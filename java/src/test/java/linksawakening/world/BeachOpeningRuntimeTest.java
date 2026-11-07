@@ -1,5 +1,12 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.OwlEventCompletion;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
@@ -75,7 +82,7 @@ final class BeachOpeningRuntimeTest {
         boolean foundSpinPose = false;
         boolean foundFinalPose = false;
         boolean foundSpinFrameWithoutMotionBlock = false;
-        List<RoomEntityRuntime.SwordPickupRewardEvent> rewards = List.of();
+        List<SwordPickupRewardEvent> rewards = List.of();
         for (int frame = 3; frame < 0x240 && rewards.isEmpty(); frame++) {
             runtime.tick(frame, 0x58, 0x60, () -> 0);
             foundSwordDialog |= runtime.consumePendingDialogRequests().stream()
@@ -86,9 +93,9 @@ final class BeachOpeningRuntimeTest {
             foundSpinNoise |= runtime.consumePendingEntityEvents().stream()
                 .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                     && event.soundId() == 0x03);
-            List<RoomEntityRuntime.LinkSwordSpinPoseRequest> spinRequests =
+            List<LinkSwordSpinPoseRequest> spinRequests =
                 runtime.consumePendingLinkSwordSpinPoseRequests();
-            List<RoomEntityRuntime.LinkMotionBlockRequest> motionBlockRequests =
+            List<LinkMotionBlockRequest> motionBlockRequests =
                 runtime.consumePendingLinkMotionBlockRequests();
             foundSpinPose |= !spinRequests.isEmpty();
             if (spinRequests.stream().anyMatch(request -> request.countdown() != 0x20)) {
@@ -108,7 +115,7 @@ final class BeachOpeningRuntimeTest {
         assertTrue(foundSpinPose);
         assertTrue(foundSpinFrameWithoutMotionBlock);
         assertTrue(foundFinalPose);
-        assertEquals(List.of(new RoomEntityRuntime.SwordPickupRewardEvent(0)), rewards);
+        assertEquals(List.of(new SwordPickupRewardEvent(0)), rewards);
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
     }
 
@@ -135,7 +142,7 @@ final class BeachOpeningRuntimeTest {
         boolean heldAboveLink = false;
         boolean linkBlocked = false;
         boolean dialogOpened = false;
-        List<RoomEntityRuntime.ToadstoolRewardEvent> rewards = List.of();
+        List<ToadstoolRewardEvent> rewards = List.of();
         for (int frame = 2; frame < 0x100 && rewards.isEmpty(); frame++) {
             runtime.tick(frame, 0x48, 0x50, () -> 0);
             heldAboveLink |= !runtime.consumePendingLinkHeldItemPoseRequests().isEmpty();
@@ -159,7 +166,7 @@ final class BeachOpeningRuntimeTest {
         assertTrue(heldAboveLink);
         assertTrue(linkBlocked);
         assertTrue(dialogOpened);
-        assertEquals(List.of(new RoomEntityRuntime.ToadstoolRewardEvent(0)), rewards);
+        assertEquals(List.of(new ToadstoolRewardEvent(0)), rewards);
         assertEquals(0x09, runtime.consumePendingMusicTrack());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
     }
@@ -220,7 +227,7 @@ final class BeachOpeningRuntimeTest {
             assertTrue(runtime.consumePendingOwlEventCompletions().isEmpty());
         }
         runtime.tick(frame, 0x58, 0x60, () -> 0);
-        assertEquals(List.of(new RoomEntityRuntime.OwlEventCompletion(0)),
+        assertEquals(List.of(new OwlEventCompletion(0)),
             runtime.consumePendingOwlEventCompletions());
     }
 
@@ -273,7 +280,7 @@ final class BeachOpeningRuntimeTest {
         assertEquals(1, armed.owlEventStateForTest(0));
         assertEquals(0x22, armed.consumePendingMusicTrack());
         armed.tick(1, 0x50, 0x50, () -> 0);
-        assertEquals(List.of(new RoomEntityRuntime.LinkFacingRequest(0, 0)),
+        assertEquals(List.of(new LinkFacingRequest(0, 0)),
             armed.consumePendingLinkFacingRequests());
         assertTrue(armed.consumePendingEntityEvents().stream().anyMatch(event ->
             event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE

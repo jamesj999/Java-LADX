@@ -1,5 +1,17 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.KeyQuicksandEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomBank;
@@ -438,7 +450,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -453,7 +465,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 3, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -970,7 +982,7 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.groundStatus(0));
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.WATER_SPLASH, 0x40, 0x50)),
             runtime.transientVfxRequests());
         assertEquals(List.of(new EntityCombatEvent(0, 0x4D, 0, false,
@@ -1687,7 +1699,7 @@ final class RoomEntityRuntimeTest {
         runtime.setTransitionSequenceCounterForTest(0x04);
 
         runtime.tick(0, 0xC0, 0x40, () -> 0);
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x90)),
+        assertEquals(List.of(new DialogRequest(1, 0x90)),
             runtime.consumePendingDialogRequests());
         assertEquals(1, runtime.moblinSwordPrivateState3(0));
 
@@ -2877,7 +2889,7 @@ final class RoomEntityRuntimeTest {
         RoomEntity statue = runtime.snapshot().slots().get(0);
         assertEquals(56, statue.x());
         assertEquals(64, statue.y());
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -3161,7 +3173,7 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, runtime.genieActiveStateForTest(1));
         assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(1));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x52)),
+        assertEquals(List.of(new DialogRequest(0, 0x52)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -3178,7 +3190,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(4, runtime.genieActiveStateForTest(0));
         assertEquals(0x08, runtime.enemyHealth(0));
         assertEquals(0xFF, runtime.geniePrivateCountdown1ForTest(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x53)),
+        assertEquals(List.of(new DialogRequest(0, 0x53)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -3517,7 +3529,7 @@ final class RoomEntityRuntimeTest {
 
         runtime.tick(0x20, 0x50, 0x70, () -> 0);
         assertEquals(0x19, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xB4)),
+        assertEquals(List.of(new DialogRequest(0, 0xB4)),
             runtime.consumePendingDialogRequests());
 
         runtime.tick(0x21, 0x50, 0x70, () -> 0);
@@ -3662,7 +3674,7 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(0xB2, 0x50, 0x60, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0x04, 0x00, 0, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 
@@ -3715,7 +3727,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x05, rubble.spriteVariant());
         assertEquals(0xC4, runtime.physicsFlags(rubble.slot()));
         assertEquals(0x0A, runtime.options1(rubble.slot()));
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.POOF, 0x57, 0x50)), runtime.transientVfxRequests());
         assertEquals(List.of(new EntityCombatEvent(rubble.slot(), 0x05, 0, false,
             EntityCombatEvent.SoundChannel.NOISE, 0x29)),
@@ -3767,7 +3779,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(List.of(new EntityCombatEvent(0, 0x88, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
             runtime.consumePendingEntityEvents());
-        assertEquals(List.of(new RoomEntityRuntime.ScreenShakeRequest(0, 0x30, 0x04)),
+        assertEquals(List.of(new ScreenShakeRequest(0, 0x30, 0x04)),
             runtime.consumePendingScreenShakeRequests());
 
         for (int frame = 0x131; frame <= 0x160; frame++) {
@@ -3775,9 +3787,9 @@ final class RoomEntityRuntimeTest {
         }
         assertEquals(2, runtime.armosKnightState(0));
         assertEquals(0, runtime.armosKnightTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+        assertEquals(List.of(new LinkMotionBlockRequest(0)),
             runtime.consumePendingLinkMotionBlockRequests());
-        assertEquals(List.of(new RoomEntityRuntime.LinkFallenPoseRequest(0)),
+        assertEquals(List.of(new LinkFallenPoseRequest(0)),
             runtime.consumePendingLinkFallenPoseRequests());
     }
 
@@ -4412,10 +4424,10 @@ final class RoomEntityRuntimeTest {
         runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00, 0x00), null,
             new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
 
-        List<RoomEntityRuntime.LikeLikeEvent> events =
+        List<LikeLikeEvent> events =
             runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertEquals(-1, events.getFirst().stolenInventorySlot());
         assertEquals(1, runtime.likeLikeState(0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
@@ -4438,9 +4450,9 @@ final class RoomEntityRuntimeTest {
 
         runtime.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
             new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
-        RoomEntityRuntime.LikeLikeEvent stolen =
+        LikeLikeEvent stolen =
             runtime.consumePendingLikeLikeEvents().getFirst();
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, stolen.kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
         assertEquals(1, runtime.likeLikePrivateState1(0));
@@ -4454,7 +4466,7 @@ final class RoomEntityRuntimeTest {
         levelTwo.consumePendingLikeLikeEvents();
         levelTwo.tickWithProjectileEvents(2, 64, 64, sequence(0x00), null,
             new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0));
-        RoomEntityRuntime.LikeLikeEvent protectedShield =
+        LikeLikeEvent protectedShield =
             levelTwo.consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
         assertEquals(0, levelTwo.likeLikePrivateState1(0));
@@ -4475,7 +4487,7 @@ final class RoomEntityRuntimeTest {
             new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0));
         var events = runtime.consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertFalse(events.getFirst().pinLinkPosition());
         assertEquals(0, events.getFirst().stolenInventorySlot());
         assertEquals(1, runtime.likeLikePrivateState1(0));
@@ -4502,9 +4514,9 @@ final class RoomEntityRuntimeTest {
 
         runtime.tickWithProjectileEvents(9, 64, 64, sequence(0x00), null,
             new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0));
-        RoomEntityRuntime.LikeLikeEvent release =
+        LikeLikeEvent release =
             runtime.consumePendingLikeLikeEvents().getFirst();
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.RELEASE, release.kind());
+        assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());
         assertEquals(0, runtime.likeLikeState(0));
         assertEquals(0x15, runtime.slowTransitionCountdown(0));
     }
@@ -5381,7 +5393,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x07, events.getFirst().soundId());
-        assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+        assertEquals(List.of(new TransientVfxRequest(
             TransientVfxType.SWORD_POKE, 0x40, 0x4E)), runtime.transientVfxRequests());
     }
 
@@ -6603,7 +6615,7 @@ final class RoomEntityRuntimeTest {
         assertTrue(events.isEmpty());
         assertFalse(runtime.snapshot().slots().get(0).loaded());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest request = runtime.transientVfxRequests().get(0);
+        TransientVfxRequest request = runtime.transientVfxRequests().get(0);
         assertEquals(TransientVfxType.SWORD_POKE, request.type());
         assertEquals(0x40, request.worldX());
         assertEquals(0x40, request.worldY());
@@ -6855,7 +6867,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x21, beam.x());
         assertEquals(0x30, beam.y());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest request =
+        TransientVfxRequest request =
             runtime.transientVfxRequests().get(0);
         assertEquals(TransientVfxType.LASER_BEAM, request.type());
         assertEquals(0x25, request.worldX());
@@ -7031,7 +7043,7 @@ final class RoomEntityRuntimeTest {
         for (int frame = 0; frame < 36; frame++) {
             runtime.tick(frame, 0x30, 0x58, () -> 0);
             openedIntro |= runtime.consumePendingDialogRequests().equals(
-                List.of(new RoomEntityRuntime.DialogRequest(1, 0x91, true)));
+                List.of(new DialogRequest(1, 0x91, true)));
         }
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -7187,7 +7199,7 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, runtime.bowWowState());
         assertEquals(0x10, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x6C)),
+        assertEquals(List.of(new DialogRequest(1, 0x6C)),
             runtime.consumePendingDialogRequests());
     }
 
@@ -7367,7 +7379,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(6).status());
         assertEquals(0, runtime.bowWowTransitionCountdown(5));
         assertEquals(0x80, runtime.bowWowPrivateCountdown2(5));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(1, 0x15)),
+        assertEquals(List.of(new DialogRequest(1, 0x15)),
             runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -7517,13 +7529,13 @@ final class RoomEntityRuntimeTest {
             assertFalse(runtime.liftedEntityState().active());
             assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
             for (int frame = 0; frame < 46; frame++) runtime.tick(frame);
-            assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
+            assertEquals(List.of(new DialogRequest(0, type == 0x33 ? 0x08 : 0xEC)),
                 runtime.consumePendingDialogRequests());
             runtime.setDialogActive(true);
             for (int frame = 46; frame < 246; frame++) runtime.tick(frame);
             assertTrue(runtime.powerUpPickupSequenceActive());
             assertFalse(runtime.liftedEntityState().active());
-            assertEquals(List.of(new RoomEntityRuntime.LinkHeldItemPoseRequest(0, true)),
+            assertEquals(List.of(new LinkHeldItemPoseRequest(0, true)),
                 runtime.consumePendingLinkHeldItemPoseRequests());
             runtime.setDialogActive(false);
             runtime.tick(246);
@@ -7547,7 +7559,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x30, pickup.type());
         assertEquals(1, pickup.persistentClearMask());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_SMALL_KEY)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7571,9 +7583,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x40, held.x());
         assertEquals(0x44, held.y());
         assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA3)),
+        assertEquals(List.of(new DialogRequest(0, 0xA3)),
             runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_ANGLER_KEY)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7595,9 +7607,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(EntitySpriteDefinition.Shape.PAIR, held.spriteDefinition().shape());
         assertEquals(0x36, held.spriteDefinition().variant(0).first().tile());
         assertEquals(0x0F, runtime.keyDropTransitionCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x93)),
+        assertEquals(List.of(new DialogRequest(0, 0x93)),
             runtime.consumePendingDialogRequests());
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             0, ChestContentsTable.CHEST_HOOKSHOT)),
             runtime.consumePendingKeyRewardEvents());
     }
@@ -7616,7 +7628,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x2F, runtime.transitionCountdown(0));
         assertEquals(0x50, runtime.fallingTargetX(0));
         assertEquals(0x48, runtime.fallingTargetY(0));
-        assertEquals(List.of(new RoomEntityRuntime.KeyQuicksandEvent(0)),
+        assertEquals(List.of(new KeyQuicksandEvent(0)),
             runtime.consumePendingKeyQuicksandEvents());
         assertEquals(List.of(new EntityCombatEvent(0, 0x30, 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x18)),
@@ -8011,9 +8023,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x0F, runtime.transitionCountdown(0));
         assertEquals(0x20, held.x());
         assertEquals(0x24, held.y());
-        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 6, 0xA2)),
+        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
             runtime.consumePendingSlimeKeyRewardEvents());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA2)),
+        assertEquals(List.of(new DialogRequest(0, 0xA2)),
             runtime.consumePendingDialogRequests());
     }
 

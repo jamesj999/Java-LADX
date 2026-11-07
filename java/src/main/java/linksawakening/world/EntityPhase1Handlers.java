@@ -1,5 +1,12 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.event.WarpLinkStateRequest;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

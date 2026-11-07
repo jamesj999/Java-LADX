@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,7 +92,7 @@ final class BoomerangRuntimeTest {
         assertEquals(1, runtime.boomerangObjectRequests().size());
         assertEquals(0x20, runtime.snapshot().slots().get(slot).x());
         assertEquals(0x27, runtime.boomerangTransitionCountdown(slot));
-        RoomEntityRuntime.BoomerangObjectRequest request =
+        BoomerangObjectRequest request =
             runtime.boomerangObjectRequests().get(0);
 
         runtime.setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());

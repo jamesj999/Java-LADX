@@ -1,5 +1,16 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -670,13 +681,13 @@ final class RoomTransitionCoordinatorTest {
             (frame & 0xFE) | ((toadstool.slot() ^ 1) & 1),
             toadstool.x(), toadstool.y(), false, true, Link.DIRECTION_RIGHT, 0);
         assertNotNull(toadstoolPickup);
-        List<RoomEntityRuntime.ToadstoolRewardEvent> toadstoolRewards = List.of();
+        List<ToadstoolRewardEvent> toadstoolRewards = List.of();
         while (toadstoolRewards.isEmpty() && frame < pickupFrame + 0x900) {
             session.tickEntities(frame++, toadstool.x(), toadstool.y());
             session.consumeEntityDialogRequests();
             toadstoolRewards = session.consumeToadstoolRewards();
         }
-        assertEquals(List.of(new RoomEntityRuntime.ToadstoolRewardEvent(toadstool.slot())),
+        assertEquals(List.of(new ToadstoolRewardEvent(toadstool.slot())),
             toadstoolRewards);
         // Mirrors Main's live event consumer; RoomSession owns the entity
         // cadence and PlayerState owns the resulting inventory mutation.
@@ -724,7 +735,7 @@ final class RoomTransitionCoordinatorTest {
             frame++, witch.x(), 0x56, 0, 0, 1, false);
         session.tickEntitiesWithProjectileEvents(
             frame++, witch.x(), 0x56, 0, 0, 1, false);
-        List<RoomEntityRuntime.WitchExchangeEvent> exchangeEvents =
+        List<WitchExchangeEvent> exchangeEvents =
             session.consumeWitchExchangeEvents();
         assertEquals(1, exchangeEvents.size());
         playerState.beginWitchToadstoolExchange(exchangeEvents.getFirst().inventorySlot());
@@ -1553,7 +1564,7 @@ final class RoomTransitionCoordinatorTest {
         while (!instrumentOwlDialogOpened && frame < instrumentOwlDeadline) {
             tickInteractiveEntities(session, frame++, 0x50, 0x50);
             instrumentOwlDialogs.addAll(session.consumeEntityDialogRequests().stream()
-                .map(RoomEntityRuntime.DialogRequest::globalDialogId).toList());
+                .map(DialogRequest::globalDialogId).toList());
             instrumentOwlDialogOpened |= instrumentOwlDialogs.contains(0x0C2);
         }
         assertTrue(instrumentOwlDialogOpened, instrumentOwlDialogs.toString());
@@ -2380,7 +2391,7 @@ final class RoomTransitionCoordinatorTest {
         boolean compassChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 compassRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_COMPASS;
                 playerState.applyChestReward(reward.itemType());
@@ -2571,7 +2582,7 @@ final class RoomTransitionCoordinatorTest {
         boolean stoneBeakChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 stoneBeakRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_STONE_BEAK;
                 playerState.applyChestReward(reward.itemType());
@@ -2758,7 +2769,7 @@ final class RoomTransitionCoordinatorTest {
         boolean room38ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 room38RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 playerState.applyChestReward(reward.itemType());
@@ -2821,7 +2832,7 @@ final class RoomTransitionCoordinatorTest {
         boolean room39ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 room39RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 playerState.applyChestReward(reward.itemType());
@@ -3518,7 +3529,7 @@ final class RoomTransitionCoordinatorTest {
         boolean braceletChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 braceletRewardObserved |= reward.itemType()
                     == ChestContentsTable.CHEST_POWER_BRACELET;
@@ -3705,7 +3716,7 @@ final class RoomTransitionCoordinatorTest {
         boolean room22ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 room22RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 playerState.applyChestReward(reward.itemType());
@@ -3859,7 +3870,7 @@ final class RoomTransitionCoordinatorTest {
         boolean room27ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-            for (RoomEntityRuntime.ChestRewardEvent reward
+            for (ChestRewardEvent reward
                     : session.consumeChestRewardEvents()) {
                 nightmareKeyRewardObserved |= reward.itemType()
                     == ChestContentsTable.CHEST_NIGHTMARE_KEY;
@@ -4380,11 +4391,11 @@ final class RoomTransitionCoordinatorTest {
         // applying the current descending-slot platform requests.
         link.clearStandingOnSideViewEntity();
 
-        List<RoomEntityRuntime.SideViewPlatformLinkRequest> platforms =
+        List<SideViewPlatformLinkRequest> platforms =
             session.consumeSideViewPlatformLinkRequests();
-        List<RoomEntityRuntime.SideViewPotLinkRequest> pots =
+        List<SideViewPotLinkRequest> pots =
             session.consumeSideViewPotLinkRequests();
-        List<RoomEntityRuntime.LinkFinalPositionRequest> finalPositions =
+        List<LinkFinalPositionRequest> finalPositions =
             session.consumeLinkFinalPositionRequests();
         int platformIndex = 0;
         int potIndex = 0;
@@ -4409,7 +4420,7 @@ final class RoomTransitionCoordinatorTest {
                 stream = 2;
             }
             if (stream == 0) {
-                RoomEntityRuntime.SideViewPlatformLinkRequest request =
+                SideViewPlatformLinkRequest request =
                     platforms.get(platformIndex++);
                 if (request.standing()) {
                     link.applySideViewPlatformContact(request.horizontalDelta(),
@@ -4421,7 +4432,7 @@ final class RoomTransitionCoordinatorTest {
                     }
                 }
             } else if (stream == 1) {
-                RoomEntityRuntime.LinkFinalPositionRequest request =
+                LinkFinalPositionRequest request =
                     finalPositions.get(finalPositionIndex++);
                 link.restoreRomFinalPosition();
                 if (request.clearLinkPositionIncrement()) {
@@ -4434,7 +4445,7 @@ final class RoomTransitionCoordinatorTest {
                     link.resetPegasusBoots();
                 }
             } else {
-                RoomEntityRuntime.SideViewPotLinkRequest request = pots.get(potIndex++);
+                SideViewPotLinkRequest request = pots.get(potIndex++);
                 if (request.restoreFinalPositionX()) {
                     link.restoreRomFinalPositionX();
                 }
@@ -4452,7 +4463,7 @@ final class RoomTransitionCoordinatorTest {
                 }
             }
         }
-        for (RoomEntityRuntime.LinkMotionBlockRequest request
+        for (LinkMotionBlockRequest request
                 : session.consumeLinkMotionBlockRequests()) {
             link.blockNextRomMotionFrame();
         }
@@ -4462,9 +4473,9 @@ final class RoomTransitionCoordinatorTest {
         assertFalse(session.consumeWorldLinkMotionBlockRequest());
         assertTrue(session.consumeLinkFallenPoseRequests().isEmpty());
         assertTrue(session.consumeLinkFacingRequests().isEmpty());
-        List<RoomEntityRuntime.LinkAttackClearRequest> attackClears =
+        List<LinkAttackClearRequest> attackClears =
             session.consumeLinkAttackClearRequests();
-        List<RoomEntityRuntime.LinkAttackStepRequest> attackSteps =
+        List<LinkAttackStepRequest> attackSteps =
             session.consumeLinkAttackStepRequests();
         int attackClearIndex = 0;
         int attackStepIndex = 0;

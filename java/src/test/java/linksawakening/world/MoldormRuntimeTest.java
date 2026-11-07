@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.vfx.TransientVfxType;
@@ -42,7 +44,7 @@ final class MoldormRuntimeTest {
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         var before = runtime.snapshot().slots().getFirst();
         runtime.tick(112, 80, 80, () -> 0);
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xB0)),
+        assertEquals(List.of(new DialogRequest(0, 0xB0)),
             runtime.consumePendingDialogRequests());
         assertEquals(before.x(), runtime.snapshot().slots().getFirst().x());
         assertEquals(before.y(), runtime.snapshot().slots().getFirst().y());

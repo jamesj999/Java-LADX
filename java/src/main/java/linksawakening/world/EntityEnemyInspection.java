@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

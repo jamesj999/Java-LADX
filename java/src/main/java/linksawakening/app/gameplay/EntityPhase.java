@@ -1,5 +1,8 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.RichardProgressEvent;
+
 import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
@@ -348,7 +351,7 @@ final class EntityPhase {
                 for (var event : roomSession.consumeRichardProgressEvents()) {
                     if (playerState != null
                         && event.kind()
-                            == RoomEntityRuntime.RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
+                            == RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
                         playerState.setGoldenLeavesCount(event.goldenLeavesCount());
                         if (gpu != null && romData != null) {
                             gpu.replaceSlimeKeyTilesByGoldenLeaf(romData);
@@ -379,7 +382,7 @@ final class EntityPhase {
                 }
                 for (var event : roomSession.consumeLikeLikeEvents()) {
                     if (event.kind()
-                        == linksawakening.world.RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE) {
+                        == linksawakening.world.entity.event.LikeLikeEvent.Kind.CAPTURE) {
                         if (event.stolenInventorySlot() == 0) {
                             playerState.setItemB(PlayerState.INVENTORY_EMPTY);
                         } else if (event.stolenInventorySlot() == 1) {

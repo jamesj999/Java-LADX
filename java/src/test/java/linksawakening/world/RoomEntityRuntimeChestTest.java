@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +63,7 @@ final class RoomEntityRuntimeChestTest {
         for (int frame = 9; frame <= 0x26; frame++) {
             runtime.tick(frame, 0, 0, () -> 0);
         }
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xAC)),
+        assertEquals(List.of(new DialogRequest(0, 0xAC)),
             runtime.consumePendingDialogRequests());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(slot).status());
 

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +18,7 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x3B, platform());
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
 
-        assertEquals(List.of(new RoomEntityRuntime.SideViewPlatformLinkRequest(
+        assertEquals(List.of(new SideViewPlatformLinkRequest(
             0, 0, 0x40, 0x02, true, true)), runtime.consumePendingSideViewPlatformLinkRequests());
         assertEquals(0x10, runtime.sideViewPlatformPrivateState2ForTest(0));
         assertEquals(1, runtime.sideViewPlatformPrivateState4ForTest(0));
@@ -28,7 +30,7 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(0x20, platform());
         tick(runtime, 0, 0x48, 0x40, 0x00, 0x00);
 
-        RoomEntityRuntime.SideViewPlatformLinkRequest request =
+        SideViewPlatformLinkRequest request =
             runtime.consumePendingSideViewPlatformLinkRequests().get(0);
         assertEquals(0, request.horizontalDelta());
         assertEquals(0x40, request.positionY());

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
@@ -54,7 +56,7 @@ final class MagicPowderRuntimeTest {
 
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
         assertEquals(1, runtime.magicPowderObjectRequests().size());
-        RoomEntityRuntime.MagicPowderObjectRequest request =
+        MagicPowderObjectRequest request =
             runtime.magicPowderObjectRequests().getFirst();
         assertEquals(RoomEntityRuntime.MagicPowderObjectAction.REVEAL,
             request.action());

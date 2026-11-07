@@ -1,5 +1,45 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import linksawakening.world.entity.event.InstrumentCompletionEvent;
+import linksawakening.world.entity.event.InstrumentRewardEvent;
+import linksawakening.world.entity.event.KeyQuicksandEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.entity.event.OwlEventCompletion;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+import linksawakening.world.entity.event.RoosterLinkStateRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.event.WarpLinkStateRequest;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
+
 import static linksawakening.world.EntitySlotValidation.*;
 
 import static linksawakening.world.EntityMotionMath.*;
@@ -85,429 +125,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         }
     }
 
-    /** Collision payload consumed by EntityCheckThrowAtTriggers in bank $03. */
-    public record ThrownBackgroundCollisionEvent(int slot, int entityType,
-                                                  int direction, int objectId) implements EntityEvent {
-    }
-
-    /** A ROM transient-VFX creation requested by an entity handler this frame. */
-    public record TransientVfxRequest(TransientVfxType type, int worldX, int worldY,
-                                      int variant) implements EntityEvent {
-        public TransientVfxRequest(TransientVfxType type, int worldX, int worldY) {
-            this(type, worldX, worldY, 0);
-        }
-    }
-
-    public record HeartContainerRewardEvent(int slot) implements EntityEvent {
-    }
-
-    public record MadamMeowMeowFullHealRequest(int slot) implements EntityEvent {
-    }
-
-    public record SwordPickupRewardEvent(int slot) implements EntityEvent {
-    }
-
-    public record ToadstoolRewardEvent(int slot) implements EntityEvent {
-    }
-
-    public record InstrumentRewardEvent(int slot) implements EntityEvent {
-    }
-
-    public record InstrumentCompletionEvent(int slot, int mapId) implements EntityEvent {
-    }
-
-    public record RichardProgressEvent(int slot, Kind kind, int goldenLeavesCount) implements EntityEvent {
-        public enum Kind { START_QUEST, RETURN_ALL_LEAVES }
-    }
-
-    public record WitchExchangeEvent(int slot, int inventorySlot) implements EntityEvent {
-    }
-
-    public record WitchRewardEvent(int slot) implements EntityEvent {
-    }
-
-    public record OwlEventCompletion(int slot) implements EntityEvent {
-    }
-
-    /** A ROM handler request carrying the complete Link-side push response. */
-    public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
-                                           boolean resetHookshotChain,
-                                           boolean markLinkPushing,
-                                           boolean clearLinkPositionIncrement) implements EntityEvent {
-        public LinkFinalPositionRequest(int sourceSlot) {
-            this(sourceSlot, false, false, false, false);
-        }
-
-        public LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
-                                        boolean resetHookshotChain,
-                                        boolean markLinkPushing) {
-            this(sourceSlot, resetPegasusBoots, resetHookshotChain, markLinkPushing, false);
-        }
-
-        public LinkFinalPositionRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Link final-position source slot out of range: "
-                    + sourceSlot);
-            }
-        }
-    }
-
-    /** Link HRAM writes emitted by Rooster's active lifted handler. */
-    public record RoosterLinkStateRequest(int sourceSlot, int positionZ, int velocityZ,
-                                          int speedX, int speedY, int romDirection) implements EntityEvent {
-        public RoosterLinkStateRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Rooster source slot out of range: "
-                    + sourceSlot);
-            }
-            if ((positionZ & ~0xFF) != 0 || (velocityZ & ~0xFF) != 0
-                || (speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Rooster Link state must be byte-shaped");
-            }
-            if (romDirection < 0 || romDirection > 3) {
-                throw new IllegalArgumentException("Rooster ROM direction must be between 0 and 3");
-            }
-        }
-    }
-
-    /** A ROM handler request to block Link's next interactive motion frame. */
-    public record LinkMotionBlockRequest(int sourceSlot, int positionDeltaX, int positionDeltaY) implements EntityEvent {
-        public LinkMotionBlockRequest(int sourceSlot) { this(sourceSlot, 0, 0); }
-        public LinkMotionBlockRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Link motion-block source slot out of range: "
-                    + sourceSlot);
-            }
-        }
-    }
-
-    /** Link-side position/speed writes emitted by the side-view platform handler. */
-    public record SideViewPlatformLinkRequest(int sourceSlot, int horizontalDelta,
-                                              int positionY, int speedY, boolean standing,
-                                              boolean activate) implements EntityEvent {
-        public SideViewPlatformLinkRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || horizontalDelta < -0x80 || horizontalDelta > 0x7F
-                || (positionY & ~0xFF) != 0
-                || (speedY & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Invalid side-view platform Link request");
-            }
-        }
-    }
-
-    /** Link-side writes emitted by entity-$D6's state-0 collision handler. */
-    public record SideViewPotLinkRequest(int sourceSlot, boolean resetPegasusBoots,
-                                         boolean restoreFinalPositionX,
-                                         int ignoreCollisionCountdown, int speedX,
-                                         boolean snapTop, int positionY, int speedY) implements EntityEvent {
-        public SideViewPotLinkRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || ignoreCollisionCountdown < 0 || ignoreCollisionCountdown > 0xFF
-                || (speedX & ~0xFF) != 0 || (positionY & ~0xFF) != 0
-                || (speedY & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Invalid side-view pot Link request");
-            }
-        }
-    }
-
-    /** A cleared entity-$61 handler request for the ROM dungeon warp table. */
-    public record DungeonWarpRequest(int sourceSlot, WarpMotion.Destination destination) implements EntityEvent {
-        public DungeonWarpRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || destination == null) {
-                throw new IllegalArgumentException("Invalid dungeon warp request");
-            }
-        }
-    }
-
-    /** Link HRAM writes emitted by entity-$61's WarpState3Handler. */
-    public record WarpLinkStateRequest(int sourceSlot, int positionX, int visualPositionY,
-                                       int immunityCountdown) implements EntityEvent {
-        public WarpLinkStateRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || (positionX & ~0xFF) != 0 || (visualPositionY & ~0xFF) != 0
-                || (immunityCountdown & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Warp Link state must be byte-shaped");
-            }
-        }
-    }
-
-    /** Link-side HRAM effects emitted by Hinox's grab/throw handler. */
-    public record HinoxLinkEffectRequest(int sourceSlot, int heldX, int heldY, int heldZ,
-                                         int speedX, int speedY, int velocityZ,
-                                         int airborneState, int damage,
-                                         boolean motionBlocked,
-                                         boolean applyHeldLinkPose) implements EntityEvent {
-        public HinoxLinkEffectRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Hinox source slot out of range: " + sourceSlot);
-            }
-            for (int value : new int[] {heldX, heldY, heldZ, speedX, speedY, velocityZ,
-                                        airborneState, damage}) {
-                if ((value & ~0xFF) != 0) {
-                    throw new IllegalArgumentException("Hinox Link effect must be byte-shaped");
-                }
-            }
-        }
-
-        public boolean throwing() {
-            return speedX != 0 || speedY != 0 || velocityZ != 0 || damage != 0;
-        }
-    }
-
-    /** A ROM handler request to show Link's explicit fallen animation pose. */
-    public record LinkFallenPoseRequest(int sourceSlot) implements EntityEvent {
-        public LinkFallenPoseRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Link fallen-pose source slot out of range: "
-                    + sourceSlot);
-            }
-        }
-    }
-
-    public record LinkFacingRequest(int sourceSlot, int romDirection,
-                                    boolean preserveWalkingPhase) implements EntityEvent {
-        public LinkFacingRequest(int sourceSlot, int romDirection) {
-            this(sourceSlot, romDirection, false);
-        }
-
-        public LinkFacingRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || romDirection < 0 || romDirection > 3) {
-                throw new IllegalArgumentException("Invalid Link-facing request");
-            }
-        }
-    }
-
-    /** A lifted-throw request applied after AnimateEntities, like the ROM HRAM write. */
-    public record LinkAttackStepRequest(int sourceSlot) implements EntityEvent {
-        public LinkAttackStepRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException(
-                    "Link attack-step source slot out of range: " + sourceSlot);
-            }
-        }
-    }
-
-    /** A source handler's direct write clearing Link's attack animation countdown. */
-    public record LinkAttackClearRequest(int sourceSlot) implements EntityEvent {
-        public LinkAttackClearRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Link attack-clear source slot out of range");
-            }
-        }
-    }
-
-    /** Deferred room-save writes that must not alter the live handler's room status. */
-    public record RoomStatusPersistenceRequest(int sourceSlot, int roomStatusMask,
-                                               int tarinFlag) implements EntityEvent {
-        public RoomStatusPersistenceRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
-                || (roomStatusMask & ~0xFF) != 0 || (tarinFlag & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Invalid room-status persistence request");
-            }
-        }
-    }
-
-    public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) implements EntityEvent {
-        public LinkHeldItemPoseRequest(int sourceSlot) { this(sourceSlot, false); }
-        public LinkHeldItemPoseRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Held-item source slot out of range: "
-                    + sourceSlot);
-            }
-        }
-    }
-
-    public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) implements EntityEvent {
-        public LinkSwordSpinPoseRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Sword-spin source slot out of range: "
-                    + sourceSlot);
-            }
-            if (countdown < 0 || countdown > 0x20) {
-                throw new IllegalArgumentException("Sword-spin countdown out of range: "
-                    + countdown);
-            }
-        }
-    }
-
-    public record LinkSwordFinalPoseRequest(int sourceSlot) implements EntityEvent {
-        public LinkSwordFinalPoseRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Sword-final source slot out of range: "
-                    + sourceSlot);
-            }
-        }
-    }
-
-    /** A ROM handler request to start the source screen-shake timer. */
-    public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) implements EntityEvent {
-        public ScreenShakeRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Screen-shake source slot out of range: "
-                    + sourceSlot);
-            }
-            if (countdown < 0 || countdown > 0xFF) {
-                throw new IllegalArgumentException("Screen-shake countdown must be an unsigned byte");
-            }
-            if (phase < 0 || phase > 0x04 || (phase & 0x01) != 0) {
-                throw new IllegalArgumentException("Screen-shake phase must be 0, 2, or 4");
-            }
-        }
-    }
-
-    /** A boomerang request to reveal the object it intersected after movement. */
-    public record BoomerangObjectRequest(int sourceSlot, int location,
-                                         int objectLeft, int objectTop) implements EntityEvent {
-        public BoomerangObjectRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Boomerang source slot out of range: "
-                    + sourceSlot);
-            }
-            location &= 0xFF;
-            objectLeft &= 0xF0;
-            objectTop &= 0xF0;
-        }
-    }
-
-    /** A Magic Rod fireball request to reveal the object it burned. */
-    public record MagicRodObjectRequest(int sourceSlot, int location,
-                                        int objectLeft, int objectTop) implements EntityEvent {
-        public MagicRodObjectRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Magic Rod source slot out of range: "
-                    + sourceSlot);
-            }
-            location &= 0xFF;
-            objectLeft &= 0xF0;
-            objectTop &= 0xF0;
-        }
-    }
-
     /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
     public enum MagicPowderObjectAction {
         REVEAL,
         IGNITE_TORCH,
         EXTINGUISH_TORCH
-    }
-
-    /** A ROM powder-sprinkle object mutation applied by RoomSession. */
-    public record MagicPowderObjectRequest(int sourceSlot, int location,
-                                           int objectLeft, int objectTop,
-                                           MagicPowderObjectAction action) implements EntityEvent {
-        public MagicPowderObjectRequest {
-            if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Magic Powder source slot out of range: "
-                    + sourceSlot);
-            }
-            location &= 0xFF;
-            objectLeft &= 0xF0;
-            objectTop &= 0xF0;
-            if (action == null) {
-                throw new IllegalArgumentException("Magic Powder object action cannot be null");
-            }
-        }
-    }
-
-    /** A ROM dialog-table entry requested by an entity handler this frame. */
-    public record DialogRequest(int tableId, int dialogLowId, boolean forceTop) implements EntityEvent {
-        public DialogRequest(int tableId, int dialogLowId) { this(tableId, dialogLowId, false); }
-        public DialogRequest {
-            if (tableId < 0 || tableId > 2) {
-                throw new IllegalArgumentException("Dialog table id must be 0, 1, or 2");
-            }
-            if ((dialogLowId & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Dialog id must be an unsigned byte: "
-                    + dialogLowId);
-            }
-        }
-
-        public int globalDialogId() {
-            return (tableId << 8) | dialogLowId;
-        }
-    }
-
-    /** Reward application requested by EntityInitChestWithItem. */
-    public record ChestRewardEvent(int slot, int itemType) implements EntityEvent {
-        public ChestRewardEvent {
-            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Chest entity slot out of range: " + slot);
-            }
-            if ((itemType & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Chest item must be an unsigned byte: "
-                    + itemType);
-            }
-        }
-    }
-
-    /** Reward application requested by PickDroppableKey. */
-    public record KeyRewardEvent(int slot, int itemType) implements EntityEvent {
-        public KeyRewardEvent {
-            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Key entity slot out of range: " + slot);
-            }
-            if ((itemType & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Key item must be an unsigned byte: "
-                    + itemType);
-            }
-        }
-    }
-
-    /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */
-    public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) implements EntityEvent {
-        public SlimeKeyRewardEvent {
-            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Slime Key entity slot out of range: " + slot);
-            }
-            if (goldenLeavesCount < 0 || goldenLeavesCount > 0x63) {
-                throw new IllegalArgumentException("Golden leaves count must be between 0 and 99: "
-                    + goldenLeavesCount);
-            }
-            if ((dialogLowId & ~0xFF) != 0) {
-                throw new IllegalArgumentException("Slime Key dialog must be an unsigned byte: "
-                    + dialogLowId);
-            }
-        }
-    }
-
-    /** Status propagation requested by CheckForEntityFallingDownQuicksandHole. */
-    public record KeyQuicksandEvent(int slot) implements EntityEvent {
-        public KeyQuicksandEvent {
-            if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
-                throw new IllegalArgumentException("Key entity slot out of range: " + slot);
-            }
-        }
-    }
-
-    /** Link capture/release side effects emitted by Like Like's handler. */
-    public record LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
-                                int stolenInventorySlot, int stolenShieldLevel,
-                                boolean pinLinkPosition) implements EntityEvent {
-        public enum Kind { CAPTURE, RELEASE }
-
-        public LikeLikeEvent(int slot, Kind kind, int entityX, int entityY,
-                             int stolenInventorySlot, int stolenShieldLevel) {
-            this(slot, kind, entityX, entityY, stolenInventorySlot, stolenShieldLevel,
-                kind == Kind.CAPTURE);
-        }
-    }
-
-    /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
-    public record HookshotBridgeUpdate(int objectLeft, int objectTop, int direction,
-                                       boolean active) implements EntityEvent {
-        public HookshotBridgeUpdate(int objectLeft, int objectTop, int direction) {
-            this(objectLeft, objectTop, direction, true);
-        }
-
-        public HookshotBridgeUpdate {
-            objectLeft &= 0xF0;
-            objectTop &= 0xF0;
-            if (direction < HookshotBridgeMotion.PULL_DOWN_DIRECTION
-                || direction > HookshotBridgeMotion.PULL_UP_DIRECTION) {
-                throw new IllegalArgumentException("Bridge direction must be 0 or 1: " + direction);
-            }
-        }
     }
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,

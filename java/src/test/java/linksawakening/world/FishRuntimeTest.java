@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.vfx.TransientVfxType;
@@ -40,7 +42,7 @@ final class FishRuntimeTest {
                 assertEquals(2, runtime.fishState(0));
                 assertEquals(0x12, runtime.physicsFlags(0));
                 RoomEntity fish = runtime.snapshot().slots().get(0);
-                assertEquals(List.of(new RoomEntityRuntime.TransientVfxRequest(
+                assertEquals(List.of(new TransientVfxRequest(
                     TransientVfxType.WATER_SPLASH, fish.x(), fish.y())),
                     runtime.transientVfxRequests());
                 assertEquals(List.of(new EntityCombatEvent(0, FishMotion.ENTITY_TYPE, 0, false,

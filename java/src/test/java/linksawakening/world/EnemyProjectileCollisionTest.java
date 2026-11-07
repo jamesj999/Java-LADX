@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
@@ -265,7 +267,7 @@ final class EnemyProjectileCollisionTest {
         assertTrue(events.getFirst().remove());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x40, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
@@ -291,7 +293,7 @@ final class EnemyProjectileCollisionTest {
         assertTrue(event.remove());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x38, vfx.worldX());
         assertEquals(0x50, vfx.worldY());

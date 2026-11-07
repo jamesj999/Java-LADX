@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ final class HookshotBridgeRuntimeTest {
         assertEquals(0x28, bridge.x());
         assertEquals(0x30, bridge.y());
         assertEquals(1, runtime.hookshotBridgeUpdates().size());
-        RoomEntityRuntime.HookshotBridgeUpdate update = runtime.hookshotBridgeUpdates().get(0);
+        HookshotBridgeUpdate update = runtime.hookshotBridgeUpdates().get(0);
         assertEquals(0x20, update.objectLeft());
         assertEquals(0x20, update.objectTop());
         assertEquals(0, update.direction());
@@ -57,7 +59,7 @@ final class HookshotBridgeRuntimeTest {
 
         runtime.tick(0, 0x40, 0x40, () -> 0);
 
-        RoomEntityRuntime.HookshotBridgeUpdate update = runtime.hookshotBridgeUpdates().get(0);
+        HookshotBridgeUpdate update = runtime.hookshotBridgeUpdates().get(0);
         assertEquals(1, update.direction());
         RoomEntity bridge = findBridge(runtime);
         assertEquals(0x30, bridge.y());

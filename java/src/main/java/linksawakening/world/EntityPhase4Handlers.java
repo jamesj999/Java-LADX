@@ -1,5 +1,17 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

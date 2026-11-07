@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -79,7 +81,7 @@ final class MagicRodRuntimeTest {
         tick(runtime, 0, 0x20, 0x20);
 
         assertEquals(1, runtime.magicRodObjectRequests().size());
-        RoomEntityRuntime.MagicRodObjectRequest request =
+        MagicRodObjectRequest request =
             runtime.magicRodObjectRequests().getFirst();
         assertEquals(slot, request.sourceSlot());
         assertEquals(0x43, request.location());

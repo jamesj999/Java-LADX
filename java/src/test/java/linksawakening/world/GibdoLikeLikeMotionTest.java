@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LikeLikeEvent;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -91,7 +93,7 @@ final class GibdoLikeLikeMotionTest {
 
         LikeLikeMotion.Update hidden = motion.advance(caught.entity(), 2, 0x50, 0x60,
             0, motionState, false, itemA, itemB, shieldLevel, 0, () -> 1, null);
-        assertEquals(RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE, hidden.event().kind());
+        assertEquals(LikeLikeEvent.Kind.CAPTURE, hidden.event().kind());
         assertFalse(hidden.event().pinLinkPosition());
         assertEquals(stolenSlot, hidden.event().stolenInventorySlot());
         assertEquals(stolenSlot >= 0 ? shieldLevel : 0, motion.privateState1(0));

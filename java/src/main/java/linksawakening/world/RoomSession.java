@@ -1,5 +1,43 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.BoomerangObjectRequest;
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import linksawakening.world.entity.event.InstrumentCompletionEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.MagicPowderObjectRequest;
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+import linksawakening.world.entity.event.RoosterLinkStateRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.event.WarpDestination;
+import linksawakening.world.entity.event.WarpLinkStateRequest;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
@@ -207,27 +245,27 @@ public final class RoomSession {
     private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
     private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
     private Warp pendingDungeonWarp;
-    private final List<RoomEntityRuntime.ChestRewardEvent> pendingChestRewardEvents =
+    private final List<ChestRewardEvent> pendingChestRewardEvents =
         new ArrayList<>();
-    private final List<RoomEntityRuntime.KeyRewardEvent> pendingKeyRewardEvents =
+    private final List<KeyRewardEvent> pendingKeyRewardEvents =
         new ArrayList<>();
-    private final List<RoomEntityRuntime.SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents =
+    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents =
         new ArrayList<>();
-    private final List<RoomEntityRuntime.HeartContainerRewardEvent>
+    private final List<HeartContainerRewardEvent>
         pendingHeartContainerRewards = new ArrayList<>();
-    private final List<RoomEntityRuntime.MadamMeowMeowFullHealRequest>
+    private final List<MadamMeowMeowFullHealRequest>
         pendingMadamMeowMeowFullHealRequests = new ArrayList<>();
-    private final List<RoomEntityRuntime.RichardProgressEvent>
+    private final List<RichardProgressEvent>
         pendingRichardProgressEvents = new ArrayList<>();
-    private final List<RoomEntityRuntime.SwordPickupRewardEvent>
+    private final List<SwordPickupRewardEvent>
         pendingSwordPickupRewards = new ArrayList<>();
-    private final List<RoomEntityRuntime.ToadstoolRewardEvent>
+    private final List<ToadstoolRewardEvent>
         pendingToadstoolRewards = new ArrayList<>();
-    private final List<RoomEntityRuntime.WitchExchangeEvent>
+    private final List<WitchExchangeEvent>
         pendingWitchExchangeEvents = new ArrayList<>();
-    private final List<RoomEntityRuntime.WitchRewardEvent>
+    private final List<WitchRewardEvent>
         pendingWitchRewardEvents = new ArrayList<>();
-    private final List<RoomEntityRuntime.DialogRequest> pendingRoomDialogRequests =
+    private final List<DialogRequest> pendingRoomDialogRequests =
         new ArrayList<>();
     private PendingShovelDrop pendingShovelDrop;
     private int shovelUseState;
@@ -237,7 +275,7 @@ public final class RoomSession {
     private final byte[] indoorBRoomStatus = new byte[0x100];
     private final byte[] colorDungeonRoomStatus = new byte[0x100];
     private final DungeonItemState dungeonItemState = new DungeonItemState();
-    private final Map<Integer, RoomEntityRuntime.HookshotBridgeUpdate>
+    private final Map<Integer, HookshotBridgeUpdate>
         hookshotBridgeTileOverrides = new HashMap<>();
     /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
     private final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
@@ -1355,7 +1393,7 @@ public final class RoomSession {
                     || activeRoom.roomId() != 0x0E);
         } else if (normalizedTimer == SHOVEL_FINISH_TIMER) {
             if (shovelUseState == SHOVEL_STATE_DUG && followingNpcState.marinFollowing()) {
-                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                pendingRoomDialogRequests.add(new DialogRequest(
                     SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
             }
             shovelUseState = 0;
@@ -1824,9 +1862,9 @@ public final class RoomSession {
                 romDirectionForProjectileCollision(linkDirection), usingShield, shieldLevel,
                 invincibilityCounter), swordCollisionActive, swordX, swordWidth,
             swordY, swordHeight, linkSpeedX, linkSpeedY));
-        for (RoomEntityRuntime.DungeonWarpRequest request
+        for (DungeonWarpRequest request
             : entityRuntime.consumePendingDungeonWarpRequests()) {
-            WarpMotion.Destination destination = request.destination();
+            linksawakening.world.entity.event.WarpDestination destination = request.destination();
             pendingDungeonWarp = new Warp(Warp.CATEGORY_INDOOR, destination.mapId(),
                 destination.roomId(), destination.x(), destination.y(), 0x34);
         }
@@ -1854,9 +1892,9 @@ public final class RoomSession {
         List<BombExplosionEvent> bombExplosionEvents = entityRuntime.consumeBombExplosionEvents();
         pendingBombExplosionEvents.clear();
         pendingBombExplosionEvents.addAll(bombExplosionEvents);
-        List<RoomEntityRuntime.ChestRewardEvent> chestRewards =
+        List<ChestRewardEvent> chestRewards =
             entityRuntime.consumePendingChestRewardEvents();
-        for (RoomEntityRuntime.ChestRewardEvent reward : chestRewards) {
+        for (ChestRewardEvent reward : chestRewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dungeonItemState.incrementCurrentFlag(reward.itemType());
@@ -1877,7 +1915,7 @@ public final class RoomSession {
         harvestRichardProgressEvents();
         harvestWitchEvents();
         harvestOwlEventCompletions();
-        for (RoomEntityRuntime.RoomStatusPersistenceRequest request
+        for (RoomStatusPersistenceRequest request
             : entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 overworldRoomStatus[activeRoom.roomId()] |= (byte) request.roomStatusMask();
@@ -1890,7 +1928,7 @@ public final class RoomSession {
         }
         enemyDropCounters = entityRuntime.enemyDropCounters();
         if (transientVfxSystem != null) {
-            for (RoomEntityRuntime.TransientVfxRequest request
+            for (TransientVfxRequest request
                 : entityRuntime.transientVfxRequests()) {
                 transientVfxSystem.spawn(request.type(), request.worldX(), request.worldY(),
                     request.variant());
@@ -1925,13 +1963,13 @@ public final class RoomSession {
             if (selectedSongIndex == 0x01) {
                 pendingManboTransition = true;
             } else if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+                pendingRoomDialogRequests.add(new DialogRequest(
                     OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
             }
             return;
         }
         if (ocarinaSongFlags == 0) {
-            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+            pendingRoomDialogRequests.add(new DialogRequest(
                 OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
         } else if (selectedSongIndex == 0x01) {
             pendingManboTransition = true;
@@ -1961,44 +1999,44 @@ public final class RoomSession {
     }
 
     /** Returns and clears handlers that restore Link's pre-entity final position. */
-    public List<RoomEntityRuntime.LinkFinalPositionRequest>
+    public List<LinkFinalPositionRequest>
             consumeLinkFinalPositionRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkFinalPositionRequests();
     }
 
     /** Returns and clears Rooster's Link HRAM writes from the last entity tick. */
-    public List<RoomEntityRuntime.RoosterLinkStateRequest>
+    public List<RoosterLinkStateRequest>
             consumeRoosterLinkStateRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingRoosterLinkStateRequests();
     }
 
     /** Returns and clears handlers that block Link's next interactive motion frame. */
-    public List<RoomEntityRuntime.LinkMotionBlockRequest>
+    public List<LinkMotionBlockRequest>
             consumeLinkMotionBlockRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkMotionBlockRequests();
     }
 
     /** Returns and clears side-view platform Link writes from the last entity tick. */
-    public List<RoomEntityRuntime.SideViewPlatformLinkRequest>
+    public List<SideViewPlatformLinkRequest>
             consumeSideViewPlatformLinkRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingSideViewPlatformLinkRequests();
     }
 
     /** Returns state-0 side-view pot Link writes from the last entity tick. */
-    public List<RoomEntityRuntime.SideViewPotLinkRequest>
+    public List<SideViewPotLinkRequest>
             consumeSideViewPotLinkRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingSideViewPotLinkRequests();
     }
 
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
-    public List<RoomEntityRuntime.WarpLinkStateRequest>
+    public List<WarpLinkStateRequest>
             consumeWarpLinkStateRequests() {
-        List<RoomEntityRuntime.WarpLinkStateRequest> requests = entityRuntime == null
+        List<WarpLinkStateRequest> requests = entityRuntime == null
             ? List.of() : entityRuntime.consumePendingWarpLinkStateRequests();
         if (!requests.isEmpty()) {
             ocarinaPlaybackCountdown = 0;
@@ -2012,14 +2050,14 @@ public final class RoomSession {
     }
 
     /** Returns and clears Hinox grab/throw writes for the last entity tick. */
-    public List<RoomEntityRuntime.HinoxLinkEffectRequest>
+    public List<HinoxLinkEffectRequest>
             consumeHinoxLinkEffectRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingHinoxLinkEffectRequests();
     }
 
     /** Returns and clears explicit ROM Link fallen-pose requests. */
-    public List<RoomEntityRuntime.LinkFallenPoseRequest>
+    public List<LinkFallenPoseRequest>
             consumeLinkFallenPoseRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkFallenPoseRequests();
@@ -2036,25 +2074,25 @@ public final class RoomSession {
         return pending;
     }
 
-    public List<RoomEntityRuntime.LinkFacingRequest> consumeLinkFacingRequests() {
+    public List<LinkFacingRequest> consumeLinkFacingRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkFacingRequests();
     }
 
-    public List<RoomEntityRuntime.LinkAttackClearRequest>
+    public List<LinkAttackClearRequest>
             consumeLinkAttackClearRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkAttackClearRequests();
     }
 
     /** Returns lifted-throw attack-step writes for Main's post-entity phase. */
-    public List<RoomEntityRuntime.LinkAttackStepRequest>
+    public List<LinkAttackStepRequest>
             consumeLinkAttackStepRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkAttackStepRequests();
     }
 
-    public List<RoomEntityRuntime.LinkHeldItemPoseRequest>
+    public List<LinkHeldItemPoseRequest>
             consumeLinkHeldItemPoseRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkHeldItemPoseRequests();
@@ -2072,93 +2110,93 @@ public final class RoomSession {
         return entityRuntime != null && entityRuntime.swordPickupSequenceActive();
     }
 
-    public List<RoomEntityRuntime.LinkSwordSpinPoseRequest>
+    public List<LinkSwordSpinPoseRequest>
             consumeLinkSwordSpinPoseRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkSwordSpinPoseRequests();
     }
 
-    public List<RoomEntityRuntime.LinkSwordFinalPoseRequest>
+    public List<LinkSwordFinalPoseRequest>
             consumeLinkSwordFinalPoseRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingLinkSwordFinalPoseRequests();
     }
 
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
-    public List<RoomEntityRuntime.ScreenShakeRequest> consumeScreenShakeRequests() {
+    public List<ScreenShakeRequest> consumeScreenShakeRequests() {
         return entityRuntime == null
             ? List.of() : entityRuntime.consumePendingScreenShakeRequests();
     }
 
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
-    public List<RoomEntityRuntime.ChestRewardEvent> consumeChestRewardEvents() {
-        List<RoomEntityRuntime.ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
+    public List<ChestRewardEvent> consumeChestRewardEvents() {
+        List<ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
         pendingChestRewardEvents.clear();
         return rewards;
     }
 
     /** Returns and clears key or hookshot rewards emitted by key-drop entities. */
-    public List<RoomEntityRuntime.KeyRewardEvent> consumeKeyRewardEvents() {
-        List<RoomEntityRuntime.KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
+    public List<KeyRewardEvent> consumeKeyRewardEvents() {
+        List<KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
         pendingKeyRewardEvents.clear();
         return rewards;
     }
 
     /** Returns and clears Hiding Slime Key leaf-count updates emitted by entity handlers. */
-    public List<RoomEntityRuntime.SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
-        List<RoomEntityRuntime.SlimeKeyRewardEvent> rewards =
+    public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+        List<SlimeKeyRewardEvent> rewards =
             List.copyOf(pendingSlimeKeyRewardEvents);
         pendingSlimeKeyRewardEvents.clear();
         return rewards;
     }
 
     /** Returns and clears completed boss heart-container rewards. */
-    public List<RoomEntityRuntime.HeartContainerRewardEvent>
+    public List<HeartContainerRewardEvent>
             consumeHeartContainerRewards() {
-        List<RoomEntityRuntime.HeartContainerRewardEvent> rewards =
+        List<HeartContainerRewardEvent> rewards =
             List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
         return rewards;
     }
 
-    public List<RoomEntityRuntime.MadamMeowMeowFullHealRequest>
+    public List<MadamMeowMeowFullHealRequest>
             consumeMadamMeowMeowFullHealRequests() {
-        List<RoomEntityRuntime.MadamMeowMeowFullHealRequest> requests =
+        List<MadamMeowMeowFullHealRequest> requests =
             List.copyOf(pendingMadamMeowMeowFullHealRequests);
         pendingMadamMeowMeowFullHealRequests.clear();
         return requests;
     }
 
-    public List<RoomEntityRuntime.RichardProgressEvent> consumeRichardProgressEvents() {
-        List<RoomEntityRuntime.RichardProgressEvent> events =
+    public List<RichardProgressEvent> consumeRichardProgressEvents() {
+        List<RichardProgressEvent> events =
             List.copyOf(pendingRichardProgressEvents);
         pendingRichardProgressEvents.clear();
         return events;
     }
 
-    public List<RoomEntityRuntime.SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
+    public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
+        List<SwordPickupRewardEvent> rewards =
             List.copyOf(pendingSwordPickupRewards);
         pendingSwordPickupRewards.clear();
         return rewards;
     }
 
-    public List<RoomEntityRuntime.ToadstoolRewardEvent> consumeToadstoolRewards() {
-        List<RoomEntityRuntime.ToadstoolRewardEvent> rewards =
+    public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
+        List<ToadstoolRewardEvent> rewards =
             List.copyOf(pendingToadstoolRewards);
         pendingToadstoolRewards.clear();
         return rewards;
     }
 
-    public List<RoomEntityRuntime.WitchExchangeEvent> consumeWitchExchangeEvents() {
-        List<RoomEntityRuntime.WitchExchangeEvent> events =
+    public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
+        List<WitchExchangeEvent> events =
             List.copyOf(pendingWitchExchangeEvents);
         pendingWitchExchangeEvents.clear();
         return events;
     }
 
-    public List<RoomEntityRuntime.WitchRewardEvent> consumeWitchRewardEvents() {
-        List<RoomEntityRuntime.WitchRewardEvent> events =
+    public List<WitchRewardEvent> consumeWitchRewardEvents() {
+        List<WitchRewardEvent> events =
             List.copyOf(pendingWitchRewardEvents);
         pendingWitchRewardEvents.clear();
         return events;
@@ -2180,7 +2218,7 @@ public final class RoomSession {
     }
 
     /** Returns and clears Like Like capture/release requests from the last tick. */
-    public List<RoomEntityRuntime.LikeLikeEvent> consumeLikeLikeEvents() {
+    public List<LikeLikeEvent> consumeLikeLikeEvents() {
         if (entityRuntime == null) {
             return List.of();
         }
@@ -2188,8 +2226,8 @@ public final class RoomSession {
     }
 
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */
-    public List<RoomEntityRuntime.DialogRequest> consumeEntityDialogRequests() {
-        List<RoomEntityRuntime.DialogRequest> requests = new ArrayList<>(
+    public List<DialogRequest> consumeEntityDialogRequests() {
+        List<DialogRequest> requests = new ArrayList<>(
             pendingRoomDialogRequests);
         pendingRoomDialogRequests.clear();
         if (entityRuntime != null) {
@@ -2363,7 +2401,7 @@ public final class RoomSession {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
             markActiveRoomCompleted();
-            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0xEF));
+            pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
             pendingRoomEntityEvents.add(new EntityCombatEvent(
                 event.slot(), event.type(), 0, false,
                 EntityCombatEvent.SoundChannel.WAVE, 0x01));
@@ -2721,13 +2759,13 @@ public final class RoomSession {
     }
 
     private void applyBoomerangObjectInteractions(
-            List<RoomEntityRuntime.BoomerangObjectRequest> requests) {
+            List<BoomerangObjectRequest> requests) {
         if (activeRoom == null || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
             || requests == null || requests.isEmpty()) {
             return;
         }
 
-        for (RoomEntityRuntime.BoomerangObjectRequest request : requests) {
+        for (BoomerangObjectRequest request : requests) {
             OverworldBushInteraction.CutResult result =
                 overworldBushInteraction.revealObjectAtLocation(
                     request.location(), activeRoom.roomId(), true,
@@ -2748,12 +2786,12 @@ public final class RoomSession {
     }
 
     private void applyMagicRodObjectInteractions(
-            List<RoomEntityRuntime.MagicRodObjectRequest> requests) {
+            List<MagicRodObjectRequest> requests) {
         if (activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
 
-        for (RoomEntityRuntime.MagicRodObjectRequest request : requests) {
+        for (MagicRodObjectRequest request : requests) {
             boolean changed = false;
             if (activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 OverworldBushInteraction.CutResult result =
@@ -2797,12 +2835,12 @@ public final class RoomSession {
     }
 
     private void applyMagicPowderObjectInteractions(
-            List<RoomEntityRuntime.MagicPowderObjectRequest> requests) {
+            List<MagicPowderObjectRequest> requests) {
         if (activeRoom == null || requests == null || requests.isEmpty()) {
             return;
         }
 
-        for (RoomEntityRuntime.MagicPowderObjectRequest request : requests) {
+        for (MagicPowderObjectRequest request : requests) {
             boolean changed = switch (request.action()) {
                 case REVEAL -> activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                     && overworldBushInteraction.revealObjectAtLocation(
@@ -3109,7 +3147,7 @@ public final class RoomSession {
                 return false;
             }
             if (dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
-                pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0x07));
+                pendingRoomDialogRequests.add(new DialogRequest(0, 0x07));
                 return true;
             }
             indoorBossDoorOpening = true;
@@ -3339,7 +3377,7 @@ public final class RoomSession {
         }
         if (dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
             pushBlockContactTicks = 0;
-            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(0, 0x8C));
+            pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
             return true;
         }
         pushBlockContactTicks++;
@@ -3433,7 +3471,7 @@ public final class RoomSession {
             return false;
         }
         if (!hasKey) {
-            pendingRoomDialogRequests.add(new RoomEntityRuntime.DialogRequest(
+            pendingRoomDialogRequests.add(new DialogRequest(
                 KEYHOLE_DIALOG_TABLE, dialogLowId));
             return true;
         }
@@ -3735,9 +3773,9 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        List<RoomEntityRuntime.KeyRewardEvent> rewards =
+        List<KeyRewardEvent> rewards =
             entityRuntime.consumePendingKeyRewardEvents();
-        for (RoomEntityRuntime.KeyRewardEvent reward : rewards) {
+        for (KeyRewardEvent reward : rewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                 && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dungeonItemState.incrementCurrentFlag(reward.itemType());
@@ -3751,7 +3789,7 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        List<RoomEntityRuntime.HeartContainerRewardEvent> rewards =
+        List<HeartContainerRewardEvent> rewards =
             entityRuntime.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
@@ -3764,7 +3802,7 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        List<RoomEntityRuntime.SwordPickupRewardEvent> rewards =
+        List<SwordPickupRewardEvent> rewards =
             entityRuntime.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
@@ -3797,7 +3835,7 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        for (RoomEntityRuntime.InstrumentCompletionEvent completion
+        for (InstrumentCompletionEvent completion
             : entityRuntime.consumePendingInstrumentCompletions()) {
             pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
@@ -3812,10 +3850,10 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        List<RoomEntityRuntime.RichardProgressEvent> events =
+        List<RichardProgressEvent> events =
             entityRuntime.consumePendingRichardProgressEvents();
-        for (RoomEntityRuntime.RichardProgressEvent event : events) {
-            if (event.kind() == RoomEntityRuntime.RichardProgressEvent.Kind.START_QUEST) {
+        for (RichardProgressEvent event : events) {
+            if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
                 indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
                 richardSpokenFlag = Math.max(richardSpokenFlag, 0x02);
             } else {
@@ -3861,9 +3899,9 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        List<RoomEntityRuntime.SlimeKeyRewardEvent> rewards =
+        List<SlimeKeyRewardEvent> rewards =
             entityRuntime.consumePendingSlimeKeyRewardEvents();
-        for (RoomEntityRuntime.SlimeKeyRewardEvent reward : rewards) {
+        for (SlimeKeyRewardEvent reward : rewards) {
             entityGoldenLeavesCount = reward.goldenLeavesCount();
             markActiveRoomCompleted();
         }
@@ -3884,7 +3922,7 @@ public final class RoomSession {
         if (entityRuntime == null) {
             return;
         }
-        for (RoomEntityRuntime.ThrownBackgroundCollisionEvent collision
+        for (ThrownBackgroundCollisionEvent collision
                 : entityRuntime.consumePendingThrownBackgroundCollisions()) {
             int objectId = collision.objectId();
             if ((activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
@@ -4382,18 +4420,18 @@ public final class RoomSession {
     }
 
     private void applyHookshotBridgeUpdates(
-            List<RoomEntityRuntime.HookshotBridgeUpdate> updates) {
+            List<HookshotBridgeUpdate> updates) {
         if (activeRoom == null || updates == null || updates.isEmpty()) {
             return;
         }
         int[] objects = activeRoom.roomObjectsArea();
         boolean changed = false;
-        for (RoomEntityRuntime.HookshotBridgeUpdate update : updates) {
+        for (HookshotBridgeUpdate update : updates) {
             int areaIndex = hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
             if (areaIndex < 0 || areaIndex >= objects.length) {
                 continue;
             }
-            RoomEntityRuntime.HookshotBridgeUpdate previous =
+            HookshotBridgeUpdate previous =
                 hookshotBridgeTileOverrides.put(areaIndex, update);
             if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
                 objects[areaIndex] = 0x9D;
@@ -4410,7 +4448,7 @@ public final class RoomSession {
             return;
         }
         int[] tileIds = activeRoom.tileIds();
-        for (RoomEntityRuntime.HookshotBridgeUpdate update
+        for (HookshotBridgeUpdate update
             : hookshotBridgeTileOverrides.values()) {
             int tileX = (update.objectLeft() & 0xFF) >>> 3;
             int tileY = (update.objectTop() & 0xFF) >>> 3;

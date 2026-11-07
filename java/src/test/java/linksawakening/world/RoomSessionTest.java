@@ -1,5 +1,15 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
@@ -45,7 +55,7 @@ final class RoomSessionTest {
             session.tickEntities(0, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
             session.setEntityActionButtonsHeld(true, false);
             session.tickEntities(1, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
-            assertEquals(List.of(new RoomEntityRuntime.DialogRequest(
+            assertEquals(List.of(new DialogRequest(
                 hasBeak ? 2 : 1, hasBeak ? 0x82 : 0x10)),
                 session.consumeEntityDialogRequests());
             RoomEntity updated = session.activeRoom().entities().loadedEntities().stream()
@@ -207,7 +217,7 @@ final class RoomSessionTest {
         session.tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0,
             Link.DIRECTION_DOWN, false);
 
-        assertEquals(List.of(new RoomEntityRuntime.SideViewPlatformLinkRequest(
+        assertEquals(List.of(new SideViewPlatformLinkRequest(
             0, 0, 0x40, 0x02, true, true)),
             session.consumeSideViewPlatformLinkRequests());
         assertTrue(session.consumeSideViewPlatformLinkRequests().isEmpty());
@@ -376,7 +386,7 @@ final class RoomSessionTest {
         tickInteractive(session, 0, witch);
         tickInteractive(session, 1, witch);
 
-        assertEquals(List.of(new RoomEntityRuntime.WitchExchangeEvent(witch.slot(), 0)),
+        assertEquals(List.of(new WitchExchangeEvent(witch.slot(), 0)),
             session.consumeWitchExchangeEvents());
 
         session.setEntityActionButtonsHeld(false, false);
@@ -415,7 +425,7 @@ final class RoomSessionTest {
         tickInteractive(session, frame++, witch);
         session.setEntityDialogActive(false);
         tickInteractive(session, frame++, witch);
-        assertEquals(List.of(new RoomEntityRuntime.WitchRewardEvent(witch.slot())),
+        assertEquals(List.of(new WitchRewardEvent(witch.slot())),
             session.consumeWitchRewardEvents());
         assertTrue(session.gotItemPresentationActive());
         assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
@@ -494,7 +504,7 @@ final class RoomSessionTest {
         assertEquals(EntityStatus.DISABLED,
             session.activeRoom().entities().slots().get(key.slot()).status());
         assertEquals(0x10, session.indoorRoomStatusForTest(0x03, 0x7C) & 0x10);
-        assertEquals(List.of(new RoomEntityRuntime.KeyRewardEvent(
+        assertEquals(List.of(new KeyRewardEvent(
             key.slot(), ChestContentsTable.CHEST_SMALL_KEY)),
             session.consumeKeyRewardEvents());
     }
@@ -543,10 +553,10 @@ final class RoomSessionTest {
         runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
         session.tickEntities(2, 0x20, 0x30);
 
-        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 6, 0xA2)),
+        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
             session.consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.overworldRoomStatusSnapshot()[0xC6] & 0x10);
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xA2)),
+        assertEquals(List.of(new DialogRequest(0, 0xA2)),
             session.consumeEntityDialogRequests());
     }
 
@@ -572,10 +582,10 @@ final class RoomSessionTest {
         runtime.setHidingSlimeKeyTransitionCountdownForTest(0, 0x11);
         session.tickEntities(2, 0x40, 0x50);
 
-        assertEquals(List.of(new RoomEntityRuntime.SlimeKeyRewardEvent(0, 5, 0xE9)),
+        assertEquals(List.of(new SlimeKeyRewardEvent(0, 5, 0xE9)),
             session.consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.overworldRoomStatusSnapshot()[0x58] & 0x10);
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xE9)),
+        assertEquals(List.of(new DialogRequest(0, 0xE9)),
             session.consumeEntityDialogRequests());
     }
 
@@ -743,7 +753,7 @@ final class RoomSessionTest {
         assertTrue(session.startOcarina(0x01, 0x00, 0x00));
         session.tickEntities(0);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x8E)),
+        assertEquals(List.of(new DialogRequest(0, 0x8E)),
             session.consumeEntityDialogRequests());
         assertFalse(session.ocarinaPlaying());
     }
@@ -759,7 +769,7 @@ final class RoomSessionTest {
         assertTrue(session.startOcarina(0x01, 0x01, 0x00));
         session.tickEntities(0, 0x40, 0x50);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(2, 0x77)),
+        assertEquals(List.of(new DialogRequest(2, 0x77)),
             session.consumeEntityDialogRequests());
     }
 
@@ -1801,7 +1811,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x20, session.indoorRoomStatusForTest(0x01, 0x2B) & 0x20);
-        assertEquals(List.of(new RoomEntityRuntime.HeartContainerRewardEvent(heart.slot())),
+        assertEquals(List.of(new HeartContainerRewardEvent(heart.slot())),
             session.consumeHeartContainerRewards());
     }
 
@@ -2593,7 +2603,7 @@ final class RoomSessionTest {
         session.advanceShovel(0x44, 0x56, 0, 0x10);
         session.advanceShovel(0x44, 0x56, 0, 0x18);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x79)),
+        assertEquals(List.of(new DialogRequest(0, 0x79)),
             session.consumeEntityDialogRequests());
     }
 
@@ -3622,7 +3632,7 @@ final class RoomSessionTest {
             session.activeRoom().entities().slots().get(pickup.slot()).status());
         assertEquals(0x10, session.overworldRoomStatusForTest(0xA4) & 0x10);
         assertTrue(session.consumeEntityDialogRequests().contains(
-            new RoomEntityRuntime.DialogRequest(0, 0xEF)));
+            new DialogRequest(0, 0xEF)));
         assertTrue(session.consumeEntityEvents().stream().anyMatch(soundEvent ->
             soundEvent.type() == 0x3D
                 && soundEvent.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
@@ -3843,7 +3853,7 @@ final class RoomSessionTest {
             session.tickEntities(frame, madam.x(), linkY, 0, Link.DIRECTION_UP);
         }
 
-        assertEquals(List.of(new RoomEntityRuntime.MadamMeowMeowFullHealRequest(madam.slot())),
+        assertEquals(List.of(new MadamMeowMeowFullHealRequest(madam.slot())),
             session.consumeMadamMeowMeowFullHealRequests());
         assertEquals(0, session.entityTransitionCountdownForTest(madam.slot()));
     }
@@ -3919,8 +3929,8 @@ final class RoomSessionTest {
 
         assertEquals(0x13A,
             session.consumeEntityDialogRequests().getFirst().globalDialogId());
-        assertEquals(List.of(new RoomEntityRuntime.RichardProgressEvent(
-                richard.slot(), RoomEntityRuntime.RichardProgressEvent.Kind.START_QUEST, 0)),
+        assertEquals(List.of(new RichardProgressEvent(
+                richard.slot(), RichardProgressEvent.Kind.START_QUEST, 0)),
             session.consumeRichardProgressEvents());
         assertEquals(0x10, session.indoorBRoomStatusSnapshot()[0xC7] & 0x10);
         assertEquals(2, session.richardSpokenFlag());
@@ -4007,8 +4017,8 @@ final class RoomSessionTest {
 
         assertEquals(0x13D,
             session.consumeEntityDialogRequests().getFirst().globalDialogId());
-        assertEquals(List.of(new RoomEntityRuntime.RichardProgressEvent(
-                richard.slot(), RoomEntityRuntime.RichardProgressEvent.Kind.RETURN_ALL_LEAVES,
+        assertEquals(List.of(new RichardProgressEvent(
+                richard.slot(), RichardProgressEvent.Kind.RETURN_ALL_LEAVES,
                 0xFF)), session.consumeRichardProgressEvents());
 
         session.setEntityActionButtonsHeld(false, false);

@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -67,7 +72,7 @@ final class RoomEntityLiftThrowRuntimeTest {
 
         runtime.tick(0, 0, 0, () -> 0);
 
-        assertEquals(List.of(new RoomEntityRuntime.ThrownBackgroundCollisionEvent(
+        assertEquals(List.of(new ThrownBackgroundCollisionEvent(
                 0, 0x05, ThrownEntityMotion.ROM_DIRECTION_DOWN, 0x35)),
             runtime.consumePendingThrownBackgroundCollisions());
     }
@@ -212,7 +217,7 @@ final class RoomEntityLiftThrowRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
             false, 0, 0, 0, 0, 0, 0);
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.resetPegasusBoots());
         assertFalse(request.restoreFinalPositionX());
@@ -229,7 +234,7 @@ final class RoomEntityLiftThrowRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
             false, 0, 0, 0, 0, 0, 0);
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.restoreFinalPositionX());
         assertTrue(request.resetPegasusBoots());
@@ -244,7 +249,7 @@ final class RoomEntityLiftThrowRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x50, 0x57, 0, 0, 3, false),
             false, 0, 0, 0, 0, 0, 0);
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.snapTop());
         assertEquals(0x50, request.positionY());
@@ -361,7 +366,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(0, link.romAttackStepAnimationCountdown());
 
         runtime.tick(0, 0, 0, () -> 0);
-        for (RoomEntityRuntime.LinkAttackStepRequest request
+        for (LinkAttackStepRequest request
                 : runtime.consumePendingLinkAttackStepRequests()) {
             link.startRomItemAttackStep();
         }
@@ -390,9 +395,9 @@ final class RoomEntityLiftThrowRuntimeTest {
 
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());
-        List<RoomEntityRuntime.LinkAttackClearRequest> clears =
+        List<LinkAttackClearRequest> clears =
             runtime.consumePendingLinkAttackClearRequests();
-        List<RoomEntityRuntime.LinkAttackStepRequest> steps =
+        List<LinkAttackStepRequest> steps =
             runtime.consumePendingLinkAttackStepRequests();
         int clearIndex = 0;
         int stepIndex = 0;

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.WarpDestination;
+
 import linksawakening.rom.RomBank;
 
 import java.util.Arrays;
@@ -74,12 +76,12 @@ final class WarpMotion {
             return new Update(entity, STATE_TRANSITION, countdown - 1, true,
                 -1, -1, 0, false, null);
         }
-        Destination destination = destinationFor(mapId, roomId);
+        WarpDestination destination = destinationFor(mapId, roomId);
         return new Update(entity, STATE_TRANSITION, 0, true, -1, -1, 0,
             true, destination);
     }
 
-    private Destination destinationFor(int mapId, int roomId) {
+    private WarpDestination destinationFor(int mapId, int roomId) {
         if (mapId >= DUNGEON_WARP_PAIR_COUNT) {
             return null;
         }
@@ -88,7 +90,7 @@ final class WarpMotion {
         int second = Byte.toUnsignedInt(romData[table + mapId * 2 + 1]);
         int destinationRoom = roomId == first ? second : first;
         int destinationY = destinationRoom == 0x64 ? 0x28 : 0x48;
-        return new Destination(mapId, destinationRoom, 0x50, destinationY);
+        return new WarpDestination(mapId, destinationRoom, 0x50, destinationY);
     }
 
     private static Update idle(RoomEntity entity, int state, int countdown) {
@@ -99,11 +101,10 @@ final class WarpMotion {
         return ((value - center + bias) & 0xFF) < size;
     }
 
-    record Destination(int mapId, int roomId, int x, int y) {
-    }
+
 
     record Update(RoomEntity entity, int state, int countdown, boolean motionBlocked,
                  int musicTrack, int jingleId, int immunityCountdown,
-                 boolean destinationReady, Destination destination) {
+                 boolean destinationReady, WarpDestination destination) {
     }
 }

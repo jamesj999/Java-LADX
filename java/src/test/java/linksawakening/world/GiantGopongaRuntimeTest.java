@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -129,7 +131,7 @@ final class GiantGopongaRuntimeTest {
         runtime.tickWithProjectileEvents(0, 0x40, 0x40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(0x40, 0x40, 0x10, 0, 0, false));
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0, true, true, false)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
             runtime.consumePendingLinkFinalPositionRequests());
     }
 

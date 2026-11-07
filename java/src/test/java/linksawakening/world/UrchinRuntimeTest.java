@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -171,7 +173,7 @@ final class UrchinRuntimeTest {
         assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
         assertEquals(0x92, runtime.physicsFlags(0));
         assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
@@ -192,7 +194,7 @@ final class UrchinRuntimeTest {
             new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false));
 
         assertEquals(0x12, runtime.physicsFlags(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
