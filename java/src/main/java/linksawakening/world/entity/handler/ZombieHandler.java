@@ -46,7 +46,7 @@ final class ZombieHandler {
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
@@ -55,7 +55,7 @@ final class ZombieHandler {
                     state.slot().ignoreHits(slot));
             state.updated = zombieUpdate.entity();
             state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(slot, zombieUpdate.physicsFlags());
             state.applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
             if (zombieUpdate.spawnRequest() != null) {
               state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());

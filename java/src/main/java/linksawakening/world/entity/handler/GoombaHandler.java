@@ -36,7 +36,7 @@ final class GoombaHandler {
               state.runtime.droppedItemBySlot[state.entity.slot()] = 0x2D;
               state.runtime.dropPrivateCountdown3[state.entity.slot()] = 0x0C;
               state.runtime.dyingCountdown[state.entity.slot()] = 0x0C;
-              state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
+              state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
               state.status = EntityStatus.DYING;
             }
           }

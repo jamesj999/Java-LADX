@@ -35,7 +35,7 @@ final class UrchinHandler {
                 state.runtime.urchinMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
@@ -44,7 +44,7 @@ final class UrchinHandler {
                     state.handlerLinkCollisionEnabled,
                     urchinBackgroundInteraction);
             state.updated = urchinUpdate.entity();
-            state.runtime.enemyPhysicsFlags[slot] = urchinUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(slot, urchinUpdate.physicsFlags());
             if (urchinUpdate.pushed()) {
               // UrchinEntityHandler writes $03 for its background probe,
               // then clears wEntitiesIgnoreHitsCountdown immediately.

@@ -44,7 +44,7 @@ final class DogHandler {
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
@@ -54,7 +54,7 @@ final class DogHandler {
                     dogBackgroundInteraction);
             state.updated = dogUpdate.entity();
             state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());
             state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
             if (dogUpdate.dialogRequested()) {
               state.emit(

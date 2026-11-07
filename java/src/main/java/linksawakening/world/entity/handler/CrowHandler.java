@@ -39,7 +39,7 @@ final class CrowHandler {
                     state.runtime.slotProperties.kanaletCrowTakeoffTriggered(state.entity));
             state.updated = crowUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = crowUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(state.entity.slot(), crowUpdate.physicsFlags());
             if (crowUpdate.boomerangSound()) {
               state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
             }

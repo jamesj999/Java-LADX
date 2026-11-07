@@ -27,7 +27,7 @@ final class FishHandler {
                     state.backgroundCollision);
             state.updated = fishUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), fishUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = fishUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(state.entity.slot(), fishUpdate.physicsFlags());
             if (fishUpdate.waterSplash()) {
               state.emit(
                   new TransientVfxRequest(

@@ -85,11 +85,9 @@ final class MoblinKingHandler {
                           ? 0xC4
                           : 0x40;
               if (state.runtime.moblinKingMotion.state(state.entity.slot()) == 5) {
-                state.runtime.enemyPhysicsFlags[state.entity.slot()] |=
-                    ENTITY_PHYSICS_HARMLESS;
+                state.slot().orPhysicsFlags(state.entity.slot(), ENTITY_PHYSICS_HARMLESS);
               } else {
-                state.runtime.enemyPhysicsFlags[state.entity.slot()] &=
-                    ~ENTITY_PHYSICS_HARMLESS;
+                state.slot().andPhysicsFlags(state.entity.slot(), ~ENTITY_PHYSICS_HARMLESS);
               }
               if (state.sprites() != null) {
                 state.updated =

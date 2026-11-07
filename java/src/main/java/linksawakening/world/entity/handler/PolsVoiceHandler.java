@@ -25,7 +25,7 @@ final class PolsVoiceHandler {
             // or the ordinary collision path. Its private countdown $1F
             // is the shared EntityDeathHandler's visible death timer.
             state.runtime.dyingCountdown[state.entity.slot()] = 0x1F;
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
+            state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
             state.status = EntityStatus.DYING;
             state.updated = withStatus(state.entity, EntityStatus.DYING);
             state.emit(

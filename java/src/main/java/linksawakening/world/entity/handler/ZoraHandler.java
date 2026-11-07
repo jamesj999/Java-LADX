@@ -39,14 +39,14 @@ final class ZoraHandler {
                 state.runtime.zoraMotion.advance(
                     state.updated,
                     state.slot().transitionCountdown(slot),
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.runtime.objectQuery);
             state.updated = zoraUpdate.entity();
             state.slot().setTransitionCountdown(slot, zoraUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(slot, zoraUpdate.physicsFlags());
             if (zoraUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnZoraProjectile(zoraUpdate.projectileSpawn());
             }

@@ -353,7 +353,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
 

@@ -48,7 +48,7 @@ final class HidingZolHandler {
                       0x24));
             }
             if (hidingZolUpdate.physicsFlags() >= 0) {
-              state.runtime.enemyPhysicsFlags[state.entity.slot()] = hidingZolUpdate.physicsFlags();
+              state.slot().setPhysicsFlags(state.entity.slot(), hidingZolUpdate.physicsFlags());
             }
           }
           return true;

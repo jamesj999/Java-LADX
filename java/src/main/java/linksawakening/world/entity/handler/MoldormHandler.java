@@ -145,7 +145,7 @@ final class MoldormHandler {
                           state.frame),
                       0);
             }
-            state.runtime.enemyPhysicsFlags[slot] = 0x02;
+            state.slot().setPhysicsFlags(slot, 0x02);
             state.preserveMoldormPresentation = true;
           }
           return true;

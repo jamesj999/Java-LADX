@@ -51,10 +51,10 @@ final class WizrobeHandler {
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.slot().transitionCountdown(state.entity.slot()),
-                    state.runtime.enemyPhysicsFlags[state.entity.slot()]);
+                    state.slot().physicsFlags(state.entity.slot()));
             state.updated = wizrobeUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), wizrobeUpdate.transitionCountdown());
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = wizrobeUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(state.entity.slot(), wizrobeUpdate.physicsFlags());
             state.preserveWizrobePresentation = true;
             if (wizrobeUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnWizrobeProjectile(

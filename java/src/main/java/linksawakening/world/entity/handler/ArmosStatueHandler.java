@@ -49,7 +49,7 @@ final class ArmosStatueHandler {
             if (armosUpdate.activated()) {
               // State 1 clears the harmless physics bit and enables the
               // normal hitbox/sword path for state 2.
-              state.runtime.enemyPhysicsFlags[state.entity.slot()] &= 0x7F;
+              state.slot().andPhysicsFlags(state.entity.slot(), 0x7F);
               state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
           }

@@ -14,4 +14,8 @@ public final class EntitySlotView {
   public void shiftIgnoreHitsRight(int slot, int distance) {
     state.enemyIgnoreHitsCountdown[slot] >>>= distance;
   }
+  public int physicsFlags(int slot) { return state.enemyPhysicsFlags[slot]; }
+  public void setPhysicsFlags(int slot, int value) { state.enemyPhysicsFlags[slot] = value; }
+  public void andPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] &= mask; }
+  public void orPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] |= mask; }
 }
