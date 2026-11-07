@@ -3,6 +3,7 @@ package linksawakening;
 import linksawakening.app.screen.*;
 import linksawakening.app.SessionBootstrap;
 import linksawakening.app.SaveCoordinator;
+import linksawakening.app.MusicDirector;
 import linksawakening.app.story.OpeningStory;
 
 import linksawakening.config.AppConfig;
@@ -175,7 +176,7 @@ public class GameSession {
     private GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
     private FrameMusicPlayer musicPlayer;
     private GameplayMusicController gameplayMusicController;
-    private boolean overworldIntroContinuationPending;
+    private MusicDirector musicDirector;
     private CutsceneManager cutsceneManager;
     private FileMenuController fileMenuController;
     private FileSaveController fileSaveController;
@@ -196,7 +197,7 @@ public class GameSession {
     private int[] newGameTarinShieldPalette;
     private AppConfig appConfig;
     private final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(() -> cutsceneManager, () -> inputState, this::startFileSelection));
-    private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(() -> cutsceneManager, () -> inputState, () -> dialogController, () -> inputConfig, this::routeDialogSounds, () -> currentScreen = titleScreen, () -> { currentScreen = titleScreen; playDirectMusic(directTitleScreenMusicTrack()); }));
+    private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(() -> cutsceneManager, () -> inputState, () -> dialogController, () -> inputConfig, this::routeDialogSounds, () -> currentScreen = titleScreen, () -> { currentScreen = titleScreen; musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack()); }));
     private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(() -> fileMenuController, () -> inputState, () -> inputConfig, () -> saveRamStore, slot -> currentSaveSlot = slot, () -> saves().startNewGame(), saved -> saves().startSavedGame(saved), mutation -> saves().persistFileMenuMutation(mutation), this::completeInputFrame));
     private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(() -> fileSaveController, () -> inputState, () -> inputConfig, () -> { fileSaveController = null; currentScreen = this.gameplayScreen; }, () -> saves().saveCurrentPlayerState(), this::startFileSelection, this::completeInputFrame));
     private final Screen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, this::gameplayKey);
@@ -466,20 +467,7 @@ public class GameSession {
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(frameCounter, 0);
 
-        if (musicPlayer != null) {
-            musicPlayer.update();
-            if (gameplayMusicController != null) {
-                gameplayMusicController.tickFadeOut();
-            }
-            if (overworldIntroContinuationPending
-                && gameplayMusicController != null
-                && gameplayMusicController.currentTrackId()
-                    == MusicTrackIds.MUSIC_OVERWORLD_INTRO
-                && !musicPlayer.isMusicPlaying()) {
-                overworldIntroContinuationPending = false;
-                gameplayMusicController.playDirect(MusicTrackIds.MUSIC_OVERWORLD);
-            }
-        }
+        musicDirector.tick();
 
         currentScreen.tick();
     }
@@ -652,7 +640,7 @@ public class GameSession {
                     if (pickup != null) {
                         if (pickup.type() == 0x36) {
                             playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
-                            playDirectMusic(0x25);
+                            musicDirector.playDirectMusic(0x25);
                         } else if (pickup.sourceVariant() >= 0) {
                             playerState.applyFloatingItemPickup(
                                 pickup.type(), pickup.sourceVariant());
@@ -1044,7 +1032,7 @@ public class GameSession {
                     if (playerState != null) {
                         playerState.applyHeartContainerReward();
                     }
-                    playDirectMusic(0x18);
+                    musicDirector.playDirectMusic(0x18);
                 }
                 for (var request : roomSession.consumeMadamMeowMeowFullHealRequests()) {
                     if (playerState != null) {
@@ -1081,7 +1069,7 @@ public class GameSession {
                 roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
                 int chestMusicTrack = roomSession.consumePendingMusicTrack();
                 if (chestMusicTrack >= 0) {
-                    playDirectMusic(chestMusicTrack);
+                    musicDirector.playDirectMusic(chestMusicTrack);
                 }
                 for (var event : roomSession.consumeLikeLikeEvents()) {
                     if (event.kind()
@@ -1234,16 +1222,6 @@ public class GameSession {
             default -> throw new IllegalArgumentException("Link direction out of range: "
                 + javaDirection);
         };
-    }
-
-    private void selectMusicForLoadedRoom(ActiveRoom room) {
-        if (gameplayMusicController == null || playerState == null || room == null) {
-            return;
-        }
-        gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState));
-        if (roomSession != null) {
-            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.currentTrackId());
-        }
     }
 
     private void maybeCutBushWithSword() {
@@ -1473,7 +1451,7 @@ public class GameSession {
         fileMenuController = null;
         fileSaveController = null;
         currentScreen = cutsceneScreen;
-        playDirectMusic(introCutsceneMusicTrack());
+        musicDirector.playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         gpu.loadIntroSequenceTiles(romData);
         cutsceneManager.startIntro(romData, this::loadIntroBackgroundScene);
     }
@@ -1490,7 +1468,7 @@ public class GameSession {
         fileMenuController = null;
         fileSaveController = null;
         currentScreen = titleScreen;
-        playDirectMusic(directTitleScreenMusicTrack());
+        musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     private void startFileSelection() {
@@ -1506,7 +1484,7 @@ public class GameSession {
                 saveRamStore.readSlot(2).maxHearts()},
             new int[]{saveRamStore.readSlot(0).deathCountBcd(), saveRamStore.readSlot(1).deathCountBcd(),
                 saveRamStore.readSlot(2).deathCountBcd()});
-        playDirectMusic(fileSelectionMusicTrack());
+        musicDirector.playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
         inputState.tickEdges();
@@ -1527,40 +1505,12 @@ public class GameSession {
             gpu.loadTitleScreenTiles(romData);
         }
         if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && currentScreen == cutsceneScreen) {
-            playDirectMusic(naturalIntroTitleMusicTrack());
+            musicDirector.playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
         }
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
         if (spec != null) {
             applyBackgroundScene(backgroundSceneLoader.load(spec));
         }
-    }
-
-    private void playDirectMusic(int trackId) {
-        if (gameplayMusicController != null) {
-            gameplayMusicController.playDirect(trackId);
-            overworldIntroContinuationPending =
-                (trackId & 0xFF) == MusicTrackIds.MUSIC_OVERWORLD_INTRO;
-        }
-    }
-
-    int introCutsceneMusicTrack() {
-        return MusicTrackIds.MUSIC_TITLE_CUTSCENE;
-    }
-
-    int naturalIntroTitleMusicTrack() {
-        return MusicTrackIds.MUSIC_TITLE_SCREEN;
-    }
-
-    int newGameHouseMusicTrack() {
-        return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
-    }
-
-    int directTitleScreenMusicTrack() {
-        return MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO;
-    }
-
-    int fileSelectionMusicTrack() {
-        return MusicTrackIds.MUSIC_FILE_SELECT;
     }
 
     boolean shouldEnterFileSelection(Screen screen, int key, int action) {
@@ -1649,13 +1599,13 @@ public class GameSession {
 
     private OpeningStory openingStory() {
         return new OpeningStory(frameCounter, newGameWakeUpMotion, newGameTarinShieldMotion, newGameTarinShieldPalette, inputState, inputConfig, dialogController, dialogTextLoader, roomSession, link, playerState,
-            this::currentOverworldDialogBlockers, this::playDirectMusic,
-            this::newGameHouseMusicTrack, this::romDirectionForLink);
+            this::currentOverworldDialogBlockers, musicDirector::playDirectMusic,
+            MusicDirector::newGameHouseMusicTrack, this::romDirectionForLink);
     }
     private void initialize(boolean headless) {
         gpu = new GPU();
         var built = new SessionBootstrap(random, gpu, transitionController, scrollController,
-            new SessionBootstrap.Callbacks(this::setCutsceneScene, this::selectMusicForLoadedRoom,
+            new SessionBootstrap.Callbacks(this::setCutsceneScene, room -> musicDirector.selectMusicForLoadedRoom(room, playerState, roomSession),
                 this::romDirectionForLink)).build(headless);
         bgPalettes = built.bgPalettes();
         objPalettes = built.objPalettes();
@@ -1680,6 +1630,7 @@ public class GameSession {
         gameplaySoundSink = built.gameplaySoundSink();
         musicPlayer = built.musicPlayer();
         gameplayMusicController = built.gameplayMusicController();
+        musicDirector = new MusicDirector(musicPlayer, gameplayMusicController);
         cutsceneManager = built.cutsceneManager();
         saveRamStore = built.saveRamStore();
         romTables = built.romTables();
@@ -1699,7 +1650,7 @@ public class GameSession {
             () -> { fileMenuController = null; fileSaveController = null; currentScreen = gameplayScreen; },
             () -> { newGameWakeUpMotion = null; newGameTarinShieldMotion = null; },
             () -> { newGameWakeUpMotion = new MarinWakeUpMotion(); newGameTarinShieldMotion = new TarinShieldMotion(); },
-            () -> playDirectMusic(newGameHouseMusicTrack()),
+            () -> musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack()),
             () -> openingStory().updateNewGameMarinPresentation(),
             saved -> openingStory().restoreNewGameHouseRuntimeIfNeeded(saved, motion -> newGameWakeUpMotion = motion, motion -> newGameTarinShieldMotion = motion, () -> openingStory().updateNewGameMarinPresentation()),
             this::startFileSelection,

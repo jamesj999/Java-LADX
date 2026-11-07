@@ -32,7 +32,7 @@ final class MainFileMenuFlowTest {
     @Test
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
         assertEquals(RenderScreen.FILE_MENU, game.renderScreenFor(new FileMenuScreen(new FileMenuScreen.Dependencies(() -> null, () -> null, () -> null, () -> null, slot -> {}, () -> {}, saved -> {}, mutation -> {}, () -> {}))));
-        assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, game.fileSelectionMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, linksawakening.app.MusicDirector.fileSelectionMusicTrack());
     }
 
     @Test
@@ -167,7 +167,7 @@ final class MainFileMenuFlowTest {
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
         String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileSaveScreen.java")));
         int start = source.indexOf("fileMenuController = new FileMenuController(");
-        int end = source.indexOf("playDirectMusic(fileSelectionMusicTrack());", start);
+        int end = source.indexOf("musicDirector.playDirectMusic(MusicDirector.fileSelectionMusicTrack());", start);
         String constructor = source.substring(start, end);
 
         assertTrue(constructor.contains("saveRamStore.saveFilesMask()"));

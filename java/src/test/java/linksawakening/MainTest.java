@@ -179,9 +179,9 @@ final class MainTest {
 
     @Test
     void titleAndIntroMusicTracksMatchDisassemblyEntryPoints() {
-        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, game.introCutsceneMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, game.naturalIntroTitleMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, game.directTitleScreenMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, linksawakening.app.MusicDirector.introCutsceneMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, linksawakening.app.MusicDirector.naturalIntroTitleMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, linksawakening.app.MusicDirector.directTitleScreenMusicTrack());
     }
 
     private static byte[] loadRom() {
