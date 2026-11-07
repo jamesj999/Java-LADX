@@ -1,6 +1,7 @@
 package linksawakening;
 
 import linksawakening.app.screen.*;
+import linksawakening.app.SessionBootstrap;
 import linksawakening.app.story.OpeningStory;
 
 import linksawakening.config.AppConfig;
@@ -203,13 +204,7 @@ public class GameSession {
     private final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
 
     public void run(String[] args) {
-        gpu = new GPU();
-
-        loadROM();
-        transitionController.setRomData(romData);
-        appConfig = AppConfig.loadFromResources();
-        loadGraphicsData();
-        initMenuSystem();
+        initialize(false);
         if (StartupCoordinator.shouldStartIntroCutscene(currentAppConfig())) {
             startIntroCutscene();
         } else if (currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
@@ -250,12 +245,7 @@ public class GameSession {
     /** Initializes this session using the desktop update, input and render paths. */
     void initializeHeadlessNewGame() {
         if (inputState != null) throw new IllegalStateException("Game already initialized");
-        gpu = new GPU();
-        loadROM();
-        transitionController.setRomData(romData);
-        appConfig = AppConfig.parse("{\"itemProfile\":\"NEW_GAME\",\"debugEnabled\":false}");
-        loadGraphicsData();
-        initMenuSystem(true);
+        initialize(true);
         dialogController.setPlayerName("A");
         startNewGame();
     }
@@ -336,344 +326,6 @@ public class GameSession {
                 roomSession.currentDungeonItemFlagsSnapshot()[1] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[0] & 0xFF,
                 roomSession.currentDungeonItemFlagsSnapshot()[3] & 0xFF, link.romAnimationState(), 3 - link.direction(), equipmentController.activeSword() == null ? 0 : equipmentController.activeSword().state(), link.romEntityZ(), link.zVelocity(), link.romSpeedX(), link.romSpeedY(), scrollController.isActive() || transitionController.isInputBlocked(), playerState.maxHearts(), roomSession.dungeonProgressFlagsSnapshot()[0] & 0xFF);
-    }
-
-    private void loadROM() {
-        try (InputStream is = GameSession.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
-            if (is == null) {
-                throw new IllegalStateException("ROM not found in resources");
-            }
-
-            romData = is.readAllBytes();
-            System.out.println("ROM loaded: " + romData.length + " bytes");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to load ROM", e);
-        }
-    }
-
-    private void initMenuSystem() {
-        initMenuSystem(false);
-    }
-
-    private void initMenuSystem(boolean headless) {
-        try {
-            saveRamStore = headless ? SaveRamStore.inMemory() : SaveRamStore.open(SaveRamStore.defaultPath());
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to open save image", exception);
-        }
-        inputConfig = currentAppConfig().inputConfig();
-        inputState = new InputState();
-        playerState = new PlayerState();
-        initMusicSystem(headless);
-        dialogSoundOutput = headless ? (pcm, rate) -> {} : new OpenAlPcmSoundOutput();
-        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
-        gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
-        InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
-        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
-        inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
-        dialogController = DialogController.forGameplay();
-        dialogTextLoader = DialogTextLoader.loadFromRom(romData);
-        overworldDialogInteraction = new OverworldDialogInteraction(
-            SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
-        cutsceneManager = new CutsceneManager(dialogController, this::setCutsceneScene);
-        romTables = RomTables.loadFromRom(romData);
-        newGameTarinShieldPalette = RomBank.loadPalettes(romData, 0x05, 0x4C94, 1)[0];
-        overworldCollision = new OverworldCollision(romTables);
-        overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
-        linkSpriteSheet = LinkSpriteSheet.loadFromRom(romData);
-        SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData);
-        SwordPalette swordPalette = SwordPalette.loadFromRom(romData);
-        TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData);
-        transientVfxSystem = new TransientVfxSystem(16);
-        droppableRupeeSystem = new DroppableRupeeSystem(16,
-            random);
-        cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
-        itemRegistry = new ItemRegistry();
-        roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
-            new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
-            this::selectMusicForLoadedRoom);
-        roomSession.setColorShellSoundSink(gameplaySoundSink);
-        LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData);
-        link = new Link(inputState, inputConfig, romTables, overworldCollision,
-                        linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
-                        linkTunicPalette);
-        link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
-            && (roomSession == null || (!roomSession.powerUpPickupSequenceActive() && !roomSession.heartPiecePickupActive())));
-        itemRegistry.register(PlayerState.INVENTORY_OCARINA, new Ocarina(
-            playerState, gameplaySoundSink, new Ocarina.PlaybackTarget() {
-                @Override
-                public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-                    return roomSession != null
-                        && roomSession.startOcarina(countdown, songFlags, selectedSong);
-                }
-
-                @Override
-                public boolean ocarinaPlaying() {
-                    return roomSession != null && roomSession.ocarinaPlaying();
-                }
-
-                @Override
-                public boolean canStartOcarina() {
-                    return link != null && roomSession != null && link.canUseItems()
-                        && !link.isAirborne() && !roomSession.hookshotActive();
-                }
-
-                @Override
-                public int ocarinaAnimationState() {
-                    return roomSession == null ? -1 : roomSession.ocarinaAnimationState();
-                }
-            }));
-        itemRegistry.register(PlayerState.INVENTORY_SWORD, new Sword(romTables, swordSpriteSheet,
-            gameplaySoundSink, random, swordPalette,
-            new Sword.BeamTarget() {
-                @Override
-                public boolean fireSwordBeam() {
-                    if (link == null || roomSession == null || playerState == null) {
-                        return false;
-                    }
-                    int romDirection = link.applyRomItemDirectionFromInput();
-                    if (playerState.swordLevel() != 2
-                        || playerState.health() != playerState.maxHearts()
-                            * PlayerState.HP_PER_HEART
-                        || roomSession.activeProjectileCount() != 0) {
-                        return false;
-                    }
-                    boolean spawned = roomSession.fireSwordBeam(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
-                    if (spawned) {
-                        link.startRomItemAttackStep();
-                    }
-                    return spawned;
-                }
-            }));
-        itemRegistry.register(PlayerState.INVENTORY_MAGIC_ROD, new MagicRod(
-            romTables, linkSpriteSheet, linkTunicPalette, gameplaySoundSink,
-            new MagicRod.LaunchTarget() {
-                @Override
-                public void startMagicRodAttackStep() {
-                    if (link != null) {
-                        link.startRomMagicRodAttackStep();
-                    }
-                }
-
-                @Override
-                public boolean fireMagicRodFireball() {
-                    if (link == null || roomSession == null || playerState == null) {
-                        return false;
-                    }
-                    int romDirection = link.applyRomItemDirectionFromInput();
-                    boolean spawned = roomSession.fireMagicRodFireball(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection,
-                        playerState.activePowerUp()
-                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
-                    return spawned;
-                }
-
-                @Override
-                public int activeProjectileCount() {
-                    return roomSession == null ? 0 : roomSession.activeProjectileCount();
-                }
-            }, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_MAGIC_POWDER, new MagicPowder(
-            playerState, gameplaySoundSink, new MagicPowder.SprinkleTarget() {
-                @Override
-                public boolean sprinkleMagicPowder() {
-                    if (link == null || roomSession == null) {
-                        return false;
-                    }
-                    int romDirection = link.applyRomItemDirectionFromInput();
-                    return roomSession.sprinkleMagicPowder(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), romDirection);
-                }
-
-                @Override
-                public void startMagicPowderAttackStep() {
-                    if (link != null) {
-                        link.startRomMagicPowderAttackStep();
-                    }
-                }
-
-                @Override
-                public boolean magicPowderAttackStepActive() {
-                    return link != null && link.romAttackStepAnimationCountdown() != 0;
-            }
-        }, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_SHIELD,
-            new Shield(gameplaySoundSink, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_SHOVEL, new Shovel(
-            gameplaySoundSink, new Shovel.DigTarget() {
-                private int linkEntityX;
-                private int linkEntityY;
-                private int romDirection;
-
-                @Override
-                public Shovel.StartResult startShovel() {
-                    if (link == null || roomSession == null) {
-                        return new Shovel.StartResult(false, true);
-                    }
-                    romDirection = link.applyRomItemDirectionFromInput();
-                    linkEntityX = link.romEntityX();
-                    linkEntityY = link.romEntityY();
-                    RoomSession.ShovelStartResult result = roomSession.startShovel(
-                        linkEntityX, linkEntityY, romDirection, link.isAirborne());
-                    return new Shovel.StartResult(result.started(), result.poking());
-                }
-
-                @Override
-                public void advanceShovel(int timer) {
-                    if (roomSession != null) {
-                        roomSession.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
-                    }
-                }
-
-                @Override
-                public int shovelAnimationState(int javaDirection, int timer) {
-                    return roomSession == null ? -1
-                        : roomSession.shovelAnimationState(javaDirection, timer);
-                }
-            }, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
-        itemRegistry.register(PlayerState.INVENTORY_BOMBS, new Bomb(
-            playerState, gameplaySoundSink, new Bomb.PlacementTarget() {
-                private boolean playBumpForLastPlacement;
-
-                @Override
-                public boolean placeBomb() {
-                    if (link == null || roomSession == null) {
-                        playBumpForLastPlacement = false;
-                        return false;
-                    }
-                    boolean placed = roomSession.placeBomb(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        romDirectionForLink(link.direction()));
-                    playBumpForLastPlacement = placed
-                        && roomSession.lastBombPlacementPlayedBump();
-                    if (placed) {
-                        link.startRomItemAttackStep();
-                    }
-                    return placed;
-                }
-
-                @Override
-                public boolean playBumpForLastPlacement() {
-                    return playBumpForLastPlacement;
-                }
-
-                @Override
-                public boolean bombActive() {
-                    return roomSession != null && roomSession.bombActive();
-                }
-            }, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_BOW, new Arrow(
-            playerState, gameplaySoundSink, new Arrow.ShootTarget() {
-                private boolean playWhooshForLastShot;
-
-                @Override
-                public boolean shootArrow() {
-                    if (link == null || roomSession == null) {
-                        playWhooshForLastShot = false;
-                        return false;
-                    }
-                    RoomSession.ArrowShotResult result = roomSession.shootArrowResult(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        link.applyRomItemDirectionFromInput(),
-                        playerState.activePowerUp()
-                            == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
-                    playWhooshForLastShot = result.playWhoosh();
-                    if (result.spawned()) {
-                        link.startRomItemAttackStep();
-                    }
-                    return result.spawned();
-                }
-
-                @Override
-                public boolean playWhooshForLastShot() {
-                    return playWhooshForLastShot;
-                }
-
-                @Override
-                public int activeProjectileCount() {
-                    return roomSession == null ? 0 : roomSession.activeProjectileCount();
-                }
-            }, link::canUseItems));
-        itemRegistry.register(PlayerState.INVENTORY_HOOKSHOT, new Hookshot(
-            new Hookshot.LaunchTarget() {
-                @Override
-                public boolean fireHookshot() {
-                    if (link == null || roomSession == null) {
-                        return false;
-                    }
-                    return roomSession.fireHookshot(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        romDirectionForLink(link.direction()), link.isAirborne(),
-                        link.isRomLinkPushing());
-                }
-
-                @Override
-                public boolean hookshotActive() {
-                    return roomSession != null && roomSession.hookshotActive();
-                }
-            }));
-        itemRegistry.register(PlayerState.INVENTORY_BOOMERANG, new Boomerang(
-            new Boomerang.LaunchTarget() {
-                @Override
-                public boolean fireBoomerang() {
-                    if (link == null || roomSession == null) {
-                        return false;
-                    }
-                    boolean spawned = roomSession.fireBoomerang(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(),
-                        link.applyRomItemDirectionFromInput(),
-                        link.romPressedButtonsMask());
-                    if (spawned) {
-                        link.startRomItemAttackStep();
-                    }
-                    return spawned;
-                }
-
-                @Override
-                public boolean boomerangActive() {
-                    return roomSession != null && roomSession.boomerangActive();
-                }
-            }, link::canUseItems));
-        equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
-        roomTransitionCoordinator = new RoomTransitionCoordinator(
-            roomSession, new RoomBoundaryController(), transitionController, scrollController);
-    }
-
-    private void initMusicSystem(boolean headless) {
-        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        if (headless) {
-            musicPlayer = new HeadlessMusicPlayer(romData);
-        } else {
-            GameBoyApu musicApu = new GameBoyApu(48_000);
-            var output = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
-            output.setLoopEnabled(false);
-            musicPlayer = output;
-        }
-        // ROM background tracks contain their own loop commands. Host-level
-        // restarting would also loop finite fanfares such as $1B forever,
-        // preventing wActiveMusicIndex-gated acquisition handlers advancing.
-        gameplayMusicController = new GameplayMusicController(
-            AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
-    }
-
-    private void loadGraphicsData() {
-        if (romData == null || romData.length < 0x8000) {
-            throw new IllegalStateException("ROM data is not available");
-        }
-
-        backgroundSceneLoader = new BackgroundSceneLoader(romData);
-        gpu.loadTitleScreenTiles(romData);
-        applyBackgroundScene(backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE));
-        indexedDisplayBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-
-        if (currentTilemap.length != GAME_BOY_BG_MAP_TILES) {
-            throw new IllegalStateException("Decoded title tilemap has unexpected size: " + currentTilemap.length);
-        }
-        if (currentAttrmap.length != GAME_BOY_BG_MAP_TILES) {
-            throw new IllegalStateException("Decoded title attrmap has unexpected size: " + currentAttrmap.length);
-        }
     }
 
     private void onKeyEvent(int key, int action) {
@@ -2133,5 +1785,47 @@ public class GameSession {
         return new OpeningStory(frameCounter, newGameWakeUpMotion, newGameTarinShieldMotion, newGameTarinShieldPalette, inputState, inputConfig, dialogController, dialogTextLoader, roomSession, link, playerState,
             this::currentOverworldDialogBlockers, this::playDirectMusic,
             this::newGameHouseMusicTrack, this::romDirectionForLink);
+    }
+    private void initialize(boolean headless) {
+        gpu = new GPU();
+        var built = new SessionBootstrap(random, gpu, transitionController, scrollController,
+            new SessionBootstrap.Callbacks(this::setCutsceneScene, this::selectMusicForLoadedRoom,
+                this::romDirectionForLink)).build(headless);
+        bgPalettes = built.bgPalettes();
+        objPalettes = built.objPalettes();
+        appConfig = built.appConfig();
+        romData = built.romData();
+        currentTilemap = built.currentTilemap();
+        currentAttrmap = built.currentAttrmap();
+        indexedDisplayBuffer = built.indexedDisplayBuffer();
+        roomSession = built.roomSession();
+        roomTransitionCoordinator = built.roomTransitionCoordinator();
+        inputConfig = built.inputConfig();
+        inputState = built.inputState();
+        playerState = built.playerState();
+        backgroundSceneLoader = built.backgroundSceneLoader();
+        inventoryMenu = built.inventoryMenu();
+        inventoryController = built.inventoryController();
+        dialogController = built.dialogController();
+        dialogTextLoader = built.dialogTextLoader();
+        overworldDialogInteraction = built.overworldDialogInteraction();
+        dialogSoundSink = built.dialogSoundSink();
+        dialogSoundOutput = built.dialogSoundOutput();
+        gameplaySoundSink = built.gameplaySoundSink();
+        musicPlayer = built.musicPlayer();
+        gameplayMusicController = built.gameplayMusicController();
+        cutsceneManager = built.cutsceneManager();
+        saveRamStore = built.saveRamStore();
+        romTables = built.romTables();
+        overworldCollision = built.overworldCollision();
+        overworldBushInteraction = built.overworldBushInteraction();
+        linkSpriteSheet = built.linkSpriteSheet();
+        transientVfxSystem = built.transientVfxSystem();
+        droppableRupeeSystem = built.droppableRupeeSystem();
+        cutLeavesEffectRenderer = built.cutLeavesEffectRenderer();
+        itemRegistry = built.itemRegistry();
+        equipmentController = built.equipmentController();
+        link = built.link();
+        newGameTarinShieldPalette = built.newGameTarinShieldPalette();
     }
 }
