@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+@linksawakening.testing.RequiresRom
 final class RoomPaletteLoaderTest {
 
     @Test
@@ -101,7 +102,7 @@ final class RoomPaletteLoaderTest {
     @Test
     void indoorTransitionTablePreservesColorsAndSeparatesBackgroundFromObjectUpdates() throws Exception {
         byte[] rom;
-        try (var input = getClass().getResourceAsStream("/rom/azle.gbc")) { rom = input.readAllBytes(); }
+        try (var input = linksawakening.testing.TestRom.open()) { rom = input.readAllBytes(); }
         RoomPaletteLoader loader = new RoomPaletteLoader(rom);
         int[][] baseBg = loader.loadIndoor(0, 0x17, null);
         int[][] baseObj = loader.loadIndoorObjectPalettes(0, 0x17);

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class ManboWarpResolverTest {
 
     @Test
@@ -48,8 +49,7 @@ final class ManboWarpResolverTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = ManboWarpResolverTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+@linksawakening.testing.RequiresRom
 final class LinkTest {
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
@@ -2073,7 +2074,7 @@ final class LinkTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream in = LinkTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream in = linksawakening.testing.TestRom.open()) {
             if (in == null) {
                 throw new IOException("Missing ROM resource /rom/azle.gbc");
             }

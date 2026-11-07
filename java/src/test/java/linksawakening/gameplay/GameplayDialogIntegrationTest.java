@@ -24,6 +24,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+@linksawakening.testing.RequiresRom
 final class GameplayDialogIntegrationTest {
 
     private static final int OBJECT_SIGNPOST = 0xD4;
@@ -297,8 +298,7 @@ final class GameplayDialogIntegrationTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = GameplayDialogIntegrationTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

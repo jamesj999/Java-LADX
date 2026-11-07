@@ -22,11 +22,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /** Offline opening scene through production room, entity, bed and HUD rendering. */
+@linksawakening.testing.RequiresRom
 public final class HouseEmulatorCapture {
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
         byte[] rom;
-        try (var in = HouseEmulatorCapture.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();

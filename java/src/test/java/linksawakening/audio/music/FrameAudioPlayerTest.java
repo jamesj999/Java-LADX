@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
+@linksawakening.testing.RequiresRom
 class FrameAudioPlayerTest {
     @Test void scriptedAudioIsDeterministic() throws Exception {
         byte[] rom;
-        try (var stream = getClass().getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             assertNotNull(stream);
             rom = stream.readAllBytes();
         }
@@ -44,7 +45,7 @@ class FrameAudioPlayerTest {
 
     @Test void sixtyUpdatesEmitExactlyOneSecondAndDialogSharesOutput() throws Exception {
         byte[] rom;
-        try (var stream = getClass().getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             assertNotNull(stream);
             rom = stream.readAllBytes();
         }

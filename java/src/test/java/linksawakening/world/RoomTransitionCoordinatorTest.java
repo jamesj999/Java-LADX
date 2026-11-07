@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class RoomTransitionCoordinatorTest {
     private static final int MAP_WITH_NO_WARP_ROOM = 0x01;
     private static final int INDOOR_ROOM_WITH_NO_WARPS = 0x00;
@@ -5353,8 +5354,7 @@ final class RoomTransitionCoordinatorTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = RoomTransitionCoordinatorTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

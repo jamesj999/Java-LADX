@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class OwlEventDialogResolverTest {
     @Test
     void resolvesBeachAndTailCaveApproachDialogsFromRomTables() throws IOException {
@@ -24,8 +25,7 @@ final class OwlEventDialogResolverTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = OwlEventDialogResolverTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) throw new IOException("Missing ROM resource: rom/azle.gbc");
             return stream.readAllBytes();
         }

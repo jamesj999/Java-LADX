@@ -18,6 +18,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+@linksawakening.testing.RequiresRom
 final class InventoryControllerTest {
 
     @Test
@@ -46,7 +47,7 @@ final class InventoryControllerTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = InventoryControllerTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }
