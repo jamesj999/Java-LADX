@@ -26,12 +26,12 @@ final class BombHandler {
             state.entity = state.entityAt(state.index);
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
               state.replaceEntity(state.runtime.bombPrivateState4[state.entity.slot()] != 0
-                      ? state.runtime.liftThrow.advanceEnemyBombEntity(
+                      ? state.liftThrow().advanceEnemyBombEntity(
                           state.entity, state.backgroundCollision, state.frame)
-                      : state.runtime.liftThrow.advancePlacedBombEntity(
+                      : state.liftThrow().advancePlacedBombEntity(
                           state.entity, state.backgroundCollision, state.frame));
             }
-            state.runtime.liftThrow.tryLiftBombIfRequested(
+            state.liftThrow().tryLiftBombIfRequested(
                 state.index,
                 bombDecision,
                 state.linkEntityX,

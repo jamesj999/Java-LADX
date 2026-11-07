@@ -22,13 +22,12 @@ final class FishHandler {
             FishMotion.Update fishUpdate =
                 state.runtime.fishMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = fishUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                fishUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = fishUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(state.entity.slot(), fishUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(state.entity.slot(), fishUpdate.physicsFlags());
             if (fishUpdate.waterSplash()) {
               state.emit(
                   new TransientVfxRequest(

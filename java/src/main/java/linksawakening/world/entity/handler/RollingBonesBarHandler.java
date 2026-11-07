@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -24,33 +28,31 @@ final class RollingBonesBarHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 // BossIntro runs before ReturnIfNonInteractive_06.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                if (state.entity.type() == ENTITY_ROLLING_BONES
                     && !state.runtime.roomTransitionActive
-                    && !state.runtime.linkState.inventoryAppearing) {
+                    && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
                       state.runtime.bossIntroMotion.advance(
                           state.runtime.options1(state.entity.slot()),
                           state.entity.type(),
                           state.runtime.entityMapId,
-                          state.runtime.transitionSequenceCounter);
+                          state.lifecycle().transitionSequenceCounter());
                   if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
                 }
                 // The bar's room-clear check precedes its interaction guard.
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR
+                if (state.entity.type() == ENTITY_ROLLING_BONES_BAR
                     && (state.runtime.entityRoomStatus & 0x20) != 0) {
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
                 // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
                 if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
-                if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES
+                if (state.entity.type() == ENTITY_ROLLING_BONES
                     && !state.rollingBonesHitThisFrame
-                    && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+                    && state.slot().ignoreHits(state.entity.slot()) != 0) {
                   // ApplyRecoilIfNeeded_06 pops the handler return address:
                   // no jump physics or AI movement occurs during recoil.
-                  state.replaceEntity(state
-                          .runtime
-                          .backgroundMechanics
+                  state.replaceEntity(state.background()
                           .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
                           .entity());
                   return false;
@@ -73,11 +75,11 @@ final class RollingBonesBarHandler {
                 state.runtime.rollingBonesMotion.advanceBar(
                     state.entity, state.frame, state.backgroundCollision);
             state.updated = barUpdate.entity();
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forRollingBonesBar(
+                      state.sprites().forRollingBonesBar(
                           0, state.updated.y(), barUpdate.animationVariant()),
                       0);
             }

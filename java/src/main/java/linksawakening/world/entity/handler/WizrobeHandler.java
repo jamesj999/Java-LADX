@@ -32,7 +32,7 @@ final class WizrobeHandler {
               {
                 state.runtime.wizrobeMotion.initializeFromRoom(
                     state.entity.slot(), state.entity.spriteVariant());
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x80;
+                state.slot().setTransitionCountdown(state.entity.slot(), 0x80);
                 state.preserveWizrobePresentation = true;
               }
               return true;
@@ -50,12 +50,11 @@ final class WizrobeHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyPhysicsFlags[state.entity.slot()]);
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().physicsFlags(state.entity.slot()));
             state.updated = wizrobeUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                wizrobeUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = wizrobeUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(state.entity.slot(), wizrobeUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(state.entity.slot(), wizrobeUpdate.physicsFlags());
             state.preserveWizrobePresentation = true;
             if (wizrobeUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnWizrobeProjectile(

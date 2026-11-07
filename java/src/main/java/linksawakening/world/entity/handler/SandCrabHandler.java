@@ -22,7 +22,7 @@ final class SandCrabHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction sandCrabBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (sandCrabBackgroundInteraction == null && state.backgroundCollision != null) {
               sandCrabBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -31,11 +31,11 @@ final class SandCrabHandler {
                 state.runtime.sandCrabMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.randomByteSupplier,
                     sandCrabBackgroundInteraction);
             state.updated = sandCrabUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = sandCrabUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, sandCrabUpdate.transitionCountdown());
             state.applyGenericGroundInteraction = sandCrabUpdate.appliesBackgroundInteraction();
             state.preserveSandCrabPresentation = true;
           }

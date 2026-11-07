@@ -34,7 +34,7 @@ final class DogHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction dogBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (dogBackgroundInteraction == null && state.backgroundCollision != null) {
               dogBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -43,18 +43,18 @@ final class DogHandler {
                 state.runtime.dogMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().transitionCountdown(slot),
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
-                    state.runtime.linkState.actionButtonAHeld,
-                    state.runtime.linkState.dialogActive,
+                    state.link().actionButtonAHeld(),
+                    state.link().dialogActive(),
                     state.randomByteSupplier,
                     dogBackgroundInteraction);
             state.updated = dogUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = dogUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());
             state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
             if (dogUpdate.dialogRequested()) {
               state.emit(

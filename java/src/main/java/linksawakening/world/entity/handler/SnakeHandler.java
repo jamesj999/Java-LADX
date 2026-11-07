@@ -23,10 +23,9 @@ final class SnakeHandler {
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()]);
+                    state.slot().transitionCountdown(state.entity.slot()));
             state.updated = snakeUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                snakeUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), snakeUpdate.transitionCountdown());
             state.preserveSnakePresentation = true;
           }
           return true;

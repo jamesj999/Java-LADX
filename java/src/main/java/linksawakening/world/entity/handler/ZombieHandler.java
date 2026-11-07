@@ -36,7 +36,7 @@ final class ZombieHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction zombieBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (zombieBackgroundInteraction == null && state.backgroundCollision != null) {
               zombieBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -45,17 +45,17 @@ final class ZombieHandler {
                 state.runtime.zombieMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().transitionCountdown(slot),
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.runtime.objectQuery,
                     zombieBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot]);
+                    state.slot().ignoreHits(slot));
             state.updated = zombieUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = zombieUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slot, zombieUpdate.physicsFlags());
             state.applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
             if (zombieUpdate.spawnRequest() != null) {
               state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());

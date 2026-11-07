@@ -25,7 +25,7 @@ final class PolsVoiceHandler {
             // or the ordinary collision path. Its private countdown $1F
             // is the shared EntityDeathHandler's visible death timer.
             state.runtime.dyingCountdown[state.entity.slot()] = 0x1F;
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
+            state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
             state.status = EntityStatus.DYING;
             state.updated = withStatus(state.entity, EntityStatus.DYING);
             state.emit(
@@ -49,7 +49,7 @@ final class PolsVoiceHandler {
             // $01, then clears it with B (zero) before the default enemy
             // collision pass. The shared Java movement probe is the
             // handler's background-interaction seam, so bracket it here.
-            state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0x01;
+            state.slot().setIgnoreHits(state.entity.slot(), 0x01);
             try {
               PolsVoiceMotion.Update polsVoiceUpdate =
                   state.runtime.polsVoiceMotion.advance(
@@ -58,12 +58,11 @@ final class PolsVoiceHandler {
                       state.linkEntityY,
                       state.randomByteSupplier,
                       state.backgroundCollision,
-                      state.runtime.enemyTransitionCountdown[state.entity.slot()]);
+                      state.slot().transitionCountdown(state.entity.slot()));
               state.updated = polsVoiceUpdate.entity();
-              state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                  polsVoiceUpdate.transitionCountdown();
+              state.slot().setTransitionCountdown(state.entity.slot(), polsVoiceUpdate.transitionCountdown());
             } finally {
-              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
+              state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
             state.preservePolsVoicePresentation = true;
           }

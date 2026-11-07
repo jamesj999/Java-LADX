@@ -16,8 +16,8 @@ final class CrowHandler {
             type,
             EntityTickStage.PHASE_1_CROW,
             state -> {
-              if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >= 0x10) {
-                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >>>= 2;
+              if (state.slot().ignoreHits(state.entity.slot()) >= 0x10) {
+                state.slot().shiftIgnoreHitsRight(state.entity.slot(), 2);
               }
               return true;
             });
@@ -31,16 +31,15 @@ final class CrowHandler {
             CrowMotion.Update crowUpdate =
                 state.runtime.crowMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
                     state.runtime.entityRoomId != 0x58,
                     state.runtime.slotProperties.kanaletCrowTakeoffTriggered(state.entity));
             state.updated = crowUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                crowUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = crowUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(state.entity.slot(), crowUpdate.physicsFlags());
             if (crowUpdate.boomerangSound()) {
               state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
             }

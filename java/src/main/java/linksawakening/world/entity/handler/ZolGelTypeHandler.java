@@ -37,7 +37,7 @@ final class ZolGelTypeHandler {
                   && state.handlerInteractive
                  ) {
                 RoomEntityBackgroundInteraction zolGelBackgroundInteraction =
-                    state.runtime.backgroundInteraction;
+                    state.background().interaction();
                 if (zolGelBackgroundInteraction == null && state.backgroundCollision != null) {
                   zolGelBackgroundInteraction =
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -51,8 +51,8 @@ final class ZolGelTypeHandler {
                         state.randomByteSupplier,
                         zolGelBackgroundInteraction,
                         state.frame,
-                        state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
-                        state.runtime.linkState.joypadHeld || state.runtime.linkState.actionButtonsHeld);
+                        state.slot().ignoreHits(state.entity.slot()),
+                        state.link().joypadHeld() || state.link().actionButtonsHeld());
                 state.updated = zolGelUpdate.entity();
                 state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
                 if (zolGelUpdate.split() != null) {

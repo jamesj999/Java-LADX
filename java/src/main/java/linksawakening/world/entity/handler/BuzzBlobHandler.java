@@ -22,7 +22,7 @@ final class BuzzBlobHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (buzzBlobBackgroundInteraction == null && state.backgroundCollision != null) {
               buzzBlobBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -31,11 +31,11 @@ final class BuzzBlobHandler {
                 state.runtime.buzzBlobMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.randomByteSupplier,
                     buzzBlobBackgroundInteraction);
             state.updated = buzzBlobUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = buzzBlobUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, buzzBlobUpdate.transitionCountdown());
             state.applyGenericGroundInteraction = buzzBlobUpdate.appliesBackgroundInteraction();
             state.preserveBuzzBlobPresentation = true;
           }

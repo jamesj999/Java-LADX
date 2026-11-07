@@ -23,13 +23,12 @@ final class ThreeOfAKindHandler {
                 state.runtime.threeOfAKindMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = cardUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                cardUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), cardUpdate.transitionCountdown());
             state.preserveThreeOfAKindPresentation = true;
           }
           return true;

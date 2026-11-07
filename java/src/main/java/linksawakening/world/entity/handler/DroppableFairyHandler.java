@@ -22,10 +22,9 @@ final class DroppableFairyHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()]);
+                    state.slot().transitionCountdown(state.entity.slot()));
             state.updated = fairyUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                fairyUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), fairyUpdate.transitionCountdown());
           }
           return true;
         });

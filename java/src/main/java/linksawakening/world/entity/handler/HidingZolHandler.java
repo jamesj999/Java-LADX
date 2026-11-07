@@ -18,7 +18,7 @@ final class HidingZolHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (hidingZolBackgroundInteraction == null && state.backgroundCollision != null) {
               hidingZolBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -35,7 +35,7 @@ final class HidingZolHandler {
             if (hidingZolUpdate.clearsIgnoreHitsCountdown()) {
               // func_007_73F7 temporarily writes $03 around the
               // background helper, then clears the shared byte.
-              state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = 0;
+              state.slot().setIgnoreHits(state.entity.slot(), 0);
             }
             if (hidingZolUpdate.jumpJingle()) {
               state.emit(
@@ -48,7 +48,7 @@ final class HidingZolHandler {
                       0x24));
             }
             if (hidingZolUpdate.physicsFlags() >= 0) {
-              state.runtime.enemyPhysicsFlags[state.entity.slot()] = hidingZolUpdate.physicsFlags();
+              state.slot().setPhysicsFlags(state.entity.slot(), hidingZolUpdate.physicsFlags());
             }
           }
           return true;

@@ -23,11 +23,10 @@ final class SpikedBeetleHandler {
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().ignoreHits(state.entity.slot()));
             state.updated = spikedBeetleUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                spikedBeetleUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), spikedBeetleUpdate.transitionCountdown());
             state.runtime.entityOptions1Override[state.entity.slot()] =
                 spikedBeetleUpdate.options1();
             state.runtime.enemyHitboxFlags[state.entity.slot()] = spikedBeetleUpdate.hitboxFlags();

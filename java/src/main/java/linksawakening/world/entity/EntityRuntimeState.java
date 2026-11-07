@@ -92,7 +92,8 @@ import java.util.function.IntUnaryOperator;
 /** ROM slot arrays and room handler state; orchestration remains in RoomEntityRuntime. */
 abstract class EntityRuntimeState extends EntityRomConstants {
     public final EntityEventChannels events = new EntityEventChannels();
-    public final EntityLinkState linkState = new EntityLinkState();
+    final EntityLinkState linkState = new EntityLinkState();
+    final EntityLinkView linkView = new EntityLinkView(linkState);
 
     public EntitySpriteSelection spriteSelection;
 
@@ -100,7 +101,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
 
-    public RoomEntityBackgroundInteraction backgroundInteraction;
+    RoomEntityBackgroundInteraction backgroundInteraction;
 
     public FollowingNpcState followingNpcState = FollowingNpcState.none();
 
@@ -333,7 +334,8 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final EnemyDropMotion enemyDropMotion = new EnemyDropMotion();
 
-    public final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final EntitySlotView slotView = new EntitySlotView(this);
+    final int[] enemyTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -351,7 +353,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final boolean[] powerRecoilDeath = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -364,9 +366,9 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] moblinKingLethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -514,7 +516,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
-    public int transitionSequenceCounter = 0x04;
+    int transitionSequenceCounter = 0x04;
 
     // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
     // Live room sessions default to the ordinary active world path; tests can

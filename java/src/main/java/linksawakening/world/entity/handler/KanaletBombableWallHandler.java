@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityHandlerRegistration;
@@ -17,8 +20,8 @@ final class KanaletBombableWallHandler {
               return false;
             }
             state.runtime.droppedItemBySlot[state.entity.slot()] =
-                state.runtime.ENTITY_HIDING_SLIME_KEY;
-            if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
+                ENTITY_HIDING_SLIME_KEY;
+            if (state.slot().ignoreHits(state.entity.slot()) != 0) {
               if (state.enemySpawns().spawnKanaletWallMoblin(state.entity)) {
                 state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;

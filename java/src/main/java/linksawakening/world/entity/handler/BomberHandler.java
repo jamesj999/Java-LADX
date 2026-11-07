@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -19,7 +22,7 @@ final class BomberHandler {
             BomberMotion.Update bomberUpdate =
                 state.runtime.bomberMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
@@ -27,8 +30,7 @@ final class BomberHandler {
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = bomberUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                bomberUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), bomberUpdate.transitionCountdown());
             if (bomberUpdate.bombSpawn() != null) {
               BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
               int bombSlot =
@@ -44,7 +46,7 @@ final class BomberHandler {
                 state.emit(
                     new EntityCombatEvent(
                         bombSlot,
-                        state.runtime.ENTITY_BOMB,
+                        ENTITY_BOMB,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

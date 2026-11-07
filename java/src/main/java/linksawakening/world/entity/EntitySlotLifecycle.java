@@ -26,6 +26,8 @@ public final class EntitySlotLifecycle {
     private final RoomEntityRuntime runtime;
     EntitySlotLifecycle(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
+    public int transitionSequenceCounter() { return runtime.transitionSequenceCounter; }
+
     EntityPickupEvent collectIfNeeded(int frameCounter,
                                              int linkEntityX,
                                              int linkEntityY,

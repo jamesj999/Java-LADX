@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -31,7 +35,7 @@ final class KeyDropPointHandler {
             if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
               state.emit(new KeyQuicksandEvent(slot));
               state.replaceEntity(withStatus(state.updated, EntityStatus.FALLING));
-              state.runtime.enemyTransitionCountdown[slot] = 0x2F;
+              state.slot().setTransitionCountdown(slot, 0x2F);
               state.runtime.fallingTargetX[slot] = 0x50;
               state.runtime.fallingTargetY[slot] = 0x48;
               state.runtime.fallingSpeedX[slot] = 0;
@@ -42,7 +46,7 @@ final class KeyDropPointHandler {
               state.emit(
                   new EntityCombatEvent(
                       slot,
-                      state.runtime.ENTITY_KEY_DROP_POINT,
+                      ENTITY_KEY_DROP_POINT,
                       0,
                       false,
                       EntityCombatEvent.SoundChannel.JINGLE,
@@ -55,15 +59,15 @@ final class KeyDropPointHandler {
                   withDefinition(
                       state.updated,
                       state.runtime.slotProperties.spriteDefinitionFor(
-                          state.runtime.ENTITY_HOOKSHOT_CHAIN),
+                          ENTITY_HOOKSHOT_CHAIN),
                       0);
             }
             KeyDropPointMotion.Update keyUpdate =
                 KeyDropPointMotion.advance(
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.updated.spriteVariant(),
                     hookshotRoom);
-            state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
+            state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.dialogLowId() >= 0) {
               state.emit(
                   new DialogRequest(KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));

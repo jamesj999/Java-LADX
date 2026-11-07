@@ -18,17 +18,17 @@ final class PiranhaPlantHandler {
               && !state.wasInitializing
 
               && !state.creditsGameplay
-              && state.runtime.transitionSequenceCounter == 0x04
+              && state.lifecycle().transitionSequenceCounter() == 0x04
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             PiranhaMotion.Update piranhaUpdate =
                 state.runtime.piranhaMotion.advance(
                     state.updated,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.linkEntityX,
                     state.linkEntityY);
             state.updated = piranhaUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = piranhaUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, piranhaUpdate.transitionCountdown());
             state.preservePiranhaPresentation = true;
           }
           return true;

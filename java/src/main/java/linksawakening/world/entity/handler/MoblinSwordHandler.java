@@ -32,15 +32,15 @@ final class MoblinSwordHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && !state.runtime.linkState.dialogActive
-              && !state.runtime.linkState.inventoryAppearing
+              && !state.link().dialogActive()
+              && !state.link().inventoryAppearing()
               && !state.runtime.roomTransitionActive
               && state.runtime.gameplayWorld
-              && state.runtime.transitionSequenceCounter == 0x04
+              && state.lifecycle().transitionSequenceCounter() == 0x04
               && !state.runtime.inspection().witchGotItemPresentationActive()
              ) {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (swordBackgroundInteraction == null && state.backgroundCollision != null) {
               swordBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -51,10 +51,10 @@ final class MoblinSwordHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     swordBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.runtime.swordMoblinAlertingSoundCounter,
                     state.runtime.entityMapId,
-                    state.runtime.transitionSequenceCounter,
+                    state.lifecycle().transitionSequenceCounter(),
                     state.frame);
             state.updated = moblinSwordUpdate.entity();
             if (moblinSwordUpdate.dialogRequested()) {

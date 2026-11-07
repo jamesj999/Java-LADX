@@ -19,15 +19,13 @@ final class GopongaFlowerProjectileHandler {
                 state.runtime.gopongaProjectileMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.handlerLinkCollisionEnabled);
             state.runtime.enemyHealth[state.entity.slot()] =
                 GopongaProjectileMotion.HEALTH_OVERRIDE;
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                projectileUpdate.transitionCountdown();
-            state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] =
-                projectileUpdate.ignoreHitsCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), projectileUpdate.transitionCountdown());
+            state.slot().setIgnoreHits(state.entity.slot(), projectileUpdate.ignoreHitsCountdown());
             if (projectileUpdate.unloadRequested()) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;

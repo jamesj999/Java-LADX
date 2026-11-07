@@ -17,7 +17,7 @@ final class Type0X39Handler {
 
                   && state.runtime.instrumentParticleKind[state.entity.slot()] == 0
                   && state.runtime.instrumentPickupState[state.entity.slot()] < 3
-                  && state.runtime.transitionSequenceCounter == 4
+                  && state.lifecycle().transitionSequenceCounter() == 4
                   && state.runtime.spriteSelection != null) {
                 int[][] palettes = state.runtime.spriteSelection.objectPalettes();
                 int offset = ((state.frame >> 1) & 0x3C) / 2;

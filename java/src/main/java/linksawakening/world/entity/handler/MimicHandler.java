@@ -18,7 +18,7 @@ final class MimicHandler {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction mimicBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (mimicBackgroundInteraction == null && state.backgroundCollision != null) {
               mimicBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -27,10 +27,10 @@ final class MimicHandler {
                 state.runtime.mimicMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.linkState.linkPressedButtonsMask,
+                    state.link().linkPressedButtonsMask(),
                     state.romCollisionType,
                     mimicBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.frame);
             state.updated = mimicUpdate.entity();
             state.preserveMimicPresentation = true;

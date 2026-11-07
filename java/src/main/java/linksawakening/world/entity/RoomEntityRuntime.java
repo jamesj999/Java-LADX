@@ -71,7 +71,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
     final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
     public final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
-    public final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
+    final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
     public final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
     final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
@@ -85,7 +85,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     public final GenieEntityController genie = new GenieEntityController(this);
     public final EntityProjectileController projectiles = new EntityProjectileController(this);
     public final EntityPickupController pickups = new EntityPickupController(this);
-    public final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
+    final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
     public final EntityBossRewards bossRewards = new EntityBossRewards(this);
     public final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
@@ -94,14 +94,15 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
     public final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
-    public final RoomEntity[] slots;
+    final RoomEntity[] slots;
+    final java.util.List<RoomEntity> slotEntities;
     
     final EntitySpriteTileSnapshot spriteTiles;
     public final boolean indoorRoom;
     private final RomTables romTables;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
-    public final EntitySpriteHandlerCatalog spriteHandlers;
+    final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
     final ChestContentsTable chestContentsTable;
 
@@ -140,6 +141,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
                                RomTables romTables,
                                byte[] romData) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
+        this.slotEntities = java.util.Arrays.asList(slots);
         this.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
         this.groundInteractionSideScrolling = initial.sideScrolling();

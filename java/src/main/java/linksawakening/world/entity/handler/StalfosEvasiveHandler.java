@@ -27,15 +27,14 @@ final class StalfosEvasiveHandler {
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.linkState.actionButtonsHeld,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                    state.link().actionButtonsHeld(),
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().ignoreHits(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.runtime.entityMapId);
             state.updated = evasiveUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                evasiveUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {
               state.enemySpawns().spawnEvasiveClone(
                   state.entity, evasiveUpdate.cloneRequest());
@@ -59,9 +58,9 @@ final class StalfosEvasiveHandler {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               EntitySpriteDefinition evasiveDefinition =
-                  state.runtime.spriteHandlers.forStalfosEvasiveState(
+                  state.sprites().forStalfosEvasiveState(
                       state.runtime.stalfosEvasiveMotion.privateState1(state.entity.slot()));
               state.updated =
                   withDefinition(state.updated, evasiveDefinition, state.updated.spriteVariant());

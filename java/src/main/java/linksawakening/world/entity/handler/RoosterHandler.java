@@ -26,10 +26,10 @@ final class RoosterHandler {
                     RoosterMotion.advanceLifted(
                         state.frame,
                         state.linkZ & 0xFF,
-                        state.runtime.linkState.linkPressedButtonsMask,
+                        state.link().linkPressedButtonsMask(),
                         state.romCollisionType,
-                        state.runtime.linkState.currentLinkSpeedX,
-                        state.runtime.linkState.currentLinkSpeedY,
+                        state.link().currentLinkSpeedX(),
+                        state.link().currentLinkSpeedY(),
                         state.romLinkDirection);
                 state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
                 state.runtime.liftedSourceDirection[state.entity.slot()] =
@@ -57,8 +57,8 @@ final class RoosterHandler {
             state.preserveRoosterPresentation = true;
             if (state.projectileLinkState.motionState() == 0
                 && (state.linkZ & 0xFF) == 0
-                && state.runtime.linkState.linkAttackStepAnimationCountdown == 0
-                && state.runtime.liftThrow.cuccoPowerBraceletHeld()
+                && state.link().linkAttackStepAnimationCountdown() == 0
+                && state.liftThrow().cuccoPowerBraceletHeld()
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
@@ -67,8 +67,8 @@ final class RoosterHandler {
                       state.entity.slot(),
                       0x02,
                       0x00,
-                      state.runtime.linkState.currentLinkSpeedX,
-                      state.runtime.linkState.currentLinkSpeedY,
+                      state.link().currentLinkSpeedX(),
+                      state.link().currentLinkSpeedY(),
                       state.romLinkDirection));
               state.emit(
                   new EntityCombatEvent(

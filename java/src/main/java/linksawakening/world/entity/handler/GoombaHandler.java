@@ -23,11 +23,10 @@ final class GoombaHandler {
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.runtime.groundInteractionSideScrolling);
             state.updated = goombaUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                goombaUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), goombaUpdate.transitionCountdown());
             if (goombaUpdate.startDying()) {
               // func_007_666B writes ENTITY_DROPPABLE_HEART and the
               // private-countdown-3 death window before setting status
@@ -37,7 +36,7 @@ final class GoombaHandler {
               state.runtime.droppedItemBySlot[state.entity.slot()] = 0x2D;
               state.runtime.dropPrivateCountdown3[state.entity.slot()] = 0x0C;
               state.runtime.dyingCountdown[state.entity.slot()] = 0x0C;
-              state.runtime.enemyPhysicsFlags[state.entity.slot()] = 0x04;
+              state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
               state.status = EntityStatus.DYING;
             }
           }

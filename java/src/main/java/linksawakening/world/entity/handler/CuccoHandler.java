@@ -25,23 +25,22 @@ final class CuccoHandler {
                 state.runtime.cuccoMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyFlashCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().flashCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.linkZ,
                     state.handlerLinkCollisionEnabled,
-                    state.runtime.liftThrow.cuccoPowerBraceletHeld(),
-                    state.runtime.linkState.linkAttackStepAnimationCountdown != 0,
+                    state.liftThrow().cuccoPowerBraceletHeld(),
+                    state.link().linkAttackStepAnimationCountdown() != 0,
                     state.randomByteSupplier,
                     state.backgroundCollision,
                     state.runtime.indoorRoom,
                     state.runtime.followingNpcState.marinFollowing(),
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                cuccoUpdate.transitionCountdown();
-            state.runtime.enemyFlashCountdown[state.entity.slot()] = cuccoUpdate.flashCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());
+            state.slot().setFlashCountdown(state.entity.slot(), cuccoUpdate.flashCountdown());
             state.runtime.enemyHealth[state.entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
             state.preserveCuccoPresentation = true;
             if (cuccoUpdate.dialogLowId() >= 0) {
@@ -62,8 +61,8 @@ final class CuccoHandler {
                       false,
                       EntityCombatEvent.SoundChannel.WAVE,
                       CuccoMotion.LIFT_WAVE_SFX));
-              state.replaceEntity(state.runtime.liftThrow.advanceLiftedEntity(
-                      state.runtime.liftThrow.renderLiftedEntity(
+              state.replaceEntity(state.liftThrow().advanceLiftedEntity(
+                      state.liftThrow().renderLiftedEntity(
                           state.entityAt(state.index), state.frame),
                       state.linkEntityX,
                       state.linkEntityY,

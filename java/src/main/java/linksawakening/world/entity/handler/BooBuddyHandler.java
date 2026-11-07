@@ -28,11 +28,11 @@ final class BooBuddyHandler {
             if (!state.handlerInteractive) {
               return false;
             }
-            if (state.runtime.enemyIgnoreHitsCountdown[slot] != 0) {
+            if (state.slot().ignoreHits(slot) != 0) {
               // $06:64F7 consumes one ignore-hits tick, moves with recoil
               // speeds, and pops the handler return address. OPTIONS1
               // bit $20 skips background collision for Boo Buddy.
-              state.runtime.enemyIgnoreHitsCountdown[slot]--;
+              state.slot().decrementIgnoreHits(slot);
               state.replaceEntity(state.runtime.booBuddyMotion.advanceRecoil(
                       state.entity,
                       state.runtime.enemyRecoilMotion.recoilSpeedX(slot),
@@ -53,13 +53,12 @@ final class BooBuddyHandler {
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.runtime.booBuddyTriggerCount,
                     state.swordCollisionActive,
                     state.randomByteSupplier);
             state.updated = booBuddyUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                booBuddyUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), booBuddyUpdate.transitionCountdown());
             if (booBuddyUpdate.healthOverride() >= 0) {
               state.runtime.enemyHealth[state.entity.slot()] = booBuddyUpdate.healthOverride();
             }

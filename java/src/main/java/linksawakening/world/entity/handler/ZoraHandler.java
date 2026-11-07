@@ -32,21 +32,21 @@ final class ZoraHandler {
               // this collision check, then copies hLinkFinalPosition
               // and calls ResetPegasusBoots. It does not use the common
               // hookshot-chain reset helper.
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.ZORA);
             }
             ZoraMotion.Update zoraUpdate =
                 state.runtime.zoraMotion.advance(
                     state.updated,
-                    state.runtime.enemyTransitionCountdown[slot],
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().transitionCountdown(slot),
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.runtime.objectQuery);
             state.updated = zoraUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(slot, zoraUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slot, zoraUpdate.physicsFlags());
             if (zoraUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnZoraProjectile(zoraUpdate.projectileSpawn());
             }

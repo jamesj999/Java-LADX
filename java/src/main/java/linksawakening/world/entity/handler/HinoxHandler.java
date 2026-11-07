@@ -26,8 +26,8 @@ final class HinoxHandler {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
               && state.handlerLinkCollisionEnabled
-              && state.runtime.backgroundMechanics.entityTimersInteractive()
-              && state.runtime.transitionSequenceCounter == 0x04
+              && state.background().entityTimersInteractive()
+              && state.lifecycle().transitionSequenceCounter() == 0x04
               && !state.creditsGameplay
              ) {
             int slot = state.entity.slot();
@@ -36,7 +36,7 @@ final class HinoxHandler {
                     state.runtime.options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }
@@ -47,7 +47,7 @@ final class HinoxHandler {
             HinoxMotion.Update hinoxUpdate =
                 state.runtime.hinoxMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[slot],
+                    state.slot().transitionCountdown(slot),
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
@@ -56,9 +56,9 @@ final class HinoxHandler {
                     state.randomByteSupplier,
                     state.hinoxBackgroundInteraction,
                     state.runtime.hinoxMotion.collisionFlags(slot),
-                    state.runtime.enemyFlashCountdown[slot]);
+                    state.slot().flashCountdown(slot));
             state.updated = hinoxUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = hinoxUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             state.preserveHinoxPresentation = true;
             if (hinoxUpdate.linkMotionBlocked()) {
               state.emit(new LinkMotionBlockRequest(slot));

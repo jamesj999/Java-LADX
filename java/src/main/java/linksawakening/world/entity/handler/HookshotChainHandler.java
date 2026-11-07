@@ -32,7 +32,7 @@ final class HookshotChainHandler {
               return false;
             }
             // $7BE3 cancels the chain before rendering or the pause gate.
-            if (state.runtime.linkState.linkPlayingOcarinaCountdown != 0) {
+            if (state.link().linkPlayingOcarinaCountdown() != 0) {
               state.runtime.clearEntity(state.entity.slot());
               return false;
             }
@@ -130,14 +130,14 @@ final class HookshotChainHandler {
             }
             EntityBackgroundCollisionResult collisionResult = null;
             boolean blocked;
-            if (state.runtime.backgroundInteraction != null) {
+            if (state.background().interaction() != null) {
               collisionResult =
-                  state.runtime.backgroundInteraction.probe(
+                  state.background().interaction().probe(
                       state.entity,
                       hookshotState.direction(),
                       nextPosition.x(),
                       nextPosition.y(),
-                      state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                      state.slot().ignoreHits(state.entity.slot()),
                       state.frame);
               blocked = collisionResult.blocked();
             } else {

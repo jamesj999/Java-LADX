@@ -21,7 +21,7 @@ final class MaskedMimicGoriyaHandler {
               && state.runtime.entityMapId != 0x1F) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (maskedMimicBackgroundInteraction == null && state.backgroundCollision != null) {
               maskedMimicBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -32,10 +32,10 @@ final class MaskedMimicGoriyaHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
-                    state.runtime.linkState.linkPressedButtonsMask,
+                    state.link().linkPressedButtonsMask(),
                     state.romCollisionType,
                     maskedMimicBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
+                    state.slot().ignoreHits(slot),
                     state.frame);
             state.updated = maskedMimicUpdate.entity();
             state.runtime.entityOptions1Override[slot] = maskedMimicUpdate.options1();

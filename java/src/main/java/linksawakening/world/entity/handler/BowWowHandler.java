@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntityRuntime;
@@ -28,17 +31,17 @@ final class BowWowHandler {
             // $05:4054 selects the following tiles for every nonzero
             // quest state, including kidnapped ($80), before any gates.
             int spriteAddress = state.runtime.bowWowState != 0 ? 0x401C : 0x4000;
-            if (state.runtime.spriteHandlers != null
+            if (state.sprites() != null
                 && (state.entity.spriteDefinition().bank() != 0x05
                     || state.entity.spriteDefinition().address() != spriteAddress)) {
               state.entity =
                   withDefinition(
                       state.entity,
                       state.runtime.bowWowState != 0
-                          ? state.runtime.spriteHandlers.forFollowerEntityType(
-                              state.runtime.ENTITY_BOW_WOW)
-                          : state.runtime.spriteHandlers.forEntityType(
-                              state.runtime.ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
+                          ? state.sprites().forFollowerEntityType(
+                              ENTITY_BOW_WOW)
+                          : state.sprites().forEntityType(
+                              ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
                       state.entity.spriteVariant());
             }
             state.entity =
@@ -47,8 +50,8 @@ final class BowWowHandler {
             if (!state.bowWowHandlerInteractive) {
               return false;
             }
-            if (state.runtime.enemyIgnoreHitsCountdown[slot] != 0) {
-              state.runtime.enemyIgnoreHitsCountdown[slot]--;
+            if (state.slot().ignoreHits(slot) != 0) {
+              state.slot().decrementIgnoreHits(slot);
             }
           }
           return true;
@@ -68,12 +71,12 @@ final class BowWowHandler {
             // BowWowEntityHandler's kidnapped branch checks the handler's
             // collision byte only after Link enters the $88/$40 pen.
             state.runtime.bowWowState = 0x01;
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               state.entity =
                   withDefinition(
                       state.entity,
-                      state.runtime.spriteHandlers.forFollowerEntityType(
-                          state.runtime.ENTITY_BOW_WOW),
+                      state.sprites().forFollowerEntityType(
+                          ENTITY_BOW_WOW),
                       state.entity.spriteVariant());
               state.replaceEntity(state.entity);
             }

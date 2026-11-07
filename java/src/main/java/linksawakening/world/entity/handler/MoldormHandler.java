@@ -24,13 +24,13 @@ final class MoldormHandler {
           if (!state.wasInitializing
 
               && !state.runtime.roomTransitionActive
-              && !state.runtime.linkState.inventoryAppearing) {
+              && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
                 state.runtime.bossIntroMotion.advance(
                     state.runtime.options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
             if (intro.dialogLowId() >= 0) {
               state.emit(
@@ -79,10 +79,10 @@ final class MoldormHandler {
             if (!state.handlerInteractive
                 || state.countdownBlocksInteraction
                 || state.moldormIntroOpenedThisFrame) {
-              if (state.runtime.spriteHandlers != null) {
+              if (state.sprites() != null) {
                 state.replaceEntity(withDefinition(
                         state.entity,
-                        state.runtime.spriteHandlers.forMoldormState(
+                        state.sprites().forMoldormState(
                             state.runtime.moldormMotion.headSpriteVariant(slot),
                             state.entity.x(),
                             (state.entity.y() - state.entity.z()) & 0xFF,
@@ -96,12 +96,12 @@ final class MoldormHandler {
               return false;
             }
             RoomEntityBackgroundInteraction moldormBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (moldormBackgroundInteraction == null && state.backgroundCollision != null) {
               moldormBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
-            int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
+            int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
               // Common countdowns have already ticked before dispatch;
               // the direct motion API performs the same decrement.
@@ -112,13 +112,13 @@ final class MoldormHandler {
                     state.entity,
                     state.frame,
                     transitionForMotion,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
-                    state.runtime.enemyFlashCountdown[slot],
+                    state.slot().ignoreHits(slot),
+                    state.slot().flashCountdown(slot),
                     state.runtime.enemyHealth[slot],
                     state.randomByteSupplier,
                     moldormBackgroundInteraction);
             state.updated = moldormUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(slot, moldormUpdate.transitionCountdown());
             if (moldormUpdate.noiseRequested()) {
               state.emit(
                   new EntityCombatEvent(
@@ -129,12 +129,12 @@ final class MoldormHandler {
                       EntityCombatEvent.SoundChannel.NOISE,
                       0x1B));
             }
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               MoldormMotion.Presentation presentation = moldormUpdate.presentation();
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forMoldormPresentation(
+                      state.sprites().forMoldormPresentation(
                           presentation.headSpriteVariant(),
                           presentation.headX(),
                           presentation.headY(),
@@ -145,7 +145,7 @@ final class MoldormHandler {
                           state.frame),
                       0);
             }
-            state.runtime.enemyPhysicsFlags[slot] = 0x02;
+            state.slot().setPhysicsFlags(slot, 0x02);
             state.preserveMoldormPresentation = true;
           }
           return true;

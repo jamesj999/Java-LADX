@@ -24,19 +24,19 @@ final class MiniMoldormHandler {
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
             state.runtime.miniMoldormMotion.beginFrame(
-                state.entity, state.runtime.enemyIgnoreHitsCountdown[slot] != 0);
+                state.entity, state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
-                state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(
+                state.background().applyEnemyRecoilIfNeeded(
                     state.entity, state.backgroundCollision);
             state.entity = recoil.entity();
             state.updated = state.entity;
             RoomEntityBackgroundInteraction miniBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (miniBackgroundInteraction == null && state.backgroundCollision != null) {
               miniBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
-            int transitionForMotion = state.runtime.enemyTransitionCountdown[slot];
+            int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
               // The common runtime timer has already performed the ROM
               // pre-handler decrement; MiniMoldormMotion mirrors that
@@ -47,18 +47,18 @@ final class MiniMoldormHandler {
                 state.runtime.miniMoldormMotion.advanceAfterHistory(
                     state.entity,
                     transitionForMotion,
-                    state.runtime.enemyIgnoreHitsCountdown[slot],
-                    state.runtime.enemyFlashCountdown[slot],
+                    state.slot().ignoreHits(slot),
+                    state.slot().flashCountdown(slot),
                     miniBackgroundInteraction,
                     state.randomByteSupplier,
                     state.frame);
             state.updated = miniUpdate.entity();
-            state.runtime.enemyTransitionCountdown[slot] = miniUpdate.transitionCountdown();
-            if (state.runtime.spriteHandlers != null) {
+            state.slot().setTransitionCountdown(slot, miniUpdate.transitionCountdown());
+            if (state.sprites() != null) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forMiniMoldormState(
+                      state.sprites().forMiniMoldormState(
                           miniUpdate.headSpriteVariant(),
                           state.updated.x(),
                           (state.updated.y() - state.updated.z()) & 0xFF,

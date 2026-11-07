@@ -21,19 +21,18 @@ final class GiantGopongaFlowerHandler {
                 state.linkEntityX,
                 state.linkEntityY,
                 state.handlerLinkCollisionEnabled)) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
             GiantGopongaMotion.Update giantUpdate =
                 state.runtime.giantGopongaMotion.advance(
                     state.entity,
                     state.frame,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY);
             state.updated = giantUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                giantUpdate.transitionCountdown();
+            state.slot().setTransitionCountdown(state.entity.slot(), giantUpdate.transitionCountdown());
             if (giantUpdate.projectileSpawn() != null) {
               state.enemySpawns().spawnGopongaProjectile(
                   state.entity, giantUpdate.projectileSpawn());

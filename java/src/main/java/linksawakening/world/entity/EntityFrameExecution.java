@@ -161,7 +161,19 @@ public final class EntityFrameExecution {
     this.context = context;
   }
 
+  public linksawakening.entity.EntitySpriteHandlerCatalog sprites() { return runtime.spriteHandlers; }
+
+  public EntityBackgroundMechanics background() { return runtime.backgroundMechanics; }
+
+  public EntityLiftThrowController liftThrow() { return runtime.liftThrow; }
+
+  public EntityLinkView link() { return runtime.linkView; }
+
+  public EntitySlotView slot() { return runtime.slotView; }
+
   public void replaceEntity(RoomEntity replacement) { runtime.slots[index] = replacement; }
+
+  public List<RoomEntity> entities() { return runtime.slotEntities; }
 
   public RoomEntity entityAt(int slotIndex) { return runtime.slots[slotIndex]; }
 

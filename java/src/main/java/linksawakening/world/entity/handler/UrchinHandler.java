@@ -26,7 +26,7 @@ final class UrchinHandler {
               && state.handlerLinkCollisionEnabled) {
             int slot = state.entity.slot();
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (urchinBackgroundInteraction == null && state.backgroundCollision != null) {
               urchinBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -35,7 +35,7 @@ final class UrchinHandler {
                 state.runtime.urchinMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.enemyPhysicsFlags[slot],
+                    state.slot().physicsFlags(slot),
                     state.linkEntityX,
                     state.linkEntityY,
                     state.romLinkDirection,
@@ -44,15 +44,15 @@ final class UrchinHandler {
                     state.handlerLinkCollisionEnabled,
                     urchinBackgroundInteraction);
             state.updated = urchinUpdate.entity();
-            state.runtime.enemyPhysicsFlags[slot] = urchinUpdate.physicsFlags();
+            state.slot().setPhysicsFlags(slot, urchinUpdate.physicsFlags());
             if (urchinUpdate.pushed()) {
               // UrchinEntityHandler writes $03 for its background probe,
               // then clears wEntitiesIgnoreHitsCountdown immediately.
-              state.runtime.enemyIgnoreHitsCountdown[slot] = 0;
+              state.slot().setIgnoreHits(slot, 0);
             }
             state.applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
             if (urchinUpdate.linkCollision()) {
-              state.runtime.backgroundMechanics.requestLinkPush(
+              state.background().requestLinkPush(
                   state.updated, EntityLinkCollisionRules.URCHIN);
             }
             if (urchinUpdate.jingleId() >= 0) {
@@ -65,9 +65,9 @@ final class UrchinHandler {
                       EntityCombatEvent.SoundChannel.JINGLE,
                       urchinUpdate.jingleId()));
             }
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               EntitySpriteDefinition urchinDefinition =
-                  state.runtime.spriteHandlers.forUrchinState(state.creditsGameplay);
+                  state.sprites().forUrchinState(state.creditsGameplay);
               state.updated =
                   withDefinition(state.updated, urchinDefinition, state.updated.spriteVariant());
             }

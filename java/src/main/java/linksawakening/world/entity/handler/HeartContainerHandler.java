@@ -14,7 +14,7 @@ final class HeartContainerHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
+              && state.slot().transitionCountdown(state.entity.slot()) != 0) {
             state.runtime.bossRewards.advanceCollectedHeartContainer(
                 state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
             return false;

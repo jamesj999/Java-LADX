@@ -18,7 +18,7 @@ final class StarHandler {
 
               && state.handlerLinkCollisionEnabled) {
             RoomEntityBackgroundInteraction starBackgroundInteraction =
-                state.runtime.backgroundInteraction;
+                state.background().interaction();
             if (starBackgroundInteraction == null && state.backgroundCollision != null) {
               starBackgroundInteraction =
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
@@ -29,7 +29,7 @@ final class StarHandler {
                     state.frame,
                     state.randomByteSupplier,
                     starBackgroundInteraction,
-                    state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
+                    state.slot().ignoreHits(state.entity.slot()));
             state.preserveStarPresentation = true;
           }
           return true;

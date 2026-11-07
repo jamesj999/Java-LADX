@@ -18,11 +18,11 @@ final class IronMaskHandler {
             int privateState2 = state.runtime.ironMaskPrivateState2[state.entity.slot()];
             int variant =
                 privateState2 == 0 ? state.updated.spriteVariant() : ((state.frame >>> 4) & 0x01);
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forIronMaskState(privateState2),
+                      state.sprites().forIronMaskState(privateState2),
                       variant);
             }
             state.preserveIronMaskPresentation = true;

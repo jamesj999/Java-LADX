@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -29,15 +32,14 @@ final class BushCrawlerHandler {
                     state.linkEntityY,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
                     RoomEntityCombatRules.overlapsLink(
                         state.entity, state.linkEntityX, state.linkEntityY),
-                    state.runtime.linkState.actionButtonAHeld,
-                    state.runtime.linkState.actionButtonBHeld,
-                    state.runtime.linkState.linkItemA,
-                    state.runtime.linkState.linkItemB);
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                bushUpdate.transitionCountdown();
+                    state.link().actionButtonAHeld(),
+                    state.link().actionButtonBHeld(),
+                    state.link().linkItemA(),
+                    state.link().linkItemB());
+            state.slot().setTransitionCountdown(state.entity.slot(), bushUpdate.transitionCountdown());
             state.runtime.fallingVisualYOffset[state.entity.slot()] = bushUpdate.visualYOffset();
             state.updated = bushUpdate.entity();
             if (bushUpdate.specialState()) {
@@ -58,7 +60,7 @@ final class BushCrawlerHandler {
                   withDefinition(
                       state.updated,
                       state.runtime.slotProperties.spriteDefinitionFor(
-                          state.runtime.ENTITY_BUSH_CRAWLER),
+                          ENTITY_BUSH_CRAWLER),
                       state.updated.spriteVariant());
             }
             if (!bushUpdate.specialState()) {
@@ -69,7 +71,7 @@ final class BushCrawlerHandler {
             }
             state.preserveBushCrawlerPresentation = true;
             if (bushUpdate.liftRequested()
-                && state.runtime.liftThrow.beginBushCrawlerLift(
+                && state.liftThrow().beginBushCrawlerLift(
                     state.index,
                     state.updated,
                     bushUpdate.privateState4(),

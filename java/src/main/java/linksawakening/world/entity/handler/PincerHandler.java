@@ -24,14 +24,13 @@ final class PincerHandler {
             PincerMotion.Update pincerUpdate =
                 state.runtime.pincerMotion.advance(
                     state.entity,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyPhysicsFlags[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().physicsFlags(state.entity.slot()),
                     state.linkEntityX,
                     state.linkEntityY);
             state.updated = pincerUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                pincerUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = pincerUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(state.entity.slot(), pincerUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(state.entity.slot(), pincerUpdate.physicsFlags());
             state.preservePincerPresentation = true;
           }
           return true;

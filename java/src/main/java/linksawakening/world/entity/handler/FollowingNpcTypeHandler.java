@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -15,7 +18,7 @@ final class FollowingNpcTypeHandler {
             EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
             state -> {
               {
-                if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
+                if (state.entity.type() == ENTITY_BOW_WOW) {
                   state.runtime.bowWowMotion.initialize(state.entity.slot());
                 } else {
                   state.runtime.followingNpcMotion.initialize(

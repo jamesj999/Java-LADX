@@ -18,11 +18,11 @@ final class CrystalSwitchHandler {
             // its normal collision helper, so sword damage can never
             // turn this entity into a dying state.
             state.runtime.enemyHealth[state.entity.slot()] = 0xFF;
-            if (state.runtime.enemyFlashCountdown[state.entity.slot()] > 0) {
+            if (state.slot().flashCountdown(state.entity.slot()) > 0) {
               // The handler consumes the collision flash as its trigger.
-              state.runtime.enemyFlashCountdown[state.entity.slot()] = 0;
+              state.slot().setFlashCountdown(state.entity.slot(), 0);
               if (!state.runtime.switchBlockAnimationActive) {
-                state.runtime.enemyTransitionCountdown[state.entity.slot()] = 0x18;
+                state.slot().setTransitionCountdown(state.entity.slot(), 0x18);
                 state.runtime.pendingSwitchBlockAnimationRequest = true;
                 state.emit(
                     new EntityCombatEvent(

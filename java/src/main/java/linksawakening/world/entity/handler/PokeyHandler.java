@@ -29,11 +29,11 @@ final class PokeyHandler {
                   state.runtime.pokeyMotion.advanceSegment(
                       state.updated,
                       state.runtime.entityInertia[slot],
-                      state.runtime.enemyTransitionCountdown[slot],
+                      state.slot().transitionCountdown(slot),
                       state.backgroundCollision);
               state.updated = segmentUpdate.entity();
               state.runtime.entityInertia[slot] = segmentUpdate.inertia();
-              state.runtime.enemyTransitionCountdown[slot] = segmentUpdate.transitionCountdown();
+              state.slot().setTransitionCountdown(slot, segmentUpdate.transitionCountdown());
               if (segmentUpdate.unloadRequested()) {
                 state.emit(
                     new TransientVfxRequest(
@@ -73,24 +73,24 @@ final class PokeyHandler {
                       state.updated,
                       state.frame,
                       state.runtime.entityInertia[slot],
-                      state.runtime.enemyTransitionCountdown[slot],
-                      state.runtime.enemyFlashCountdown[slot],
+                      state.slot().transitionCountdown(slot),
+                      state.slot().flashCountdown(slot),
                       state.linkEntityX,
                       state.linkEntityY,
                       state.randomByteSupplier,
                       state.backgroundCollision);
               state.updated = pokeyUpdate.entity();
               state.runtime.entityInertia[slot] = pokeyUpdate.inertia();
-              state.runtime.enemyTransitionCountdown[slot] = pokeyUpdate.transitionCountdown();
-              state.runtime.enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
+              state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());
+              state.slot().setFlashCountdown(slot, pokeyUpdate.flashCountdown());
               if (pokeyUpdate.segmentSpawn() != null) {
                 state.enemySpawns().spawnPokeySegment(pokeyUpdate.segmentSpawn());
               }
-              if (state.runtime.spriteHandlers != null) {
+              if (state.sprites() != null) {
                 state.updated =
                     withDefinition(
                         state.updated,
-                        state.runtime.spriteHandlers.forPokeyState(pokeyUpdate.renderInertia()),
+                        state.sprites().forPokeyState(pokeyUpdate.renderInertia()),
                         state.updated.spriteVariant());
               }
             }

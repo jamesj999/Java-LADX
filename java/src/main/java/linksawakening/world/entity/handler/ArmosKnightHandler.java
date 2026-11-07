@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -29,7 +32,7 @@ final class ArmosKnightHandler {
                     state.runtime.options1(state.entity.slot()),
                     state.entity.type(),
                     state.runtime.entityMapId,
-                    state.runtime.transitionSequenceCounter);
+                    state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
               state.runtime.pendingMusicTrack = bossIntro.musicTrack();
             }
@@ -37,7 +40,7 @@ final class ArmosKnightHandler {
               state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
-            state.runtime.backgroundMechanics.requestArmosLinkPush(
+            state.background().requestArmosLinkPush(
                 state.entity,
                 state.linkEntityX,
                 state.linkEntityY,
@@ -48,15 +51,14 @@ final class ArmosKnightHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.linkZ,
-                    state.runtime.enemyTransitionCountdown[state.entity.slot()],
-                    state.runtime.enemyPhysicsFlags[state.entity.slot()],
+                    state.slot().transitionCountdown(state.entity.slot()),
+                    state.slot().physicsFlags(state.entity.slot()),
                     state.runtime.enemyHitboxFlags[state.entity.slot()],
                     state.runtime.options1(state.entity.slot()),
                     state.runtime.enemyHealth[state.entity.slot()]);
             state.updated = armosKnightUpdate.entity();
-            state.runtime.enemyTransitionCountdown[state.entity.slot()] =
-                armosKnightUpdate.transitionCountdown();
-            state.runtime.enemyPhysicsFlags[state.entity.slot()] = armosKnightUpdate.physicsFlags();
+            state.slot().setTransitionCountdown(state.entity.slot(), armosKnightUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(state.entity.slot(), armosKnightUpdate.physicsFlags());
             state.runtime.enemyHitboxFlags[state.entity.slot()] = armosKnightUpdate.hitboxFlags();
             state.runtime.entityOptions1Override[state.entity.slot()] =
                 armosKnightUpdate.options1();
@@ -81,7 +83,7 @@ final class ArmosKnightHandler {
                 state.emit(
                     new EntityCombatEvent(
                         rubbleSlot,
-                        state.runtime.ENTITY_LIFTABLE_ROCK,
+                        ENTITY_LIFTABLE_ROCK,
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.NOISE,

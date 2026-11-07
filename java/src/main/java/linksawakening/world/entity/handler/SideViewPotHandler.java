@@ -30,13 +30,13 @@ final class SideViewPotHandler {
                       state.linkEntityX,
                       state.linkEntityY,
                       state.linkAirborne,
-                      state.runtime.linkState.currentLinkSpeedY);
+                      state.link().currentLinkSpeedY());
               if (contact.collided()) {
-                state.runtime.liftThrow.pendingLinkPotContact(state.entity.slot(), contact);
+                state.liftThrow().pendingLinkPotContact(state.entity.slot(), contact);
                 if (contact.restoreFinalPositionX()) {
                   effectiveLinkX =
-                      state.runtime.linkState.currentLinkFinalPositionXConfigured
-                          ? state.runtime.linkState.currentLinkFinalPositionX
+                      state.link().currentLinkFinalPositionXConfigured()
+                          ? state.link().currentLinkFinalPositionX()
                           : state.linkEntityX;
                 }
                 if (contact.snapTop()) {
@@ -47,8 +47,8 @@ final class SideViewPotHandler {
             if (state.runtime.groundInteractionSideScrolling
                 && state.sideViewPotInteractive
                 && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
-                && state.runtime.liftThrow.sideViewPotPowerBraceletHeld()
-                && state.runtime.linkState.linkAttackStepAnimationCountdown == 0
+                && state.liftThrow().sideViewPotPowerBraceletHeld()
+                && state.link().linkAttackStepAnimationCountdown() == 0
                 && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(
@@ -75,7 +75,7 @@ final class SideViewPotHandler {
                   state.runtime.sideViewPotMotion.advance(state.entity);
               RoomEntity movedPot = potUpdate.entity();
               boolean collision =
-                  state.runtime.liftThrow.sideViewPotBackgroundCollision(
+                  state.liftThrow().sideViewPotBackgroundCollision(
                       state.entity, movedPot, state.backgroundCollision, state.frame);
               if (collision) {
                 state.runtime.spawnLiftableRockSmash(
@@ -99,7 +99,7 @@ final class SideViewPotHandler {
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,
             state -> {
-              if (state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
+              if (state.slot().transitionCountdown(state.entity.slot()) != 0) {
                 state.replaceEntity(state.lifted);
                 return false;
               }

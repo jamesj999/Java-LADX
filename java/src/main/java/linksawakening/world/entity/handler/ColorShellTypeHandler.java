@@ -7,7 +7,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 
 import linksawakening.world.entity.motion.ColorShellMotion;
 
-import java.util.Arrays;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
@@ -60,12 +59,11 @@ final class ColorShellTypeHandler {
                         state.linkEntityY,
                         state.randomByteSupplier,
                         state.backgroundCollision,
-                        state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
+                        state.slot().ignoreHits(state.entity.slot()),
                         state.runtime.colorShellWorld,
-                        Arrays.asList(state.runtime.slots));
+                        state.entities());
                 state.updated = shellUpdate.entity();
-                state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] =
-                    shellUpdate.nextIgnoreHitsCountdown();
+                state.slot().setIgnoreHits(state.entity.slot(), shellUpdate.nextIgnoreHitsCountdown());
                 if (shellUpdate.unloadRequested()) {
                   state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
