@@ -132,7 +132,7 @@ public final class EntitySlotLifecycle {
         return null;
     }
 
-    int clearEntity(int slot) {
+    public int clearEntity(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -624,4 +624,16 @@ public final class EntitySlotLifecycle {
         runtime.blooperMotion.decrementPrivateCountdown3(slot);
         runtime.wingedOctorokMotion.decrementPrivateCountdown2(slot);
     }
+  public void requestPersistentClearMask(int mask) { runtime.pendingClearedEntityMask |= mask; }
+  public void delayInteractions(int countdown) { runtime.entityInteractionCountdown = countdown; }
+  public void recordGelClinging(boolean clinging) { runtime.gelClingingToLink |= clinging; }
+
+  public void setDroppedItemBySlot(int slot, int value) { runtime.droppedItemBySlot[slot] = value; }
+  public void setDyingCountdown(int slot, int value) { runtime.dyingCountdown[slot] = value; }
+  public void setDropPrivateCountdown3(int slot, int value) { runtime.dropPrivateCountdown3[slot] = value; }
+  public int warpState(int slot) { return runtime.warpState[slot]; }
+  public void setWarpState(int slot, int value) { runtime.warpState[slot] = value; }
+  public int warpTransitionCountdown(int slot) { return runtime.warpTransitionCountdown[slot]; }
+  public void setWarpTransitionCountdown(int slot, int value) { runtime.warpTransitionCountdown[slot] = value; }
+  public int droppablePrivateState3(int slot) { return runtime.droppablePrivateState3[slot]; }
 }

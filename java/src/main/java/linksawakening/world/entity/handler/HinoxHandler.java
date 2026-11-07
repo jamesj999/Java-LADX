@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HINOX;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -20,7 +22,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class HinoxHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HINOX,
+        ENTITY_HINOX,
         EntityTickStage.PHASE_4_HINOX,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -32,20 +34,20 @@ final class HinoxHandler {
              ) {
             int slot = state.entity.slot();
             BossIntroMotion.Update bossIntro =
-                state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                state.bossIntroMotion().advance(
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
-                    state.runtime.entityMapId,
+                    state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = bossIntro.musicTrack();
+              state.requestMusic(bossIntro.musicTrack());
             }
             if (bossIntro.dialogLowId() >= 0) {
               state.emit(
                   new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             HinoxMotion.Update hinoxUpdate =
-                state.runtime.hinoxMotion.advance(
+                state.hinoxMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(slot),
                     state.frame,
@@ -55,7 +57,7 @@ final class HinoxHandler {
                     state.projectileLinkState.motionState(),
                     state.randomByteSupplier,
                     state.hinoxBackgroundInteraction,
-                    state.runtime.hinoxMotion.collisionFlags(slot),
+                    state.hinoxMotion().collisionFlags(slot),
                     state.slot().flashCountdown(slot));
             state.updated = hinoxUpdate.entity();
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
@@ -81,7 +83,7 @@ final class HinoxHandler {
             }
             if (hinoxUpdate.bombSpawn() != null) {
               HinoxMotion.BombSpawn spawn = hinoxUpdate.bombSpawn();
-              state.runtime.spawnEnemyBomb(
+              state.enemySpawns().spawnEnemyBomb(
                   spawn.x(),
                   spawn.y(),
                   spawn.z(),

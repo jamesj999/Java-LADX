@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,12 +13,12 @@ import linksawakening.world.entity.motion.BombMotion;
 final class BombHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BOMB,
+        ENTITY_BOMB,
         EntityTickStage.PHASE_1_BOMB,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
             BombMotion.Decision bombDecision =
-                state.runtime.bombInteractions.advanceBombEntity(
+                state.bombInteractions().advanceBombEntity(
                     state.index,
                     state.entity,
                     state.projectileEvents,
@@ -25,7 +27,7 @@ final class BombHandler {
                     state.projectileLinkState);
             state.entity = state.entityAt(state.index);
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
-              state.replaceEntity(state.runtime.bombPrivateState4[state.entity.slot()] != 0
+              state.replaceEntity(state.bombInteractions().bombPrivateState4(state.entity.slot()) != 0
                       ? state.liftThrow().advanceEnemyBombEntity(
                           state.entity, state.backgroundCollision, state.frame)
                       : state.liftThrow().advancePlacedBombEntity(
@@ -43,14 +45,14 @@ final class BombHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+      if (((type == ENTITY_BOMB))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_BOMB,
             state -> {
               {
                 BombMotion.Decision bombDecision =
-                    state.runtime.bombInteractions.advanceBombEntity(
+                    state.bombInteractions().advanceBombEntity(
                         state.index,
                         state.entity,
                         state.projectileEvents,
@@ -67,14 +69,14 @@ final class BombHandler {
       }
     }
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
+      if (((type == ENTITY_BOMB))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_BOMB_2,
             state -> {
               {
                 BombMotion.Decision bombDecision =
-                    state.runtime.bombInteractions.advanceBombEntity(
+                    state.bombInteractions().advanceBombEntity(
                         state.index,
                         state.entity,
                         state.projectileEvents,
@@ -86,7 +88,7 @@ final class BombHandler {
                   return false;
                 }
                 state.entity =
-                    state.runtime.bombInteractions.applyBombStunnedPostActiveWork(
+                    state.bombInteractions().applyBombStunnedPostActiveWork(
                         state.entity, state.backgroundCollision, state.frame);
                 state.replaceEntity(state.entity);
               }

@@ -3,8 +3,10 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
 
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUSH_CRAWLER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -17,7 +19,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class BushCrawlerHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BUSH_CRAWLER,
+        ENTITY_BUSH_CRAWLER,
         EntityTickStage.PHASE_3_BUSH_CRAWLER,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -25,7 +27,7 @@ final class BushCrawlerHandler {
 
               && state.handlerLinkCollisionEnabled) {
             BushCrawlerMotion.Update bushUpdate =
-                state.runtime.bushCrawlerMotion.advance(
+                state.bushCrawlerMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,
@@ -40,26 +42,26 @@ final class BushCrawlerHandler {
                     state.link().linkItemA(),
                     state.link().linkItemB());
             state.slot().setTransitionCountdown(state.entity.slot(), bushUpdate.transitionCountdown());
-            state.runtime.fallingVisualYOffset[state.entity.slot()] = bushUpdate.visualYOffset();
+            state.background().setFallingVisualYOffset(state.entity.slot(), bushUpdate.visualYOffset());
             state.updated = bushUpdate.entity();
             if (bushUpdate.specialState()) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionForBushCrawlerState(0x02),
+                      state.slotProperties().spriteDefinitionForBushCrawlerState(0x02),
                       state.updated.spriteVariant());
             } else if (bushUpdate.crawlOverlayRendered()) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionForBushCrawlerCrawlState(
+                      state.slotProperties().spriteDefinitionForBushCrawlerCrawlState(
                           bushUpdate.privateState4()),
                       state.updated.spriteVariant());
             } else {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionFor(
+                      state.slotProperties().spriteDefinitionFor(
                           ENTITY_BUSH_CRAWLER),
                       state.updated.spriteVariant());
             }
@@ -67,7 +69,7 @@ final class BushCrawlerHandler {
               // BushCrawlerEntityHandler writes $04 immediately before
               // its default enemy collision path on every interactive
               // normal pass. The static health group is $00.
-              state.runtime.enemyHealth[state.entity.slot()] = 0x04;
+              state.slot().setHealth(state.entity.slot(), 0x04);
             }
             state.preserveBushCrawlerPresentation = true;
             if (bushUpdate.liftRequested()

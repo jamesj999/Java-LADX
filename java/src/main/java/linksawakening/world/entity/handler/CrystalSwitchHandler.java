@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CRYSTAL_SWITCH;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -10,20 +12,20 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 final class CrystalSwitchHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CRYSTAL_SWITCH,
+        ENTITY_CRYSTAL_SWITCH,
         EntityTickStage.PHASE_2_CRYSTAL_SWITCH,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // CrystalSwitchEntityHandler writes $FF before dispatching
             // its normal collision helper, so sword damage can never
             // turn this entity into a dying state.
-            state.runtime.enemyHealth[state.entity.slot()] = 0xFF;
+            state.slot().setHealth(state.entity.slot(), 0xFF);
             if (state.slot().flashCountdown(state.entity.slot()) > 0) {
               // The handler consumes the collision flash as its trigger.
               state.slot().setFlashCountdown(state.entity.slot(), 0);
-              if (!state.runtime.switchBlockAnimationActive) {
+              if (!state.background().switchBlockAnimationActive()) {
                 state.slot().setTransitionCountdown(state.entity.slot(), 0x18);
-                state.runtime.pendingSwitchBlockAnimationRequest = true;
+                state.background().requestSwitchBlockAnimation();
                 state.emit(
                     new EntityCombatEvent(
                         state.entity.slot(),

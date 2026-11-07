@@ -1,10 +1,12 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_KNIGHT;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -23,18 +25,18 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class ArmosKnightHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ARMOS_KNIGHT,
+        ENTITY_ARMOS_KNIGHT,
         EntityTickStage.PHASE_4_ARMOS_KNIGHT,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
-                state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                state.bossIntroMotion().advance(
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
-                    state.runtime.entityMapId,
+                    state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
-              state.runtime.pendingMusicTrack = bossIntro.musicTrack();
+              state.requestMusic(bossIntro.musicTrack());
             }
             if (bossIntro.dialogLowId() >= 0) {
               state.emit(
@@ -46,22 +48,21 @@ final class ArmosKnightHandler {
                 state.linkEntityY,
                 state.projectileLinkState.motionState());
             ArmosKnightMotion.Update armosKnightUpdate =
-                state.runtime.armosKnightMotion.advance(
+                state.armosKnightMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,
                     state.linkZ,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.slot().physicsFlags(state.entity.slot()),
-                    state.runtime.enemyHitboxFlags[state.entity.slot()],
-                    state.runtime.options1(state.entity.slot()),
-                    state.runtime.enemyHealth[state.entity.slot()]);
+                    state.slot().hitboxFlags(state.entity.slot()),
+                    state.slotProperties().options1(state.entity.slot()),
+                    state.slot().health(state.entity.slot()));
             state.updated = armosKnightUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), armosKnightUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(state.entity.slot(), armosKnightUpdate.physicsFlags());
-            state.runtime.enemyHitboxFlags[state.entity.slot()] = armosKnightUpdate.hitboxFlags();
-            state.runtime.entityOptions1Override[state.entity.slot()] =
-                armosKnightUpdate.options1();
+            state.slot().setHitboxFlags(state.entity.slot(), armosKnightUpdate.hitboxFlags());
+            state.slot().setOptions1Override(state.entity.slot(), armosKnightUpdate.options1());
             state.preserveArmosKnightPresentation = true;
             if (armosKnightUpdate.linkMotionBlocked()) {
               state.emit(
@@ -76,7 +77,7 @@ final class ArmosKnightHandler {
             }
             if (armosKnightUpdate.rubbleRequest() != null) {
               ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
-              int rubbleSlot = state.runtime.spawnLiftableRockRubble(rubble.x(), rubble.y());
+              int rubbleSlot = state.playerSpawns().spawnLiftableRockRubble(rubble.x(), rubble.y());
               if (rubbleSlot >= 0) {
                 state.emit(
                     new TransientVfxRequest(TransientVfxType.POOF, rubble.x(), rubble.y()));

@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WINGED_OCTOROK;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.WingedOctorokMotion;
 final class WingedOctorokHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WINGED_OCTOROK,
+        ENTITY_WINGED_OCTOROK,
         EntityTickStage.PHASE_3_WINGED_OCTOROK,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -20,7 +22,7 @@ final class WingedOctorokHandler {
 
               && state.handlerLinkCollisionEnabled) {
             WingedOctorokMotion.Update wingedUpdate =
-                state.runtime.wingedOctorokMotion.advance(
+                state.wingedOctorokMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,
@@ -36,14 +38,13 @@ final class WingedOctorokHandler {
             state.updated = wingedUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), wingedUpdate.transitionCountdown());
             state.preserveWingedOctorokPresentation = true;
-            state.runtime.wingedStateTwoThisFrame[state.entity.slot()] =
-                wingedUpdate.skippedDefaultCollision();
+            state.projectiles().setWingedStateTwoThisFrame(state.entity.slot(), wingedUpdate.skippedDefaultCollision());
             if (wingedUpdate.rockSpawn() != null) {
               state.enemySpawns().spawnWingedOctorokRock(
                   state.updated, wingedUpdate.rockSpawn().direction());
             }
             if (wingedUpdate.jumped()) {
-              state.runtime.wingedSwordAttackThisFrame[state.entity.slot()] = true;
+              state.projectiles().setWingedSwordAttackThisFrame(state.entity.slot(), true);
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),

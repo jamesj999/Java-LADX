@@ -1,5 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_COUNTDOWN;
+import static linksawakening.world.entity.EntityRomConstants.BOMBITE_EXPLOSION_SOUND_ID;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOUNCING_BOMBITE;
 
@@ -24,8 +28,8 @@ final class BombiteTypeHandler {
             EntityTickStage.PHASE_2_BOMBITE_TYPE,
             state -> {
               {
-                state.runtime.bombiteMotion.initialize(state.entity.slot());
-                state.runtime.slowTimerInitialized[state.entity.slot()] = true;
+                state.bombiteMotion().initialize(state.entity.slot());
+                state.slot().setSlowTimerInitialized(state.entity.slot(), true);
               }
               return true;
             });
@@ -39,14 +43,14 @@ final class BombiteTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 BombiteMotion.Update bombiteUpdate =
-                    state.runtime.bombiteMotion.advance(
+                    state.bombiteMotion().advance(
                         state.entity,
                         state.frame,
                         state.linkEntityX,
                         state.linkEntityY,
                         state.slot().transitionCountdown(state.entity.slot()),
-                        state.runtime.slowTransitionCountdown[state.entity.slot()],
-                        state.runtime.bombPrivateCountdown1[state.entity.slot()],
+                        state.slot().slowTransitionCountdown(state.entity.slot()),
+                        state.bombInteractions().bombPrivateCountdown1(state.entity.slot()),
                         state.slot().ignoreHits(state.entity.slot()),
                         state.link().runningWithPegasusBoots(),
                         state.randomByteSupplier,
@@ -54,10 +58,8 @@ final class BombiteTypeHandler {
                 state.updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());
                 state.preserveBombitePresentation = true;
                 state.slot().setTransitionCountdown(state.entity.slot(), bombiteUpdate.transitionCountdown());
-                state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                    bombiteUpdate.slowTransitionCountdown();
-                state.runtime.bombPrivateCountdown1[state.entity.slot()] =
-                    bombiteUpdate.privateCountdown1();
+                state.slot().setSlowTransitionCountdown(state.entity.slot(), bombiteUpdate.slowTransitionCountdown());
+                state.bombInteractions().setBombPrivateCountdown1(state.entity.slot(), bombiteUpdate.privateCountdown1());
                 if (bombiteUpdate.bumpJingle()) {
                   state.emit(
                       new EntityCombatEvent(
@@ -70,19 +72,19 @@ final class BombiteTypeHandler {
                 }
                 boolean entityCollisionExplosion =
                     state.entity.type() == ENTITY_BOUNCING_BOMBITE
-                        && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
-                        && state.runtime.projectiles.collideBouncingBombiteWithEntities(
+                        && state.bombiteMotion().state(state.entity.slot()) == 2
+                        && state.projectiles().collideBouncingBombiteWithEntities(
                             state.updated, state.frame);
                 if (bombiteUpdate.explode() || entityCollisionExplosion) {
                   // BombiteExplode writes the already-positioned source
                   // coordinates into a fresh type-$02 enemy bomb and then
                   // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
                   int bombSlot =
-                      state.runtime.spawnEnemyBomb(
+                      state.enemySpawns().spawnEnemyBomb(
                           state.updated.x(),
                           state.updated.y(),
                           0,
-                          state.runtime.BOMBITE_EXPLOSION_COUNTDOWN);
+                          BOMBITE_EXPLOSION_COUNTDOWN);
                   if (bombSlot >= 0) {
                     state.slot().setIgnoreHits(bombSlot, 0x01);
                     state.emit(
@@ -92,7 +94,7 @@ final class BombiteTypeHandler {
                             0,
                             false,
                             EntityCombatEvent.SoundChannel.NOISE,
-                            state.runtime.BOMBITE_EXPLOSION_SOUND_ID));
+                            BOMBITE_EXPLOSION_SOUND_ID));
                   }
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;

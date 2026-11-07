@@ -28,7 +28,7 @@ final class SideViewPlatformHandler {
                   && !state.creditsGameplay
                   && state.lifecycle().transitionSequenceCounter() == 0x04) {
                 SideViewPlatformMotion.Frame platformFrame =
-                    state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
+                    state.sideViewPlatformMotion().beginFrame(state.entity);
                 RoomEntity movedPlatform = platformFrame.entity();
                 if (platformFrame.horizontalDelta() != 0
                     && state.backgroundCollision != null
@@ -38,7 +38,7 @@ final class SideViewPlatformHandler {
                         movedPlatform.x(),
                         movedPlatform.y())) {
                   platformFrame =
-                      state.runtime.sideViewPlatformMotion.restoreHorizontalPosition(
+                      state.sideViewPlatformMotion().restoreHorizontalPosition(
                           state.entity, platformFrame);
                   movedPlatform = platformFrame.entity();
                 }
@@ -47,20 +47,20 @@ final class SideViewPlatformHandler {
                   if (state.backgroundCollision.blocks(
                       state.entity, direction, movedPlatform.x(), movedPlatform.y())) {
                     platformFrame =
-                        state.runtime.sideViewPlatformMotion.restoreVerticalPosition(
+                        state.sideViewPlatformMotion().restoreVerticalPosition(
                             state.entity, platformFrame);
                     movedPlatform = platformFrame.entity();
                   }
                 }
                 boolean standing =
-                    state.runtime.groundInteractionSideScrolling
+                    state.background().groundInteractionSideScrolling()
                         && (state.linkZ & 0xFF) == 0
                         && (state.link().currentLinkSpeedY() & 0x80) == 0
                         && sideViewPlatformOverlapsLink(
                             movedPlatform, state.linkEntityX, state.linkEntityY)
                         && (((state.linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
                 boolean activationAllowed =
-                    state.runtime.entityRoomId == 0x3B || state.carryingEntity;
+                    state.roomInspection().entityRoomId() == 0x3B || state.carryingEntity;
                 if (standing) {
                   state.emit(
                       new SideViewPlatformLinkRequest(
@@ -72,7 +72,7 @@ final class SideViewPlatformHandler {
                           activationAllowed));
                 }
                 SideViewPlatformMotion.Update platformUpdate =
-                    state.runtime.sideViewPlatformMotion.finishFrame(
+                    state.sideViewPlatformMotion().finishFrame(
                         movedPlatform, platformFrame, state.frame, standing, activationAllowed);
                 state.updated = platformUpdate.entity();
                 if (platformUpdate.rumble()) {

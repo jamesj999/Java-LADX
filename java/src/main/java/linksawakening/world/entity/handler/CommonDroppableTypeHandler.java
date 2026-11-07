@@ -21,7 +21,7 @@ final class CommonDroppableTypeHandler {
             state -> {
               if (state.wasInitializing
 
-                  && state.runtime.droppablePrivateState3[state.entity.slot()] != 0) {
+                  && state.lifecycle().droppablePrivateState3(state.entity.slot()) != 0) {
                 // The init handler has already set the hidden options. The
                 // corresponding active handler will be entered on the next
                 // entity tick, so suppress this first display-list pass too.
@@ -40,13 +40,13 @@ final class CommonDroppableTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 CommonDroppableUpdate droppableUpdate =
-                    state.runtime.pickups.advanceCommonDroppable(
+                    state.pickups().advanceCommonDroppable(
                         state.entity,
                         state.linkEntityX,
                         state.linkEntityY,
-                        state.runtime.objectQuery == null
+                        state.background().objectQuery() == null
                             ? null
-                            : state.runtime.objectQuery.sample(state.entity));
+                            : state.background().objectQuery().sample(state.entity));
                 state.updated = droppableUpdate.entity();
                 if (droppableUpdate.hidden()) {
                   // DroppableRevealOrReturnIfNeeded returns past the caller's

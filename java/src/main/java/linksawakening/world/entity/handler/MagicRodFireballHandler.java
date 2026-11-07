@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MAGIC_ROD_FIREBALL;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,11 +11,11 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class MagicRodFireballHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MAGIC_ROD_FIREBALL,
+        ENTITY_MAGIC_ROD_FIREBALL,
         EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.projectiles.advanceMagicRodFireballEntity(
+            state.projectiles().advanceMagicRodFireballEntity(
                 state.index,
                 state.entity,
                 state.frame,

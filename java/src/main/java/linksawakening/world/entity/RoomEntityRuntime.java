@@ -70,9 +70,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityPlayerCommands playerCommands = new EntityPlayerCommands(this);
     private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
     final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
-    public final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
+    final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
     final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
-    public final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
+    final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
     final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
     final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
     final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
@@ -80,25 +80,25 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
     final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
-    public final EntityRewardController rewards = new EntityRewardController(this);
-    public final EntityStoryController story = new EntityStoryController(this);
-    public final GenieEntityController genie = new GenieEntityController(this);
-    public final EntityProjectileController projectiles = new EntityProjectileController(this);
-    public final EntityPickupController pickups = new EntityPickupController(this);
+    final EntityRewardController rewards = new EntityRewardController(this);
+    final EntityStoryController story = new EntityStoryController(this);
+    final GenieEntityController genie = new GenieEntityController(this);
+    final EntityProjectileController projectiles = new EntityProjectileController(this);
+    final EntityPickupController pickups = new EntityPickupController(this);
     final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
-    public final EntityBossRewards bossRewards = new EntityBossRewards(this);
-    public final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
+    final EntityBossRewards bossRewards = new EntityBossRewards(this);
+    final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
     final EntityBossInspection bossInspection = new EntityBossInspection(this);
     final EntityFlyingEnemyInspection flyingEnemyInspection = new EntityFlyingEnemyInspection(this);
     final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
-    public final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
+    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
     final RoomEntity[] slots;
     final java.util.List<RoomEntity> slotEntities;
     
     final EntitySpriteTileSnapshot spriteTiles;
-    public final boolean indoorRoom;
+    final boolean indoorRoom;
     private final RomTables romTables;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
@@ -113,7 +113,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
 
-    public final WarpMotion warpMotion;
+    final WarpMotion warpMotion;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
 

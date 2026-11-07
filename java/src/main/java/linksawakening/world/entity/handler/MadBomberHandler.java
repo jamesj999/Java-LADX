@@ -1,10 +1,15 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MAD_BOMBER;
+
+
+import static linksawakening.world.entity.EntityRomConstants.BOMBER_THROW_JINGLE_ID;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,15 +22,15 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class MadBomberHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MAD_BOMBER,
+        ENTITY_MAD_BOMBER,
         EntityTickStage.PHASE_2_MAD_BOMBER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             // MadBomberEntityHandler rewrites this handler-owned drop
             // byte on every interactive pass before its state dispatch.
-            state.runtime.droppedItemBySlot[state.entity.slot()] = 0x3C;
+            state.lifecycle().setDroppedItemBySlot(state.entity.slot(), 0x3C);
             MadBomberMotion.Update madBomberUpdate =
-                state.runtime.madBomberMotion.advance(
+                state.madBomberMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.linkEntityX,
@@ -38,7 +43,7 @@ final class MadBomberHandler {
             if (madBomberUpdate.bombSpawn() != null) {
               MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
               int bombSlot =
-                  state.runtime.spawnEnemyBomb(
+                  state.enemySpawns().spawnEnemyBomb(
                       spawn.x(),
                       spawn.y(),
                       spawn.z(),
@@ -54,7 +59,7 @@ final class MadBomberHandler {
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
-                        state.runtime.BOMBER_THROW_JINGLE_ID));
+                        BOMBER_THROW_JINGLE_ID));
               }
             }
           }

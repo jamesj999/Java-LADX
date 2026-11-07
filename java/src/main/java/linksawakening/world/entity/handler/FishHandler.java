@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_FISH;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -15,12 +17,12 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class FishHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_FISH,
+        ENTITY_FISH,
         EntityTickStage.PHASE_3_FISH,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             FishMotion.Update fishUpdate =
-                state.runtime.fishMotion.advance(
+                state.fishMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.randomByteSupplier,

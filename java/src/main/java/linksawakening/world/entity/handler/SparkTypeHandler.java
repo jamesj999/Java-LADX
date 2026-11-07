@@ -16,7 +16,7 @@ final class SparkTypeHandler {
             EntityTickStage.PHASE_2_SPARK_TYPE,
             state -> {
               {
-                state.runtime.sparkMotion.initialize(state.entity.slot(), state.entity.type());
+                state.sparkMotion().initialize(state.entity.slot(), state.entity.type());
               }
               return true;
             });
@@ -29,7 +29,7 @@ final class SparkTypeHandler {
             EntityTickStage.PHASE_2_SPARK_TYPE_2,
             state -> {
               if (state.wasInitializing) {
-                state.updated = state.runtime.sparkMotion.applyInitializationOffset(state.entity);
+                state.updated = state.sparkMotion().applyInitializationOffset(state.entity);
               }
               return true;
             });
@@ -43,7 +43,7 @@ final class SparkTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 state.updated =
-                    state.runtime.sparkMotion.advance(
+                    state.sparkMotion().advance(
                         state.entity, state.frame, state.backgroundCollision);
               }
               return true;

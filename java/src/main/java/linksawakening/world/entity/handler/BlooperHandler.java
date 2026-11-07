@@ -1,9 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BLOOPER;
+
+
 import linksawakening.world.entity.RoomEntityGroundInteraction;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -15,7 +17,7 @@ import java.util.Objects;
 final class BlooperHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_BLOOPER,
+        ENTITY_BLOOPER,
         EntityTickStage.PHASE_3_BLOOPER,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -29,22 +31,22 @@ final class BlooperHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             BlooperMotion.Movement movement =
-                state.runtime.blooperMotion.move(
+                state.blooperMotion().move(
                     state.entity,
                     state.frame,
                     blooperBackgroundInteraction,
                     state.slot().ignoreHits(state.entity.slot()));
             RoomEntityGroundInteraction.Result groundResult =
                 Objects.requireNonNull(
-                    state.runtime.groundInteraction.apply(
+                    state.background().groundInteraction().apply(
                         movement.entity(),
                         state.frame,
-                        state.runtime.entityGroundStatus[state.entity.slot()],
+                        state.background().entityGroundStatus(state.entity.slot()),
                         state.background().verticalSpeedZ(movement.entity()),
-                        state.runtime.groundInteractionSideScrolling),
+                        state.background().groundInteractionSideScrolling()),
                     "Room entity ground interaction returned null");
             BlooperMotion.Update blooperUpdate =
-                state.runtime.blooperMotion.finish(
+                state.blooperMotion().finish(
                     movement, groundResult, state.frame, state.linkEntityX, state.linkEntityY);
             state.updated = blooperUpdate.entity();
             state.preAppliedGroundResult = blooperUpdate.groundResult();

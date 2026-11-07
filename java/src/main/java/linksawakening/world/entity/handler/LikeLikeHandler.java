@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIKE_LIKE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -14,12 +16,12 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class LikeLikeHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_LIKE_LIKE,
+        ENTITY_LIKE_LIKE,
         EntityTickStage.PHASE_3_LIKE_LIKE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             LikeLikeMotion.Update likeLikeUpdate =
-                state.runtime.likeLikeMotion.advance(
+                state.likeLikeMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,
@@ -30,16 +32,15 @@ final class LikeLikeHandler {
                     state.link().linkItemA(),
                     state.link().linkItemB(),
                     state.projectileLinkState.shieldLevel(),
-                    state.runtime.slowTransitionCountdown[state.entity.slot()],
+                    state.slot().slowTransitionCountdown(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = likeLikeUpdate.entity();
-            state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                likeLikeUpdate.slowTransitionCountdown();
+            state.slot().setSlowTransitionCountdown(state.entity.slot(), likeLikeUpdate.slowTransitionCountdown());
             if (likeLikeUpdate.event() != null) {
               state.emit(likeLikeUpdate.event());
               if (likeLikeUpdate.event().kind() == LikeLikeEvent.Kind.RELEASE) {
-                state.runtime.slowTimerInitialized[state.entity.slot()] = true;
+                state.slot().setSlowTimerInitialized(state.entity.slot(), true);
               }
             }
             if (likeLikeUpdate.spriteVariant() >= 0) {

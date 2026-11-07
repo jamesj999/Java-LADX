@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,11 +13,11 @@ import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant
 final class ChestWithItemHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
+        ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM,
         state -> {
           if (state.wasInitializing) {
-            state.runtime.pickups.initializeChestEntity(state.entity);
+            state.pickups().initializeChestEntity(state.entity);
             state.updated =
                 withPositionAndVariant(
                     state.entity,
@@ -26,11 +28,11 @@ final class ChestWithItemHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
+        ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.runtime.pickups.advanceChestEntity(state.index, state.entity)) {
+            if (state.pickups().advanceChestEntity(state.index, state.entity)) {
               return false;
             }
             state.updated = state.entityAt(state.index);

@@ -294,4 +294,10 @@ public final class EntityLiftThrowController {
             contact.ignoreCollisionCountdown(), contact.speedX(), contact.snapTop(),
             contact.positionY(), contact.speedY()));
         }
+  public boolean beginLift(int slot, int direction) {
+    return runtime.beginLift(slot, direction);
+  }
+
+  public void setLiftedSourceDirection(int slot, int value) { runtime.liftedSourceDirection[slot] = value; }
+  public boolean liftableRockSmashActive(int slot) { return runtime.liftableRockSmashActive[slot]; }
 }

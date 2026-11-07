@@ -1,8 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SIDE_VIEW_POT;
+
+
+import static linksawakening.world.entity.EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,12 +19,12 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 final class SideViewPotHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
+        ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT,
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && !state.runtime.sideViewPotMotion.active(state.entity.slot())) {
+              && !state.sideViewPotMotion().active(state.entity.slot())) {
             SideViewPotContact.Result contact = SideViewPotContact.Result.none();
             int effectiveLinkX = state.linkEntityX;
             int effectiveLinkY = state.linkEntityY;
@@ -44,12 +49,12 @@ final class SideViewPotHandler {
                 }
               }
             }
-            if (state.runtime.groundInteractionSideScrolling
+            if (state.background().groundInteractionSideScrolling()
                 && state.sideViewPotInteractive
                 && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
                 && state.liftThrow().sideViewPotPowerBraceletHeld()
                 && state.link().linkAttackStepAnimationCountdown() == 0
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
@@ -64,25 +69,25 @@ final class SideViewPotHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
+        ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE
 
-              && state.runtime.sideViewPotMotion.active(state.entity.slot())) {
+              && state.sideViewPotMotion().active(state.entity.slot())) {
             if (state.sideViewPotInteractive) {
               SideViewPotMotion.Update potUpdate =
-                  state.runtime.sideViewPotMotion.advance(state.entity);
+                  state.sideViewPotMotion().advance(state.entity);
               RoomEntity movedPot = potUpdate.entity();
               boolean collision =
                   state.liftThrow().sideViewPotBackgroundCollision(
                       state.entity, movedPot, state.backgroundCollision, state.frame);
               if (collision) {
-                state.runtime.spawnLiftableRockSmash(
+                state.playerSpawns().spawnLiftableRockSmash(
                     movedPot.x(),
                     (movedPot.y() - movedPot.z()) & 0xFF,
-                    state.runtime.LIFTABLE_ROCK_SMASH_MODE_ROCK);
-                state.runtime.clearEntity(state.entity.slot());
+                    LIFTABLE_ROCK_SMASH_MODE_ROCK);
+                state.lifecycle().clearEntity(state.entity.slot());
               } else {
                 state.replaceEntity(movedPot);
               }
@@ -94,7 +99,7 @@ final class SideViewPotHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_SIDE_VIEW_POT)) {
+      if ((type == ENTITY_SIDE_VIEW_POT)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_SIDE_VIEW_POT,

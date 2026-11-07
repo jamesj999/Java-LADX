@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_OWL_EVENT;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,11 +11,11 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class OwlEventHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_OWL_EVENT,
+        ENTITY_OWL_EVENT,
         EntityTickStage.PHASE_1_OWL_EVENT,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            state.runtime.story.advanceOwlEvent(
+            state.story().advanceOwlEvent(
                 state.entity,
                 state.frame,
                 state.linkEntityX,

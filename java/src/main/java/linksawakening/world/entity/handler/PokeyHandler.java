@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_POKEY;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -16,7 +18,7 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class PokeyHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_POKEY,
+        ENTITY_POKEY,
         EntityTickStage.PHASE_4_POKEY,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -24,15 +26,15 @@ final class PokeyHandler {
             if (!state.handlerLinkCollisionEnabled) {
               // Both Pokey branches return immediately after their
               // pre-handler display pass when Link is non-interactive.
-            } else if (state.runtime.pokeyMotion.isSegment(slot)) {
+            } else if (state.pokeyMotion().isSegment(slot)) {
               PokeyMotion.Update segmentUpdate =
-                  state.runtime.pokeyMotion.advanceSegment(
+                  state.pokeyMotion().advanceSegment(
                       state.updated,
-                      state.runtime.entityInertia[slot],
+                      state.slot().pokeyInertia(slot),
                       state.slot().transitionCountdown(slot),
                       state.backgroundCollision);
               state.updated = segmentUpdate.entity();
-              state.runtime.entityInertia[slot] = segmentUpdate.inertia();
+              state.slot().setPokeyInertia(slot, segmentUpdate.inertia());
               state.slot().setTransitionCountdown(slot, segmentUpdate.transitionCountdown());
               if (segmentUpdate.unloadRequested()) {
                 state.emit(
@@ -62,17 +64,17 @@ final class PokeyHandler {
                         0x09));
               }
             } else {
-              if (state.runtime.entityInertia[slot] < 0x02) {
+              if (state.slot().pokeyInertia(slot) < 0x02) {
                 // PokeyEntityHandler replaces the normal group-$00
                 // health with two hit points until its body is fully
                 // separated.
-                state.runtime.enemyHealth[slot] = 0x02;
+                state.slot().setHealth(slot, 0x02);
               }
               PokeyMotion.Update pokeyUpdate =
-                  state.runtime.pokeyMotion.advanceMain(
+                  state.pokeyMotion().advanceMain(
                       state.updated,
                       state.frame,
-                      state.runtime.entityInertia[slot],
+                      state.slot().pokeyInertia(slot),
                       state.slot().transitionCountdown(slot),
                       state.slot().flashCountdown(slot),
                       state.linkEntityX,
@@ -80,7 +82,7 @@ final class PokeyHandler {
                       state.randomByteSupplier,
                       state.backgroundCollision);
               state.updated = pokeyUpdate.entity();
-              state.runtime.entityInertia[slot] = pokeyUpdate.inertia();
+              state.slot().setPokeyInertia(slot, pokeyUpdate.inertia());
               state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());
               state.slot().setFlashCountdown(slot, pokeyUpdate.flashCountdown());
               if (pokeyUpdate.segmentSpawn() != null) {

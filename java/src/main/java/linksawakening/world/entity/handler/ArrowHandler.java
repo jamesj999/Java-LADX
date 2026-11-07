@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
+
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -16,12 +18,12 @@ import linksawakening.world.entity.motion.PlayerArrowMotion;
 final class ArrowHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ARROW,
+        ENTITY_ARROW,
         EntityTickStage.PHASE_1_ARROW,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            if (state.runtime.playerArrowBombArrow[state.entity.slot()]
-                && state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) != 0) {
+            if (state.projectiles().playerArrowBombArrow(state.entity.slot())
+                && state.playerArrowMotion().transitionCountdown(state.entity.slot()) != 0) {
               int explosionSlot =
                   state.playerSpawns().spawnBombFromBombArrow(state.entity);
               if (explosionSlot >= 0) {
@@ -40,10 +42,10 @@ final class ArrowHandler {
             // ArrowEntityHandler jumps straight to rendering/rebound
             // while its transition countdown is nonzero ($6A3D-$6A40).
             boolean hitEntity =
-                state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) == 0
-                    && state.runtime.projectiles.collidePlayerArrowWithEntities(
+                state.playerArrowMotion().transitionCountdown(state.entity.slot()) == 0
+                    && state.projectiles().collidePlayerArrowWithEntities(
                         state.entity, state.frame);
-            if (hitEntity && !state.runtime.playerArrowBombArrow[state.entity.slot()]) {
+            if (hitEntity && !state.projectiles().playerArrowBombArrow(state.entity.slot())) {
               // func_003_75A2 reaches jr_003_7737 after an ordinary
               // arrow target hit. With no wall-collision byte set on
               // the active arrow, the state-0 arrow unloads there.
@@ -51,12 +53,12 @@ final class ArrowHandler {
               return false;
             }
             PlayerArrowMotion.Update arrowUpdate =
-                state.runtime.playerArrowMotion.advance(
+                state.playerArrowMotion().advance(
                     state.entity,
                     state.backgroundCollision,
                     state.frame,
-                    state.runtime.entityGroundStatus[state.entity.slot()],
-                    state.runtime.groundInteractionSideScrolling,
+                    state.background().entityGroundStatus(state.entity.slot()),
+                    state.background().groundInteractionSideScrolling(),
                     state.handlerInteractive,
                     state.projectileTimersInteractive);
             if (arrowUpdate.unloaded()) {
@@ -74,7 +76,7 @@ final class ArrowHandler {
                       0x07));
               // AlertSwordMoblins is shared by player arrows, enemy
               // projectiles, and bomb explosions.
-              state.runtime.swordMoblinAlertingSoundCounter = 0x04;
+              state.projectiles().setSwordMoblinAlertingSoundCounter(0x04);
             }
             state.replaceEntity(arrowUpdate.entity());
             return false;

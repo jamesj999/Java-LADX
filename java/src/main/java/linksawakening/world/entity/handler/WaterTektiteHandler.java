@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WATER_TEKTITE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,12 +11,12 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class WaterTektiteHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WATER_TEKTITE,
+        ENTITY_WATER_TEKTITE,
         EntityTickStage.PHASE_3_WATER_TEKTITE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.waterTektiteMotion.advance(
+                state.waterTektiteMotion().advance(
                     state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
           }
           return true;

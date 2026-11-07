@@ -22,30 +22,30 @@ final class WarpHandler {
             EntityTickStage.PHASE_1_TYPE,
             state -> {
               if (state.status == EntityStatus.ACTIVE
-                  && state.runtime.indoorRoom
+                  && state.roomInspection().indoorRoom()
 
-                  && state.runtime.warpMotion != null) {
+                  && state.warpMotion() != null) {
                 int slot = state.entity.slot();
                 state.replaceEntity(withPositionAndVariant(
                         state.entity,
                         state.entity.x(),
                         state.entity.y(),
-                        state.runtime.dungeonMinibossReady ? (state.frame >> 3) & 7 : -1));
+                        state.roomInspection().dungeonMinibossReady() ? (state.frame >> 3) & 7 : -1));
                 WarpMotion.Update warpUpdate =
-                    state.runtime.warpMotion.advance(
+                    state.warpMotion().advance(
                         state.entity,
-                        state.runtime.warpState[slot],
-                        state.runtime.warpTransitionCountdown[slot],
-                        state.runtime.entityMapId,
-                        state.runtime.entityRoomId,
-                        state.runtime.dungeonMinibossReady,
+                        state.lifecycle().warpState(slot),
+                        state.lifecycle().warpTransitionCountdown(slot),
+                        state.roomInspection().entityMapId(),
+                        state.roomInspection().entityRoomId(),
+                        state.roomInspection().dungeonMinibossReady(),
                         state.linkEntityX,
                         state.linkEntityY,
                         state.linkZ);
-                state.runtime.warpState[slot] = warpUpdate.state();
-                state.runtime.warpTransitionCountdown[slot] = warpUpdate.countdown();
+                state.lifecycle().setWarpState(slot, warpUpdate.state());
+                state.lifecycle().setWarpTransitionCountdown(slot, warpUpdate.countdown());
                 if (warpUpdate.musicTrack() >= 0) {
-                  state.runtime.pendingMusicTrack = warpUpdate.musicTrack();
+                  state.requestMusic(warpUpdate.musicTrack());
                 }
                 if (warpUpdate.jingleId() >= 0) {
                   state.emit(

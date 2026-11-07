@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROOSTER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -16,7 +18,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class RoosterHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROOSTER))) {
+      if (((type == ENTITY_ROOSTER))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_ROOSTER,
@@ -32,8 +34,7 @@ final class RoosterHandler {
                         state.link().currentLinkSpeedY(),
                         state.romLinkDirection);
                 state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
-                state.runtime.liftedSourceDirection[state.entity.slot()] =
-                    roosterUpdate.romDirection();
+                state.liftThrow().setLiftedSourceDirection(state.entity.slot(), roosterUpdate.romDirection());
                 state.liftedRomDirection = roosterUpdate.romDirection();
                 state.emit(
                     new RoosterLinkStateRequest(
@@ -43,14 +44,14 @@ final class RoosterHandler {
                         roosterUpdate.speedX(),
                         roosterUpdate.speedY(),
                         roosterUpdate.romDirection()));
-                state.runtime.projectiles.playBoomerangSoundIfDue(state.entity);
+                state.projectiles().playBoomerangSoundIfDue(state.entity);
               }
               return true;
             });
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ROOSTER,
+        ENTITY_ROOSTER,
         EntityTickStage.PHASE_5_ROOSTER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -61,7 +62,7 @@ final class RoosterHandler {
                 && state.liftThrow().cuccoPowerBraceletHeld()
                 && RoomEntityCombatRules.overlapsLink(
                     state.entity, state.linkEntityX, state.linkEntityY)
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new RoosterLinkStateRequest(
                       state.entity.slot(),

@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_WIZROBE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -13,7 +15,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class WizrobeHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WIZROBE,
+        ENTITY_WIZROBE,
         EntityTickStage.PHASE_2_WIZROBE,
         state -> {
           if (state.wasInitializing) {
@@ -24,13 +26,13 @@ final class WizrobeHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_WIZROBE))) {
+      if (((type == ENTITY_WIZROBE))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_WIZROBE_2,
             state -> {
               {
-                state.runtime.wizrobeMotion.initializeFromRoom(
+                state.wizrobeMotion().initializeFromRoom(
                     state.entity.slot(), state.entity.spriteVariant());
                 state.slot().setTransitionCountdown(state.entity.slot(), 0x80);
                 state.preserveWizrobePresentation = true;
@@ -40,12 +42,12 @@ final class WizrobeHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_WIZROBE,
+        ENTITY_WIZROBE,
         EntityTickStage.PHASE_3_WIZROBE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             WizrobeMotion.Update wizrobeUpdate =
-                state.runtime.wizrobeMotion.advance(
+                state.wizrobeMotion().advance(
                     state.entity,
                     state.linkEntityX,
                     state.linkEntityY,

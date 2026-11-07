@@ -13,7 +13,7 @@ final class Type0X35Handler {
             type,
             EntityTickStage.PHASE_1_TYPE_0X35,
             state -> {
-              if ((state.runtime.entityRoomStatus & 0x10) != 0) {
+              if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
                 state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                 return false;
               }
@@ -29,8 +29,8 @@ final class Type0X35Handler {
             state -> {
               if (state.status == EntityStatus.ACTIVE
 
-                  && state.runtime.heartPiecePickup[state.entity.slot()] != null) {
-                state.runtime.pickups.advanceHeartPiecePickup(
+                  && state.pickups().hasHeartPiecePickup(state.entity.slot())) {
+                state.pickups().advanceHeartPiecePickup(
                     state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
                 return false;
               }

@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,18 +11,18 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class SleepyToadstoolHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_SLEEPY_TOADSTOOL,
+        ENTITY_SLEEPY_TOADSTOOL,
         EntityTickStage.PHASE_1_SLEEPY_TOADSTOOL,
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
-            if (!state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]
-                && (state.runtime.playerHasToadstool
-                    || state.runtime.playerMagicPowderCount != 0)) {
+            if (!state.rewards().toadstoolPickupSequenceActive(state.entity.slot())
+                && (state.story().playerHasToadstool()
+                    || state.story().playerMagicPowderCount() != 0)) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
-            if (state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]) {
-              state.runtime.rewards.advanceToadstoolPickup(
+            if (state.rewards().toadstoolPickupSequenceActive(state.entity.slot())) {
+              state.rewards().advanceToadstoolPickup(
                   state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
               return false;
             }

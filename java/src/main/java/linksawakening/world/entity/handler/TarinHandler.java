@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_TARIN;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -21,27 +23,27 @@ import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
 final class TarinHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_TARIN,
+        ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
         state -> {
-          if (!state.runtime.indoorRoom && (state.runtime.entityRoomStatus & 0x10) != 0) {
+          if (!state.roomInspection().indoorRoom() && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_TARIN)) {
+      if ((type == ENTITY_TARIN)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_4_TARIN,
             state -> {
               if (state.status == EntityStatus.ACTIVE
                   && !state.wasInitializing
-                  && !state.runtime.indoorRoom
+                  && !state.roomInspection().indoorRoom()
 
-                  && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
-                      || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
+                  && (state.tarinRaccoonMotion().state(state.entity.slot()) == 0
+                      || state.roomInspection().tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction =
                     state.background().interaction();
                 if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {
@@ -49,7 +51,7 @@ final class TarinHandler {
                       RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
                 }
                 TarinRaccoonMotion.Update tarinUpdate =
-                    state.runtime.tarinRaccoonMotion.advance(
+                    state.tarinRaccoonMotion().advance(
                         state.updated,
                         new TarinRaccoonMotion.Input(
                             state.frame,
@@ -64,15 +66,14 @@ final class TarinHandler {
                             state.link().inventoryAppearing(),
                             state.link().dialogCooldown(),
                             state.link().windowY(),
-                            state.runtime.slowTransitionCountdown[state.entity.slot()],
+                            state.slot().slowTransitionCountdown(state.entity.slot()),
                             state.slot().transitionCountdown(state.entity.slot())),
                         tarinBackgroundInteraction);
                 state.updated = tarinUpdate.entity();
-                state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                    tarinUpdate.slowTransitionCountdown();
+                state.slot().setSlowTransitionCountdown(state.entity.slot(), tarinUpdate.slowTransitionCountdown());
                 state.slot().setTransitionCountdown(state.entity.slot(), tarinUpdate.transitionCountdown());
                 state.preserveTarinPresentation = true;
-                state.runtime.shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
+                state.story().setShouldGetLostInMysteriousWoods(tarinUpdate.shouldGetLost());
                 if (tarinUpdate.linkMotionBlocked()) {
                   state.emit(
                       new LinkMotionBlockRequest(state.entity.slot()));
@@ -108,7 +109,7 @@ final class TarinHandler {
                           EntityCombatEvent.SoundChannel.JINGLE,
                           tarinUpdate.soundId()));
                   if (tarinUpdate.soundId() == 0x23) {
-                    state.runtime.pendingMusicTrack = state.runtime.defaultMusicTrack;
+                    state.requestMusic(state.roomInspection().defaultMusicTrack());
                   }
                 }
                 if (tarinUpdate.spawnBomb()) {

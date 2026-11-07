@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CUCCO;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,7 +16,7 @@ import linksawakening.world.entity.event.DialogRequest;
 final class CuccoHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CUCCO,
+        ENTITY_CUCCO,
         EntityTickStage.PHASE_3_CUCCO,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -22,7 +24,7 @@ final class CuccoHandler {
 
               && state.handlerLinkCollisionEnabled) {
             CuccoMotion.Update cuccoUpdate =
-                state.runtime.cuccoMotion.advance(
+                state.cuccoMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),
@@ -35,13 +37,13 @@ final class CuccoHandler {
                     state.link().linkAttackStepAnimationCountdown() != 0,
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.indoorRoom,
-                    state.runtime.followingNpcState.marinFollowing(),
+                    state.roomInspection().indoorRoom(),
+                    state.story().followingNpcState().marinFollowing(),
                     state.lifecycle().transitionSequenceCounter());
             state.updated = cuccoUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());
             state.slot().setFlashCountdown(state.entity.slot(), cuccoUpdate.flashCountdown());
-            state.runtime.enemyHealth[state.entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
+            state.slot().setHealth(state.entity.slot(), CuccoMotion.HEALTH_OVERRIDE);
             state.preserveCuccoPresentation = true;
             if (cuccoUpdate.dialogLowId() >= 0) {
               state.emit(
@@ -52,7 +54,7 @@ final class CuccoHandler {
               return false;
             }
             if (cuccoUpdate.liftRequested()
-                && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
+                && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
               state.emit(
                   new EntityCombatEvent(
                       state.entity.slot(),
@@ -82,7 +84,7 @@ final class CuccoHandler {
                       CuccoMotion.CUCCO_HURT_WAVE_SFX));
             }
             if (cuccoUpdate.boomerangSound()) {
-              state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
+              state.projectiles().playBoomerangSoundIfDue(state.updated);
             }
           }
           return true;

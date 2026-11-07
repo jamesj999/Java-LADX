@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HOOKSHOT_CHAIN;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_KEY_DROP_POINT;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -24,7 +26,7 @@ import static linksawakening.world.entity.EntitySnapshots.withZ;
 final class KeyDropPointHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_KEY_DROP_POINT,
+        ENTITY_KEY_DROP_POINT,
         EntityTickStage.PHASE_2_KEY_DROP_POINT,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -32,17 +34,11 @@ final class KeyDropPointHandler {
             // shared transition-byte decrement before bank-$03's handler
             // reads it.
             int slot = state.entity.slot();
-            if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
+            if (state.pickups().checkForKeyDropQuicksandHole(state.updated)) {
               state.emit(new KeyQuicksandEvent(slot));
               state.replaceEntity(withStatus(state.updated, EntityStatus.FALLING));
               state.slot().setTransitionCountdown(slot, 0x2F);
-              state.runtime.fallingTargetX[slot] = 0x50;
-              state.runtime.fallingTargetY[slot] = 0x48;
-              state.runtime.fallingSpeedX[slot] = 0;
-              state.runtime.fallingSpeedY[slot] = 0;
-              state.runtime.fallingSpeedXAccumulator[slot] = 0;
-              state.runtime.fallingSpeedYAccumulator[slot] = 0;
-              state.runtime.fallingVisualYOffset[slot] = 0;
+              state.background().initializeKeyQuicksandFall(slot);
               state.emit(
                   new EntityCombatEvent(
                       slot,
@@ -53,12 +49,12 @@ final class KeyDropPointHandler {
                       0x18));
               return false;
             }
-            boolean hookshotRoom = state.runtime.entityRoomId == 0x80;
+            boolean hookshotRoom = state.roomInspection().entityRoomId() == 0x80;
             if (hookshotRoom) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.slotProperties.spriteDefinitionFor(
+                      state.slotProperties().spriteDefinitionFor(
                           ENTITY_HOOKSHOT_CHAIN),
                       0);
             }

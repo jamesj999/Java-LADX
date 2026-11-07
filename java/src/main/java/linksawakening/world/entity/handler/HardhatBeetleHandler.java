@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HARDHAT_BEETLE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -9,12 +11,12 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 final class HardhatBeetleHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HARDHAT_BEETLE,
+        ENTITY_HARDHAT_BEETLE,
         EntityTickStage.PHASE_4_HARDHAT_BEETLE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.hardHatMotion.advance(
+                state.hardHatMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,

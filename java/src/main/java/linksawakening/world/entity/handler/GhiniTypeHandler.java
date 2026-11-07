@@ -17,7 +17,7 @@ final class GhiniTypeHandler {
             EntityTickStage.PHASE_2_GHINI_TYPE,
             state -> {
               {
-                state.runtime.ghiniMotion.initialize(state.entity.slot(), state.entity.type());
+                state.ghiniMotion().initialize(state.entity.slot(), state.entity.type());
                 if (isHidingGhiniType(state.entity.type())) {
                   state.preserveGhiniPresentation = true;
                 }
@@ -34,7 +34,7 @@ final class GhiniTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 state.updated =
-                    state.runtime.ghiniMotion.advance(
+                    state.ghiniMotion().advance(
                         state.entity,
                         state.frame,
                         state.entity.type(),

@@ -22,15 +22,15 @@ final class EnemyProjectileTypeHandler {
             state -> {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 boolean preexistingCollision =
-                    state.runtime.enemyProjectileMotion.pendingLinkCollision(state.entity.slot());
+                    state.enemyProjectileMotion().pendingLinkCollision(state.entity.slot());
                 boolean hasLinkCollision =
-                    state.runtime.enemyProjectileMotion.transitionCountdown(state.entity.slot())
+                    state.enemyProjectileMotion().transitionCountdown(state.entity.slot())
                         == 0;
                 if (hasLinkCollision) {
                   var collisionEvent =
                       EnemyProjectileCollision.check(
                           state.entity,
-                          state.runtime.enemyProjectileMotion.direction(state.entity.slot()),
+                          state.enemyProjectileMotion().direction(state.entity.slot()),
                           state.projectileLinkState);
                   if (collisionEvent.isPresent()) {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
@@ -43,13 +43,13 @@ final class EnemyProjectileTypeHandler {
                   }
                 }
                 EnemyProjectileMotion.Update projectileUpdate =
-                    state.runtime.enemyProjectileMotion.advance(
+                    state.enemyProjectileMotion().advance(
                         state.entity,
                         state.backgroundCollision,
                         preexistingCollision,
                         state.frame,
-                        state.runtime.entityGroundStatus[state.entity.slot()],
-                        state.runtime.groundInteractionSideScrolling,
+                        state.background().entityGroundStatus(state.entity.slot()),
+                        state.background().groundInteractionSideScrolling(),
                         state.handlerInteractive,
                         state.projectileTimersInteractive);
                 if (projectileUpdate.unloaded()) {
@@ -69,7 +69,7 @@ final class EnemyProjectileTypeHandler {
                             EntityCombatEvent.SoundChannel.JINGLE,
                             0x07));
                   }
-                  state.runtime.swordMoblinAlertingSoundCounter = 0x04;
+                  state.projectiles().setSwordMoblinAlertingSoundCounter(0x04);
                 }
                 state.updated = projectileUpdate.entity();
               }

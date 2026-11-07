@@ -4,8 +4,11 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONE
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -20,8 +23,8 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class RollingBonesBarHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
-          || type == RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR))) {
+      if (((type == ENTITY_ROLLING_BONES
+          || type == ENTITY_ROLLING_BONES_BAR))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_ROLLING_BONES_BAR,
@@ -29,19 +32,19 @@ final class RollingBonesBarHandler {
               if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
                 // BossIntro runs before ReturnIfNonInteractive_06.
                 if (state.entity.type() == ENTITY_ROLLING_BONES
-                    && !state.runtime.roomTransitionActive
+                    && !state.roomInspection().roomTransitionActive()
                     && !state.link().inventoryAppearing()) {
                   BossIntroMotion.Update intro =
-                      state.runtime.bossIntroMotion.advance(
-                          state.runtime.options1(state.entity.slot()),
+                      state.bossIntroMotion().advance(
+                          state.slotProperties().options1(state.entity.slot()),
                           state.entity.type(),
-                          state.runtime.entityMapId,
+                          state.roomInspection().entityMapId(),
                           state.lifecycle().transitionSequenceCounter());
-                  if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
+                  if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
                 }
                 // The bar's room-clear check precedes its interaction guard.
                 if (state.entity.type() == ENTITY_ROLLING_BONES_BAR
-                    && (state.runtime.entityRoomStatus & 0x20) != 0) {
+                    && (state.roomInspection().entityRoomStatus() & 0x20) != 0) {
                   state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
                   return false;
                 }
@@ -63,16 +66,16 @@ final class RollingBonesBarHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR,
+        ENTITY_ROLLING_BONES_BAR,
         EntityTickStage.PHASE_4_ROLLING_BONES_BAR,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if ((state.runtime.entityRoomStatus & 0x20) != 0) {
+            if ((state.roomInspection().entityRoomStatus() & 0x20) != 0) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
             RollingBonesMotion.BarUpdate barUpdate =
-                state.runtime.rollingBonesMotion.advanceBar(
+                state.rollingBonesMotion().advanceBar(
                     state.entity, state.frame, state.backgroundCollision);
             state.updated = barUpdate.entity();
             if (state.sprites() != null) {

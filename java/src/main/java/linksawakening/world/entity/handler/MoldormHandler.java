@@ -1,8 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -18,20 +21,20 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class MoldormHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOLDORM,
+        ENTITY_MOLDORM,
         EntityTickStage.PHASE_1_MOLDORM,
         state -> {
           if (!state.wasInitializing
 
-              && !state.runtime.roomTransitionActive
+              && !state.roomInspection().roomTransitionActive()
               && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
-                state.runtime.bossIntroMotion.advance(
-                    state.runtime.options1(state.entity.slot()),
+                state.bossIntroMotion().advance(
+                    state.slotProperties().options1(state.entity.slot()),
                     state.entity.type(),
-                    state.runtime.entityMapId,
+                    state.roomInspection().entityMapId(),
                     state.lifecycle().transitionSequenceCounter());
-            if (intro.musicTrack() >= 0) state.runtime.pendingMusicTrack = intro.musicTrack();
+            if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
               state.emit(
                   new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
@@ -41,15 +44,15 @@ final class MoldormHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
-          || type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_ROLLING_BONES
+          || type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_MOLDORM_2,
             state -> {
               if (!state.wasInitializing
-                  && !state.runtime.roomTransitionActive
-                  && !state.runtime.freeMovementMode
+                  && !state.roomInspection().roomTransitionActive()
+                  && !state.roomInspection().freeMovementMode()
                  ) {
                 int dx = 0;
                 int dy = 0;
@@ -63,7 +66,7 @@ final class MoldormHandler {
                       new LinkMotionBlockRequest(state.entity.slot(), dx, dy));
                   state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
                   state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
-                  state.runtime.entityInteractionCountdown = 2;
+                  state.lifecycle().delayInteractions(2);
                 }
               }
               return true;
@@ -71,7 +74,7 @@ final class MoldormHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOLDORM,
+        ENTITY_MOLDORM,
         EntityTickStage.PHASE_2_MOLDORM,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -83,16 +86,16 @@ final class MoldormHandler {
                 state.replaceEntity(withDefinition(
                         state.entity,
                         state.sprites().forMoldormState(
-                            state.runtime.moldormMotion.headSpriteVariant(slot),
+                            state.moldormMotion().headSpriteVariant(slot),
                             state.entity.x(),
                             (state.entity.y() - state.entity.z()) & 0xFF,
-                            state.runtime.moldormMotion.currentTailSegments(slot),
+                            state.moldormMotion().currentTailSegments(slot),
                             0,
                             state.frame),
                         0));
               }
-              if (state.runtime.roomTransitionActive)
-                state.runtime.moldormMotion.resetHistory(slot);
+              if (state.roomInspection().roomTransitionActive())
+                state.moldormMotion().resetHistory(slot);
               return false;
             }
             RoomEntityBackgroundInteraction moldormBackgroundInteraction =
@@ -108,13 +111,13 @@ final class MoldormHandler {
               transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
             MoldormMotion.Update moldormUpdate =
-                state.runtime.moldormMotion.advance(
+                state.moldormMotion().advance(
                     state.entity,
                     state.frame,
                     transitionForMotion,
                     state.slot().ignoreHits(slot),
                     state.slot().flashCountdown(slot),
-                    state.runtime.enemyHealth[slot],
+                    state.slot().health(slot),
                     state.randomByteSupplier,
                     moldormBackgroundInteraction);
             state.updated = moldormUpdate.entity();
@@ -151,26 +154,26 @@ final class MoldormHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOLDORM_2,
             state -> {
               {
-                state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
+                state.bossRewards().advanceMoldormDestruction(state.entity, state.frame);
                 return false;
               }
             });
       }
     }
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
+      if (((type == ENTITY_MOLDORM))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOLDORM_3,
             state -> {
               {
-                state.runtime.moldormMotion.initialize(state.entity);
+                state.moldormMotion().initialize(state.entity);
               }
               return true;
             });

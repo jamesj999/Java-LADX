@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_KING;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOBLIN_ARROW;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PHYSICS_HARMLESS;
 
 
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -22,13 +24,13 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class MoblinKingHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_MOBLIN_KING))) {
+      if (((type == ENTITY_MOBLIN_KING))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_MOBLIN_KING,
             state -> {
               {
-                state.runtime.bossRewards.advanceMoblinKingDestruction(
+                state.bossRewards().advanceMoblinKingDestruction(
                     state.entity, state.frame, state.randomByteSupplier);
                 return false;
               }
@@ -36,11 +38,11 @@ final class MoblinKingHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_MOBLIN_KING,
+        ENTITY_MOBLIN_KING,
         EntityTickStage.PHASE_4_MOBLIN_KING,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.runtime.bowWowState != 0x80) {
+            if (state.story().bowWowState() != 0x80) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
               return false;
             }
@@ -49,7 +51,7 @@ final class MoblinKingHandler {
             } else {
               // ApplyRecoilIfNeeded_15 pops the handler return address:
               // movement/Z physics and AI wait until the recoil ends.
-              if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
+              if (state.enemyRecoilMotion().isActive(state.entity.slot())
                   && state.slot().ignoreHits(state.entity.slot()) != 0) {
                 state.replaceEntity(state.background()
                         .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
@@ -57,12 +59,12 @@ final class MoblinKingHandler {
                 return false;
               }
               MoblinKingMotion.Update kingUpdate =
-                  state.runtime.moblinKingMotion.advance(
+                  state.moblinKingMotion().advance(
                       state.entity,
                       state.linkEntityX,
                       state.linkEntityY,
                       state.slot().transitionCountdown(state.entity.slot()),
-                      state.runtime.slowTransitionCountdown[state.entity.slot()],
+                      state.slot().slowTransitionCountdown(state.entity.slot()),
                       state.frame,
                       state.randomByteSupplier,
                       state.backgroundCollision,
@@ -73,16 +75,14 @@ final class MoblinKingHandler {
                               state.entity, state.linkEntityX, state.linkEntityY));
               state.updated = kingUpdate.entity();
               state.slot().setTransitionCountdown(state.entity.slot(), kingUpdate.transitionCountdown());
-              state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                  kingUpdate.slowTransitionCountdown();
-              state.runtime.slowTimerInitialized[state.entity.slot()] = true;
-              state.runtime.entityOptions1Override[state.entity.slot()] =
-                  state.runtime.moblinKingMotion.state(state.entity.slot()) == 5
+              state.slot().setSlowTransitionCountdown(state.entity.slot(), kingUpdate.slowTransitionCountdown());
+              state.slot().setSlowTimerInitialized(state.entity.slot(), true);
+              state.slot().setOptions1Override(state.entity.slot(), state.moblinKingMotion().state(state.entity.slot()) == 5
                       ? 0x84
-                      : state.runtime.moblinKingMotion.state(state.entity.slot()) >= 2
+                      : state.moblinKingMotion().state(state.entity.slot()) >= 2
                           ? 0xC4
-                          : 0x40;
-              if (state.runtime.moblinKingMotion.state(state.entity.slot()) == 5) {
+                          : 0x40);
+              if (state.moblinKingMotion().state(state.entity.slot()) == 5) {
                 state.slot().orPhysicsFlags(state.entity.slot(), ENTITY_PHYSICS_HARMLESS);
               } else {
                 state.slot().andPhysicsFlags(state.entity.slot(), ~ENTITY_PHYSICS_HARMLESS);
@@ -92,8 +92,8 @@ final class MoblinKingHandler {
                     withDefinition(
                         state.updated,
                         state.sprites().forMoblinKingState(
-                            state.runtime.moblinKingMotion.bodyVariant(state.entity.slot()),
-                            state.runtime.moblinKingMotion.weaponVariant(state.entity.slot()),
+                            state.moblinKingMotion().bodyVariant(state.entity.slot()),
+                            state.moblinKingMotion().weaponVariant(state.entity.slot()),
                             state.updated.z() != 0),
                         0);
               }
@@ -103,7 +103,7 @@ final class MoblinKingHandler {
                 state.emit(new DialogRequest(1, 0x91, true));
               }
               if (kingUpdate.arrowRequest() != null) {
-                state.runtime.events.projectileLaunchRequests.add(
+                state.emit(
                     new RoamingEnemyMotion.LaunchRequest(
                         state.entity.slot(),
                         state.entity.type(),

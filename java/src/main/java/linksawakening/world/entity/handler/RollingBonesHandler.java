@@ -1,11 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
+
+
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
 
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -16,13 +18,13 @@ import linksawakening.world.entity.motion.RollingBonesMotion;
 final class RollingBonesHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES))) {
+      if (((type == ENTITY_ROLLING_BONES))) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_ROLLING_BONES,
             state -> {
               {
-                state.runtime.bossRewards.advanceRollingBonesDestruction(
+                state.bossRewards().advanceRollingBonesDestruction(
                     state.entity, state.randomByteSupplier);
                 return false;
               }
@@ -30,20 +32,20 @@ final class RollingBonesHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ROLLING_BONES,
+        ENTITY_ROLLING_BONES,
         EntityTickStage.PHASE_4_ROLLING_BONES,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             RoomEntity bar =
-                state.runtime.roomInspection.firstLoadedEntityOfType(
+                state.roomInspection().firstLoadedEntityOfType(
                     ENTITY_ROLLING_BONES_BAR);
             if (bar != null) {
               RollingBonesMotion.BossUpdate bossUpdate =
-                  state.runtime.rollingBonesMotion.advanceBoss(
+                  state.rollingBonesMotion().advanceBoss(
                       state.entity,
                       bar,
                       state.slot().transitionCountdown(state.entity.slot()),
-                      state.runtime.enemyHealth[state.entity.slot()],
+                      state.slot().health(state.entity.slot()),
                       state.backgroundCollision);
               state.updated = bossUpdate.entity();
               state.slot().setTransitionCountdown(state.entity.slot(), bossUpdate.transitionCountdown());

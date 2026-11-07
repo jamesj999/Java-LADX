@@ -216,7 +216,7 @@ public final class EntitySlotProperties {
 
     public RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return runtime.roomInspection.refreshColorShellDisplay(entity, status); }
 
-    int options1(int slot) {
+    public int options1(int slot) {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }

@@ -15,35 +15,51 @@ class WorldDependencyTest {
     private static final Path ROOT = Path.of("build/classes/java/main/linksawakening");
     private static final Pattern TYPE = Pattern.compile("linksawakening/[A-Za-z0-9_$/]+");
 
-    private record CompiledType(String name, List<String> references) {}
+    private record FieldReference(String owner, String name) {}
+    private record CompiledType(String name, List<String> references, List<FieldReference> fields) {}
 
     private static List<CompiledType> classes() throws Exception {
         List<CompiledType> result = new ArrayList<>();
         try (var paths = Files.walk(ROOT)) {
             for (Path path : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
                 List<String> references = new ArrayList<>();
+                List<FieldReference> fields = new ArrayList<>();
                 try (var input = new DataInputStream(Files.newInputStream(path))) {
                     if (input.readInt() != 0xCAFEBABE) throw new IllegalArgumentException(path.toString());
                     input.readUnsignedShort();
                     input.readUnsignedShort();
                     int count = input.readUnsignedShort();
+                    String[] utf8 = new String[count];
+                    int[] classNames = new int[count];
+                    int[][] nameAndTypes = new int[count][];
+                    List<int[]> fieldRefs = new ArrayList<>();
                     for (int i = 1; i < count; i++) {
                         switch (input.readUnsignedByte()) {
                             case 1 -> {
-                                var matcher = TYPE.matcher(input.readUTF());
+                                utf8[i] = input.readUTF();
+                                var matcher = TYPE.matcher(utf8[i]);
                                 while (matcher.find()) references.add(matcher.group());
                             }
                             case 3, 4 -> input.skipNBytes(4);
                             case 5, 6 -> { input.skipNBytes(8); i++; }
-                            case 7, 8, 16, 19, 20 -> input.skipNBytes(2);
-                            case 9, 10, 11, 12, 17, 18 -> input.skipNBytes(4);
+                            case 7 -> classNames[i] = input.readUnsignedShort();
+                            case 9 -> fieldRefs.add(new int[] {
+                                input.readUnsignedShort(), input.readUnsignedShort()});
+                            case 12 -> nameAndTypes[i] = new int[] {
+                                input.readUnsignedShort(), input.readUnsignedShort()};
+                            case 8, 16, 19, 20 -> input.skipNBytes(2);
+                            case 10, 11, 17, 18 -> input.skipNBytes(4);
                             case 15 -> input.skipNBytes(3);
                             default -> throw new IllegalArgumentException("Unknown constant-pool tag: " + path);
                         }
                     }
+                    for (int[] field : fieldRefs) {
+                        fields.add(new FieldReference(utf8[classNames[field[0]]],
+                            utf8[nameAndTypes[field[1]][0]]));
+                    }
                 }
                 result.add(new CompiledType("linksawakening/" + ROOT.relativize(path)
-                    .toString().replace('\\', '/').replace(".class", ""), references));
+                    .toString().replace('\\', '/').replace(".class", ""), references, fields));
             }
         }
         assertTrue(!result.isEmpty(), "No compiled world classes found");
@@ -66,6 +82,23 @@ class WorldDependencyTest {
             if (!type.name().contains("/entity/handler/") && !type.name().endsWith("Handler")) continue;
             for (String reference : type.references()) {
                 assertTrue(!reference.startsWith("linksawakening/world/room/"), type.name() + " -> " + reference);
+            }
+        }
+    }
+
+    @Test
+    void handlersAccessRuntimeStateOnlyThroughServices() throws Exception {
+        Set<String> runtimeOwners = Set.of(
+            "linksawakening/world/entity/EntityRuntimeState",
+            "linksawakening/world/entity/RoomEntityRuntime");
+        for (var type : classes()) {
+            if (!type.name().startsWith("linksawakening/world/entity/handler/")) continue;
+            // CONSTANT_Fieldref covers reads, writes and field method handles,
+            // including inherited fields qualified through RoomEntityRuntime.
+            for (var field : type.fields()) {
+                assertTrue(!runtimeOwners.contains(field.owner()),
+                    type.name() + " -> " + field.owner() + "." + field.name()
+                        + "; use the frame's typed services");
             }
         }
     }

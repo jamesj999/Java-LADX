@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ZOMBIE;
+
+
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -14,7 +16,7 @@ import static linksawakening.world.entity.EntitySnapshots.withVariant;
 final class ZombieHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ZOMBIE,
+        ENTITY_ZOMBIE,
         EntityTickStage.PHASE_2_ZOMBIE,
         state -> {
           if (state.wasInitializing) {
@@ -26,7 +28,7 @@ final class ZombieHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_ZOMBIE,
+        ENTITY_ZOMBIE,
         EntityTickStage.PHASE_4_ZOMBIE,
         state -> {
           if (state.status == EntityStatus.ACTIVE
@@ -42,7 +44,7 @@ final class ZombieHandler {
                   RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
             }
             ZombieMotion.Update zombieUpdate =
-                state.runtime.zombieMotion.advance(
+                state.zombieMotion().advance(
                     state.updated,
                     state.frame,
                     state.slot().transitionCountdown(slot),
@@ -50,7 +52,7 @@ final class ZombieHandler {
                     state.linkEntityX,
                     state.linkEntityY,
                     state.randomByteSupplier,
-                    state.runtime.objectQuery,
+                    state.background().objectQuery(),
                     zombieBackgroundInteraction,
                     state.slot().ignoreHits(slot));
             state.updated = zombieUpdate.entity();
@@ -61,7 +63,7 @@ final class ZombieHandler {
               state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());
             }
             if (zombieUpdate.unloadRequested()) {
-              state.runtime.clearEntity(slot);
+              state.lifecycle().clearEntity(slot);
               return false;
             }
             state.preserveZombiePresentation = true;

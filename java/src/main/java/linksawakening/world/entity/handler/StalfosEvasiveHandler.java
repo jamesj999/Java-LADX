@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_EVASIVE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -17,12 +19,12 @@ import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 final class StalfosEvasiveHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_STALFOS_EVASIVE,
+        ENTITY_STALFOS_EVASIVE,
         EntityTickStage.PHASE_3_STALFOS_EVASIVE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             StalfosEvasiveMotion.Update evasiveUpdate =
-                state.runtime.stalfosEvasiveMotion.advance(
+                state.stalfosEvasiveMotion().advance(
                     state.entity,
                     state.frame,
                     state.linkEntityX,
@@ -32,7 +34,7 @@ final class StalfosEvasiveHandler {
                     state.slot().ignoreHits(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision,
-                    state.runtime.entityMapId);
+                    state.roomInspection().entityMapId());
             state.updated = evasiveUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {
@@ -61,7 +63,7 @@ final class StalfosEvasiveHandler {
             if (state.sprites() != null) {
               EntitySpriteDefinition evasiveDefinition =
                   state.sprites().forStalfosEvasiveState(
-                      state.runtime.stalfosEvasiveMotion.privateState1(state.entity.slot()));
+                      state.stalfosEvasiveMotion().privateState1(state.entity.slot()));
               state.updated =
                   withDefinition(state.updated, evasiveDefinition, state.updated.spriteVariant());
             }

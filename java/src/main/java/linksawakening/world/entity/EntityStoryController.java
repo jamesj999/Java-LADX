@@ -395,4 +395,30 @@ public final class EntityStoryController {
             runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
         }
+  public void presentWitchGotItem(int slot) { runtime.presentWitchGotItem(slot); }
+
+  public void enableBowWowFollowing() {
+    runtime.followingNpcState =
+                new FollowingNpcState(
+                    runtime.followingNpcState.roosterFollowing(),
+                    runtime.followingNpcState.ghostFollowingState(),
+                    runtime.followingNpcState.marinFollowing(),
+                    true,
+                    runtime.followingNpcState.instrument4Flags(),
+                    runtime.followingNpcState.powerBraceletLevel(),
+                    runtime.followingNpcState.db10());
+  }
+  public void markBowWowRescued() { runtime.bowWowState = 0x01; }
+
+  public void consumeToadstool() { runtime.playerHasToadstool = false; }
+  public void startWitchGotItemCountdown(int slot) { runtime.witchGotItemCountdown[slot] = 0x2A; }
+
+  public int bowWowState() { return runtime.bowWowState; }
+  public FollowingNpcState followingNpcState() { return runtime.followingNpcState; }
+  public int booBuddyTriggerCount() { return runtime.booBuddyTriggerCount; }
+  public boolean playerHasToadstool() { return runtime.playerHasToadstool; }
+  public int playerMagicPowderCount() { return runtime.playerMagicPowderCount; }
+  public int bgPaletteEffectAddress() { return runtime.bgPaletteEffectAddress; }
+  public int paletteDataFlags() { return runtime.paletteDataFlags; }
+  public void setShouldGetLostInMysteriousWoods(boolean value) { runtime.shouldGetLostInMysteriousWoods = value; }
 }

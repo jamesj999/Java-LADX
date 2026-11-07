@@ -250,4 +250,7 @@ public final class EntityBombInteractions {
         runtime.thrownMotionInitialized[slot] = false;
         return withStatus(moved, stunned.status());
     }
+  public int bombPrivateCountdown1(int slot) { return runtime.bombPrivateCountdown1[slot]; }
+  public void setBombPrivateCountdown1(int slot, int value) { runtime.bombPrivateCountdown1[slot] = value; }
+  public int bombPrivateState4(int slot) { return runtime.bombPrivateState4[slot]; }
 }

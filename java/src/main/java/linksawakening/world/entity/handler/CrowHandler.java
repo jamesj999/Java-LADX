@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CROW;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
@@ -11,7 +13,7 @@ import linksawakening.world.entity.motion.CrowMotion;
 final class CrowHandler {
   static void install(EntityHandlerRegistration registry) {
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_CROW)) {
+      if ((type == ENTITY_CROW)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_1_CROW,
@@ -24,24 +26,24 @@ final class CrowHandler {
       }
     }
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_CROW,
+        ENTITY_CROW,
         EntityTickStage.PHASE_3_CROW,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             CrowMotion.Update crowUpdate =
-                state.runtime.crowMotion.advance(
+                state.crowMotion().advance(
                     state.entity,
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.entityRoomId != 0x58,
-                    state.runtime.slotProperties.kanaletCrowTakeoffTriggered(state.entity));
+                    state.roomInspection().entityRoomId() != 0x58,
+                    state.slotProperties().kanaletCrowTakeoffTriggered(state.entity));
             state.updated = crowUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(state.entity.slot(), crowUpdate.physicsFlags());
             if (crowUpdate.boomerangSound()) {
-              state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
+              state.projectiles().playBoomerangSoundIfDue(state.updated);
             }
             if (crowUpdate.unloaded()) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

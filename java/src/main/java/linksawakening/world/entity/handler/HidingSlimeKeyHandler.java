@@ -1,5 +1,8 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
@@ -13,13 +16,13 @@ import linksawakening.world.entity.event.DialogRequest;
 final class HidingSlimeKeyHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
+        ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY,
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
 
-              && (state.runtime.entityRoomStatus & 0x10) != 0) {
+              && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
             // the source persistence mask.
@@ -29,13 +32,13 @@ final class HidingSlimeKeyHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
+        ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             int slot = state.entity.slot();
             SlimeKeyTransitionUpdate keyUpdate =
-                state.runtime.pickups.advanceHidingSlimeKey(
+                state.pickups().advanceHidingSlimeKey(
                     state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
             state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.reward() != null) {
@@ -53,12 +56,12 @@ final class HidingSlimeKeyHandler {
           return true;
         });
     for (int type = 0; type < 256; type++) {
-      if ((type == RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY)) {
+      if ((type == ENTITY_HIDING_SLIME_KEY)) {
         registry.registerTick(
             type,
             EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3,
             state -> {
-              if ((state.runtime.entityRoomStatus & 0x10) != 0) {
+              if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
                 // The handler's first instruction is the completed-room
                 // gate, including the INIT dispatch path.
                 state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

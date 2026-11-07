@@ -1,8 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_PAIRODD_PROJECTILE;
+
+
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -14,12 +16,12 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 final class PairoddProjectileHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_PAIRODD_PROJECTILE,
+        ENTITY_PAIRODD_PROJECTILE,
         EntityTickStage.PHASE_3_PAIRODD_PROJECTILE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             state.updated =
-                state.runtime.pairoddProjectileMotion.advance(state.entity, state.frame);
+                state.pairoddProjectileMotion().advance(state.entity, state.frame);
             boolean objectCollisionHit =
                 state.objectCollision != null && state.objectCollision.collides(state.updated);
             boolean removePairoddProjectile = false;
@@ -27,7 +29,7 @@ final class PairoddProjectileHandler {
             var collisionEvent =
                 EnemyProjectileCollision.check(
                     state.updated,
-                    state.runtime.pairoddProjectileMotion.direction(state.entity.slot()),
+                    state.pairoddProjectileMotion().direction(state.entity.slot()),
                     state.projectileLinkState);
             if (collisionEvent.isPresent()) {
               EntityProjectileEvent event = collisionEvent.orElseThrow();

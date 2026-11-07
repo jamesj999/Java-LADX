@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
@@ -12,7 +14,7 @@ import linksawakening.world.entity.motion.GiantGopongaMotion;
 final class GiantGopongaFlowerHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_GIANT_GOPONGA_FLOWER,
+        ENTITY_GIANT_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GIANT_GOPONGA_FLOWER,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -25,7 +27,7 @@ final class GiantGopongaFlowerHandler {
                   state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
             }
             GiantGopongaMotion.Update giantUpdate =
-                state.runtime.giantGopongaMotion.advance(
+                state.giantGopongaMotion().advance(
                     state.entity,
                     state.frame,
                     state.slot().transitionCountdown(state.entity.slot()),

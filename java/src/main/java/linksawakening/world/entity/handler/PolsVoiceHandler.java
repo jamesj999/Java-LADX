@@ -1,7 +1,9 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_POLS_VOICE;
+
+
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -14,17 +16,17 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 final class PolsVoiceHandler {
   static void install(EntityHandlerRegistration registry) {
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_POLS_VOICE,
+        ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_2_POLS_VOICE,
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
 
-              && state.runtime.enemyInspection.polsVoiceBalladOcarinaTrigger()) {
+              && state.enemyInspection().polsVoiceBalladOcarinaTrigger()) {
             // The handler checks this before rendering, recoil, movement,
             // or the ordinary collision path. Its private countdown $1F
             // is the shared EntityDeathHandler's visible death timer.
-            state.runtime.dyingCountdown[state.entity.slot()] = 0x1F;
+            state.lifecycle().setDyingCountdown(state.entity.slot(), 0x1F);
             state.slot().setPhysicsFlags(state.entity.slot(), 0x04);
             state.status = EntityStatus.DYING;
             state.updated = withStatus(state.entity, EntityStatus.DYING);
@@ -40,7 +42,7 @@ final class PolsVoiceHandler {
           return true;
         });
     registry.registerTick(
-        RoomEntityRuntime.ENTITY_POLS_VOICE,
+        ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_4_POLS_VOICE,
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
@@ -52,7 +54,7 @@ final class PolsVoiceHandler {
             state.slot().setIgnoreHits(state.entity.slot(), 0x01);
             try {
               PolsVoiceMotion.Update polsVoiceUpdate =
-                  state.runtime.polsVoiceMotion.advance(
+                  state.polsVoiceMotion().advance(
                       state.entity,
                       state.linkEntityX,
                       state.linkEntityY,
