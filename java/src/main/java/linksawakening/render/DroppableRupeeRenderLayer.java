@@ -1,7 +1,9 @@
 package linksawakening.render;
 
+
+
 import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
     private final DroppableRupeeSystem droppableRupeeSystem;

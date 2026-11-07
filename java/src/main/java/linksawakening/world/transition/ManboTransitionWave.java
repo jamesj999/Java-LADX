@@ -1,4 +1,6 @@
-package linksawakening.world;
+package linksawakening.world.transition;
+
+import linksawakening.world.*;
 
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;

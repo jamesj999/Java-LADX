@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;

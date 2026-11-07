@@ -1,5 +1,7 @@
 package linksawakening.entity;
 
+import linksawakening.world.transition.Warp;
+
 /** Complete Link-side effects, independent of world event record locations. */
 public interface LinkCommand {
     void applyTo(Link link);

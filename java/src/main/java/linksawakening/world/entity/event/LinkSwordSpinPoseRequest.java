@@ -5,7 +5,7 @@ import linksawakening.vfx.TransientVfxType;
 
 public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) implements EntityRequest {
     public LinkSwordSpinPoseRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Sword-spin source slot out of range: "
                 + sourceSlot);
         }

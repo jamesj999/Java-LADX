@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import java.util.Arrays;
 import java.util.HashMap;

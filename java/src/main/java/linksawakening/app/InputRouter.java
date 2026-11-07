@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.gameplay.DialogInteractions;
 
 import linksawakening.app.screen.TitleScreen;
@@ -18,9 +20,9 @@ import linksawakening.ui.InventoryController;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
 import static linksawakening.world.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;

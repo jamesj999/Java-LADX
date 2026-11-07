@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;

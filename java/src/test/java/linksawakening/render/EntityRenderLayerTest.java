@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteSelection;
@@ -14,7 +16,7 @@ import linksawakening.world.PincerBodyOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
 import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 import linksawakening.world.WingedOctorokOam;
 import org.junit.jupiter.api.Test;
 

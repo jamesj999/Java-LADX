@@ -1,4 +1,6 @@
-package linksawakening.world;
+package linksawakening.world.transition;
+
+import linksawakening.world.transition.ScreenShakeMotion;
 
 import org.junit.jupiter.api.Test;
 

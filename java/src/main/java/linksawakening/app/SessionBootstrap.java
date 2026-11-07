@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -56,12 +58,12 @@ import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.OverworldTilesetTable;
-import linksawakening.world.RoomBoundaryController;
+import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.RoomLoader;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import java.io.IOException;
 import java.io.InputStream;

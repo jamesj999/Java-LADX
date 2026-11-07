@@ -1,5 +1,8 @@
 package linksawakening.render;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.ItemRegistry;

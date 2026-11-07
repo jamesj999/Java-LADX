@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;

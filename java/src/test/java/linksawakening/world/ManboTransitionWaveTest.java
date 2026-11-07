@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ManboTransitionWave;
+
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 

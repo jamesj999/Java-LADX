@@ -1,8 +1,10 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.Link;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 /** Renders LinksBedSpriteVariants and the GBC mattress from Marin's entity sheet. */
 @Deprecated

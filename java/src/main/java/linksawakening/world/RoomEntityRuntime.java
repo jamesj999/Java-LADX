@@ -129,11 +129,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
-    public enum MagicPowderObjectAction {
-        REVEAL,
-        IGNITE_TORCH,
-        EXTINGUISH_TORCH
-    }
+
 
     private RoomEntityRuntime(RoomEntitySnapshot initial, boolean indoorRoom,
                                IntSupplier defaultRandomByteSupplier,

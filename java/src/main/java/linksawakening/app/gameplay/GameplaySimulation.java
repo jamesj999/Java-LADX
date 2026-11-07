@@ -1,5 +1,7 @@
 package linksawakening.app.gameplay;
 
+
+
 import linksawakening.app.MusicDirector;
 import linksawakening.app.story.OpeningStory;
 
@@ -23,8 +25,8 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import static linksawakening.world.RoomConstants.*;
 

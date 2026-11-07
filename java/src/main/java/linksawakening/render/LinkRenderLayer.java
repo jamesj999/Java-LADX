@@ -1,7 +1,9 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.Link;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 public final class LinkRenderLayer implements HardwareRenderLayer {
     private final Link link;

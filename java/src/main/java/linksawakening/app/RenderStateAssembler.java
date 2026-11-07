@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.screen.Screen;
 
 import linksawakening.cutscene.CutsceneManager;
@@ -15,9 +17,9 @@ import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.RoomSession;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
 import static linksawakening.world.RoomConstants.*;
 

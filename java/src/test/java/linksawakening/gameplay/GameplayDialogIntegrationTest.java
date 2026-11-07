@@ -1,9 +1,11 @@
 package linksawakening.gameplay;
 
+
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;

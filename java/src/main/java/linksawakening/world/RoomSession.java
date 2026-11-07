@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.RoomBoundaryState;
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;

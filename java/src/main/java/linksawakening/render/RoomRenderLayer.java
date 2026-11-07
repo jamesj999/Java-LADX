@@ -1,8 +1,10 @@
 package linksawakening.render;
 
+
+
 import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;

@@ -1,5 +1,7 @@
 package linksawakening;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.app.*;
 import linksawakening.app.gameplay.*;
 import linksawakening.app.host.*;

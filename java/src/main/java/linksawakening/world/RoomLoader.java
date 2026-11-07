@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.entity.EntitySpriteCatalog;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.Rom;

@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.host.HeadlessHost;
 import linksawakening.app.host.Host;
 import linksawakening.app.host.DesktopHost;
@@ -60,8 +62,8 @@ import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.RoomSession;
 import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import linksawakening.world.RomRandomByteSource;
 

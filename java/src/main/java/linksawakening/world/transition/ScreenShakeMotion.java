@@ -1,4 +1,6 @@
-package linksawakening.world;
+package linksawakening.world.transition;
+
+import linksawakening.world.*;
 
 /** Bank-$14 func_014_54F8's screen-shake countdown and phase tables. */
 final class ScreenShakeMotion {

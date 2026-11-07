@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicPowderObjectAction;
+
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;

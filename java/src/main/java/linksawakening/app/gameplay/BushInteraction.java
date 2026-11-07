@@ -1,5 +1,7 @@
 package linksawakening.app.gameplay;
 
+
+
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
@@ -10,7 +12,7 @@ import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.ActiveRoom;
 import linksawakening.world.OverworldBushInteraction;
 import linksawakening.world.RoomSession;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.Warp;
 
 import static linksawakening.world.RoomConstants.*;
 

@@ -6,7 +6,7 @@ import linksawakening.vfx.TransientVfxType;
 /** A source handler's direct write clearing Link's attack animation countdown. */
 public record LinkAttackClearRequest(int sourceSlot) implements EntityRequest {
     public LinkAttackClearRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Link attack-clear source slot out of range");
         }
     }

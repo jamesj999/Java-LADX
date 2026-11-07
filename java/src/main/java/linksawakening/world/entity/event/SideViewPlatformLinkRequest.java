@@ -8,7 +8,7 @@ public record SideViewPlatformLinkRequest(int sourceSlot, int horizontalDelta,
                                           int positionY, int speedY, boolean standing,
                                           boolean activate) implements EntityRequest {
     public SideViewPlatformLinkRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT
             || horizontalDelta < -0x80 || horizontalDelta > 0x7F
             || (positionY & ~0xFF) != 0
             || (speedY & ~0xFF) != 0) {

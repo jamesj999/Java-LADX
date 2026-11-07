@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.TransitionController;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;

@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+
+
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.dialog.DialogController;
@@ -10,8 +12,8 @@ import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.DroppableRupeeSystem;
 import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 public record GameFrameState(
     RenderScreen screen,

@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.RoomBoundaryDecision;
+import linksawakening.world.transition.Warp;
+import linksawakening.world.transition.TransitionController;
+
 import linksawakening.entity.Link;
 
 public final class RoomTransitionCoordinator {

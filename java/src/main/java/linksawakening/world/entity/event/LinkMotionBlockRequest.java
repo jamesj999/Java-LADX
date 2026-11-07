@@ -7,7 +7,7 @@ import linksawakening.vfx.TransientVfxType;
 public record LinkMotionBlockRequest(int sourceSlot, int positionDeltaX, int positionDeltaY) implements EntityRequest {
     public LinkMotionBlockRequest(int sourceSlot) { this(sourceSlot, 0, 0); }
     public LinkMotionBlockRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Link motion-block source slot out of range: "
                 + sourceSlot);
         }

@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicPowderObjectAction;
+
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
@@ -174,11 +178,11 @@ final class RoomObjectMutations {
             if (!changed) {
                 continue;
             }
-            if (request.action() == RoomEntityRuntime.MagicPowderObjectAction.IGNITE_TORCH) {
+            if (request.action() == MagicPowderObjectAction.IGNITE_TORCH) {
                 session.context.roomTriggerCount = (session.context.roomTriggerCount + 1) & 0xFF;
                 session.context.indoorTorchPaletteEffect.igniteTorch();
             } else if (request.action()
-                == RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH
+                == MagicPowderObjectAction.EXTINGUISH_TORCH
                 && session.context.activeRoom.roomId() != 0x74) {
                 session.context.roomTriggerCount = (session.context.roomTriggerCount - 1) & 0xFF;
                 session.context.indoorTorchPaletteEffect.extinguishTorch(session.context.currentLinkMotionState != 0x05);

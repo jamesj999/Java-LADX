@@ -1,5 +1,7 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.entity.LinkCommand;
 import linksawakening.world.entity.event.*;
 import linksawakening.world.EntityProjectileEvent;

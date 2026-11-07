@@ -1,4 +1,6 @@
-package linksawakening.world;
+package linksawakening.world.transition;
+
+import linksawakening.world.*;
 
 public final class ScrollController {
     public static final int NONE = 0;

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicPowderObjectAction;
+
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
@@ -59,7 +61,7 @@ final class MagicPowderRuntimeTest {
         assertEquals(1, runtime.magicPowderObjectRequests().size());
         MagicPowderObjectRequest request =
             runtime.magicPowderObjectRequests().getFirst();
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.REVEAL,
+        assertEquals(MagicPowderObjectAction.REVEAL,
             request.action());
         assertEquals(0x43, request.location());
         assertEquals(0x30, request.objectLeft());
@@ -82,14 +84,14 @@ final class MagicPowderRuntimeTest {
         assertEquals(0x80, runtime.magicPowderSlowTransitionCountdown(slot));
         assertEquals(0x40, runtime.snapshot().slots().get(slot).x());
         assertEquals(0x40, runtime.snapshot().slots().get(slot).y());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.IGNITE_TORCH,
+        assertEquals(MagicPowderObjectAction.IGNITE_TORCH,
             runtime.magicPowderObjectRequests().getFirst().action());
 
         runtime.setMagicPowderSlowTransitionCountdownForTest(slot, 1);
         tick(runtime, 4, 0x20, 0x20, 0);
 
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH,
+        assertEquals(MagicPowderObjectAction.EXTINGUISH_TORCH,
             runtime.magicPowderObjectRequests().getFirst().action());
     }
 
@@ -130,7 +132,7 @@ final class MagicPowderRuntimeTest {
         setGate(runtime, gate, false);
         tick(runtime, 8, 0, 0, 6);
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH,
+        assertEquals(MagicPowderObjectAction.EXTINGUISH_TORCH,
             runtime.magicPowderObjectRequests().getFirst().action());
     }
 
@@ -160,7 +162,7 @@ final class MagicPowderRuntimeTest {
             0x5C, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, motionState);
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.REVEAL,
+        assertEquals(MagicPowderObjectAction.REVEAL,
             runtime.magicPowderObjectRequests().getFirst().action());
     }
 
@@ -237,7 +239,7 @@ final class MagicPowderRuntimeTest {
         assertFalse(runtime.snapshot().slots().get(expiring).loaded());
         assertEquals(0, runtime.magicPowderState(igniting));
         assertEquals(1, runtime.magicPowderObjectRequests().size());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.EXTINGUISH_TORCH,
+        assertEquals(MagicPowderObjectAction.EXTINGUISH_TORCH,
             runtime.magicPowderObjectRequests().getFirst().action());
     }
 
@@ -268,7 +270,7 @@ final class MagicPowderRuntimeTest {
             0x5C, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, 0);
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
-        assertEquals(RoomEntityRuntime.MagicPowderObjectAction.REVEAL,
+        assertEquals(MagicPowderObjectAction.REVEAL,
             runtime.magicPowderObjectRequests().getFirst().action());
     }
 

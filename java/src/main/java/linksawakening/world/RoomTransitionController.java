@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.DialogRequest;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;

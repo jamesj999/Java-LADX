@@ -7,7 +7,7 @@ import linksawakening.vfx.TransientVfxType;
 public record RoosterLinkStateRequest(int sourceSlot, int positionZ, int velocityZ,
                                       int speedX, int speedY, int romDirection) implements EntityRequest {
     public RoosterLinkStateRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Rooster source slot out of range: "
                 + sourceSlot);
         }

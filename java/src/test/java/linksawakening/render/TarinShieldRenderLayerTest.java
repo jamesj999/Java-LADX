@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gpu.Framebuffer;
@@ -8,7 +10,7 @@ import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

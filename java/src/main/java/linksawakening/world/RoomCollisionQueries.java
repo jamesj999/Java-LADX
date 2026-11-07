@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.RoomBoundaryState;
+import linksawakening.world.transition.Warp;
+
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;

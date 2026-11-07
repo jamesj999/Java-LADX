@@ -19,7 +19,7 @@ public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots
     }
 
     public LinkFinalPositionRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Link final-position source slot out of range: "
                 + sourceSlot);
         }

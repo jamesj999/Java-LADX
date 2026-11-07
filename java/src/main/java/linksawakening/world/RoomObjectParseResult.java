@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import java.util.List;
 
 public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,

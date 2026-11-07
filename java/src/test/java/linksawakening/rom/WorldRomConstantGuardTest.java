@@ -1,5 +1,7 @@
 package linksawakening.rom;
 
+import linksawakening.world.transition.ManboTransitionWave;
+
 import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,8 +44,12 @@ class WorldRomConstantGuardTest {
     @Test
     void migratedFilesDoNotReintroduceLiteralRomLocations() throws Exception {
         for (String name : MIGRATED) {
-            var matcher = LITERAL.matcher(Files.readString(Path.of(
-                "src/main/java/linksawakening/world", name + ".java")));
+            Path source;
+            try (var files = Files.walk(Path.of("src/main/java/linksawakening/world"))) {
+                source = files.filter(path -> path.getFileName().toString().equals(name + ".java"))
+                    .findFirst().orElseThrow();
+            }
+            var matcher = LITERAL.matcher(Files.readString(source));
             while (matcher.find()) {
                 assertFalse(!NON_ROM_ALLOW_LIST.contains(name + "." + matcher.group(1)),
                     name + ": use RomSymbols for " + matcher.group(1));

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.RomBank;

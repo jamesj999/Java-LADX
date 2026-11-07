@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.Warp;
+
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;

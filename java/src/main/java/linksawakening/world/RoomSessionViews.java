@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import linksawakening.gameplay.GameplaySoundSink;
 import java.util.List;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;

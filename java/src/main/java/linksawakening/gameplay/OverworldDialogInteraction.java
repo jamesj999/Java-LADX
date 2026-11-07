@@ -1,8 +1,10 @@
 package linksawakening.gameplay;
 
+
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.Warp;
 
 import java.util.Objects;
 

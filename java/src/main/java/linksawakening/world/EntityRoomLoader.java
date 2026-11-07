@@ -12,7 +12,7 @@ import java.util.List;
 /** ROM-backed decoder for the four room entity pointer tables in bank $16. */
 public final class EntityRoomLoader {
 
-    public static final int MAX_ENTITIES = 0x10;
+    public static final int MAX_ENTITIES = RoomEntity.SLOT_COUNT;
 
     private static final int ENTITY_STREAM_END = 0xFF;
     private static final int MAX_ROOM_ID = 0xFF;

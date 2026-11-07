@@ -1,4 +1,6 @@
-package linksawakening.world;
+package linksawakening.world.transition;
+
+import linksawakening.world.*;
 
 public record RoomBoundaryState(int mapCategory,
                                 int roomId,

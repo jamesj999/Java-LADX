@@ -18,8 +18,10 @@ public record RoomEntity(
     int deathSpriteVariant,
     boolean powerRecoilDeath) {
 
+    public static final int SLOT_COUNT = 0x10;
+
     public RoomEntity {
-        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (slot < 0 || slot >= SLOT_COUNT) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         if (sourceLoadOrder < -1) {

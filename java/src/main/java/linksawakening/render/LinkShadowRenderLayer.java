@@ -1,7 +1,9 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.Link;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 /** Bank $02:$7590: Link's airborne shadow in OAM slot zero. */
 @Deprecated

@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.Warp;
+import linksawakening.world.transition.TransitionController;
+
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;

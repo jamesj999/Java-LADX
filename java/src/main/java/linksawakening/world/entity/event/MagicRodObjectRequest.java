@@ -7,7 +7,7 @@ import linksawakening.vfx.TransientVfxType;
 public record MagicRodObjectRequest(int sourceSlot, int location,
                                     int objectLeft, int objectTop) implements EntityRequest {
     public MagicRodObjectRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Magic Rod source slot out of range: "
                 + sourceSlot);
         }

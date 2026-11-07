@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.Warp;
+
 import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;

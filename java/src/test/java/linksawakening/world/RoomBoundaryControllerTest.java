@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.transition.RoomBoundaryDecision;
+import linksawakening.world.transition.RoomBoundaryState;
+import linksawakening.world.transition.Warp;
+
 import linksawakening.entity.Link;
 import org.junit.jupiter.api.Test;
 

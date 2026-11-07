@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 /**
  * Owns an isolated, window-free game session for input replay and capture.
  * Frames use the same input, simulation and composition paths as the desktop.
@@ -13,8 +15,8 @@ import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.world.RoomSession;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import static linksawakening.world.RoomConstants.*;
 

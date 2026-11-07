@@ -3,8 +3,8 @@ package linksawakening.world;
 /** Fixed-point motion state for indoor hookshot bridge entity {@code $68}. */
 public final class HookshotBridgeMotion {
     public static final int ENTITY_TYPE = 0x68;
-    public static final int PULL_DOWN_DIRECTION = 0;
-    public static final int PULL_UP_DIRECTION = 1;
+    public static final int PULL_DOWN_DIRECTION = linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_DOWN_DIRECTION;
+    public static final int PULL_UP_DIRECTION = linksawakening.world.entity.event.HookshotBridgeUpdate.PULL_UP_DIRECTION;
     public static final int SPEED_DOWN = 0x30;
     public static final int SPEED_UP = 0xD0;
 
