@@ -9,7 +9,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

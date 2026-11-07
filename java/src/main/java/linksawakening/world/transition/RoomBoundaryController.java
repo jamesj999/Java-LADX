@@ -4,8 +4,8 @@ package linksawakening.world.transition;
 
 import linksawakening.entity.Link;
 
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomBoundaryController {
     private static final int OVERWORLD_COLUMNS = 16;

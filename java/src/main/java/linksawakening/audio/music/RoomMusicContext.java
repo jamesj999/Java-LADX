@@ -3,7 +3,7 @@ package linksawakening.audio.music;
 
 
 import linksawakening.state.PlayerState;
-import linksawakening.world.ActiveRoom;
+import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.transition.Warp;
 
 public record RoomMusicContext(int roomId,

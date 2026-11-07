@@ -13,8 +13,8 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.entity.WingedOctorokOam;
 import linksawakening.world.entity.EntityStatus;
 
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
 public final class EntityRenderLayer implements HardwareRenderLayer {

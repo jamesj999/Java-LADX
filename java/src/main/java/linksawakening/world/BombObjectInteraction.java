@@ -8,7 +8,7 @@ package linksawakening.world;
  * coordinates are aligned to the padded room-object buffer exactly as the
  * source's {@code & $F0} operations do.</p>
  */
-final class BombObjectInteraction {
+public final class BombObjectInteraction {
 
     static final int FIRST_OBJECT_COUNTDOWN = 0x0E;
     static final int LAST_OBJECT_COUNTDOWN = 0x16;
@@ -24,13 +24,13 @@ final class BombObjectInteraction {
          0x18,  0x18, 0x18
     };
 
-    record Candidate(int objectLeft, int objectTop) {
-        Candidate {
+    public record Candidate(int objectLeft, int objectTop) {
+        public Candidate {
             objectLeft &= 0xF0;
             objectTop &= 0xF0;
         }
 
-        int location() {
+        public int location() {
             return (objectTop | (objectLeft >>> 4)) & 0xFF;
         }
     }
@@ -38,11 +38,11 @@ final class BombObjectInteraction {
     private BombObjectInteraction() {
     }
 
-    static Candidate basicCandidate(int bombX, int bombVisualY, int countdown) {
+    public static Candidate basicCandidate(int bombX, int bombVisualY, int countdown) {
         return candidate(bombX, bombVisualY, countdown);
     }
 
-    static Candidate puzzleCandidate(int bombX, int bombY, int countdown) {
+    public static Candidate puzzleCandidate(int bombX, int bombY, int countdown) {
         return candidate(bombX, bombY, countdown);
     }
 

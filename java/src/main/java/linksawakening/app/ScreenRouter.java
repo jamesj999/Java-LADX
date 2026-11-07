@@ -19,9 +19,9 @@ import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 import java.util.function.Consumer;

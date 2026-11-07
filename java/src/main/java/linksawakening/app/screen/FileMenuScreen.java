@@ -10,7 +10,7 @@ import linksawakening.ui.FileMenuController;
 
 import java.io.IOException;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 import java.util.function.Consumer;

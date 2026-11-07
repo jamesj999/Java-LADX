@@ -97,7 +97,7 @@ final class MainArchitectureTest {
     }
     @Test
     void roomSessionExposesOnlyTheCanonicalBombPlacementBridge() throws Exception {
-        var bridges = java.util.Arrays.stream(linksawakening.world.RoomSession.class.getDeclaredMethods()).filter(m -> m.getName().equals("placeBomb")).toList();
+        var bridges = java.util.Arrays.stream(linksawakening.world.room.RoomSession.class.getDeclaredMethods()).filter(m -> m.getName().equals("placeBomb")).toList();
         assertEquals(1, bridges.size());
         assertEquals(4, bridges.getFirst().getParameterCount());
     }

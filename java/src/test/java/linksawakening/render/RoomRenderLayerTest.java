@@ -4,8 +4,8 @@ package linksawakening.render;
 
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
-import linksawakening.world.RoomConstants;
-import linksawakening.world.RoomRenderSnapshot;
+import linksawakening.world.room.RoomConstants;
+import linksawakening.world.room.RoomRenderSnapshot;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import org.junit.jupiter.api.Test;

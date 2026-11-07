@@ -11,7 +11,7 @@ import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

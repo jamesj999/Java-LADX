@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.OwlEventDialogResolver;
-import linksawakening.world.ChestContentsTable;
+import linksawakening.world.room.OwlEventDialogResolver;
+import linksawakening.world.room.ChestContentsTable;
 
 
 

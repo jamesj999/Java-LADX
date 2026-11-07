@@ -6,7 +6,7 @@ import linksawakening.render.RenderScreen;
 import linksawakening.ui.FileSaveAction;
 import linksawakening.ui.FileSaveController;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 

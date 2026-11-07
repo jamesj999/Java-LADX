@@ -13,7 +13,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.RoomEntityRuntime;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

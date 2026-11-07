@@ -10,8 +10,8 @@ import linksawakening.ui.FileMenuFrameSnapshot;
 import linksawakening.ui.InventoryController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.RoomRenderSnapshot;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.room.RoomRenderSnapshot;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 

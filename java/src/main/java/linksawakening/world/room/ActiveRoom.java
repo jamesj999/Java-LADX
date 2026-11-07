@@ -1,0 +1,156 @@
+package linksawakening.world.room;
+
+
+
+
+
+
+
+import linksawakening.world.entity.RoomEntitySnapshot;
+
+import linksawakening.world.transition.Warp;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public final class ActiveRoom {
+    private final int roomId;
+    private final int mapCategory;
+    private final int mapId;
+    private final int[] roomObjectsArea;
+    private final int[] gbcOverlay;
+    private final int[] renderValues;
+    private final int[] tileIds;
+    private final int[] tileAttrs;
+    private final int[][] palettes;
+    private final List<Warp> warps;
+    private final boolean indoorHasSouthEntrance;
+    private final int staircaseLocation;
+    private int shutterDoorMask;
+    private RoomEntitySnapshot entities;
+
+    private ActiveRoom(LoadedRoom room) {
+        this(room, room.entities());
+    }
+
+    private ActiveRoom(LoadedRoom room, RoomEntitySnapshot entities) {
+        this.roomId = room.roomId();
+        this.mapCategory = room.mapCategory();
+        this.mapId = room.mapId();
+        this.roomObjectsArea = room.roomObjectsArea();
+        this.gbcOverlay = room.gbcOverlay();
+        this.renderValues = room.renderValues();
+        this.tileIds = room.tileIds();
+        this.tileAttrs = room.tileAttrs();
+        this.palettes = room.palettes();
+        this.warps = new ArrayList<>(room.warps());
+        this.indoorHasSouthEntrance = room.indoorHasSouthEntrance();
+        this.staircaseLocation = room.staircaseLocation();
+        this.shutterDoorMask = room.shutterDoorMask();
+        this.entities = entities;
+    }
+
+    public static ActiveRoom from(LoadedRoom room) {
+        return new ActiveRoom(room);
+    }
+
+    public static ActiveRoom from(LoadedRoom room, RoomEntitySnapshot entities) {
+        return new ActiveRoom(room, entities);
+    }
+
+    public int roomId() {
+        return roomId;
+    }
+
+    public int mapCategory() {
+        return mapCategory;
+    }
+
+    public int mapId() {
+        return mapId;
+    }
+
+    public int[] roomObjectsArea() {
+        return roomObjectsArea;
+    }
+
+    public int[] gbcOverlay() {
+        return gbcOverlay;
+    }
+
+    public int[] renderValues() {
+        return renderValues;
+    }
+
+    public int[] tileIds() {
+        return tileIds;
+    }
+
+    public int[] tileAttrs() {
+        return tileAttrs;
+    }
+
+    public int[][] palettes() {
+        return palettes;
+    }
+
+    public List<Warp> warps() {
+        return warps;
+    }
+
+    public boolean hasWarps() {
+        return !warps.isEmpty();
+    }
+
+    public Warp firstWarp() {
+        return warps.get(0);
+    }
+
+    public boolean indoorHasSouthEntrance() {
+        return indoorHasSouthEntrance;
+    }
+
+    public int staircaseLocation() {
+        return staircaseLocation;
+    }
+
+    public int shutterDoorMask() {
+        return shutterDoorMask;
+    }
+
+    void openShutterDoors() {
+        shutterDoorMask = 0;
+    }
+
+    void retainClosedShutterDoors(int mask) {
+        shutterDoorMask &= mask;
+    }
+
+    public RoomEntitySnapshot entities() {
+        return entities;
+    }
+
+    void replaceEntities(RoomEntitySnapshot entities) {
+        this.entities = entities;
+    }
+
+    void replaceTilemap(int[] tileIds, int[] tileAttrs) {
+        if (tileIds == null || tileIds.length != this.tileIds.length
+            || tileAttrs == null || tileAttrs.length != this.tileAttrs.length) {
+            throw new IllegalArgumentException("Replacement tilemap dimensions must match room");
+        }
+        System.arraycopy(tileIds, 0, this.tileIds, 0, tileIds.length);
+        System.arraycopy(tileAttrs, 0, this.tileAttrs, 0, tileAttrs.length);
+    }
+
+    public void replaceFirstWarpTile(int tileLocation) {
+        if (warps.isEmpty()) {
+            return;
+        }
+        warps.set(0, warps.get(0).withTileLocation(tileLocation));
+    }
+
+    public RoomRenderSnapshot renderSnapshot() {
+        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities);
+    }
+}

@@ -59,7 +59,7 @@ public final class GameFrameSceneBuilder {
         var warp = state.room().instrumentWarp();
         int[][] backgroundPalettes = warp == null ? state.room().palettes()
             : warp.backgroundPalettes(state.room().palettes());
-        var room = new linksawakening.world.RoomRenderSnapshot(state.room().tileIds(),
+        var room = new linksawakening.world.room.RoomRenderSnapshot(state.room().tileIds(),
             state.room().tileAttrs(), backgroundPalettes, state.room().entities());
         layers.add(new RoomRenderLayer(room, state.scrollController(), state.transitionController()));
         List<RenderLayer> sprites = new ArrayList<>();

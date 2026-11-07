@@ -14,11 +14,11 @@ import linksawakening.equipment.Sword;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryMenu;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 public final class HeadlessGameDriver {
     private final GameSession session = new GameSession();

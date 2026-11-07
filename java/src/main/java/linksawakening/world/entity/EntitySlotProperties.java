@@ -2,7 +2,7 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.PincerBodyOam;
 import linksawakening.world.entity.WingedOctorokOam;
-import linksawakening.world.ChestContentsTable;
+import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.HookshotChainOam;
 import linksawakening.world.entity.BowWowChain;

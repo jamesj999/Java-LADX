@@ -20,10 +20,10 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
-import linksawakening.world.ChestContentsTable;
-import linksawakening.world.OverworldTilesetTable;
-import linksawakening.world.RoomLoader;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.ChestContentsTable;
+import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomSession;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

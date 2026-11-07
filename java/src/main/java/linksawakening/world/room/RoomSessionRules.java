@@ -1,0 +1,130 @@
+package linksawakening.world.room;
+
+
+
+
+
+
+
+import linksawakening.world.entity.EntityRomConstants;
+
+
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
+
+/** Immutable ROM-shaped room interaction constants. */
+abstract class RoomSessionRules {
+    static final int ROOM_STATUS_TABLE_SIZE = 0x100;
+    static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
+    static final int W_TILESET_NO_UPDATE = 0xFF;
+    static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
+    static final int ENTITY_FISH = 0xCC;
+    static final int ENTITY_PEAHAT = 0xA0;
+    static final int ENTITY_ROOSTER = 0xD5;
+    static final int ENTITY_BOW_WOW = 0x6D;
+    static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    static final int ENTITY_HEART_CONTAINER = 0x36;
+    static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
+    static final int OBJECT_ROCKY_GROUND = 0x09;
+    static final int OBJECT_ROCKY_CAVE_DOOR = 0xE1;
+    static final int OBJECT_CLOSED_GATE = 0xC2;
+    static final int OBJECT_CAVE_DOOR = 0xE3;
+    static final int OBJECT_BOMBABLE_CAVE_DOOR = 0xBA;
+    static final int OBJECT_GIANT_SKULL_TOP_LEFT = 0xBB;
+    static final int OBJECT_GIANT_SKULL_BOTTOM_RIGHT = 0xBE;
+    static final int OBJECT_BOMBABLE_BLOCK = 0xA9;
+    static final int OBJECT_FLOOR_OD = 0x0D;
+    static final int OBJECT_SHOVEL_HOLE = 0xCC;
+    static final int OBJECT_SHOVEL_INDOOR_DIGGABLE = 0x05;
+    static final int OBJECT_SHOVEL_BLOCKER_A = 0x0C;
+    static final int OBJECT_SHOVEL_BLOCKER_B = 0x0D;
+    static final int OBJECT_SHOVEL_BLOCKER_C = 0xB9;
+    static final int SHOVEL_STATE_ACTIVE = 0x01;
+    static final int SHOVEL_STATE_DUG = 0x02;
+    static final int SHOVEL_DIG_TIMER = 0x10;
+    static final int SHOVEL_FINISH_TIMER = 0x18;
+    static final int SHOVEL_DIALOG_TABLE = 0;
+    static final int SHOVEL_DIALOG_ID = 0x79;
+    static final int OCARINA_NO_SONG_DIALOG_TABLE = 0;
+    static final int OCARINA_NO_SONG_DIALOG_ID = 0x8E;
+    static final int OCARINA_MARIN_DIALOG_TABLE = 2;
+    static final int OCARINA_MARIN_DIALOG_ID = 0x77;
+    static final int[] SHOVEL_TARGET_X = {0x14, 0xFC, 0x08, 0x08};
+    static final int[] SHOVEL_TARGET_Y = {0x0A, 0x0A, 0xFC, 0x14};
+    static final int OW_ROOM_STATUS_OPENED = 0x04;
+    static final int OW_ROOM_STATUS_FLAG_CHANGED = 0x04;
+    static final int ROOM_STATUS_CHEST_OPEN = 0x10;
+    static final int ROOM_STATUS_EVENT_1 = 0x10;
+    static final int ROOM_STATUS_EVENT_2 = 0x20;
+    static final int ROOM_STATUS_DISCOVERED = 0x40;
+    static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
+    static final int ROOM_OW_TAIL_CAVE_ENTRANCE = 0xD3;
+    static final int ROOM_OW_KEY_CAVERN_ENTRANCE = 0xB5;
+    static final int ROOM_OW_MYSTERIOUS_WOODS_LOST = 0x63;
+    static final int ENTITY_TARIN = EntityRomConstants.ENTITY_TARIN;
+    static final int ENTITY_OWL_EVENT = 0x41;
+    static final int TAIL_CAVE_GATE_LOCATION = 0x16;
+    static final int KEYHOLE_DIALOG_TABLE = 2;
+    static final int TAIL_KEYHOLE_DIALOG_ID = 0x30;
+    static final int SLIME_KEYHOLE_DIALOG_ID = 0x31;
+    static final int LINK_COLLISION_TYPE_UP = 0x01;
+    static final int TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN = 0xDF;
+    static final int TAIL_CAVE_RUMBLE_GATE_FRAME = 0x08;
+    static final int INDOOR_ROOM_STATUS_EVENT_3 = 0x40;
+    static final int EVENT_TRIGGER_MASK = 0x1F;
+    static final int EVENT_EFFECT_MASK = 0xE0;
+    static final int EVENT_TRIGGER_KILL_ALL_ENEMIES = 0x01;
+    static final int EVENT_TRIGGER_PUSH_SINGLE_BLOCK = 0x02;
+    static final int EVENT_TRIGGER_STEP_ON_BUTTON = 0x03;
+    static final int EVENT_TRIGGER_LIGHT_TORCHES = 0x05;
+    static final int EVENT_TRIGGER_KILL_IN_ORDER = 0x06;
+    static final int EVENT_TRIGGER_PUSH_BLOCKS = 0x07;
+    static final int EVENT_TRIGGER_THROW_AT_DOOR = 0x0B;
+    static final int EVENT_EFFECT_OPEN_LOCKED_DOORS = 0x20;
+    static final int EVENT_EFFECT_REVEAL_CHEST = 0x60;
+    static final int EVENT_EFFECT_DROP_KEY = 0x80;
+    static final int EVENT_EFFECT_REVEAL_STAIRWAY = 0xA0;
+    static final int EVENT_EFFECT_CLEAR_MIDBOSS = 0xC0;
+    static final int EVENT_CLEAR_MIDBOSS = 0xC1;
+    static final int OBJECT_SWITCH_BUTTON = 0xAA;
+    static final int OBJECT_LIFTABLE_POT = 0x20;
+    static final int OBJECT_POT_WITH_SWITCH = 0x8E;
+    static final int INDOOR_POT_PULL_FRAMES = 0x08;
+    static final int OBJECT_PUSHABLE_BLOCK = 0xA7;
+    static final int OBJECT_KEYHOLE_BLOCK = 0xDE;
+    static final int OBJECT_SETTLED_PUSHED_BLOCK = 0xA6;
+    static final int OBJECT_STAIRS_DOWN = 0xBE;
+    static final int STAIRCASE_NONE = 0;
+    static final int STAIRCASE_INACTIVE = 1;
+    static final int STAIRCASE_ACTIVE = 2;
+    static final int EVENT_STAIRWAY_LOCATION = 0x18;
+    static final int PUSH_BLOCK_CONTACT_TICKS = 0x40;
+    static final int KEYHOLE_BLOCK_CONTACT_TICKS = 0x20;
+    static final int PUSHED_BLOCK_MOTION_FRAMES = 0x21;
+    static final int SWITCH_BUTTON_PRESS_FRAMES = 0x18;
+    static final int SWITCH_BUTTON_PRESSED = 0x60;
+    static final int ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL = 0x02;
+    static final int ROOM_EVENT_CHEST_REVEAL_COUNTDOWN = 0x0F;
+    static final int ROOM_EVENT_CHEST_WRITE_COUNTDOWN = 0x04;
+    static final int KEY_DOOR_PHYSICS_BASE = 0x90;
+    static final int KEY_DOOR_ANIMATION_FRAMES = 0x08;
+    static final int[] KEY_DOOR_CLOSED_OBJECTS = {
+        0x2D, 0x2F, 0x31, 0x33
+    };
+    static final int[][] KEY_DOOR_OPEN_OBJECTS = {
+        {0x43, 0x44}, {0x8C, 0x08}, {0x09, 0x0A}, {0x0B, 0x0C}
+    };
+    static final int[] KEY_DOOR_CURRENT_STATUS = {0x04, 0x08, 0x02, 0x01};
+    static final int[] KEY_DOOR_ADJACENT_STATUS = {0x08, 0x04, 0x01, 0x02};
+    static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
+    static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
+    static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
+    static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
+    static final int LINK_MOTION_FALLING_DOWN = 0x06;
+    static final int OBJECT_WELL = 0x61;
+    static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
+    static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};
+    static final int[] ENTITY_CONVEYOR_MOVEMENT_Y = {1, -1, 0, 0, 1, 1, -1, -1};
+
+}

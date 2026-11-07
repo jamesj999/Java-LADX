@@ -84,11 +84,11 @@ class WorldDependencyTest {
 
     // Explicit facade/value surface used by app, including construction-time APIs.
     private static final Set<String> APP_WORLD_API = Set.of(
-        "ActiveRoom", "ChestContentsTable", "DroppableRupeeSystem", "entity/EnemyAttackContext",
+        "room/ActiveRoom", "room/ChestContentsTable", "room/DroppableRupeeSystem", "entity/EnemyAttackContext",
         "entity/EntityPickupEvent", "entity/EntityStatus",
-        "OverworldBushInteraction", "OverworldTilesetTable", "entity/RomRandomByteSource",
-        "RoomConstants", "entity/RoomEntity", "entity/RoomEntitySnapshot", "RoomLoadListener", "RoomLoader",
-        "RoomRenderSnapshot", "RoomSession", "RoomTransitionCoordinator",
+        "OverworldBushInteraction", "room/OverworldTilesetTable", "entity/RomRandomByteSource",
+        "room/RoomConstants", "entity/RoomEntity", "entity/RoomEntitySnapshot", "room/RoomLoadListener", "room/RoomLoader",
+        "room/RoomRenderSnapshot", "room/RoomSession", "room/RoomTransitionCoordinator",
         "transition/RoomBoundaryController", "transition/ScrollController",
         "transition/TransitionController", "transition/Warp");
 

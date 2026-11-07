@@ -3,7 +3,7 @@ package linksawakening.state;
 import linksawakening.world.entity.event.FloatingItemPickupEffect;
 
 import linksawakening.save.SaveSlotState;
-import linksawakening.world.ChestContentsTable;
+import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 
 import java.util.Arrays;

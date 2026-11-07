@@ -15,7 +15,7 @@ import linksawakening.world.entity.HookshotChainOam;
 import linksawakening.world.entity.PincerBodyOam;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntitySnapshot;
-import linksawakening.world.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderSnapshot;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.entity.WingedOctorokOam;
 import org.junit.jupiter.api.Test;

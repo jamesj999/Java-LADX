@@ -22,13 +22,13 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.RoomSession;
-import linksawakening.world.RoomTransitionCoordinator;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 import java.util.function.IntUnaryOperator;

@@ -1,10 +1,10 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.OverworldTilesetTable;
-import linksawakening.world.RoomSession;
-import linksawakening.world.ChestContentsTable;
-import linksawakening.world.RoomLoader;
-import linksawakening.world.RoomPaletteLoader;
+import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.ChestContentsTable;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomPaletteLoader;
 
 
 
@@ -434,12 +434,12 @@ final class TarinRaccoonRuntimeTest {
         RoomEntityRuntime runtime = raccoonRuntime(false);
         runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
         runtime.setSlowTransitionCountdownForTest(0, 1);
-        linksawakening.world.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
+        linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
         session.tickEntities(4, 0x50, 0x40);
 
         assertEquals(0x10,
-            linksawakening.world.RoomSessionTestAccess.overworldStatus(session, ROOM_MYSTERIOUS_WOODS) & 0x10);
+            linksawakening.world.room.RoomSessionTestAccess.overworldStatus(session, ROOM_MYSTERIOUS_WOODS) & 0x10);
         assertEquals(1, session.tarinFlag());
         assertTrue(hasRaccoon(session),
             "persisted room status must not be exposed to the live runtime");
@@ -469,7 +469,7 @@ final class TarinRaccoonRuntimeTest {
                 .anyMatch(dialog -> dialog.globalDialogId() == 0x00A);
         }
         assertTrue(finished, "Transformation must reach Tarin's recovery dialogue");
-        assertEquals(0x10, linksawakening.world.RoomSessionTestAccess.overworldStatus(session, ROOM_MYSTERIOUS_WOODS) & 0x10);
+        assertEquals(0x10, linksawakening.world.room.RoomSessionTestAccess.overworldStatus(session, ROOM_MYSTERIOUS_WOODS) & 0x10);
         assertTrue(hasRaccoon(session), "Live Tarin remains until the room reloads");
     }
 
@@ -577,7 +577,7 @@ final class TarinRaccoonRuntimeTest {
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         RoomEntityRuntime runtime = raccoonRuntime(false);
         runtime.setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
-        linksawakening.world.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
+        linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
         session.tickEntities(0, 0x50, 0x60, 0, 0);
 

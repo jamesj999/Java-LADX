@@ -2,7 +2,7 @@ package linksawakening.world.transition;
 
 import linksawakening.world.entity.ScreenShake;
 
-import linksawakening.world.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderSnapshot;
 
 public final class ScrollController {
     public static final int NONE = 0;

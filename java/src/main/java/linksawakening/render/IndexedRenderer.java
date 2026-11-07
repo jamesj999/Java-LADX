@@ -4,7 +4,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
-import linksawakening.world.RoomConstants;
+import linksawakening.world.room.RoomConstants;
 
 public final class IndexedRenderer {
     private static final int ATTR_FLIP_X = 0x20;

@@ -4,7 +4,7 @@ import linksawakening.world.entity.PincerBodyOam;
 import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.entity.WingedOctorokOam;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
-import linksawakening.world.ChestContentsTable;
+import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;

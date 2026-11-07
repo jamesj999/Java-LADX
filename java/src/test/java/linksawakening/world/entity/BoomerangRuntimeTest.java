@@ -1,6 +1,6 @@
 package linksawakening.world.entity;
 
-import linksawakening.world.ChestContentsTable;
+import linksawakening.world.room.ChestContentsTable;
 
 
 
