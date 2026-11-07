@@ -65,4 +65,8 @@ public final class InventoryController {
     public InventoryMenu.ClosedWindow closedWindow(int[][] roomPalettes) {
         return menu.closedWindow(roomPalettes);
     }
+    public void submit(linksawakening.render.HardwareFrame frame, GPU gpu, int[][] palettes) {
+        menu.submit(frame, gpu, palettes);
+    }
+    public boolean canSubmitFullyOpenWindow() { return menu.isFullyOpen(); }
 }

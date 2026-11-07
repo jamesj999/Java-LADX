@@ -106,6 +106,16 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         return legacy[offset + 3] == (byte) 255 && hardware[offset + 3] == (byte) 255;
     }
 
+    /** HideSprites ($01:5F4B-$5F69): at WY=0 every visible gameplay OAM entry is hidden. */
+    public void hideGameplayObjectsForOpenInventory() { oam.clear(); }
+
+    public void sprite8x16(linksawakening.gpu.GPU gpu, int tile, int x, int y,
+                           boolean fx, boolean fy, int[] palette) {
+        int base = tile & 254;
+        append(gpu.getTile(fy ? base + 1 : base), x, y, fx, fy, palette, false);
+        append(gpu.getTile(fy ? base : base + 1), x, y + 8, fx, fy, palette, false);
+    }
+
     private record ObjectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                               int[] palette, int order, boolean behind, String source) {}
     private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();

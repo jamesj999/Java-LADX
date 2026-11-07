@@ -71,4 +71,14 @@ public final class TilemapRenderer {
     private static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
     }
+    public static void submit(linksawakening.render.HardwareFrame frame, GPU gpu,
+                              int[] tileIds, int[] attrs, int[][] palettes,
+                              int width, int height, int offsetX, int offsetY) {
+        for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
+            int at = y * width + x, tile = tileIds[at] & 255;
+            int attr = attrs == null ? 0 : attrs[at] & 255;
+            frame.closedHudTile(gpu.getTile(resolveSignedBgTileIndex(tile)), tile, attr,
+                x * 8 + offsetX, y * 8 + offsetY, palettes[Math.min(attr & 7, palettes.length - 1)]);
+        }
+    }
 }

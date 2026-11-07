@@ -130,4 +130,20 @@ final class InventoryDungeonPanel {
                 map[y * 20 + x] = values[(length & 0x40) != 0 ? 0 : i];
         }
     }
+
+    void submit(linksawakening.render.HardwareFrame frameModel, int[] map, int[] attrs, int[][] palettes, int offsetY,
+                int mapId, int position, int frame, int[][] objectPalettes) {
+        // Render only the right-hand panel using its own VRAM so gameplay tiles survive closing.
+        for (int y = 3; y < 17; y++) {
+            int[] row = Arrays.copyOfRange(map, y * 20 + 9, y * 20 + 20);
+            int[] attributes = Arrays.copyOfRange(attrs, y * 20 + 9, y * 20 + 20);
+            TilemapRenderer.submit(frameModel, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
+        }
+        if (position < 0 || position >= 64) return;
+        int layout = read(linksawakening.rom.RomSymbols.MinimapLayoutTable.bank(), linksawakening.rom.RomSymbols.MinimapLayoutTable.address() + (mapId == 0xFF ? 15 : mapId));
+        int x = 88 + (position & 7) * 8 + ((layout & 0x10) != 0 && (position & 7) >= 4 ? 8 : 0);
+        int y = 64 + (position & 0x38) - ((layout & 0x20) != 0 && position < 32 ? 8 : 0);
+        frameModel.sprite8x16( tiles, 0x3E, x, y + offsetY,
+            false, false, objectPalettes[(frame & 8) == 0 ? 1 : 4]);
+    }
 }
