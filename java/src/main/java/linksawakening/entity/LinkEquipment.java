@@ -1,19 +1,7 @@
 package linksawakening.entity;
 
 import linksawakening.equipment.EquipmentItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
-import linksawakening.state.LinkPlayerState;
 import static linksawakening.entity.LinkRomConstants.*;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;

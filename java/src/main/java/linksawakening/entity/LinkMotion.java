@@ -1,19 +1,7 @@
 package linksawakening.entity;
 
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import linksawakening.equipment.EquipmentItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import static linksawakening.entity.Link.*;
 
@@ -72,6 +60,15 @@ final class LinkMotion {
         subY = candidateSubY;
     }
 
+    /**
+     * Point-based collision check on the leading edge of movement,
+     * mirroring {@code LinkCollisionPointsX/Y} (bank2.asm:6302). Tests
+     * two specific points on Link's sprite for the given direction; if
+     * either is in a blocked cell, the move is rejected. This is what
+     * lets Link step up and out of a scrolled-into-a-tree-row
+     * situation — his upper-edge collision points are in the clear row
+     * above even while his feet still overlap the tree cells below.
+     */
     boolean leadingEdgeBlocked(int spriteX, int spriteY, int dir) {
         return leadingEdgeCollisionMask(spriteX, spriteY, dir) != 0;
     }
@@ -197,6 +194,7 @@ final class LinkMotion {
         return true;
     }
 
+    /** Ports LinkMotionUnstuckingHandler's initial downward search. */
     void beginOverworldLedgeUnstuckingMotion() {
         subY += 16 << Link.SUB_PIXEL_SHIFT;
         link.linkAirborne.zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
@@ -259,7 +257,7 @@ final class LinkMotion {
     }
 
     void setRoomEntryPixelPosition(int pixelX, int pixelY) {
-        link.clearSideViewPlatformState();
+        link.linkSideView.clearSideViewPlatformState();
         setPixelPosition(pixelX, pixelY);
         markRoomEntryPosition();
     }

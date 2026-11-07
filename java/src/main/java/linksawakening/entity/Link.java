@@ -1,16 +1,12 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquipmentItem;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.state.LinkPlayerState;
@@ -33,11 +29,13 @@ import java.util.function.BooleanSupplier;
  */
 public final class Link implements RocsFeather.JumpTarget {
 
+    final LinkAnimator linkAnimator = new LinkAnimator(this);
+
+    final LinkSideView linkSideView = new LinkSideView(this);
+
     final LinkStateMachine linkStateMachine = new LinkStateMachine(this);
 
     final LinkEquipment linkEquipment = new LinkEquipment(this);
-
-    final LinkAnimator linkAnimator = new LinkAnimator(this);
 
     final LinkEntityEffects linkEntityEffects = new LinkEntityEffects(this);
 
@@ -46,9 +44,6 @@ public final class Link implements RocsFeather.JumpTarget {
     final LinkAirborne linkAirborne = new LinkAirborne(this);
 
     final LinkSwimming linkSwimming = new LinkSwimming(this);
-
-
-    final LinkSideView linkSideView = new LinkSideView(this);
 
     final LinkDamage linkDamage = new LinkDamage(this);
 
@@ -78,17 +73,9 @@ public final class Link implements RocsFeather.JumpTarget {
     int walkFrame;
     boolean movingThisFrame;
     private int groundMotionCounter;
-    /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
-    /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
     boolean topDownFeatherStarted;
 
-    /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
-
     int romLinkPushing;
-    /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
-    /** Mirrors wC191, the collision-probe countdown for directional ledges. */
-    /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
-    /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     int romAttackStepAnimationCountdown;
     final GameplaySoundSink soundSink;
 
@@ -139,15 +126,9 @@ public final class Link implements RocsFeather.JumpTarget {
         linkSideView.setSideScrolling(enabled);
     }
 
-
-
     public boolean debugNoClip() {
         return linkStateMachine.debugNoClip;
     }
-
-
-
-
 
     /** Manual warp exits bypass the ordinary room-edge recoil gate. */
     public void setCollisionIgnoreFrames(int frames) {
@@ -163,60 +144,9 @@ public final class Link implements RocsFeather.JumpTarget {
      * reading movement input. Background collisions still run ($02:44C2).
      */
 
-    /** Applies the side-view platform handler's Link position and speed writes. */
-    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY, boolean standing) {
-        if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {
-            throw new IllegalArgumentException("Side-view platform X delta must be a signed byte");
-        }
-        validateRomByte(romPositionY, "Side-view platform Link Y");
-        validateRomByte(romSpeedY, "Side-view platform Link Y speed");
-
-        int currentRomX = linkMotion.romEntityX() & 0xFF;
-        int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
-        int nextTopLeftX = (nextRomX - 0x08) & 0xFF;
-        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
-        linkMotion.subX = (nextTopLeftX << SUB_PIXEL_SHIFT) | (linkMotion.subX & 0x0F);
-        linkMotion.subY = (nextTopLeftY << SUB_PIXEL_SHIFT) | (linkMotion.subY & 0x0F);
-        linkSideView.standingOnSideViewEntity = standing;
-        // The platform handler writes hLinkSpeedY as an HRAM observation for
-        // this frame and for one subsequent vertical movement attempt. It
-        // never queues horizontal movement.
-        linkMotion.lastRomSpeedY = romSpeedY & 0xFF;
-        linkSideView.sideViewPlatformVerticalSpeedPending = standing ? romSpeedY & 0xFF : -1;
-    }
-
-    /** Applies a standing platform contact (the common side-view case). */
-    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
-                                              int romSpeedY) {
-        applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, true);
-    }
-
     /** Returns whether Link stood on a side-view entity during the current frame. */
     public boolean standingOnSideViewEntity() {
         return linkSideView.standingOnSideViewEntity;
-    }
-
-    /** Clears all transient side-view platform state during a room transition. */
-    public void clearSideViewPlatformState() {
-        linkSideView.standingOnSideViewEntity = false;
-        linkSideView.sideViewPlatformVerticalSpeedPending = -1;
-    }
-
-    /** Clears only the per-frame side-view standing flag before entity processing. */
-    public void clearStandingOnSideViewEntity() {
-        linkSideView.standingOnSideViewEntity = false;
-    }
-
-    /** Applies state-0 pot's top snap and hLinkSpeedY/wC147 writes. */
-    public void applySideViewPotContact(int romPositionY, int romSpeedY) {
-        validateRomByte(romPositionY, "Side-view pot Link Y");
-        validateRomByte(romSpeedY, "Side-view pot Link Y speed");
-        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
-        linkMotion.subY = (nextTopLeftY << SUB_PIXEL_SHIFT) | (linkMotion.subY & 0x0F);
-        linkSideView.standingOnSideViewEntity = true;
-        linkMotion.lastRomSpeedY = romSpeedY;
-        linkSideView.sideViewPlatformVerticalSpeedPending = romSpeedY;
     }
 
     /** Mirrors the transient wIsLinkPushing value consumed by item handlers. */
@@ -237,8 +167,6 @@ public final class Link implements RocsFeather.JumpTarget {
     public boolean isRomLinkPushing() {
         return romLinkPushing != 0;
     }
-
-
 
     public boolean isTarinShieldPresentationVisible() {
         return linkAnimator.tarinShieldPresentation;
@@ -290,26 +218,10 @@ public final class Link implements RocsFeather.JumpTarget {
         return linkStateMachine.physicsModifier & 0xFF;
     }
 
-
-
-
-
-
-
     /** Mirrors wLinkAttackStepAnimationCountdown after a player projectile spawn. */
     public int romAttackStepAnimationCountdown() {
         return romAttackStepAnimationCountdown & 0xFF;
     }
-
-
-
-
-
-
-
-
-
-
 
     /** Mirrors the unsigned {@code wCollisionType} byte written by Link motion. */
     public int romCollisionType() {
@@ -374,21 +286,11 @@ public final class Link implements RocsFeather.JumpTarget {
     public record ScreenShakeRequest(int countdown, int phase) {
     }
 
-
-
-
-
-
     /** Previous entity pass's wIsGelClingingToLink and current hFrameCounter. */
     public void setGelClinging(boolean clinging, int worldFrame) {
         linkStateMachine.gelClinging = clinging;
         linkStateMachine.gelMotionFrame = worldFrame & 0xFF;
     }
-
-
-
-
-
 
     /** ROM wC145: the Y origin used by sword collision while linkAirborne.airborne. */
     public int romSwordCollisionY() {
@@ -398,8 +300,6 @@ public final class Link implements RocsFeather.JumpTarget {
     public int direction() {
         return direction;
     }
-
-
 
     /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
     public boolean isCollisionDamageImmune() {
@@ -481,7 +381,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkSwimming.leaveSwimming();
     }
 
-    /** Advance the walking-cycle timer without processing input or collision. */
+    /** Apply one complete external Link effect. */
     public void apply(LinkCommand command) {
         Objects.requireNonNull(command, "command").applyTo(this);
     }
@@ -504,10 +404,6 @@ public final class Link implements RocsFeather.JumpTarget {
         return pending;
     }
 
-    /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
-
-    /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
-
     static int signedByte(int value) {
         int normalized = value & 0xFF;
         return normalized < 0x80 ? normalized : normalized - 0x100;
@@ -518,20 +414,6 @@ public final class Link implements RocsFeather.JumpTarget {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     boolean shouldApplyGroundMotion() {
         groundMotionCounter++;
@@ -550,20 +432,6 @@ public final class Link implements RocsFeather.JumpTarget {
     boolean playerHasFlippers() {
         return playerState != null && playerState.hasFlippers();
     }
-
-    /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
-
-    /**
-     * Point-based collision check on the leading edge of movement,
-     * mirroring {@code LinkCollisionPointsX/Y} (bank2.asm:6302). Tests
-     * two specific points on Link's sprite for the given direction; if
-     * either is in a blocked cell, the move is rejected. This is what
-     * lets Link step up and out of a scrolled-into-a-tree-row
-     * situation — his upper-edge collision points are in the clear row
-     * above even while his feet still overlap the tree cells below.
-     */
-
-    /** Ports LinkMotionUnstuckingHandler's initial downward search. */
 
     int buildJoypadMask() {
         int mask = 0;
@@ -598,84 +466,6 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     int resolveAnimationState() { return linkAnimator.resolveAnimationState(); }
-    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        if (linkEntityEffects.likeLikeCaptured) {
-            return;
-        }
-        Tile[] composedTiles = new Tile[4];
-        int animationState = resolveAnimationState();
-        spriteSheet.resolveTiles(animationState, composedTiles);
-
-        boolean leftFlipX = spriteSheet.leftHalfFlipX(animationState);
-        boolean leftFlipY = spriteSheet.leftHalfFlipY(animationState);
-        boolean rightFlipX = spriteSheet.rightHalfFlipX(animationState);
-        boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
-
-        int originX = pixelX() + offsetX;
-        int renderY = pixelY() - (linkAnimator.bedJumpRenderZ >= 0 ? linkAnimator.bedJumpRenderZ : zPixels());
-        int originY = renderY + offsetY;
-        int[] palette = playerState != null
-            && (playerState.invincibilityCounter() & 0x04) != 0
-            // DrawLinkSprite's GBC path selects object palette 4 from bit 2
-            // of wInvincibilityCounter while Link is flashing.
-            ? tunicPalette.forObjectPalette(4)
-            : tunicPalette.forTunic(
-                playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
-
-        if (linkStateMachine.revolvingDoorPaletteVariant >= 0 && linkStateMachine.revolvingDoorFrame < 0x38) {
-            palette = romTables.revolvingDoorPalette(linkStateMachine.revolvingDoorPaletteVariant);
-        }
-
-        // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
-        // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
-        // each vertically.
-        Tile leftTop = composedTiles[leftFlipY ? 1 : 0];
-        Tile leftBottom = composedTiles[leftFlipY ? 0 : 1];
-        Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
-        Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
-
-        sink.append(leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
-            palette, false);
-        sink.append(leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
-            palette, false);
-        sink.append(rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
-            palette, false);
-        sink.append(rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
-            palette, false);
-
-        // Let equipped items paint their own sprites on top (e.g. the sword
-        // blade during a swing). Matches the disassembly's ordering where
-        // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
-        // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
-        submitEquippedOam(sink, offsetX, offsetY);
-    }
-    private void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        if (itemRegistry == null || playerState == null) {
-            return;
-        }
-        EquipmentItem a = itemRegistry.lookup(playerState.itemA());
-        if (a != null) {
-            a.submitOam(sink, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
-        }
-        EquipmentItem b = itemRegistry.lookup(playerState.itemB());
-        if (b != null && b != a) {
-            b.submitOam(sink, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
-        }
-        if (linkAnimator.swordAcquisitionAnimationState >= 0) {
-            // ApplyLinkMotionState draws the sword during the pickup spin
-            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
-            // sword handler from the registry, but do not draw it twice if a
-            // save already has the sword equipped.
-            EquipmentItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
-            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
-                acquisitionSword.submitOam(sink, pixelX(), pixelY() - zPixels(),
-                    direction, offsetX, offsetY);
-            }
-        }
-    }
-
-
-
 
     public int romAnimationState() {
         return linkAnimator.resolveAnimationState();
@@ -694,10 +484,6 @@ public final class Link implements RocsFeather.JumpTarget {
             default -> throw new AssertionError(romDirection);
         };
     }
-
-
-
-
 
     public void setPixelPosition(int pixelX, int pixelY) { linkMotion.setPixelPosition(pixelX, pixelY); }
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) { linkMotion.setRoomEntryPixelPosition(pixelX, pixelY); }
@@ -765,4 +551,12 @@ public final class Link implements RocsFeather.JumpTarget {
     public void setRomPhysicsModifier(int modifier) { linkStateMachine.setRomPhysicsModifier(modifier); }
     public ScreenShakeRequest consumePegasusScreenShakeRequest() { return linkStateMachine.consumePegasusScreenShakeRequest(); }
     public void resetPegasusBoots() { linkStateMachine.resetPegasusBoots(); }
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY, boolean standing) { linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing); }
+    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY) { linkSideView.applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY); }
+    public void clearSideViewPlatformState() { linkSideView.clearSideViewPlatformState(); }
+    public void clearStandingOnSideViewEntity() { linkSideView.clearStandingOnSideViewEntity(); }
+    public void applySideViewPotContact(int romPositionY, int romSpeedY) { linkSideView.applySideViewPotContact(romPositionY, romSpeedY); }
+    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) { linkAnimator.submitOam(sink, offsetX, offsetY); }
 }

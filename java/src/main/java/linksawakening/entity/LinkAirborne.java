@@ -19,10 +19,13 @@ final class LinkAirborne {
     int pitSlipTargetTopLeftY;
     int pitSlipPhysicsFlag;
     boolean hasPitSlipTarget;
+    /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     boolean overworldLedgeFallActive;
+    /** Mirrors wC10A while a directional ledge jump owns Link's XY speed. */
     boolean directionalLedgeJumpMotionLocked;
     int directionalLedgeJumpSpeedX;
     int directionalLedgeJumpSpeedY;
+    /** Mirrors wC191, the collision-probe countdown for directional ledges. */
     int directionalLedgeCollisionCounter;
 
     LinkAirborne(Link link) { this.link = link; }

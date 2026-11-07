@@ -1,20 +1,5 @@
 package linksawakening.entity;
 
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import linksawakening.equipment.EquipmentItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
-import linksawakening.state.LinkPlayerState;
 import linksawakening.state.PlayerState;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
@@ -287,6 +272,7 @@ final class LinkStateMachine {
         }
     }
 
+    /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
     void updatePegasusBootsUse() {
         if (link.playerState == null || link.inputState == null || link.inputConfig == null) {
             return;
@@ -337,6 +323,7 @@ final class LinkStateMachine {
         };
     }
 
+    /** Mirrors bank2.asm:74AD's dash collision response and func_020_49BA. */
     void handlePegasusBootsCollision() {
         if (link.playerState == null || !link.playerState.runningWithPegasusBoots()
             || (link.linkMotion.romCollisionType & 0x0F) == 0) {
@@ -379,7 +366,6 @@ final class LinkStateMachine {
     int pegasusBootsCollisionPosY;
     int pendingPegasusScreenShakeCountdown;
     int pendingPegasusScreenShakePhase;
-
 
     /** Enables the development movement mode; normal gameplay leaves this off. */
     void setDebugNoClip(boolean enabled) {

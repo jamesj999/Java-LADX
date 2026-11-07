@@ -1,22 +1,13 @@
 package linksawakening.entity;
 
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import linksawakening.equipment.EquipmentItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
+import linksawakening.gpu.Framebuffer;
 import linksawakening.state.PlayerState;
 import static linksawakening.entity.Link.*;
+import static linksawakening.entity.LinkRomConstants.*;
 
+/** ROM pose selection and sprite data for both rendering paths. */
 final class LinkAnimator {
     private final Link link;
     LinkAnimator(Link link) { this.link = link; }
@@ -345,5 +336,82 @@ final class LinkAnimator {
             throw new IllegalArgumentException("Bed sprite variant must be between 0 and 4");
         }
         marinWakeUpBedVariant = spriteVariant;
+    }
+
+    void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        if (link.linkEntityEffects.likeLikeCaptured) {
+            return;
+        }
+        Tile[] composedTiles = new Tile[4];
+        int animationState = link.resolveAnimationState();
+        link.spriteSheet.resolveTiles(animationState, composedTiles);
+
+        boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);
+        boolean leftFlipY = link.spriteSheet.leftHalfFlipY(animationState);
+        boolean rightFlipX = link.spriteSheet.rightHalfFlipX(animationState);
+        boolean rightFlipY = link.spriteSheet.rightHalfFlipY(animationState);
+
+        int originX = link.pixelX() + offsetX;
+        int renderY = link.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : link.zPixels());
+        int originY = renderY + offsetY;
+        int[] palette = link.playerState != null
+            && (link.playerState.invincibilityCounter() & 0x04) != 0
+            // DrawLinkSprite's GBC path selects object palette 4 from bit 2
+            // of wInvincibilityCounter while Link is flashing.
+            ? link.tunicPalette.forObjectPalette(4)
+            : link.tunicPalette.forTunic(
+                link.playerState == null ? PlayerState.TUNIC_GREEN : link.playerState.tunicType());
+
+        if (link.linkStateMachine.revolvingDoorPaletteVariant >= 0 && link.linkStateMachine.revolvingDoorFrame < 0x38) {
+            palette = link.romTables.revolvingDoorPalette(link.linkStateMachine.revolvingDoorPaletteVariant);
+        }
+
+        // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
+        // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
+        // each vertically.
+        Tile leftTop = composedTiles[leftFlipY ? 1 : 0];
+        Tile leftBottom = composedTiles[leftFlipY ? 0 : 1];
+        Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
+        Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
+
+        sink.append(leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
+            palette, false);
+        sink.append(leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
+            palette, false);
+        sink.append(rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
+            palette, false);
+        sink.append(rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
+            palette, false);
+
+        // Let equipped items paint their own sprites on top (e.g. the sword
+        // blade during a swing). Matches the disassembly's ordering where
+        // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
+        // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
+        submitEquippedOam(sink, offsetX, offsetY);
+    }
+
+    void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        if (link.itemRegistry == null || link.playerState == null) {
+            return;
+        }
+        EquipmentItem a = link.itemRegistry.lookup(link.playerState.itemA());
+        if (a != null) {
+            a.submitOam(sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);
+        }
+        EquipmentItem b = link.itemRegistry.lookup(link.playerState.itemB());
+        if (b != null && b != a) {
+            b.submitOam(sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);
+        }
+        if (swordAcquisitionAnimationState >= 0) {
+            // ApplyLinkMotionState draws the sword during the pickup spin
+            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
+            // sword handler from the registry, but do not draw it twice if a
+            // save already has the sword equipped.
+            EquipmentItem acquisitionSword = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+                acquisitionSword.submitOam(sink, link.pixelX(), link.pixelY() - link.zPixels(),
+                    link.direction, offsetX, offsetY);
+            }
+        }
     }
 }

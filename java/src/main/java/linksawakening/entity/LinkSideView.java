@@ -2,8 +2,9 @@ package linksawakening.entity;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
+import static linksawakening.entity.Link.*;
+import static linksawakening.entity.LinkRomConstants.*;
 
-/** ROM-faithful sideview collaborator for Link. */
 final class LinkSideView {
     private final Link link;
     boolean sideScrolling;
@@ -12,11 +13,14 @@ final class LinkSideView {
     int sideViewSpeedY;
     boolean sideViewGrounded;
     boolean sideViewFeatherPending;
+    /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
     boolean standingOnSideViewEntity;
+    /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
     int sideViewPlatformVerticalSpeedPending = -1;
 
     LinkSideView(Link link) { this.link = link; }
 
+    /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
     void setSideScrolling(boolean enabled) {
         if (sideScrolling == enabled) return;
         sideScrolling = enabled;
@@ -29,6 +33,7 @@ final class LinkSideView {
         link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
     }
 
+    /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
     void updateSideViewMotion(int platformSpeedY) {
         int mask = link.buildJoypadMask();
         if (!link.linkAirborne.airborne && link.linkEquipment.itemsBlockMotion()) return;
@@ -137,5 +142,56 @@ final class LinkSideView {
     boolean sideViewSolidAt(int x, int y) {
         int physics = link.collision.objectPhysicsFlagAtPoint(x, y);
         return physics == 0x60 || physics == 0x01;
+    }
+
+    /** Applies the side-view platform handler's Link position and speed writes. */
+    /** Applies a standing platform contact (the common side-view case). */
+    void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY, boolean standing) {
+        if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {
+            throw new IllegalArgumentException("Side-view platform X delta must be a signed byte");
+        }
+        link.validateRomByte(romPositionY, "Side-view platform Link Y");
+        link.validateRomByte(romSpeedY, "Side-view platform Link Y speed");
+
+        int currentRomX = link.linkMotion.romEntityX() & 0xFF;
+        int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
+        int nextTopLeftX = (nextRomX - 0x08) & 0xFF;
+        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
+        link.linkMotion.subX = (nextTopLeftX << Link.SUB_PIXEL_SHIFT) | (link.linkMotion.subX & 0x0F);
+        link.linkMotion.subY = (nextTopLeftY << Link.SUB_PIXEL_SHIFT) | (link.linkMotion.subY & 0x0F);
+        standingOnSideViewEntity = standing;
+        // The platform handler writes hLinkSpeedY as an HRAM observation for
+        // this frame and for one subsequent vertical movement attempt. It
+        // never queues horizontal movement.
+        link.linkMotion.lastRomSpeedY = romSpeedY & 0xFF;
+        sideViewPlatformVerticalSpeedPending = standing ? romSpeedY & 0xFF : -1;
+    }
+
+    void applySideViewPlatformContact(int horizontalDelta, int romPositionY,
+                                              int romSpeedY) {
+        applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, true);
+    }
+
+    /** Clears all transient side-view platform state during a room transition. */
+    void clearSideViewPlatformState() {
+        standingOnSideViewEntity = false;
+        sideViewPlatformVerticalSpeedPending = -1;
+    }
+
+    /** Clears only the per-frame side-view standing flag before entity processing. */
+    void clearStandingOnSideViewEntity() {
+        standingOnSideViewEntity = false;
+    }
+
+    /** Applies state-0 pot's top snap and hLinkSpeedY/wC147 writes. */
+    void applySideViewPotContact(int romPositionY, int romSpeedY) {
+        link.validateRomByte(romPositionY, "Side-view pot Link Y");
+        link.validateRomByte(romSpeedY, "Side-view pot Link Y speed");
+        int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
+        link.linkMotion.subY = (nextTopLeftY << Link.SUB_PIXEL_SHIFT) | (link.linkMotion.subY & 0x0F);
+        standingOnSideViewEntity = true;
+        link.linkMotion.lastRomSpeedY = romSpeedY;
+        sideViewPlatformVerticalSpeedPending = romSpeedY;
     }
 }

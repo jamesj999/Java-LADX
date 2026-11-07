@@ -1,20 +1,5 @@
 package linksawakening.entity;
 
-import linksawakening.equipment.EquipmentItem;
-import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.rom.RomTables;
-import linksawakening.state.PlayerState;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import static linksawakening.entity.Link.*;
 
 /** ROM-faithful entityeffects collaborator for Link. */
@@ -27,6 +12,7 @@ final class LinkEntityEffects {
     int carryingLiftedObjectState;
     int carryingLiftedObjectRomDirection = 3;
     boolean roosterCarryActive;
+    /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
     boolean marinBedJumpMotionLocked;
 
     LinkEntityEffects(Link link) { this.link = link; }
