@@ -37,7 +37,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainConsumesProjectileEventsAtTheEntityFrameBoundary() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
 
         assertTrue(source.contains("tickEntitiesWithProjectileEvents"));
         assertTrue(source.contains("link.romCollisionType()"));
@@ -46,7 +46,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         int swordBox = source.indexOf("sword.enemyCollisionBox(");
@@ -85,7 +85,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
 
         assertTrue(source.contains("consumeLinkAttackClearRequests"));
         assertTrue(source.contains("link.clearRomAttackStepAnimationCountdown()"));
@@ -94,7 +94,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(normalizedSource.contains("int linkAttackClearIndex = 0;"));
@@ -107,7 +107,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
-        String normalizedSource = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")))
+        String normalizedSource = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")))
             .replaceAll("\\s+", " ");
 
         assertFalse(normalizedSource.contains(
@@ -116,7 +116,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainCapturesLinkFinalPositionBeforeLinkMotionForEntityPushes() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
 
         int capture = source.indexOf("link.captureRomFinalPosition();");
         int update = source.indexOf("link.update();");
@@ -128,7 +128,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         int potConsume = normalizedSource.indexOf(
@@ -144,7 +144,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("EntityProjectileEvent.Kind.HOOKSHOT_PULL"));
@@ -157,7 +157,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainRegistersBombWithLinkRomPlacementState() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(source.contains("PlayerState.INVENTORY_BOMBS"));
@@ -177,7 +177,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
-        String source = ((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
+        String source = (((((Files.readString(Path.of("src/main/java/linksawakening/GameSession.java")) + Files.readString(Path.of("src/main/java/linksawakening/app/gameplay/DialogInteractions.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SaveCoordinator.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/SessionBootstrap.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/story/OpeningStory.java"))) + Files.readString(Path.of("src/main/java/linksawakening/app/screen/FileMenuScreen.java")));
         String normalizedSource = source.replaceAll("\\s+", " ");
 
         assertTrue(normalizedSource.contains(

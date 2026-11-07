@@ -1,6 +1,7 @@
 package linksawakening;
 
 import linksawakening.app.screen.*;
+import linksawakening.app.gameplay.*;
 import linksawakening.app.SessionBootstrap;
 import linksawakening.app.SaveCoordinator;
 import linksawakening.app.MusicDirector;
@@ -386,10 +387,10 @@ public class GameSession {
         if (openingStory().tryOpenMarinFollowUpDialog(key)) {
             return;
         }
-        if (tryOpenChest(key)) {
+        if (dialogs().tryOpenChest(key)) {
             return;
         }
-        if (tryOpenOverworldDialog(key)) {
+        if (dialogs().tryOpenOverworldDialog(key)) {
             return;
         }
 
@@ -563,8 +564,8 @@ public class GameSession {
                 if (keyholeSequenceActive) {
                     link.blockNextRomMotionFrame();
                 }
-                boolean powerBraceletButtonHeld = isPowerBraceletButtonHeld();
-                boolean bombButtonHeld = isBombButtonHeld();
+                boolean powerBraceletButtonHeld = lifting().isPowerBraceletButtonHeld();
+                boolean bombButtonHeld = lifting().isBombButtonHeld();
                 if (roomSession != null && !keyholeSequenceActive) {
                     roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
                     roomSession.setEntityBombButtonHeld(bombButtonHeld);
@@ -649,7 +650,7 @@ public class GameSession {
                         }
                     }
                 }
-                maybeCutBushWithSword();
+                bushes().maybeCutBushWithSword();
                 // Warp-transition check runs BEFORE edge-scroll/clamp:
                 // indoor rooms clamp Link at y=112 (== ROOM_PIXEL_HEIGHT −
                 // SPRITE_SIZE) in the edge-scroll fallback, but the
@@ -772,8 +773,8 @@ public class GameSession {
                             || inputState.isDown(inputConfig.menuOpenKey())));
                 roomSession.setEntityPressedButtonsMask(
                     link == null ? 0 : link.romPressedButtonsMask());
-                roomSession.setEntityPowerBraceletButtonHeld(isPowerBraceletButtonHeld());
-                roomSession.setEntityBombButtonHeld(isBombButtonHeld());
+                roomSession.setEntityPowerBraceletButtonHeld(lifting().isPowerBraceletButtonHeld());
+                roomSession.setEntityBombButtonHeld(lifting().isBombButtonHeld());
                 roomSession.setEntityAttackStepAnimationCountdown(
                     link == null ? 0 : link.romAttackStepAnimationCountdown());
                 roomSession.setEntityFinalPositionX(
@@ -1087,7 +1088,7 @@ public class GameSession {
                         link.releaseLikeLikeCapture();
                     }
                 }
-                openEntityDialogRequests();
+                dialogs().openEntityDialogRequests();
                 if (roomTransitionCoordinator.handlePendingManboTransition(link)) {
                     gameplaySoundSink.play(linksawakening.gameplay.GameplaySoundEvent.MANBO_WARP);
                 }
@@ -1143,7 +1144,7 @@ public class GameSession {
                         playerState.applyRomEnemyDamage(request.damage());
                     }
                 }
-                synchronizeLinkLiftedPresentation();
+                lifting().synchronizeLinkLiftedPresentation();
             }
             completeGameplayFrame(dialogController);
 
@@ -1174,44 +1175,7 @@ public class GameSession {
         DialogSoundRouter.routePending(dialogController, dialogSoundSink);
     }
 
-    private boolean isPowerBraceletButtonHeld() {
-        if (inputState == null || inputConfig == null || playerState == null) {
-            return false;
-        }
-        boolean braceletOnA = playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET
-            && inputState.isDown(inputConfig.aKey());
-        boolean braceletOnB = playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET
-            && inputState.isDown(inputConfig.bKey());
-        return braceletOnA || braceletOnB;
-    }
-
     /** Mirrors BombEntityHandler's B-slot-first equipped-bomb input check. */
-    private boolean isBombButtonHeld() {
-        if (inputState == null || inputConfig == null || playerState == null) {
-            return false;
-        }
-        if (playerState.itemB() == PlayerState.INVENTORY_BOMBS) {
-            return inputState.isDown(inputConfig.bKey());
-        }
-        return playerState.itemA() == PlayerState.INVENTORY_BOMBS
-            && inputState.isDown(inputConfig.aKey());
-    }
-
-    private void synchronizeLinkLiftedPresentation() {
-        if (link == null || roomSession == null) {
-            return;
-        }
-        var state = roomSession.liftedEntityState();
-        if (state.active()) {
-            link.setCarryingLiftedObjectState(state.carryState(),
-                state.effectiveRomDirection());
-        } else {
-            if (link.isRoosterCarryActive()) {
-                link.clearRoosterCarryState();
-            }
-            link.setCarryingLiftedObjectState(0, romDirectionForLink(link.direction()));
-        }
-    }
 
     private int romDirectionForLink(int javaDirection) {
         return switch (javaDirection) {
@@ -1222,126 +1186,6 @@ public class GameSession {
             default -> throw new IllegalArgumentException("Link direction out of range: "
                 + javaDirection);
         };
-    }
-
-    private void maybeCutBushWithSword() {
-        if (roomSession == null
-            || !roomSession.hasActiveRoom()
-            || roomSession.mapCategory() != Warp.CATEGORY_OVERWORLD
-            || overworldBushInteraction == null
-            || link == null) {
-            return;
-        }
-        ActiveRoom room = roomSession.activeRoom();
-
-        Sword sword = equipmentController.activeSword();
-        if (sword == null || !sword.staticCollisionActive()) {
-            return;
-        }
-
-        int location = overworldBushInteraction.swordHitRoomObjectLocationForCollisionIndex(
-            true, sword.staticCollisionMapIndex(link.direction()), link.pixelX(), link.pixelY());
-        if (location < 0) {
-            return;
-        }
-
-        int areaIndex = ROOM_OBJECTS_BASE + location;
-        if (areaIndex < 0 || areaIndex >= room.roomObjectsArea().length) {
-            return;
-        }
-        int originalObjectId = room.roomObjectsArea()[areaIndex];
-
-        OverworldBushInteraction.CutResult cutResult = overworldBushInteraction.cutObjectAtLocation(
-            location,
-            room.roomId(),
-            true,
-            room.roomObjectsArea(),
-            room.renderValues(),
-            room.gbcOverlay(),
-            room.tileIds(),
-            room.tileAttrs()
-        );
-        if (!cutResult.changed()) {
-            return;
-        }
-
-        gameplaySoundSink.play(cutResult.soundEvent());
-
-        if (transientVfxSystem != null && cutResult.bushLeavesVisible()) {
-            transientVfxSystem.spawn(
-                TransientVfxType.BUSH_LEAVES,
-                overworldBushInteraction.effectOriginXForLocation(location),
-                overworldBushInteraction.effectOriginYForLocation(location)
-            );
-        }
-
-        if (droppableRupeeSystem != null) {
-            droppableRupeeSystem.maybeSpawnFromBush(
-                originalObjectId,
-                overworldBushInteraction.effectOriginXForLocation(location),
-                overworldBushInteraction.effectOriginYForLocation(location)
-            );
-        }
-
-        if (areaIndex >= 0 && areaIndex < room.roomObjectsArea().length
-            && room.roomObjectsArea()[areaIndex] == OBJECT_GROUND_STAIRS) {
-            room.replaceFirstWarpTile(location);
-        }
-    }
-
-    private boolean tryOpenOverworldDialog(int key) {
-        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
-            || overworldDialogInteraction == null
-            || roomSession == null
-            || !roomSession.hasActiveRoom()
-            || link == null) {
-            return false;
-        }
-        ActiveRoom room = roomSession.activeRoom();
-        return overworldDialogInteraction.tryOpenSignpostDialog(
-            room.roomId(),
-            room.mapCategory(),
-            room.roomObjectsArea(),
-            link.pixelX(),
-            link.pixelY(),
-            link.direction(),
-            true,
-            currentOverworldDialogBlockers(),
-            dialogController);
-    }
-
-    private boolean tryOpenChest(int key) {
-        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
-            || roomSession == null
-            || !roomSession.hasActiveRoom()
-            || link == null
-            || playerState == null
-            || currentOverworldDialogBlockers().blocksOpening()) {
-            return false;
-        }
-        RoomSession.ChestOpenResult result = roomSession.tryOpenChest(
-            link.pixelX(), link.pixelY(), link.direction(), true, playerState.swordLevel());
-        return result.opened();
-    }
-
-    private void openEntityDialogRequests() {
-        if (roomSession == null || dialogController == null || dialogTextLoader == null
-            || link == null || dialogController.isActive()) {
-            return;
-        }
-        for (var request : roomSession.consumeEntityDialogRequests()) {
-            SignpostDialogRef dialogRef = new SignpostDialogRef(
-                request.tableId(), request.dialogLowId());
-            if (request.forceTop()) {
-                dialogController.openPreformatted(dialogTextLoader.load(dialogRef),
-                    DialogController.BoxPosition.TOP);
-                return;
-            }
-            dialogController.openPreformattedForLinkY(
-                dialogTextLoader.load(dialogRef),
-                LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
-            return;
-        }
     }
 
     private OverworldDialogBlockers currentOverworldDialogBlockers() {
@@ -1657,5 +1501,14 @@ public class GameSession {
             () -> { currentScreen = fileSaveScreen; fileMenuController = null; },
             controller -> fileSaveController = controller,
             this::loadFileMenuBackgroundScene);
+    }
+    private BushInteraction bushes() {
+        return new BushInteraction(roomSession, overworldBushInteraction, link, equipmentController, gameplaySoundSink, transientVfxSystem, droppableRupeeSystem);
+    }
+    private DialogInteractions dialogs() {
+        return new DialogInteractions(inputConfig, overworldDialogInteraction, roomSession, link, playerState, dialogController, dialogTextLoader, this::currentOverworldDialogBlockers);
+    }
+    private LiftInteraction lifting() {
+        return new LiftInteraction(inputState, inputConfig, playerState, link, roomSession, this::romDirectionForLink);
     }
 }
