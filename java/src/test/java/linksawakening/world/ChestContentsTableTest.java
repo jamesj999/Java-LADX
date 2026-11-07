@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@linksawakening.testing.RequiresRom
 final class ChestContentsTableTest {
 
     @Test
@@ -80,8 +81,7 @@ final class ChestContentsTableTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = ChestContentsTableTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

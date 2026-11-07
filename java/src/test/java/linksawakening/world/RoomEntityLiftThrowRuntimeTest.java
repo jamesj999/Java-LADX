@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class RoomEntityLiftThrowRuntimeTest {
 
     @Test
@@ -648,8 +649,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = RoomEntityLiftThrowRuntimeTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

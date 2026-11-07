@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class MusicCatalogTest {
     @Test
     void resolvesRepresentativeTracksFromBothMusicBanks() {
@@ -47,7 +48,7 @@ final class MusicCatalogTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = MusicCatalogTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

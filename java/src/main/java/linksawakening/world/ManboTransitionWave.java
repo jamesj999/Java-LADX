@@ -1,11 +1,11 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /** Decodes the bank-$14 scanline wave table used by RenderTransitionEffect. */
 public final class ManboTransitionWave {
-    private static final int WAVE_TABLE_BANK = 0x14;
-    private static final int WAVE_TABLE_ADDRESS = 0x4EE8;
     private static final int WAVE_TABLE_SIZE = 0x100;
 
     private final int[] signedOffsets;
@@ -15,12 +15,12 @@ public final class ManboTransitionWave {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         signedOffsets = new int[WAVE_TABLE_SIZE];
-        int source = RomBank.romOffset(WAVE_TABLE_BANK, WAVE_TABLE_ADDRESS);
+        int source = RomSymbols.Data_014_4EE8.offset();
         if (source < 0 || source > romData.length - WAVE_TABLE_SIZE) {
             throw new IllegalArgumentException("Manbo transition wave table exceeds ROM bounds");
         }
         for (int index = 0; index < signedOffsets.length; index++) {
-            signedOffsets[index] = (byte) romData[source + index];
+            signedOffsets[index] = (byte) new Rom(romData).u8(RomSymbols.Data_014_4EE8.plus(index));
         }
     }
 

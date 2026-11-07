@@ -5,9 +5,10 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+@linksawakening.testing.RequiresRom
 final class InventoryDungeonPanelTest {
     private byte[] rom() throws Exception {
-        return Files.readAllBytes(Path.of("src/main/resources/rom/azle.gbc"));
+        try (var stream = linksawakening.testing.TestRom.open()) { return stream.readAllBytes(); }
     }
 
     @Test

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class TarinRaccoonRuntimeTest {
     private static final int ROOM_MYSTERIOUS_WOODS = 0x51;
     private static final int ENTITY_TARIN = 0x3F;
@@ -674,8 +675,7 @@ final class TarinRaccoonRuntimeTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = TarinRaccoonRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

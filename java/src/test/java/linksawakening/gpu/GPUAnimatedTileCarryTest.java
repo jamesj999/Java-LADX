@@ -4,11 +4,12 @@ import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GPUAnimatedTileCarryTest {
     @Test
     void dungeonAndLavaPingPongDoNotOverwriteTheLinearAnimationOffset() throws Exception {
         byte[] rom;
-        try (var input = getClass().getResourceAsStream("/rom/azle.gbc")) { rom = input.readAllBytes(); }
+        try (var input = linksawakening.testing.TestRom.open()) { rom = input.readAllBytes(); }
         for (int group : new int[]{4, 6}) {
             GPU gpu = new GPU();
             gpu.loadAnimatedTilesGroup(rom, 2);

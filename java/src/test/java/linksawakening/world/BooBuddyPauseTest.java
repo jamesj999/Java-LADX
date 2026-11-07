@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class BooBuddyPauseTest {
     @ParameterizedTest
     @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
@@ -163,7 +164,7 @@ final class BooBuddyPauseTest {
 
     private static RoomEntityRuntime runtime() throws IOException {
         byte[] rom;
-        try (var stream = BooBuddyPauseTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }

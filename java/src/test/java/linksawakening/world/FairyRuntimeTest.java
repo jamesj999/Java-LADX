@@ -12,6 +12,7 @@ import java.util.function.IntSupplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class FairyRuntimeTest {
 
     @Test
@@ -96,8 +97,7 @@ final class FairyRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = FairyRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

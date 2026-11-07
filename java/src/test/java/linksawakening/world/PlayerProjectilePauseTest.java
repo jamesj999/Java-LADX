@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class PlayerProjectilePauseTest {
     @ParameterizedTest
     @CsvSource({"1, dialog", "4, dialog", "0xDF, dialog",
@@ -101,8 +102,7 @@ final class PlayerProjectilePauseTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        try (var stream = PlayerProjectilePauseTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }

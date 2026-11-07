@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class OcarinaPopupRendererTest {
 
     @Test
@@ -71,8 +72,7 @@ final class OcarinaPopupRendererTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = OcarinaPopupRendererTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }

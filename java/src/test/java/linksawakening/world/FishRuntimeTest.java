@@ -14,6 +14,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@linksawakening.testing.RequiresRom
 final class FishRuntimeTest {
 
     @Test
@@ -71,8 +72,7 @@ final class FishRuntimeTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = FishRuntimeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

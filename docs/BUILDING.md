@@ -14,9 +14,11 @@ The verifyRom helper reports a non-fatal MD5 mismatch against
 
 ./gradlew test runs all tests when a ROM is available. Without one,
 ROM integration tests are skipped with a reason. ./gradlew romFreeTest
-always skips ROM tests. Classification is centralized in
-java/src/test/resources/rom-tests.txt; add new ROM integration test classes
-there (including classes that indirectly depend on ROM helpers).
+excludes tests tagged rom. Mark every new ROM integration test class with
+@linksawakening.testing.RequiresRom (including indirect ROM consumers).
+This composed annotation supplies the JUnit rom tag and skips tests when the
+ROM is absent. Use TestRom.open() for test ROM resource reads; unmarked test
+classes fail with an instruction to add @RequiresRom. No classifier list is needed.
 
 ./gradlew distZip builds a distribution for the current platform.
 Override with -Pplatform=macos, macos-arm64, linux, linux-arm64, or windows.

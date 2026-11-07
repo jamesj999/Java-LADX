@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class GameplaySoundEffectMapTest {
 
     @Test
@@ -150,8 +151,7 @@ final class GameplaySoundEffectMapTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

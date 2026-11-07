@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class PlayerProjectileEnemyCollisionTest {
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 0xDF})
@@ -197,7 +198,7 @@ final class PlayerProjectileEnemyCollisionTest {
     private static RoomEntityRuntime runtime(int projectileType, int targetType, int dx, int dy)
             throws IOException {
         byte[] rom;
-        try (var stream = PlayerProjectileEnemyCollisionTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM");
             }

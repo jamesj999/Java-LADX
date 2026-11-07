@@ -8,11 +8,12 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@linksawakening.testing.RequiresRom
 final class InventoryHudPaletteTest {
     @Test
     void closedHudUsesRoomPalettesAndOpenInventoryUsesItsOwnPalettes() throws Exception {
         byte[] rom;
-        try (var in = getClass().getResourceAsStream("/rom/azle.gbc")) {
+        try (var in = linksawakening.testing.TestRom.open()) {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();

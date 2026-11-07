@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 
+@linksawakening.testing.RequiresRom
 final class IntroEmulatorCapture {
 
     public static void main(String[] args) throws Exception {
@@ -71,8 +72,7 @@ final class IntroEmulatorCapture {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = IntroEmulatorCapture.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

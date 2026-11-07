@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class IndoorTorchPaletteEffectTest {
 
     @ParameterizedTest
@@ -180,8 +181,7 @@ final class IndoorTorchPaletteEffectTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = IndoorTorchPaletteEffectTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new AssertionError("Missing ROM resource");
             }

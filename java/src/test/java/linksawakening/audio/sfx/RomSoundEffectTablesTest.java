@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@linksawakening.testing.RequiresRom
 final class RomSoundEffectTablesTest {
     @Test
     void readsHandlerPointersFromRomTables() throws IOException {
@@ -26,7 +27,7 @@ final class RomSoundEffectTablesTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = RomSoundEffectTablesTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

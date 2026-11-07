@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@linksawakening.testing.RequiresRom
 final class InventoryOcarinaIntegrationTest {
 
     @Test
@@ -96,8 +97,7 @@ final class InventoryOcarinaIntegrationTest {
     }
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
-        try (InputStream stream = InventoryOcarinaIntegrationTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return InventoryTilemapLoader.loadFromRom(stream.readAllBytes());
         }
     }
