@@ -65,6 +65,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomDoorInteractions roomDoorInteractions = new RoomDoorInteractions(this);
     final RoomObjectMutations roomObjectMutations = new RoomObjectMutations(this);
     final RoomTransitionController roomTransitionController = new RoomTransitionController(this);
     final RoomLoadCoordinator roomLoadCoordinator = new RoomLoadCoordinator(this);
@@ -2089,113 +2090,10 @@ public final class RoomSession {
      * The source at $00:1F80 samples SwordAreaX/YForDirection relative to
      * Link's sprite top-left (ROM entity coordinates minus 8/16).
      */
-    public ChestOpenResult tryOpenChest(int linkPixelX, int linkPixelY, int linkDirection,
-                                        boolean actionPressed, int swordLevel) {
-        if (!actionPressed || linkDirection != Link.DIRECTION_UP
-            || activeRoom == null || entityBridge.entityRuntime == null) {
-            return new ChestOpenResult(false, -1, -1, -1);
-        }
-        if (linkPixelX < 0 || linkPixelY < 0
-            || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
-            return new ChestOpenResult(false, -1, -1, -1);
-        }
-        int column = Math.floorDiv(linkPixelX + (romData[0x1F4B] & 0xFF), 0x10);
-        int row = Math.floorDiv(linkPixelY + (romData[0x1F4F] & 0xFF), 0x10);
-        if (column < 0 || column >= RoomConstants.OBJECTS_PER_ROW
-            || row < 0 || row >= RoomConstants.OBJECTS_PER_COLUMN) {
-            return new ChestOpenResult(false, -1, -1, -1);
-        }
-        int location = (row << 4) | column;
-        if (objectAtRoomLocation(location) != 0xA0) {
-            return new ChestOpenResult(false, -1, -1, location);
-        }
-        int itemType = chestContentsTable.itemForSpawn(
-            activeRoom.mapId(), activeRoom.roomId(), swordLevel,
-            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD);
-        int slot = entityBridge.entityRuntime.spawnChestWithItem(column << 4, row << 4, itemType);
-        if (slot < 0) {
-            return new ChestOpenResult(false, -1, -1, location);
-        }
-
-        writeBombPuzzleObject(location, 0xA1);
-        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? roomState.overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
-        status[activeRoom.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
-        // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
-        // from the ROM overlay would discard other live mutations (cut bushes).
-        if (activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            refreshActiveRoomTilemap();
-        }
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? activeRoom.gbcOverlay() : null);
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return new ChestOpenResult(true, itemType, slot, location);
-    }
+    public ChestOpenResult tryOpenChest(int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) { return roomDoorInteractions.tryOpenChest(linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel); }
 
     /** Mirrors bank 2's locked-door branch for physics categories $90-$93. */
-    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY,
-                                          int linkDirection, int collisionType) {
-        if (activeRoom == null
-            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || indoorKeyDoorAnimationCountdown != 0) {
-            return false;
-        }
-        int doorDirection = keyDoorDirectionIndex(linkDirection);
-        if (doorDirection < 0
-            || (collisionType & keyDoorCollisionBit(doorDirection)) == 0) {
-            return false;
-        }
-        int expectedPhysics = KEY_DOOR_PHYSICS_BASE + doorDirection;
-        int touchedLocation = -1;
-        boolean bossDoor = false;
-        for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
-            int physics = overworldCollision.objectPhysicsFlagAtPoint(point[0], point[1]);
-            if (physics == expectedPhysics || (doorDirection == 0 && physics == 0x98)) {
-                int column = Math.floorDiv(point[0], 0x10);
-                int row = Math.floorDiv(point[1], 0x10);
-                touchedLocation = (row << 4) | column;
-                bossDoor = physics == 0x98;
-                break;
-            }
-        }
-        if (touchedLocation < 0) {
-            return false;
-        }
-        int touchedObject = objectAtRoomLocation(touchedLocation);
-        if (bossDoor) {
-            int objectOffset = touchedObject - 0xA4;
-            if (objectOffset < 0 || objectOffset > 1
-                || !alignedWithIndoorKeyDoor(touchedLocation - objectOffset,
-                    0, linkPixelX, linkPixelY)) {
-                return false;
-            }
-            if (roomState.dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
-                entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x07));
-                return true;
-            }
-            indoorBossDoorOpening = true;
-            indoorKeyDoorDirection = 0;
-            indoorKeyDoorLocation = touchedLocation - objectOffset;
-            indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
-            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-            return true;
-        }
-        int objectOffset = touchedObject - KEY_DOOR_CLOSED_OBJECTS[doorDirection];
-        if (objectOffset < 0 || objectOffset > 1) return false;
-        int doorLocation = touchedLocation
-            - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
-        if (!alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
-            || !roomState.dungeonItemState.consumeSmallKey()) return false;
-        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
-            |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
-        indoorKeyDoorDirection = doorDirection;
-        indoorKeyDoorLocation = doorLocation;
-        indoorKeyDoorAnimationCountdown = KEY_DOOR_ANIMATION_FRAMES;
-        colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        return true;
-    }
+    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return roomDoorInteractions.tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
     /** $02:70F2-$710F checks ROM Link coordinates against the authored door origin. */
     static boolean alignedWithIndoorKeyDoor(int location, int direction,
@@ -2207,220 +2105,23 @@ public final class RoomSession {
     }
 
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
-    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY,
-                                      int linkDirection, int collisionType) {
-        if (activeRoom == null
-            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || pushedBlockMotionFrames != 0) {
-            pushBlockContactTicks = 0;
-            return false;
-        }
-        int direction = keyDoorDirectionIndex(linkDirection);
-        if (direction < 0 || (collisionType & keyDoorCollisionBit(direction)) == 0) {
-            pushBlockContactTicks = 0;
-            return false;
-        }
-        int touchedLocation = -1;
-        boolean keyholeBlockContact = false;
-        for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
-            int column = Math.floorDiv(point[0], 0x10);
-            int row = Math.floorDiv(point[1], 0x10);
-            int location = (row << 4) | column;
-            int object = objectAtRoomLocation(location);
-            if (object == OBJECT_PUSHABLE_BLOCK) {
-                touchedLocation = location;
-                break;
-            }
-            keyholeBlockContact |= object == OBJECT_KEYHOLE_BLOCK;
-        }
-        if (touchedLocation < 0) {
-            if (!keyholeBlockContact) {
-                pushBlockContactTicks = 0;
-            }
-            return false;
-        }
-        pushBlockContactTicks++;
-        if (pushBlockContactTicks < PUSH_BLOCK_CONTACT_TICKS) {
-            return true;
-        }
-        pushBlockContactTicks = 0;
-        int destination = touchedLocation + switch (direction) {
-            case 0 -> -0x10;
-            case 1 -> 0x10;
-            case 2 -> -1;
-            case 3 -> 1;
-            default -> 0;
-        };
-        int sourceIndex = RoomConstants.ROOM_OBJECTS_BASE + touchedLocation;
-        int destinationX = ((destination & 0x0F) << 4) + 0x08;
-        int destinationY = (destination & 0xF0) + 0x10;
-        if (PhysicsFlags.blocksWalking(
-                overworldCollision.objectPhysicsFlagAtEntityPosition(
-                    destinationX, destinationY))) {
-            return true;
-        }
-        int sourceX = ((touchedLocation & 0x0F) << 4) + 0x08;
-        int sourceY = (touchedLocation & 0xF0) + 0x10;
-        int spawnedSlot = entityBridge.entityRuntime == null
-            ? -1 : entityBridge.entityRuntime.spawnPushedBlock(sourceX, sourceY);
-        if (spawnedSlot < 0) {
-            return true;
-        }
-        activeRoom.roomObjectsArea()[sourceIndex] = OBJECT_FLOOR_OD;
-        pushedBlockSourceLocation = touchedLocation;
-        pushedBlockDestinationLocation = destination;
-        pushedBlockDirection = direction;
-        pushedBlockMotionFrames = PUSHED_BLOCK_MOTION_FRAMES;
-        pushedBlockEntitySlot = spawnedSlot;
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-        if (entityBridge.entityRuntime != null) {
-            activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        }
-        return true;
-    }
+    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return roomDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
     /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
-    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY,
-                                       int linkDirection,
-                                       boolean braceletButtonHeld,
-                                       int pressedButtonsMask) {
-        return tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection,
-            braceletButtonHeld, pressedButtonsMask, false);
-    }
+    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) { return roomDoorInteractions.tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask); }
 
     /** Includes the source's shortened pull while Piece of Power is active. */
-    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY,
-                                       int linkDirection,
-                                       boolean braceletButtonHeld,
-                                       int pressedButtonsMask,
-                                       boolean pieceOfPowerActive) {
-        if (activeRoom == null || entityBridge.entityRuntime == null
-            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || !braceletButtonHeld || entityBridge.entityRuntime.liftedEntityState().active()) {
-            indoorPotPullFrames = 0;
-            return false;
-        }
-        int oppositeButton = switch (linkDirection) {
-            case Link.DIRECTION_UP -> 0x08;
-            case Link.DIRECTION_DOWN -> 0x04;
-            case Link.DIRECTION_LEFT -> 0x01;
-            case Link.DIRECTION_RIGHT -> 0x02;
-            default -> 0;
-        };
-        if (oppositeButton == 0 || (pressedButtonsMask & oppositeButton) == 0) {
-            indoorPotPullFrames = 0;
-            return false;
-        }
-
-        int swordAreaX = switch (linkDirection) {
-            case Link.DIRECTION_RIGHT -> 0x0C;
-            case Link.DIRECTION_LEFT -> 0x03;
-            case Link.DIRECTION_UP, Link.DIRECTION_DOWN -> 0x08;
-            default -> 0;
-        };
-        int swordAreaY = switch (linkDirection) {
-            case Link.DIRECTION_RIGHT, Link.DIRECTION_LEFT -> 0x0A;
-            case Link.DIRECTION_UP -> 0x05;
-            case Link.DIRECTION_DOWN -> 0x10;
-            default -> 0;
-        };
-        int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
-        int objectTop = (linkPixelY + swordAreaY) & 0xF0;
-        int touchedLocation = objectTop | (objectLeft >>> 4);
-        int touchedObject = objectAtRoomLocation(touchedLocation);
-        if (touchedObject != OBJECT_LIFTABLE_POT
-            && touchedObject != OBJECT_POT_WITH_SWITCH) {
-            indoorPotPullFrames = 0;
-            return false;
-        }
-        indoorPotPullFrames++;
-        int pullFrames = pieceOfPowerActive ? 0x03 : INDOOR_POT_PULL_FRAMES;
-        if (indoorPotPullFrames < pullFrames) {
-            return true;
-        }
-        indoorPotPullFrames = 0;
-
-        activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + touchedLocation] =
-            touchedObject == OBJECT_POT_WITH_SWITCH
-                ? OBJECT_SWITCH_BUTTON : 0x0D;
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-        int x = linkPixelX + 0x08;
-        int y = linkPixelY + 0x10;
-        entityBridge.entityRuntime.spawnLiftedRoomObject(
-            x, y, romDirectionForProjectileCollision(linkDirection), 0);
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean tryLiftIndoorObject(int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask, boolean pieceOfPowerActive) { return roomDoorInteractions.tryLiftIndoorObject(linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive); }
 
     int entityPhysicsFlagsForTest(int slot) {
         return entityBridge.entityRuntime == null ? 0 : entityBridge.entityRuntime.physicsFlags(slot);
     }
 
     /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
-    public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY,
-                                              int linkDirection, int collisionType) {
-        if (tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType)) {
-            return true;
-        }
-        return tryUnlockIndoorKeyholeBlock(
-            linkPixelX, linkPixelY, linkDirection, collisionType);
-    }
+    public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return roomDoorInteractions.tryInteractWithIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
     /** Mirrors bank 2's $DE interactive-block branch and TryOpenLockedDoor. */
-    public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY,
-                                               int linkDirection, int collisionType) {
-        if (activeRoom == null
-            || activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
-            pushBlockContactTicks = 0;
-            return false;
-        }
-        int direction = keyDoorDirectionIndex(linkDirection);
-        if (direction < 0 || (collisionType & keyDoorCollisionBit(direction)) == 0) {
-            pushBlockContactTicks = 0;
-            return false;
-        }
-        int touchedLocation = -1;
-        for (int[] point : keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
-            int column = Math.floorDiv(point[0], 0x10);
-            int row = Math.floorDiv(point[1], 0x10);
-            int location = (row << 4) | column;
-            if (objectAtRoomLocation(location) == OBJECT_KEYHOLE_BLOCK) {
-                touchedLocation = location;
-                break;
-            }
-        }
-        if (touchedLocation < 0) {
-            pushBlockContactTicks = 0;
-            return false;
-        }
-        if (roomState.dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
-            pushBlockContactTicks = 0;
-            entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
-            return true;
-        }
-        pushBlockContactTicks++;
-        if (pushBlockContactTicks < KEYHOLE_BLOCK_CONTACT_TICKS) {
-            return true;
-        }
-        pushBlockContactTicks = 0;
-        roomState.dungeonItemState.consumeSmallKey();
-
-        writeBombPuzzleObject(touchedLocation, OBJECT_FLOOR_OD);
-        indoorStatusTableForMap(activeRoom.mapId())[activeRoom.roomId()]
-            |= (byte) INDOOR_ROOM_STATUS_EVENT_3;
-        colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        refreshActiveRoomTilemap();
-        overworldCollision.setRoom(activeRoom.roomObjectsArea());
-        overworldCollision.setGbcOverlay(null);
-        return true;
-    }
+    public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) { return roomDoorInteractions.tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType); }
 
     static int keyDoorDirectionIndex(int linkDirection) {
         return switch (linkDirection) {
@@ -2457,143 +2158,25 @@ public final class RoomSession {
      * keyhole is automatic: walking upward into physics category $C0 either
      * opens Dialog230 or schedules the ROM's $DF-frame gate-opening rumble.
      */
-    public boolean tryUnlockTailCaveKeyhole(int linkPixelX, int linkPixelY,
-                                            int linkDirection, int collisionType,
-                                            boolean hasTailKey) {
-        return tryUnlockOverworldDungeonKeyhole(
-            linkPixelX, linkPixelY, linkDirection, collisionType,
-            ROOM_OW_TAIL_CAVE_ENTRANCE, hasTailKey, TAIL_KEYHOLE_DIALOG_ID);
-    }
+    public boolean tryUnlockTailCaveKeyhole(int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) { return roomDoorInteractions.tryUnlockTailCaveKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey); }
 
     /** Mirrors bank 2's room-$B5 Slime Key branch of the shared keyhole handler. */
-    public boolean tryUnlockKeyCavernKeyhole(int linkPixelX, int linkPixelY,
-                                              int linkDirection, int collisionType,
-                                              int goldenLeavesCount) {
-        return tryUnlockOverworldDungeonKeyhole(
-            linkPixelX, linkPixelY, linkDirection, collisionType,
-            ROOM_OW_KEY_CAVERN_ENTRANCE, (goldenLeavesCount & 0xFF) == 0x06,
-            SLIME_KEYHOLE_DIALOG_ID);
-    }
+    public boolean tryUnlockKeyCavernKeyhole(int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) { return roomDoorInteractions.tryUnlockKeyCavernKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount); }
 
-    boolean tryUnlockOverworldDungeonKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType,
-            int roomId, boolean hasKey, int dialogLowId) {
-        if (activeRoom == null
-            || activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
-            || activeRoom.roomId() != roomId
-            || linkDirection != Link.DIRECTION_UP
-            || (collisionType & LINK_COLLISION_TYPE_UP) == 0
-            || (roomState.overworldRoomStatus[roomId] & ROOM_STATUS_EVENT_1) != 0) {
-            return false;
-        }
-
-        int collisionPointY = linkPixelY + 0x06;
-        boolean leftProbeIsKeyhole = overworldCollision.objectPhysicsFlagAtPoint(
-            linkPixelX + 0x06, collisionPointY) == PhysicsFlags.CAT_KEYHOLE;
-        boolean rightProbeIsKeyhole = overworldCollision.objectPhysicsFlagAtPoint(
-            linkPixelX + 0x09, collisionPointY) == PhysicsFlags.CAT_KEYHOLE;
-        if (!leftProbeIsKeyhole && !rightProbeIsKeyhole) {
-            return false;
-        }
-        if (!hasKey) {
-            entityBridge.pendingRoomDialogRequests.add(new DialogRequest(
-                KEYHOLE_DIALOG_TABLE, dialogLowId));
-            return true;
-        }
-
-        roomState.overworldRoomStatus[roomId] |= (byte) ROOM_STATUS_EVENT_1;
-        tailCaveKeyholeCountdown = TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
-        tailCaveResumeMusicTrack = entityDefaultMusicTrack;
-        entityBridge.pendingRoomMusicTrack = 0x00;
-        return true;
-    }
+    boolean tryUnlockOverworldDungeonKeyhole( int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int roomId, boolean hasKey, int dialogLowId) { return roomDoorInteractions.tryUnlockOverworldDungeonKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, roomId, hasKey, dialogLowId); }
 
     /** One RenderTranscientRumble step, called once per unpaused gameplay frame. */
-    public int tickTailCaveKeyholeSequence() {
-        tickNextWorldMusicTrackCountdown();
-        if (tailCaveKeyholeCountdown == 0) {
-            tailCaveFinalMotionBlockPending = false;
-            return 0;
-        }
-        tailCaveKeyholeCountdown = (tailCaveKeyholeCountdown - 1) & 0xFF;
-        int countdown = tailCaveKeyholeCountdown;
-        if (countdown == 0xDE) {
-            colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        }
-        if (countdown == 0xA0) {
-            colorShellSoundSink.play(GameplaySoundEvent.OPEN_KEY_CAVERN);
-        }
-        if (countdown < 0x20 && (countdown & 0x0F) == 0x08) {
-            writeTailCaveGateAnimationFrame(countdown);
-        }
-        if (countdown == TAIL_CAVE_RUMBLE_GATE_FRAME) {
-            int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + TAIL_CAVE_GATE_LOCATION;
-            if (activeRoom != null
-                && activeRoom.roomObjectsArea()[gateIndex] == OBJECT_CLOSED_GATE) {
-                activeRoom.roomObjectsArea()[gateIndex] = OBJECT_CAVE_DOOR;
-                // BackupObjectInRAM2($82): force-copy [hl], then return to bank 2.
-                // $82 is a control argument, not the replacement object value.
-                int overlayIndex = 0x10;
-                activeRoom.gbcOverlay()[overlayIndex] = OBJECT_CAVE_DOOR;
-                activeRoom.renderValues()[gateIndex] = OBJECT_CAVE_DOOR;
-                // The source's draw command changes tile IDs only; keep attrs.
-                refreshOverworldCollisionAfterObjectMutation();
-            }
-            colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
-        }
-        if (countdown == 0x0A) {
-            nextWorldMusicTrackCountdown = 0x50;
-        }
-        if (countdown == 0) {
-            tailCaveFinalMotionBlockPending = true;
-        }
-        if (countdown < 0x20 || countdown >= 0x9C) {
-            return 0;
-        }
-        return (countdown & 0x04) == 0 ? 1 : -2;
-    }
+    public int tickTailCaveKeyholeSequence() { return roomDoorInteractions.tickTailCaveKeyholeSequence(); }
 
-    public boolean tailCaveKeyholeSequenceActive() {
-        return tailCaveKeyholeCountdown != 0 || tailCaveFinalMotionBlockPending;
-    }
+    public boolean tailCaveKeyholeSequenceActive() { return roomDoorInteractions.tailCaveKeyholeSequenceActive(); }
 
-    int tailCaveKeyholeCountdownForTest() {
-        return tailCaveKeyholeCountdown;
-    }
+    int tailCaveKeyholeCountdownForTest() { return roomDoorInteractions.tailCaveKeyholeCountdownForTest(); }
 
-    int nextWorldMusicTrackCountdownForTest() {
-        return nextWorldMusicTrackCountdown;
-    }
+    int nextWorldMusicTrackCountdownForTest() { return roomDoorInteractions.nextWorldMusicTrackCountdownForTest(); }
 
-    void writeTailCaveGateAnimationFrame(int countdown) {
-        if (activeRoom == null
-            || activeRoom.roomId() != ROOM_OW_TAIL_CAVE_ENTRANCE
-                && activeRoom.roomId() != ROOM_OW_KEY_CAVERN_ENTRANCE) {
-            return;
-        }
-        int frameIndex = (countdown >>> 3) & 0x02;
-        int frameOffset = RomBank.romOffset(0x02, 0x5642) + frameIndex;
-        int topTile = romData[frameOffset] & 0xFF;
-        int bottomTile = romData[frameOffset + 1] & 0xFF;
-        int tileX = (TAIL_CAVE_GATE_LOCATION & 0x0F) * 2;
-        int tileY = (TAIL_CAVE_GATE_LOCATION >>> 4) * 2;
-        int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-        int[] tiles = activeRoom.tileIds();
-        tiles[topLeft] = topTile;
-        tiles[topLeft + 1] = topTile;
-        tiles[topLeft + RoomConstants.ROOM_TILE_WIDTH] = bottomTile;
-        tiles[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = bottomTile;
-    }
+    void writeTailCaveGateAnimationFrame(int countdown) { roomDoorInteractions.writeTailCaveGateAnimationFrame(countdown); }
 
-    void tickNextWorldMusicTrackCountdown() {
-        if (nextWorldMusicTrackCountdown == 0) {
-            return;
-        }
-        nextWorldMusicTrackCountdown--;
-        if (nextWorldMusicTrackCountdown == 0) {
-            entityBridge.pendingRoomMusicTrack = tailCaveResumeMusicTrack;
-        }
-    }
+    void tickNextWorldMusicTrackCountdown() { roomDoorInteractions.tickNextWorldMusicTrackCountdown(); }
 
     void writeBombPuzzleObject(int location, int objectId) { roomObjectMutations.writeBombPuzzleObject(location, objectId); }
 
