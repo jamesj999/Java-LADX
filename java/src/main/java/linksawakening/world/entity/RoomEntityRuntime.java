@@ -101,7 +101,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private final RomTables romTables;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
-    public final EntitySpriteHandlerCatalog spriteHandlers;
+    final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
     final ChestContentsTable chestContentsTable;
 

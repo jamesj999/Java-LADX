@@ -86,11 +86,11 @@ final class PokeyHandler {
               if (pokeyUpdate.segmentSpawn() != null) {
                 state.enemySpawns().spawnPokeySegment(pokeyUpdate.segmentSpawn());
               }
-              if (state.runtime.spriteHandlers != null) {
+              if (state.sprites() != null) {
                 state.updated =
                     withDefinition(
                         state.updated,
-                        state.runtime.spriteHandlers.forPokeyState(pokeyUpdate.renderInertia()),
+                        state.sprites().forPokeyState(pokeyUpdate.renderInertia()),
                         state.updated.spriteVariant());
               }
             }

@@ -54,11 +54,11 @@ final class MiniMoldormHandler {
                     state.frame);
             state.updated = miniUpdate.entity();
             state.slot().setTransitionCountdown(slot, miniUpdate.transitionCountdown());
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forMiniMoldormState(
+                      state.sprites().forMiniMoldormState(
                           miniUpdate.headSpriteVariant(),
                           state.updated.x(),
                           (state.updated.y() - state.updated.z()) & 0xFF,

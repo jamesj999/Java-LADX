@@ -87,11 +87,11 @@ final class MoblinKingHandler {
                 state.runtime.enemyPhysicsFlags[state.entity.slot()] &=
                     ~state.runtime.ENTITY_PHYSICS_HARMLESS;
               }
-              if (state.runtime.spriteHandlers != null) {
+              if (state.sprites() != null) {
                 state.updated =
                     withDefinition(
                         state.updated,
-                        state.runtime.spriteHandlers.forMoblinKingState(
+                        state.sprites().forMoblinKingState(
                             state.runtime.moblinKingMotion.bodyVariant(state.entity.slot()),
                             state.runtime.moblinKingMotion.weaponVariant(state.entity.slot()),
                             state.updated.z() != 0),

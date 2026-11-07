@@ -79,10 +79,10 @@ final class MoldormHandler {
             if (!state.handlerInteractive
                 || state.countdownBlocksInteraction
                 || state.moldormIntroOpenedThisFrame) {
-              if (state.runtime.spriteHandlers != null) {
+              if (state.sprites() != null) {
                 state.replaceEntity(withDefinition(
                         state.entity,
-                        state.runtime.spriteHandlers.forMoldormState(
+                        state.sprites().forMoldormState(
                             state.runtime.moldormMotion.headSpriteVariant(slot),
                             state.entity.x(),
                             (state.entity.y() - state.entity.z()) & 0xFF,
@@ -129,12 +129,12 @@ final class MoldormHandler {
                       EntityCombatEvent.SoundChannel.NOISE,
                       0x1B));
             }
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               MoldormMotion.Presentation presentation = moldormUpdate.presentation();
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forMoldormPresentation(
+                      state.sprites().forMoldormPresentation(
                           presentation.headSpriteVariant(),
                           presentation.headX(),
                           presentation.headY(),

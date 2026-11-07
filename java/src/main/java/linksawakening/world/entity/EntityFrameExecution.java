@@ -161,6 +161,8 @@ public final class EntityFrameExecution {
     this.context = context;
   }
 
+  public linksawakening.entity.EntitySpriteHandlerCatalog sprites() { return runtime.spriteHandlers; }
+
   public EntityLinkView link() { return runtime.linkView; }
 
   public EntitySlotView slot() { return runtime.slotView; }

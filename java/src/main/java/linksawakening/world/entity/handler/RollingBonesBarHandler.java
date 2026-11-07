@@ -73,11 +73,11 @@ final class RollingBonesBarHandler {
                 state.runtime.rollingBonesMotion.advanceBar(
                     state.entity, state.frame, state.backgroundCollision);
             state.updated = barUpdate.entity();
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               state.updated =
                   withDefinition(
                       state.updated,
-                      state.runtime.spriteHandlers.forRollingBonesBar(
+                      state.sprites().forRollingBonesBar(
                           0, state.updated.y(), barUpdate.animationVariant()),
                       0);
             }

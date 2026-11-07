@@ -65,9 +65,9 @@ final class UrchinHandler {
                       EntityCombatEvent.SoundChannel.JINGLE,
                       urchinUpdate.jingleId()));
             }
-            if (state.runtime.spriteHandlers != null) {
+            if (state.sprites() != null) {
               EntitySpriteDefinition urchinDefinition =
-                  state.runtime.spriteHandlers.forUrchinState(state.creditsGameplay);
+                  state.sprites().forUrchinState(state.creditsGameplay);
               state.updated =
                   withDefinition(state.updated, urchinDefinition, state.updated.spriteVariant());
             }
