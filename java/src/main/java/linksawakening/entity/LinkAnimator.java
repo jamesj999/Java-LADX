@@ -190,7 +190,7 @@ final class LinkAnimator {
             return swordAcquisitionAnimationState;
         }
         if (link.linkAirborne.fallingIntoPit) {
-            int frame = Math.min(LinkAnimator.FALL_ANIMATION_STATE.length - 1, link.linkAirborne.fallingFrameCounter / Link.FALL_FRAME_TICKS);
+            int frame = Math.min(LinkAnimator.FALL_ANIMATION_STATE.length - 1, link.linkAirborne.fallingFrameCounter / LinkRomConstants.FALL_FRAME_TICKS);
             return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 

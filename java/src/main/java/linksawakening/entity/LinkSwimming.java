@@ -37,7 +37,7 @@ final class LinkSwimming {
         }
 
         int mask = link.buildJoypadMask();
-        int newDirection = Link.JOYPAD_TO_DIRECTION[mask];
+        int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1) {
             link.direction = newDirection;
         }
@@ -99,7 +99,7 @@ final class LinkSwimming {
 
         if (link.movingThisFrame) {
             link.walkTickCounter++;
-            if (link.walkTickCounter >= Link.WALK_FRAME_TICKS) {
+            if (link.walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
                 link.walkTickCounter = 0;
                 link.walkFrame ^= 1;
             }

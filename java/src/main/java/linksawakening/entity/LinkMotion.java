@@ -59,10 +59,10 @@ final class LinkMotion {
             collisionProbePixelX[moveDirection] = candidatePixelX;
             collisionProbePixelY[moveDirection] = candidatePixelY;
             romCollisionType |= switch (moveDirection) {
-                case Link.DIRECTION_UP -> Link.COLLISION_TYPE_UP;
-                case Link.DIRECTION_DOWN -> Link.COLLISION_TYPE_DOWN;
-                case Link.DIRECTION_LEFT -> Link.COLLISION_TYPE_LEFT;
-                case Link.DIRECTION_RIGHT -> Link.COLLISION_TYPE_RIGHT;
+                case Link.DIRECTION_UP -> LinkRomConstants.COLLISION_TYPE_UP;
+                case Link.DIRECTION_DOWN -> LinkRomConstants.COLLISION_TYPE_DOWN;
+                case Link.DIRECTION_LEFT -> LinkRomConstants.COLLISION_TYPE_LEFT;
+                case Link.DIRECTION_RIGHT -> LinkRomConstants.COLLISION_TYPE_RIGHT;
                 default -> 0;
             };
             return;
@@ -77,8 +77,8 @@ final class LinkMotion {
     }
 
     int leadingEdgeCollisionMask(int spriteX, int spriteY, int dir) {
-        int[] xs = Link.COLLISION_POINTS_X[dir];
-        int[] ys = Link.COLLISION_POINTS_Y[dir];
+        int[] xs = LinkRomConstants.COLLISION_POINTS_X[dir];
+        int[] ys = LinkRomConstants.COLLISION_POINTS_Y[dir];
         int blockedMask = 0;
         for (int i = 0; i < xs.length; i++) {
             boolean blocked = false;
@@ -219,8 +219,8 @@ final class LinkMotion {
         int spriteX = link.pixelX();
         int spriteY = link.pixelY();
         for (int index = 0; index < 2; index++) {
-            int pointX = spriteX + Link.COLLISION_POINTS_X[Link.DIRECTION_UP][index];
-            int pointY = spriteY + Link.COLLISION_POINTS_Y[Link.DIRECTION_UP][index];
+            int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Link.DIRECTION_UP][index];
+            int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Link.DIRECTION_UP][index];
             if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())) {
                 return true;
             }
@@ -235,10 +235,10 @@ final class LinkMotion {
 
     static int joypadBitForDirection(int direction) {
         return switch (direction) {
-            case Link.DIRECTION_DOWN -> Link.JOY_DOWN;
-            case Link.DIRECTION_UP -> Link.JOY_UP;
-            case Link.DIRECTION_LEFT -> Link.JOY_LEFT;
-            case Link.DIRECTION_RIGHT -> Link.JOY_RIGHT;
+            case Link.DIRECTION_DOWN -> LinkRomConstants.JOY_DOWN;
+            case Link.DIRECTION_UP -> LinkRomConstants.JOY_UP;
+            case Link.DIRECTION_LEFT -> LinkRomConstants.JOY_LEFT;
+            case Link.DIRECTION_RIGHT -> LinkRomConstants.JOY_RIGHT;
             default -> 0;
         };
     }

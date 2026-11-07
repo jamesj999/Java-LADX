@@ -107,7 +107,7 @@ final class LinkStateMachine {
         }
 
         int mask = link.buildJoypadMask();
-        int newDirection = Link.JOYPAD_TO_DIRECTION[mask];
+        int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         // $02:4406 skips facing selection while link.linkAirborne.airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
         if (newDirection != -1 && (!link.linkAirborne.airborne || featherLaunchFrame)
@@ -215,7 +215,7 @@ final class LinkStateMachine {
 
         if (link.movingThisFrame) {
             link.walkTickCounter++;
-            if (link.walkTickCounter >= Link.WALK_FRAME_TICKS) {
+            if (link.walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
                 link.walkTickCounter = 0;
                 link.walkFrame ^= 1;
             }
@@ -248,7 +248,7 @@ final class LinkStateMachine {
 
     void updateDebugNoClip() {
         int mask = link.buildJoypadMask();
-        int newDirection = Link.JOYPAD_TO_DIRECTION[mask];
+        int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1) {
             link.direction = newDirection;
         }
@@ -261,7 +261,7 @@ final class LinkStateMachine {
         link.linkMotion.subY += speedY;
         if (link.movingThisFrame) {
             link.walkTickCounter++;
-            if (link.walkTickCounter >= Link.WALK_FRAME_TICKS) {
+            if (link.walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
                 link.walkTickCounter = 0;
                 link.walkFrame ^= 1;
             }
@@ -292,11 +292,11 @@ final class LinkStateMachine {
 
         int heldBootsSlots = (aHeld ? 1 : 0) + (bHeld ? 1 : 0);
         for (int slot = 0; slot < heldBootsSlots; slot++) {
-            if (link.pegasusBootsChargeMeter >= Link.PEGASUS_BOOTS_MAX_CHARGE) {
+            if (link.pegasusBootsChargeMeter >= LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 break;
             }
             link.pegasusBootsChargeMeter++;
-            if (link.pegasusBootsChargeMeter == Link.PEGASUS_BOOTS_MAX_CHARGE) {
+            if (link.pegasusBootsChargeMeter == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 link.playerState.setRunningWithPegasusBoots(true);
                 link.linkMotion.forcedSpeedPending = false;
                 link.linkMotion.forcedSpeedXOnly = false;
@@ -307,16 +307,16 @@ final class LinkStateMachine {
 
     int pegasusRunningSpeedX() {
         return switch (link.direction) {
-            case Link.DIRECTION_LEFT -> -Link.PEGASUS_BOOTS_RUNNING_SPEED;
-            case Link.DIRECTION_RIGHT -> Link.PEGASUS_BOOTS_RUNNING_SPEED;
+            case Link.DIRECTION_LEFT -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+            case Link.DIRECTION_RIGHT -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
         };
     }
 
     int pegasusRunningSpeedY() {
         return switch (link.direction) {
-            case Link.DIRECTION_UP -> -Link.PEGASUS_BOOTS_RUNNING_SPEED;
-            case Link.DIRECTION_DOWN -> Link.PEGASUS_BOOTS_RUNNING_SPEED;
+            case Link.DIRECTION_UP -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+            case Link.DIRECTION_DOWN -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
         };
     }
@@ -337,15 +337,15 @@ final class LinkStateMachine {
         link.linkMotion.lastRomSpeedY = reflectedSpeedY & 0xFF;
         link.linkAirborne.airborne = true;
         link.linkAirborne.zSubPixels = 0;
-        link.linkAirborne.zVelocity = Link.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
+        link.linkAirborne.zVelocity = LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
 
         int romDirection = link.romDirectionForJavaDirection(link.direction);
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
         link.pegasusBootsCollisionPosX = (link.linkMotion.romEntityX() + xOffsets[romDirection]) & 0xFF;
         link.pegasusBootsCollisionPosY = (link.linkMotion.romEntityY() + yOffsets[romDirection]) & 0xFF;
-        link.pegasusBootsCollisionCountdown = Link.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
-        link.pendingPegasusScreenShakeCountdown = Link.PEGASUS_BOOTS_COLLISION_SHAKE;
+        link.pegasusBootsCollisionCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
+        link.pendingPegasusScreenShakeCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE;
         link.pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;
     }
 }

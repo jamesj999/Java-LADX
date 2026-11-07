@@ -35,8 +35,8 @@ final class LinkDamage {
             speedX = 0;
             speedY = 0;
         }
-        if ((link.linkMotion.romCollisionType & (Link.COLLISION_TYPE_LEFT | Link.COLLISION_TYPE_RIGHT)) != 0) speedX = 0;
-        if ((link.linkMotion.romCollisionType & (Link.COLLISION_TYPE_UP | Link.COLLISION_TYPE_DOWN)) != 0) speedY = 0;
+        if ((link.linkMotion.romCollisionType & (LinkRomConstants.COLLISION_TYPE_LEFT | LinkRomConstants.COLLISION_TYPE_RIGHT)) != 0) speedX = 0;
+        if ((link.linkMotion.romCollisionType & (LinkRomConstants.COLLISION_TYPE_UP | LinkRomConstants.COLLISION_TYPE_DOWN)) != 0) speedY = 0;
         recoilSpeedX = speedX;
         recoilSpeedY = speedY;
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;

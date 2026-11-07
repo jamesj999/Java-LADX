@@ -41,11 +41,11 @@ final class LinkAirborne {
             && !directionalLedgeJumpMotionLocked && !overworldLedgeFallActive
             && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
             int mask = link.buildJoypadMask();
-            if ((mask & (Link.JOY_RIGHT | Link.JOY_LEFT)) != 0) {
+            if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = link.romTables.airSpeedX(mask & 3);
                 link.linkMotion.lastRomSpeedX = steerAirSpeed(link.linkMotion.lastRomSpeedX, target);
             }
-            if ((mask & (Link.JOY_UP | Link.JOY_DOWN)) != 0) {
+            if ((mask & (LinkRomConstants.JOY_UP | LinkRomConstants.JOY_DOWN)) != 0) {
                 int target = link.romTables.airSpeedY((mask >>> 2) & 3);
                 link.linkMotion.lastRomSpeedY = steerAirSpeed(link.linkMotion.lastRomSpeedY, target);
             }
@@ -92,8 +92,8 @@ final class LinkAirborne {
         // updates; phase 3 stops overriding the normal walking animation.
         // The unstucking handler does not refresh walking animation, so it
         // retains the final flip pose until landing ($02:49AA-$49C7).
-        if (link.linkAnimator.jumpAnimationCounter < 3 * Link.JUMP_FRAME_TICKS) {
-            link.linkAnimator.jumpAnimationFrame = link.linkAnimator.jumpAnimationCounter / Link.JUMP_FRAME_TICKS;
+        if (link.linkAnimator.jumpAnimationCounter < 3 * LinkRomConstants.JUMP_FRAME_TICKS) {
+            link.linkAnimator.jumpAnimationFrame = link.linkAnimator.jumpAnimationCounter / LinkRomConstants.JUMP_FRAME_TICKS;
             link.linkAnimator.jumpAnimationCounter++;
         } else if (!overworldLedgeFallActive) {
             link.linkAnimator.jumpAnimationFrame = 3;
@@ -177,7 +177,7 @@ final class LinkAirborne {
 
     void tickPitFall() {
         fallingFrameCounter++;
-        if (fallingFrameCounter < Link.FALL_DURATION_FRAMES) {
+        if (fallingFrameCounter < LinkRomConstants.FALL_DURATION_FRAMES) {
             return;
         }
 
