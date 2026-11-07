@@ -1,5 +1,8 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.HookshotBridgeUpdate;
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

@@ -232,7 +232,7 @@ final class ZombieRuntimeTest {
         runtime.setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x00,
             entity.x(), entity.y()));
 
-        runtime.tick(0, 0x70, 0x50, () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12));
 
         RoomEntity child = runtime.snapshot().slots().get(5);
         assertEquals(EntityStatus.ACTIVE, child.status());
@@ -244,10 +244,10 @@ final class ZombieRuntimeTest {
         assertEquals(0x01, runtime.enemyIgnoreHitsCountdown(5));
         assertFalse(runtime.snapshot().slots().get(0).spriteVariant() >= 0);
 
-        runtime.tick(1, 0x70, 0x50, () -> 0);
-        runtime.tick(2, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x70, 0x50, () -> 0));
         assertEquals(0, runtime.snapshot().slots().get(5).spriteVariant());
-        runtime.tick(3, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 0x70, 0x50, () -> 0));
         assertEquals(1, runtime.snapshot().slots().get(5).spriteVariant());
     }
 
@@ -275,7 +275,7 @@ final class ZombieRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(parent), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0x70, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 
         assertFalse(runtime.snapshot().slots().get(0).spriteVariant() >= 0);
     }

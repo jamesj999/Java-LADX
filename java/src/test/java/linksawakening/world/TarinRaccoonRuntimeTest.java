@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -86,7 +92,7 @@ final class TarinRaccoonRuntimeTest {
 
         assertTrue(session.shouldGetLostInMysteriousWoods());
         assertEquals(3, raccoon(session).spriteVariant());
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x21)),
+        assertEquals(List.of(new DialogRequest(0, 0x21)),
             session.consumeEntityDialogRequests());
 
         session.tickEntities(9, 0x78, 0x1E, 0, 0);
@@ -119,7 +125,7 @@ final class TarinRaccoonRuntimeTest {
         session.setEntityDialogActive(false);
         session.tickEntities(3, 0x78, 0x50, 0, 1);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0D)),
+        assertEquals(List.of(new DialogRequest(0, 0x0D)),
             session.consumeEntityDialogRequests());
     }
 
@@ -156,7 +162,7 @@ final class TarinRaccoonRuntimeTest {
 
         session.tickEntities(1, 0x78, 0x50, 1, false, 1);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0D)),
+        assertEquals(List.of(new DialogRequest(0, 0x0D)),
             session.consumeEntityDialogRequests());
     }
 
@@ -186,7 +192,7 @@ final class TarinRaccoonRuntimeTest {
         session.setEntityTalkState(false, 0, 0x80);
         session.tickEntities(2, 0x78, 0x1E, 0, 1);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x21)),
+        assertEquals(List.of(new DialogRequest(0, 0x21)),
             session.consumeEntityDialogRequests());
     }
 
@@ -225,7 +231,7 @@ final class TarinRaccoonRuntimeTest {
         session.setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
         session.tickEntities(0x19, 0x78, 0x50, 0, 1);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0D)),
+        assertEquals(List.of(new DialogRequest(0, 0x0D)),
             session.consumeEntityDialogRequests());
     }
 
@@ -256,7 +262,7 @@ final class TarinRaccoonRuntimeTest {
 
         tick(runtime, 8, 0x50, 0x60);
 
-        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+        assertEquals(List.of(new LinkMotionBlockRequest(0)),
             runtime.consumePendingLinkMotionBlockRequests());
         // Powder writes $7F/$10 before Tarin's lower slot receives the
         // runtime's one shared countdown decrement on frame $08.
@@ -294,7 +300,7 @@ final class TarinRaccoonRuntimeTest {
 
         assertEquals(0x7E, runtime.slowTransitionCountdownForTest(0x0F));
         assertEquals(0x0F, runtime.enemyFlashCountdown(0x0F));
-        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0x0F)),
+        assertEquals(List.of(new LinkMotionBlockRequest(0x0F)),
             runtime.consumePendingLinkMotionBlockRequests());
     }
 
@@ -397,9 +403,9 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(tarin.z(), bomb.z());
         assertEquals(0x4C, runtime.bombPrivateState4ForTest(bomb.slot()));
         assertEquals(0x20, runtime.transitionCountdown(bomb.slot()));
-        assertEquals(List.of(new RoomEntityRuntime.LinkAttackClearRequest(0)),
+        assertEquals(List.of(new LinkAttackClearRequest(0)),
             runtime.consumePendingLinkAttackClearRequests());
-        assertEquals(List.of(new RoomEntityRuntime.RoomStatusPersistenceRequest(0, 0x10, 1)),
+        assertEquals(List.of(new RoomStatusPersistenceRequest(0, 0x10, 1)),
             runtime.consumePendingRoomStatusPersistenceRequests());
         assertEquals(0, runtime.entityRoomStatusForTest() & 0x10,
             "persistence must not truncate live states two and three");
@@ -526,7 +532,7 @@ final class TarinRaccoonRuntimeTest {
         runtime.setTransitionCountdownForTest(0, 2);
         tick(runtime, 1, 0x70, 0x60);
 
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0x0A)),
+        assertEquals(List.of(new DialogRequest(0, 0x0A)),
             runtime.consumePendingDialogRequests());
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
     }
@@ -541,11 +547,11 @@ final class TarinRaccoonRuntimeTest {
         tick(runtime, 4, 0x50, 0x40);
 
         assertEquals(4, runtime.slowTransitionCountdownForTest(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkMotionBlockRequest(0)),
+        assertEquals(List.of(new LinkMotionBlockRequest(0)),
             runtime.consumePendingLinkMotionBlockRequests());
-        assertEquals(List.of(new RoomEntityRuntime.LinkAttackClearRequest(0)),
+        assertEquals(List.of(new LinkAttackClearRequest(0)),
             runtime.consumePendingLinkAttackClearRequests());
-        assertEquals(List.of(new RoomEntityRuntime.LinkFacingRequest(0, 0, true)),
+        assertEquals(List.of(new LinkFacingRequest(0, 0, true)),
             runtime.consumePendingLinkFacingRequests());
     }
 
@@ -663,9 +669,9 @@ final class TarinRaccoonRuntimeTest {
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
             new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0,
-                0, false));
+                0, false)));
     }
 
     private static byte[] loadRom() {

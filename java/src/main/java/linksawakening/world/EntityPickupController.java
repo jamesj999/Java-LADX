@@ -1,5 +1,11 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

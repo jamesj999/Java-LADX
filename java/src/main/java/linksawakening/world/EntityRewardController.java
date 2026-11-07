@@ -1,5 +1,16 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.InstrumentCompletionEvent;
+import linksawakening.world.entity.event.InstrumentRewardEvent;
+import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.LinkSwordFinalPoseRequest;
+import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;

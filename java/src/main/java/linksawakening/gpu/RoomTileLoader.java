@@ -1,5 +1,7 @@
 package linksawakening.gpu;
 
+import linksawakening.rom.GbcBanks;
+
 import linksawakening.rom.RomSymbols;
 
 final class RoomTileLoader {
@@ -15,7 +17,6 @@ final class RoomTileLoader {
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = RomSymbols.InventoryOverworldItemsTiles.address();
     private static final int INVENTORY_INDOOR_ITEMS_TILES_BANK = RomSymbols.InventoryIndoorItemsTiles.bank();
     private static final int INVENTORY_INDOOR_ITEMS_TILES_ADDR = RomSymbols.InventoryIndoorItemsTiles.address();
-    private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
     private static final int W_TILESET_KEEP = 0x0F;
     private static final int TILESET_BANK = RomSymbols.SaveMenuTiles.bank();
     private static final int OVERWORLD_TILESET_SOURCE_BASE = 0x4000;
@@ -42,12 +43,7 @@ final class RoomTileLoader {
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_CAMERA_SHOP = 0xB5;
     private static final int COLOR_DUNGEON_BG_BANK = 0x35;
-    private static final int COLOR_DUNGEON_BG_FLOOR_ADDR = 0x6000;
-    private static final int COLOR_DUNGEON_BG_ITEMS_ADDR = 0x6100;
     private static final int CAMERA_SHOP_TILES_ADDR = 0x6600;
-    private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_BANK = 0x20;
-    private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_ADDR = 0x45EA;
-    private static final int COLOR_DUNGEON_WALLS_POINTER_ADDR = 0x45C9;
     private static final int INDOORS_TILESETS_TABLE_BANK = RomSymbols.IndoorsTilesetsTable.bank();
     private static final int INDOORS_TILESETS_TABLE_ADDR = RomSymbols.IndoorsTilesetsTable.address();
     private static final int W_TILESET_NO_UPDATE = 0xFF;
@@ -69,7 +65,7 @@ final class RoomTileLoader {
         target.animatedTiles.currentMapId = mapId;
         target.animatedTiles.stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
-            loadColorDungeonBgTiles(romData, roomId);
+            new ColorDungeonTileLoader(target).loadBackground(romData, roomId);
             return;
         }
 
@@ -152,34 +148,6 @@ final class RoomTileLoader {
                 0x20, DUNGEON_ITEMS_VRAM_INDEX);
             return;
         }
-    }
-
-    private void loadColorDungeonBgTiles(byte[] romData, int roomId) {
-        if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
-            throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
-        }
-
-        int roomTilesOffset = bankAddrToRomOffset(COLOR_DUNGEON_ROOM_TILES_TABLE_BANK,
-            COLOR_DUNGEON_ROOM_TILES_TABLE_ADDR + roomId * 2);
-        int roomTilesHighByte = Byte.toUnsignedInt(romData[roomTilesOffset]);
-        int roomTilesBank = Byte.toUnsignedInt(romData[roomTilesOffset + 1]);
-        target.loadTilesFromROM(romData, roomTilesBank, roomTilesHighByte << 8,
-            INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX);
-
-        target.loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, COLOR_DUNGEON_BG_FLOOR_ADDR,
-            INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX + 0x10);
-
-        target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK),
-            DUNGEONS_TILES_ADDR, DUNGEONS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
-
-        int wallsPointerOffset = bankAddrToRomOffset(COLOR_DUNGEON_ROOM_TILES_TABLE_BANK,
-            COLOR_DUNGEON_WALLS_POINTER_ADDR);
-        int wallsHighByte = Byte.toUnsignedInt(romData[wallsPointerOffset]);
-        target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK), wallsHighByte << 8,
-            DUNGEON_WALLS_TILES_COUNT, DUNGEONS_TILES_VRAM_INDEX);
-
-        target.loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, COLOR_DUNGEON_BG_ITEMS_ADDR,
-            DUNGEON_ITEMS_TILES_COUNT, DUNGEON_ITEMS_VRAM_INDEX);
     }
 
     public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {

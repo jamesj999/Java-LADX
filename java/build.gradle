@@ -139,3 +139,41 @@ tasks.register('verifyRom') {
 }
 tasks.withType(Test).configureEach { dependsOn 'verifyRom' }
 run { classpath += files(romFile.parentFile.parentFile) }
+
+// Keep dual-pipeline scene reports from the full and ROM-free suites separate.
+tasks.withType(Test).configureEach {
+    systemProperty 'sceneParity.task', name
+    systemProperty 'sceneParity.probe', providers.gradleProperty('sceneParityProbe').getOrElse('false')
+}
+
+// Summarize parity from this invocation only; each blocked scene counts once per layer.
+tasks.withType(Test).configureEach {
+    doFirst {
+        delete layout.buildDirectory.dir("scene-parity/${name}")
+    }
+    doLast {
+        def reportDir = layout.buildDirectory.dir("scene-parity/${name}").get().asFile
+        reportDir.mkdirs()
+        def totals = [IDENTICAL: 0L, BLOCKED: 0L, MISMATCH: 0L, EXPECTED_FIDELITY_FIX: 0L, EXPECTED_FIDELITY_FIX_PIXELS: 0L]
+        def blockedBy = [:].withDefault { 0L }
+        fileTree(reportDir).matching { include '*.tsv'; exclude 'summary.tsv', 'blocked-by-layer.tsv', '*.groups.tsv' }.each { report ->
+            report.readLines().drop(1).each { line ->
+                def fields = line.split('\t', 3)
+                totals[fields[1]] = totals[fields[1]] + 1L
+                if (fields[1] == 'EXPECTED_FIDELITY_FIX') {
+                    totals.EXPECTED_FIDELITY_FIX_PIXELS += (fields[2] =~ /pixels=(\d+)/)[0][1] as long
+                }
+                if (fields[1] == 'BLOCKED') {
+                    fields[2].split(',').collect { it.replaceAll('/0x[0-9a-fA-F]+', '') }.unique().each { layer ->
+                        blockedBy[layer] = blockedBy[layer] + 1L
+                    }
+                }
+            }
+        }
+        new File(reportDir, 'summary.tsv').text = 'status\tcount\n' + totals.collect { k, v -> "$k\t$v" }.join('\n') + '\n'
+        def sorted = blockedBy.entrySet().sort { a, b -> b.value <=> a.value ?: a.key <=> b.key }
+        new File(reportDir, 'blocked-by-layer.tsv').text = 'layer\tblocked_scenes\n' + sorted.collect { "$it.key\t$it.value" }.join('\n') + '\n'
+        logger.lifecycle("Scene parity ${name}: ${totals}")
+        sorted.each { logger.lifecycle("  blocked by ${it.key}: ${it.value}") }
+    }
+}

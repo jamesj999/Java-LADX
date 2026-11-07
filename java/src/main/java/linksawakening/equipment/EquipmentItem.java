@@ -88,4 +88,7 @@ public interface EquipmentItem {
     default void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
                         int direction, int offsetX, int offsetY) {
     }
+    /** Additive indexed counterpart of auxiliary sprite rendering. */
+    default void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
+                           int direction, int offsetX, int offsetY) {}
 }

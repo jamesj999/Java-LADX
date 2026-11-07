@@ -1,7 +1,7 @@
 package linksawakening.app.gameplay;
 
 import linksawakening.entity.LinkCommand;
-import linksawakening.world.RoomEntityRuntime.*;
+import linksawakening.world.entity.event.*;
 import linksawakening.world.EntityProjectileEvent;
 
 /** The sole translation boundary between world requests and Link commands. */

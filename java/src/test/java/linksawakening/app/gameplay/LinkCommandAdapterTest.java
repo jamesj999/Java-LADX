@@ -2,7 +2,7 @@ package linksawakening.app.gameplay;
 
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkCommand;
-import linksawakening.world.RoomEntityRuntime.*;
+import linksawakening.world.entity.event.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

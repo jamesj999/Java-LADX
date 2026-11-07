@@ -46,7 +46,7 @@ final class CuccoRuntimeTest {
         assertEquals(0x02, runtime.options1(0));
         runtime.setActionButtonsHeld(true, false);
         runtime.setLikeLikeLinkInventory(0x03, 0x00);
-        runtime.tick(0, 0x40, 0x50, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         assertTrue(runtime.consumePendingEntityEvents().stream()
@@ -64,7 +64,7 @@ final class CuccoRuntimeTest {
                 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)), false,
             () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tick(0, 0x00, 0x00, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, () -> 0));
         List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x50,
             false, true, false, 0, 0, 0, 0);
 

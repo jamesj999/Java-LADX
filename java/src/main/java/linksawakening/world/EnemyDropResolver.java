@@ -1,6 +1,8 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.Objects;
 import java.util.function.IntSupplier;
@@ -9,30 +11,18 @@ import java.util.function.IntSupplier;
 public final class EnemyDropResolver {
     public static final int ENTITY_NONE = 0xFF;
 
-    private static final int DESTROYED_HEALTH_GROUP_OFFSETS_BANK = 0x03;
-    private static final int DESTROYED_HEALTH_GROUP_OFFSETS_ADDRESS = 0x4826;
     // The source comment says 52 entries, but the label spans $4826-$485A and
     // the shipped ROM contains all 53 bytes listed by the disassembly.
     private static final int DESTROYED_HEALTH_GROUP_OFFSETS_LENGTH = 53;
 
-    private static final int DROP_TABLE_BY_INDEX_BANK = 0x03;
-    private static final int DROP_TABLE_BY_INDEX_ADDRESS = 0x559D;
     private static final int DROP_TABLE_BY_INDEX_LENGTH = 14;
 
-    private static final int RANDOM_DROP_CHANCE_TABLE_BANK = 0x03;
-    private static final int RANDOM_DROP_CHANCE_TABLE_ADDRESS = 0x55AB;
     private static final int RANDOM_DROP_CHANCE_TABLE_LENGTH = 14;
 
-    private static final int RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_BANK = 0x03;
-    private static final int RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_ADDRESS = 0x55B9;
     private static final int RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_LENGTH = 14;
 
-    private static final int DROP_TABLE_RANDOM_BANK = 0x03;
-    private static final int DROP_TABLE_RANDOM_ADDRESS = 0x55C7;
     private static final int DROP_TABLE_RANDOM_LENGTH = 8;
 
-    private static final int THRESHOLD_LOW_HEALTH_TABLE_BANK = 0x02;
-    private static final int THRESHOLD_LOW_HEALTH_TABLE_ADDRESS = 0x6308;
     private static final int THRESHOLD_LOW_HEALTH_TABLE_LENGTH = 15;
 
     private static final int GUARDIAN_ACORN_COUNTER_MAX = 0x0C;
@@ -50,22 +40,17 @@ public final class EnemyDropResolver {
     public EnemyDropResolver(byte[] romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         destroyedHealthGroupOffsets = loadTable(romData,
-            DESTROYED_HEALTH_GROUP_OFFSETS_BANK, DESTROYED_HEALTH_GROUP_OFFSETS_ADDRESS,
+            RomSymbols.DestroyedEntityHealthGroupOffsetTable,
             DESTROYED_HEALTH_GROUP_OFFSETS_LENGTH, "DestroyedEntityHealthGroupOffsetTable");
-        dropTableByIndex = loadTable(romData, DROP_TABLE_BY_INDEX_BANK,
-            DROP_TABLE_BY_INDEX_ADDRESS, DROP_TABLE_BY_INDEX_LENGTH, "DropTableByIndex");
-        randomDropChanceTable = loadTable(romData, RANDOM_DROP_CHANCE_TABLE_BANK,
-            RANDOM_DROP_CHANCE_TABLE_ADDRESS, RANDOM_DROP_CHANCE_TABLE_LENGTH,
+        dropTableByIndex = loadTable(romData, RomSymbols.DropTableByIndex, DROP_TABLE_BY_INDEX_LENGTH, "DropTableByIndex");
+        randomDropChanceTable = loadTable(romData, RomSymbols.RandomDropChanceTable, RANDOM_DROP_CHANCE_TABLE_LENGTH,
             "RandomDropChanceTable");
         randomDropChanceTableLowHealth = loadTable(romData,
-            RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_BANK,
-            RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_ADDRESS,
+            RomSymbols.RandomDropChanceTableLowHealth,
             RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_LENGTH,
             "RandomDropChanceTableLowHealth");
-        dropTableRandom = loadTable(romData, DROP_TABLE_RANDOM_BANK,
-            DROP_TABLE_RANDOM_ADDRESS, DROP_TABLE_RANDOM_LENGTH, "DropTableRandom");
-        thresholdLowHealthTable = loadTable(romData, THRESHOLD_LOW_HEALTH_TABLE_BANK,
-            THRESHOLD_LOW_HEALTH_TABLE_ADDRESS, THRESHOLD_LOW_HEALTH_TABLE_LENGTH,
+        dropTableRandom = loadTable(romData, RomSymbols.DropTableRandom, DROP_TABLE_RANDOM_LENGTH, "DropTableRandom");
+        thresholdLowHealthTable = loadTable(romData, RomSymbols.ThresholdLowHealthTable, THRESHOLD_LOW_HEALTH_TABLE_LENGTH,
             "ThresholdLowHealthTable");
     }
 
@@ -231,15 +216,16 @@ public final class EnemyDropResolver {
         return new Result(ENTITY_NONE, counters, randomReads);
     }
 
-    private static int[] loadTable(byte[] romData, int bank, int address, int length,
+    private static int[] loadTable(byte[] romData, RomAddress address, int length,
                                    String tableName) {
-        int offset = RomBank.romOffset(bank, address);
+        int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.length - length) {
             throw new IllegalArgumentException("ROM table is truncated: " + tableName);
         }
+        Rom rom = new Rom(romData);
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
-            values[index] = Byte.toUnsignedInt(romData[offset + index]);
+            values[index] = rom.u8(address.plus(index));
         }
         return values;
     }

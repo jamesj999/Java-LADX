@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkFinalPositionRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
@@ -166,13 +168,13 @@ final class UrchinRuntimeTest {
             catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, true)));
 
         assertEquals(0x3F, runtime.snapshot().slots().get(0).x());
         assertEquals(0x92, runtime.physicsFlags(0));
         assertEquals(0, runtime.enemyIgnoreHitsCountdown(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
         assertEquals(1, events.size());
@@ -189,11 +191,11 @@ final class UrchinRuntimeTest {
             catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD), 0, 0, 0, 0, -1, false)),
             false, () -> 0, catalog, new RomEnemyCombatTables(rom));
 
-        runtime.tickWithProjectileEvents(0, 0x48, 0x40, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x48, 0x40, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 2, false)));
 
         assertEquals(0x12, runtime.physicsFlags(0));
-        assertEquals(List.of(new RoomEntityRuntime.LinkFinalPositionRequest(0)),
+        assertEquals(List.of(new LinkFinalPositionRequest(0)),
             runtime.consumePendingLinkFinalPositionRequests());
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }

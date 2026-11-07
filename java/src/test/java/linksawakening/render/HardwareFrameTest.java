@@ -59,4 +59,49 @@ final class HardwareFrameTest {
             }
         }
     }
+    @Test void laterPainterSubmissionWinsRegardlessOfXOrUnusedSlotMetadata() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.appendInSlot(2, solid(1), 0, 0, false, false, PALETTE, false);
+        frame.appendInSlot(5, solid(2), 4, 0, false, false, PALETTE, false);
+        assertEquals(33, pixel(frame, 4, 0));
+    }
+    @Test void shadowSubmittedAfterLinkCoversLink() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.appendInSlot(2, solid(2), 0, 0, false, false, PALETTE, false);
+        frame.appendInSlot(3, solid(3), 8, 0, false, false, PALETTE, false);
+        frame.appendInSlot(0, solid(1), 4, 0, false, false, PALETTE, false);
+        assertEquals(22, pixel(frame, 4, 0));
+        assertEquals(22, pixel(frame, 8, 0));
+    }
+    @Test void hudColorZeroCannotHideAnObjectEvenWithBgPrioritySet() {
+        // User-supplied ROM: InventoryTilemap row 0 col 8 is $7F,
+        // InventoryAttrmap is $01, shared CGB tile slot $17F pixel (7,0) is index 0.
+        // home/animated_tiles.asm $1D57-$1D59 rejects OAM Y >= $88,
+        // but that is an entry guard, not a per-pixel HUD clip.
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.backgroundTile(solid(0), 64, 128, false, false, PALETTE, true);
+        frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, true);
+        assertEquals(33, pixel(frame, 71, 128));
+    }
+    @Test void fidelityClassifierRequiresHardwareVisibleObjectAndExactLegacyBgColor() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.closedHudTile(solid(0), 0x7F, 1, 64, 128, PALETTE);
+        frame.appendInSlot(2, solid(2), 64, 128, false, false, PALETTE, false);
+        byte[] hardware = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        frame.compose(hardware);
+        int pixel = 128 * Framebuffer.WIDTH + 71, at = pixel * 4;
+        byte[] legacy = hardware.clone();
+        legacy[at + 2] = 11;
+        org.junit.jupiter.api.Assertions.assertTrue(frame.explainsHudPriority(legacy, hardware, pixel));
+        legacy[at] = 1;
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, pixel));
+        legacy[at] = 0;
+        frame.closedHudTile(solid(3), 0xA9, 2, 64, 128, PALETTE);
+        frame.compose(hardware);
+        legacy[at + 2] = 44;
+        org.junit.jupiter.api.Assertions.assertTrue(frame.explainsHudPriority(legacy, hardware, pixel));
+        frame.closedHudTile(solid(3), 0xA9, 0x82, 64, 128, PALETTE);
+        frame.compose(hardware);
+        org.junit.jupiter.api.Assertions.assertFalse(frame.explainsHudPriority(legacy, hardware, pixel));
+    }
 }

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +28,7 @@ final class RoomEntityRuntimeChestTest {
         assertEquals(EntityStatus.INIT, runtime.snapshot().slots().get(slot).status());
         assertEquals(0x60, runtime.snapshot().slots().get(slot).y());
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity initialized = runtime.snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, initialized.status());
@@ -48,11 +50,11 @@ final class RoomEntityRuntimeChestTest {
         int slot = runtime.spawnChestWithItem(0x28, 0x50,
             ChestContentsTable.CHEST_RUPEES_50);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.consumePendingEntityEvents();
         runtime.consumePendingChestRewardEvents();
         for (int frame = 1; frame <= 8; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
 
         assertTrue(runtime.consumePendingEntityEvents().stream()
@@ -60,23 +62,23 @@ final class RoomEntityRuntimeChestTest {
                 && event.soundId() == 0x01));
 
         for (int frame = 9; frame <= 0x26; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         }
-        assertEquals(List.of(new RoomEntityRuntime.DialogRequest(0, 0xAC)),
+        assertEquals(List.of(new DialogRequest(0, 0xAC)),
             runtime.consumePendingDialogRequests());
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(slot).status());
 
         RoomEntity displayedItem = runtime.snapshot().slots().get(slot);
         runtime.setDialogActive(true);
         for (int frame = 0; frame < 240; frame++) {
-            runtime.tick(frame, 0, 0, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
             assertEquals(displayedItem, runtime.snapshot().slots().get(slot));
         }
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
         runtime.setDialogActive(false);
-        runtime.tick(0x27, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x27, 0, 0, () -> 0));
         assertTrue(runtime.consumePendingDialogRequests().isEmpty());
-        runtime.tick(0x28, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0x28, 0, 0, () -> 0));
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
     }
 
@@ -88,8 +90,8 @@ final class RoomEntityRuntimeChestTest {
             new ChestContentsTable(rom));
         int chestSlot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
 
-        runtime.tick(0, 0, 0, () -> 0);
-        runtime.tick(1, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
 
         int zolSlot = chestSlot - 1;
         RoomEntity zol = runtime.snapshot().slots().get(zolSlot);

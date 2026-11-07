@@ -3,7 +3,7 @@ package linksawakening.render;
 import linksawakening.dialog.DialogController;
 import linksawakening.dialog.DialogRenderer;
 
-public final class DialogRenderLayer implements RenderLayer {
+public final class DialogRenderLayer implements HardwareRenderLayer {
     private final DialogController dialogController;
     private final int[] backgroundPalette;
     private final int[][] objectPalettes;
@@ -38,5 +38,9 @@ public final class DialogRenderLayer implements RenderLayer {
                     false, true, objectPalettes[2]);
             }
         }
+    }
+    @Override public boolean supportsHardware() { return !dialogController.isActive(); }
+    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        if (!supportsHardware()) throw new IllegalStateException("Active dialog not migrated");
     }
 }

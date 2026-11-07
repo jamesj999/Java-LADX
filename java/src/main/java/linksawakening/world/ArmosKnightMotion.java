@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.ScreenShakeRequest;
+
 /** Bank-$06 ArmosKnightEntityHandler's active state machine. */
 final class ArmosKnightMotion {
     record RubbleRequest(int x, int y) {

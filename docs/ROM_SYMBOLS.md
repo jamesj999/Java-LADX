@@ -99,3 +99,87 @@ entity-runtime-owned WarpMotion 1, EntityRoomLoader 1 and RoomSession 6.
 EnemyDropResolver 6 and RomEnemyCombatTables 1 left untouched because their
 entity/combat ownership is ambiguous. Physics has zero matching declarations.
 This turn migrated 57 named declarations across seven files, plus inline tables.
+
+## Final owned-world follow-up
+
+RoomTilemapBuilder and OverworldBushInteraction now derive all 27 named ROM
+location constants (23 under the original suffix metric) from exact symbols.
+All byte reads use Rom; overlay and attribute selection remain unchanged.
+Verified IndoorObjectsTilemapCGB 08:43B0, ColorDungeonObjectsTilemap 08:4760,
+ColorDungeonBGAttributes 23:6000, BGAttributesPointers_IndoorsA/B
+1A:6076/6276, OverworldObjectsTilemapCGB 1A:6B1D,
+OverworldBGAttributesBanks 1A:6476, BGAttributesPointers_Overworld 1A:5E76,
+IndoorsA/BObjectsAttrmaps 23/24:4000 and RoomGBCOverlaysA/B 26/27:4000.
+No symbol discrepancies. World original-metric remaining count is 15.
+
+Integration constraint: GbcBanks.adjust is package-private in another owner's
+gpu package. Existing OR-$20 attribute-bank adjustment remains unchanged here:
+a RomAddress-based replacement rejected zero-pointer synthetic fixtures before
+file-offset translation. Typed reads preserve the prior offset semantics.
+
+BackgroundSceneCatalog now uses symbols for all 30 location pairs across ten
+scene specifications (23 distinct exact azle.sym labels; no discrepancies).
+The guard scans physics, save, state excluding PlayerState, scene, startup and
+config, including a check against literal BackgroundSceneSpec constructors.
+These packages have zero remaining literal ROM locations from this audit.
+
+### Deferred declarations for assignment
+
+These are the 15 original-metric declarations, at current source lines; paired
+constants with other suffixes and inline reads also need auditing by their owners.
+
+- WarpMotion.java:19 — DUNGEON_WARPS_BANK.
+- EntityRoomLoader.java:15 — ENTITY_POINTER_BANK.
+- RoomSession.java:135 — BOMBED_CAVE_DOOR_TILES_BANK.
+- RoomSession.java:136 — BOMBED_CAVE_DOOR_TILES_GBC_ADDR.
+- RoomSession.java:137 — INDOOR_MAP_LAYOUT_BANK.
+- RoomSession.java:138 — INDOOR_MAP_LAYOUT_BASE_ADDR.
+- RoomSession.java:139 — COLOR_DUNGEON_MAP_LAYOUT_ADDR.
+- RoomSession.java:140 — EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR.
+- EnemyDropResolver.java:12 — DESTROYED_HEALTH_GROUP_OFFSETS_BANK.
+- EnemyDropResolver.java:18 — DROP_TABLE_BY_INDEX_BANK.
+- EnemyDropResolver.java:22 — RANDOM_DROP_CHANCE_TABLE_BANK.
+- EnemyDropResolver.java:26 — RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_BANK.
+- EnemyDropResolver.java:30 — DROP_TABLE_RANDOM_BANK.
+- EnemyDropResolver.java:34 — THRESHOLD_LOW_HEALTH_TABLE_BANK.
+- RomEnemyCombatTables.java:10 — BOW_WOW_EATABLE_BANK.
+
+## Entity runtime follow-up
+
+Migrated the remaining 15 original-metric declarations in WarpMotion,
+EntityRoomLoader, RoomSession, EnemyDropResolver and RomEnemyCombatTables.
+The room-state extraction moved map-layout access into RoomWorldState; both
+files are covered by the guard. Paired address constants and the combat table
+locations were migrated too. Exact local azle.sym matches:
+
+- 19:4201 DungeonWarps.
+- 16:4000/4200/4400/4600 OverworldEntitiesPointersTable,
+  IndoorsAEntitiesPointersTable, IndoorsBEntitiesPointersTable,
+  ColorDungeonEntitiesPointersTable.
+- 03:6751 BombedCaveDoorTilesIndexesGBC (no bank adjustment in this path).
+- 14:4220/44E0/4520 MapLayout0, MapLayout11, MapLayout12.
+- 03:4826 DestroyedEntityHealthGroupOffsetTable; 03:559D DropTableByIndex;
+  03:55AB RandomDropChanceTable; 03:55B9 RandomDropChanceTableLowHealth;
+  03:55C7 DropTableRandom; 02:6308 ThresholdLowHealthTable.
+- 14:5218 BowWowEatableEntitiesTable.
+- 03:41F6 HealthGroupForEntity; 03:43EC Data_003_43EC;
+  03:473C Data_003_473C; 03:47BC InitialHealthForGroup;
+  03:47F1 EntityDamagesForGroup.
+
+No discrepancies. Reads use Rom, preserving table lengths, ROM truncation checks,
+stream termination, map selection and caller-owned/copy ownership. Existing
+unrelated inline ROM locations in RoomSession remain outside this batch.
+## Rendering TODO
+
+Rendering TODO: implement a future `RomOamAllocator` that follows the ROM's
+per-frame OAM allocation, including direction/state-dependent Link and sword
+ordering. Actual CGB hardware resolves OBJ overlap by lower OAM index (not X).
+Until that allocator exists, production composition preserves the emulator-validated
+legacy painter order: later opaque OBJ submissions win. Static slot assignments
+are not a substitute for dynamic allocation. OBJ-vs-BG/window uses CGB color-zero,
+BG/OBJ priority flags, and LCDC bit 0 independently of this temporary OBJ ordering.
+
+Entity runtime integration checked the public rom.GbcBanks.adjust API after
+merging develop. None of the 15 assigned declarations uses an adjusted bank;
+BombedCaveDoorTilesIndexesGBC is a fixed bank-03 tile-index table. No new bank
+adjustment was introduced.
