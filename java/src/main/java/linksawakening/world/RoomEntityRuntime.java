@@ -26,7 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
-    private final EntityHandlerRegistry entityHandlers = createEntityHandlers();
+    final EntityHandlerRegistry entityHandlers = createEntityHandlers();
     private final EntityRewardController rewards = new EntityRewardController(this);
     private final EntityStoryController story = new EntityStoryController(this);
     private final GenieEntityController genie = new GenieEntityController(this);
@@ -56,8 +56,8 @@ public final class RoomEntityRuntime {
     static final int ENTITY_CRYSTAL_SWITCH = 0x66;
     private static final int ENTITY_BUTTERFLY = 0x6E;
     static final int ENTITY_KID_71 = 0x71;
-    private static final int ENTITY_KID_72 = 0x72;
-    private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
+    static final int ENTITY_KID_72 = 0x72;
+    static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     static final int ENTITY_MOBLIN_KING = 0xE4;
     static final int ENTITY_OCTOROK = 0x09;
     static final int ENTITY_OCTOROK_ROCK = 0x0A;
@@ -86,14 +86,14 @@ public final class RoomEntityRuntime {
     static final int ENTITY_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
     static final int ENTITY_MASKED_MIMIC_GORIYA =
         EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
-    private static final int ENTITY_SPIKE_TRAP = 0x27;
+    static final int ENTITY_SPIKE_TRAP = 0x27;
     static final int ENTITY_PAIRODD = 0x57;
-    private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
+    static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
     static final int ENTITY_WATER_TEKTITE = 0x99;
     static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
     static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
-    private static final int ENTITY_KNIGHT = 0x51;
-    private static final int ENTITY_KANALET_BOMBABLE_WALL = 0x94;
+    static final int ENTITY_KNIGHT = 0x51;
+    static final int ENTITY_KANALET_BOMBABLE_WALL = 0x94;
     static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
     static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
     static final int ENTITY_DROPPABLE_HEART = 0x2D;
@@ -101,7 +101,7 @@ public final class RoomEntityRuntime {
     static final int ENTITY_DROPPABLE_ARROWS = 0x37;
     static final int ENTITY_DROPPABLE_BOMBS = 0x38;
     static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
-    private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
+    static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     static final int ENTITY_RICHARD = 0x95;
     static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
@@ -133,7 +133,7 @@ public final class RoomEntityRuntime {
             | 0x10;
     private static final int LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS =
         0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP;
-    private static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
+    static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
     private static final int LIFTABLE_ROCK_SMASH_MODE_BUSH = 1;
     static final int LIFTABLE_ROCK_SMASH_MODE_GRASS = 0xFF;
     static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
@@ -172,14 +172,14 @@ public final class RoomEntityRuntime {
     static final int ENTITY_GHOST = 0xD4;
     static final int ENTITY_ROOSTER = 0xD5;
     static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
-    private static final int ENTITY_MARIN_INDOOR = 0x3E;
+    static final int ENTITY_MARIN_INDOOR = 0x3E;
     static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
     static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
     static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
-    private static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
+    static final int SECRET_SEASHELL_REVEALED_OPTIONS1 =
         ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     static final int DROPPABLE_HIDDEN_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_NO_WALL_COLLISION;
@@ -196,15 +196,15 @@ public final class RoomEntityRuntime {
     static final int DROPPABLE_REVEAL_SPEED_Z = 0x20;
     static final int DROPPABLE_OBJECT_SHORT_GRASS = 0x04;
     static final int DROPPABLE_OBJECT_SHOVEL_HOLE = 0xCC;
-    private static final int ENTITY_HEART_CONTAINER = 0x36;
+    static final int ENTITY_HEART_CONTAINER = 0x36;
     static final int ENTITY_MOBLIN_SWORD = 0x14;
     static final int ENTITY_LASER = 0x2A;
     static final int ENTITY_LASER_BEAM = 0x2B;
-    private static final int ENTITY_ARROW = 0x00;
+    static final int ENTITY_ARROW = 0x00;
     static final int ENTITY_BOOMERANG = BoomerangMotion.ENTITY_TYPE;
-    private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
+    static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
     static final int ENTITY_MAGIC_POWDER_SPRINKLE = 0x08;
-    private static final int ENTITY_MUSICAL_NOTE = 0xC9;
+    static final int ENTITY_MUSICAL_NOTE = 0xC9;
     static final int ENTITY_SWORD_BEAM = 0xDF;
     static final int ENTITY_BOMB = 0x02;
     static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
@@ -212,7 +212,7 @@ public final class RoomEntityRuntime {
     static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
     static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
-    private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
+    static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
     static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
     static final int ENTITY_BOUNCING_BOMBITE = 0x55;
     static final int ENTITY_TIMER_BOMBITE = 0x56;
@@ -224,13 +224,13 @@ public final class RoomEntityRuntime {
     private static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
     private static final int KEY_DROP_POINT_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
-    private static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
+    static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
+    static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
     static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int MAD_BOMBER_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION;
     static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
     private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
-    private static final int BOMBER_THROW_JINGLE_ID = 0x08;
+    static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int LIFTED_THROW_JINGLE_ID = 0x08;
     static final int DAMAGE_TYPE_ARROW = 0x05;
     static final int DAMAGE_TYPE_BOOMERANG = 0x08;
@@ -240,10 +240,10 @@ public final class RoomEntityRuntime {
     private static final int DAMAGE_TYPE_BOMB = BombExplosionEvent.DAMAGE_TYPE_BOMB;
     static final int DAMAGE_TYPE_BOMB_ARROW = 0x0C;
     static final int DAMAGE_TYPE_THROW_AT = 0x0B;
-    private static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
-    private static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
-    private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
-    private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_UP = 0x9F;
+    static final int ENTITY_HOOKSHOT_CHAIN = HookshotChainMotion.ENTITY_TYPE;
+    static final int ENTITY_HOOKSHOT_BRIDGE = HookshotBridgeMotion.ENTITY_TYPE;
+    static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
+    static final int OBJECT_HOOKSHOT_BRIDGE_PULL_UP = 0x9F;
     private static final int OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT = 0x9D;
     static final int ENTITY_LIFTABLE_ROCK = 0x05;
     static final int ENTITY_LIFTABLE_STATUE = 0x9D;
@@ -279,8 +279,8 @@ public final class RoomEntityRuntime {
     static final int SWORD_BEAM_JINGLE_ID = 0x3B;
     static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
         0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
-    private static final int MAP_COLOR_DUNGEON = 0xFF;
-    private static final int DIALOG_MOBLIN = 0x90;
+    static final int MAP_COLOR_DUNGEON = 0xFF;
+    static final int DIALOG_MOBLIN = 0x90;
     private static final int DIALOG_BOW_WOW = 0x15;
     private static final int FALLING_JINGLE_ID = 0x18;
     private static final int[] FALLING_VISUAL_Y_OFFSETS = {0, 0, 4, 0};
@@ -303,88 +303,88 @@ public final class RoomEntityRuntime {
     final EntitySpriteHandlerCatalog spriteHandlers;
     final RomEnemyCombatTables enemyCombatTables;
     final ChestContentsTable chestContentsTable;
-    private RoomEntityGroundInteraction groundInteraction =
+    RoomEntityGroundInteraction groundInteraction =
         (entity, frameCounter, previousGroundStatus, speedZ, sideScrolling) ->
             RoomEntityGroundInteraction.Result.unchanged(entity, 0);
     RoomEntityBackgroundInteraction backgroundInteraction;
-    private FollowingNpcState followingNpcState = FollowingNpcState.none();
-    private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
-    private int followingLinkZ;
-    private int followingLinkDirection;
+    FollowingNpcState followingNpcState = FollowingNpcState.none();
+    LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
+    int followingLinkZ;
+    int followingLinkDirection;
     int lastRomLinkDirection;
-    private int followingEntityYOffset;
-    private int linkAttackStepAnimationCountdown;
+    int followingEntityYOffset;
+    int linkAttackStepAnimationCountdown;
     private final ButterflyMotion butterflyMotion = new ButterflyMotion();
-    private final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
+    final SideViewPlatformMotion sideViewPlatformMotion = new SideViewPlatformMotion();
     final SideViewPotMotion sideViewPotMotion = new SideViewPotMotion();
     private final KeeseMotion keeseMotion = new KeeseMotion();
     final RoamingEnemyMotion roamingEnemyMotion = new RoamingEnemyMotion();
     final UnmaskedIronMaskMotion unmaskedIronMaskMotion =
         new UnmaskedIronMaskMotion();
-    private final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
+    final MoblinSwordMotion moblinSwordMotion = new MoblinSwordMotion();
     final PlayerArrowMotion playerArrowMotion = new PlayerArrowMotion();
-    private final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
+    final EnemyProjectileMotion enemyProjectileMotion = new EnemyProjectileMotion();
     final HookshotChainMotion hookshotChainMotion = new HookshotChainMotion();
     private final HookshotBridgeMotion hookshotBridgeMotion = new HookshotBridgeMotion();
-    private final LaserMotion laserMotion = new LaserMotion();
+    final LaserMotion laserMotion = new LaserMotion();
     private final TektiteMotion tektiteMotion = new TektiteMotion();
     final LeeverMotion leeverMotion = new LeeverMotion();
     private final AntiFairyMotion antiFairyMotion = new AntiFairyMotion();
-    private final SparkMotion sparkMotion = new SparkMotion();
+    final SparkMotion sparkMotion = new SparkMotion();
     final ZolGelMotion zolGelMotion = new ZolGelMotion();
     final HidingZolMotion hidingZolMotion = new HidingZolMotion();
-    private final StarMotion starMotion = new StarMotion();
-    private final BlooperMotion blooperMotion = new BlooperMotion();
+    final StarMotion starMotion = new StarMotion();
+    final BlooperMotion blooperMotion = new BlooperMotion();
     final WingedOctorokMotion wingedOctorokMotion = new WingedOctorokMotion();
-    private final PincerMotion pincerMotion = new PincerMotion();
+    final PincerMotion pincerMotion = new PincerMotion();
     final BushCrawlerMotion bushCrawlerMotion = new BushCrawlerMotion();
-    private final MimicMotion mimicMotion = new MimicMotion();
-    private final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
-    private final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
+    final MimicMotion mimicMotion = new MimicMotion();
+    final MaskedMimicMotion maskedMimicMotion = new MaskedMimicMotion();
+    final MiniMoldormMotion miniMoldormMotion = new MiniMoldormMotion();
     final MoldormMotion moldormMotion = new MoldormMotion();
-    private final CuccoMotion cuccoMotion = new CuccoMotion();
-    private final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
-    private final GopongaProjectileMotion gopongaProjectileMotion =
+    final CuccoMotion cuccoMotion = new CuccoMotion();
+    final GiantGopongaMotion giantGopongaMotion = new GiantGopongaMotion();
+    final GopongaProjectileMotion gopongaProjectileMotion =
         new GopongaProjectileMotion();
     final PokeyMotion pokeyMotion = new PokeyMotion();
     final PiranhaMotion piranhaMotion = new PiranhaMotion();
-    private final ZoraMotion zoraMotion = new ZoraMotion();
+    final ZoraMotion zoraMotion = new ZoraMotion();
     final ZombieMotion zombieMotion = new ZombieMotion();
-    private final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
-    private final SandCrabMotion sandCrabMotion = new SandCrabMotion();
-    private final DogMotion dogMotion = new DogMotion();
-    private final UrchinMotion urchinMotion = new UrchinMotion();
-    private final WitchRatMotion witchRatMotion = new WitchRatMotion();
-    private final WitchMotion witchMotion = new WitchMotion();
+    final BuzzBlobMotion buzzBlobMotion = new BuzzBlobMotion();
+    final SandCrabMotion sandCrabMotion = new SandCrabMotion();
+    final DogMotion dogMotion = new DogMotion();
+    final UrchinMotion urchinMotion = new UrchinMotion();
+    final WitchRatMotion witchRatMotion = new WitchRatMotion();
+    final WitchMotion witchMotion = new WitchMotion();
     final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final TarinRaccoonMotion tarinRaccoonMotion = new TarinRaccoonMotion();
-    private final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
+    final SpikeTrapMotion spikeTrapMotion = new SpikeTrapMotion();
     final PairoddMotion pairoddMotion = new PairoddMotion();
-    private final PairoddProjectileMotion pairoddProjectileMotion =
+    final PairoddProjectileMotion pairoddProjectileMotion =
         new PairoddProjectileMotion();
-    private final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
+    final WaterTektiteMotion waterTektiteMotion = new WaterTektiteMotion();
     final FishMotion fishMotion = new FishMotion();
     final CrowMotion crowMotion = new CrowMotion();
     final BooBuddyMotion booBuddyMotion = new BooBuddyMotion();
     final FairyMotion fairyMotion = new FairyMotion();
-    private final StalfosAggressiveMotion stalfosAggressiveMotion =
+    final StalfosAggressiveMotion stalfosAggressiveMotion =
         new StalfosAggressiveMotion();
     final StalfosEvasiveMotion stalfosEvasiveMotion = new StalfosEvasiveMotion();
     private final GibdoMotion gibdoMotion = new GibdoMotion();
     final LikeLikeMotion likeLikeMotion = new LikeLikeMotion();
     final GoombaMotion goombaMotion = new GoombaMotion();
-    private final SnakeMotion snakeMotion = new SnakeMotion();
+    final SnakeMotion snakeMotion = new SnakeMotion();
     final WizrobeMotion wizrobeMotion = new WizrobeMotion();
-    private final WizrobeProjectileMotion wizrobeProjectileMotion =
+    final WizrobeProjectileMotion wizrobeProjectileMotion =
         new WizrobeProjectileMotion();
     final PeaHatMotion peaHatMotion = new PeaHatMotion();
     final ArmosMotion armosMotion = new ArmosMotion();
-    private final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
+    final ArmosKnightMotion armosKnightMotion = new ArmosKnightMotion();
     final HinoxMotion hinoxMotion = new HinoxMotion();
-    private final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
+    final RollingBonesMotion rollingBonesMotion = new RollingBonesMotion();
     final ThreeOfAKindMotion threeOfAKindMotion = new ThreeOfAKindMotion();
     final MoblinKingMotion moblinKingMotion = new MoblinKingMotion();
-    private final BossIntroMotion bossIntroMotion = new BossIntroMotion();
+    final BossIntroMotion bossIntroMotion = new BossIntroMotion();
     final GenieMotion genieMotion = new GenieMotion();
     final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -409,16 +409,16 @@ public final class RoomEntityRuntime {
     int bossAgonySfxCountdown;
     int bossAgonySourceSlot;
     final GhiniMotion ghiniMotion = new GhiniMotion();
-    private final HardHatMotion hardHatMotion = new HardHatMotion();
-    private final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
+    final HardHatMotion hardHatMotion = new HardHatMotion();
+    final PolsVoiceMotion polsVoiceMotion = new PolsVoiceMotion();
     final SpikedBeetleMotion spikedBeetleMotion = new SpikedBeetleMotion();
-    private final MadBomberMotion madBomberMotion = new MadBomberMotion();
-    private final BomberMotion bomberMotion = new BomberMotion();
+    final MadBomberMotion madBomberMotion = new MadBomberMotion();
+    final BomberMotion bomberMotion = new BomberMotion();
     final BombiteMotion bombiteMotion = new BombiteMotion();
     final EnemyRecoilMotion enemyRecoilMotion = new EnemyRecoilMotion();
-    private final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
-    private final BowWowMotion bowWowMotion = new BowWowMotion();
-    private final ColorShellMotion colorShellMotion = new ColorShellMotion();
+    final FollowingNpcMotion followingNpcMotion = new FollowingNpcMotion();
+    final BowWowMotion bowWowMotion = new BowWowMotion();
+    final ColorShellMotion colorShellMotion = new ColorShellMotion();
     final SecretSeashellMotion secretSeashellMotion =
         new SecretSeashellMotion();
     final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
@@ -438,7 +438,7 @@ public final class RoomEntityRuntime {
     final int[] moldormDestructionTailState =
         new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private boolean gelClingingToLink;
+    boolean gelClingingToLink;
 
     public boolean gelClingingToLink() { return gelClingingToLink; }
 
@@ -454,19 +454,19 @@ public final class RoomEntityRuntime {
     final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] entityGroundStatus = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingTargetX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingTargetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] fallingSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] fallingVisualYOffset = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] enemyProjectileSpawnedThisFrame =
+    final boolean[] enemyProjectileSpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] dynamicEntitySpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -489,7 +489,7 @@ public final class RoomEntityRuntime {
         new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] liftableRockSmashSourceVariant =
         new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] liftableRockSmashActive =
+    final boolean[] liftableRockSmashActive =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -509,10 +509,10 @@ public final class RoomEntityRuntime {
     final int[] chestSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] chestInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] chestItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
+    final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
         new ArrayList<>();
     final List<TransientVfxRequest> transientVfxRequests = outbox.channel(TransientVfxRequest.class, "transientVfxRequests");
-    private final List<HeartContainerRewardEvent> pendingHeartContainerRewards = outbox.channel(HeartContainerRewardEvent.class, "pendingHeartContainerRewards");
+    final List<HeartContainerRewardEvent> pendingHeartContainerRewards = outbox.channel(HeartContainerRewardEvent.class, "pendingHeartContainerRewards");
     final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = outbox.channel(MadamMeowMeowFullHealRequest.class, "pendingMadamMeowMeowFullHealRequests");
     final List<SwordPickupRewardEvent> pendingSwordPickupRewards = outbox.channel(SwordPickupRewardEvent.class, "pendingSwordPickupRewards");
     final List<ToadstoolRewardEvent> pendingToadstoolRewards = outbox.channel(ToadstoolRewardEvent.class, "pendingToadstoolRewards");
@@ -520,41 +520,41 @@ public final class RoomEntityRuntime {
     final List<InstrumentCompletionEvent> pendingInstrumentCompletions = outbox.channel(InstrumentCompletionEvent.class, "pendingInstrumentCompletions");
     final List<RichardProgressEvent> pendingRichardProgressEvents = outbox.channel(RichardProgressEvent.class, "pendingRichardProgressEvents");
     final List<OwlEventCompletion> pendingOwlEventCompletions = outbox.channel(OwlEventCompletion.class, "pendingOwlEventCompletions");
-    private final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests = outbox.channel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
-    private final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests = outbox.channel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
-    private final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests = outbox.channel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
+    final List<LinkFinalPositionRequest> pendingLinkFinalPositionRequests = outbox.channel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
+    final List<RoosterLinkStateRequest> pendingRoosterLinkStateRequests = outbox.channel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
+    final List<SideViewPlatformLinkRequest> pendingSideViewPlatformLinkRequests = outbox.channel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
     final List<SideViewPotLinkRequest> pendingSideViewPotLinkRequests = outbox.channel(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
     final List<LinkMotionBlockRequest> pendingLinkMotionBlockRequests = outbox.channel(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
-    private final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests = outbox.channel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
-    private final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests = outbox.channel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
+    final List<HinoxLinkEffectRequest> pendingHinoxLinkEffectRequests = outbox.channel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
+    final List<LinkFallenPoseRequest> pendingLinkFallenPoseRequests = outbox.channel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
     final List<LinkFacingRequest> pendingLinkFacingRequests = outbox.channel(LinkFacingRequest.class, "pendingLinkFacingRequests");
-    private final List<LinkAttackStepRequest> pendingLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingLinkAttackStepRequests");
-    private final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingPreTickLinkAttackStepRequests");
-    private final List<LinkAttackClearRequest> pendingLinkAttackClearRequests = outbox.channel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
-    private final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests = outbox.channel(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
+    final List<LinkAttackStepRequest> pendingLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingLinkAttackStepRequests");
+    final List<LinkAttackStepRequest> pendingPreTickLinkAttackStepRequests = outbox.channel(LinkAttackStepRequest.class, "pendingPreTickLinkAttackStepRequests");
+    final List<LinkAttackClearRequest> pendingLinkAttackClearRequests = outbox.channel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
+    final List<RoomStatusPersistenceRequest> pendingRoomStatusPersistenceRequests = outbox.channel(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
     final List<LinkHeldItemPoseRequest> pendingLinkHeldItemPoseRequests = outbox.channel(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
     final List<LinkSwordSpinPoseRequest> pendingLinkSwordSpinPoseRequests = outbox.channel(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
     final List<LinkSwordFinalPoseRequest> pendingLinkSwordFinalPoseRequests = outbox.channel(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
-    private final List<ScreenShakeRequest> pendingScreenShakeRequests = outbox.channel(ScreenShakeRequest.class, "pendingScreenShakeRequests");
+    final List<ScreenShakeRequest> pendingScreenShakeRequests = outbox.channel(ScreenShakeRequest.class, "pendingScreenShakeRequests");
     final List<DialogRequest> pendingDialogRequests = outbox.channel(DialogRequest.class, "pendingDialogRequests");
     final List<EntityCombatEvent> pendingEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingEntityEvents");
-    private final List<EntityCombatEvent> pendingPreTickEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingPreTickEntityEvents");
-    private final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
+    final List<EntityCombatEvent> pendingPreTickEntityEvents = outbox.channel(EntityCombatEvent.class, "pendingPreTickEntityEvents");
+    final List<ThrownBackgroundCollisionEvent> pendingThrownBackgroundCollisions = outbox.channel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
     final List<DungeonWarpRequest> pendingDungeonWarpRequests = outbox.channel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
-    private final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
+    final List<WarpLinkStateRequest> pendingWarpLinkStateRequests = outbox.channel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
     final List<ChestRewardEvent> pendingChestRewardEvents = outbox.channel(ChestRewardEvent.class, "pendingChestRewardEvents");
-    private final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
-    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = outbox.channel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
-    private final List<WitchExchangeEvent> pendingWitchExchangeEvents = outbox.channel(WitchExchangeEvent.class, "pendingWitchExchangeEvents");
-    private final List<WitchRewardEvent> pendingWitchRewardEvents = outbox.channel(WitchRewardEvent.class, "pendingWitchRewardEvents");
-    private final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = outbox.channel(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
-    private final List<LikeLikeEvent> pendingLikeLikeEvents = outbox.channel(LikeLikeEvent.class, "pendingLikeLikeEvents");
-    private final List<BombExplosionEvent> pendingBombExplosionEvents = outbox.channel(BombExplosionEvent.class, "pendingBombExplosionEvents");
-    private final List<HookshotBridgeUpdate> hookshotBridgeUpdates = outbox.channel(HookshotBridgeUpdate.class, "hookshotBridgeUpdates");
-    private boolean switchBlockAnimationActive;
-    private boolean pendingSwitchBlockAnimationRequest;
-    private ColorShellWorld colorShellWorld = ColorShellWorld.none();
-    private int pendingClearedEntityMask;
+    final List<KeyRewardEvent> pendingKeyRewardEvents = outbox.channel(KeyRewardEvent.class, "pendingKeyRewardEvents");
+    final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = outbox.channel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
+    final List<WitchExchangeEvent> pendingWitchExchangeEvents = outbox.channel(WitchExchangeEvent.class, "pendingWitchExchangeEvents");
+    final List<WitchRewardEvent> pendingWitchRewardEvents = outbox.channel(WitchRewardEvent.class, "pendingWitchRewardEvents");
+    final List<KeyQuicksandEvent> pendingKeyQuicksandEvents = outbox.channel(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
+    final List<LikeLikeEvent> pendingLikeLikeEvents = outbox.channel(LikeLikeEvent.class, "pendingLikeLikeEvents");
+    final List<BombExplosionEvent> pendingBombExplosionEvents = outbox.channel(BombExplosionEvent.class, "pendingBombExplosionEvents");
+    final List<HookshotBridgeUpdate> hookshotBridgeUpdates = outbox.channel(HookshotBridgeUpdate.class, "hookshotBridgeUpdates");
+    boolean switchBlockAnimationActive;
+    boolean pendingSwitchBlockAnimationRequest;
+    ColorShellWorld colorShellWorld = ColorShellWorld.none();
+    int pendingClearedEntityMask;
     private int pendingRoomStatusMask;
     private EnemyDropResolver enemyDropResolver;
     private EnemyDropResolver.CounterState enemyDropCounters =
@@ -565,23 +565,23 @@ public final class RoomEntityRuntime {
     private boolean enemyDropBossBattle;
     private int killCount;
     int booBuddyTriggerCount;
-    private int bgPaletteEffectAddress;
-    private int paletteDataFlags;
-    private int defaultMusicTrack = 0x05;
+    int bgPaletteEffectAddress;
+    int paletteDataFlags;
+    int defaultMusicTrack = 0x05;
     private final int[] killOrder = new int[0x100];
     boolean actionButtonsHeld;
     boolean actionButtonAHeld;
     boolean actionButtonBHeld;
-    private boolean joypadHeld;
+    boolean joypadHeld;
     boolean dialogActive;
     boolean inventoryAppearing;
     int dialogCooldown;
     int windowY = 0x80;
     int dialogAskSelectionIndex;
-    private boolean shouldGetLostInMysteriousWoods;
+    boolean shouldGetLostInMysteriousWoods;
     boolean activeMusic;
     int bowWowState;
-    private int linkPressedButtonsMask;
+    int linkPressedButtonsMask;
     int linkItemA;
     int linkItemB;
     boolean linkInventoryConfigured;
@@ -591,11 +591,11 @@ public final class RoomEntityRuntime {
     // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
     // RoomSession supplies these from the active Ocarina item state once per
     // entity tick; the zero values preserve the ordinary no-song path.
-    private int linkPlayingOcarinaCountdown;
+    int linkPlayingOcarinaCountdown;
     private int ocarinaSongFlags;
     private int selectedSongIndex;
-    private int ocarinaAnimationCounter;
-    private int ocarinaAnimationPhase;
+    int ocarinaAnimationCounter;
+    int ocarinaAnimationPhase;
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
@@ -605,8 +605,8 @@ public final class RoomEntityRuntime {
     // select the world-map/transition branches explicitly.
     boolean gameplayWorld = true;
     boolean roomTransitionActive;
-    private int swordMoblinAlertingSoundCounter;
-    private int bombArrowCooldown;
+    int swordMoblinAlertingSoundCounter;
+    int bombArrowCooldown;
     private int latestDroppedBombEntityIndex = -1;
     private int latestShotArrowEntityIndex = -1;
     private boolean lastArrowShotPlayedWhoosh;
@@ -617,13 +617,13 @@ public final class RoomEntityRuntime {
     // entity snapshot.
     private int currentLinkVelocityZ;
     private List<BowWowChain.Entry> bowWowChainOam = List.of();
-    private int currentLinkSpeedX;
-    private int currentLinkSpeedY;
-    private int currentLinkFinalPositionX;
-    private boolean currentLinkFinalPositionXConfigured;
+    int currentLinkSpeedX;
+    int currentLinkSpeedY;
+    int currentLinkFinalPositionX;
+    boolean currentLinkFinalPositionXConfigured;
     int chestShieldLevel = 1;
     int chestSwordLevel = 1;
-    private boolean chestPlayerLevelsKnown;
+    boolean chestPlayerLevelsKnown;
     int chestPowerBraceletLevel = 1;
     int entityGoldenLeavesCount;
     int pendingMusicTrack = -1;
@@ -647,7 +647,7 @@ public final class RoomEntityRuntime {
     final List<HeartPiecePickupMotion.Update> heartPieceUpdates = new ArrayList<>();
     int heartPiecesCount;
     private final int[] heartPieceMeterPairs = new int[20];
-    private final int[] instrumentPaletteCycle = new int[32];
+    final int[] instrumentPaletteCycle = new int[32];
     private final int[] instrumentWarpSprites = new int[256];
     private final int[] instrumentHintTiles = new int[20 * 18];
     private final int[] instrumentHintAttributes = new int[20 * 18];
@@ -678,14 +678,14 @@ public final class RoomEntityRuntime {
     final int[] richardDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] richardXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] richardInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private boolean playerHasToadstool;
-    private int playerMagicPowderCount;
+    boolean playerHasToadstool;
+    int playerMagicPowderCount;
     boolean playerHasTailKey;
     int instrument1Flags;
     int instrument2Flags;
     /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
     int entityInteractionCountdown;
-    private boolean freeMovementMode;
+    boolean freeMovementMode;
 
     void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
     final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -708,8 +708,8 @@ public final class RoomEntityRuntime {
     boolean groundInteractionSideScrolling;
     int entityMapId = -1;
     int entityRoomId = -1;
-    private boolean dungeonMinibossReady;
-    private final WarpMotion warpMotion;
+    boolean dungeonMinibossReady;
+    final WarpMotion warpMotion;
     int entityRoomStatus;
     // These latches represent the HRAM values read by
     // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
@@ -739,7 +739,7 @@ public final class RoomEntityRuntime {
     private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
     int boomerangSfxCounter;
-    private boolean boomerangSoundClockProvided;
+    boolean boomerangSoundClockProvided;
 
     private EntityHandlerRegistry createEntityHandlers() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
@@ -1733,3203 +1733,13 @@ public final class RoomEntityRuntime {
 
 
 
-    private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {
-        int frameCounter = context.frameCounter();
-        int linkEntityX = context.linkEntityX();
-        int linkEntityY = context.linkEntityY();
-        int collisionType = context.collisionType();
-        IntSupplier randomByteSupplier = context.randomByteSupplier();
-        RoomEntityBackgroundCollision backgroundCollision = context.backgroundCollision();
-        RoomEntityObjectCollision objectCollision = context.objectCollision();
-        LinkPositionHistory linkPositionHistory = context.linkPositionHistory();
-        int linkZ = context.linkZ();
-        boolean linkAirborne = context.linkAirborne();
-        int linkDirection = context.linkDirection();
-        int entityYOffset = context.entityYOffset();
-        EnemyProjectileCollision.LinkState projectileLinkState = context.projectileLinkState();
-        boolean creditsGameplay = context.creditsGameplay();
-        boolean swordCollisionActive = context.swordCollisionActive();
-        int swordX = context.swordX();
-        int swordWidth = context.swordWidth();
-        int swordY = context.swordY();
-        int swordHeight = context.swordHeight();
-        boolean handlerLinkCollisionEnabled = context.handlerLinkCollisionEnabled();
-        Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
-        Objects.requireNonNull(projectileLinkState, "projectileLinkState");
-        gelClingingToLink = false; // AnimateEntities clears wIsGelClingingToLink each pass.
-        boolean countdownBlocksInteraction = entityInteractionCountdown != 0;
-        if (!dialogActive && entityInteractionCountdown > 0) entityInteractionCountdown--;
-        handlerLinkCollisionEnabled = handlerLinkCollisionEnabled && !inventoryAppearing
-            && !countdownBlocksInteraction;
-        boolean threeOfAKindInteractive = handlerLinkCollisionEnabled
-            && entityTimersInteractive();
-        boolean handlerInteractive = entityHandlerInteractive(creditsGameplay);
-        boolean bowWowHandlerInteractive = transitionSequenceCounter == 0x04
-            && !roomTransitionActive && !dialogActive && !inventoryAppearing
-            && !witchGotItemPresentationActive();
-        boolean projectileTimersInteractive = gameplayEntityTimersInteractive(creditsGameplay);
-        boolean sideViewPotInteractive = handlerInteractive;
-        boolean sideViewPotLinkCollisionInteractive = sideViewPotInteractive
-            && handlerLinkCollisionEnabled
-            && projectileLinkState.motionState()
-                < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
-        shouldGetLostInMysteriousWoods = false;
-        finalizePendingBombPresentations();
-        int frame = frameCounter & 0xFF;
-        int romCollisionType = collisionType & 0xFF;
-        // WorldHandler runs $14:4B21 before AnimateEntities, even when no
-        // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!boomerangSoundClockProvided && gameplayWorld && !creditsGameplay) {
-            boomerangSfxCounter = (boomerangSfxCounter + 1) % BOOMERANG_SFX_COUNTER_PERIOD;
-        }
-        boomerangSoundClockProvided = false;
-        if (swordMoblinAlertingSoundCounter > 0) {
-            swordMoblinAlertingSoundCounter--;
-        }
-        if (bombArrowCooldown > 0) {
-            bombArrowCooldown--;
-        }
-        if (backgroundInteraction != null) {
-            backgroundCollision = (entity, direction, nextX, nextY) ->
-            {
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction, nextX, nextY,
-                    enemyIgnoreHitsCountdown[entity.slot()], frame);
-                if (result.blocked() && entity.status() == EntityStatus.THROWN
-                    && checksThrownRoomEventTriggers(entity.type())) {
-                    pendingThrownBackgroundCollisions.add(
-                        new ThrownBackgroundCollisionEvent(entity.slot(), entity.type(),
-                            direction, result.objectId()));
-                }
-                return result.blocked();
-            };
-        }
-        RoomEntityBackgroundInteraction hinoxBackgroundInteraction = backgroundInteraction;
-        if (hinoxBackgroundInteraction == null && backgroundCollision != null) {
-            hinoxBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                backgroundCollision);
-        }
-        projectileLaunchRequests.clear();
-        Arrays.fill(enemyProjectileSpawnedThisFrame, false);
-        Arrays.fill(dynamicEntitySpawnedThisFrame, false);
-        Arrays.fill(genieImpactRegisteredThisFrame, false);
-        Arrays.fill(wingedSwordAttackThisFrame, false);
-        Arrays.fill(wingedStateTwoThisFrame, false);
-        transientVfxRequests.clear();
-        pendingLinkFinalPositionRequests.clear();
-        pendingRoosterLinkStateRequests.clear();
-        pendingLinkMotionBlockRequests.clear();
-        pendingSideViewPlatformLinkRequests.clear();
-        pendingSideViewPotLinkRequests.clear();
-        pendingHinoxLinkEffectRequests.clear();
-        pendingLinkFallenPoseRequests.clear();
-        pendingLinkFacingRequests.clear();
-        pendingLinkAttackStepRequests.clear();
-        pendingLinkAttackStepRequests.addAll(pendingPreTickLinkAttackStepRequests);
-        pendingPreTickLinkAttackStepRequests.clear();
-        pendingLinkAttackClearRequests.clear();
-        pendingRoomStatusPersistenceRequests.clear();
-        pendingLinkHeldItemPoseRequests.clear();
-        pendingLinkSwordSpinPoseRequests.clear();
-        pendingLinkSwordFinalPoseRequests.clear();
-        pendingScreenShakeRequests.clear();
-        boomerangObjectRequests.clear();
-        magicRodObjectRequests.clear();
-        magicPowderObjectRequests.clear();
-        pendingDialogRequests.clear();
-        pendingEntityEvents.clear();
-        pendingThrownBackgroundCollisions.clear();
-        pendingEntityEvents.addAll(pendingPreTickEntityEvents);
-        pendingPreTickEntityEvents.clear();
-        pendingWarpLinkStateRequests.clear();
-        pendingChestRewardEvents.clear();
-        pendingHeartContainerRewards.clear();
-        pendingMadamMeowMeowFullHealRequests.clear();
-        pendingSwordPickupRewards.clear();
-        pendingToadstoolRewards.clear();
-        pendingInstrumentRewards.clear();
-        pendingInstrumentCompletions.clear();
-        pendingRichardProgressEvents.clear();
-        if (bossAgonySfxCountdown > 0) {
-            bossAgonySfxCountdown--;
-            if (bossAgonySfxCountdown == 0) {
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    bossAgonySourceSlot, ENTITY_GENIE, 0, false,
-                    EntityCombatEvent.SoundChannel.WAVE, 0x10));
-            }
-        }
-        pendingWitchExchangeEvents.clear();
-        pendingWitchRewardEvents.clear();
-        pendingOwlEventCompletions.clear();
-        pendingSlimeKeyRewardEvents.clear();
-        pendingKeyQuicksandEvents.clear();
-        pendingLikeLikeEvents.clear();
-        pendingBombExplosionEvents.clear();
-        hookshotBridgeUpdates.clear();
-        pendingSwitchBlockAnimationRequest = false;
-        if (linkPlayingOcarinaCountdown >= 0x10 && ocarinaAnimationCounter == 0x14) {
-            spawnMusicalNote(linkEntityX, linkEntityY, ocarinaAnimationPhase);
-        }
-        List<EntityProjectileEvent> projectileEvents = new ArrayList<>();
-        if (linkPositionHistory != null) {
-            followingLinkPositionHistory = linkPositionHistory;
-        }
-        followingLinkZ = linkZ & 0xFF;
-        followingLinkDirection = linkDirection & 0xFF;
-        followingEntityYOffset = entityYOffset & 0xFF;
-        boolean carryingEntity = liftedEntityState().carryState() != 0;
-        int romLinkDirection = romDirectionForJavaDirection(linkDirection);
-        lastRomLinkDirection = romLinkDirection;
-        for (int index = slots.length - 1; index >= 0; index--) {
-            RoomEntity entity = slots[index];
-            boolean moldormIntroOpenedThisFrame = false;
-            boolean rollingBonesHitThisFrame = entity.type() == ENTITY_ROLLING_BONES
-                && rollingBonesSwordHitFrame[index] == frame + 1;
-            rollingBonesSwordHitFrame[index] = 0;
-            if (!entity.loaded()) {
-                continue;
-            }
-            if (entity.type() == 0x35 && (entityRoomStatus & 0x10) != 0) {
-                disableEntityWithoutPersistence(entity.slot());
-                continue;
-            }
-            if (enemyProjectileSpawnedThisFrame[entity.slot()]
-                || dynamicEntitySpawnedThisFrame[entity.slot()]) {
-                continue;
-            }
-            if (entity.type() == ENTITY_KANALET_BOMBABLE_WALL) {
-                if ((entityRoomStatus & 0x10) != 0) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                droppedItemBySlot[entity.slot()] = ENTITY_HIDING_SLIME_KEY;
-                if (enemyIgnoreHitsCountdown[entity.slot()] != 0) {
-                    if (spawnKanaletWallMoblin(entity)) {
-                        disableEntityWithoutPersistence(entity.slot());
-                        continue;
-                    }
-                }
-            }
-            boolean kanaletLeafProducer =
-                entity.type() == ENTITY_CROW && !indoorRoom && entityRoomId == 0x58
-                || entity.type() == ENTITY_MAD_BOMBER
-                || entity.type() == ENTITY_KNIGHT && entityMapId >= 0x14;
-            if (kanaletLeafProducer) {
-                if (entity.type() == ENTITY_CROW
-                    && enemyIgnoreHitsCountdown[entity.slot()] >= 0x10) {
-                    enemyIgnoreHitsCountdown[entity.slot()] >>>= 2;
-                }
-                if ((entityRoomStatus & 0x10) != 0) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                droppedItemBySlot[entity.slot()] = ENTITY_HIDING_SLIME_KEY;
-                if (entity.sourceLoadOrder() != 0xFF) {
-                    entity = withSourceLoadOrder(entity, 0xFF);
-                    slots[index] = entity;
-                }
-            }
-            if (!indoorRoom && entity.type() == ENTITY_TARIN
-                && (entityRoomStatus & 0x10) != 0) {
-                disableEntityWithoutPersistence(entity.slot());
-                continue;
-            }
-            if (indoorRoom && entity.type() == ENTITY_MARIN_INDOOR && chestPlayerLevelsKnown
-                && chestSwordLevel != 0) {
-                disableEntityWithoutPersistence(entity.slot());
-                continue;
-            }
-            RoomEntity originalEntity = entity;
-            EntityStatus initialStatus = entity.status();
-            boolean wasInitializing = initialStatus == EntityStatus.INIT;
-            boolean freezeTarinTimers = !indoorRoom && entity.type() == ENTITY_TARIN
-                && tarinRaccoonMotion.state(entity.slot()) != 0
-                && !tarinTransformationTimersInteractive();
-            boolean freezeThreeOfAKindTimers = entity.type() == ENTITY_THREE_OF_A_KIND
-                && !threeOfAKindInteractive;
-            boolean freezeHinoxTimers = entity.type() == ENTITY_HINOX
-                && initialStatus == EntityStatus.ACTIVE
-                && (creditsGameplay || !handlerLinkCollisionEnabled || !entityTimersInteractive()
-                    || transitionSequenceCounter != 0x04);
-            boolean freezeGenieTimers = entity.type() == ENTITY_GENIE
-                && (!gameplayEntityTimersInteractive(creditsGameplay)
-                    || witchGotItemPresentationActive());
-            boolean freezeWitchTimers = entity.type() == ENTITY_WITCH
-                && !projectileTimersInteractive;
-            boolean freezePowderTimers = entity.type() == ENTITY_MAGIC_POWDER_SPRINKLE
-                && !projectileTimersInteractive;
-            boolean freezeBooBuddyTimers = entity.type() == ENTITY_BOO_BUDDY
-                && !projectileTimersInteractive;
-            boolean freezeBowWowTimers = entity.type() == ENTITY_BOW_WOW
-                && !projectileTimersInteractive;
-            boolean freezeMoblinKingTimers = entity.type() == ENTITY_MOBLIN_KING
-                && !projectileTimersInteractive;
-            boolean ignoreHitsDecrementedBeforeHandler = !freezeTarinTimers
-                && !freezeThreeOfAKindTimers
-                && !freezeHinoxTimers
-                && !freezeGenieTimers
-                && !freezeWitchTimers
-                && !freezePowderTimers
-                && !freezeBooBuddyTimers
-                && !freezeBowWowTimers
-                && !freezeMoblinKingTimers
-                && !rollingBonesHitThisFrame
-                && decrementEnemyCombatCountdowns(entity.slot(), !wasInitializing
-                    && entity.type() != ENTITY_BOO_BUDDY && entity.type() != ENTITY_BOW_WOW);
-            if (!freezeTarinTimers && !freezeThreeOfAKindTimers && !freezeHinoxTimers
-                && !freezeGenieTimers && !freezePowderTimers && !freezeBooBuddyTimers
-                && !freezeBowWowTimers && !freezeWitchTimers && !freezeMoblinKingTimers) {
-                decrementEnemyStatusCountdowns(entity.slot());
-                if (entity.type() == ENTITY_GENIE
-                    && geniePrivateCountdown1[entity.slot()] > 0) {
-                    geniePrivateCountdown1[entity.slot()]--;
-                }
-                if (entity.type() == ENTITY_GENIE
-                    && geniePrivateCountdown2[entity.slot()] > 0) {
-                    geniePrivateCountdown2[entity.slot()]--;
-                }
-            }
-            if (entity.type() == ENTITY_BOO_BUDDY && initialStatus == EntityStatus.ACTIVE) {
-                int slot = entity.slot();
-                // Rendering precedes ReturnIfNonInteractive_06 and recoil.
-                entity = withVariant(entity, booBuddyMotion.selectedVariant(slot));
-                slots[index] = entity;
-                if (projectileTimersInteractive) {
-                    booBuddyMotion.tickTimers(slot);
-                }
-                if (!handlerInteractive) {
-                    continue;
-                }
-                if (enemyIgnoreHitsCountdown[slot] != 0) {
-                    // $06:64F7 consumes one ignore-hits tick, moves with recoil
-                    // speeds, and pops the handler return address. OPTIONS1
-                    // bit $20 skips background collision for Boo Buddy.
-                    enemyIgnoreHitsCountdown[slot]--;
-                    slots[index] = booBuddyMotion.advanceRecoil(entity,
-                        enemyRecoilMotion.recoilSpeedX(slot),
-                        enemyRecoilMotion.recoilSpeedY(slot));
-                    continue;
-                }
-            }
-            if (entity.type() == ENTITY_BOW_WOW && initialStatus == EntityStatus.ACTIVE) {
-                int slot = entity.slot();
-                if (projectileTimersInteractive) {
-                    bowWowMotion.tickTimers(slot);
-                }
-                // $05:4054 selects the following tiles for every nonzero
-                // quest state, including kidnapped ($80), before any gates.
-                int spriteAddress = bowWowState != 0 ? 0x401C : 0x4000;
-                if (spriteHandlers != null
-                    && (entity.spriteDefinition().bank() != 0x05
-                        || entity.spriteDefinition().address() != spriteAddress)) {
-                    entity = withDefinition(entity, bowWowState != 0
-                        ? spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW)
-                        : spriteHandlers.forEntityType(ENTITY_BOW_WOW,
-                            EntityRoomLoader.RoomTable.OVERWORLD),
-                        entity.spriteVariant());
-                }
-                entity = withVariant(entity, bowWowMotion.selectedVariant(slot));
-                slots[index] = entity;
-                if (!bowWowHandlerInteractive) {
-                    continue;
-                }
-                if (enemyIgnoreHitsCountdown[slot] != 0) {
-                    enemyIgnoreHitsCountdown[slot]--;
-                }
-            }
-            if (entity.sourceLoadOrder() == -1 && isDisabledFollower(entity.type())) {
-                clearEntity(entity.slot());
-                continue;
-            }
-
-            // label_394D -> $14:54AC runs before these bosses' interaction
-            // guards, including during their death handlers. It directly
-            // nudges Link into the arena, then blocks his next input frame.
-            if (!wasInitializing && !roomTransitionActive && !freeMovementMode
-                && (entity.type() == ENTITY_ROLLING_BONES || entity.type() == ENTITY_MOLDORM)) {
-                int dx = 0;
-                int dy = 0;
-                if (((linkEntityX - 0x11) & 0xFF) >= 0x7E) {
-                    dx = linkEntityX < 0x50 ? 1 : -1;
-                } else if (((linkEntityY - 0x16) & 0xFF) >= 0x5E) {
-                    dy = -1;
-                }
-                if (dx != 0 || dy != 0) {
-                    pendingLinkMotionBlockRequests.add(
-                        new LinkMotionBlockRequest(entity.slot(), dx, dy));
-                    linkEntityX = (linkEntityX + dx) & 0xFF;
-                    linkEntityY = (linkEntityY + dy) & 0xFF;
-                    entityInteractionCountdown = 2;
-                }
-            }
-
-            // Moldorm calls BossIntro before dispatching active/death states ($04:56C0).
-            if (!wasInitializing && entity.type() == ENTITY_MOLDORM
-                && !roomTransitionActive && !inventoryAppearing) {
-                BossIntroMotion.Update intro = bossIntroMotion.advance(
-                    options1(entity.slot()), entity.type(), entityMapId, transitionSequenceCounter);
-                if (intro.musicTrack() >= 0) pendingMusicTrack = intro.musicTrack();
-                if (intro.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
-                    moldormIntroOpenedThisFrame = true;
-                }
-            }
-
-            EntityStatus status = entity.status();
-            boolean preserveGhiniPresentation = false;
-            boolean preserveMadBomberPresentation = false;
-            boolean preserveBombitePresentation = false;
-            boolean preserveIronMaskPresentation = false;
-            boolean preserveSnakePresentation = false;
-            boolean preserveStarPresentation = false;
-            boolean preserveBlooperPresentation = false;
-            boolean preserveWingedOctorokPresentation = false;
-            boolean preservePincerPresentation = false;
-            boolean preserveBushCrawlerPresentation = false;
-            boolean preserveMimicPresentation = false;
-            boolean preserveMaskedMimicPresentation = false;
-            boolean preserveMiniMoldormPresentation = false;
-            boolean preserveMoldormPresentation = false;
-            boolean preserveCuccoPresentation = false;
-            boolean preserveGopongaFlowerPresentation = false;
-            boolean preserveGiantGopongaPresentation = false;
-            boolean preserveGopongaProjectilePresentation = false;
-            boolean preservePokeyPresentation = false;
-            boolean preservePiranhaPresentation = false;
-            boolean preserveZoraPresentation = false;
-            boolean preserveZombiePresentation = false;
-            boolean preserveBuzzBlobPresentation = false;
-            boolean preserveSandCrabPresentation = false;
-            boolean preserveDogPresentation = false;
-            boolean preserveUrchinPresentation = false;
-            boolean preserveWitchRatPresentation = false;
-            boolean preserveWitchPresentation = false;
-            boolean preserveRoosterPresentation = false;
-            boolean preserveWizrobePresentation = false;
-            boolean preserveWizrobeProjectilePresentation = false;
-            boolean preservePolsVoicePresentation = false;
-            boolean preserveSpikedBeetlePresentation = false;
-            boolean preserveArmosKnightPresentation = false;
-            boolean preserveHinoxPresentation = false;
-            boolean preserveRollingBonesPresentation = false;
-            boolean preserveThreeOfAKindPresentation = false;
-            boolean preserveMoblinKingPresentation = false;
-            boolean preserveSecretSeashellPresentation = false;
-            boolean preserveDroppablePresentation = false;
-            boolean preserveTarinPresentation = false;
-            boolean keyDropTransitionActive = false;
-            RoomEntityGroundInteraction.Result preAppliedGroundResult = null;
-            boolean applyGenericGroundInteraction = entity.type() != ENTITY_ZOMBIE
-                && entity.type() != ENTITY_BUZZ_BLOB
-                && entity.type() != ENTITY_SAND_CRAB
-                && entity.type() != ENTITY_DOG
-                && entity.type() != ENTITY_URCHIN;
-            if (status == EntityStatus.ACTIVE) {
-                decrementEnemyDropCountdowns(entity);
-            }
-            if (status == EntityStatus.ACTIVE
-            && entity.type() == ENTITY_SIDE_VIEW_POT
-            && !sideViewPotMotion.active(entity.slot())) {
-                SideViewPotContact.Result contact = SideViewPotContact.Result.none();
-                int effectiveLinkX = linkEntityX;
-                int effectiveLinkY = linkEntityY;
-                if (sideViewPotLinkCollisionInteractive) {
-                    contact = SideViewPotContact.resolve(
-                        entity, linkEntityX, linkEntityY, linkAirborne, currentLinkSpeedY);
-                    if (contact.collided()) {
-                        pendingLinkPotContact(entity.slot(), contact);
-                        if (contact.restoreFinalPositionX()) {
-                            effectiveLinkX = currentLinkFinalPositionXConfigured
-                                ? currentLinkFinalPositionX : linkEntityX;
-                        }
-                        if (contact.snapTop()) {
-                            effectiveLinkY = contact.positionY();
-                        }
-                    }
-                }
-                if (groundInteractionSideScrolling
-                    && sideViewPotInteractive
-                    && SideViewPotContact.liftWindow(entity, effectiveLinkX, effectiveLinkY)
-                    && sideViewPotPowerBraceletHeld()
-                    && linkAttackStepAnimationCountdown == 0
-                    && beginLift(entity.slot(), romLinkDirection)) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, 0x02));
-                }
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_SIDE_VIEW_POT
-                && sideViewPotMotion.active(entity.slot())) {
-                if (sideViewPotInteractive) {
-                    SideViewPotMotion.Update potUpdate = sideViewPotMotion.advance(entity);
-                    RoomEntity movedPot = potUpdate.entity();
-                    boolean collision = sideViewPotBackgroundCollision(entity, movedPot,
-                        backgroundCollision, frame);
-                    if (collision) {
-                        spawnLiftableRockSmash(movedPot.x(),
-                            (movedPot.y() - movedPot.z()) & 0xFF,
-                            LIFTABLE_ROCK_SMASH_MODE_ROCK);
-                        clearEntity(entity.slot());
-                    } else {
-                        slots[index] = movedPot;
-                    }
-                }
-                // ReturnIfNonInteractive_19 leaves the rendered pot and all
-                // dedicated motion state untouched while Link is gated.
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_DOG) {
-                // DogEntityHandler writes this before ReturnIfNonInteractive_19.
-                enemyHealth[entity.slot()] = DogMotion.HANDLER_HEALTH;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_BRIDGE) {
-                advanceHookshotBridgeEntity(index, entity);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HOOKSHOT_CHAIN) {
-                HookshotChainMotion.State hookshotState = hookshotChainMotion.state(entity.slot());
-                if (hookshotState == null) {
-                    clearEntity(entity.slot());
-                    continue;
-                }
-                // $7BE3 cancels the chain before rendering or the pause gate.
-                if (linkPlayingOcarinaCountdown != 0) {
-                    clearEntity(entity.slot());
-                    continue;
-                }
-                if (projectileTimersInteractive) {
-                    hookshotState = HookshotChainMotion.decrementTransitionCountdown(hookshotState);
-                    hookshotChainMotion.setState(entity.slot(), hookshotState);
-                }
-                // Bank $18 has no credits exception in ReturnIfNonInteractive.
-                if (!handlerInteractive || creditsGameplay) {
-                    continue;
-                }
-
-                if ((frame & 0x03) == 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x0B));
-                }
-
-                if (hookshotState.entityState() == HookshotChainMotion.PULLING_STATE) {
-                    if (handlerLinkCollisionEnabled && HookshotChainMotion.overlapsLink(hookshotState,
-                        linkEntityX, linkEntityY)) {
-                        clearEntity(entity.slot());
-                        continue;
-                    }
-                    HookshotChainMotion.PullSpeed pullSpeed =
-                        HookshotChainMotion.pullLinkSpeed(
-                            hookshotState, linkEntityX, linkEntityY);
-                    projectileEvents.add(EntityProjectileEvent.hookshotPull(
-                        entity.slot(), pullSpeed.speedX(), pullSpeed.speedY()));
-                    slots[index] = entity;
-                    continue;
-                }
-
-                HookshotChainMotion.Position nextPosition =
-                    HookshotChainMotion.nextPosition(hookshotState);
-                HookshotChainMotion.Step step = HookshotChainMotion.advance(
-                    hookshotState, linkEntityX, linkEntityY, false, false);
-                if (step.returning()) {
-                    hookshotChainMotion.setState(entity.slot(), step.state());
-                    if (handlerLinkCollisionEnabled && step.reachedLink()) {
-                        clearEntity(entity.slot());
-                    } else {
-                        slots[index] = withPositionAndVariant(entity,
-                            step.state().x(), step.state().y(), entity.spriteVariant());
-                    }
-                    continue;
-                }
-                // $7C59 checks enemies before background interaction. The
-                // collision pass may clear the timer, but this pass still
-                // follows the already-selected outgoing handler branch.
-                boolean unmasked = collideHookshotWithEntities(entity, step.state(), frame);
-                if (unmasked) {
-                    step = new HookshotChainMotion.Step(
-                        HookshotChainMotion.completeWallPoke(step.state()),
-                        step.collided(), step.reachedLink(), step.returning());
-                }
-                if (hookshotState.wallCollisionPending()) {
-                    hookshotChainMotion.setState(entity.slot(),
-                        HookshotChainMotion.completeWallPoke(step.state()));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.SWORD_POKE, entity.x(),
-                        (entity.y() - entity.z()) & 0xFF));
-                    slots[index] = withPositionAndVariant(entity,
-                        step.state().x(), step.state().y(), entity.spriteVariant());
-                    continue;
-                }
-                EntityBackgroundCollisionResult collisionResult = null;
-                boolean blocked;
-                if (backgroundInteraction != null) {
-                    collisionResult = backgroundInteraction.probe(
-                        entity, hookshotState.direction(), nextPosition.x(), nextPosition.y(),
-                        enemyIgnoreHitsCountdown[entity.slot()], frame);
-                    blocked = collisionResult.blocked();
-                } else {
-                    blocked = backgroundCollision != null
-                        && backgroundCollision.blocks(entity, hookshotState.direction(),
-                            nextPosition.x(), nextPosition.y());
-                }
-                if (blocked) {
-                    HookshotChainMotion.State stopped = HookshotChainMotion.rollbackTo(
-                        step.state(), hookshotState.x(), hookshotState.y());
-                    if (collisionResult != null
-                        && collisionResult.physicsFlag() == 0x60) {
-                        if (HookshotChainMotion.shouldUnloadForHookshotable(
-                            step.state().transitionCountdown())) {
-                            clearEntity(entity.slot());
-                            continue;
-                        }
-                        hookshotChainMotion.setState(entity.slot(),
-                            HookshotChainMotion.enterPulling(stopped));
-                    } else {
-                        hookshotChainMotion.setState(entity.slot(),
-                            HookshotChainMotion.deferWallPoke(stopped));
-                    }
-                    slots[index] = entity;
-                    continue;
-                }
-
-                if (indoorRoom
-                    && hookshotState.speedY() != 0 && objectQuery != null) {
-                    RoomEntity movedChain = withPositionAndVariant(entity,
-                        step.state().x(), step.state().y(), entity.spriteVariant());
-                    RoomEntityObjectSample object = objectQuery.sample(movedChain);
-                    if (object != null) {
-                        int bridgeObject = (hookshotState.speedY() & 0x80) != 0
-                            ? OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
-                            : OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
-                        if (object.objectId() == bridgeObject
-                            && spawnHookshotBridge(object.objectLeft() + 0x08,
-                                object.objectTop() + 0x10,
-                                bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
-                                step.state().transitionCountdown())) {
-                            hookshotBridgeUpdates.add(new HookshotBridgeUpdate(
-                                object.objectLeft(), object.objectTop(),
-                                bridgeObject == OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1));
-                        }
-                    }
-                }
-
-                hookshotChainMotion.setState(entity.slot(), step.state());
-                slots[index] = withPositionAndVariant(entity,
-                    step.state().x(), step.state().y(), entity.spriteVariant());
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && indoorRoom
-                && entity.type() == WarpMotion.ENTITY_TYPE && warpMotion != null) {
-                int slot = entity.slot();
-                slots[index] = withPositionAndVariant(entity, entity.x(), entity.y(),
-                    dungeonMinibossReady ? (frame >> 3) & 7 : -1);
-                WarpMotion.Update warpUpdate = warpMotion.advance(
-                    entity, warpState[slot], warpTransitionCountdown[slot], entityMapId,
-                    entityRoomId, dungeonMinibossReady, linkEntityX, linkEntityY, linkZ);
-                warpState[slot] = warpUpdate.state();
-                warpTransitionCountdown[slot] = warpUpdate.countdown();
-                if (warpUpdate.musicTrack() >= 0) {
-                    pendingMusicTrack = warpUpdate.musicTrack();
-                }
-                if (warpUpdate.jingleId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, warpUpdate.jingleId()));
-                }
-                if (warpUpdate.motionBlocked()) {
-                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-                }
-                if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
-                    pendingWarpLinkStateRequests.add(new WarpLinkStateRequest(
-                        slot, entity.x(), entity.y(), warpUpdate.immunityCountdown()));
-                }
-                if (warpUpdate.destinationReady()) {
-                    pendingDungeonWarpRequests.add(new DungeonWarpRequest(
-                        slot, warpUpdate.destination()));
-                    disableEntityWithoutPersistence(slot);
-                }
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOOMERANG) {
-                advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY,
-                    linkZ, projectileLinkState.motionState(), handlerInteractive,
-                    projectileTimersInteractive);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SWORD_BEAM) {
-                advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY,
-                    romLinkDirection, handlerInteractive);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_MAGIC_ROD_FIREBALL) {
-                advanceMagicRodFireballEntity(index, entity, frame,
-                    handlerInteractive, projectileTimersInteractive);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_MAGIC_POWDER_SPRINKLE) {
-                advanceMagicPowderSprinkleEntity(index, entity, frame,
-                    projectileLinkState.motionState(),
-                    handlerInteractive && !creditsGameplay, projectileTimersInteractive);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_MUSICAL_NOTE) {
-                RoomEntity note = advanceMusicalNoteEntity(entity);
-                if (note == null) {
-                    continue;
-                }
-                slots[index] = note;
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOMB) {
-                BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
-                    projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-                entity = slots[index];
-                if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
-                    slots[index] = bombPrivateState4[entity.slot()] != 0
-                        ? advanceEnemyBombEntity(entity, backgroundCollision, frame)
-                        : advancePlacedBombEntity(entity, backgroundCollision, frame);
-                }
-                tryLiftBombIfRequested(index, bombDecision, linkEntityX, linkEntityY,
-                    linkZ, romLinkDirection);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_ARROW) {
-                if (playerArrowBombArrow[entity.slot()]
-                    && playerArrowMotion.transitionCountdown(entity.slot()) != 0) {
-                    int explosionSlot = spawnBombFromBombArrow(entity);
-                    if (explosionSlot >= 0) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            explosionSlot, ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.NOISE, 0x0C));
-                    }
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                // ArrowEntityHandler jumps straight to rendering/rebound
-                // while its transition countdown is nonzero ($6A3D-$6A40).
-                boolean hitEntity = playerArrowMotion.transitionCountdown(entity.slot()) == 0
-                    && collidePlayerArrowWithEntities(entity, frame);
-                if (hitEntity && !playerArrowBombArrow[entity.slot()]) {
-                    // func_003_75A2 reaches jr_003_7737 after an ordinary
-                    // arrow target hit. With no wall-collision byte set on
-                    // the active arrow, the state-0 arrow unloads there.
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                PlayerArrowMotion.Update arrowUpdate = playerArrowMotion.advance(
-                    entity, backgroundCollision, frame, entityGroundStatus[entity.slot()],
-                    groundInteractionSideScrolling, handlerInteractive, projectileTimersInteractive);
-                if (arrowUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (arrowUpdate.collidedWithWall()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), ENTITY_ARROW, 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
-                    // AlertSwordMoblins is shared by player arrows, enemy
-                    // projectiles, and bomb explosions.
-                    swordMoblinAlertingSoundCounter = 0x04;
-                }
-                slots[index] = arrowUpdate.entity();
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_LIFTABLE_ROCK
-                && liftableRockSmashActive[entity.slot()]) {
-                advanceLiftableRockSmash(index, entity, frame);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_HEART_CONTAINER
-                && enemyTransitionCountdown[entity.slot()] != 0) {
-                advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_MADAM_MEOWMEOW) {
-                advanceMadamMeowMeow(entity, frame, linkEntityX, linkEntityY, linkAirborne);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_RICHARD) {
-                advanceRichard(entity, frame, linkEntityX, linkEntityY, linkAirborne);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == 0x42
-                && indoorRoom && entityMapId != 0x16) {
-                advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ,
-                    projectileLinkState.motionState(), linkAirborne);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_BOW_WOW
-                && entity.sourceLoadOrder() >= 0 && bowWowState == 0x80
-                && handlerLinkCollisionEnabled && romCollisionType != 0
-                && withinUnsignedWindow(linkEntityX, 0x88, 0x10)
-                && withinUnsignedWindow(linkEntityY, 0x40, 0x10)) {
-                // BowWowEntityHandler's kidnapped branch checks the handler's
-                // collision byte only after Link enters the $88/$40 pen.
-                bowWowState = 0x01;
-                if (spriteHandlers != null) {
-                    entity = withDefinition(entity,
-                        spriteHandlers.forFollowerEntityType(ENTITY_BOW_WOW),
-                        entity.spriteVariant());
-                    slots[index] = entity;
-                }
-                followingNpcState = new FollowingNpcState(
-                    followingNpcState.roosterFollowing(),
-                    followingNpcState.ghostFollowingState(),
-                    followingNpcState.marinFollowing(), true,
-                    followingNpcState.instrument4Flags(),
-                    followingNpcState.powerBraceletLevel(), followingNpcState.db10());
-                pendingMusicTrack = 0x10;
-                pendingDialogRequests.add(new DialogRequest(1, 0x6C));
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    entity.slot(), entity.type(), 0, false,
-                    EntityCombatEvent.SoundChannel.WAVE, 0x18));
-            }
-            if (status == EntityStatus.ACTIVE
-                && (entity.type() == ENTITY_KID_71 || entity.type() == ENTITY_KID_72)
-                && bowWowState == 0x80) {
-                advanceKidnapWarningKid(entity, frame, linkEntityX, linkEntityY);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == 0x35
-                && heartPiecePickup[entity.slot()] != null) {
-                advanceHeartPiecePickup(entity, linkEntityX, linkEntityY, linkZ);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == 0x39
-                && instrumentParticleKind[entity.slot()] == 0
-                && instrumentPickupState[entity.slot()] < 3
-                && transitionSequenceCounter == 4 && spriteSelection != null) {
-                int[][] palettes = spriteSelection.objectPalettes();
-                int offset = ((frame >> 1) & 0x3C) / 2;
-                palettes[1][2] = instrumentPaletteCycle[offset];
-                palettes[1][3] = instrumentPaletteCycle[offset + 1];
-                spriteSelection = spriteSelection.withObjectPalettes(palettes);
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
-                && instrumentParticleKind[entity.slot()] == 1) {
-                advanceInstrumentParticle(entity);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
-                && instrumentPickupSequenceActive[entity.slot()]) {
-                advanceInstrumentPickup(entity, frame, linkEntityX, linkEntityY, linkZ,
-                    randomByteSupplier);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE
-                && entity.type() == ENTITY_SWORD_SHIELD_PICKUP) {
-                if (chestSwordLevel == 0 && spriteHandlers != null) {
-                    entity = withDefinition(entity,
-                        spriteHandlers.forSwordShieldPickup(true), entity.spriteVariant());
-                    slots[index] = entity;
-                }
-                if (swordPickupSequenceActive[entity.slot()]) {
-                    advanceSwordPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && powerUpPickupCountdown[entity.slot()] != 0) {
-                advancePowerUpPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_SLEEPY_TOADSTOOL) {
-                if (!toadstoolPickupSequenceActive[entity.slot()]
-                    && (playerHasToadstool || playerMagicPowderCount != 0)) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (toadstoolPickupSequenceActive[entity.slot()]) {
-                    advanceToadstoolPickup(entity, linkEntityX, linkEntityY, linkZ);
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && entity.type() == ENTITY_OWL_EVENT) {
-                advanceOwlEvent(entity, frame, linkEntityX, linkEntityY,
-                    handlerLinkCollisionEnabled);
-                continue;
-            }
-            if (status == EntityStatus.LIFTED) {
-                RoomEntity lifted = renderLiftedEntity(entity, frame);
-                // Side-view pot pickup enters status LIFTED with the ROM's
-                // transition countdown set to $02. UpdateEntityTimers has
-                // already decremented it for this frame; EntityLiftedHandler
-                // does not advance the pot until that countdown reaches zero.
-                // Other lifted entities retain their established generic
-                // presentation timing here.
-                if (entity.type() == ENTITY_SIDE_VIEW_POT
-                    && enemyTransitionCountdown[entity.slot()] != 0) {
-                    slots[index] = lifted;
-                    continue;
-                }
-                int liftedRomDirection = romLinkDirection;
-                if (entity.type() == ENTITY_ROOSTER) {
-                    RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
-                        frame, linkZ & 0xFF, linkPressedButtonsMask, romCollisionType,
-                        currentLinkSpeedX, currentLinkSpeedY, romLinkDirection);
-                    lifted = withVariant(lifted, roosterUpdate.spriteVariant());
-                    liftedSourceDirection[entity.slot()] = roosterUpdate.romDirection();
-                    liftedRomDirection = roosterUpdate.romDirection();
-                    pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
-                        entity.slot(), roosterUpdate.positionZ(), roosterUpdate.velocityZ(),
-                        roosterUpdate.speedX(), roosterUpdate.speedY(),
-                        roosterUpdate.romDirection()));
-                    playBoomerangSoundIfDue(entity);
-                }
-                slots[index] = advanceLiftedEntity(lifted, linkEntityX, linkEntityY, linkZ,
-                    liftedRomDirection);
-                continue;
-            } else if (status == EntityStatus.THROWN) {
-                if (entity.type() == ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
-                        projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-                    entity = slots[index];
-                    if (bombDecision.unloadAfterPresentation()) {
-                        continue;
-                    }
-                }
-                RoomEntity thrown = advanceThrownEntity(entity, backgroundCollision,
-                    groundInteractionSideScrolling, romLinkDirection, frame);
-                slots[index] = thrown;
-                if (thrown.status() == EntityStatus.THROWN) {
-                    collideThrownEntityWithEntities(thrown, frame);
-                }
-                continue;
-            } else if (status == EntityStatus.FALLING) {
-                if (entityMapId == MAP_COLOR_DUNGEON
-                    && ColorShellMotion.isColorShellType(entity.type())) {
-                    colorShellMotion.enterState6(entity);
-                    RoomEntity activeShell = refreshColorShellDisplay(
-                        withStatus(entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
-                    slots[index] = activeShell;
-                    continue;
-                }
-                RoomEntity falling = advanceFallingEntity(entity);
-                if (falling == null) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                int renderFlipAttribute = baseEntityFlipAttribute[entity.slot()];
-                if (enemyFlashCountdown[entity.slot()] > 0) {
-                    renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
-                }
-                slots[index] = new RoomEntity(
-                    falling.slot(), falling.sourceLoadOrder(), falling.type(), falling.x(),
-                    falling.y(), EntityStatus.FALLING, falling.spriteDefinition(),
-                    falling.spriteVariant(), renderFlipAttribute, falling.spriteTileOffset(),
-                    falling.z(), -1, false);
-                continue;
-            } else if (status == EntityStatus.DYING) {
-                if (entity.type() == ENTITY_MOBLIN_KING) {
-                    advanceMoblinKingDestruction(entity, frame, randomByteSupplier);
-                    continue;
-                }
-                if (entity.type() == ENTITY_GENIE
-                    && geniePrivateState1[entity.slot()] == 1) {
-                    advanceGenieDestruction(entity, frame, randomByteSupplier);
-                    continue;
-                }
-                if (entity.type() == ENTITY_ROLLING_BONES) {
-                    advanceRollingBonesDestruction(entity, randomByteSupplier);
-                    continue;
-                }
-                if (entity.type() == ENTITY_MOLDORM) {
-                    advanceMoldormDestruction(entity, frame);
-                    continue;
-                }
-                if (isBossKeyDropProducer(entity.type())) {
-                    advanceBossKeyDropProducer(entity, randomByteSupplier);
-                    continue;
-                }
-                if (dyingCountdown[entity.slot()] == 0) {
-                    handleTerminalEnemyDeath(entity, randomByteSupplier);
-                } else {
-                    int slot = entity.slot();
-                    int presentationCountdown = dyingCountdown[slot];
-                    // EntityDeathHandler ($03:557D): the initial counter is a
-                    // ceiling, not a fixed wait. Begin destruction once the
-                    // hit recoil has expired; bosses use their handlers above.
-                    if (presentationCountdown >= 0x20 && enemyIgnoreHitsCountdown[slot] == 0) {
-                        dyingCountdown[slot] = 0x1F;
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.NOISE, 0x13));
-                    }
-                    RoomEntity updated = enemyIgnoreHitsCountdown[slot] > 0
-                        ? applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity() : entity;
-                    updated = refreshColorShellDisplay(updated, status);
-                    slots[index] = withDeathPresentation(updated,
-                        deathSpriteVariantForCountdown(presentationCountdown),
-                        powerRecoilDeath[slot]);
-                }
-                continue;
-            } else if (status == EntityStatus.BURNING) {
-                if (enemyTransitionCountdown[entity.slot()] == 0) {
-                    finishBurning(entity);
-                } else {
-                    slots[index] = refreshColorShellDisplay(entity, status);
-                }
-                continue;
-            } else if (status == EntityStatus.STUNNED) {
-                if (entity.type() == ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = advanceBombEntity(index, entity,
-                        projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
-                    entity = slots[index];
-                    if (bombDecision.unloadAfterPresentation()) {
-                        continue;
-                    }
-                    entity = applyBombStunnedPostActiveWork(entity, backgroundCollision, frame);
-                    slots[index] = entity;
-                }
-                if (powerBraceletButtonHeld
-                    && isLiftableEntity(entity)
-                    && (entity.type() == ENTITY_BOMB
-                        || (enemyPhysicsFlags[entity.slot()] & ENTITY_PHYSICS_GRABBABLE) != 0)
-                    && RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                    if (beginLift(entity.slot(), romLinkDirection)) {
-                        slots[index] = advanceLiftedEntity(renderLiftedBomb(slots[index]),
-                            linkEntityX, linkEntityY, linkZ, romLinkDirection);
-                    }
-                    continue;
-                }
-                if (enemyStunnedCountdown[entity.slot()] == 0) {
-                    slots[index] = refreshColorShellDisplay(
-                        withStatus(entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
-                } else {
-                    slots[index] = refreshColorShellDisplay(entity, status);
-                }
-                continue;
-            } else if (status == EntityStatus.INIT) {
-                if (entity.type() == ENTITY_HIDING_SLIME_KEY
-                    && (entityRoomStatus & 0x10) != 0) {
-                    // The handler's first instruction is the completed-room
-                    // gate, including the INIT dispatch path.
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                status = EntityStatus.ACTIVE;
-                initializeEntityTimers(entity);
-                entityHandlers.initialize(entity, randomByteSupplier);
-
-                if (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN) {
-                    roamingEnemyMotion.initialize(entity.slot());
-                }
-
-                if (entity.type() == ENTITY_MOBLIN_SWORD) {
-                    moblinSwordMotion.initialize(entity.slot(), entity.x());
-                }
-
-
-
-                if (isSparkType(entity.type())) {
-                    sparkMotion.initialize(entity.slot(), entity.type());
-                }
-                if (isZolGelType(entity.type())) {
-                    zolGelMotion.initialize(entity.slot(), entity.type(), randomByteSupplier);
-                }
-
-
-
-
-                if (entity.type() == ENTITY_MINI_MOLDORM) {
-                    miniMoldormMotion.initialize(entity);
-                }
-                if (entity.type() == ENTITY_MOLDORM) {
-                    moldormMotion.initialize(entity);
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                if (entity.type() == ENTITY_WIZROBE) {
-                    wizrobeMotion.initializeFromRoom(entity.slot(), entity.spriteVariant());
-                    enemyTransitionCountdown[entity.slot()] = 0x80;
-                    preserveWizrobePresentation = true;
-                }
-                if (entity.type() == ENTITY_WIZROBE_PROJECTILE) {
-                    wizrobeProjectileMotion.initialize(entity.slot(), randomByteSupplier);
-                    preserveWizrobeProjectilePresentation = true;
-                }
-
-
-
-
-                if (isGhiniType(entity.type())) {
-                    ghiniMotion.initialize(entity.slot(), entity.type());
-                    if (isHidingGhiniType(entity.type())) {
-                        preserveGhiniPresentation = true;
-                    }
-                }
-
-
-
-
-                if (isBombiteType(entity.type())) {
-                    bombiteMotion.initialize(entity.slot());
-                    slowTimerInitialized[entity.slot()] = true;
-                }
-                if (isFollowingNpcType(entity.type())) {
-                    if (entity.type() == ENTITY_BOW_WOW) {
-                        bowWowMotion.initialize(entity.slot());
-                    } else {
-                        followingNpcMotion.initialize(entity.slot(), entity.type());
-                    }
-                }
-                if (ColorShellMotion.isColorShellType(entity.type())) {
-                    colorShellMotion.initialize(entity.slot());
-                }
-            } else if (status == EntityStatus.ACTIVE) {
-                if (!freezeTarinTimers && !freezeMoblinKingTimers) {
-                    decrementSlowTransitionCountdown(entity.slot(), frame);
-                }
-                if (shouldDisappear(entity)) {
-                    if (slowTransitionCountdown[entity.slot()] == 0) {
-                        clearEntity(entity.slot());
-                        continue;
-                    }
-                }
-            }
-            RoomEntity updated = entity;
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == SideViewPlatformMotion.ENTITY_TYPE
-                && handlerLinkCollisionEnabled && entityTimersInteractive()
-                && !creditsGameplay && transitionSequenceCounter == 0x04) {
-                SideViewPlatformMotion.Frame platformFrame =
-                    sideViewPlatformMotion.beginFrame(entity);
-                RoomEntity movedPlatform = platformFrame.entity();
-                if (platformFrame.horizontalDelta() != 0 && backgroundCollision != null
-                    && backgroundCollision.blocks(entity,
-                        platformFrame.horizontalDelta() < 0 ? 1 : 0,
-                        movedPlatform.x(), movedPlatform.y())) {
-                    platformFrame = sideViewPlatformMotion.restoreHorizontalPosition(entity,
-                        platformFrame);
-                    movedPlatform = platformFrame.entity();
-                }
-                if (platformFrame.verticalDelta() != 0 && backgroundCollision != null) {
-                    int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
-                    if (backgroundCollision.blocks(entity, direction, movedPlatform.x(),
-                        movedPlatform.y())) {
-                        platformFrame = sideViewPlatformMotion.restoreVerticalPosition(entity,
-                            platformFrame);
-                        movedPlatform = platformFrame.entity();
-                    }
-                }
-                boolean standing = groundInteractionSideScrolling
-                    && (linkZ & 0xFF) == 0
-                    && (currentLinkSpeedY & 0x80) == 0
-                    && sideViewPlatformOverlapsLink(movedPlatform, linkEntityX, linkEntityY)
-                    && (((linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
-                boolean activationAllowed = entityRoomId == 0x3B || carryingEntity;
-                if (standing) {
-                    pendingSideViewPlatformLinkRequests.add(new SideViewPlatformLinkRequest(
-                        entity.slot(), platformFrame.horizontalDelta(),
-                        (movedPlatform.y() - 0x10) & 0xFF, 0x02, true, activationAllowed));
-                }
-                SideViewPlatformMotion.Update platformUpdate = sideViewPlatformMotion.finishFrame(
-                    movedPlatform, platformFrame, frame, standing, activationAllowed);
-                updated = platformUpdate.entity();
-                if (platformUpdate.rumble()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x11));
-                }
-            }
-            if (wasInitializing && entity.type() == ENTITY_CHEST_WITH_ITEM) {
-                initializeChestEntity(entity);
-                updated = withPositionAndVariant(entity, entity.x(),
-                    (entity.y() - 0x08) & 0xFF, entity.spriteVariant());
-            }
-            if (wasInitializing && isCommonDroppableType(entity.type())
-                && droppablePrivateState3[entity.slot()] != 0) {
-                // The init handler has already set the hidden options. The
-                // corresponding active handler will be entered on the next
-                // entity tick, so suppress this first display-list pass too.
-                updated = withVariant(entity, -1);
-                preserveDroppablePresentation = true;
-            }
-            if (preserveGhiniPresentation) {
-                updated = withVariant(entity, -1);
-            }
-            if (wasInitializing && entity.type() == ENTITY_ZOMBIE) {
-                // The room-loaded Zombie is only a hidden spawn marker; its
-                // bank-$18 handler never renders the parent entity.
-                updated = withVariant(entity, -1);
-                preserveZombiePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_CHEST_WITH_ITEM) {
-                if (advanceChestEntity(index, entity)) {
-                    continue;
-                }
-                updated = slots[index];
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                if (chestSwordLevel >= 0x02
-                    || (entityRoomStatus & 0x10) != 0
-                    || (entityRoomId == 0xE3 && (entityRoomStatus & 0x40) == 0)) {
-                    // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
-                    // for these gates, which deliberately does not mark the
-                    // source load-order bit as completed.
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                RoomEntityObjectSample objectUnderEntity = objectQuery == null
-                    ? null : objectQuery.sample(entity);
-                SecretSeashellMotion.Update shellUpdate = secretSeashellMotion.advance(
-                    entity, entityRoomId, frame,
-                    false, secretSeashellScreenShakeActive,
-                    secretSeashellPegasusCollisionActive,
-                    secretSeashellPegasusCollisionCoordinatesKnown,
-                    secretSeashellPegasusCollisionX,
-                    secretSeashellPegasusCollisionY,
-                    linkEntityX, linkEntityY, objectUnderEntity);
-                updated = shellUpdate.entity();
-                entityOptions1Override[entity.slot()] =
-                    secretSeashellMotion.privateState3(entity.slot()) != 0
-                        ? SECRET_SEASHELL_HIDDEN_OPTIONS1
-                        : SECRET_SEASHELL_REVEALED_OPTIONS1;
-                preserveSecretSeashellPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_HIDING_SLIME_KEY
-                && (entityRoomStatus & 0x10) != 0) {
-                // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
-                // calling the shared reveal helper and unloads without touching
-                // the source persistence mask.
-                disableEntityWithoutPersistence(entity.slot());
-                continue;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isCommonDroppableType(entity.type())) {
-                CommonDroppableUpdate droppableUpdate = advanceCommonDroppable(
-                    entity, linkEntityX, linkEntityY,
-                    objectQuery == null ? null : objectQuery.sample(entity));
-                updated = droppableUpdate.entity();
-                if (droppableUpdate.hidden()) {
-                    // DroppableRevealOrReturnIfNeeded returns past the caller's
-                    // remaining handler. In particular, no rendering, pickup,
-                    // movement, or background interaction may run while hidden.
-                    slots[index] = withStatus(withVariant(updated, -1), status);
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_HIDING_SLIME_KEY) {
-                int slot = entity.slot();
-                SlimeKeyTransitionUpdate keyUpdate = advanceHidingSlimeKey(
-                    updated, slot, linkEntityX, linkEntityY, linkZ);
-                enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
-                if (keyUpdate.reward() != null) {
-                    pendingSlimeKeyRewardEvents.add(keyUpdate.reward());
-                    pendingDialogRequests.add(new DialogRequest(
-                        0, keyUpdate.reward().dialogLowId()));
-                }
-                if (keyUpdate.unload()) {
-                    disableEntityWithoutPersistence(slot);
-                    continue;
-                }
-                keyDropTransitionActive = keyUpdate.holdAboveLink();
-                updated = keyUpdate.entity();
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_KEY_DROP_POINT) {
-                // decrementEnemyStatusCountdowns mirrors UpdateEntityTimers'
-                // shared transition-byte decrement before bank-$03's handler
-                // reads it.
-                int slot = entity.slot();
-                if (checkForKeyDropQuicksandHole(updated)) {
-                    pendingKeyQuicksandEvents.add(new KeyQuicksandEvent(slot));
-                    slots[index] = withStatus(updated, EntityStatus.FALLING);
-                    enemyTransitionCountdown[slot] = 0x2F;
-                    fallingTargetX[slot] = 0x50;
-                    fallingTargetY[slot] = 0x48;
-                    fallingSpeedX[slot] = 0;
-                    fallingSpeedY[slot] = 0;
-                    fallingSpeedXAccumulator[slot] = 0;
-                    fallingSpeedYAccumulator[slot] = 0;
-                    fallingVisualYOffset[slot] = 0;
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, ENTITY_KEY_DROP_POINT, 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x18));
-                    continue;
-                }
-                boolean hookshotRoom = entityRoomId == 0x80;
-                if (hookshotRoom) {
-                    updated = withDefinition(updated, spriteDefinitionFor(ENTITY_HOOKSHOT_CHAIN), 0);
-                }
-                KeyDropPointMotion.Update keyUpdate = KeyDropPointMotion.advance(
-                    enemyTransitionCountdown[slot], updated.spriteVariant(), hookshotRoom);
-                enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
-                if (keyUpdate.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        KeyDropPointMotion.DIALOG_TABLE, keyUpdate.dialogLowId()));
-                }
-                if (keyUpdate.rewardItemType() >= 0) {
-                    pendingKeyRewardEvents.add(new KeyRewardEvent(
-                        slot, keyUpdate.rewardItemType()));
-                }
-                keyDropTransitionActive = keyUpdate.holdAboveLink();
-                if (keyDropTransitionActive) {
-                    updated = withPositionAndVariant(updated, linkEntityX,
-                        linkEntityY - 0x0C, updated.spriteVariant());
-                    updated = withZ(updated, linkZ);
-                }
-            }
-            if (wasInitializing && entity.type() == ENTITY_WIZROBE) {
-                // EntityInitWizrobe decrements the initial display-list variant
-                // before the first active handler dispatch.
-                updated = withVariant(entity, -1);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_POLS_VOICE
-                && polsVoiceBalladOcarinaTrigger()) {
-                // The handler checks this before rendering, recoil, movement,
-                // or the ordinary collision path. Its private countdown $1F
-                // is the shared EntityDeathHandler's visible death timer.
-                dyingCountdown[entity.slot()] = 0x1F;
-                enemyPhysicsFlags[entity.slot()] = 0x04;
-                status = EntityStatus.DYING;
-                updated = withStatus(entity, EntityStatus.DYING);
-                pendingEntityEvents.add(new EntityCombatEvent(
-                    entity.slot(), entity.type(), 0, false,
-                    EntityCombatEvent.SoundChannel.NOISE, 0x13));
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && (entity.type() == ENTITY_ROLLING_BONES
-                    || entity.type() == ENTITY_ROLLING_BONES_BAR)) {
-                // BossIntro runs before ReturnIfNonInteractive_06.
-                if (entity.type() == ENTITY_ROLLING_BONES
-                    && !roomTransitionActive && !inventoryAppearing) {
-                    BossIntroMotion.Update intro = bossIntroMotion.advance(
-                        options1(entity.slot()), entity.type(), entityMapId,
-                        transitionSequenceCounter);
-                    if (intro.musicTrack() >= 0) pendingMusicTrack = intro.musicTrack();
-                }
-                // The bar's room-clear check precedes its interaction guard.
-                if (entity.type() == ENTITY_ROLLING_BONES_BAR && (entityRoomStatus & 0x20) != 0) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
-                if (!handlerInteractive || countdownBlocksInteraction) continue;
-                if (entity.type() == ENTITY_ROLLING_BONES
-                    && !rollingBonesHitThisFrame && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
-                    // ApplyRecoilIfNeeded_06 pops the handler return address:
-                    // no jump physics or AI movement occurs during recoil.
-                    slots[index] = applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity();
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && (usesSharedRecoil(entity.type())
-                    || (entity.type() == ENTITY_POKEY
-                        && pokeyMotion.isSegment(entity.slot())
-                        && handlerLinkCollisionEnabled))
-                && entity.type() != ENTITY_ROLLING_BONES
-                && entity.type() != ENTITY_MINI_MOLDORM
-                && entity.type() != ENTITY_BOO_BUDDY
-                && (entity.type() != ENTITY_MASKED_MIMIC_GORIYA || entityMapId != 0x1F)
-                && ((entity.type() != ENTITY_STAR && entity.type() != ENTITY_BLOOPER)
-                    || handlerLinkCollisionEnabled)
-                && ((entity.type() != ENTITY_ZOMBIE && entity.type() != ENTITY_BUZZ_BLOB
-                    && entity.type() != ENTITY_SAND_CRAB)
-                    || handlerLinkCollisionEnabled)) {
-                // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
-                // handlers apply the shared recoil before their own movement.
-                EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
-                    entity, backgroundCollision);
-                entity = recoil.entity();
-                updated = entity;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MINI_MOLDORM) {
-                int slot = entity.slot();
-                // RenderMiniMoldorm records the history before the bank-$04
-                // recoil helper runs, so keep this ordering explicit.
-                miniMoldormMotion.beginFrame(entity, enemyIgnoreHitsCountdown[slot] != 0);
-                EnemyRecoilMotion.Update recoil = applyEnemyRecoilIfNeeded(
-                    entity, backgroundCollision);
-                entity = recoil.entity();
-                updated = entity;
-                RoomEntityBackgroundInteraction miniBackgroundInteraction = backgroundInteraction;
-                if (miniBackgroundInteraction == null && backgroundCollision != null) {
-                    miniBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                int transitionForMotion = enemyTransitionCountdown[slot];
-                if (transitionForMotion != 0) {
-                    // The common runtime timer has already performed the ROM
-                    // pre-handler decrement; MiniMoldormMotion mirrors that
-                    // decrement for its direct source-derived API as well.
-                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
-                }
-                MiniMoldormMotion.Update miniUpdate = miniMoldormMotion.advanceAfterHistory(
-                    entity, transitionForMotion, enemyIgnoreHitsCountdown[slot],
-                    enemyFlashCountdown[slot], miniBackgroundInteraction,
-                    randomByteSupplier, frame);
-                updated = miniUpdate.entity();
-                enemyTransitionCountdown[slot] = miniUpdate.transitionCountdown();
-                if (spriteHandlers != null) {
-                    updated = withDefinition(updated,
-                        spriteHandlers.forMiniMoldormState(
-                            miniUpdate.headSpriteVariant(), updated.x(),
-                            (updated.y() - updated.z()) & 0xFF,
-                            miniUpdate.segment1X(), miniUpdate.segment1Y(),
-                            miniUpdate.segment2X(), miniUpdate.segment2Y()), 0);
-                } else if (updated.spriteDefinition().supported()
-                    && miniUpdate.headSpriteVariant() < updated.spriteDefinition().variantCount()) {
-                    updated = withVariant(updated, miniUpdate.headSpriteVariant());
-                }
-                preserveMiniMoldormPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MOLDORM) {
-                int slot = entity.slot();
-                if (!handlerInteractive || countdownBlocksInteraction || moldormIntroOpenedThisFrame) {
-                    if (spriteHandlers != null) {
-                        slots[index] = withDefinition(entity, spriteHandlers.forMoldormState(
-                            moldormMotion.headSpriteVariant(slot), entity.x(),
-                            (entity.y() - entity.z()) & 0xFF,
-                            moldormMotion.currentTailSegments(slot), 0, frame), 0);
-                    }
-                    if (roomTransitionActive) moldormMotion.resetHistory(slot);
-                    continue;
-                }
-                RoomEntityBackgroundInteraction moldormBackgroundInteraction =
-                    backgroundInteraction;
-                if (moldormBackgroundInteraction == null && backgroundCollision != null) {
-                    moldormBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                int transitionForMotion = enemyTransitionCountdown[slot];
-                if (transitionForMotion != 0) {
-                    // Common countdowns have already ticked before dispatch;
-                    // the direct motion API performs the same decrement.
-                    transitionForMotion = (transitionForMotion + 1) & 0xFF;
-                }
-                MoldormMotion.Update moldormUpdate = moldormMotion.advance(
-                    entity, frame, transitionForMotion, enemyIgnoreHitsCountdown[slot],
-                    enemyFlashCountdown[slot], enemyHealth[slot], randomByteSupplier,
-                    moldormBackgroundInteraction);
-                updated = moldormUpdate.entity();
-                enemyTransitionCountdown[slot] = moldormUpdate.transitionCountdown();
-                if (moldormUpdate.noiseRequested()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.NOISE, 0x1B));
-                }
-                if (spriteHandlers != null) {
-                    MoldormMotion.Presentation presentation = moldormUpdate.presentation();
-                    updated = withDefinition(updated, spriteHandlers.forMoldormPresentation(
-                        presentation.headSpriteVariant(), presentation.headX(),
-                        presentation.headY(), updated.x(),
-                        (updated.y() - updated.z()) & 0xFF,
-                        presentation.segments(), 0, frame), 0);
-                }
-                enemyPhysicsFlags[slot] = 0x02;
-                preserveMoldormPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MIMIC) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction mimicBackgroundInteraction = backgroundInteraction;
-                if (mimicBackgroundInteraction == null && backgroundCollision != null) {
-                    mimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                MimicMotion.Update mimicUpdate = mimicMotion.advance(
-                    entity, frame, linkPressedButtonsMask, romCollisionType,
-                    mimicBackgroundInteraction, enemyIgnoreHitsCountdown[slot], frame);
-                updated = mimicUpdate.entity();
-                preserveMimicPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MASKED_MIMIC_GORIYA
-                && entityMapId != 0x1F) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
-                    backgroundInteraction;
-                if (maskedMimicBackgroundInteraction == null && backgroundCollision != null) {
-                    maskedMimicBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                MaskedMimicMotion.Update maskedMimicUpdate = maskedMimicMotion.advance(
-                    entity, linkEntityX, linkEntityY, romLinkDirection,
-                    linkPressedButtonsMask, romCollisionType,
-                    maskedMimicBackgroundInteraction, enemyIgnoreHitsCountdown[slot], frame);
-                updated = maskedMimicUpdate.entity();
-                entityOptions1Override[slot] = maskedMimicUpdate.options1();
-                preserveMaskedMimicPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_CRYSTAL_SWITCH) {
-                // CrystalSwitchEntityHandler writes $FF before dispatching
-                // its normal collision helper, so sword damage can never
-                // turn this entity into a dying state.
-                enemyHealth[entity.slot()] = 0xFF;
-                if (enemyFlashCountdown[entity.slot()] > 0) {
-                    // The handler consumes the collision flash as its trigger.
-                    enemyFlashCountdown[entity.slot()] = 0;
-                    if (!switchBlockAnimationActive) {
-                        enemyTransitionCountdown[entity.slot()] = 0x18;
-                        pendingSwitchBlockAnimationRequest = true;
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            entity.slot(), entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.WAVE, 0x0E));
-                    }
-                }
-            }
-            if (wasInitializing && entity.type() == ENTITY_LEEVER) {
-                // EntityInitLeever calls SetEntitySpriteVariant($FF) before
-                // the first active handler dispatch.
-                updated = withVariant(entity, -1);
-            }
-            if (wasInitializing && isSparkType(entity.type())) {
-                updated = sparkMotion.applyInitializationOffset(entity);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entityHandlers.hasAdvance(entity.type())) {
-                updated = entityHandlers.advance(entity, context.withRuntimeInputs(
-                    frame, linkEntityX, linkEntityY, backgroundCollision));
-            }
-
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BOMBER) {
-                BomberMotion.Update bomberUpdate = bomberMotion.advance(
-                    entity, enemyTransitionCountdown[entity.slot()], linkEntityX, linkEntityY,
-                    romLinkDirection, swordCollisionActive, randomByteSupplier,
-                    backgroundCollision);
-                updated = bomberUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = bomberUpdate.transitionCountdown();
-                if (bomberUpdate.bombSpawn() != null) {
-                    BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
-                    int bombSlot = spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
-                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
-                        spawn.speedZ());
-                    if (bombSlot >= 0 && bomberUpdate.playJingle()) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            bombSlot, ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            BOMBER_THROW_JINGLE_ID));
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MAD_BOMBER) {
-                // MadBomberEntityHandler rewrites this handler-owned drop
-                // byte on every interactive pass before its state dispatch.
-                droppedItemBySlot[entity.slot()] = 0x3C;
-                MadBomberMotion.Update madBomberUpdate = madBomberMotion.advance(
-                    entity, enemyTransitionCountdown[entity.slot()], linkEntityX, linkEntityY,
-                    enemyFlashCountdown[entity.slot()], randomByteSupplier);
-                updated = withVariant(madBomberUpdate.entity(),
-                    madBomberUpdate.spriteVariant());
-                preserveMadBomberPresentation = true;
-                enemyTransitionCountdown[entity.slot()] =
-                    madBomberUpdate.transitionCountdown();
-                if (madBomberUpdate.bombSpawn() != null) {
-                    MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
-                    int bombSlot = spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
-                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
-                        spawn.speedZ());
-                    if (bombSlot >= 0 && madBomberUpdate.playJingle()) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            bombSlot, ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            BOMBER_THROW_JINGLE_ID));
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isBombiteType(entity.type())) {
-                BombiteMotion.Update bombiteUpdate = bombiteMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY,
-                    enemyTransitionCountdown[entity.slot()],
-                    slowTransitionCountdown[entity.slot()],
-                    bombPrivateCountdown1[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()],
-                    runningWithPegasusBoots, randomByteSupplier, backgroundCollision);
-                updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());
-                preserveBombitePresentation = true;
-                enemyTransitionCountdown[entity.slot()] =
-                    bombiteUpdate.transitionCountdown();
-                slowTransitionCountdown[entity.slot()] =
-                    bombiteUpdate.slowTransitionCountdown();
-                bombPrivateCountdown1[entity.slot()] = bombiteUpdate.privateCountdown1();
-                if (bombiteUpdate.bumpJingle()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x09));
-                }
-                boolean entityCollisionExplosion = entity.type() == ENTITY_BOUNCING_BOMBITE
-                    && bombiteMotion.state(entity.slot()) == 2
-                    && collideBouncingBombiteWithEntities(updated, frame);
-                if (bombiteUpdate.explode() || entityCollisionExplosion) {
-                    // BombiteExplode writes the already-positioned source
-                    // coordinates into a fresh type-$02 enemy bomb and then
-                    // lets ConfigureNewEntity supply z=0 and ignore-hits=1.
-                    int bombSlot = spawnEnemyBomb(updated.x(), updated.y(), 0,
-                        BOMBITE_EXPLOSION_COUNTDOWN);
-                    if (bombSlot >= 0) {
-                        enemyIgnoreHitsCountdown[bombSlot] = 0x01;
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            bombSlot, ENTITY_BOMB, 0, false,
-                            EntityCombatEvent.SoundChannel.NOISE,
-                            BOMBITE_EXPLOSION_SOUND_ID));
-                    }
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isRoamingEnemyType(entity.type())) {
-                if (entity.type() == ENTITY_IRON_MASK
-                    && ironMaskPrivateState2[entity.slot()] != 0) {
-                    UnmaskedIronMaskMotion.Update unmaskedUpdate =
-                        unmaskedIronMaskMotion.advance(entity, frame, randomByteSupplier,
-                            backgroundInteraction, backgroundCollision,
-                            enemyIgnoreHitsCountdown[entity.slot()], frame);
-                    updated = unmaskedUpdate.entity();
-                    enemyTransitionCountdown[entity.slot()] =
-                        unmaskedUpdate.transitionCountdown();
-                } else {
-                    RoamingEnemyMotion.Update roamingUpdate = backgroundInteraction == null
-                        ? roamingEnemyMotion.advance(entity, linkEntityX, linkEntityY,
-                            randomByteSupplier, backgroundCollision, creditsGameplay)
-                        : roamingEnemyMotion.advanceWithInteraction(entity, linkEntityX,
-                            linkEntityY, randomByteSupplier, backgroundInteraction,
-                            enemyIgnoreHitsCountdown[entity.slot()], frame, creditsGameplay);
-                    updated = roamingUpdate.entity();
-                    if (roamingUpdate.launchRequest() != null) {
-                        projectileLaunchRequests.add(roamingUpdate.launchRequest());
-                        spawnEnemyProjectile(entity, roamingUpdate.launchRequest());
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_IRON_MASK) {
-                int privateState2 = ironMaskPrivateState2[entity.slot()];
-                int variant = privateState2 == 0
-                    ? updated.spriteVariant() : ((frame >>> 4) & 0x01);
-                if (spriteHandlers != null) {
-                    updated = withDefinition(updated,
-                        spriteHandlers.forIronMaskState(privateState2), variant);
-                }
-                preserveIronMaskPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !dialogActive && !inventoryAppearing && !roomTransitionActive
-                && gameplayWorld && transitionSequenceCounter == 0x04 && !witchGotItemPresentationActive()
-                && entity.type() == ENTITY_MOBLIN_SWORD) {
-                RoomEntityBackgroundInteraction swordBackgroundInteraction = backgroundInteraction;
-                if (swordBackgroundInteraction == null && backgroundCollision != null) {
-                    swordBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                MoblinSwordMotion.Update moblinSwordUpdate = moblinSwordMotion.advance(
-                    entity, linkEntityX, linkEntityY,
-                    swordBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()],
-                    swordMoblinAlertingSoundCounter, entityMapId,
-                    transitionSequenceCounter, frame);
-                updated = moblinSwordUpdate.entity();
-                if (moblinSwordUpdate.dialogRequested()) {
-                    pendingDialogRequests.add(new DialogRequest(1, DIALOG_MOBLIN));
-                }
-            }
-
-
-
-            if (status == EntityStatus.ACTIVE && !wasInitializing && isSparkType(entity.type())) {
-                updated = sparkMotion.advance(entity, frame, backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing && handlerInteractive
-                && isZolGelType(entity.type())) {
-                RoomEntityBackgroundInteraction zolGelBackgroundInteraction = backgroundInteraction;
-                if (zolGelBackgroundInteraction == null && backgroundCollision != null) {
-                    zolGelBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                ZolGelMotion.Update zolGelUpdate = zolGelMotion.advance(entity, linkEntityX,
-                    linkEntityY, linkZ, randomByteSupplier, zolGelBackgroundInteraction,
-                    frame, enemyIgnoreHitsCountdown[entity.slot()],
-                    joypadHeld || actionButtonsHeld);
-                updated = zolGelUpdate.entity();
-                gelClingingToLink |= zolGelUpdate.clinging();
-                if (zolGelUpdate.split() != null) {
-                    updated = applyZolSplit(entity, updated, zolGelUpdate.split());
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_HIDING_ZOL) {
-                RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
-                    backgroundInteraction;
-                if (hidingZolBackgroundInteraction == null && backgroundCollision != null) {
-                    hidingZolBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                HidingZolMotion.Update hidingZolUpdate = hidingZolMotion.advance(
-                    entity, linkEntityX, linkEntityY, randomByteSupplier,
-                    hidingZolBackgroundInteraction, frame);
-                updated = hidingZolUpdate.entity();
-                if (hidingZolUpdate.clearsIgnoreHitsCountdown()) {
-                    // func_007_73F7 temporarily writes $03 around the
-                    // background helper, then clears the shared byte.
-                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
-                }
-                if (hidingZolUpdate.jumpJingle()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x24));
-                }
-                if (hidingZolUpdate.physicsFlags() >= 0) {
-                    enemyPhysicsFlags[entity.slot()] = hidingZolUpdate.physicsFlags();
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_SPIKE_TRAP) {
-                SpikeTrapMotion.Update spikeTrapUpdate = spikeTrapMotion.advance(
-                    entity, linkEntityX, linkEntityY, backgroundCollision);
-                updated = spikeTrapUpdate.entity();
-                if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        spikeTrapUpdate.soundChannel(), spikeTrapUpdate.soundId()));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_PAIRODD) {
-                PairoddMotion.Update pairoddUpdate = pairoddMotion.advance(entity, frame,
-                    linkEntityX, linkEntityY, randomByteSupplier,
-                    enemyFlashCountdown[entity.slot()] > 0);
-                updated = pairoddUpdate.entity();
-                if (pairoddUpdate.spawnProjectile()) {
-                    spawnPairoddProjectile(entity, linkEntityX, linkEntityY);
-                }
-                if (pairoddUpdate.teleportJingle()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x3C));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_STAR && handlerLinkCollisionEnabled) {
-                RoomEntityBackgroundInteraction starBackgroundInteraction = backgroundInteraction;
-                if (starBackgroundInteraction == null && backgroundCollision != null) {
-                    starBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                updated = starMotion.advance(entity, frame, randomByteSupplier,
-                    starBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
-                preserveStarPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BLOOPER && handlerLinkCollisionEnabled) {
-                RoomEntityBackgroundInteraction blooperBackgroundInteraction = backgroundInteraction;
-                if (blooperBackgroundInteraction == null && backgroundCollision != null) {
-                    blooperBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                BlooperMotion.Movement movement = blooperMotion.move(entity, frame,
-                    blooperBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
-                RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
-                    groundInteraction.apply(movement.entity(), frame,
-                        entityGroundStatus[entity.slot()], verticalSpeedZ(movement.entity()),
-                        groundInteractionSideScrolling),
-                    "Room entity ground interaction returned null");
-                BlooperMotion.Update blooperUpdate = blooperMotion.finish(movement, groundResult,
-                    frame, linkEntityX, linkEntityY);
-                updated = blooperUpdate.entity();
-                preAppliedGroundResult = blooperUpdate.groundResult();
-                preserveBlooperPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_PINCER && handlerLinkCollisionEnabled) {
-                // PincerEntityHandler clears its stale ground status before
-                // rendering and does not call the generic background helper.
-                entityGroundStatus[entity.slot()] = 0;
-                PincerMotion.Update pincerUpdate = pincerMotion.advance(
-                    entity, enemyTransitionCountdown[entity.slot()],
-                    enemyPhysicsFlags[entity.slot()], linkEntityX, linkEntityY);
-                updated = pincerUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = pincerUpdate.transitionCountdown();
-                enemyPhysicsFlags[entity.slot()] = pincerUpdate.physicsFlags();
-                preservePincerPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WINGED_OCTOROK && handlerLinkCollisionEnabled) {
-                WingedOctorokMotion.Update wingedUpdate = wingedOctorokMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()], actionButtonAHeld,
-                    actionButtonBHeld,
-                    linkItemA, linkItemB);
-                updated = wingedUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = wingedUpdate.transitionCountdown();
-                preserveWingedOctorokPresentation = true;
-                wingedStateTwoThisFrame[entity.slot()] = wingedUpdate.skippedDefaultCollision();
-                if (wingedUpdate.rockSpawn() != null) {
-                    spawnWingedOctorokRock(updated, wingedUpdate.rockSpawn().direction());
-                }
-                if (wingedUpdate.jumped()) {
-                    wingedSwordAttackThisFrame[entity.slot()] = true;
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x24));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BUSH_CRAWLER && handlerLinkCollisionEnabled) {
-                BushCrawlerMotion.Update bushUpdate = bushCrawlerMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
-                    RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY),
-                    actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB);
-                enemyTransitionCountdown[entity.slot()] = bushUpdate.transitionCountdown();
-                fallingVisualYOffset[entity.slot()] = bushUpdate.visualYOffset();
-                updated = bushUpdate.entity();
-                if (bushUpdate.specialState()) {
-                    updated = withDefinition(updated,
-                        spriteDefinitionForBushCrawlerState(0x02), updated.spriteVariant());
-                } else if (bushUpdate.crawlOverlayRendered()) {
-                    updated = withDefinition(updated,
-                        spriteDefinitionForBushCrawlerCrawlState(bushUpdate.privateState4()),
-                        updated.spriteVariant());
-                } else {
-                    updated = withDefinition(updated, spriteDefinitionFor(ENTITY_BUSH_CRAWLER),
-                        updated.spriteVariant());
-                }
-                if (!bushUpdate.specialState()) {
-                    // BushCrawlerEntityHandler writes $04 immediately before
-                    // its default enemy collision path on every interactive
-                    // normal pass. The static health group is $00.
-                    enemyHealth[entity.slot()] = 0x04;
-                }
-                preserveBushCrawlerPresentation = true;
-                if (bushUpdate.liftRequested()
-                    && beginBushCrawlerLift(index, updated, bushUpdate.privateState4(),
-                        romLinkDirection)) {
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_PAIRODD_PROJECTILE) {
-                updated = pairoddProjectileMotion.advance(entity, frame);
-                boolean objectCollisionHit = objectCollision != null
-                    && objectCollision.collides(updated);
-                boolean removePairoddProjectile = false;
-                boolean swordPokeVfxQueued = false;
-                var collisionEvent = EnemyProjectileCollision.check(updated,
-                    pairoddProjectileMotion.direction(entity.slot()), projectileLinkState);
-                if (collisionEvent.isPresent()) {
-                    EntityProjectileEvent event = collisionEvent.orElseThrow();
-                    projectileEvents.add(event);
-                    if (event.swordPokeVfx()) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
-                        swordPokeVfxQueued = true;
-                    }
-                    if (event.remove()) {
-                        removePairoddProjectile = true;
-                    }
-                }
-                var swordCollisionEvent = EnemyProjectileCollision.checkSwordCollision(
-                    updated, swordCollisionActive, swordX, swordWidth, swordY, swordHeight);
-                if (swordCollisionEvent.isPresent()) {
-                    EntityProjectileEvent event = swordCollisionEvent.orElseThrow();
-                    projectileEvents.add(event);
-                    if (event.swordPokeVfx() && !swordPokeVfxQueued) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
-                        swordPokeVfxQueued = true;
-                    }
-                    removePairoddProjectile = true;
-                }
-                if (objectCollisionHit) {
-                    if (!swordPokeVfxQueued) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.SWORD_POKE, updated.x(),
-                            (updated.y() - updated.z()) & 0xFF));
-                    }
-                    removePairoddProjectile = true;
-                }
-                if (removePairoddProjectile) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WIZROBE_PROJECTILE) {
-                var collisionEvent = EnemyProjectileCollision.check(entity,
-                    wizrobeProjectileMotion.direction(entity.slot()), projectileLinkState);
-                if (collisionEvent.isPresent()) {
-                    projectileEvents.add(collisionEvent.orElseThrow());
-                }
-                updated = wizrobeProjectileMotion.advance(entity);
-                updated = withFlipAttribute(updated,
-                    wizrobeProjectileMotion.flipAttribute(frame));
-                preserveWizrobeProjectilePresentation = true;
-                boolean objectCollisionHit = objectCollision != null
-                    && objectCollision.collides(updated);
-                if (objectCollisionHit
-                    || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && laserMotion.isParent(entity.slot())) {
-                LaserMotion.ParentUpdate laserUpdate = laserMotion.advanceParent(entity);
-                updated = laserUpdate.entity();
-                if (laserUpdate.spawnSensor()) {
-                    spawnLaserSensor(entity);
-                }
-                if (laserUpdate.spawnBeam()) {
-                    if (spawnLaserBeam(entity)) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            entity.slot(), entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.NOISE, 0x08));
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && laserMotion.isSensor(entity.slot())) {
-                int ownerSlot = laserMotion.parentSlot(entity.slot());
-                RoomEntity owner = ownerSlot >= 0 && ownerSlot < slots.length
-                    ? slots[ownerSlot] : null;
-                LaserMotion.SensorUpdate sensorUpdate = laserMotion.advanceSensor(
-                    entity, owner, linkEntityX, linkEntityY,
-                    projectileLinkState.invincibilityCounter());
-                if (sensorUpdate.triggeredParent() && ownerSlot >= 0 && ownerSlot < slots.length) {
-                    // LaserLinkSensorHandler starts the parent's visible
-                    // pre-fire flash at the same time as its $20 countdown.
-                    enemyFlashCountdown[ownerSlot] = 0x10;
-                }
-                if (sensorUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                updated = sensorUpdate.entity();
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && laserMotion.isBeam(entity.slot())) {
-                var collisionEvent = EnemyProjectileCollision.check(entity,
-                    laserMotion.direction(entity.slot()), projectileLinkState);
-                if (collisionEvent.isPresent()) {
-                    EntityProjectileEvent event = collisionEvent.orElseThrow();
-                    projectileEvents.add(event);
-                    if (event.remove()) {
-                        disableEntityWithoutPersistence(entity.slot());
-                        continue;
-                    }
-                    // Bank-$15 moves the beam before consuming the collision
-                    // byte.  A reflected beam therefore advances once in
-                    // this frame, then reverses the selected speed axis.
-                    LaserMotion.BeamUpdate beamUpdate = laserMotion.advanceBeam(
-                        entity, backgroundCollision);
-                    if (beamUpdate.unloaded()) {
-                        disableEntityWithoutPersistence(entity.slot());
-                        continue;
-                    }
-                    updated = beamUpdate.entity();
-                    laserMotion.reflectBeam(entity.slot(), projectileLinkState.direction());
-                    if (event.swordPokeVfx()) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.SWORD_POKE, updated.x(), updated.y()));
-                    }
-                } else {
-                    LaserMotion.BeamUpdate beamUpdate = laserMotion.advanceBeam(
-                        entity, backgroundCollision);
-                    if (beamUpdate.unloaded()) {
-                        disableEntityWithoutPersistence(entity.slot());
-                        continue;
-                    }
-                    updated = beamUpdate.entity();
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.LASER_BEAM, updated.x() + 0x04, updated.y()));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isEnemyProjectileType(entity.type())) {
-                boolean preexistingCollision =
-                    enemyProjectileMotion.pendingLinkCollision(entity.slot());
-                boolean hasLinkCollision = enemyProjectileMotion.transitionCountdown(entity.slot()) == 0;
-                if (hasLinkCollision) {
-                    var collisionEvent = EnemyProjectileCollision.check(entity,
-                        enemyProjectileMotion.direction(entity.slot()), projectileLinkState);
-                    if (collisionEvent.isPresent()) {
-                        EntityProjectileEvent event = collisionEvent.orElseThrow();
-                        projectileEvents.add(event);
-                        if (event.remove()) {
-                            disableEntityWithoutPersistence(entity.slot());
-                            continue;
-                        }
-                        preexistingCollision |= event.startsWallTransition();
-                    }
-                }
-                EnemyProjectileMotion.Update projectileUpdate = enemyProjectileMotion.advance(
-                    entity, backgroundCollision, preexistingCollision, frame,
-                    entityGroundStatus[entity.slot()], groundInteractionSideScrolling,
-                    handlerInteractive, projectileTimersInteractive);
-                if (projectileUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (projectileUpdate.collidedWithWall()) {
-                    // $6B0C skips the poke jingle when Link collision supplied
-                    // $FF (including shield blocks, which already play a ting).
-                    if (!preexistingCollision) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            entity.slot(), entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE, 0x07));
-                    }
-                    swordMoblinAlertingSoundCounter = 0x04;
-                }
-                updated = projectileUpdate.entity();
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
-                GopongaProjectileMotion.Update projectileUpdate = gopongaProjectileMotion.advance(
-                    entity, frame, enemyTransitionCountdown[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()], handlerLinkCollisionEnabled);
-                enemyHealth[entity.slot()] = GopongaProjectileMotion.HEALTH_OVERRIDE;
-                enemyTransitionCountdown[entity.slot()] = projectileUpdate.transitionCountdown();
-                enemyIgnoreHitsCountdown[entity.slot()] = projectileUpdate.ignoreHitsCountdown();
-                if (projectileUpdate.unloadRequested()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                updated = projectileUpdate.entity();
-                preserveGopongaProjectilePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WATER_TEKTITE) {
-                updated = waterTektiteMotion.advance(entity, frame, randomByteSupplier,
-                    backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_FISH) {
-                FishMotion.Update fishUpdate = fishMotion.advance(entity,
-                    enemyTransitionCountdown[entity.slot()], randomByteSupplier,
-                    backgroundCollision);
-                updated = fishUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = fishUpdate.transitionCountdown();
-                enemyPhysicsFlags[entity.slot()] = fishUpdate.physicsFlags();
-                if (fishUpdate.waterSplash()) {
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.WATER_SPLASH, updated.x(), updated.y()));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        updated.slot(), updated.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_CROW) {
-                CrowMotion.Update crowUpdate = crowMotion.advance(entity,
-                    enemyTransitionCountdown[entity.slot()], frame, linkEntityX, linkEntityY,
-                    entityRoomId != 0x58, kanaletCrowTakeoffTriggered(entity));
-                updated = crowUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = crowUpdate.transitionCountdown();
-                enemyPhysicsFlags[entity.slot()] = crowUpdate.physicsFlags();
-                if (crowUpdate.boomerangSound()) {
-                    playBoomerangSoundIfDue(updated);
-                }
-                if (crowUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_CUCCO && handlerLinkCollisionEnabled) {
-                CuccoMotion.Update cuccoUpdate = cuccoMotion.advance(entity, frame,
-                    enemyTransitionCountdown[entity.slot()], enemyFlashCountdown[entity.slot()],
-                    linkEntityX, linkEntityY, linkZ, handlerLinkCollisionEnabled,
-                    cuccoPowerBraceletHeld(), linkAttackStepAnimationCountdown != 0,
-                    randomByteSupplier, backgroundCollision,
-                    indoorRoom, followingNpcState.marinFollowing(), transitionSequenceCounter);
-                updated = cuccoUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = cuccoUpdate.transitionCountdown();
-                enemyFlashCountdown[entity.slot()] = cuccoUpdate.flashCountdown();
-                enemyHealth[entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
-                preserveCuccoPresentation = true;
-                if (cuccoUpdate.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        cuccoUpdate.dialogTableId(), cuccoUpdate.dialogLowId()));
-                }
-                if (cuccoUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (cuccoUpdate.liftRequested()
-                    && beginLift(entity.slot(), romLinkDirection)) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.LIFT_WAVE_SFX));
-                    slots[index] = advanceLiftedEntity(
-                        renderLiftedEntity(slots[index], frame), linkEntityX, linkEntityY,
-                        linkZ, romLinkDirection);
-                    continue;
-                }
-                if (cuccoUpdate.spawnRequest() != null
-                    && spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.CUCCO_HURT_WAVE_SFX));
-                }
-                if (cuccoUpdate.boomerangSound()) {
-                    playBoomerangSoundIfDue(updated);
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BOO_BUDDY) {
-                BooBuddyMotion.Update booBuddyUpdate = booBuddyMotion.advanceAfterTimers(entity, frame,
-                    linkEntityX, linkEntityY, enemyTransitionCountdown[entity.slot()],
-                    booBuddyTriggerCount, swordCollisionActive, randomByteSupplier);
-                updated = booBuddyUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = booBuddyUpdate.transitionCountdown();
-                if (booBuddyUpdate.healthOverride() >= 0) {
-                    enemyHealth[entity.slot()] = booBuddyUpdate.healthOverride();
-                }
-                if (booBuddyUpdate.unloaded()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_DROPPABLE_FAIRY) {
-                FairyMotion.Update fairyUpdate = fairyMotion.advance(entity, frame,
-                    linkEntityX, linkEntityY, randomByteSupplier,
-                    enemyTransitionCountdown[entity.slot()]);
-                updated = fairyUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = fairyUpdate.transitionCountdown();
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_STALFOS_AGGRESSIVE) {
-                updated = stalfosAggressiveMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_STALFOS_EVASIVE) {
-                StalfosEvasiveMotion.Update evasiveUpdate = stalfosEvasiveMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, actionButtonsHeld,
-                    enemyTransitionCountdown[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()], randomByteSupplier,
-                    backgroundCollision, entityMapId);
-                updated = evasiveUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = evasiveUpdate.transitionCountdown();
-                if (evasiveUpdate.cloneRequest() != null) {
-                    spawnEvasiveClone(entity, evasiveUpdate.cloneRequest());
-                }
-                if (evasiveUpdate.swordPokeRequested()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x07));
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.SWORD_POKE, updated.x(),
-                        (updated.y() - updated.z()) & 0xFF));
-                }
-                if (evasiveUpdate.unloadRequested()) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (spriteHandlers != null) {
-                    EntitySpriteDefinition evasiveDefinition =
-                        spriteHandlers.forStalfosEvasiveState(
-                            stalfosEvasiveMotion.privateState1(entity.slot()));
-                    updated = withDefinition(updated, evasiveDefinition, updated.spriteVariant());
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_THREE_OF_A_KIND
-                && threeOfAKindInteractive) {
-                enemyHealth[entity.slot()] = 0x20;
-                ThreeOfAKindMotion.Update cardUpdate = threeOfAKindMotion.advance(
-                    entity, frame, enemyTransitionCountdown[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()], randomByteSupplier,
-                    backgroundCollision);
-                updated = cardUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = cardUpdate.transitionCountdown();
-                preserveThreeOfAKindPresentation = true;
-            }
-
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_LIKE_LIKE) {
-                LikeLikeMotion.Update likeLikeUpdate = likeLikeMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, linkZ,
-                    projectileLinkState.motionState(), actionButtonsHeld,
-                    linkItemA, linkItemB, projectileLinkState.shieldLevel(),
-                    slowTransitionCountdown[entity.slot()], randomByteSupplier,
-                    backgroundCollision);
-                updated = likeLikeUpdate.entity();
-                slowTransitionCountdown[entity.slot()] = likeLikeUpdate.slowTransitionCountdown();
-                if (likeLikeUpdate.event() != null) {
-                    pendingLikeLikeEvents.add(likeLikeUpdate.event());
-                    if (likeLikeUpdate.event().kind()
-                        == LikeLikeEvent.Kind.RELEASE) {
-                        slowTimerInitialized[entity.slot()] = true;
-                    }
-                }
-                if (likeLikeUpdate.spriteVariant() >= 0) {
-                    updated = withVariant(updated, likeLikeUpdate.spriteVariant());
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GOOMBA) {
-                GoombaMotion.Update goombaUpdate = goombaMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
-                    groundInteractionSideScrolling);
-                updated = goombaUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = goombaUpdate.transitionCountdown();
-                if (goombaUpdate.startDying()) {
-                    // func_007_666B writes ENTITY_DROPPABLE_HEART and the
-                    // private-countdown-3 death window before setting status
-                    // DYING and physics flags to 4. Keep both the source
-                    // table and the runtime death countdown synchronized;
-                    // the latter drives the shared Java death presentation.
-                    droppedItemBySlot[entity.slot()] = 0x2D;
-                    dropPrivateCountdown3[entity.slot()] = 0x0C;
-                    dyingCountdown[entity.slot()] = 0x0C;
-                    enemyPhysicsFlags[entity.slot()] = 0x04;
-                    status = EntityStatus.DYING;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_SNAKE) {
-                SnakeMotion.Update snakeUpdate = snakeMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyTransitionCountdown[entity.slot()]);
-                updated = snakeUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = snakeUpdate.transitionCountdown();
-                preserveSnakePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WIZROBE) {
-                WizrobeMotion.Update wizrobeUpdate = wizrobeMotion.advance(
-                    entity, linkEntityX, linkEntityY, randomByteSupplier,
-                    enemyTransitionCountdown[entity.slot()],
-                    enemyPhysicsFlags[entity.slot()]);
-                updated = wizrobeUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = wizrobeUpdate.transitionCountdown();
-                enemyPhysicsFlags[entity.slot()] = wizrobeUpdate.physicsFlags();
-                preserveWizrobePresentation = true;
-                if (wizrobeUpdate.projectileSpawn() != null) {
-                    spawnWizrobeProjectile(updated, wizrobeUpdate.projectileSpawn());
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_PEAHAT) {
-                updated = peaHatMotion.advance(entity, frame, randomByteSupplier,
-                    backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ARMOS_STATUE) {
-                RoomEntityBackgroundInteraction armosBackgroundInteraction = backgroundInteraction;
-                if (armosBackgroundInteraction == null && backgroundCollision != null) {
-                    armosBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                ArmosMotion.Update armosUpdate = armosMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    handlerLinkCollisionEnabled,
-                    armosBackgroundInteraction, enemyIgnoreHitsCountdown[entity.slot()]);
-                updated = armosUpdate.entity();
-                if (armosUpdate.linkFinalPositionCopyRequested()
-                    && projectileLinkState.motionState()
-                        < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-                    requestLinkPush(entity, EntityLinkCollisionRules.RESTORE_ONLY);
-                }
-                if (armosUpdate.woke()) {
-                    // ArmosStatueEntityHandler's wake branch starts the same
-                    // $18 visible flash used by the ROM's enemy hit handlers.
-                    enemyFlashCountdown[entity.slot()] = 0x18;
-                }
-                if (armosUpdate.activated()) {
-                    // State 1 clears the harmless physics bit and enables the
-                    // normal hitbox/sword path for state 2.
-                    enemyPhysicsFlags[entity.slot()] &= 0x7F;
-                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GENIE) {
-                BossIntroMotion.Update bossIntro = !inventoryAppearing && !roomTransitionActive
-                    ? bossIntroMotion.advance(options1(entity.slot()), entity.type(), entityMapId,
-                        transitionSequenceCounter)
-                    : BossIntroMotion.Update.none();
-                if (bossIntro.musicTrack() >= 0) {
-                    pendingMusicTrack = bossIntro.musicTrack();
-                }
-                if (bossIntro.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
-                }
-                boolean genieThresholdReached = geniePrivateState4[entity.slot()]
-                    >= GenieMotion.JAR_HEALTH_THRESHOLD;
-                if (geniePrivateState1[entity.slot()] == 0 && !genieThresholdReached) {
-                    genieControllerSlot = entity.slot();
-                }
-                if (geniePrivateState1[entity.slot()] == 0
-                    && (genieThresholdReached || genieState0Interactive(creditsGameplay))) {
-                    advanceGenieJar(entity, linkEntityY);
-                    if (!slots[entity.slot()].loaded()) {
-                        continue;
-                    }
-                    updated = slots[entity.slot()];
-                }
-                if (geniePrivateState1[entity.slot()] == 2
-                    && genieState0Interactive(creditsGameplay)) {
-                    advanceGenieAppearance(entity);
-                    if (!slots[entity.slot()].loaded()) {
-                        continue;
-                    }
-                    updated = slots[entity.slot()];
-                }
-                if (geniePrivateState1[entity.slot()] == 3
-                    && genieState0Interactive(creditsGameplay)) {
-                    advanceGenieSideProjectile(entity, frameCounter);
-                    if (!slots[entity.slot()].loaded()) {
-                        continue;
-                    }
-                    updated = slots[entity.slot()];
-                }
-                if (geniePrivateState1[entity.slot()] == 4
-                    && genieState0Interactive(creditsGameplay)) {
-                    if (handlerLinkCollisionEnabled
-                        && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-                    }
-                    advanceGenieFireball(entity, frameCounter);
-                    if (!slots[entity.slot()].loaded()) {
-                        continue;
-                    }
-                    updated = slots[entity.slot()];
-                }
-                if (geniePrivateState1[entity.slot()] == 1
-                    && genieState0Interactive(creditsGameplay)) {
-                    genieSharedBodySpeedX = genieSpeedX[entity.slot()] & 0xFF;
-                    genieSharedBodySpeedY = genieSpeedY[entity.slot()] & 0xFF;
-                    if (genieActiveState[entity.slot()] != 5
-                        && handlerLinkCollisionEnabled
-                        && RoomEntityCombatRules.overlapsLink(entity,
-                            linkEntityX, linkEntityY)) {
-                        requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-                    }
-                    advanceGenieBody(entity, frameCounter, linkEntityX, linkEntityY,
-                        randomByteSupplier);
-                    if (!slots[entity.slot()].loaded()) {
-                        continue;
-                    }
-                    updated = slots[entity.slot()];
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ARMOS_KNIGHT) {
-                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                    options1(entity.slot()), entity.type(), entityMapId,
-                    transitionSequenceCounter);
-                if (bossIntro.musicTrack() >= 0) {
-                    pendingMusicTrack = bossIntro.musicTrack();
-                }
-                if (bossIntro.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
-                }
-                requestArmosLinkPush(entity, linkEntityX, linkEntityY,
-                    projectileLinkState.motionState());
-                ArmosKnightMotion.Update armosKnightUpdate = armosKnightMotion.advance(
-                    entity, linkEntityX, linkEntityY, linkZ,
-                    enemyTransitionCountdown[entity.slot()],
-                    enemyPhysicsFlags[entity.slot()], enemyHitboxFlags[entity.slot()],
-                    options1(entity.slot()), enemyHealth[entity.slot()]);
-                updated = armosKnightUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] =
-                    armosKnightUpdate.transitionCountdown();
-                enemyPhysicsFlags[entity.slot()] = armosKnightUpdate.physicsFlags();
-                enemyHitboxFlags[entity.slot()] = armosKnightUpdate.hitboxFlags();
-                entityOptions1Override[entity.slot()] = armosKnightUpdate.options1();
-                preserveArmosKnightPresentation = true;
-                if (armosKnightUpdate.linkMotionBlocked()) {
-                    pendingLinkMotionBlockRequests.add(
-                        new LinkMotionBlockRequest(entity.slot()));
-                    pendingLinkFallenPoseRequests.add(
-                        new LinkFallenPoseRequest(entity.slot()));
-                }
-                if (armosKnightUpdate.screenShakeRequest() != null) {
-                    ArmosKnightMotion.ScreenShakeRequest shake =
-                        armosKnightUpdate.screenShakeRequest();
-                    pendingScreenShakeRequests.add(new ScreenShakeRequest(
-                        entity.slot(), shake.countdown(), shake.phase()));
-                }
-                if (armosKnightUpdate.rubbleRequest() != null) {
-                    ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
-                    int rubbleSlot = spawnLiftableRockRubble(rubble.x(), rubble.y());
-                    if (rubbleSlot >= 0) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.POOF, rubble.x(), rubble.y()));
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            rubbleSlot, ENTITY_LIFTABLE_ROCK, 0, false,
-                            EntityCombatEvent.SoundChannel.NOISE, 0x29));
-                    }
-                }
-                if (armosKnightUpdate.jingleId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        armosKnightUpdate.jingleId()));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && handlerLinkCollisionEnabled && entityTimersInteractive()
-                && transitionSequenceCounter == 0x04
-                && !creditsGameplay
-                && entity.type() == ENTITY_HINOX) {
-                int slot = entity.slot();
-                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                    options1(entity.slot()), entity.type(), entityMapId,
-                    transitionSequenceCounter);
-                if (bossIntro.musicTrack() >= 0) {
-                    pendingMusicTrack = bossIntro.musicTrack();
-                }
-                if (bossIntro.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
-                }
-                HinoxMotion.Update hinoxUpdate = hinoxMotion.advance(
-                    entity, enemyTransitionCountdown[slot], frame,
-                    linkEntityX, linkEntityY, linkZ, projectileLinkState.motionState(),
-                    randomByteSupplier, hinoxBackgroundInteraction,
-                    hinoxMotion.collisionFlags(slot),
-                    enemyFlashCountdown[slot]);
-                updated = hinoxUpdate.entity();
-                enemyTransitionCountdown[slot] = hinoxUpdate.transitionCountdown();
-                preserveHinoxPresentation = true;
-                if (hinoxUpdate.linkMotionBlocked()) {
-                    pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-                    pendingLinkFallenPoseRequests.add(new LinkFallenPoseRequest(slot));
-                }
-                if (hinoxUpdate.heldLinkPositionWritten()) {
-                    pendingHinoxLinkEffectRequests.add(new HinoxLinkEffectRequest(
-                        slot, hinoxUpdate.heldLinkX(), hinoxUpdate.heldLinkY(),
-                        hinoxUpdate.heldLinkZ(), hinoxUpdate.linkSpeedX(),
-                        hinoxUpdate.linkSpeedY(), hinoxUpdate.linkVelocityZ(),
-                        hinoxUpdate.linkAirborneState(), hinoxUpdate.linkDamage(),
-                        hinoxUpdate.linkMotionBlocked(), hinoxUpdate.applyHeldLinkPose()));
-                }
-                if (hinoxUpdate.bombSpawn() != null) {
-                    HinoxMotion.BombSpawn spawn = hinoxUpdate.bombSpawn();
-                    spawnEnemyBomb(spawn.x(), spawn.y(), spawn.z(),
-                        spawn.transitionCountdown(), spawn.speedX(), spawn.speedY(),
-                        spawn.speedZ());
-                }
-                if (!hinoxUpdate.heldLinkPositionWritten()
-                    && !hinoxUpdate.linkMotionBlocked()
-                    && (hinoxUpdate.linkSpeedX() != 0 || hinoxUpdate.linkSpeedY() != 0
-                    || hinoxUpdate.linkVelocityZ() != 0 || hinoxUpdate.linkDamage() != 0)) {
-                    pendingHinoxLinkEffectRequests.add(new HinoxLinkEffectRequest(
-                        slot, hinoxUpdate.heldLinkX(), hinoxUpdate.heldLinkY(),
-                        hinoxUpdate.heldLinkZ(), hinoxUpdate.linkSpeedX(),
-                        hinoxUpdate.linkSpeedY(), hinoxUpdate.linkVelocityZ(),
-                        hinoxUpdate.linkAirborneState(), hinoxUpdate.linkDamage(),
-                        hinoxUpdate.linkMotionBlocked(), hinoxUpdate.applyHeldLinkPose()));
-                }
-                if (hinoxUpdate.dustRequested()) {
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.PEGASUS_DUST, updated.x(), (updated.y() + 0x0A) & 0xFF));
-                }
-                if (hinoxUpdate.jingleId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, hinoxUpdate.jingleId()));
-                }
-                if (hinoxUpdate.waveId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, hinoxUpdate.waveId()));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ROLLING_BONES) {
-                RoomEntity bar = firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
-                if (bar != null) {
-                    RollingBonesMotion.BossUpdate bossUpdate = rollingBonesMotion.advanceBoss(
-                        entity, bar, enemyTransitionCountdown[entity.slot()],
-                        enemyHealth[entity.slot()], backgroundCollision);
-                    updated = bossUpdate.entity();
-                    enemyTransitionCountdown[entity.slot()] =
-                        bossUpdate.transitionCountdown();
-                    preserveRollingBonesPresentation = true;
-                    if (bossUpdate.jingleId() >= 0) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            entity.slot(), entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE,
-                            bossUpdate.jingleId()));
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ROLLING_BONES_BAR) {
-                if ((entityRoomStatus & 0x20) != 0) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                RollingBonesMotion.BarUpdate barUpdate = rollingBonesMotion.advanceBar(
-                    entity, frame, backgroundCollision);
-                updated = barUpdate.entity();
-                if (spriteHandlers != null) {
-                    updated = withDefinition(updated,
-                        spriteHandlers.forRollingBonesBar(
-                            0, updated.y(), barUpdate.animationVariant()),
-                        0);
-                }
-                preserveRollingBonesPresentation = true;
-                if (barUpdate.rollingSound()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, 0x1A));
-                }
-                if (barUpdate.strongBump()) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x0B));
-                    pendingScreenShakeRequests.add(new ScreenShakeRequest(
-                        entity.slot(), barUpdate.screenShakeCountdown(), 0));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_MOBLIN_KING) {
-                if (bowWowState != 0x80) {
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-                if (!handlerInteractive) {
-                    preserveMoblinKingPresentation = true;
-                } else {
-                    // ApplyRecoilIfNeeded_15 pops the handler return address:
-                    // movement/Z physics and AI wait until the recoil ends.
-                    if (enemyRecoilMotion.isActive(entity.slot())
-                        && enemyIgnoreHitsCountdown[entity.slot()] != 0) {
-                        slots[index] = applyEnemyRecoilIfNeeded(entity, backgroundCollision).entity();
-                        continue;
-                    }
-                    MoblinKingMotion.Update kingUpdate = moblinKingMotion.advance(
-                        entity, linkEntityX, linkEntityY,
-                        enemyTransitionCountdown[entity.slot()],
-                        slowTransitionCountdown[entity.slot()], frame,
-                        randomByteSupplier, backgroundCollision,
-                        handlerLinkCollisionEnabled
-                            && RoomEntityCombatRules.collisionCadenceMatches(
-                                frame, entity.slot())
-                            && RoomEntityCombatRules.overlapsLink(
-                                entity, linkEntityX, linkEntityY));
-                    updated = kingUpdate.entity();
-                    enemyTransitionCountdown[entity.slot()] = kingUpdate.transitionCountdown();
-                    slowTransitionCountdown[entity.slot()] =
-                        kingUpdate.slowTransitionCountdown();
-                    slowTimerInitialized[entity.slot()] = true;
-                    entityOptions1Override[entity.slot()] =
-                        moblinKingMotion.state(entity.slot()) == 5
-                            ? 0x84 : moblinKingMotion.state(entity.slot()) >= 2 ? 0xC4 : 0x40;
-                    if (moblinKingMotion.state(entity.slot()) == 5) {
-                        enemyPhysicsFlags[entity.slot()] |= ENTITY_PHYSICS_HARMLESS;
-                    } else {
-                        enemyPhysicsFlags[entity.slot()] &= ~ENTITY_PHYSICS_HARMLESS;
-                    }
-                    if (spriteHandlers != null) {
-                        updated = withDefinition(updated,
-                            spriteHandlers.forMoblinKingState(
-                                moblinKingMotion.bodyVariant(entity.slot()),
-                                moblinKingMotion.weaponVariant(entity.slot()),
-                                updated.z() != 0), 0);
-                    }
-                    preserveMoblinKingPresentation = true;
-                    if (kingUpdate.openIntroDialog()) {
-                        // $15:475C clears DIALOG_BOX_BOTTOM_BIT after opening Dialog191.
-                        pendingDialogRequests.add(new DialogRequest(1, 0x91, true));
-                    }
-                    if (kingUpdate.arrowRequest() != null) {
-                        projectileLaunchRequests.add(new RoamingEnemyMotion.LaunchRequest(
-                            entity.slot(), entity.type(), ENTITY_MOBLIN_ARROW));
-                        spawnEnemyProjectile(entity, new RoamingEnemyMotion.LaunchRequest(
-                            entity.slot(), entity.type(), ENTITY_MOBLIN_ARROW),
-                            kingUpdate.arrowRequest().direction());
-                    }
-                    if (kingUpdate.jingleId() >= 0) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            entity.slot(), entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE, kingUpdate.jingleId()));
-                    }
-                    if (kingUpdate.screenShakeCountdown() != 0) {
-                        pendingScreenShakeRequests.add(new ScreenShakeRequest(
-                            entity.slot(), kingUpdate.screenShakeCountdown(), 0));
-                    }
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GOPONGA_FLOWER) {
-                if (GopongaFlowerMotion.overlapsInteractiveLink(
-                    entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
-                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-                }
-                updated = withVariant(updated, GopongaFlowerMotion.frameVariant(frame));
-                preserveGopongaFlowerPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GIANT_GOPONGA_FLOWER) {
-                if (GiantGopongaMotion.overlapsInteractiveLink(
-                    entity, linkEntityX, linkEntityY, handlerLinkCollisionEnabled)) {
-                    requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
-                }
-                GiantGopongaMotion.Update giantUpdate = giantGopongaMotion.advance(
-                    entity, frame, enemyTransitionCountdown[entity.slot()],
-                    linkEntityX, linkEntityY);
-                updated = giantUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = giantUpdate.transitionCountdown();
-                if (giantUpdate.projectileSpawn() != null) {
-                    spawnGopongaProjectile(entity, giantUpdate.projectileSpawn());
-                }
-                preserveGiantGopongaPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_POKEY) {
-                int slot = entity.slot();
-                if (!handlerLinkCollisionEnabled) {
-                    // Both Pokey branches return immediately after their
-                    // pre-handler display pass when Link is non-interactive.
-                } else if (pokeyMotion.isSegment(slot)) {
-                    PokeyMotion.Update segmentUpdate = pokeyMotion.advanceSegment(
-                        updated, entityInertia[slot], enemyTransitionCountdown[slot],
-                        backgroundCollision);
-                    updated = segmentUpdate.entity();
-                    entityInertia[slot] = segmentUpdate.inertia();
-                    enemyTransitionCountdown[slot] = segmentUpdate.transitionCountdown();
-                    if (segmentUpdate.unloadRequested()) {
-                        transientVfxRequests.add(new TransientVfxRequest(
-                            TransientVfxType.POOF, updated.x(),
-                            (updated.y() - updated.z()) & 0xFF));
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE, 0x2F));
-                        disableEntityWithoutPersistence(slot);
-                        continue;
-                    }
-                    if (segmentUpdate.bumpJingle()) {
-                        pendingEntityEvents.add(new EntityCombatEvent(
-                            slot, entity.type(), 0, false,
-                            EntityCombatEvent.SoundChannel.JINGLE, 0x09));
-                    }
-                } else {
-                    if (entityInertia[slot] < 0x02) {
-                        // PokeyEntityHandler replaces the normal group-$00
-                        // health with two hit points until its body is fully
-                        // separated.
-                        enemyHealth[slot] = 0x02;
-                    }
-                    PokeyMotion.Update pokeyUpdate = pokeyMotion.advanceMain(
-                        updated, frame, entityInertia[slot],
-                        enemyTransitionCountdown[slot], enemyFlashCountdown[slot],
-                        linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
-                    updated = pokeyUpdate.entity();
-                    entityInertia[slot] = pokeyUpdate.inertia();
-                    enemyTransitionCountdown[slot] = pokeyUpdate.transitionCountdown();
-                    enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
-                    if (pokeyUpdate.segmentSpawn() != null) {
-                        spawnPokeySegment(pokeyUpdate.segmentSpawn());
-                    }
-                    if (spriteHandlers != null) {
-                        updated = withDefinition(updated,
-                            spriteHandlers.forPokeyState(pokeyUpdate.renderInertia()),
-                            updated.spriteVariant());
-                    }
-                }
-                preservePokeyPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_PIRANHA_PLANT && !creditsGameplay
-                && transitionSequenceCounter == 0x04 && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                PiranhaMotion.Update piranhaUpdate = piranhaMotion.advance(
-                    updated, enemyTransitionCountdown[slot], linkEntityX, linkEntityY);
-                updated = piranhaUpdate.entity();
-                enemyTransitionCountdown[slot] = piranhaUpdate.transitionCountdown();
-                preservePiranhaPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ZORA && !creditsGameplay
-                && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                    // Zora writes ENTITY_PHYSICS_HARMLESS immediately before
-                    // this collision check, then copies hLinkFinalPosition
-                    // and calls ResetPegasusBoots. It does not use the common
-                    // hookshot-chain reset helper.
-                    requestLinkPush(entity, EntityLinkCollisionRules.ZORA);
-                }
-                ZoraMotion.Update zoraUpdate = zoraMotion.advance(
-                    updated, enemyTransitionCountdown[slot], enemyPhysicsFlags[slot],
-                    linkEntityX, linkEntityY, randomByteSupplier, objectQuery);
-                updated = zoraUpdate.entity();
-                enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
-                enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
-                if (zoraUpdate.projectileSpawn() != null) {
-                    spawnZoraProjectile(zoraUpdate.projectileSpawn());
-                }
-                if (zoraUpdate.splash()) {
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.WATER_SPLASH, updated.x(),
-                        (updated.y() - updated.z()) & 0xFF));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
-                }
-                preserveZoraPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ZOMBIE && !creditsGameplay
-                && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction zombieBackgroundInteraction = backgroundInteraction;
-                if (zombieBackgroundInteraction == null && backgroundCollision != null) {
-                    zombieBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                ZombieMotion.Update zombieUpdate = zombieMotion.advance(
-                    updated, frame, enemyTransitionCountdown[slot],
-                    enemyPhysicsFlags[slot], linkEntityX, linkEntityY,
-                    randomByteSupplier, objectQuery, zombieBackgroundInteraction,
-                    enemyIgnoreHitsCountdown[slot]);
-                updated = zombieUpdate.entity();
-                enemyTransitionCountdown[slot] = zombieUpdate.transitionCountdown();
-                enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
-                applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
-                if (zombieUpdate.spawnRequest() != null) {
-                    spawnZombieChild(zombieUpdate.spawnRequest());
-                }
-                if (zombieUpdate.unloadRequested()) {
-                    clearEntity(slot);
-                    continue;
-                }
-                preserveZombiePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BUZZ_BLOB && !creditsGameplay
-                && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction = backgroundInteraction;
-                if (buzzBlobBackgroundInteraction == null && backgroundCollision != null) {
-                    buzzBlobBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                BuzzBlobMotion.Update buzzBlobUpdate = buzzBlobMotion.advance(
-                    updated, frame, enemyTransitionCountdown[slot], randomByteSupplier,
-                    buzzBlobBackgroundInteraction);
-                updated = buzzBlobUpdate.entity();
-                enemyTransitionCountdown[slot] = buzzBlobUpdate.transitionCountdown();
-                applyGenericGroundInteraction = buzzBlobUpdate.appliesBackgroundInteraction();
-                preserveBuzzBlobPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_SAND_CRAB && !creditsGameplay
-                && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction sandCrabBackgroundInteraction = backgroundInteraction;
-                if (sandCrabBackgroundInteraction == null && backgroundCollision != null) {
-                    sandCrabBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                SandCrabMotion.Update sandCrabUpdate = sandCrabMotion.advance(
-                    updated, frame, enemyTransitionCountdown[slot], randomByteSupplier,
-                    sandCrabBackgroundInteraction);
-                updated = sandCrabUpdate.entity();
-                enemyTransitionCountdown[slot] = sandCrabUpdate.transitionCountdown();
-                applyGenericGroundInteraction = sandCrabUpdate.appliesBackgroundInteraction();
-                preserveSandCrabPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_DOG && !creditsGameplay
-                && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction dogBackgroundInteraction = backgroundInteraction;
-                if (dogBackgroundInteraction == null && backgroundCollision != null) {
-                    dogBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                DogMotion.Update dogUpdate = dogMotion.advance(
-                    updated, frame, enemyTransitionCountdown[slot], enemyPhysicsFlags[slot],
-                    linkEntityX, linkEntityY, romLinkDirection, actionButtonAHeld,
-                    dialogActive, randomByteSupplier, dogBackgroundInteraction);
-                updated = dogUpdate.entity();
-                enemyTransitionCountdown[slot] = dogUpdate.transitionCountdown();
-                enemyPhysicsFlags[slot] = dogUpdate.physicsFlags();
-                applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
-                if (dogUpdate.dialogRequested()) {
-                    pendingDialogRequests.add(new DialogRequest(0, dogUpdate.dialogLowId()));
-                }
-                preserveDogPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !indoorRoom && entity.type() == ENTITY_TARIN
-                && (tarinRaccoonMotion.state(entity.slot()) == 0
-                    || tarinTransformationHandlerInteractive())) {
-                RoomEntityBackgroundInteraction tarinBackgroundInteraction = backgroundInteraction;
-                if (tarinBackgroundInteraction == null && backgroundCollision != null) {
-                    tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                TarinRaccoonMotion.Update tarinUpdate = tarinRaccoonMotion.advance(updated,
-                    new TarinRaccoonMotion.Input(frame, linkEntityX, linkEntityY,
-                        romLinkDirection, actionButtonAHeld, dialogActive, false,
-                        linkAttackStepAnimationCountdown, linkAirborne,
-                        inventoryAppearing, dialogCooldown, windowY,
-                        slowTransitionCountdown[entity.slot()],
-                        enemyTransitionCountdown[entity.slot()]),
-                    tarinBackgroundInteraction);
-                updated = tarinUpdate.entity();
-                slowTransitionCountdown[entity.slot()] =
-                    tarinUpdate.slowTransitionCountdown();
-                enemyTransitionCountdown[entity.slot()] = tarinUpdate.transitionCountdown();
-                preserveTarinPresentation = true;
-                shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();
-                if (tarinUpdate.linkMotionBlocked()) {
-                    pendingLinkMotionBlockRequests.add(
-                        new LinkMotionBlockRequest(entity.slot()));
-                }
-                if (tarinUpdate.dialogGlobalId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        tarinUpdate.dialogGlobalId() >>> 8,
-                        tarinUpdate.dialogGlobalId() & 0xFF));
-                }
-                if (tarinUpdate.clearLinkAttack()) {
-                    pendingLinkAttackClearRequests.add(
-                        new LinkAttackClearRequest(entity.slot()));
-                }
-                if (tarinUpdate.linkFacingDirection() >= 0) {
-                    pendingLinkFacingRequests.add(new LinkFacingRequest(
-                        entity.slot(), tarinUpdate.linkFacingDirection(), true));
-                }
-                if (tarinUpdate.pushLink()) {
-                    if (RoomEntityCombatRules.overlapsLink(
-                        updated, linkEntityX, linkEntityY)) {
-                        requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
-                    }
-                }
-                if (tarinUpdate.soundId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(entity.slot(), entity.type(),
-                        0, false, EntityCombatEvent.SoundChannel.JINGLE,
-                        tarinUpdate.soundId()));
-                    if (tarinUpdate.soundId() == 0x23) {
-                        pendingMusicTrack = defaultMusicTrack;
-                    }
-                }
-                if (tarinUpdate.spawnBomb()) {
-                    spawnTarinTransformationBomb(updated);
-                }
-                if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
-                    pendingRoomStatusPersistenceRequests.add(
-                        new RoomStatusPersistenceRequest(entity.slot(), 0x10, 1));
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WITCH) {
-                advanceWitchGotItemPresentation(entity.slot());
-                WitchMotion.Update witchUpdate = witchMotion.advance(
-                    updated, enemyTransitionCountdown[entity.slot()],
-                    new WitchMotion.Input(playerHasToadstool, linkItemB, linkItemA,
-                        actionButtonAHeld, actionButtonBHeld, dialogActive,
-                        linkZ != 0,
-                        linkEntityX, linkEntityY, romLinkDirection,
-                        transitionSequenceCounter, booBuddyTriggerCount,
-                        bgPaletteEffectAddress, paletteDataFlags, defaultMusicTrack));
-                updated = witchUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] = witchUpdate.transitionCountdown();
-                preserveWitchPresentation = true;
-                if (witchUpdate.blockLink()) {
-                    pendingLinkMotionBlockRequests.add(
-                        new LinkMotionBlockRequest(entity.slot()));
-                }
-                if (witchUpdate.dialogGlobalId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        witchUpdate.dialogGlobalId() >>> 8,
-                        witchUpdate.dialogGlobalId() & 0xFF));
-                }
-                if (witchUpdate.musicTrack() >= 0) {
-                    pendingMusicTrack = witchUpdate.musicTrack();
-                }
-                if (witchUpdate.jingleId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, witchUpdate.jingleId()));
-                }
-                if (witchUpdate.exchangeStarted()) {
-                    int inventorySlot = witchUpdate.clearedSlot()
-                        == WitchMotion.InventorySlot.B ? 0 : 1;
-                    pendingWitchExchangeEvents.add(
-                        new WitchExchangeEvent(entity.slot(), inventorySlot));
-                    playerHasToadstool = false;
-                }
-                if (witchUpdate.grantMagicPowder()) {
-                    pendingWitchRewardEvents.add(new WitchRewardEvent(entity.slot()));
-                    witchGotItemCountdown[entity.slot()] = 0x2A;
-                    presentWitchGotItem(entity.slot());
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_URCHIN && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction urchinBackgroundInteraction = backgroundInteraction;
-                if (urchinBackgroundInteraction == null && backgroundCollision != null) {
-                    urchinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                UrchinMotion.Update urchinUpdate = urchinMotion.advance(
-                    updated, frame, enemyPhysicsFlags[slot], linkEntityX, linkEntityY,
-                    romLinkDirection, projectileLinkState.usingShield(),
-                    swordCollisionActive, handlerLinkCollisionEnabled,
-                    urchinBackgroundInteraction);
-                updated = urchinUpdate.entity();
-                enemyPhysicsFlags[slot] = urchinUpdate.physicsFlags();
-                if (urchinUpdate.pushed()) {
-                    // UrchinEntityHandler writes $03 for its background probe,
-                    // then clears wEntitiesIgnoreHitsCountdown immediately.
-                    enemyIgnoreHitsCountdown[slot] = 0;
-                }
-                applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
-                if (urchinUpdate.linkCollision()) {
-                    requestLinkPush(updated, EntityLinkCollisionRules.URCHIN);
-                }
-                if (urchinUpdate.jingleId() >= 0) {
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        slot, entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, urchinUpdate.jingleId()));
-                }
-                if (spriteHandlers != null) {
-                    EntitySpriteDefinition urchinDefinition = spriteHandlers.forUrchinState(
-                        creditsGameplay);
-                    updated = withDefinition(updated, urchinDefinition,
-                        updated.spriteVariant());
-                }
-                preserveUrchinPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_WITCH_RAT && handlerLinkCollisionEnabled) {
-                int slot = entity.slot();
-                RoomEntityBackgroundInteraction witchRatBackgroundInteraction = backgroundInteraction;
-                if (witchRatBackgroundInteraction == null && backgroundCollision != null) {
-                    witchRatBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
-                        backgroundCollision);
-                }
-                WitchRatMotion.Update witchRatUpdate = witchRatMotion.advance(
-                    updated, frame, enemyTransitionCountdown[slot], randomByteSupplier,
-                    witchRatBackgroundInteraction);
-                updated = witchRatUpdate.entity();
-                enemyTransitionCountdown[slot] = witchRatUpdate.transitionCountdown();
-                applyGenericGroundInteraction = witchRatUpdate.appliesBackgroundInteraction();
-                preserveWitchRatPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isGhiniType(entity.type())) {
-                updated = ghiniMotion.advance(entity, frame, entity.type(),
-                    linkEntityX, linkEntityY, romCollisionType, randomByteSupplier);
-                preserveGhiniPresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_HARDHAT_BEETLE) {
-                updated = hardHatMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_POLS_VOICE) {
-                // PolsVoiceEntityHandler deliberately writes the temporary
-                // ignore-hits byte after moving, so the background helper sees
-                // $01, then clears it with B (zero) before the default enemy
-                // collision pass. The shared Java movement probe is the
-                // handler's background-interaction seam, so bracket it here.
-                enemyIgnoreHitsCountdown[entity.slot()] = 0x01;
-                try {
-                    PolsVoiceMotion.Update polsVoiceUpdate = polsVoiceMotion.advance(
-                        entity, linkEntityX, linkEntityY, randomByteSupplier,
-                        backgroundCollision, enemyTransitionCountdown[entity.slot()]);
-                    updated = polsVoiceUpdate.entity();
-                    enemyTransitionCountdown[entity.slot()] =
-                        polsVoiceUpdate.transitionCountdown();
-                } finally {
-                    enemyIgnoreHitsCountdown[entity.slot()] = 0;
-                }
-                preservePolsVoicePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_SPIKED_BEETLE) {
-                SpikedBeetleMotion.Update spikedBeetleUpdate = spikedBeetleMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyTransitionCountdown[entity.slot()],
-                    enemyIgnoreHitsCountdown[entity.slot()]);
-                updated = spikedBeetleUpdate.entity();
-                enemyTransitionCountdown[entity.slot()] =
-                    spikedBeetleUpdate.transitionCountdown();
-                entityOptions1Override[entity.slot()] = spikedBeetleUpdate.options1();
-                enemyHitboxFlags[entity.slot()] = spikedBeetleUpdate.hitboxFlags();
-                preserveSpikedBeetlePresentation = true;
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && (isDynamicFollowingNpc(entity)
-                    || entity.type() == ENTITY_BOW_WOW)) {
-                if (entity.type() == ENTITY_BOW_WOW) {
-                    BowWowMotion.Update bowWowUpdate = bowWowMotion.advanceAfterTimers(
-                        entity, frame, linkEntityX, linkEntityY, followingLinkZ,
-                        randomByteSupplier, backgroundCollision, Arrays.asList(slots),
-                        enemyCombatTables == null
-                            ? type -> false : enemyCombatTables::canBowWowEatEntity,
-                        bowWowState);
-                    updated = bowWowUpdate.entity();
-                    if (bowWowUpdate.targetContact() != null) {
-                        handleBowWowTargetContact(entity, bowWowUpdate.targetContact(),
-                            randomByteSupplier);
-                    }
-                } else {
-                    updated = followingNpcMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                        followingLinkZ, followingLinkDirection, followingEntityYOffset,
-                        followingLinkPositionHistory, backgroundCollision);
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ROOSTER) {
-                preserveRoosterPresentation = true;
-                if (projectileLinkState.motionState() == 0
-                    && (linkZ & 0xFF) == 0
-                    && linkAttackStepAnimationCountdown == 0
-                    && cuccoPowerBraceletHeld()
-                    && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)
-                    && beginLift(entity.slot(), romLinkDirection)) {
-                    pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(
-                        entity.slot(), 0x02, 0x00, currentLinkSpeedX, currentLinkSpeedY,
-                        romLinkDirection));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        entity.slot(), entity.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.WAVE, RoosterMotion.LIFT_WAVE_SFX));
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && ColorShellMotion.isColorShellType(entity.type())) {
-                ColorShellMotion.Update shellUpdate = colorShellMotion.advance(
-                    entity, frame, linkEntityX, linkEntityY, randomByteSupplier,
-                    backgroundCollision, enemyIgnoreHitsCountdown[entity.slot()],
-                    colorShellWorld, Arrays.asList(slots));
-                updated = shellUpdate.entity();
-                enemyIgnoreHitsCountdown[entity.slot()] = shellUpdate.nextIgnoreHitsCountdown();
-                if (shellUpdate.unloadRequested()) {
-                    pendingClearedEntityMask |= persistentClearMask(entity);
-                    disableEntityWithoutPersistence(entity.slot());
-                    continue;
-                }
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !keyDropTransitionActive && enemyDropActive[updated.slot()]) {
-                updated = enemyDropMotion.advance(updated, frame,
-                    entityGroundStatus[updated.slot()], groundInteractionSideScrolling);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && !keyDropTransitionActive && applyGenericGroundInteraction
-                && !hasNoGroundInteraction(updated)
-                && (handlerLinkCollisionEnabled || updated.type() != ENTITY_BLOOPER)) {
-                // ApplyEntityInteractionWithBackground runs after each ROM
-                // entity handler's movement and before the final display-list
-                // presentation. The room session supplies terrain physics;
-                // direct runtime users retain the no-op default.
-                int previousGroundStatus = entityGroundStatus[updated.slot()];
-                RoomEntityGroundInteraction.Result groundResult = preAppliedGroundResult != null
-                    ? preAppliedGroundResult
-                    : Objects.requireNonNull(
-                        groundInteraction.apply(updated, frame, previousGroundStatus,
-                            verticalSpeedZ(updated), groundInteractionSideScrolling),
-                        "Room entity ground interaction returned null");
-                updated = Objects.requireNonNull(groundResult.entity(),
-                    "Room entity ground interaction returned a null entity");
-                entityGroundStatus[updated.slot()] = groundResult.groundStatus() & 0xFF;
-                if (groundResult.pitTransition() != null
-                    && beginFalling(updated, groundResult.pitTransition(),
-                        ignoreHitsDecrementedBeforeHandler)) {
-                    status = EntityStatus.FALLING;
-                }
-                if (groundResult.waterSplash()) {
-                    transientVfxRequests.add(new TransientVfxRequest(
-                        TransientVfxType.WATER_SPLASH, updated.x(), updated.y()));
-                    pendingEntityEvents.add(new EntityCombatEvent(
-                        updated.slot(), updated.type(), 0, false,
-                        EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
-                }
-                if (groundResult.unloaded()) {
-                    disableEntityWithoutPersistence(updated.slot());
-                    continue;
-                }
-                if (status == EntityStatus.ACTIVE && enemyDropActive[updated.slot()]) {
-                    boolean dropGroundCollision = groundInteractionSideScrolling
-                        && enemyDropMotion.speedY(updated.slot()) != 0
-                        && (enemyDropMotion.speedY(updated.slot()) & 0x80) == 0
-                        && backgroundCollision != null
-                        && backgroundCollision.blocks(updated,
-                            EntityBackgroundCollisionResult.DOWN,
-                            updated.x(), updated.y());
-                    updated = enemyDropMotion.bounce(updated, groundResult.groundStatus(),
-                        groundInteractionSideScrolling, dropGroundCollision);
-                }
-            }
-            EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy =
-                EntityLinkCollisionRules.genericPolicyFor(updated.type());
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && handlerLinkCollisionEnabled
-                && updated.type() != ENTITY_GENIE
-                && genericLinkPushPolicy.restoreFinalPosition()
-                && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
-                // The shared PushLinkOutOfEntity_* helpers run after their
-                // handler-specific work. Restore the pre-entity final
-                // position and carry the helper's other side effects across
-                // the room/runtime boundary.
-                requestLinkPush(updated, genericLinkPushPolicy);
-            }
-            if (ColorShellMotion.isColorShellType(updated.type())) {
-                updated = refreshColorShellDisplay(updated, status);
-            }
-            if (status == EntityStatus.ACTIVE && isRuntimeFloatingItem(updated)) {
-                updated = withZ(updated,
-                    FloatingItemMotion.zForFrame(groundInteractionSideScrolling, frame));
-            }
-            int variant = preserveGhiniPresentation || preserveMadBomberPresentation
-                || preserveBombitePresentation
-                || preserveIronMaskPresentation || preserveSnakePresentation
-                || preserveStarPresentation
-                || preserveBlooperPresentation || preserveWingedOctorokPresentation
-                || preservePincerPresentation || preserveBushCrawlerPresentation
-                || preserveMimicPresentation
-                || preserveMaskedMimicPresentation
-                || preserveMiniMoldormPresentation
-                || preserveMoldormPresentation
-                || preserveCuccoPresentation
-                || preserveGopongaFlowerPresentation
-                || preserveGiantGopongaPresentation
-                || preserveGopongaProjectilePresentation
-                || preservePokeyPresentation
-                || preservePiranhaPresentation
-                || preserveZoraPresentation
-                || preserveZombiePresentation
-                || preserveBuzzBlobPresentation
-                || preserveSandCrabPresentation
-                || preserveDogPresentation
-                || preserveUrchinPresentation
-                || preserveWitchRatPresentation
-                || preserveWitchPresentation
-                || preserveRoosterPresentation
-                || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
-                || preservePolsVoicePresentation
-                || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
-                || preserveHinoxPresentation
-                || preserveRollingBonesPresentation
-                || preserveThreeOfAKindPresentation
-                || preserveMoblinKingPresentation
-                || preserveSecretSeashellPresentation || preserveDroppablePresentation
-                || preserveTarinPresentation
-                ? updated.spriteVariant() : variantFor(updated, frame);
-            if (status == EntityStatus.ACTIVE && shouldDisappear(entity)) {
-                variant = (slowTransitionCountdown[entity.slot()] & 0x01) != 0 ? 0 : -1;
-            }
-            int renderFlipAttribute = preserveGhiniPresentation || preserveMadBomberPresentation
-                || preserveBombitePresentation
-                || preserveIronMaskPresentation || preserveSnakePresentation
-                || preserveStarPresentation
-                || preserveBlooperPresentation || preserveWingedOctorokPresentation
-                || preservePincerPresentation || preserveBushCrawlerPresentation
-                || preserveMimicPresentation
-                || preserveMaskedMimicPresentation
-                || preserveMiniMoldormPresentation
-                || preserveMoldormPresentation
-                || preserveCuccoPresentation
-                || preserveGopongaFlowerPresentation
-                || preserveGiantGopongaPresentation
-                || preserveGopongaProjectilePresentation
-                || preservePokeyPresentation
-                || preservePiranhaPresentation
-                || preserveZoraPresentation
-                || preserveZombiePresentation
-                || preserveBuzzBlobPresentation
-                || preserveSandCrabPresentation
-                || preserveDogPresentation
-                || preserveUrchinPresentation
-                || preserveWitchRatPresentation
-                || preserveWitchPresentation
-                || preserveRoosterPresentation
-                || preserveWizrobePresentation || preserveWizrobeProjectilePresentation
-                || preservePolsVoicePresentation
-                || preserveSpikedBeetlePresentation || preserveArmosKnightPresentation
-                || preserveHinoxPresentation
-                || preserveRollingBonesPresentation
-                || preserveThreeOfAKindPresentation
-                || preserveMoblinKingPresentation
-                || preserveSecretSeashellPresentation || preserveDroppablePresentation
-                || preserveTarinPresentation
-                ? updated.entityFlipAttribute() : baseEntityFlipAttribute[entity.slot()];
-            if (preserveBombitePresentation && updated.type() == ENTITY_TIMER_BOMBITE) {
-                renderFlipAttribute |= (bombPrivateCountdown1[updated.slot()] << 3) & 0x10;
-            }
-            if (enemyFlashCountdown[entity.slot()] > 0) {
-                renderFlipAttribute ^= (enemyFlashCountdown[entity.slot()] << 2) & 0x10;
-            }
-            if (status != entity.status() || variant != entity.spriteVariant()
-                || updated.type() != entity.type()
-                || updated.spriteDefinition() != entity.spriteDefinition()
-                || updated.x() != originalEntity.x() || updated.y() != originalEntity.y()
-                || renderFlipAttribute != originalEntity.entityFlipAttribute()
-                || updated.z() != originalEntity.z()) {
-                slots[index] = new RoomEntity(
-                    updated.slot(), updated.sourceLoadOrder(), updated.type(), updated.x(), updated.y(),
-                    status, updated.spriteDefinition(), variant, renderFlipAttribute,
-                    updated.spriteTileOffset(), updated.z(), -1, false);
-            }
-        }
-        if (threeOfAKindInteractive) {
-            resolveThreeOfAKindPuzzle();
-        }
-        updateHookshotChainOam(linkEntityX, linkEntityY, frame);
-        updatePincerBodyOam();
-        updateWingedOctorokOam();
-        updateBowWowChain(frame);
-        return List.copyOf(projectileEvents);
-    }
+    private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) { return new EntityFrameExecution(this, context).advance(); }
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() {
         return List.copyOf(projectileLaunchRequests);
     }
 
-    private void resolveThreeOfAKindPuzzle() {
+    void resolveThreeOfAKindPuzzle() {
         ThreeOfAKindMotion.PuzzleResult result = threeOfAKindMotion.resolvePuzzle(
             Arrays.asList(slots), enemyTransitionCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
@@ -5174,28 +1984,28 @@ public final class RoomEntityRuntime {
             liftedEffectiveDirection);
     }
 
-    private RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
+    RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
 
-    private RoomEntity advanceThrownEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean sideScrolling, int romLinkDirection, int frame) { return liftThrow.advanceThrownEntity(entity, backgroundCollision, sideScrolling, romLinkDirection, frame); }
+    RoomEntity advanceThrownEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean sideScrolling, int romLinkDirection, int frame) { return liftThrow.advanceThrownEntity(entity, backgroundCollision, sideScrolling, romLinkDirection, frame); }
 
     RoomEntity registerGenieJarImpact(RoomEntity jar) { return genie.registerGenieJarImpact(jar); }
 
     /** Applies the two source-ordered probes made by ApplyEntityInteractionWithBackground. */
-    private boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved, RoomEntityBackgroundCollision fallback, int frame) { return liftThrow.sideViewPotBackgroundCollision(original, moved, fallback, frame); }
+    boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved, RoomEntityBackgroundCollision fallback, int frame) { return liftThrow.sideViewPotBackgroundCollision(original, moved, fallback, frame); }
 
     /** Mirrors EntityThrownHandler's post-bounce func_003_75A2 collision pass. */
-    private void collideThrownEntityWithEntities(RoomEntity thrown, int frame) { liftThrow.collideThrownEntityWithEntities(thrown, frame); }
+    void collideThrownEntityWithEntities(RoomEntity thrown, int frame) { liftThrow.collideThrownEntityWithEntities(thrown, frame); }
 
-    private RoomEntity advancePlacedBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advancePlacedBombEntity(entity, backgroundCollision, frame); }
+    RoomEntity advancePlacedBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advancePlacedBombEntity(entity, backgroundCollision, frame); }
 
-    private RoomEntity advanceEnemyBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advanceEnemyBombEntity(entity, backgroundCollision, frame); }
+    RoomEntity advanceEnemyBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advanceEnemyBombEntity(entity, backgroundCollision, frame); }
 
 
 
 
 
     /** Mirrors CuccoEntityHandler's B-slot-first Power Bracelet check. */
-    private boolean cuccoPowerBraceletHeld() { return liftThrow.cuccoPowerBraceletHeld(); }
+    boolean cuccoPowerBraceletHeld() { return liftThrow.cuccoPowerBraceletHeld(); }
 
     /**
      * Runs the ported portion of DefaultEnemyDamageCollisionHandler for the
@@ -5281,21 +2091,21 @@ public final class RoomEntityRuntime {
         boomerangSoundClockProvided = true;
     }
 
-    private void playBoomerangSoundIfDue(RoomEntity entity) { projectiles.playBoomerangSoundIfDue(entity); }
+    void playBoomerangSoundIfDue(RoomEntity entity) { projectiles.playBoomerangSoundIfDue(entity); }
 
     /** Advances entity $01 through the ROM boomerang handler's two states. */
-    private void advanceBoomerangEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, handlerInteractive, timersInteractive); }
+    void advanceBoomerangEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, handlerInteractive, timersInteractive); }
 
     /** Advances entity {@code $DF} through the ROM sword-beam handler. */
-    private void advanceSwordBeamEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int romLinkDirection, boolean handlerInteractive) { projectiles.advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY, romLinkDirection, handlerInteractive); }
+    void advanceSwordBeamEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int romLinkDirection, boolean handlerInteractive) { projectiles.advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY, romLinkDirection, handlerInteractive); }
 
     /** Advances entity {@code $04} through MagicRodFireballEntityHandler. */
-    private void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicRodFireballEntity(index, entity, frame, handlerInteractive, timersInteractive); }
+    void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicRodFireballEntity(index, entity, frame, handlerInteractive, timersInteractive); }
 
     private boolean isMagicRodBurnableObject(RoomEntityObjectSample object) { return projectiles.isMagicRodBurnableObject(object); }
 
     /** Advances entity {@code $08} through MagicPowderSprinkleEntityHandler. */
-    private void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicPowderSprinkleEntity(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive); }
+    void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicPowderSprinkleEntity(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive); }
 
     void setTorchPaletteTransitionState(int targetAddress, boolean active) {
         validateByte(targetAddress, "Torch palette target");
@@ -5333,7 +2143,7 @@ public final class RoomEntityRuntime {
      * active arrow checks targets in descending slot order and uses the same
      * alternating frame cadence and unsigned twelve-pixel windows as the ROM.
      */
-    private boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) { return projectiles.collidePlayerArrowWithEntities(arrow, frame); }
+    boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) { return projectiles.collidePlayerArrowWithEntities(arrow, frame); }
 
     /** Common bank-$03 collision pass for the active boomerang. */
     private boolean collideBoomerangWithEntities(RoomEntity boomerang, int frame) { return projectiles.collideBoomerangWithEntities(boomerang, frame); }
@@ -5346,7 +2156,7 @@ public final class RoomEntityRuntime {
      * order, on alternating frames, and uses the active Bombite's transition
      * byte as the source-side explosion latch.
      */
-    private boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) { return projectiles.collideBouncingBombiteWithEntities(source, frame); }
+    boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) { return projectiles.collideBouncingBombiteWithEntities(source, frame); }
 
     /**
      * Ports the Iron Mask target branch of bank-$03 {@code func_003_75A2} for
@@ -5354,7 +2164,7 @@ public final class RoomEntityRuntime {
      * owned by their entity-specific runtimes; this branch is special because
      * it changes the target's private state and creates a visible mask entity.
      */
-    private boolean collideHookshotWithEntities(RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) { return projectiles.collideHookshotWithEntities(hookshot, hookshotState, frame); }
+    boolean collideHookshotWithEntities(RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) { return projectiles.collideHookshotWithEntities(hookshot, hookshotState, frame); }
 
     void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) {
         int freeSlot = findFreeEntitySlot();
@@ -5409,7 +2219,7 @@ public final class RoomEntityRuntime {
             : enemyCombatTables.contactDamage(type);
     }
 
-    private void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
+    void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
         HookshotBridgeMotion.State bridgeState = hookshotBridgeMotion.state(entity.slot());
         if (bridgeState == null) {
             clearEntity(entity.slot());
@@ -5946,7 +2756,7 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
-    private void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) {
+    void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -5975,7 +2785,7 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
+    RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
         int inertia = (musicalNoteInertia[slot] - 1) & 0xFF;
         musicalNoteInertia[slot] = inertia;
@@ -6198,14 +3008,14 @@ public final class RoomEntityRuntime {
     }
 
     /** Creates a Bomber-spawned type-$02 enemy bomb with its source speeds. */
-    private int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+    int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ) {
         return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown,
             speedX, speedY, speedZ, true, 0x01);
     }
 
-    private int spawnEnemyBomb(int entityX, int entityY, int entityZ,
+    int spawnEnemyBomb(int entityX, int entityY, int entityZ,
                                int transitionCountdown, int speedX, int speedY,
                                int speedZ, boolean initializeMotion, int privateState4) {
         validateByte(entityX, "Enemy bomb X");
@@ -6253,21 +3063,21 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
-    private int spawnTarinTransformationBomb(RoomEntity tarin) {
+    int spawnTarinTransformationBomb(RoomEntity tarin) {
         return spawnEnemyBomb(tarin.x(), tarin.y(), tarin.z(), 0x20,
             0, 0, 0, false, 0x4C);
     }
 
-    private boolean tarinTransformationHandlerInteractive() {
+    boolean tarinTransformationHandlerInteractive() {
         return transitionSequenceCounter == 0x04 && !dialogActive && !inventoryAppearing;
     }
 
-    private boolean tarinTransformationTimersInteractive() {
+    boolean tarinTransformationTimersInteractive() {
         return tarinTransformationHandlerInteractive() && linkPlayingOcarinaCountdown == 0;
     }
 
     /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */
-    private boolean genieState0Interactive(boolean creditsGameplay) {
+    boolean genieState0Interactive(boolean creditsGameplay) {
         return !creditsGameplay
             && gameplayWorld
             && transitionSequenceCounter == 0x04
@@ -6278,7 +3088,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Mirrors UpdateEntityTimers' gameplay and presentation gates. */
-    private boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
+    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
         return (creditsGameplay || (gameplayWorld && transitionSequenceCounter == 0x04))
             && !roomTransitionActive
             && entityTimersInteractive();
@@ -6303,23 +3113,23 @@ public final class RoomEntityRuntime {
             0x0F, LIFTABLE_ROCK_RUBBLE_PHYSICS_FLAGS, -1);
     }
 
-    private void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) { this.genie.advanceGenieJar(jarEntity, linkEntityY); }
+    void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) { this.genie.advanceGenieJar(jarEntity, linkEntityY); }
 
     private RoomEntity advanceGenieJarAttract(RoomEntity jar) { return genie.advanceGenieJarAttract(jar); }
 
-    private void advanceGenieAppearance(RoomEntity appearance) { this.genie.advanceGenieAppearance(appearance); }
+    void advanceGenieAppearance(RoomEntity appearance) { this.genie.advanceGenieAppearance(appearance); }
 
-    private void advanceGenieBody(RoomEntity body, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) { this.genie.advanceGenieBody(body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier); }
+    void advanceGenieBody(RoomEntity body, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) { this.genie.advanceGenieBody(body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier); }
 
 
 
     private int spawnGenieAimedFireball(RoomEntity body, int bodySlot, int linkEntityX, int linkEntityY) { return genie.spawnGenieAimedFireball(body, bodySlot, linkEntityX, linkEntityY); }
 
-    private void advanceGenieDestruction(RoomEntity genie, int frameCounter, IntSupplier randomByteSupplier) { this.genie.advanceGenieDestruction(genie, frameCounter, randomByteSupplier); }
+    void advanceGenieDestruction(RoomEntity genie, int frameCounter, IntSupplier randomByteSupplier) { this.genie.advanceGenieDestruction(genie, frameCounter, randomByteSupplier); }
 
-    private void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) { this.genie.advanceGenieSideProjectile(projectile, frameCounter); }
+    void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) { this.genie.advanceGenieSideProjectile(projectile, frameCounter); }
 
-    private void advanceGenieFireball(RoomEntity fireball, int frameCounter) { this.genie.advanceGenieFireball(fireball, frameCounter); }
+    void advanceGenieFireball(RoomEntity fireball, int frameCounter) { this.genie.advanceGenieFireball(fireball, frameCounter); }
 
     private int spawnGenieBody(GenieMotion.BodySpawnRequest request) { return genie.spawnGenieBody(request); }
 
@@ -6363,7 +3173,7 @@ public final class RoomEntityRuntime {
         return freeSlot;
     }
 
-    private int spawnBombFromBombArrow(RoomEntity arrow) {
+    int spawnBombFromBombArrow(RoomEntity arrow) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return -1;
@@ -6459,7 +3269,7 @@ public final class RoomEntityRuntime {
         enemyTransitionCountdown[slot] = value;
     }
 
-    private boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
+    boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction,
                                         int transitionCountdown) {
         if (!indoorRoom) {
             return false;
@@ -6600,7 +3410,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
+    void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = hookshotSlot();
         if (slot < 0 || !slots[slot].loaded()) {
             hookshotChainOam = List.of();
@@ -6615,7 +3425,7 @@ public final class RoomEntityRuntime {
         currentLinkVelocityZ = velocity & 0xFF;
     }
 
-    private void updateBowWowChain(int frame) {
+    void updateBowWowChain(int frame) {
         List<BowWowChain.Entry> entries = new ArrayList<>();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
@@ -6634,7 +3444,7 @@ public final class RoomEntityRuntime {
         bowWowChainOam = List.copyOf(entries);
     }
 
-    private void updatePincerBodyOam() {
+    void updatePincerBodyOam() {
         List<PincerBodyOam.Entry> entries = new ArrayList<>();
         for (RoomEntity entity : slots) {
             if (!entity.loaded() || entity.type() != ENTITY_PINCER) {
@@ -6647,7 +3457,7 @@ public final class RoomEntityRuntime {
         pincerBodyOam = List.copyOf(entries);
     }
 
-    private void updateWingedOctorokOam() {
+    void updateWingedOctorokOam() {
         List<WingedOctorokOam.Entry> entries = new ArrayList<>();
         for (RoomEntity entity : slots) {
             if (!entity.loaded() || entity.type() != ENTITY_WINGED_OCTOROK) {
@@ -7428,7 +4238,7 @@ public final class RoomEntityRuntime {
 
 
 
-    private RoomEntity firstLoadedEntityOfType(int type) {
+    RoomEntity firstLoadedEntityOfType(int type) {
         for (RoomEntity candidate : slots) {
             if (candidate.loaded() && candidate.type() == type) {
                 return candidate;
@@ -7472,7 +4282,7 @@ public final class RoomEntityRuntime {
             && (entityOptions1Override[slot] & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0;
     }
 
-    private boolean hasNoGroundInteraction(RoomEntity entity) {
+    boolean hasNoGroundInteraction(RoomEntity entity) {
         return isGhiniType(entity.type()) || entity.type() == ENTITY_MAD_BOMBER
             || entity.type() == ENTITY_WIZROBE_PROJECTILE
             || entity.type() == ENTITY_GIANT_GOPONGA_FLOWER
@@ -7484,7 +4294,7 @@ public final class RoomEntityRuntime {
             || hasNoGroundInteractionOverride(entity.slot());
     }
 
-    private RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
+    RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
                                       ZolGelMotion.Split split) {
         EntitySpriteDefinition gelDefinition = spriteDefinitionFor(ENTITY_GEL);
         int gelVariant = gelDefinition.supported() ? 0 : -1;
@@ -7524,7 +4334,7 @@ public final class RoomEntityRuntime {
         return gel;
     }
 
-    private void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
+    void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
         boolean swallowedShield = entity.type() == ENTITY_LIKE_LIKE
             && likeLikeMotion.privateState1(entity.slot()) != 0;
         if (entity.type() == ENTITY_MOBLIN_KING) {
@@ -7565,7 +4375,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Ports {@code RollingBonesEntityHandler}'s long miniboss destruction sequence. */
-    private void advanceRollingBonesDestruction(RoomEntity entity,
+    void advanceRollingBonesDestruction(RoomEntity entity,
                                                  IntSupplier randomByteSupplier) {
         int slot = entity.slot();
         if (!rollingBonesDeathInitialized[slot]) {
@@ -7610,7 +4420,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
-    private void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
+    void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) {
         int slot = source.slot();
         // Main resolves sword damage before dispatch; the ROM dispatches the
         // dying branch on the following frame, after this hit's active handler.
@@ -7646,7 +4456,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
+    void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
         int slot = source.slot();
         int tailState = moldormDestructionTailState[slot];
         if (spriteHandlers != null) {
@@ -7753,7 +4563,7 @@ public final class RoomEntityRuntime {
             EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
 
-    private void advanceCollectedHeartContainer(RoomEntity entity,
+    void advanceCollectedHeartContainer(RoomEntity entity,
                                                  int linkEntityX, int linkEntityY,
                                                  int linkZ) {
         int slot = entity.slot();
@@ -7784,17 +4594,17 @@ public final class RoomEntityRuntime {
 
     private void startInstrumentPickup(int slot) { rewards.startInstrumentPickup(slot); }
 
-    private void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) { story.advanceKidnapWarningKid(entity, frameCounter, linkEntityX, linkEntityY); }
+    void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) { story.advanceKidnapWarningKid(entity, frameCounter, linkEntityX, linkEntityY); }
 
-    private void advanceMadamMeowMeow(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceMadamMeowMeow(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
+    void advanceMadamMeowMeow(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceMadamMeowMeow(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
-    private void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) { story.advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne); }
+    void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) { story.advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne); }
 
     void setOwlStatueDialogId(int globalDialogId) {
         owlStatueDialogId = globalDialogId;
     }
 
-    private void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
+    void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
 
     boolean sourceNpcInteractionAllowed(int xDistance, int yDistance,
                                                 boolean linkAirborne,
@@ -7809,7 +4619,7 @@ public final class RoomEntityRuntime {
 
 
 
-    private void advanceInstrumentPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ, IntSupplier randomByteSupplier) { rewards.advanceInstrumentPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier); }
+    void advanceInstrumentPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ, IntSupplier randomByteSupplier) { rewards.advanceInstrumentPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier); }
 
     public boolean heartPiecePickupActive() {
         for (var motion : heartPiecePickup) if (motion != null && motion.active()) return true;
@@ -7830,7 +4640,7 @@ public final class RoomEntityRuntime {
         return result;
     }
 
-    private void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
+    void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
 
     public String instrumentTrace() {
         StringBuilder trace = new StringBuilder().append(activeMusic ? 1 : 0);
@@ -7871,9 +4681,9 @@ public final class RoomEntityRuntime {
 
     private void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) { rewards.spawnInstrumentParticle(source, offsetIndex, variant); }
 
-    private void advanceInstrumentParticle(RoomEntity entity) { rewards.advanceInstrumentParticle(entity); }
+    void advanceInstrumentParticle(RoomEntity entity) { rewards.advanceInstrumentParticle(entity); }
 
-    private void advanceWitchGotItemPresentation(int slot) { story.advanceWitchGotItemPresentation(slot); }
+    void advanceWitchGotItemPresentation(int slot) { story.advanceWitchGotItemPresentation(slot); }
 
     void presentWitchGotItem(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
@@ -7881,11 +4691,11 @@ public final class RoomEntityRuntime {
     }
 
     /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
-    private void advancePowerUpPickup(RoomEntity entity, int frame, int linkX, int linkY, int linkZ) { rewards.advancePowerUpPickup(entity, frame, linkX, linkY, linkZ); }
+    void advancePowerUpPickup(RoomEntity entity, int frame, int linkX, int linkY, int linkZ) { rewards.advancePowerUpPickup(entity, frame, linkX, linkY, linkZ); }
 
-    private void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceToadstoolPickup(entity, linkEntityX, linkEntityY, linkZ); }
+    void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceToadstoolPickup(entity, linkEntityX, linkEntityY, linkZ); }
 
-    private void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceSwordPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ); }
+    void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceSwordPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ); }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
                                     int linkZ, boolean finalPose) {
@@ -7898,7 +4708,7 @@ public final class RoomEntityRuntime {
         slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
-    private void advanceOwlEvent(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean handlerLinkInteractive) { story.advanceOwlEvent(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive); }
+    void advanceOwlEvent(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean handlerLinkInteractive) { story.advanceOwlEvent(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive); }
 
     private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) { story.advanceDepartingOwl(entity, slot, frameCounter); }
 
@@ -7935,7 +4745,7 @@ public final class RoomEntityRuntime {
 
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
-    private void handleBowWowTargetContact(RoomEntity source,
+    void handleBowWowTargetContact(RoomEntity source,
                                            BowWowMotion.TargetContact contact,
                                            IntSupplier randomByteSupplier) {
         int targetSlot = contact.slot();
@@ -7977,7 +4787,7 @@ public final class RoomEntityRuntime {
      * {@code $30}. Boss entities stay on their active handler while DYING, so
      * they must not enter the ordinary EnemyDropResolver path.
      */
-    private void advanceBossKeyDropProducer(RoomEntity source,
+    void advanceBossKeyDropProducer(RoomEntity source,
                                              IntSupplier randomByteSupplier) {
         int slot = source.slot();
         if (enemyTransitionCountdown[slot] != 0) {
@@ -8094,7 +4904,7 @@ public final class RoomEntityRuntime {
 
     private void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
 
-    private boolean spawnKanaletWallMoblin(RoomEntity wall) {
+    boolean spawnKanaletWallMoblin(RoomEntity wall) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return false;
@@ -8114,7 +4924,7 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    private boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
+    boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
         for (RoomEntity candidate : slots) {
             if (!candidate.loaded()) {
                 continue;
@@ -8270,7 +5080,7 @@ public final class RoomEntityRuntime {
         return -1;
     }
 
-    private void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
+    void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -8296,7 +5106,7 @@ public final class RoomEntityRuntime {
         pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
-    private void spawnGopongaProjectile(RoomEntity source,
+    void spawnGopongaProjectile(RoomEntity source,
                                          GiantGopongaMotion.ProjectileSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -8327,7 +5137,7 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
+    void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -8358,7 +5168,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Mirrors ZombieEntityHandler's SpawnNewEntityInRange call with E=$05. */
-    private void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
+    void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
         int freeSlot = findFreeEntitySlotAtMost(0x05);
         if (freeSlot < 0) {
             return;
@@ -8390,7 +5200,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Mirrors PokeyEntityHandler's SpawnNewEntity plus its detached-segment setup. */
-    private void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
+    void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -8421,7 +5231,7 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private void spawnWizrobeProjectile(RoomEntity source,
+    void spawnWizrobeProjectile(RoomEntity source,
                                          WizrobeMotion.ProjectileSpawn spawn) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -8451,7 +5261,7 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private boolean spawnEvasiveClone(RoomEntity source,
+    boolean spawnEvasiveClone(RoomEntity source,
                                       StalfosEvasiveMotion.CloneRequest request) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
@@ -8487,12 +5297,12 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    private void spawnEnemyProjectile(RoomEntity source,
+    void spawnEnemyProjectile(RoomEntity source,
                                       RoamingEnemyMotion.LaunchRequest request) {
         spawnEnemyProjectile(source, request, roamingEnemyMotion.direction(source.slot()));
     }
 
-    private void spawnEnemyProjectile(RoomEntity source,
+    void spawnEnemyProjectile(RoomEntity source,
                                       RoamingEnemyMotion.LaunchRequest request,
                                       int direction) {
         // Dynamic projectiles must carry the ROM-decoded display definition;
@@ -8529,7 +5339,7 @@ public final class RoomEntityRuntime {
         enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
-    private void spawnWingedOctorokRock(RoomEntity source, int direction) {
+    void spawnWingedOctorokRock(RoomEntity source, int direction) {
         // SpawnNewEntity returns with carry when no room slot is available.
         // The ROM handler simply abandons the launch in that case.
         if (spriteHandlers == null) {
@@ -8567,10 +5377,10 @@ public final class RoomEntityRuntime {
      * slot becomes a lifted type-$05 entity and a fresh type-$BB slot starts
      * the private-state-$02 wandering handler at the same position.
      */
-    private boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) { return liftThrow.beginBushCrawlerLift(index, source, privateState4, romLinkDirection); }
+    boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) { return liftThrow.beginBushCrawlerLift(index, source, privateState4, romLinkDirection); }
 
     /** Ports CuccoState2Handler's outdoor angry-Cucco spawn setup. */
-    private boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
+    boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return false;
@@ -8596,7 +5406,7 @@ public final class RoomEntityRuntime {
         return true;
     }
 
-    private void spawnLaserSensor(RoomEntity parent) {
+    void spawnLaserSensor(RoomEntity parent) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return;
@@ -8619,7 +5429,7 @@ public final class RoomEntityRuntime {
         dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
-    private boolean spawnLaserBeam(RoomEntity parent) {
+    boolean spawnLaserBeam(RoomEntity parent) {
         int freeSlot = findFreeEntitySlot();
         if (freeSlot < 0) {
             return false;
@@ -8656,7 +5466,7 @@ public final class RoomEntityRuntime {
         return spriteHandlers.forEntityType(entityType, table, mapId);
     }
 
-    private EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
         if (spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
         }
@@ -8669,7 +5479,7 @@ public final class RoomEntityRuntime {
             : spriteHandlers.forPokeySegment();
     }
 
-    private EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
         if (spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(ENTITY_BUSH_CRAWLER);
         }
@@ -8701,14 +5511,14 @@ public final class RoomEntityRuntime {
                 : spriteSelection.roomTable(), entityMapId);
     }
 
-    private void initializeChestEntity(RoomEntity entity) { pickups.initializeChestEntity(entity); }
+    void initializeChestEntity(RoomEntity entity) { pickups.initializeChestEntity(entity); }
 
     /** Returns true when the source handler unloaded the chest this frame. */
-    private boolean advanceChestEntity(int index, RoomEntity entity) { return pickups.advanceChestEntity(index, entity); }
+    boolean advanceChestEntity(int index, RoomEntity entity) { return pickups.advanceChestEntity(index, entity); }
 
     private void spawnChestZol(RoomEntity chest) { pickups.spawnChestZol(chest); }
 
-    private void finalizePendingBombPresentations() {
+    void finalizePendingBombPresentations() {
         for (int slot = 0; slot < slots.length; slot++) {
             if (bombFinalPresentationPending[slot]) {
                 clearEntity(slot);
@@ -8716,7 +5526,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private BombMotion.Decision advanceBombEntity(
+    BombMotion.Decision advanceBombEntity(
             int index, RoomEntity entity, List<EntityProjectileEvent> projectileEvents,
             int linkEntityX, int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
@@ -8755,7 +5565,7 @@ public final class RoomEntityRuntime {
         return decision;
     }
 
-    private void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) { liftThrow.advanceLiftableRockSmash(index, entity, frameCounter); }
+    void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) { liftThrow.advanceLiftableRockSmash(index, entity, frameCounter); }
 
     static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
                                                 int countdown) {
@@ -8923,14 +5733,14 @@ public final class RoomEntityRuntime {
 
 
 
-    private RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) { return liftThrow.renderLiftedEntity(entity, frameCounter); }
+    RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) { return liftThrow.renderLiftedEntity(entity, frameCounter); }
 
-    private RoomEntity renderLiftedBomb(RoomEntity entity) { return liftThrow.renderLiftedBomb(entity); }
+    RoomEntity renderLiftedBomb(RoomEntity entity) { return liftThrow.renderLiftedBomb(entity); }
 
-    private boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.tryLiftBombIfRequested(index, decision, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
+    boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.tryLiftBombIfRequested(index, decision, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
 
     /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail for a bomb. */
-    private RoomEntity applyBombStunnedPostActiveWork(
+    RoomEntity applyBombStunnedPostActiveWork(
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = stunned.slot();
         RoomEntity moved = stunned;
@@ -8953,7 +5763,7 @@ public final class RoomEntityRuntime {
         return spriteHandlers.forStalfosEvasiveState(privateState1);
     }
 
-    private RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
+    RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
         if (!ColorShellMotion.isColorShellType(entity.type()) || spriteHandlers == null) {
             return entity;
         }
@@ -8962,7 +5772,7 @@ public final class RoomEntityRuntime {
         return withDefinition(entity, definition, colorShellMotion.spriteVariant(entity.slot()));
     }
 
-    private void finishBurning(RoomEntity entity) {
+    void finishBurning(RoomEntity entity) {
         int slot = entity.slot();
         enemyTransitionCountdown[slot] = 0;
         if (entity.type() == ENTITY_GIBDO) {
@@ -10464,7 +7274,7 @@ public final class RoomEntityRuntime {
         return enemyRecoilMotion.isActive(slot);
     }
 
-    private static int variantFor(RoomEntity entity, int frameCounter) {
+    static int variantFor(RoomEntity entity, int frameCounter) {
         if (!entity.spriteDefinition().supported() || entity.spriteDefinition().variantCount() < 2) {
             return entity.spriteVariant();
         }
@@ -10484,7 +7294,7 @@ public final class RoomEntityRuntime {
 
     private void initializeCommonDroppable(RoomEntity entity) { pickups.initializeCommonDroppable(entity); }
 
-    private CommonDroppableUpdate advanceCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) { return pickups.advanceCommonDroppable(entity, linkEntityX, linkEntityY, objectUnderEntity); }
+    CommonDroppableUpdate advanceCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) { return pickups.advanceCommonDroppable(entity, linkEntityX, linkEntityY, objectUnderEntity); }
 
     private void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) { pickups.revealCommonDroppable(entity, linkEntityX, linkEntityY); }
 
@@ -10502,23 +7312,23 @@ public final class RoomEntityRuntime {
 
 
 
-    private SlimeKeyTransitionUpdate advanceHidingSlimeKey(RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) { return pickups.advanceHidingSlimeKey(entity, slot, linkEntityX, linkEntityY, linkZ); }
+    SlimeKeyTransitionUpdate advanceHidingSlimeKey(RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) { return pickups.advanceHidingSlimeKey(entity, slot, linkEntityX, linkEntityY, linkZ); }
 
-    private void initializeEntityTimers(RoomEntity entity) { pickups.initializeEntityTimers(entity); }
+    void initializeEntityTimers(RoomEntity entity) { pickups.initializeEntityTimers(entity); }
 
     private void resetEnemyDropState(int slot) { pickups.resetEnemyDropState(slot); }
 
-    private void decrementEnemyDropCountdowns(RoomEntity entity) { pickups.decrementEnemyDropCountdowns(entity); }
+    void decrementEnemyDropCountdowns(RoomEntity entity) { pickups.decrementEnemyDropCountdowns(entity); }
 
-    private boolean checkForKeyDropQuicksandHole(RoomEntity entity) { return pickups.checkForKeyDropQuicksandHole(entity); }
-
-
+    boolean checkForKeyDropQuicksandHole(RoomEntity entity) { return pickups.checkForKeyDropQuicksandHole(entity); }
 
 
 
 
 
-    private boolean polsVoiceBalladOcarinaTrigger() {
+
+
+    boolean polsVoiceBalladOcarinaTrigger() {
         return linkPlayingOcarinaCountdown == 0x01
             && (ocarinaSongFlags & 0x04) != 0
             && selectedSongIndex == 0;
@@ -10531,7 +7341,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private boolean shouldDisappear(RoomEntity entity) {
+    boolean shouldDisappear(RoomEntity entity) {
         return slowTimerInitialized[entity.slot()]
             && isCommonDroppableType(entity.type())
             && entity.type() != ENTITY_HIDING_SLIME_KEY
@@ -10555,7 +7365,7 @@ public final class RoomEntityRuntime {
 
 
 
-    private boolean isDisabledFollower(int type) {
+    boolean isDisabledFollower(int type) {
         return switch (type) {
             case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !followingNpcState.roosterFollowing();
             case FollowingNpcEntitySpawner.ENTITY_GHOST ->
@@ -10584,14 +7394,14 @@ public final class RoomEntityRuntime {
 
 
 
-    private static int deathSpriteVariantForCountdown(int countdown) {
+    static int deathSpriteVariantForCountdown(int countdown) {
         if (countdown >= 0x20 || countdown <= 0) {
             return -1;
         }
         return ((countdown << 1) & 0x30) >>> 4;
     }
 
-    private boolean beginFalling(RoomEntity entity,
+    boolean beginFalling(RoomEntity entity,
                                  RoomEntityGroundInteraction.PitTransition transition,
                                  boolean ignoreHitsDecrementedBeforeHandler) {
         int slot = entity.slot();
@@ -10632,7 +7442,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Port of bank-$03 EntityFallHandler's pre-impact falling branch. */
-    private RoomEntity advanceFallingEntity(RoomEntity entity) {
+    RoomEntity advanceFallingEntity(RoomEntity entity) {
         int slot = entity.slot();
         int transition = enemyTransitionCountdown[slot] & 0xFF;
         if (transition == 0) {
@@ -10840,7 +7650,7 @@ public final class RoomEntityRuntime {
         slots[slot] = RoomEntity.disabled(slot);
     }
 
-    private int verticalSpeedZ(RoomEntity entity) {
+    int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
         if (enemyDropActive[slot]) {
             return enemyDropMotion.speedZ(slot);
@@ -10896,7 +7706,7 @@ public final class RoomEntityRuntime {
         return 0;
     }
 
-    private boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {
+    boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {
         if (enemyFlashCountdown[slot] > 0) {
             enemyFlashCountdown[slot]--;
         }
@@ -10908,7 +7718,7 @@ public final class RoomEntityRuntime {
         return false;
     }
 
-    private void decrementEnemyStatusCountdowns(int slot) {
+    void decrementEnemyStatusCountdowns(int slot) {
         if (enemyTransitionCountdown[slot] > 0) {
             enemyTransitionCountdown[slot]--;
         }
@@ -10936,7 +7746,7 @@ public final class RoomEntityRuntime {
     }
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
-    private boolean entityHandlerInteractive(boolean creditsGameplay) {
+    boolean entityHandlerInteractive(boolean creditsGameplay) {
         if (!creditsGameplay
             && (!gameplayWorld || transitionSequenceCounter != 0x04)) {
             return false;
@@ -10947,16 +7757,16 @@ public final class RoomEntityRuntime {
             && !roomTransitionActive;
     }
 
-    private boolean sideViewPotPowerBraceletHeld() { return liftThrow.sideViewPotPowerBraceletHeld(); }
+    boolean sideViewPotPowerBraceletHeld() { return liftThrow.sideViewPotPowerBraceletHeld(); }
 
-    private void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) { liftThrow.pendingLinkPotContact(sourceSlot, contact); }
+    void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) { liftThrow.pendingLinkPotContact(sourceSlot, contact); }
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
-    private boolean entityTimersInteractive() {
+    boolean entityTimersInteractive() {
         return !dialogActive && !inventoryAppearing && linkPlayingOcarinaCountdown == 0;
     }
 
-    private void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
+    void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY,
                                       int linkMotionState) {
         if (linkMotionState >= EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
             || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
@@ -10993,7 +7803,7 @@ public final class RoomEntityRuntime {
         }
     }
 
-    private EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
+    EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (!enemyRecoilMotion.isActive(slot)) {
