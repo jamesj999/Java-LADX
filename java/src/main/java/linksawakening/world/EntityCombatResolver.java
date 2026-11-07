@@ -39,7 +39,8 @@ final class EntityCombatResolver {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
         runtime.runningWithPegasusBoots = attackContext.pegasusBoots();
-        List<EntityCombatEvent> events = new ArrayList<>();
+        List<EntityCombatEvent> events = runtime.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        events.clear();
         for (int index = runtime.slots.length - 1; index >= 0; index--) {
             RoomEntity entity = runtime.slots[index];
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
@@ -436,6 +437,6 @@ final class EntityCombatResolver {
                 secondarySoundChannel, secondarySoundId, swordPokeVfx,
                 linkCollisionResponse));
         }
-        return List.copyOf(events);
+        return runtime.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
         }
 }
