@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for HardhatBeetle. */
 final class HardhatBeetleHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HARDHAT_BEETLE,
         EntityTickStage.PHASE_4_HARDHAT_BEETLE,

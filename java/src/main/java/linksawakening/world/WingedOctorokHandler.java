@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for WingedOctorok. */
 final class WingedOctorokHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WINGED_OCTOROK,
         EntityTickStage.PHASE_3_WINGED_OCTOROK,

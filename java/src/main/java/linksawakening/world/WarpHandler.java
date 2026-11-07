@@ -7,7 +7,7 @@ import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
 
 /** ROM handler stages for Warp. */
 final class WarpHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == WarpMotion.ENTITY_TYPE)) {
         registry.registerTick(

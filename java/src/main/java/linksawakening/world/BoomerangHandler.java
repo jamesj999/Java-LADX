@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Boomerang. */
 final class BoomerangHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOOMERANG,
         EntityTickStage.PHASE_1_BOOMERANG,

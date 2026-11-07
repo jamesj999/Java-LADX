@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for HeartContainer. */
 final class HeartContainerHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HEART_CONTAINER,
         EntityTickStage.PHASE_1_HEART_CONTAINER,

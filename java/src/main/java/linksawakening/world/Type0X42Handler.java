@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Type0X42. */
 final class Type0X42Handler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == 0x42)) {
         registry.registerTick(

@@ -7,7 +7,7 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 
 /** ROM handler stages for Witch. */
 final class WitchHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WITCH,
         EntityTickStage.PHASE_4_WITCH,

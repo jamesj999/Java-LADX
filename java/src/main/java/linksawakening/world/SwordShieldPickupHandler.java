@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for SwordShieldPickup. */
 final class SwordShieldPickupHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SWORD_SHIELD_PICKUP,
         EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP,

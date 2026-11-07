@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for LiftableRock. */
 final class LiftableRockHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_LIFTABLE_ROCK,
         EntityTickStage.PHASE_1_LIFTABLE_ROCK,

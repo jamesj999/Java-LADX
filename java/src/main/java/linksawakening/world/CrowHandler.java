@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Crow. */
 final class CrowHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_CROW)) {
         registry.registerTick(
@@ -18,9 +18,6 @@ final class CrowHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_CROW,
         EntityTickStage.PHASE_3_CROW,

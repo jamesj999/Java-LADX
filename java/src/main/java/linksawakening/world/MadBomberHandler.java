@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for MadBomber. */
 final class MadBomberHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MAD_BOMBER,
         EntityTickStage.PHASE_2_MAD_BOMBER,

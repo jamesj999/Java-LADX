@@ -4,7 +4,7 @@ import static linksawakening.world.EntityTypeRules.isZolGelType;
 
 /** ROM handler stages for ZolGelType. */
 final class ZolGelTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((isZolGelType(type)))) {
         registry.registerTick(
@@ -19,9 +19,6 @@ final class ZolGelTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isZolGelType(type))) {
         registry.registerTick(

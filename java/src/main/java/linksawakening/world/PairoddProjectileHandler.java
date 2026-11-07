@@ -5,7 +5,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 
 /** ROM handler stages for PairoddProjectile. */
 final class PairoddProjectileHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_PAIRODD_PROJECTILE,
         EntityTickStage.PHASE_3_PAIRODD_PROJECTILE,

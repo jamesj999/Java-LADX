@@ -4,7 +4,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for Genie. */
 final class GenieHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
         registry.registerTick(
@@ -18,9 +18,6 @@ final class GenieHandler {
             });
       }
     }
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
         registry.registerTick(
@@ -34,9 +31,6 @@ final class GenieHandler {
             });
       }
     }
-  }
-
-  static void installPhase2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_GENIE)) {
         registry.registerTick(
@@ -52,9 +46,6 @@ final class GenieHandler {
             });
       }
     }
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_GENIE,
         EntityTickStage.PHASE_4_GENIE,

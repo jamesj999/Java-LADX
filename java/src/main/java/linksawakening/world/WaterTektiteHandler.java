@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for WaterTektite. */
 final class WaterTektiteHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WATER_TEKTITE,
         EntityTickStage.PHASE_3_WATER_TEKTITE,

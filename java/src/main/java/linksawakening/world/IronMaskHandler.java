@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for IronMask. */
 final class IronMaskHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_IRON_MASK,
         EntityTickStage.PHASE_3_IRON_MASK,

@@ -7,7 +7,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for StalfosEvasive. */
 final class StalfosEvasiveHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_STALFOS_EVASIVE,
         EntityTickStage.PHASE_3_STALFOS_EVASIVE,

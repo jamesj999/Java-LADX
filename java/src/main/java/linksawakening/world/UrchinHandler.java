@@ -5,7 +5,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for Urchin. */
 final class UrchinHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_URCHIN,
         EntityTickStage.PHASE_4_URCHIN,

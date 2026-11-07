@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for WitchRat. */
 final class WitchRatHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WITCH_RAT,
         EntityTickStage.PHASE_4_WITCH_RAT,

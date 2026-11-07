@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SleepyToadstool. */
 final class SleepyToadstoolHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SLEEPY_TOADSTOOL,
         EntityTickStage.PHASE_1_SLEEPY_TOADSTOOL,

@@ -4,7 +4,7 @@ import static linksawakening.world.EntityTypeRules.isRoamingEnemyType;
 
 /** ROM handler stages for RoamingEnemyType. */
 final class RoamingEnemyTypeHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isRoamingEnemyType(type))) {
         registry.registerTick(

@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Type0X35. */
 final class Type0X35Handler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == 0x35)) {
         registry.registerTick(
@@ -19,9 +19,6 @@ final class Type0X35Handler {
             });
       }
     }
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == 0x35)) {
         registry.registerTick(

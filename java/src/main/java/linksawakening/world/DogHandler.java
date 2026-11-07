@@ -4,7 +4,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for Dog. */
 final class DogHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_DOG,
         EntityTickStage.PHASE_1_DOG,
@@ -15,9 +15,6 @@ final class DogHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_DOG,
         EntityTickStage.PHASE_4_DOG,

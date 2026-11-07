@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for BushCrawler. */
 final class BushCrawlerHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BUSH_CRAWLER,
         EntityTickStage.PHASE_3_BUSH_CRAWLER,

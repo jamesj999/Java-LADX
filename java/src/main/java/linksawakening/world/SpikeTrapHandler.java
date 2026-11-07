@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SpikeTrap. */
 final class SpikeTrapHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SPIKE_TRAP,
         EntityTickStage.PHASE_3_SPIKE_TRAP,

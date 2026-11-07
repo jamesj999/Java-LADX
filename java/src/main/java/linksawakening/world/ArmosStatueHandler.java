@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for ArmosStatue. */
 final class ArmosStatueHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ARMOS_STATUE,
         EntityTickStage.PHASE_3_ARMOS_STATUE,

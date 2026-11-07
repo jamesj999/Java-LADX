@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /** ROM handler stages for Blooper. */
 final class BlooperHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BLOOPER,
         EntityTickStage.PHASE_3_BLOOPER,

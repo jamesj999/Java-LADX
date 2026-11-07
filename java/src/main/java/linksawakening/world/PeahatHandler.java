@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Peahat. */
 final class PeahatHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_PEAHAT,
         EntityTickStage.PHASE_3_PEAHAT,

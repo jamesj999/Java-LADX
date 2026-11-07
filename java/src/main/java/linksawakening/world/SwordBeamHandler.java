@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SwordBeam. */
 final class SwordBeamHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SWORD_BEAM,
         EntityTickStage.PHASE_1_SWORD_BEAM,

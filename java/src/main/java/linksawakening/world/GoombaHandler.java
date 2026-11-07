@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Goomba. */
 final class GoombaHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_GOOMBA,
         EntityTickStage.PHASE_3_GOOMBA,

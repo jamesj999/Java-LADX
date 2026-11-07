@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withFlipAttribute;
 
 /** ROM handler stages for WizrobeProjectile. */
 final class WizrobeProjectileHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE))) {
         registry.registerTick(
@@ -20,9 +20,6 @@ final class WizrobeProjectileHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WIZROBE_PROJECTILE,
         EntityTickStage.PHASE_3_WIZROBE_PROJECTILE,

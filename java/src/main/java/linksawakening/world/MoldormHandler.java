@@ -6,7 +6,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for Moldorm. */
 final class MoldormHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MOLDORM,
         EntityTickStage.PHASE_1_MOLDORM,
@@ -30,9 +30,6 @@ final class MoldormHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
           || type == RoomEntityRuntime.ENTITY_MOLDORM))) {
@@ -63,9 +60,6 @@ final class MoldormHandler {
             });
       }
     }
-  }
-
-  static void installPhase2(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MOLDORM,
         EntityTickStage.PHASE_2_MOLDORM,
@@ -146,9 +140,6 @@ final class MoldormHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
         registry.registerTick(
@@ -162,9 +153,6 @@ final class MoldormHandler {
             });
       }
     }
-  }
-
-  static void installPhase2Part3(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_MOLDORM))) {
         registry.registerTick(

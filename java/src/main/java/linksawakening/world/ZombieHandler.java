@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for Zombie. */
 final class ZombieHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ZOMBIE,
         EntityTickStage.PHASE_2_ZOMBIE,
@@ -17,9 +17,6 @@ final class ZombieHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ZOMBIE,
         EntityTickStage.PHASE_4_ZOMBIE,

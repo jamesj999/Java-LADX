@@ -6,7 +6,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for HidingSlimeKey. */
 final class HidingSlimeKeyHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY,
@@ -23,9 +23,6 @@ final class HidingSlimeKeyHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY,
         EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2,
@@ -50,9 +47,6 @@ final class HidingSlimeKeyHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part3(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_HIDING_SLIME_KEY)) {
         registry.registerTick(

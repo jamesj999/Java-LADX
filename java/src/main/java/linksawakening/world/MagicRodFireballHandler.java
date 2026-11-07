@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for MagicRodFireball. */
 final class MagicRodFireballHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MAGIC_ROD_FIREBALL,
         EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL,

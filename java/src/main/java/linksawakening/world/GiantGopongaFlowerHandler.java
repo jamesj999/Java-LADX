@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for GiantGopongaFlower. */
 final class GiantGopongaFlowerHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_GIANT_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GIANT_GOPONGA_FLOWER,

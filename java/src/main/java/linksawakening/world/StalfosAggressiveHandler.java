@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for StalfosAggressive. */
 final class StalfosAggressiveHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_STALFOS_AGGRESSIVE,
         EntityTickStage.PHASE_3_STALFOS_AGGRESSIVE,

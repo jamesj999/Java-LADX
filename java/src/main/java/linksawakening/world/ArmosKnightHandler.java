@@ -9,7 +9,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 
 /** ROM handler stages for ArmosKnight. */
 final class ArmosKnightHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ARMOS_KNIGHT,
         EntityTickStage.PHASE_4_ARMOS_KNIGHT,

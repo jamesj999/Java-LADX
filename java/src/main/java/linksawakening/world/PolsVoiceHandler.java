@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withStatus;
 
 /** ROM handler stages for PolsVoice. */
 final class PolsVoiceHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_2_POLS_VOICE,
@@ -31,9 +31,6 @@ final class PolsVoiceHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_POLS_VOICE,
         EntityTickStage.PHASE_4_POLS_VOICE,

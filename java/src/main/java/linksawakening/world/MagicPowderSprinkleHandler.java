@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for MagicPowderSprinkle. */
 final class MagicPowderSprinkleHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MAGIC_POWDER_SPRINKLE,
         EntityTickStage.PHASE_1_MAGIC_POWDER_SPRINKLE,

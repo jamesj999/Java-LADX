@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Bomb. */
 final class BombHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOMB,
         EntityTickStage.PHASE_1_BOMB,
@@ -37,9 +37,6 @@ final class BombHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
         registry.registerTick(
@@ -64,9 +61,6 @@ final class BombHandler {
             });
       }
     }
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_BOMB))) {
         registry.registerTick(

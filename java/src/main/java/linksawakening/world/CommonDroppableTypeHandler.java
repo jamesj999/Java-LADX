@@ -8,7 +8,7 @@ import static linksawakening.world.EntityTypeRules.isCommonDroppableType;
 
 /** ROM handler stages for CommonDroppableType. */
 final class CommonDroppableTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isCommonDroppableType(type))) {
         registry.registerTick(
@@ -28,9 +28,6 @@ final class CommonDroppableTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isCommonDroppableType(type))) {
         registry.registerTick(

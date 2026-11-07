@@ -7,7 +7,7 @@ import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
 
 /** ROM handler stages for HookshotChain. */
 final class HookshotChainHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HOOKSHOT_CHAIN,
         EntityTickStage.PHASE_1_HOOKSHOT_CHAIN,

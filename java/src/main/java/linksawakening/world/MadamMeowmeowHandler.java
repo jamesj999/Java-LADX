@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for MadamMeowmeow. */
 final class MadamMeowmeowHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MADAM_MEOWMEOW,
         EntityTickStage.PHASE_1_MADAM_MEOWMEOW,

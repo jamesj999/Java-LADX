@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withPositionAndVariant;
 
 /** ROM handler stages for ChestWithItem. */
 final class ChestWithItemHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM,
@@ -20,9 +20,6 @@ final class ChestWithItemHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM,
         EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2,

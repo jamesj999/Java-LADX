@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Richard. */
 final class RichardHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_RICHARD,
         EntityTickStage.PHASE_1_RICHARD,

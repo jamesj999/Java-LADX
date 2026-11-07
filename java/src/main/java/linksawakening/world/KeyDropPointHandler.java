@@ -10,7 +10,7 @@ import static linksawakening.world.EntitySnapshots.withZ;
 
 /** ROM handler stages for KeyDropPoint. */
 final class KeyDropPointHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_KEY_DROP_POINT,
         EntityTickStage.PHASE_2_KEY_DROP_POINT,

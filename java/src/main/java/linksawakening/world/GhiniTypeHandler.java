@@ -5,7 +5,7 @@ import static linksawakening.world.EntityTypeRules.isHidingGhiniType;
 
 /** ROM handler stages for GhiniType. */
 final class GhiniTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((isGhiniType(type)))) {
         registry.registerTick(
@@ -22,9 +22,6 @@ final class GhiniTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isGhiniType(type))) {
         registry.registerTick(

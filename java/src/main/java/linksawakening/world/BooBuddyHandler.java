@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for BooBuddy. */
 final class BooBuddyHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_1_BOO_BUDDY,
@@ -35,9 +35,6 @@ final class BooBuddyHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOO_BUDDY,
         EntityTickStage.PHASE_3_BOO_BUDDY,

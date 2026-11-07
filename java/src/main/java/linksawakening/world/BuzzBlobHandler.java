@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for BuzzBlob. */
 final class BuzzBlobHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BUZZ_BLOB,
         EntityTickStage.PHASE_4_BUZZ_BLOB,

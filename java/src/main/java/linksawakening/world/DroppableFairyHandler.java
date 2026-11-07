@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for DroppableFairy. */
 final class DroppableFairyHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_DROPPABLE_FAIRY,
         EntityTickStage.PHASE_3_DROPPABLE_FAIRY,

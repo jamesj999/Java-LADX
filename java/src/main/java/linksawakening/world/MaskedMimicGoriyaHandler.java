@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for MaskedMimicGoriya. */
 final class MaskedMimicGoriyaHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MASKED_MIMIC_GORIYA,
         EntityTickStage.PHASE_2_MASKED_MIMIC_GORIYA,

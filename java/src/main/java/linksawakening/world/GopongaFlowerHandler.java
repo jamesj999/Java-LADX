@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for GopongaFlower. */
 final class GopongaFlowerHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_GOPONGA_FLOWER,
         EntityTickStage.PHASE_4_GOPONGA_FLOWER,

@@ -4,7 +4,7 @@ import static linksawakening.world.EntityTypeRules.isSparkType;
 
 /** ROM handler stages for SparkType. */
 final class SparkTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((isSparkType(type)))) {
         registry.registerTick(
@@ -18,9 +18,6 @@ final class SparkTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isSparkType(type))) {
         registry.registerTick(
@@ -34,9 +31,6 @@ final class SparkTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isSparkType(type))) {
         registry.registerTick(

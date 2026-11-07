@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for DroppableSecretSeashell. */
 final class DroppableSecretSeashellHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_DROPPABLE_SECRET_SEASHELL,
         EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL,

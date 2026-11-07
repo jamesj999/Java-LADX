@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for PiranhaPlant. */
 final class PiranhaPlantHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_PIRANHA_PLANT,
         EntityTickStage.PHASE_4_PIRANHA_PLANT,

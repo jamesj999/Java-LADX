@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for KanaletBombableWall. */
 final class KanaletBombableWallHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_KANALET_BOMBABLE_WALL,
         EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL,

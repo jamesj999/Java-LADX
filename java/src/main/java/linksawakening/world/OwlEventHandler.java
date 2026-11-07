@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for OwlEvent. */
 final class OwlEventHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_OWL_EVENT,
         EntityTickStage.PHASE_1_OWL_EVENT,

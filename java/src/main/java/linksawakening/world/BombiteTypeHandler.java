@@ -5,7 +5,7 @@ import static linksawakening.world.EntityTypeRules.isBombiteType;
 
 /** ROM handler stages for BombiteType. */
 final class BombiteTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((isBombiteType(type)))) {
         registry.registerTick(
@@ -20,9 +20,6 @@ final class BombiteTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isBombiteType(type))) {
         registry.registerTick(

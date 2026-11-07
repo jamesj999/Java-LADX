@@ -6,7 +6,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for MoblinKing. */
 final class MoblinKingHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_MOBLIN_KING))) {
         registry.registerTick(
@@ -21,9 +21,6 @@ final class MoblinKingHandler {
             });
       }
     }
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MOBLIN_KING,
         EntityTickStage.PHASE_4_MOBLIN_KING,

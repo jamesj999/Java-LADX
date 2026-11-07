@@ -7,7 +7,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for BowWow. */
 final class BowWowHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOW_WOW,
         EntityTickStage.PHASE_1_BOW_WOW,
@@ -45,9 +45,6 @@ final class BowWowHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOW_WOW,
         EntityTickStage.PHASE_1_BOW_WOW_2,

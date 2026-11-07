@@ -4,7 +4,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for Cucco. */
 final class CuccoHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_CUCCO,
         EntityTickStage.PHASE_3_CUCCO,

@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Pincer. */
 final class PincerHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_PINCER,
         EntityTickStage.PHASE_3_PINCER,

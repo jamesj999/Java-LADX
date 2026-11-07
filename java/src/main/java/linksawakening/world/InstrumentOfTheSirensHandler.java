@@ -4,7 +4,7 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 
 /** ROM handler stages for InstrumentOfTheSirens. */
 final class InstrumentOfTheSirensHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
         registry.registerTick(
@@ -21,9 +21,6 @@ final class InstrumentOfTheSirensHandler {
             });
       }
     }
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
         registry.registerTick(

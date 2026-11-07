@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for ThreeOfAKind. */
 final class ThreeOfAKindHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_THREE_OF_A_KIND,
         EntityTickStage.PHASE_3_THREE_OF_A_KIND,

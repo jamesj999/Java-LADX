@@ -9,7 +9,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 
 /** ROM handler stages for Hinox. */
 final class HinoxHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HINOX,
         EntityTickStage.PHASE_4_HINOX,

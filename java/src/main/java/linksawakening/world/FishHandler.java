@@ -5,7 +5,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 
 /** ROM handler stages for Fish. */
 final class FishHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_FISH,
         EntityTickStage.PHASE_3_FISH,

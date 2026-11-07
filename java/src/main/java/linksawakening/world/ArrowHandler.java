@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Arrow. */
 final class ArrowHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ARROW,
         EntityTickStage.PHASE_1_ARROW,

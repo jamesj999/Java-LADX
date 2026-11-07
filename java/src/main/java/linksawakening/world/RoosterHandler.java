@@ -5,7 +5,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for Rooster. */
 final class RoosterHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_ROOSTER))) {
         registry.registerTick(
@@ -40,9 +40,6 @@ final class RoosterHandler {
             });
       }
     }
-  }
-
-  static void installPhase5(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ROOSTER,
         EntityTickStage.PHASE_5_ROOSTER,

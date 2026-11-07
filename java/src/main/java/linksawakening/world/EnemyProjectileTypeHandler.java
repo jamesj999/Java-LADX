@@ -4,7 +4,7 @@ import static linksawakening.world.EntityTypeRules.isEnemyProjectileType;
 
 /** ROM handler stages for EnemyProjectileType. */
 final class EnemyProjectileTypeHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((isEnemyProjectileType(type))) {
         registry.registerTick(

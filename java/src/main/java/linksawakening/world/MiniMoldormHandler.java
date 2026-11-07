@@ -5,7 +5,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for MiniMoldorm. */
 final class MiniMoldormHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MINI_MOLDORM,
         EntityTickStage.PHASE_2_MINI_MOLDORM,
@@ -67,9 +67,6 @@ final class MiniMoldormHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_MINI_MOLDORM))) {
         registry.registerTick(

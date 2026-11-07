@@ -4,7 +4,7 @@ import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for MoblinSword. */
 final class MoblinSwordHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_MOBLIN_SWORD))) {
         registry.registerTick(
@@ -18,9 +18,6 @@ final class MoblinSwordHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MOBLIN_SWORD,
         EntityTickStage.PHASE_3_MOBLIN_SWORD,

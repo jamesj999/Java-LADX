@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for HidingZol. */
 final class HidingZolHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_HIDING_ZOL,
         EntityTickStage.PHASE_3_HIDING_ZOL,

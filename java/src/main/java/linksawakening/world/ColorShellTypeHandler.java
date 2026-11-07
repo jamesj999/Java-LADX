@@ -6,7 +6,7 @@ import static linksawakening.world.EntityTypeRules.persistentClearMask;
 
 /** ROM handler stages for ColorShellType. */
 final class ColorShellTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((ColorShellMotion.isColorShellType(type))) {
         registry.registerTick(
@@ -25,9 +25,6 @@ final class ColorShellTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((ColorShellMotion.isColorShellType(type)))) {
         registry.registerTick(
@@ -41,9 +38,6 @@ final class ColorShellTypeHandler {
             });
       }
     }
-  }
-
-  static void installPhase5(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((ColorShellMotion.isColorShellType(type))) {
         registry.registerTick(

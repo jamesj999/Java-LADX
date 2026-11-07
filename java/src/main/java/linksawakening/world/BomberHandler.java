@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Bomber. */
 final class BomberHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_BOMBER,
         EntityTickStage.PHASE_2_BOMBER,

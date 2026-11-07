@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Kid. */
 final class KidHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_KID_71 || type == RoomEntityRuntime.ENTITY_KID_72))) {
         registry.registerTick(

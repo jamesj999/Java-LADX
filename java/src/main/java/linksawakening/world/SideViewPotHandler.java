@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SideViewPot. */
 final class SideViewPotHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT,
@@ -55,9 +55,6 @@ final class SideViewPotHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase1Part2(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SIDE_VIEW_POT,
         EntityTickStage.PHASE_1_SIDE_VIEW_POT_2,
@@ -88,9 +85,6 @@ final class SideViewPotHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_SIDE_VIEW_POT)) {
         registry.registerTick(

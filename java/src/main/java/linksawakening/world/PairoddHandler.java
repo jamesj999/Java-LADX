@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Pairodd. */
 final class PairoddHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_PAIRODD,
         EntityTickStage.PHASE_3_PAIRODD,

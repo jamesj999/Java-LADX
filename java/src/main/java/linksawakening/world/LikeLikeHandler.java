@@ -5,7 +5,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for LikeLike. */
 final class LikeLikeHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_LIKE_LIKE,
         EntityTickStage.PHASE_3_LIKE_LIKE,

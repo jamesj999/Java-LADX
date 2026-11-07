@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SandCrab. */
 final class SandCrabHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SAND_CRAB,
         EntityTickStage.PHASE_4_SAND_CRAB,

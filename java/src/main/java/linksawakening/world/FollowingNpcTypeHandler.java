@@ -4,7 +4,7 @@ import static linksawakening.world.EntityTypeRules.isFollowingNpcType;
 
 /** ROM handler stages for FollowingNpcType. */
 final class FollowingNpcTypeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((isFollowingNpcType(type)))) {
         registry.registerTick(

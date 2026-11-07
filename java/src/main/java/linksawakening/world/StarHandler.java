@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Star. */
 final class StarHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_STAR,
         EntityTickStage.PHASE_3_STAR,

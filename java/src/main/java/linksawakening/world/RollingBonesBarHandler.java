@@ -5,7 +5,7 @@ import static linksawakening.world.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for RollingBonesBar. */
 final class RollingBonesBarHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES
           || type == RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR))) {
@@ -51,9 +51,6 @@ final class RollingBonesBarHandler {
             });
       }
     }
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ROLLING_BONES_BAR,
         EntityTickStage.PHASE_4_ROLLING_BONES_BAR,

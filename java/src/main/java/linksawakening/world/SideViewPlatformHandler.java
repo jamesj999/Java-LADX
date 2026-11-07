@@ -5,7 +5,7 @@ import static linksawakening.world.EntityMotionMath.sideViewPlatformOverlapsLink
 
 /** ROM handler stages for SideViewPlatform. */
 final class SideViewPlatformHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == SideViewPlatformMotion.ENTITY_TYPE)) {
         registry.registerTick(

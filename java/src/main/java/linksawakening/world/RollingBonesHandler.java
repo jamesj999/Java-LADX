@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for RollingBones. */
 final class RollingBonesHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_ROLLING_BONES))) {
         registry.registerTick(
@@ -19,9 +19,6 @@ final class RollingBonesHandler {
             });
       }
     }
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_ROLLING_BONES,
         EntityTickStage.PHASE_4_ROLLING_BONES,

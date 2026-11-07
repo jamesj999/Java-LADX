@@ -8,7 +8,7 @@ import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
 
 /** ROM handler stages for Tarin. */
 final class TarinHandler {
-  static void installPhase1(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
@@ -19,9 +19,6 @@ final class TarinHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase4(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if ((type == RoomEntityRuntime.ENTITY_TARIN)) {
         registry.registerTick(

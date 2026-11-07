@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for CrystalSwitch. */
 final class CrystalSwitchHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_CRYSTAL_SWITCH,
         EntityTickStage.PHASE_2_CRYSTAL_SWITCH,

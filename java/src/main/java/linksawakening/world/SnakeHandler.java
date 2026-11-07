@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Snake. */
 final class SnakeHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SNAKE,
         EntityTickStage.PHASE_3_SNAKE,

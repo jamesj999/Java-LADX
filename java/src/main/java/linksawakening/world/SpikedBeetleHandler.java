@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for SpikedBeetle. */
 final class SpikedBeetleHandler {
-  static void installPhase4(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_SPIKED_BEETLE,
         EntityTickStage.PHASE_4_SPIKED_BEETLE,

@@ -4,7 +4,7 @@ import static linksawakening.world.EntitySnapshots.withVariant;
 
 /** ROM handler stages for Wizrobe. */
 final class WizrobeHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WIZROBE,
         EntityTickStage.PHASE_2_WIZROBE,
@@ -16,9 +16,6 @@ final class WizrobeHandler {
           }
           return true;
         });
-  }
-
-  static void installPhase2Part2(EntityHandlerRegistry registry) {
     for (int type = 0; type < 256; type++) {
       if (((type == RoomEntityRuntime.ENTITY_WIZROBE))) {
         registry.registerTick(
@@ -35,9 +32,6 @@ final class WizrobeHandler {
             });
       }
     }
-  }
-
-  static void installPhase3(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_WIZROBE,
         EntityTickStage.PHASE_3_WIZROBE,

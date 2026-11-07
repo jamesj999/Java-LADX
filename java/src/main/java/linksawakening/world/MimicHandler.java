@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for Mimic. */
 final class MimicHandler {
-  static void installPhase2(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_MIMIC,
         EntityTickStage.PHASE_2_MIMIC,

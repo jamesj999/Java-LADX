@@ -4,7 +4,7 @@ package linksawakening.world;
 
 /** ROM handler stages for GopongaFlowerProjectile. */
 final class GopongaFlowerProjectileHandler {
-  static void installPhase3(EntityHandlerRegistry registry) {
+  static void install(EntityHandlerRegistry registry) {
     registry.registerTick(
         RoomEntityRuntime.ENTITY_GOPONGA_FLOWER_PROJECTILE,
         EntityTickStage.PHASE_3_GOPONGA_FLOWER_PROJECTILE,
