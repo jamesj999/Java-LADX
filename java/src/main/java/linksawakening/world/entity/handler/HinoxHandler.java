@@ -63,7 +63,7 @@ final class HinoxHandler {
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             state.preserveHinoxPresentation = true;
             if (hinoxUpdate.linkMotionBlocked()) {
-              state.emit(new LinkMotionBlockRequest(slot));
+              state.emit(new LinkMotionBlockRequest(slot, 0, 0, 1));
               state.emit(new LinkFallenPoseRequest(slot));
             }
             if (hinoxUpdate.heldLinkPositionWritten()) {

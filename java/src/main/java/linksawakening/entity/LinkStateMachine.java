@@ -12,6 +12,7 @@ final class LinkStateMachine {
     boolean revolvingDoorTransitionPending;
     int revolvingDoorPaletteVariant = -1;
     boolean romInteractiveMotionBlocked;
+    int romInteractiveMotionBlockValue;
 
     LinkStateMachine(Link link) { this.link = link; }
 
@@ -35,6 +36,7 @@ final class LinkStateMachine {
 
         boolean interactiveMotionBlocked = romInteractiveMotionBlocked;
         romInteractiveMotionBlocked = false;
+        romInteractiveMotionBlockValue = 0;
         if (!interactiveMotionBlocked) {
             link.linkAnimator.romAnimationStateOverride = -1;
             link.linkAnimator.swordAcquisitionBaseRomDirection = -1;
@@ -393,6 +395,7 @@ final class LinkStateMachine {
         link.clearGroundEffects();
         link.romConsecutiveStepsCount = 7;
         romInteractiveMotionBlocked = false;
+        romInteractiveMotionBlockValue = 0;
         link.linkSideView.standingOnSideViewEntity = false;
         link.linkSideView.sideViewPlatformVerticalSpeedPending = -1;
         link.linkDamage.collisionDamageImmune = false;
@@ -506,8 +509,13 @@ final class LinkStateMachine {
     }
 
     /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
-    void blockNextRomMotionFrame() {
-        romInteractiveMotionBlocked = true;
+    void blockNextRomMotionFrame() { writeRomInteractiveMotionBlock(2); }
+
+    void writeRomInteractiveMotionBlock(int value) {
+        if ((value & ~255) != 0) throw new IllegalArgumentException("Interaction block must be an unsigned byte");
+        // Keep the existing movement lock separate from the exact ROM equipment gate.
+        romInteractiveMotionBlockValue = value;
+        romInteractiveMotionBlocked = value != 0;
     }
 
     /** Mirrors ResetPegasusBoots for handlers that interrupt a dash. */

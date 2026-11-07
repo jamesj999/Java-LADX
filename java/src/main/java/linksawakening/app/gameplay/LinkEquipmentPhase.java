@@ -95,7 +95,8 @@ final class LinkEquipmentPhase {
                         roomSession.throwLiftedEntity(link.direction());
                     }
                 }
-                if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
+                if (!keyholeSequenceActive && !link.isCarryingLiftedObject()
+                    && !link.romItemAnimationFrameBlocked()) {
                     if (link.romMotionState() == 0x05
                         || (roomSession != null && roomSession.gelClingingToLink())) {
                         equipmentController.tickEquippedItemsWithoutInput(frameCounter);

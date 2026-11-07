@@ -61,7 +61,14 @@ final class SlimeEyeRuntimeTest {
             sword(r, eyes(r).getFirst(), false); tick(r);
         }
         assertEquals(4, r.slimeEye.stretch(0));
-        for (int i = 0; i < 30 && eyes(r).size() == 1; i++) { sword(r, eyes(r).getFirst(), true); tick(r); }
+        r.consumePendingLinkMotionBlockRequests();
+        var splitBlockValues = new ArrayList<Integer>();
+        for (int i = 0; i < 30 && eyes(r).size() == 1; i++) {
+            sword(r, eyes(r).getFirst(), true); tick(r);
+            r.consumePendingLinkMotionBlockRequests().forEach(request -> splitBlockValues.add(request.value()));
+        }
+        assertEquals(List.of(11, 10, 9, 8, 7, 6, 5, 4, 3, 2), splitBlockValues,
+            "04:4A94 writes the live split countdown, not a Boolean 2");
         assertEquals(2, eyes(r).size());
         assertTrue(eyes(r).stream().allMatch(e -> r.slimeEye.half(e.slot()) && r.enemyHealth[e.slot()] == 5));
         assertFalse(r.inspection().snapshot().slots().getFirst().loaded());

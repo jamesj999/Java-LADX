@@ -38,7 +38,7 @@ final class LinkCommandAdapter {
             r.ignoreCollisionCountdown(), r.snapTop(), r.positionY(), r.speedY());
     }
     static LinkCommand from(LinkMotionBlockRequest r) {
-        return new LinkCommand.MotionBlock(r.positionDeltaX(), r.positionDeltaY());
+        return new LinkCommand.MotionBlock(r.positionDeltaX(), r.positionDeltaY(), r.value());
     }
     static LinkCommand from(WarpLinkStateRequest r) {
         return new LinkCommand.Warp(r.positionX(), r.visualPositionY(), r.immunityCountdown());

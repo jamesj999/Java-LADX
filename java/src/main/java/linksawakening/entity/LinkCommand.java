@@ -42,10 +42,11 @@ public interface LinkCommand {
         }
     }
 
-    public record MotionBlock(int deltaX, int deltaY) implements LinkCommand {
+    public record MotionBlock(int deltaX, int deltaY, int value) implements LinkCommand {
+        public MotionBlock(int deltaX, int deltaY) { this(deltaX, deltaY, 2); }
         public void applyTo(Link link) {
             link.applyRomFinalPosition((deltaX * 16) & 0xFF, (deltaY * 16) & 0xFF);
-            link.blockNextRomMotionFrame();
+            link.writeRomInteractiveMotionBlock(value);
         }
     }
 

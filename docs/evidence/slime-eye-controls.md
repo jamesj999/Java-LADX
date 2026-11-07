@@ -108,15 +108,25 @@ python tools/slime-eye/live_compare.py
 ```
 
 Live fight trajectories, button histories, damage taken, sprite phases and
-whole frames do not match. The read-only RNG trace identifies concrete causes
-outside the half controller: the ROM consumes a footstep RNG call returning to
-`00:1547` before its first body-wander call; the engine Link footstep path does
-not consume that call. Starting at seed `$A2`, the ROM's first observed call at
-frame 194 / LY 17 yields `$BA`; its first body-wander return to `04:4B85` at
-frame 2 / LY 29 yields `$EC`. `GameSession` currently supplies scanline zero to
-its RNG, so neither consumption cadence nor LY matches. The three-frame body
-state-3 entry difference under these dialog/input clocks also remains open.
-These are explicit followups; no RNG values were forced to obtain this run.
+whole frames do not match. The earlier attribution of return `00:1547` to a
+missing footstep RNG call was incorrect: `bank0.asm:UseSword` calls
+`GetRandomByte` at `00:1544`, then masks the result and selects a sword-swing
+noise from `SwordRandomSfxTable`. Production `Sword.onPress` already consumes
+the same session `RomRandomByteSource` supplied to entities and selects its
+four sound variants. No extra footstep RNG call should be added.
+
+A subsequent fixed 320-frame button replay, before the gate correction,
+observes the first sword call in both engines at route frame 193. The ROM's call-time frame counter is 194 and
+LY is 17; seed A2 yields BA. Production observes counter 195 and LY 0; seed
+A2 yields B2. Both post-tick frame counters are 195, illustrating why a
+post-tick clock match does not establish call-time RNG inputs. The ROM body
+wander calls at route frame 257 / counter 2 / LY 29 yield EC and 85. Its
+`hLinkInteractiveMotionBlocked == 2` branch also holds the active sword's
+animation during the slow stun; the former production equipment pass advanced
+it and accepted additional swings. See the dedicated sword RNG evidence for
+the resulting gate correction, exact scope and remaining timing differences.
+No observed RNG result was overridden. The original three-frame body state-3
+entry difference and global call-time/scanline scheduling remain open.
 
 Collision placement relative to the earlier generic combat pass, complete
 reward/healing/OAM presentation timing, and sound waveform equivalence remain

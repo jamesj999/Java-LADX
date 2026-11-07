@@ -65,7 +65,7 @@ public final class SlimeEyeController {
             if (((frame.linkEntityX - 0x11) & 255) >= 0x7E) dx = frame.linkEntityX < 0x50 ? 1 : -1;
             else if (((frame.linkEntityY - 0x16) & 255) >= 0x5E) dy = -1;
             if (dx != 0 || dy != 0) {
-                frame.emit(new LinkMotionBlockRequest(slot, dx, dy));
+                frame.emit(new LinkMotionBlockRequest(slot, dx, dy, 1));
                 frame.linkEntityX = (frame.linkEntityX + dx) & 255;
                 frame.linkEntityY = (frame.linkEntityY + dy) & 255;
                 frame.lifecycle().delayInteractions(2);
@@ -138,7 +138,7 @@ public final class SlimeEyeController {
                     runtime.enemyIgnoreHitsCountdown[s]--;
                 if (splitting[s] != 0) {
                     if (splitting[s] == 1) { split(e); return; }
-                    f.emit(new LinkMotionBlockRequest(s, 0, (f.frame & 1) == 0 ? -1 : 0));
+                    f.emit(new LinkMotionBlockRequest(s, 0, (f.frame & 1) == 0 ? -1 : 0, splitting[s]));
                     variant[s] = 6;
                     return;
                 }

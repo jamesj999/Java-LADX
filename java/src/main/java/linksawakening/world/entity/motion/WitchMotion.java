@@ -28,7 +28,7 @@ public final class WitchMotion {
     public record Update(RoomEntity entity, int inertia, int transitionCountdown,
                   boolean blockLink, int dialogGlobalId, int musicTrack,
                   int jingleId, InventorySlot clearedSlot,
-                  boolean exchangeStarted, boolean grantMagicPowder) {
+                  boolean exchangeStarted, boolean grantMagicPowder, int motionBlockValue) {
     }
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -46,6 +46,7 @@ public final class WitchMotion {
         RoomEntity entity = withPresentation(source, 0x40, displayVariant);
         int nextCountdown = transitionCountdown & 0xFF;
         boolean blockLink = false;
+        int motionBlockValue = 0;
         int dialog = NO_DIALOG;
         int music = NO_SOUND;
         int jingle = NO_SOUND;
@@ -86,6 +87,7 @@ public final class WitchMotion {
             case 1 -> {
                 if (input.transitionSequenceCounter() == 0x04) {
                     blockLink = true;
+                    motionBlockValue = 2;
                     if (nextCountdown == 0) {
                         state[slot] = 2;
                     }
@@ -107,6 +109,7 @@ public final class WitchMotion {
                     musicTrackTiming[slot] = true;
                 }
                 blockLink = true;
+                motionBlockValue = 1;
                 nextInertia = (nextInertia + 4) & 0xFF;
                 inertia[slot] = nextInertia;
                 if (nextCountdown == 0) {
@@ -141,7 +144,7 @@ public final class WitchMotion {
         }
 
         return new Update(entity, nextInertia, nextCountdown, blockLink, dialog,
-            music, jingle, clearedSlot, exchangeStarted, grantMagicPowder);
+            music, jingle, clearedSlot, exchangeStarted, grantMagicPowder, motionBlockValue);
     }
 
     private static boolean nearbyAndFacing(RoomEntity entity, Input input) {

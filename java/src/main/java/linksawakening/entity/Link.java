@@ -563,6 +563,13 @@ public final class Link implements RocsFeather.JumpTarget {
     public void setDebugNoClip(boolean enabled) { linkStateMachine.setDebugNoClip(enabled); }
     public void resetTransientStateForDebug() { linkStateMachine.resetTransientStateForDebug(); }
     public void finishRoomScroll(boolean downward) { linkStateMachine.finishRoomScroll(downward); }
+    /** Raw source write, distinct from internal sword/presentation movement locks. */
+    public void writeRomInteractiveMotionBlock(int value) { linkStateMachine.writeRomInteractiveMotionBlock(value); }
+    public int romInteractiveMotionBlockValue() { return linkStateMachine.romInteractiveMotionBlockValue; }
+    /** Bank2:42B2 skips top-down item dispatch and animation only for the exact value 2. */
+    public boolean romItemAnimationFrameBlocked() {
+        return !linkSideView.sideScrolling && romInteractiveMotionBlockValue() == 2;
+    }
     public void blockNextRomMotionFrame() { linkStateMachine.blockNextRomMotionFrame(); }
     public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
                                              int mapCategory) { linkStateMachine.initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory); }

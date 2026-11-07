@@ -63,7 +63,7 @@ final class MoldormHandler {
                 }
                 if (dx != 0 || dy != 0) {
                   state.emit(
-                      new LinkMotionBlockRequest(state.entity.slot(), dx, dy));
+                      new LinkMotionBlockRequest(state.entity.slot(), dx, dy, 1));
                   state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
                   state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
                   state.lifecycle().delayInteractions(2);

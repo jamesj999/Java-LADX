@@ -49,7 +49,7 @@ final class WitchHandler {
             state.preserveWitchPresentation = true;
             if (witchUpdate.blockLink()) {
               state.emit(
-                  new LinkMotionBlockRequest(state.entity.slot()));
+                  new LinkMotionBlockRequest(state.entity.slot(), 0, 0, witchUpdate.motionBlockValue()));
             }
             if (witchUpdate.dialogGlobalId() >= 0) {
               state.emit(

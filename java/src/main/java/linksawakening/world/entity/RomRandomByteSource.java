@@ -10,6 +10,12 @@ import java.util.function.IntSupplier;
 public final class RomRandomByteSource implements IntSupplier {
     private static final int INITIAL_SEED = 0xA2;
 
+    /** Read-only observation of one actual consumption; no source value is overridden. */
+    public record Draw(int frameCounter, int scanline, int previousSeed, int value) {}
+    private java.util.function.Consumer<Draw> observer;
+
+    public void setObserver(java.util.function.Consumer<Draw> observer) { this.observer = observer; }
+
     private final int initialSeed;
     private int frameCounter;
     private int scanline;
@@ -50,8 +56,10 @@ public final class RomRandomByteSource implements IntSupplier {
 
     @Override
     public int getAsInt() {
+        int previousSeed = randomSeed;
         int sum = (frameCounter + randomSeed + scanline) & 0xFF;
         randomSeed = ((sum >>> 1) | ((sum & 0x01) << 7)) & 0xFF;
+        if (observer != null) observer.accept(new Draw(frameCounter, scanline, previousSeed, randomSeed));
         return randomSeed;
     }
 }

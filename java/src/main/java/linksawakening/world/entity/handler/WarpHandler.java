@@ -59,7 +59,7 @@ final class WarpHandler {
                 }
                 if (warpUpdate.motionBlocked()) {
                   state.emit(
-                      new LinkMotionBlockRequest(slot));
+                      new LinkMotionBlockRequest(slot, 0, 0, 1));
                 }
                 if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
                   state.emit(

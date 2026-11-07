@@ -1,0 +1,11 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('captureSwordRng', JavaExec) {
+            dependsOn testClasses
+            classpath = sourceSets.test.runtimeClasspath + files('src/main/resources')
+            mainClass = 'linksawakening.audio.SwordRngCapture'
+            jvmArgs '-Djava.awt.headless=true'
+            args '/tmp/ladx-sword-rng', '../tools/sword-rng/inputs.tsv'
+        }
+    }
+}
