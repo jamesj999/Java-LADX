@@ -21,6 +21,7 @@ public final class EntityLinkState {
     public int linkItemB;
     boolean linkInventoryConfigured;
     boolean powerBraceletButtonHeld;
+    boolean fastLiftTransition;
     boolean bombButtonHeld;
     public boolean runningWithPegasusBoots;
     public int linkPlayingOcarinaCountdown;

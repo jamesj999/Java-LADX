@@ -36,7 +36,7 @@ public final class EntityLiftThrowController {
             runtime.liftedSourceDirection[slot], romLinkDirection,
             byteValue(linkEntityX), byteValue(linkEntityY), byteValue(linkZ),
             runtime.liftedLinkC13B, entity.type(), runtime.groundInteractionSideScrolling,
-            false, entity.z());
+            runtime.chestPowerBraceletLevel >= 2 || runtime.linkState.fastLiftTransition, entity.z());
         runtime.liftedPhase[slot] = update.phase();
         runtime.enemyTransitionCountdown[slot] = update.transitionCountdown();
         runtime.liftedCarryState = update.carryState();
