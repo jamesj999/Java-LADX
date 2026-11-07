@@ -93,7 +93,7 @@ final class PlayerProjectilePauseTest {
         int beforeX = runtime.snapshot().slots().get(slot).x();
         runtime.setGameplayWorldForTest(false);
         runtime.setTransitionSequenceCounterForTest(3);
-        runtime.tick(8, 0, 0, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 0, 0, () -> 0, true));
         assertEquals(beforeX + speed(type), runtime.snapshot().slots().get(slot).x());
     }
 
@@ -132,8 +132,8 @@ final class PlayerProjectilePauseTest {
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int motionState) {
-        runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false)));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {

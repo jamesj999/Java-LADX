@@ -1,5 +1,10 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkAttackClearRequest;
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -24,8 +29,8 @@ final class RoomEntityLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.ACTIVE);
 
         assertTrue(runtime.beginLift(0, LiftedEntityMotion.ROM_DIRECTION_RIGHT));
-        runtime.tick(0, 0x50, 0x60, () -> 0, null, null, 0x04,
-            3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0, null, null, 0x04,
+            3, 0));
 
         RoomEntity lifted = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.LIFTED, lifted.status());
@@ -43,8 +48,8 @@ final class RoomEntityLiftThrowRuntimeTest {
 
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0x00,
-                3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0x00,
+                3, 0));
         }
         assertEquals(0x01, runtime.liftedEntityState().carryState());
 
@@ -52,7 +57,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(EntityStatus.THROWN, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.liftedEntityState().carryState());
 
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         RoomEntity thrown = runtime.snapshot().slots().get(0);
         assertEquals(EntityStatus.THROWN, thrown.status());
         assertEquals(0x53, thrown.x());
@@ -66,9 +71,9 @@ final class RoomEntityLiftThrowRuntimeTest {
             EntityBackgroundCollisionResult.blocked(
                 direction, 0x35, 0x03, nextX, nextY));
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        assertEquals(List.of(new RoomEntityRuntime.ThrownBackgroundCollisionEvent(
+        assertEquals(List.of(new ThrownBackgroundCollisionEvent(
                 0, 0x05, ThrownEntityMotion.ROM_DIRECTION_DOWN, 0x35)),
             runtime.consumePendingThrownBackgroundCollisions());
     }
@@ -79,14 +84,14 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_DOWN));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 0x40) {
-            runtime.tick(frame++, 0x20, 0x30, () -> 0, null, null, 0, 0, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x20, 0x30, () -> 0, null, null, 0, 0, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_DOWN));
         runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
             EntityBackgroundCollisionResult.blocked(
                 direction, 0x3C, 0x03, nextX, nextY));
 
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
 
         assertTrue(runtime.consumePendingThrownBackgroundCollisions().stream()
             .anyMatch(event -> event.entityType() == 0x02 && event.objectId() == 0x3C));
@@ -111,7 +116,7 @@ final class RoomEntityLiftThrowRuntimeTest {
             new RomEnemyCombatTables(loadRom()));
         int initialHealth = runtime.enemyHealth(targetSlot);
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity thrown = runtime.snapshot().slots().get(thrownSlot);
         assertEquals(0x53, thrown.x());
@@ -128,7 +133,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = runtimeWithEntity(EntityStatus.STUNNED);
         runtime.setPowerBraceletButtonHeld(true);
 
-        runtime.tick(0, 0x20, 0x30, () -> 0, null, null, 0x00, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0, null, null, 0x00, 3, 0));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         assertEquals(0x37, runtime.liftedEntityState().carryState());
@@ -147,8 +152,8 @@ final class RoomEntityLiftThrowRuntimeTest {
             new RoomEntitySnapshot(slots).withSideScrolling(true));
         runtime.setPowerBraceletButtonHeld(true);
 
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         assertEquals(0, runtime.liftedEntityState().slot());
@@ -161,19 +166,19 @@ final class RoomEntityLiftThrowRuntimeTest {
                 && event.soundId() == 0x02)
             .count());
         assertEquals(0x02, runtime.transitionCountdown(0));
-        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
         assertEquals(0x50, runtime.snapshot().slots().get(0).x());
         assertEquals(0x60, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.liftedEntityState().phase());
         assertEquals(0, runtime.liftedEntityState().carryState());
         assertEquals(0x01, runtime.transitionCountdown(0));
-        runtime.tickWithProjectileEvents(2, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
         assertEquals(0x60, runtime.snapshot().slots().get(0).x());
         assertEquals(0x37, runtime.liftedEntityState().carryState());
         assertEquals(1, runtime.liftedEntityState().phase());
-        runtime.tick(2, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         assertTrue(runtime.consumePendingEntityEvents().stream()
             .noneMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                 && event.soundId() == 0x02));
@@ -184,7 +189,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = sideViewPotRuntime();
         runtime.setPowerBraceletButtonHeld(true);
 
-        runtime.tick(0, 0x62, 0x60, () -> 0, null, null, 0, 3, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x62, 0x60, () -> 0, null, null, 0, 3, 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
     }
@@ -193,14 +198,14 @@ final class RoomEntityLiftThrowRuntimeTest {
     void activeSideViewPotContactRequiresInteractiveLinkButPickupDoesNot() {
         RoomEntityRuntime airborne = sideViewPotRuntime();
         airborne.setPowerBraceletButtonHeld(true);
-        airborne.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 0, false));
+        airborne.tick(EntityTestFrames.projectileFrame(airborne, 0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 1, 0, 0, false)));
         assertEquals(EntityStatus.LIFTED, airborne.snapshot().slots().get(0).status());
 
         RoomEntityRuntime nonInteractive = sideViewPotRuntime();
         nonInteractive.setPowerBraceletButtonHeld(true);
-        nonInteractive.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        nonInteractive.tick(EntityTestFrames.projectileFrame(nonInteractive, 0, 0x50, 0x60, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
         assertEquals(EntityStatus.LIFTED,
             nonInteractive.snapshot().slots().get(0).status());
     }
@@ -208,12 +213,12 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void sideViewPotState0PublishesGroundedPushRequest() {
         RoomEntityRuntime runtime = sideViewPotRuntime();
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, 0, () -> 0, null, null, null,
             0, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.resetPegasusBoots());
         assertFalse(request.restoreFinalPositionX());
@@ -225,12 +230,12 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void sideViewPotState0PublishesAirborneFinalXRestore() {
         RoomEntityRuntime runtime = sideViewPotRuntime();
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, 0, () -> 0, null, null, null,
             0, true, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.restoreFinalPositionX());
         assertTrue(request.resetPegasusBoots());
@@ -240,12 +245,12 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void sideViewPotState0PublishesTopSnapAndStandingSpeed() {
         RoomEntityRuntime runtime = sideViewPotRuntime();
-        runtime.tickWithProjectileEvents(0, 0x50, 0x57, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x57, 0, () -> 0, null, null, null,
             0, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x57, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
 
-        RoomEntityRuntime.SideViewPotLinkRequest request =
+        SideViewPotLinkRequest request =
             runtime.consumePendingSideViewPotLinkRequests().getFirst();
         assertTrue(request.snapTop());
         assertEquals(0x50, request.positionY());
@@ -256,10 +261,10 @@ final class RoomEntityLiftThrowRuntimeTest {
     void sideViewPotLiftUsesTheTopSnapYWrittenEarlierInTheHandler() {
         RoomEntityRuntime runtime = sideViewPotRuntime();
         runtime.setPowerBraceletButtonHeld(true);
-        runtime.tickWithProjectileEvents(0, 0x50, 0x57, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x57, 0, () -> 0, null, null, null,
             0, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x57, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
 
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
         // Pickup enters the lifted state at the end of this handler frame; the
@@ -267,17 +272,17 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(0, runtime.liftedEntityState().phase());
         assertEquals(0x60, runtime.snapshot().slots().get(0).y());
 
-        runtime.tickWithProjectileEvents(1, 0x50, 0x50, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x50, 0, () -> 0, null, null, null,
             0, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x50, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
         assertEquals(0x60, runtime.snapshot().slots().get(0).y());
         assertEquals(0, runtime.liftedEntityState().phase());
 
-        runtime.tickWithProjectileEvents(2, 0x50, 0x50, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 2, 0x50, 0x50, 0, () -> 0, null, null, null,
             0, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x50, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
         assertEquals(0x50, runtime.snapshot().slots().get(0).y());
     }
 
@@ -286,10 +291,10 @@ final class RoomEntityLiftThrowRuntimeTest {
         RoomEntityRuntime runtime = sideViewPotRuntime();
         runtime.setPowerBraceletButtonHeld(true);
         runtime.setLinkFinalPositionX(0x80);
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, 0, () -> 0, null, null, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, 0, () -> 0, null, null, null,
             0, true, 3, 0,
             new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false),
-            false, 0, 0, 0, 0, 0, 0);
+            false, 0, 0, 0, 0, 0, 0));
 
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
     }
@@ -297,8 +302,8 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void sideViewPotState0DoesNotContactNonInteractiveLink() {
         RoomEntityRuntime runtime = sideViewPotRuntime();
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
 
         assertTrue(runtime.consumePendingSideViewPotLinkRequests().isEmpty());
     }
@@ -309,13 +314,13 @@ final class RoomEntityLiftThrowRuntimeTest {
         runtime.setLikeLikeLinkInventoryForTest(0x03, 0x03);
         runtime.setActionButtonsHeld(true, false);
         runtime.setPowerBraceletButtonHeld(true);
-        runtime.tickWithProjectileEvents(0, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
 
         runtime.setActionButtonsHeld(false, true);
-        runtime.tickWithProjectileEvents(1, 0x50, 0x60, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 1, 0x50, 0x60, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x50, 0x60, 0, 0, 3, false)));
         assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
     }
 
@@ -325,7 +330,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertEquals(0x01, runtime.liftedEntityState().carryState());
 
@@ -337,7 +342,7 @@ final class RoomEntityLiftThrowRuntimeTest {
                 && event.soundId() == 0x08));
         RoomEntity beforeMotion = runtime.snapshot().slots().get(0);
 
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
         RoomEntity moved = runtime.snapshot().slots().get(0);
         assertEquals((beforeMotion.x() + 3) & 0xFF, moved.x());
         assertEquals((beforeMotion.y() - 1) & 0xFF, moved.y());
@@ -347,7 +352,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     @Test
     void liftedThrowJingleSurvivesTheFollowingEntityTick() {
         RoomEntityRuntime runtime = thrownSideViewPotRuntime();
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertTrue(runtime.consumePendingEntityEvents().stream()
             .anyMatch(event -> event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
@@ -361,8 +366,8 @@ final class RoomEntityLiftThrowRuntimeTest {
             null, null, null, new PlayerState(), new ItemRegistry());
         assertEquals(0, link.romAttackStepAnimationCountdown());
 
-        runtime.tick(0, 0, 0, () -> 0);
-        for (RoomEntityRuntime.LinkAttackStepRequest request
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        for (LinkAttackStepRequest request
                 : runtime.consumePendingLinkAttackStepRequests()) {
             link.startRomItemAttackStep();
         }
@@ -383,17 +388,17 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(potSlot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         runtime.setTarinRaccoonStateForTest(tarinSlot, 1, 0, 0, 0, 0, 0, false);
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
 
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());
-        List<RoomEntityRuntime.LinkAttackClearRequest> clears =
+        List<LinkAttackClearRequest> clears =
             runtime.consumePendingLinkAttackClearRequests();
-        List<RoomEntityRuntime.LinkAttackStepRequest> steps =
+        List<LinkAttackStepRequest> steps =
             runtime.consumePendingLinkAttackStepRequests();
         int clearIndex = 0;
         int stepIndex = 0;
@@ -433,12 +438,12 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
 
-        runtime.tick(frame, 0, 0, () -> 0,
-            (entity, direction, nextX, nextY) -> true);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0,
+            (entity, direction, nextX, nextY) -> true));
 
         assertTrue(runtime.snapshot().slots().get(0).status() == EntityStatus.DISABLED
             || runtime.snapshot().slots().get(0).type() == 0x05);
@@ -460,7 +465,7 @@ final class RoomEntityLiftThrowRuntimeTest {
                 nextX, nextY);
         });
 
-        runtime.tick(0, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         assertEquals(List.of(EntityBackgroundCollisionResult.RIGHT,
             EntityBackgroundCollisionResult.DOWN), probeDirections);
@@ -474,13 +479,13 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         RoomEntity beforeMotion = runtime.snapshot().slots().get(0);
         runtime.setBackgroundInteraction((entity, direction, nextX, nextY) ->
             EntityBackgroundCollisionResult.blocked(direction, 0x20, 0x01, 0x53, 0x52));
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
 
         RoomEntity smash = runtime.snapshot().slots().stream()
             .filter(entity -> entity.loaded() && entity.type() == 0x05)
@@ -498,11 +503,11 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
 
-        runtime.tick(frame, 0, 0, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
 
         assertEquals(initialHealth, runtime.enemyHealth(1));
         assertEquals(EntityStatus.ACTIVE, runtime.snapshot().slots().get(0).status());
@@ -514,13 +519,13 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         RoomEntity before = runtime.snapshot().slots().get(0);
 
-        runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
 
         assertEquals((before.x() + 3) & 0xFF,
             runtime.snapshot().slots().get(0).x());
@@ -534,51 +539,51 @@ final class RoomEntityLiftThrowRuntimeTest {
         RoomEntityRuntime dialog = thrownSideViewPotRuntime();
         dialog.setDialogActive(true);
         RoomEntity dialogBefore = dialog.snapshot().slots().get(0);
-        dialog.tick(0, 0, 0, () -> 0);
+        dialog.tick(EntityTestFrames.frame(dialog, 0, 0, 0, () -> 0));
         assertEquals(dialogBefore.x(), dialog.snapshot().slots().get(0).x());
 
         RoomEntityRuntime inventory = thrownSideViewPotRuntime();
         inventory.setTalkState(true, 0, 0x80);
         RoomEntity inventoryBefore = inventory.snapshot().slots().get(0);
-        inventory.tick(0, 0, 0, () -> 0);
+        inventory.tick(EntityTestFrames.frame(inventory, 0, 0, 0, () -> 0));
         assertEquals(inventoryBefore.x(), inventory.snapshot().slots().get(0).x());
 
         RoomEntityRuntime gotItem = thrownSideViewPotRuntime();
         gotItem.setWitchGotItemPresentationActiveForTest(true);
         RoomEntity gotItemBefore = gotItem.snapshot().slots().get(0);
-        gotItem.tick(0, 0, 0, () -> 0);
+        gotItem.tick(EntityTestFrames.frame(gotItem, 0, 0, 0, () -> 0));
         assertEquals(gotItemBefore.x(), gotItem.snapshot().slots().get(0).x());
 
         RoomEntityRuntime roomTransition = thrownSideViewPotRuntime();
         roomTransition.setRoomTransitionStateForTest(true);
         RoomEntity roomTransitionBefore = roomTransition.snapshot().slots().get(0);
-        roomTransition.tick(0, 0, 0, () -> 0);
+        roomTransition.tick(EntityTestFrames.frame(roomTransition, 0, 0, 0, () -> 0));
         assertEquals(roomTransitionBefore.x(),
             roomTransition.snapshot().slots().get(0).x());
 
         RoomEntityRuntime worldMap = thrownSideViewPotRuntime();
         worldMap.setGameplayWorldForTest(false);
         RoomEntity worldMapBefore = worldMap.snapshot().slots().get(0);
-        worldMap.tick(0, 0, 0, () -> 0);
+        worldMap.tick(EntityTestFrames.frame(worldMap, 0, 0, 0, () -> 0));
         assertEquals(worldMapBefore.x(), worldMap.snapshot().slots().get(0).x());
 
         RoomEntityRuntime ocarina = thrownSideViewPotRuntime();
         ocarina.setOcarinaPlaybackForTest(0x01, 0, 0);
         RoomEntity ocarinaBefore = ocarina.snapshot().slots().get(0);
-        ocarina.tick(0, 0, 0, () -> 0);
+        ocarina.tick(EntityTestFrames.frame(ocarina, 0, 0, 0, () -> 0));
         assertEquals((ocarinaBefore.x() + 3) & 0xFF,
             ocarina.snapshot().slots().get(0).x());
 
         RoomEntityRuntime transition = thrownSideViewPotRuntime();
         transition.setTransitionSequenceCounterForTest(0x03);
         RoomEntity transitionBefore = transition.snapshot().slots().get(0);
-        transition.tick(0, 0, 0, () -> 0);
+        transition.tick(EntityTestFrames.frame(transition, 0, 0, 0, () -> 0));
         assertEquals(transitionBefore.x(), transition.snapshot().slots().get(0).x());
 
         RoomEntityRuntime credits = thrownSideViewPotRuntime();
         credits.setTransitionSequenceCounterForTest(0x03);
         RoomEntity creditsBefore = credits.snapshot().slots().get(0);
-        credits.tick(0, 0, 0, () -> 0, true);
+        credits.tick(EntityTestFrames.frame(credits, 0, 0, 0, () -> 0, true));
         assertEquals((creditsBefore.x() + 3) & 0xFF,
             credits.snapshot().slots().get(0).x());
     }
@@ -588,7 +593,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertTrue(runtime.beginLift(0, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         int frame = 0;
         while (runtime.liftedEntityState().carryState() != 0x01 && frame < 64) {
-            runtime.tick(frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x50, 0x60, () -> 0, null, null, 0, 3, 0));
         }
         assertTrue(runtime.throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
         return runtime;

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
@@ -50,8 +52,8 @@ final class SwordBeamRuntimeTest {
         tick(runtime, 3, 0x40, 0x40, 3);
         assertEquals(List.of(TransientVfxType.SWORD_BEAM),
             runtime.transientVfxRequests().stream()
-                .map(RoomEntityRuntime.TransientVfxRequest::type).toList());
-        RoomEntityRuntime.TransientVfxRequest request = runtime.transientVfxRequests().getFirst();
+                .map(TransientVfxRequest::type).toList());
+        TransientVfxRequest request = runtime.transientVfxRequests().getFirst();
         assertEquals(0, request.variant());
         assertEquals(beforeTrail.x(), request.worldX());
         assertEquals((beforeTrail.y() - beforeTrail.z()) & 0xFF, request.worldY());
@@ -110,7 +112,7 @@ final class SwordBeamRuntimeTest {
 
         assertFalse(runtime.snapshot().slots().get(slot).loaded());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest impact = runtime.transientVfxRequests().getFirst();
+        TransientVfxRequest impact = runtime.transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, impact.type());
         assertEquals(before.x(), impact.worldX());
         assertEquals((before.y() - before.z() + 3) & 0xFF, impact.worldY());
@@ -137,9 +139,9 @@ final class SwordBeamRuntimeTest {
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY,
                              int linkDirection) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
             new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0,
-                linkDirection, false));
+                linkDirection, false)));
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

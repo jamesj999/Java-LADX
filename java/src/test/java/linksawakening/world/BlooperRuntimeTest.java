@@ -58,16 +58,16 @@ final class BlooperRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
         });
 
-        runtime.tick(0, 48, 40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 48, 40, () -> 0));
         assertEquals(1, runtime.blooperState(0));
         assertEquals(0x25, runtime.blooperTransitionCountdown(0));
         assertEquals(1, runtime.blooperDirection(0));
         assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(1, 48, 40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 48, 40, () -> 0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
 
-        runtime.tick(2, 48, 40, () -> 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 48, 40, () -> 0));
         assertEquals(0xFF, runtime.blooperSpeedX(0));
         assertEquals(0xFF, runtime.blooperSpeedY(0));
         assertEquals(1, runtime.snapshot().slots().get(0).spriteVariant());
@@ -94,9 +94,9 @@ final class BlooperRuntimeTest {
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0x01);
         });
 
-        runtime.tickWithProjectileEvents(0, 48, 40, () -> 0, null,
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 48, 40, () -> 0, null,
             new EnemyProjectileCollision.LinkState(48, 40, 0,
-                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false));
+                EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
         assertEquals(0, runtime.blooperState(0));
         assertEquals(0, runtime.blooperTransitionCountdown(0));

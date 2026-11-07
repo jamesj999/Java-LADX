@@ -1,24 +1,18 @@
 package linksawakening.world;
 
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.Objects;
 
 /** Immutable decoder for the ROM's shared entity combat and Bow-Wow tables. */
 public final class RomEnemyCombatTables {
-    private static final int BANK = 0x03;
-    private static final int BOW_WOW_EATABLE_BANK = 0x14;
-    private static final int BOW_WOW_EATABLE_ADDRESS = 0x5218;
     private static final int BOW_WOW_EATABLE_COUNT = 0x100;
-    private static final int HEALTH_GROUP_ADDRESS = 0x41F6;
     private static final int HEALTH_GROUP_COUNT = 0xFB;
-    private static final int DAMAGE_TYPE_MATRIX_ADDRESS = 0x43EC;
     private static final int HEALTH_GROUP_COUNT_FOR_DAMAGE = 0x35;
     private static final int ATTACK_TYPE_COUNT = 0x10;
-    private static final int DAMAGE_VALUE_ADDRESS = 0x473C;
     private static final int DAMAGE_VALUES_PER_TYPE = 0x08;
-    private static final int INITIAL_HEALTH_ADDRESS = 0x47BC;
-    private static final int CONTACT_DAMAGE_ADDRESS = 0x47F1;
 
     private final int[] healthGroupByEntity;
     private final int[] damageTypeMatrix;
@@ -30,19 +24,19 @@ public final class RomEnemyCombatTables {
     public RomEnemyCombatTables(byte[] romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         healthGroupByEntity = loadUnsigned(
-            romData, HEALTH_GROUP_ADDRESS, HEALTH_GROUP_COUNT);
+            romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);
         damageTypeMatrix = loadUnsigned(
-            romData, DAMAGE_TYPE_MATRIX_ADDRESS,
+            romData, RomSymbols.Data_003_43EC,
             HEALTH_GROUP_COUNT_FOR_DAMAGE * ATTACK_TYPE_COUNT);
         damageValues = loadUnsigned(
-            romData, DAMAGE_VALUE_ADDRESS,
+            romData, RomSymbols.Data_003_473C,
             ATTACK_TYPE_COUNT * DAMAGE_VALUES_PER_TYPE);
         initialHealthByGroup = loadUnsigned(
-            romData, INITIAL_HEALTH_ADDRESS, HEALTH_GROUP_COUNT_FOR_DAMAGE);
+            romData, RomSymbols.InitialHealthForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
         contactDamageByGroup = loadUnsigned(
-            romData, CONTACT_DAMAGE_ADDRESS, HEALTH_GROUP_COUNT_FOR_DAMAGE);
-        bowWowEatableByEntity = loadUnsigned(romData, BOW_WOW_EATABLE_BANK,
-            BOW_WOW_EATABLE_ADDRESS, BOW_WOW_EATABLE_COUNT);
+            romData, RomSymbols.EntityDamagesForGroup, HEALTH_GROUP_COUNT_FOR_DAMAGE);
+        bowWowEatableByEntity = loadUnsigned(romData,
+            RomSymbols.BowWowEatableEntitiesTable, BOW_WOW_EATABLE_COUNT);
     }
 
     public int healthGroup(int entityType) {
@@ -140,19 +134,16 @@ public final class RomEnemyCombatTables {
         }
     }
 
-    private static int[] loadUnsigned(byte[] romData, int address, int length) {
-        return loadUnsigned(romData, BANK, address, length);
-    }
-
-    private static int[] loadUnsigned(byte[] romData, int bank, int address, int length) {
-        int offset = RomBank.romOffset(bank, address);
+    private static int[] loadUnsigned(byte[] romData, RomAddress address, int length) {
+        int offset = address.offset();
         if (offset < 0 || length < 0 || offset > romData.length - length) {
             throw new IllegalArgumentException("ROM table is truncated at bank $"
-                + Integer.toHexString(bank) + ":$" + Integer.toHexString(address));
+                + Integer.toHexString(address.bank()) + ":$" + Integer.toHexString(address.address()));
         }
+        Rom rom = new Rom(romData);
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
-            values[index] = Byte.toUnsignedInt(romData[offset + index]);
+            values[index] = rom.u8(address.plus(index));
         }
         return values;
     }

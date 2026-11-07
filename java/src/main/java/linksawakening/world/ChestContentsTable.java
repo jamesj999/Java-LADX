@@ -1,5 +1,6 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;

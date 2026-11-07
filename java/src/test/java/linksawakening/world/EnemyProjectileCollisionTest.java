@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.TransientVfxRequest;
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
 import org.junit.jupiter.api.Test;
@@ -225,24 +227,24 @@ final class EnemyProjectileCollisionTest {
         RoomEntityRuntime rockRuntime = RoomEntityRuntime.from(snapshot(
             projectile(0x0A, 0x40, 0x50, 0)), false, () -> 0);
 
-        var rockEvents = rockRuntime.tickWithProjectileEvents(
+        var rockEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(rockRuntime,
             0, 0x40, 0x50, () -> 0, null,
-            link(0x40, 0x50, 0, 0x00, 1, true));
+            link(0x40, 0x50, 0, 0x00, 1, true)));
 
         assertEquals(1, rockEvents.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, rockEvents.getFirst().kind());
         assertEquals(0x18, rockRuntime.enemyProjectileTransitionCountdown(0));
 
-        var nextFrameEvents = rockRuntime.tickWithProjectileEvents(
+        var nextFrameEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(rockRuntime,
             1, 0x40, 0x50, () -> 0, null,
-            link(0x40, 0x50, 0, 0x00, 1, true));
+            link(0x40, 0x50, 0, 0x00, 1, true)));
         assertTrue(nextFrameEvents.isEmpty());
 
         RoomEntityRuntime arrowRuntime = RoomEntityRuntime.from(snapshot(
             projectile(0x0C, 0x40, 0x50, 0)), false, () -> 0);
-        var arrowEvents = arrowRuntime.tickWithProjectileEvents(
+        var arrowEvents = arrowRuntime.tick(EntityTestFrames.projectileFrame(arrowRuntime,
             0, 0x40, 0x50, () -> 0, null,
-            link(0x40, 0x50, 0, 0x00, 0, false));
+            link(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, arrowEvents.size());
         assertTrue(arrowEvents.getFirst().remove());
@@ -256,16 +258,16 @@ final class EnemyProjectileCollisionTest {
             projectile(0x58, 0x3F, 0x50, 0)), false, () -> 0);
         runtime.setPairoddProjectileForTest(0, 0x10, 0, 0);
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x40, 0x50, () -> 0, null,
-            link(0x40, 0x50, 0, 0x00, 0, false));
+            link(0x40, 0x50, 0, 0x00, 0, false)));
 
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.getFirst().kind());
         assertTrue(events.getFirst().remove());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x40, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
@@ -278,10 +280,10 @@ final class EnemyProjectileCollisionTest {
             projectile(0x58, 0x32, 0x58, 0x08)), false, () -> 0);
         runtime.setPairoddProjectileForTest(0, 0x60, 0, 0);
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0, 0, () -> 0, null,
             link(0, 0, 0, 0x02, 0, false),
-            true, 0x40, 1, 0x58, 1);
+            true, 0x40, 1, 0x58, 1));
 
         assertEquals(1, events.size());
         EntityProjectileEvent event = events.getFirst();
@@ -291,7 +293,7 @@ final class EnemyProjectileCollisionTest {
         assertTrue(event.remove());
         assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertEquals(1, runtime.transientVfxRequests().size());
-        RoomEntityRuntime.TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
+        TransientVfxRequest vfx = runtime.transientVfxRequests().getFirst();
         assertEquals(TransientVfxType.SWORD_POKE, vfx.type());
         assertEquals(0x38, vfx.worldX());
         assertEquals(0x50, vfx.worldY());
@@ -303,10 +305,10 @@ final class EnemyProjectileCollisionTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             projectile(0x58, 0x38, 0x58, 0x08)), false, () -> 0);
 
-        List<EntityProjectileEvent> events = runtime.tickWithProjectileEvents(
+        List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(runtime,
             0, 0x38, 0x50, () -> 0, null,
             link(0x38, 0x50, 0, 0x00, 0, false),
-            true, 0x40, 1, 0x58, 1);
+            true, 0x40, 1, 0x58, 1));
 
         assertEquals(2, events.size());
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, events.get(0).kind());

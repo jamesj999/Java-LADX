@@ -77,8 +77,8 @@ final class ArrowPauseTest {
     void shieldCollisionBeforePauseIsConsumedWhenTheHandlerResumes(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
         runtime.setDialogActive(true);
-        var events = runtime.tickWithProjectileEvents(0, 0x40, 0x50, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true));
+        var events = runtime.tick(EntityTestFrames.projectileFrame(runtime, 0, 0x40, 0x50, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 1, true)));
         assertEquals(1, events.size());
         assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, events.getFirst().kind());
         assertEquals(0, countdown(runtime, type));
@@ -134,7 +134,7 @@ final class ArrowPauseTest {
         int startX = runtime.snapshot().slots().get(slot(type)).x();
         runtime.setGameplayWorldForTest(false);
         runtime.setTransitionSequenceCounterForTest(3);
-        runtime.tick(0, 0, 0, () -> 0, true);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
         assertEquals(startX + (type == 0 ? 3 : 2),
             runtime.snapshot().slots().get(slot(type)).x());
     }
@@ -175,8 +175,8 @@ final class ArrowPauseTest {
 
     private static void tick(RoomEntityRuntime runtime, int frame,
                              RoomEntityBackgroundCollision collision) {
-        runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, collision,
-            EnemyProjectileCollision.LinkState.nonInteractive());
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, collision,
+            EnemyProjectileCollision.LinkState.nonInteractive()));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {

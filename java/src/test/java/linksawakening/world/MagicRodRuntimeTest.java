@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.MagicRodObjectRequest;
+
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -80,7 +82,7 @@ final class MagicRodRuntimeTest {
         tick(runtime, 0, 0x20, 0x20);
 
         assertEquals(1, runtime.magicRodObjectRequests().size());
-        RoomEntityRuntime.MagicRodObjectRequest request =
+        MagicRodObjectRequest request =
             runtime.magicRodObjectRequests().getFirst();
         assertEquals(slot, request.sourceSlot());
         assertEquals(0x43, request.location());
@@ -181,8 +183,8 @@ final class MagicRodRuntimeTest {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
         for (int frame = 8; frame <= 9; frame++) {
-            runtime.tickWithProjectileEvents(frame, 0, 0, () -> 0, null,
-                EnemyProjectileCollision.LinkState.nonInteractive());
+            runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, 0, 0, () -> 0, null,
+                EnemyProjectileCollision.LinkState.nonInteractive()));
             RoomEntity fireball = runtime.snapshot().slots().get(slot);
             assertEquals(0x44 + 3 * (frame - 7), fireball.x());
             assertEquals(frame == 8 ? 0 : 1, fireball.spriteVariant());
@@ -318,8 +320,8 @@ final class MagicRodRuntimeTest {
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {
-        runtime.tickWithProjectileEvents(frame, linkX, linkY, () -> 0, null,
-            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false));
+        runtime.tick(EntityTestFrames.projectileFrame(runtime, frame, linkX, linkY, () -> 0, null,
+            new EnemyProjectileCollision.LinkState(linkX, linkY, 0, 0, 0, false)));
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

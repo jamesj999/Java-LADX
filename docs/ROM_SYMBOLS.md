@@ -144,6 +144,31 @@ constants with other suffixes and inline reads also need auditing by their owner
 - EnemyDropResolver.java:34 — THRESHOLD_LOW_HEALTH_TABLE_BANK.
 - RomEnemyCombatTables.java:10 — BOW_WOW_EATABLE_BANK.
 
+## Entity runtime follow-up
+
+Migrated the remaining 15 original-metric declarations in WarpMotion,
+EntityRoomLoader, RoomSession, EnemyDropResolver and RomEnemyCombatTables.
+The room-state extraction moved map-layout access into RoomWorldState; both
+files are covered by the guard. Paired address constants and the combat table
+locations were migrated too. Exact local azle.sym matches:
+
+- 19:4201 DungeonWarps.
+- 16:4000/4200/4400/4600 OverworldEntitiesPointersTable,
+  IndoorsAEntitiesPointersTable, IndoorsBEntitiesPointersTable,
+  ColorDungeonEntitiesPointersTable.
+- 03:6751 BombedCaveDoorTilesIndexesGBC (no bank adjustment in this path).
+- 14:4220/44E0/4520 MapLayout0, MapLayout11, MapLayout12.
+- 03:4826 DestroyedEntityHealthGroupOffsetTable; 03:559D DropTableByIndex;
+  03:55AB RandomDropChanceTable; 03:55B9 RandomDropChanceTableLowHealth;
+  03:55C7 DropTableRandom; 02:6308 ThresholdLowHealthTable.
+- 14:5218 BowWowEatableEntitiesTable.
+- 03:41F6 HealthGroupForEntity; 03:43EC Data_003_43EC;
+  03:473C Data_003_473C; 03:47BC InitialHealthForGroup;
+  03:47F1 EntityDamagesForGroup.
+
+No discrepancies. Reads use Rom, preserving table lengths, ROM truncation checks,
+stream termination, map selection and caller-owned/copy ownership. Existing
+unrelated inline ROM locations in RoomSession remain outside this batch.
 ## Rendering TODO
 
 Rendering TODO: implement a future `RomOamAllocator` that follows the ROM's
@@ -153,3 +178,8 @@ Until that allocator exists, production composition preserves the emulator-valid
 legacy painter order: later opaque OBJ submissions win. Static slot assignments
 are not a substitute for dynamic allocation. OBJ-vs-BG/window uses CGB color-zero,
 BG/OBJ priority flags, and LCDC bit 0 independently of this temporary OBJ ordering.
+
+Entity runtime integration checked the public rom.GbcBanks.adjust API after
+merging develop. None of the 15 assigned declarations uses an adjusted bank;
+BombedCaveDoorTilesIndexesGBC is a fixed bank-03 tile-index table. No new bank
+adjustment was introduced.

@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LikeLikeEvent;
+
 import java.util.function.IntSupplier;
 
 /** Bank-$06 Like LikeEntityHandler state and its shared Gibdo walk. */
@@ -15,7 +17,7 @@ final class LikeLikeMotion {
     private final GibdoMotion walkMotion = new GibdoMotion();
 
     record Update(RoomEntity entity, int slowTransitionCountdown,
-                  RoomEntityRuntime.LikeLikeEvent event, int spriteVariant) {
+                  LikeLikeEvent event, int spriteVariant) {
     }
 
     void initialize(int slot) {
@@ -65,8 +67,8 @@ final class LikeLikeMotion {
                 privateState3[slot] = 0;
                 slowTransitionCountdown = 0x15;
                 return new Update(entity, slowTransitionCountdown,
-                    new RoomEntityRuntime.LikeLikeEvent(
-                        slot, RoomEntityRuntime.LikeLikeEvent.Kind.RELEASE,
+                    new LikeLikeEvent(
+                        slot, LikeLikeEvent.Kind.RELEASE,
                         entity.x(), entity.y(), -1, 0), renderedVariant);
             }
         }
@@ -91,8 +93,8 @@ final class LikeLikeMotion {
         // motion state. Only the position writes and animation calls are gated.
         if (linkMotionState != LINK_MOTION_DEFAULT) {
             return new Update(entity, slowTransitionCountdown,
-                new RoomEntityRuntime.LikeLikeEvent(
-                    slot, RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE,
+                new LikeLikeEvent(
+                    slot, LikeLikeEvent.Kind.CAPTURE,
                     entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel, false),
                 renderedVariant);
         }
@@ -103,8 +105,8 @@ final class LikeLikeMotion {
         walkMotion.advanceAnimation(slot);
 
         return new Update(entity, slowTransitionCountdown,
-            new RoomEntityRuntime.LikeLikeEvent(
-                slot, RoomEntityRuntime.LikeLikeEvent.Kind.CAPTURE,
+            new LikeLikeEvent(
+                slot, LikeLikeEvent.Kind.CAPTURE,
                 entity.x(), entity.y(), stolenInventorySlot, stolenShieldLevel),
             renderedVariant);
     }

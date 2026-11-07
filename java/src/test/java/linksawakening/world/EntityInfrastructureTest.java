@@ -1,5 +1,9 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.LinkAttackStepRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.ScreenShakeRequest;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -9,15 +13,15 @@ class EntityInfrastructureTest {
   @Test
   void outboxKeepsStagedAndLiveEventsSeparate() {
     EntityOutbox outbox = new EntityOutbox();
-    var staged = outbox.channel(RoomEntityRuntime.LinkAttackStepRequest.class, "staged");
-    var live = outbox.channel(RoomEntityRuntime.LinkAttackStepRequest.class, "live");
-    staged.add(new RoomEntityRuntime.LinkAttackStepRequest(3));
-    live.add(new RoomEntityRuntime.LinkAttackStepRequest(7));
-    assertEquals(List.of(new RoomEntityRuntime.LinkAttackStepRequest(7)), List.copyOf(live));
+    var staged = outbox.channel(LinkAttackStepRequest.class, "staged");
+    var live = outbox.channel(LinkAttackStepRequest.class, "live");
+    staged.add(new LinkAttackStepRequest(3));
+    live.add(new LinkAttackStepRequest(7));
+    assertEquals(List.of(new LinkAttackStepRequest(7)), List.copyOf(live));
     live.clear();
     live.addAll(staged);
     staged.clear();
-    assertEquals(List.of(new RoomEntityRuntime.LinkAttackStepRequest(3)), List.copyOf(live));
+    assertEquals(List.of(new LinkAttackStepRequest(3)), List.copyOf(live));
     assertTrue(staged.isEmpty());
   }
 
@@ -51,16 +55,16 @@ class EntityInfrastructureTest {
   void typedDrainLeavesOtherEffectsAndChannelsPending() {
     EntityOutbox outbox = new EntityOutbox();
     outbox
-        .channel(RoomEntityRuntime.LinkFacingRequest.class, "effects")
-        .add(new RoomEntityRuntime.LinkFacingRequest(1, 2));
+        .channel(LinkFacingRequest.class, "effects")
+        .add(new LinkFacingRequest(1, 2));
     outbox
-        .channel(RoomEntityRuntime.ScreenShakeRequest.class, "effects")
-        .add(new RoomEntityRuntime.ScreenShakeRequest(2, 8, 0));
-    var drained = outbox.drain(RoomEntityRuntime.LinkFacingRequest.class, "effects");
+        .channel(ScreenShakeRequest.class, "effects")
+        .add(new ScreenShakeRequest(2, 8, 0));
+    var drained = outbox.drain(LinkFacingRequest.class, "effects");
     assertEquals(1, drained.size());
     assertThrows(UnsupportedOperationException.class, () -> drained.clear());
-    assertTrue(outbox.drain(RoomEntityRuntime.LinkFacingRequest.class, "effects").isEmpty());
-    assertEquals(1, outbox.drain(RoomEntityRuntime.ScreenShakeRequest.class, "effects").size());
+    assertTrue(outbox.drain(LinkFacingRequest.class, "effects").isEmpty());
+    assertEquals(1, outbox.drain(ScreenShakeRequest.class, "effects").size());
   }
 
   @Test

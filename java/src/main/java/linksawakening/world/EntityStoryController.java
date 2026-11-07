@@ -1,5 +1,14 @@
 package linksawakening.world;
 
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.DungeonWarpRequest;
+import linksawakening.world.entity.event.LinkFacingRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.OwlEventCompletion;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.WarpDestination;
+
 import static linksawakening.world.EntityMotionMath.*;
 import static linksawakening.world.EntitySnapshots.*;
 import static linksawakening.world.EntityTypeRules.*;
@@ -214,7 +223,7 @@ final class EntityStoryController {
                 if (((linkEntityX - 0x78 + 0x02) & 0xFF) < 0x04
                     && ((linkEntityY - 0x20 + 0x05) & 0xFF) < 0x0A) {
                     runtime.pendingDungeonWarpRequests.add(new DungeonWarpRequest(
-                        slot, new WarpMotion.Destination(0x11, 0xD8, 0x88, 0x70)));
+                        slot, new linksawakening.world.entity.event.WarpDestination(0x11, 0xD8, 0x88, 0x70)));
                     runtime.pendingMusicFadeOutCountdown = 0x30;
                     runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, runtime.ENTITY_RICHARD, 0, false,
