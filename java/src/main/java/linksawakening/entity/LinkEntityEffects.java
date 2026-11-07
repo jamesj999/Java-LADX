@@ -79,7 +79,7 @@ final class LinkEntityEffects {
         carryingLiftedObjectState = carryState;
         carryingLiftedObjectRomDirection = romDirection;
         if (carryState != 0) {
-            link.direction = link.javaDirectionForRomDirection(romDirection);
+            link.direction = Link.javaDirectionForRomDirection(romDirection);
         }
     }
 
@@ -100,7 +100,7 @@ final class LinkEntityEffects {
         link.linkAirborne.fallingIntoPit = false;
         link.linkStateMachine.physicsModifier = 0;
         roosterCarryActive = true;
-        link.direction = link.javaDirectionForRomDirection(romDirection);
+        link.direction = Link.javaDirectionForRomDirection(romDirection);
         link.linkMotion.applyRomSpeed(speedX, speedY);
     }
 
@@ -117,13 +117,13 @@ final class LinkEntityEffects {
                                     int speedX, int speedY, int velocityZ,
                                     int airborneState, boolean motionBlocked,
                                     boolean applyHeldLinkPose) {
-        link.validateRomByte(romPositionX, "Hinox Link X");
-        link.validateRomByte(romPositionY, "Hinox Link Y");
-        link.validateRomByte(positionZ, "Hinox Link Z");
-        link.validateRomByte(speedX, "Hinox Link X speed");
-        link.validateRomByte(speedY, "Hinox Link Y speed");
-        link.validateRomByte(velocityZ, "Hinox Link Z velocity");
-        link.validateRomByte(airborneState, "Hinox Link link.linkAirborne.airborne state");
+        Link.validateRomByte(romPositionX, "Hinox Link X");
+        Link.validateRomByte(romPositionY, "Hinox Link Y");
+        Link.validateRomByte(positionZ, "Hinox Link Z");
+        Link.validateRomByte(speedX, "Hinox Link X speed");
+        Link.validateRomByte(speedY, "Hinox Link Y speed");
+        Link.validateRomByte(velocityZ, "Hinox Link Z velocity");
+        Link.validateRomByte(airborneState, "Hinox Link link.linkAirborne.airborne state");
         link.linkMotion.setPixelPosition((romPositionX - 0x08) & 0xFF,
             (romPositionY - 0x10) & 0xFF);
         link.linkStateMachine.romInteractiveMotionBlocked = motionBlocked;
@@ -144,9 +144,9 @@ final class LinkEntityEffects {
     /** Applies entity-$61 WarpState3Handler's direct Link writes each frame. */
     void applyWarpState3(int romPositionX, int visualRomPositionY,
                                 int immunityCountdown) {
-        link.validateRomByte(romPositionX, "Warp Link X");
-        link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
-        link.validateRomByte(immunityCountdown, "Warp Link immunity");
+        Link.validateRomByte(romPositionX, "Warp Link X");
+        Link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
+        Link.validateRomByte(immunityCountdown, "Warp Link immunity");
         link.linkMotion.setPixelPosition((romPositionX - 0x08) & 0xFF,
             (visualRomPositionY - 0x10) & 0xFF);
         link.linkStateMachine.romInteractiveMotionBlocked = true;

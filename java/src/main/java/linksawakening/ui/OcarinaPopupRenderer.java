@@ -1,6 +1,5 @@
 package linksawakening.ui;
 
-import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
 

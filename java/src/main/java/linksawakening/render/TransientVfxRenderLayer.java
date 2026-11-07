@@ -4,7 +4,6 @@ package linksawakening.render;
 
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.transition.ScrollController;
 
 public final class TransientVfxRenderLayer implements HardwareRenderLayer {

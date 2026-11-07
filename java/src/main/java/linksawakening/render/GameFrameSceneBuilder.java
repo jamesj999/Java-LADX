@@ -77,7 +77,7 @@ public final class GameFrameSceneBuilder {
                 if (state.room().entities() != null
                     && state.room().entities().spriteTiles() != null
                     && state.room().entities().spriteSelection() != null) {
-                    sprites.add(new MarinWakeUpBedRenderLayer(state.link(),
+                    sprites.add(StorySprites.marinBed(state.link(),
                         state.room().entities().spriteTiles(),
                         state.room().entities().spriteSelection().objectPalettes(),
                         state.scrollController()));
@@ -87,14 +87,14 @@ public final class GameFrameSceneBuilder {
                 if (state.room().entities() != null
                     && state.room().entities().spriteSelection() != null
                     && !state.room().entities().sideScrolling()) {
-                    sprites.add(new LinkShadowRenderLayer(state.link(),
+                    sprites.add(StorySprites.linkShadow(state.link(),
                         state.room().entities().spriteSelection().objectPalettes()[0],
                         state.scrollController(), state.frameCounter()));
                 }
                 if (state.link().isTarinShieldPresentationVisible()
                     && state.room().entities() != null
                     && state.room().entities().spriteSelection() != null) {
-                    sprites.add(new TarinShieldRenderLayer(state.link(), state.scrollController()));
+                    sprites.add(StorySprites.tarinShield(state.link(), state.scrollController()));
                 }
             }
         }

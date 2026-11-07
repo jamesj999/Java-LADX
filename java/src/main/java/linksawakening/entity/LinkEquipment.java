@@ -56,7 +56,7 @@ final class LinkEquipment {
         if (newDirection != -1) {
             link.direction = newDirection;
         }
-        return link.romDirectionForJavaDirection(link.direction);
+        return Link.romDirectionForJavaDirection(link.direction);
     }
 
     boolean itemsBlockMotion() {

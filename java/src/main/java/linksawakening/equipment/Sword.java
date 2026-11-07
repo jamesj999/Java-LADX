@@ -3,8 +3,6 @@ package linksawakening.equipment;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
 
 import java.util.Objects;
@@ -57,8 +55,6 @@ public final class Sword implements EquipmentItem {
     private static final int SWING_MIDDLE_FRAMES = 8;
     private static final int SPIN_ATTACK_FRAMES = 0x20;
     public static final int MAX_CHARGE = 40; // MAX_SWORD_CHARGE ($28) in the ROM
-    private static final int ATTR_FLIP_X = 0x20;
-    private static final int ATTR_FLIP_Y = 0x40;
     // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
         { STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_START,
@@ -83,7 +79,7 @@ public final class Sword implements EquipmentItem {
     };
 
     private final RomTables romTables;
-    private final SwordSpriteSheet spriteSheet;
+    private final SwordRenderer renderer;
     private final GameplaySoundSink soundSink;
     private final IntSupplier randomByteSupplier;
     private final SwordPalette swordPalette;
@@ -137,7 +133,7 @@ public final class Sword implements EquipmentItem {
             SwordPalette swordPalette,
             BeamTarget beamTarget) {
         this.romTables = romTables;
-        this.spriteSheet = spriteSheet;
+        this.renderer = new SwordRenderer(romTables, spriteSheet);
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
@@ -313,71 +309,19 @@ public final class Sword implements EquipmentItem {
     }
 
     @Override
-    public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
-                       int direction, int offsetX, int offsetY) {
+    public void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY) {
         lastKnownDirection = direction;
-        if (state == STATE_NONE && !spinAttackActive()) {
-            return;
-        }
-        int effectiveDirection = effectiveDirection(direction);
-        int romDir = toRomDirection(effectiveDirection);
-        int lookupState = effectiveBladeRenderState();
-        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
-
-        int[] palette = chargedFlashActive() ? swordPalette.charged() : swordPalette.normal();
-
-        // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
-        // Tile $FF for the left half means only the right half is drawn
-        // (the vertical blade cases).
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
-        if (tile0 != 0xFF) {
-            draw8x16(displayBuffer, tile0, bladeX, bladeY, attr0, palette);
-        }
-        if (tile1 != 0xFF) {
-            draw8x16(displayBuffer, tile1, bladeX + 8, bladeY, attr1, palette);
-        }
+        if (state == STATE_NONE && !spinAttackActive()) return;
+        renderer.render(buffer, x, y, effectiveDirection(direction), effectiveBladeRenderState(),
+            chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(), offsetX, offsetY);
     }
 
-    public void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
-                       int direction, int offsetX, int offsetY) {
-        if (state == STATE_NONE && !spinAttackActive()) {
-            return;
-        }
-        int effectiveDirection = effectiveDirection(direction);
-        int romDir = toRomDirection(effectiveDirection);
-        int lookupState = effectiveBladeRenderState();
-        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
-
-        int[] palette = chargedFlashActive() ? swordPalette.charged() : swordPalette.normal();
-
-        // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
-        // Tile $FF for the left half means only the right half is drawn
-        // (the vertical blade cases).
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
-        if (tile0 != 0xFF) {
-            submit8x16(sink, tile0, bladeX, bladeY, attr0, palette);
-        }
-        if (tile1 != 0xFF) {
-            submit8x16(sink, tile1, bladeX + 8, bladeY, attr1, palette);
-        }
+    public void submitOam(linksawakening.render.OamSink sink, int x, int y,
+                          int direction, int offsetX, int offsetY) {
+        if (state == STATE_NONE && !spinAttackActive()) return;
+        renderer.submitOam(sink, x, y, effectiveDirection(direction), effectiveBladeRenderState(),
+            chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(), offsetX, offsetY);
     }
-    private void submit8x16(linksawakening.render.OamSink sink, int tile, int x, int y,
-                            int attrs, int[] palette) {
-        boolean fx = (attrs & 32) != 0, fy = (attrs & 64) != 0;
-        sink.append8x16(spriteSheet.tile(fy ? tile + 1 : tile), spriteSheet.tile(fy ? tile : tile + 1),
-            x, y, fx, fy, palette, false);
-    }
-
 
     public int attackDirection(int linkDirection) {
         lastKnownDirection = linkDirection;
@@ -541,20 +485,6 @@ public final class Sword implements EquipmentItem {
             default: return 3;
         }
     }
-
-    private void draw8x16(byte[] buffer, int tileIndex, int screenX, int screenY,
-                          int attrs, int[] palette) {
-        boolean flipX = (attrs & ATTR_FLIP_X) != 0;
-        boolean flipY = (attrs & ATTR_FLIP_Y) != 0;
-        // GB 8x16 sprite mode: tile T and tile T+1 stacked. flipY swaps
-        // which tile is on top and flips each vertically.
-        Tile top = spriteSheet.tile(flipY ? tileIndex + 1 : tileIndex);
-        Tile bottom = spriteSheet.tile(flipY ? tileIndex : tileIndex + 1);
-        ItemSpriteRenderer.drawTile(buffer, top,    screenX, screenY,     flipX, flipY, palette);
-        ItemSpriteRenderer.drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
-    }
-
-
 
     private static int toRomDirection(int javaDirection) {
         switch (javaDirection) {

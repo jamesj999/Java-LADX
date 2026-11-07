@@ -34,7 +34,7 @@ final class MarinWakeUpBedRenderLayerTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
 
-        new MarinWakeUpBedRenderLayer(link, new EntitySpriteTileSnapshot(tiles), palettes,
+        StorySprites.marinBed(link, new EntitySpriteTileSnapshot(tiles), palettes,
             new ScrollController()).render(new RenderContext(buffer, new GPU()));
 
         assertEquals(0x00CC1122, pixel(buffer, 0x30, 0x24));
