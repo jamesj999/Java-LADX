@@ -31,7 +31,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(rgba, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
-                if (model.explainsHudColorZero(rgba, hardware, pixel)) {
+                if (model.explainsHudPriority(rgba, hardware, pixel)) {
                     expectedPixels++; evidence.add(model.hudEvidence(pixel)); continue;
                 }
                 String detail = "pixel=" + pixel % 160 + "," + pixel / 160 + " " + model.hudEvidence(pixel);
@@ -39,7 +39,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                 throw new AssertionError(context.getDisplayName() + " scene " + id + ": " + detail);
             }
             if (expectedPixels > 0) rows.add(id + "\tEXPECTED_FIDELITY_FIX\tpixels=" + expectedPixels
-                + "; CGB color 0 never covers OBJ; HUD " + evidence + "; reference tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59");
+                + "; CGB priority: OBJ wins when BG index=0 or both priority flags clear; PyBoy beach-route 56 overlap frames LCDC=$E7 WY=128 WX=7; HUD " + evidence + "; reference tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59");
             else rows.add(id + "\tIDENTICAL\t" + scene.layerCount() + " layers");
         });
     }

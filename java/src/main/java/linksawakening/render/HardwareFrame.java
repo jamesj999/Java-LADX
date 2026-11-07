@@ -43,7 +43,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         backgroundPriority[pixel] = priority;
     }
 
-    /** Retains provenance for the specifically approved closed-HUD fidelity correction. */
+    /** Retains provenance for the empirically verified closed-HUD fidelity correction. */
     public void closedHudTile(Tile tile, int tileId, int attributes, int x, int y, int[] palette) {
         backgroundTile(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0,
             palette, (attributes & 128) != 0);
@@ -51,7 +51,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
             hudTiles[pixel] = tileId;
             hudAttributes[pixel] = attributes;
-            approvedHudEvidence[pixel] = pixel / WIDTH >= 128 && index == 0;
+            approvedHudEvidence[pixel] = pixel / WIDTH >= 128;
         });
     }
 
@@ -61,12 +61,14 @@ public final class HardwareFrame implements RenderLayer, OamSink {
             backgroundPalettes[pixel] == null ? 0 : backgroundPalettes[pixel][backgroundIndex[pixel]], objects[pixel]);
     }
 
-    /** Call after compose. Requires the legacy RGB to equal the resolved zero-index HUD color. */
-    public boolean explainsHudColorZero(byte[] legacy, byte[] hardware, int pixel) {
-        if (!approvedHudEvidence[pixel] || backgroundIndex[pixel] != 0
+    /** Call after compose. Requires the legacy RGB to equal the resolved HUD color and a hardware-visible OBJ. */
+    public boolean explainsHudPriority(byte[] legacy, byte[] hardware, int pixel) {
+        if (!approvedHudEvidence[pixel]
             || objectOrder[pixel] == Integer.MAX_VALUE || backgroundPalettes[pixel] == null) return false;
         int offset = pixel * 4;
-        int bg = backgroundPalettes[pixel][0];
+        if (backgroundPriorityEnabled && backgroundIndex[pixel] != 0
+            && (backgroundPriority[pixel] || objectBehind[pixel])) return false;
+        int bg = backgroundPalettes[pixel][backgroundIndex[pixel]];
         int obj = objects[pixel];
         for (int channel = 0; channel < 3; channel++) {
             int shift = 16 - channel * 8;
