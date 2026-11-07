@@ -159,8 +159,8 @@ final class MainFileMenuFlowTest {
 
         assertTrue(tarinBody.contains("key != inputConfig.aKey()"));
         assertFalse(tarinBody.contains("GameplayDialogInput.isActionButtonKey"));
-        assertTrue(savedBody.contains("restoreNewGameHouseRuntimeIfNeeded(saved)"));
-        assertTrue(savedBody.contains("newGameWakeUpMotion = MarinWakeUpMotion.postWake()"));
+        assertTrue(savedBody.contains("restoreNewGameHouseRuntimeIfNeeded(saved,"));
+        assertTrue(source.contains("wakeMotion.accept(MarinWakeUpMotion.postWake())"));
     }
 
     @Test

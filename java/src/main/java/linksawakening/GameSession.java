@@ -1518,20 +1518,9 @@ public class GameSession {
             link.setDirection(Link.DIRECTION_DOWN);
         }
         link.setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
-        restoreNewGameHouseRuntimeIfNeeded(saved);
-    }
-
-    private void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved) {
-        if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10
-            && saved.spawnMapRoom() == 0xA3) {
-            if (playerState.swordLevel() == 0) {
-                newGameWakeUpMotion = MarinWakeUpMotion.postWake();
-                openingStory().updateNewGameMarinPresentation();
-            }
-            if (playerState.shieldLevel() == 0) {
-                newGameTarinShieldMotion = new TarinShieldMotion();
-            }
-        }
+        openingStory().restoreNewGameHouseRuntimeIfNeeded(saved,
+            motion -> newGameWakeUpMotion = motion, motion -> newGameTarinShieldMotion = motion,
+            () -> openingStory().updateNewGameMarinPresentation());
     }
 
     private void startIntroCutscene() {

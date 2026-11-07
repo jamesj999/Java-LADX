@@ -1,5 +1,7 @@
 package linksawakening.app.story;
 
+import linksawakening.save.SaveSlotState;
+
 
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
@@ -176,5 +178,20 @@ public record OpeningStory(int frameCounter, MarinWakeUpMotion newGameWakeUpMoti
     private void playDirectMusic(int track) { music.accept(track); }
     private int newGameHouseMusicTrack() { return houseMusic.getAsInt(); }
     private int romDirectionForLink(int direction) { return romDirection.applyAsInt(direction); }
+
+    public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved,
+            java.util.function.Consumer<MarinWakeUpMotion> wakeMotion,
+            java.util.function.Consumer<TarinShieldMotion> shieldMotion, Runnable refreshPresentation) {
+        if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10
+            && saved.spawnMapRoom() == 0xA3) {
+            if (playerState.swordLevel() == 0) {
+                wakeMotion.accept(MarinWakeUpMotion.postWake());
+                refreshPresentation.run();
+            }
+            if (playerState.shieldLevel() == 0) {
+                shieldMotion.accept(new TarinShieldMotion());
+            }
+        }
+    }
 
 }
