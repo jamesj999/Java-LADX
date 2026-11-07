@@ -2,7 +2,9 @@ package linksawakening.world;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,6 @@ public final class EntityRoomLoader {
 
     public static final int MAX_ENTITIES = 0x10;
 
-    private static final int ENTITY_POINTER_BANK = 0x16;
     private static final int ENTITY_STREAM_END = 0xFF;
     private static final int MAX_ROOM_ID = 0xFF;
     private static final int ENTITY_GHINI = 0x12;
@@ -29,19 +30,19 @@ public final class EntityRoomLoader {
     private static final int ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1 = 0x7A;
 
     public enum RoomTable {
-        OVERWORLD(0x4000),
-        INDOORS_A(0x4200),
-        INDOORS_B(0x4400),
-        COLOR_DUNGEON(0x4600);
+        OVERWORLD(RomSymbols.OverworldEntitiesPointersTable),
+        INDOORS_A(RomSymbols.IndoorsAEntitiesPointersTable),
+        INDOORS_B(RomSymbols.IndoorsBEntitiesPointersTable),
+        COLOR_DUNGEON(RomSymbols.ColorDungeonEntitiesPointersTable);
 
-        private final int pointerAddress;
+        private final RomAddress pointerTable;
 
-        RoomTable(int pointerAddress) {
-            this.pointerAddress = pointerAddress;
+        RoomTable(RomAddress pointerTable) {
+            this.pointerTable = pointerTable;
         }
 
         public int pointerAddress() {
-            return pointerAddress;
+            return pointerTable.address();
         }
     }
 
@@ -88,17 +89,16 @@ public final class EntityRoomLoader {
                 + clearedMask);
         }
 
-        int pointerAddress = table.pointerAddress() + roomId * 2;
-        int pointerOffset = checkedRomOffset(ENTITY_POINTER_BANK, pointerAddress, 2,
+        RomAddress pointerAddress = table.pointerTable.plus(roomId * 2);
+        int pointerOffset = checkedRomOffset(pointerAddress, 2,
             "entity pointer");
-        int streamAddress = Byte.toUnsignedInt(romData[pointerOffset])
-            | (Byte.toUnsignedInt(romData[pointerOffset + 1]) << 8);
+        int streamAddress = new Rom(romData).u16le(pointerAddress);
         if (streamAddress < 0x4000 || streamAddress > 0x7FFF) {
             throw new IllegalArgumentException("Invalid entity stream address: 0x"
                 + Integer.toHexString(streamAddress));
         }
 
-        int streamOffset = checkedRomOffset(ENTITY_POINTER_BANK, streamAddress, 1,
+        int streamOffset = checkedRomOffset(new RomAddress(table.pointerTable.bank(), streamAddress), 1,
             "entity stream");
         List<RoomEntity> slots = new ArrayList<>(MAX_ENTITIES);
         for (int slot = 0; slot < MAX_ENTITIES; slot++) {
@@ -109,13 +109,13 @@ public final class EntityRoomLoader {
         int loadedSlot = 0;
         while (true) {
             requireRange(streamOffset, 1, "entity stream location");
-            int location = Byte.toUnsignedInt(romData[streamOffset++]);
+            int location = new Rom(romData).u8(RomAddress.fromOffset(streamOffset++));
             if (location == ENTITY_STREAM_END) {
                 break;
             }
 
             requireRange(streamOffset, 1, "entity stream type");
-            int type = Byte.toUnsignedInt(romData[streamOffset++]);
+            int type = new Rom(romData).u8(RomAddress.fromOffset(streamOffset++));
             boolean cleared = sourceLoadOrder < 8
                 && (clearedMask & (1 << sourceLoadOrder)) != 0;
             boolean unloadedByInitialization = shouldUnloadAtInit(
@@ -267,10 +267,10 @@ public final class EntityRoomLoader {
         return type == 0x09 ? 0x30 : 0;
     }
 
-    private int checkedRomOffset(int bank, int address, int length, String description) {
+    private int checkedRomOffset(RomAddress address, int length, String description) {
         int offset;
         try {
-            offset = RomBank.romOffset(bank, address);
+            offset = address.offset();
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException("Invalid " + description + " address", exception);
         }

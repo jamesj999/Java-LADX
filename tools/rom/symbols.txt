@@ -344,3 +344,26 @@ MenuFileCopyAttrmap
 MenuFileSaveTilemap
 
 MenuFileSaveAttrmap
+
+# Entity runtime tables and room navigation
+DestroyedEntityHealthGroupOffsetTable
+DropTableByIndex
+RandomDropChanceTable
+RandomDropChanceTableLowHealth
+DropTableRandom
+ThresholdLowHealthTable
+HealthGroupForEntity
+Data_003_43EC
+Data_003_473C
+InitialHealthForGroup
+EntityDamagesForGroup
+BowWowEatableEntitiesTable
+DungeonWarps
+MapLayout0
+MapLayout11
+MapLayout12
+BombedCaveDoorTilesIndexesGBC
+OverworldEntitiesPointersTable
+IndoorsAEntitiesPointersTable
+IndoorsBEntitiesPointersTable
+ColorDungeonEntitiesPointersTable

@@ -47,11 +47,13 @@ import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,12 +172,6 @@ public final class RoomSession {
     private static final int OBJECT_BOMBED_PASSAGE_VERTICAL = 0x3D;
     private static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
     private static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
-    private static final int BOMBED_CAVE_DOOR_TILES_BANK = 0x03;
-    private static final int BOMBED_CAVE_DOOR_TILES_GBC_ADDR = 0x6751;
-    private static final int INDOOR_MAP_LAYOUT_BANK = 0x14;
-    private static final int INDOOR_MAP_LAYOUT_BASE_ADDR = 0x4220;
-    private static final int COLOR_DUNGEON_MAP_LAYOUT_ADDR = 0x44E0;
-    private static final int EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR = 0x4520;
     private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
     static final int LINK_MOTION_FALLING_DOWN = 0x06;
     private static final int OBJECT_WELL = 0x61;
@@ -4139,15 +4135,14 @@ public final class RoomSession {
                 continue;
             }
 
-            int tileTableOffset = RomBank.romOffset(
-                BOMBED_CAVE_DOOR_TILES_BANK, BOMBED_CAVE_DOOR_TILES_GBC_ADDR);
+            RomAddress tileTable = RomSymbols.BombedCaveDoorTilesIndexesGBC;
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = Byte.toUnsignedInt(romData[tileTableOffset]);
-            tileIds[topLeft + 1] = Byte.toUnsignedInt(romData[tileTableOffset + 1]);
+            tileIds[topLeft] = new Rom(romData).u8(tileTable);
+            tileIds[topLeft + 1] = new Rom(romData).u8(tileTable.plus(1));
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
-                Byte.toUnsignedInt(romData[tileTableOffset + 2]);
+                new Rom(romData).u8(tileTable.plus(2));
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
-                Byte.toUnsignedInt(romData[tileTableOffset + 3]);
+                new Rom(romData).u8(tileTable.plus(3));
         }
     }
 
