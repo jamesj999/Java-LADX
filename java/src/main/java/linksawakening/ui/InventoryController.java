@@ -61,4 +61,8 @@ public final class InventoryController {
     public void render(byte[] displayBuffer, GPU gpu) {
         menu.render(displayBuffer, gpu);
     }
+    public boolean canSubmitClosedWindow() { return menu.canSubmitClosedWindow(); }
+    public InventoryMenu.ClosedWindow closedWindow(int[][] roomPalettes) {
+        return menu.closedWindow(roomPalettes);
+    }
 }

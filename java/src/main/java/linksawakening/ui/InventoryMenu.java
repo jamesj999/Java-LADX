@@ -313,4 +313,20 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
+    public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
+
+    public boolean canSubmitClosedWindow() {
+        return isFullyClosed() && !ocarinaSongMenu.isVisible();
+    }
+
+    /** Read-only snapshot of the closed inventory's HUD window. */
+    public ClosedWindow closedWindow(int[][] roomPalettes) {
+        if (!canSubmitClosedWindow()) throw new IllegalStateException("Inventory window is open");
+        int[] tiles = tilemapLoader.copyBaseTilemap();
+        int[] attributes = tilemapLoader.copyAttrmap();
+        HudOverlay.apply(tiles, attributes, playerState);
+        InventorySubscreenOverlay.apply(tiles, attributes, playerState, cursorSlot, false);
+        return new ClosedWindow(tiles, attributes,
+            roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, windowY);
+    }
 }
