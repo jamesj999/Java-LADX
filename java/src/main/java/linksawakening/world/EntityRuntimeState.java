@@ -1046,6 +1046,9 @@ abstract class EntityRuntimeState {
 
     boolean runningWithPegasusBoots;
 
+    // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
+    // RoomSession supplies these from the active Ocarina item state once per
+    // entity tick; the zero values preserve the ordinary no-song path.
     int linkPlayingOcarinaCountdown;
 
     int ocarinaSongFlags;
@@ -1056,8 +1059,14 @@ abstract class EntityRuntimeState {
 
     int ocarinaAnimationPhase;
 
+    // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
+    // the active room is ready for interaction. Entity ticks are gated during
+    // the host transition, so this is the source value visible to gameplay.
     int transitionSequenceCounter = 0x04;
 
+    // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
+    // Live room sessions default to the ordinary active world path; tests can
+    // select the world-map/transition branches explicitly.
     boolean gameplayWorld = true;
 
     boolean roomTransitionActive;
@@ -1074,6 +1083,10 @@ abstract class EntityRuntimeState {
 
     boolean lastBombPlacementPlayedBump;
 
+    // hLinkSpeedX/Y are written by Link before AnimateEntities. These are set
+    // only around the live projectile tick so the enemy-bomb branch can mirror
+    // its post-collision SLA writes without making Link state part of the
+    // entity snapshot.
     int currentLinkVelocityZ;
 
     List<BowWowChain.Entry> bowWowChainOam = List.of();
@@ -1198,12 +1211,14 @@ abstract class EntityRuntimeState {
 
     int instrument2Flags;
 
+    /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
     int entityInteractionCountdown;
 
     boolean freeMovementMode;
 
     final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
 
+    /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
     final int[] owlPrivateCountdown1 =
         new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -1242,6 +1257,9 @@ abstract class EntityRuntimeState {
 
     int entityRoomStatus;
 
+    // These latches represent the HRAM values read by
+    // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
+    // them from Link's live Pegasus-Boots collision record before dispatch.
     boolean secretSeashellScreenShakeActive;
 
     boolean secretSeashellPegasusCollisionActive;

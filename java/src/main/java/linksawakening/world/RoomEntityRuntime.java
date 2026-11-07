@@ -26,6 +26,7 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
+    private final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
     private final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
     private final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
     private final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
@@ -63,98 +64,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final boolean[] bombFinalPresentationPending =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    // The three WRAM values read by PolsVoiceEntityHandler's Ocarina preamble.
-    // RoomSession supplies these from the active Ocarina item state once per
-    // entity tick; the zero values preserve the ordinary no-song path.
-
-    // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
-    // the active room is ready for interaction. Entity ticks are gated during
-    // the host transition, so this is the source value visible to gameplay.
-    
-    // ReturnIfNonInteractive_19's gameplay selector and room-transition flag.
-    // Live room sessions default to the ordinary active world path; tests can
-    // select the world-map/transition branches explicitly.
-
-    // hLinkSpeedX/Y are written by Link before AnimateEntities. These are set
-    // only around the live projectile tick so the enemy-bomb branch can mirror
-    // its post-collision SLA writes without making Link state part of the
-    // entity snapshot.
-
-    /** AnimateEntities copies wC111 to wC1A8 before decrementing it. */
-
     void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
-    
-    /** wEntitiesPrivateCountdown1Table for the owl-event handler. */
 
     final WarpMotion warpMotion;
-    
-    // These latches represent the HRAM values read by
-    // DroppableRevealOrReturnIfNeeded's tree-shell branch. RoomSession feeds
-    // them from Link's live Pegasus-Boots collision record before dispatch.
 
-    private EntityHandlerRegistry createEntityHandlers() {
-        EntityHandlerRegistry registry = new EntityHandlerRegistry();
-        registry.register(ENTITY_KEESE, (entity, random) -> keeseMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_IRON_MASK, (entity, random) -> roamingEnemyMotion.initialize(entity.slot()));
-        registry.register(ENTITY_TEKTITE, (entity, random) -> tektiteMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_LEEVER, (entity, random) -> leeverMotion.initialize(entity.slot()));
-        registry.register(ENTITY_ANTI_FAIRY, (entity, random) -> antiFairyMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_HIDING_ZOL, (entity, random) -> hidingZolMotion.initialize(entity.slot()));
-        registry.register(ENTITY_STAR, (entity, random) -> starMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_BLOOPER, (entity, random) -> blooperMotion.initialize(entity.slot()));
-        registry.register(ENTITY_PINCER, (entity, random) -> pincerMotion.initialize(entity.slot()));
-        registry.register(ENTITY_WINGED_OCTOROK, (entity, random) -> wingedOctorokMotion.initialize(entity.slot()));
-        registry.register(ENTITY_SPIKE_TRAP, (entity, random) -> spikeTrapMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_PAIRODD, (entity, random) -> pairoddMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_PAIRODD_PROJECTILE, (entity, random) -> pairoddProjectileMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_WATER_TEKTITE, (entity, random) -> waterTektiteMotion.initialize(entity.slot()));
-        registry.register(ENTITY_FISH, (entity, random) -> fishMotion.initialize(entity.slot()));
-        registry.register(ENTITY_CROW, (entity, random) -> crowMotion.initialize(entity.slot()));
-        registry.register(ENTITY_CUCCO, (entity, random) -> cuccoMotion.initialize(entity.slot()));
-        registry.register(ENTITY_POKEY, (entity, random) -> pokeyMotion.initialize(entity.slot()));
-        registry.register(ENTITY_PIRANHA_PLANT, (entity, random) -> piranhaMotion.initialize(entity.slot()));
-        registry.register(ENTITY_ZORA, (entity, random) -> zoraMotion.initialize(entity.slot()));
-        registry.register(ENTITY_ZOMBIE, (entity, random) -> zombieMotion.initialize(entity.slot()));
-        registry.register(ENTITY_BUZZ_BLOB, (entity, random) -> buzzBlobMotion.initialize(entity.slot()));
-        registry.register(ENTITY_SAND_CRAB, (entity, random) -> sandCrabMotion.initialize(entity.slot()));
-        registry.register(ENTITY_DOG, (entity, random) -> dogMotion.initialize(entity.slot()));
-        registry.register(ENTITY_URCHIN, (entity, random) -> urchinMotion.initialize(entity.slot()));
-        registry.register(ENTITY_WITCH_RAT, (entity, random) -> witchRatMotion.initialize(entity.slot()));
-        registry.register(ENTITY_BOO_BUDDY, (entity, random) -> booBuddyMotion.initialize(entity.slot()));
-        registry.register(ENTITY_DROPPABLE_FAIRY, (entity, random) -> fairyMotion.initialize(entity.slot()));
-        registry.register(ENTITY_STALFOS_AGGRESSIVE, (entity, random) -> stalfosAggressiveMotion.initialize(entity.slot(), random));
-        registry.register(ENTITY_STALFOS_EVASIVE, (entity, random) -> stalfosEvasiveMotion.initialize(entity.slot()));
-        registry.register(ENTITY_GIBDO, (entity, random) -> gibdoMotion.initialize(entity.slot()));
-        registry.register(ENTITY_LIKE_LIKE, (entity, random) -> likeLikeMotion.initialize(entity.slot()));
-        registry.register(ENTITY_POLS_VOICE, (entity, random) -> polsVoiceMotion.initialize(entity.slot()));
-        registry.register(ENTITY_GOOMBA, (entity, random) -> goombaMotion.initialize(entity.slot()));
-        registry.register(ENTITY_SNAKE, (entity, random) -> snakeMotion.initialize(entity.slot()));
-        registry.register(ENTITY_PEAHAT, (entity, random) -> peaHatMotion.initialize(entity.slot()));
-        registry.register(ENTITY_ARMOS_STATUE, (entity, random) -> armosMotion.initialize(entity.slot()));
-        registry.register(ENTITY_ARMOS_KNIGHT, (entity, random) -> armosKnightMotion.initialize(entity.slot()));
-        registry.register(ENTITY_HINOX, (entity, random) -> hinoxMotion.initialize(entity.slot()));
-        registry.register(ENTITY_HARDHAT_BEETLE, (entity, random) -> hardHatMotion.initialize(entity.slot()));
-        registry.register(ENTITY_SPIKED_BEETLE, (entity, random) -> spikedBeetleMotion.initialize(entity.slot()));
-        registry.register(ENTITY_BOMBER, (entity, random) -> bomberMotion.initialize(entity.slot()));
-        registry.register(ENTITY_MAD_BOMBER, (entity, random) -> madBomberMotion.initialize(entity.slot()));
-        registry.registerAdvance(ENTITY_BUTTERFLY, (entity, context) -> butterflyMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
-                    context.randomByteSupplier()));
-        registry.registerAdvance(ENTITY_KEESE, (entity, context) -> keeseMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
-                    context.randomByteSupplier()));
-        registry.registerAdvance(ENTITY_TEKTITE, (entity, context) -> tektiteMotion.advance(entity, context.linkEntityX(), context.linkEntityY(),
-                    context.randomByteSupplier(), context.backgroundCollision()));
-        registry.registerAdvance(ENTITY_LEEVER, (entity, context) -> leeverMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
-                    context.randomByteSupplier(), context.backgroundCollision()));
-        registry.registerAdvance(ENTITY_ANTI_FAIRY, (entity, context) -> antiFairyMotion.advance(entity, context.frameCounter(), context.backgroundCollision(),
-                    context.randomByteSupplier()));
-        registry.registerAdvance(ENTITY_GIBDO, (entity, context) -> gibdoMotion.advance(entity, context.randomByteSupplier(), context.backgroundCollision()));
-        EntityPhase1Handlers.install(registry);
-        EntityPhase2Handlers.install(registry);
-        EntityPhase3Handlers.install(registry);
-        EntityPhase4Handlers.install(registry);
-        EntityPhase5Handlers.install(registry);
-        return registry;
-    }
+    private EntityHandlerRegistry createEntityHandlers() { return this.roomInitialization.createEntityHandlers(); }
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
     public record LiftedEntityState(int slot, int type, int phase,
@@ -613,163 +527,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
-        if (romData != null) {
-            for (int i = 0; i < heartPieceMeterPairs.length; i++) heartPieceMeterPairs[i] =
-                romData[3 * 0x4000 + 0x1B17 + i] & 255;
-            for (int i = 0; i < instrumentPaletteCycle.length; i++) {
-                int offset = 0x36 * 0x4000 + 0x3096 + i * 2;
-                int rgb555 = (romData[offset] & 255) | ((romData[offset + 1] & 255) << 8);
-                instrumentPaletteCycle[i] = linksawakening.rom.RomUtil.decodeRgb555(rgb555);
-            }
-            for (int i = 0; i < instrumentWarpSprites.length; i++) {
-                instrumentWarpSprites[i] = romData[6 * 0x4000 + 0x373C + i] & 255;
-            }
-            // Eighteen fixed repeat commands, two rows per controller frame.
-            // Shipped ROM symbols: Data_007_6493=$6493, Data_007_64F6=$64DB.
-            for (int row = 0; row < 18; row++) {
-                int tile = romData[7 * 0x4000 + 0x2493 + row * 4 + 3] & 255;
-                int attr = romData[7 * 0x4000 + 0x24DB + row * 4 + 3] & 255;
-                java.util.Arrays.fill(instrumentHintTiles, row * 20, (row + 1) * 20, tile);
-                java.util.Arrays.fill(instrumentHintAttributes, row * 20, (row + 1) * 20, attr);
-            }
-        }
+        initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
-        this.hookshotChainOam = initial.hookshotChainOam();
-        this.pincerBodyOam = initial.pincerBodyOam();
-        this.wingedOctorokOam = initial.wingedOctorokOam();
-        Arrays.fill(entityOptions1Override, -1);
-        Arrays.fill(droppedItemBySlot, 0);
-        Arrays.fill(bombDirection, 0xFF);
-        Arrays.fill(bombFinalPresentationPending, false);
-        Arrays.fill(thrownDirection, 0xFF);
-        for (RoomEntity entity : slots) {
-            baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
-            fallingVisualYOffset[entity.slot()] = initial.visualYOffset(entity.slot());
-            enemyHealth[entity.slot()] = entity.loaded() ? initialHealth(entity.type()) : 0;
-            enemyPhysicsFlags[entity.slot()] = entity.loaded()
-                ? initialPhysicsFlags(entity.type()) : 0;
-            enemyHitboxFlags[entity.slot()] = entity.loaded()
-                ? initialHitboxFlags(entity.type()) : 0;
-            // Room-loaded indoor warps start at state 1 ($03:4F75).
-            // State 0 is reserved for dynamically spawned warps.
-            if (entity.loaded() && indoorRoom && entity.type() == WarpMotion.ENTITY_TYPE) {
-                warpState[entity.slot()] = WarpMotion.STATE_APPROACH;
-                slots[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
-            }
-            if (entity.loaded() && entity.type() == ENTITY_GENIE) {
-                GenieMotion.JarState jar = genieMotion.initialize(entity.slot());
-                genieActiveState[entity.slot()] = 0;
-                geniePrivateState1[entity.slot()] = jar.privateState1();
-                geniePrivateState3[entity.slot()] = 0;
-                enemyHealth[entity.slot()] = jar.health();
-                enemyPhysicsFlags[entity.slot()] = jar.physicsFlags();
-                enemyHitboxFlags[entity.slot()] = jar.hitboxFlags();
-                entityOptions1Override[entity.slot()] = GENIE_OPTIONS1;
-                if (entity.status() == EntityStatus.INIT) {
-                    slots[entity.slot()] = withPositionAndVariant(
-                        entity, entity.x() + 0x08, entity.y(), entity.spriteVariant());
-                }
-            }
-            if (entity.loaded() && entity.type() == ENTITY_CHEST_WITH_ITEM) {
-                chestItemBySlot[entity.slot()] = entity.spriteVariant();
-            }
-            if (entity.loaded() && isBombiteType(entity.type())) {
-                bombiteMotion.initialize(entity.slot());
-                // The bank-$04 handlers use the global slow-transition tick
-                // for TimerBombite's fuse. Keep it live for either family;
-                // BouncingBombite simply leaves its value at zero.
-                slowTimerInitialized[entity.slot()] = true;
-            }
-            if (entity.loaded() && isGhiniType(entity.type())) {
-                ghiniMotion.initialize(entity.slot(), entity.type());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_LIKE_LIKE) {
-                likeLikeMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_POLS_VOICE) {
-                polsVoiceMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_FISH) {
-                fishMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_CROW) {
-                crowMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_BOO_BUDDY) {
-                booBuddyMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_BUZZ_BLOB) {
-                buzzBlobMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_SAND_CRAB) {
-                sandCrabMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_DOG) {
-                dogMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_URCHIN) {
-                urchinMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_WITCH_RAT) {
-                witchRatMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_DROPPABLE_FAIRY) {
-                fairyMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_SPIKED_BEETLE) {
-                spikedBeetleMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_PINCER) {
-                pincerMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_BUSH_CRAWLER) {
-                bushCrawlerMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_MIMIC) {
-                mimicMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_MASKED_MIMIC_GORIYA) {
-                maskedMimicMotion.initialize(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_MINI_MOLDORM) {
-                miniMoldormMotion.initialize(entity);
-            }
-            if (entity.loaded() && entity.type() == ENTITY_MOLDORM) {
-                moldormMotion.initialize(entity);
-            }
-            if (entity.loaded() && entity.type() == ENTITY_ROLLING_BONES) {
-                rollingBonesMotion.initializeBoss(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_ROLLING_BONES_BAR) {
-                rollingBonesMotion.initializeBar(entity.slot());
-            }
-            if (entity.loaded() && entity.type() == ENTITY_CUCCO) {
-                cuccoMotion.initialize(entity.slot());
-            }
-            if (entity.status() == EntityStatus.DYING) {
-                powerRecoilDeath[entity.slot()] = entity.powerRecoilDeath();
-            }
-            if (isLaserType(entity.type())) {
-                laserMotion.initializeForEntity(entity);
-            }
-            if (isFollowingNpcType(entity.type())) {
-                if (entity.type() == ENTITY_BOW_WOW) {
-                    bowWowMotion.initialize(entity.slot());
-                } else {
-                    followingNpcMotion.initialize(entity.slot(), entity.type());
-                }
-            }
-            if (entity.status() == EntityStatus.LIFTED) {
-                liftedStateInitialized[entity.slot()] = true;
-                liftedSourceDirection[entity.slot()] = LiftedEntityMotion.ROM_DIRECTION_DOWN;
-                liftedEffectiveDirection = LiftedEntityMotion.ROM_DIRECTION_DOWN;
-                enemyTransitionCountdown[entity.slot()] = 0x02;
-                liftedEntitySlot = entity.slot();
-            }
-            if (entity.status() == EntityStatus.THROWN) {
-                thrownDirection[entity.slot()] = ThrownEntityMotion.ROM_DIRECTION_DOWN;
-            }
-        }
+        initializeRoomSlots(initial);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
@@ -2866,4 +2626,8 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             throw new IllegalArgumentException("ROM direction must be between 0 and 3");
         }
     }
+    private void initializeRomPresentation(byte[] romData) { this.roomInitialization.initializeRomPresentation(romData); }
+
+    private void initializeRoomSlots(RoomEntitySnapshot initial) { this.roomInitialization.initializeRoomSlots(initial); }
+
 }
