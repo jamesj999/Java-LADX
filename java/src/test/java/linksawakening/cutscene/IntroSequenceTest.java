@@ -18,6 +18,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class IntroSequenceTest {
 
     @Test
+    void openingLightningRequestsExplosionWithoutBeachWaves() {
+        IntroSequence intro = newIntro();
+        java.util.List<Integer> sounds = new java.util.ArrayList<>();
+        intro.setNoiseSound(sounds::add);
+        for (int frame = 0; frame < 1040; frame++) intro.tick();
+        assertTrue(sounds.size() >= 6);
+        assertTrue(sounds.stream().allMatch(id -> id == 0x0C));
+    }
+
+    @Test
     void initialSnapshotUsesRomShipDataAndIsImmutable() {
         IntroSequence intro = newIntro();
 

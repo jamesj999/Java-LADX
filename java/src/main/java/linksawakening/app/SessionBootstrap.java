@@ -221,6 +221,10 @@ public final class SessionBootstrap {
         overworldDialogInteraction = new OverworldDialogInteraction(
             SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
         cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene());
+        var introCatalog = linksawakening.audio.sfx.SoundEffectCatalog.fromRom(romData);
+        cutsceneManager.setIntroNoiseSound(id -> introCatalog.find(
+            linksawakening.audio.sfx.SoundEffectNamespace.NOISE, id).ifPresent(
+                ((linksawakening.audio.music.FrameAudioPlayer) musicPlayer)::playSoundEffect));
         romTables = RomTables.loadFromRom(romData);
         newGameTarinShieldPalette = RomBank.loadPalettes(romData, 0x05, 0x4C94, 1)[0];
         overworldCollision = new OverworldCollision(romTables);

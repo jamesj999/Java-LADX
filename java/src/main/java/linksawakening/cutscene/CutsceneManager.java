@@ -13,6 +13,12 @@ public final class CutsceneManager implements CutsceneContext {
     private final Consumer<String> sceneLoader;
     private final CutsceneController controller;
     private IntroSequence introSequence;
+    private java.util.function.IntConsumer noiseSound = id -> {};
+
+    public void setIntroNoiseSound(java.util.function.IntConsumer sink) {
+        noiseSound = Objects.requireNonNull(sink);
+        if (introSequence != null) introSequence.setNoiseSound(noiseSound);
+    }
     private IntroFrameSnapshot frameSnapshot;
     private String currentScene = "";
 
@@ -24,6 +30,7 @@ public final class CutsceneManager implements CutsceneContext {
 
     public void startIntro() {
         introSequence = new IntroSequence();
+        introSequence.setNoiseSound(noiseSound);
         frameSnapshot = introSequence.snapshot();
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
@@ -31,6 +38,7 @@ public final class CutsceneManager implements CutsceneContext {
 
     public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
         introSequence = new IntroSequence(romData, backgroundProvider);
+        introSequence.setNoiseSound(noiseSound);
         frameSnapshot = introSequence.snapshot();
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());

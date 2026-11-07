@@ -76,6 +76,20 @@ public final class IntroSequence {
 
     private Stage stage = Stage.SEA;
     private int frameCounter;
+    private int seaWaveCounter;
+    private java.util.function.IntConsumer noiseSound = id -> {};
+
+    public void setNoiseSound(java.util.function.IntConsumer sink) {
+        noiseSound = Objects.requireNonNull(sink);
+    }
+
+    private void tickSeaWaveSound() {
+        // intro.asm func_001_71C7: called by stage 6 and Marin, not the sea handler.
+        if (linkState < 2 && ++seaWaveCounter == 0xA0) {
+            noiseSound.accept(0x0F);
+            seaWaveCounter = 0;
+        }
+    }
     private int stageFrame;
     // hFrameCounter is reset during the beach sequence and stalls during LCD-off loads.
     // frameCounter is the monotonic presentation clock used for captures.
@@ -316,7 +330,7 @@ public final class IntroSequence {
         linkFaceTimer++;
         if (linkFaceTimer == LINK_FACE_SCREAM_FRAME) rom.applyDrawCommands(tilemap, 0x74B8);
         if (linkFaceTimer == LINK_FACE_LIGHTNING_FRAME || (clock & 0x7f) == 0)
-            lightningVisibleCountdown = 0x1C; // sound/palette flash only, no bolt entity
+            playThunder(); // sound/palette flash only, no bolt entity
         if (linkFaceTimer >= LINK_FACE_FRAMES) {
             lightning.clear();
             seaFadeTimer = 1;
@@ -344,6 +358,7 @@ public final class IntroSequence {
     }
 
     private void tickBeachFade() {
+        tickSeaWaveSound();
         beachFadeTimer--;
         // func_020_6AC1 restores all palettes one RGB555 step at a time.
         if (beachFadeTimer < 0x34) {
@@ -367,6 +382,7 @@ public final class IntroSequence {
         // Entity slot 1 (Link) executes before slot 0 (Marin).
         if (linkVisible) tickInertLink();
         if (stage != Stage.BEACH) return;
+        tickSeaWaveSound();
         // Link's handler moves both entities vertically before Marin builds her OAM.
         List<IntroSprite> corrected = new ArrayList<>(pendingSprites);
         if (corrected.size() >= 2) {
@@ -578,7 +594,13 @@ public final class IntroSequence {
         }
         lightning.add(new Lightning(
             Math.max(0, lightningStatuses[index] - 1), lightningPositions[index], 0x30, 0x20));
+        playThunder();
+    }
+
+    private void playThunder() {
         lightningVisibleCountdown = 0x1C;
+        // RenderLightning.playSfx -> PlayBombExplosionSfx (bank0.asm 00:0C4B).
+        noiseSound.accept(0x0C);
     }
 
     private void updateWaveOffsets() {
