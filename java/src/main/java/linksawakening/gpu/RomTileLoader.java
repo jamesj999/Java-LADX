@@ -1,6 +1,8 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.RomSymbols;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 
 /** Named ROM tile uploads used by the compatibility GPU facade. */
 class RomTileLoader extends Vram {
@@ -526,7 +528,12 @@ class RomTileLoader extends Vram {
             throw new IllegalArgumentException("Tile destination exceeds VRAM bounds");
         }
 
-        System.arraycopy(romData, romOffset, vram, vramOffset, byteCount);
+        // The legacy selector's bank-zero row uses a flat ROM offset,
+        // including addresses outside ROM0's CPU window. Preserve that API.
+        byte[] source = bank == 0 && address >= 0x4000
+            ? java.util.Arrays.copyOfRange(romData, romOffset, romOffset + byteCount)
+            : new Rom(romData).slice(new RomAddress(bank, address), byteCount);
+        System.arraycopy(source, 0, vram, vramOffset, byteCount);
         for (int tile = 0; tile < tileCount; tile++) {
             updateTile(vramTileIndex + tile);
         }
