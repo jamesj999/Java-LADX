@@ -24,7 +24,7 @@ final class MoldormHandler {
           if (!state.wasInitializing
 
               && !state.runtime.roomTransitionActive
-              && !state.runtime.linkState.inventoryAppearing) {
+              && !state.link().inventoryAppearing()) {
             BossIntroMotion.Update intro =
                 state.runtime.bossIntroMotion.advance(
                     state.runtime.options1(state.entity.slot()),

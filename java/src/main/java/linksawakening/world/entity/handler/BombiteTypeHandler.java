@@ -44,7 +44,7 @@ final class BombiteTypeHandler {
                         state.runtime.slowTransitionCountdown[state.entity.slot()],
                         state.runtime.bombPrivateCountdown1[state.entity.slot()],
                         state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
-                        state.runtime.linkState.runningWithPegasusBoots,
+                        state.link().runningWithPegasusBoots(),
                         state.randomByteSupplier,
                         state.backgroundCollision);
                 state.updated = withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant());

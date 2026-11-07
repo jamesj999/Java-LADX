@@ -27,7 +27,7 @@ final class StalfosEvasiveHandler {
                     state.frame,
                     state.linkEntityX,
                     state.linkEntityY,
-                    state.runtime.linkState.actionButtonsHeld,
+                    state.link().actionButtonsHeld(),
                     state.slot().transitionCountdown(state.entity.slot()),
                     state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()],
                     state.randomByteSupplier,

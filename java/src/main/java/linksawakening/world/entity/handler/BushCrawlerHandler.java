@@ -32,10 +32,10 @@ final class BushCrawlerHandler {
                     state.slot().transitionCountdown(state.entity.slot()),
                     RoomEntityCombatRules.overlapsLink(
                         state.entity, state.linkEntityX, state.linkEntityY),
-                    state.runtime.linkState.actionButtonAHeld,
-                    state.runtime.linkState.actionButtonBHeld,
-                    state.runtime.linkState.linkItemA,
-                    state.runtime.linkState.linkItemB);
+                    state.link().actionButtonAHeld(),
+                    state.link().actionButtonBHeld(),
+                    state.link().linkItemA(),
+                    state.link().linkItemB());
             state.slot().setTransitionCountdown(state.entity.slot(), bushUpdate.transitionCountdown());
             state.runtime.fallingVisualYOffset[state.entity.slot()] = bushUpdate.visualYOffset();
             state.updated = bushUpdate.entity();

@@ -92,7 +92,8 @@ import java.util.function.IntUnaryOperator;
 /** ROM slot arrays and room handler state; orchestration remains in RoomEntityRuntime. */
 abstract class EntityRuntimeState extends EntityRomConstants {
     public final EntityEventChannels events = new EntityEventChannels();
-    public final EntityLinkState linkState = new EntityLinkState();
+    final EntityLinkState linkState = new EntityLinkState();
+    final EntityLinkView linkView = new EntityLinkView(linkState);
 
     public EntitySpriteSelection spriteSelection;
 

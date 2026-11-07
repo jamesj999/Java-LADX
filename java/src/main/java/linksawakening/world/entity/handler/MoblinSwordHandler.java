@@ -32,8 +32,8 @@ final class MoblinSwordHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE
               && !state.wasInitializing
-              && !state.runtime.linkState.dialogActive
-              && !state.runtime.linkState.inventoryAppearing
+              && !state.link().dialogActive()
+              && !state.link().inventoryAppearing()
               && !state.runtime.roomTransitionActive
               && state.runtime.gameplayWorld
               && state.runtime.transitionSequenceCounter == 0x04

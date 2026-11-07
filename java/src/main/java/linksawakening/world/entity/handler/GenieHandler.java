@@ -62,7 +62,7 @@ final class GenieHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
             BossIntroMotion.Update bossIntro =
-                !state.runtime.linkState.inventoryAppearing && !state.runtime.roomTransitionActive
+                !state.link().inventoryAppearing() && !state.runtime.roomTransitionActive
                     ? state.runtime.bossIntroMotion.advance(
                         state.runtime.options1(state.entity.slot()),
                         state.entity.type(),

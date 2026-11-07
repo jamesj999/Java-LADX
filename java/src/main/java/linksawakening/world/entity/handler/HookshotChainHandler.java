@@ -32,7 +32,7 @@ final class HookshotChainHandler {
               return false;
             }
             // $7BE3 cancels the chain before rendering or the pause gate.
-            if (state.runtime.linkState.linkPlayingOcarinaCountdown != 0) {
+            if (state.link().linkPlayingOcarinaCountdown() != 0) {
               state.runtime.clearEntity(state.entity.slot());
               return false;
             }
