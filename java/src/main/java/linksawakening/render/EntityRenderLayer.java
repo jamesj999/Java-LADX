@@ -94,9 +94,6 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                                 int[][] palettes, Offset offset) {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         for (RoomEntity entity : entities.loadedEntities()) {
-            // INIT dispatch runs the ROM initialization handler before any sprite handler.
-            // Room-load snapshots can reach rendering before that first entity tick.
-            if (entity.status() == EntityStatus.INIT) continue;
             EntitySpriteDefinition definition = entity.spriteDefinition();
             boolean renderingDeath = false;
             if (entity.status() == EntityStatus.DYING && entities.spriteSelection() != null) {

@@ -295,7 +295,14 @@ public final class EntityRoomInspection {
     }
 
     public RoomEntitySnapshot snapshot() {
-        return new RoomEntitySnapshot(Arrays.asList(runtime.slots), runtime.spriteSelection, runtime.spriteTiles,
+        // MarinEntityHandler ($05:4E78) returns before drawing outdoors until
+        // Link owns the sword. Apply that presentation gate to pre-tick snapshots
+        // as well, including snapshots displayed while room scrolling pauses ticks.
+        var presentedSlots = Arrays.stream(runtime.slots).map(entity ->
+            !runtime.indoorRoom && runtime.chestPlayerLevelsKnown
+                && runtime.chestSwordLevel == 0 && entity.type() == 0x3E
+                ? EntitySnapshots.withVariant(entity, -1) : entity).toList();
+        return new RoomEntitySnapshot(presentedSlots, runtime.spriteSelection, runtime.spriteTiles,
             runtime.groundInteractionSideScrolling, runtime.hookshotChainOam, runtime.pincerBodyOam,
             runtime.wingedOctorokOam,
             runtime.fallingVisualYOffset, runtime.bowWowChainOam);

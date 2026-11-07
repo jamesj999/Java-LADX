@@ -17,6 +17,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class MarinWakeUpEntityRuntimeTest {
     @Test
+    void outdoorMarinWaitsForSwordButIndoorMarinRemainsVisibleBeforeFirstTick() {
+        var variant = new EntitySpriteDefinition.Variant(
+            new EntitySpriteDefinition.OamAttribute(0x40, 0),
+            new EntitySpriteDefinition.OamAttribute(0x42, 0));
+        var definition = new EntitySpriteDefinition(0x3E, 5, 0x4E0A,
+            EntitySpriteDefinition.Shape.PAIR, 6, Collections.nCopies(8, variant));
+        var slots = new ArrayList<RoomEntity>();
+        for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
+        slots.set(0, new RoomEntity(0, 0, 0x3E, 80, 56, EntityStatus.INIT,
+            definition, 6, 0, 0, 0, -1, false));
+        for (boolean indoor : new boolean[] {false, true}) {
+            var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), indoor);
+            runtime.configuration().setChestPlayerLevels(0, 0, 0);
+            assertEquals(indoor ? 6 : -1,
+                runtime.inspection().snapshot().slots().get(0).spriteVariant());
+            runtime.configuration().setChestPlayerLevels(0, 1, 0);
+            assertEquals(6, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        }
+    }
+
+    @Test
     void appliesControllerPositionAndFacingToIndoorMarin() {
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
