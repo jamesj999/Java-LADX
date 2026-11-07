@@ -32,7 +32,7 @@ final class EntitySlotPhase5 {
                 state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = shellUpdate.nextIgnoreHitsCountdown();
                 if (shellUpdate.unloadRequested()) {
                     state.runtime.pendingClearedEntityMask |= persistentClearMask(state.entity);
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -43,7 +43,7 @@ final class EntitySlotPhase5 {
             }
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && !state.keyDropTransitionActive && state.applyGenericGroundInteraction
-                && !state.runtime.hasNoGroundInteraction(state.updated)
+                && !state.runtime.backgroundMechanics.hasNoGroundInteraction(state.updated)
                 && (state.handlerLinkCollisionEnabled || state.updated.type() != state.runtime.ENTITY_BLOOPER)) {
                 // ApplyEntityInteractionWithBackground runs after each ROM
                 // entity handler's movement and before the final display-list
@@ -54,13 +54,13 @@ final class EntitySlotPhase5 {
                     ? state.preAppliedGroundResult
                     : Objects.requireNonNull(
                         state.runtime.groundInteraction.apply(state.updated, state.frame, previousGroundStatus,
-                            state.runtime.verticalSpeedZ(state.updated), state.runtime.groundInteractionSideScrolling),
+                            state.runtime.backgroundMechanics.verticalSpeedZ(state.updated), state.runtime.groundInteractionSideScrolling),
                         "Room entity ground interaction returned null");
                 state.updated = Objects.requireNonNull(groundResult.entity(),
                     "Room entity ground interaction returned a null entity");
                 state.runtime.entityGroundStatus[state.updated.slot()] = groundResult.groundStatus() & 0xFF;
                 if (groundResult.pitTransition() != null
-                    && state.runtime.beginFalling(state.updated, groundResult.pitTransition(),
+                    && state.runtime.backgroundMechanics.beginFalling(state.updated, groundResult.pitTransition(),
                         state.ignoreHitsDecrementedBeforeHandler)) {
                     state.status = EntityStatus.FALLING;
                 }
@@ -72,7 +72,7 @@ final class EntitySlotPhase5 {
                         EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
                 }
                 if (groundResult.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.updated.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.updated.slot());
                     return false;
                 }
                 if (state.status == EntityStatus.ACTIVE && state.runtime.enemyDropActive[state.updated.slot()]) {
@@ -98,10 +98,10 @@ final class EntitySlotPhase5 {
                 // handler-specific work. Restore the pre-entity final
                 // position and carry the helper's other side effects across
                 // the room/runtime boundary.
-                state.runtime.requestLinkPush(state.updated, state.genericLinkPushPolicy);
+                state.runtime.backgroundMechanics.requestLinkPush(state.updated, state.genericLinkPushPolicy);
             }
             if (ColorShellMotion.isColorShellType(state.updated.type())) {
-                state.updated = state.runtime.refreshColorShellDisplay(state.updated, state.status);
+                state.updated = state.runtime.slotProperties.refreshColorShellDisplay(state.updated, state.status);
             }
             if (state.status == EntityStatus.ACTIVE && isRuntimeFloatingItem(state.updated)) {
                 state.updated = withZ(state.updated,
@@ -142,7 +142,7 @@ final class EntitySlotPhase5 {
                 || state.preserveSecretSeashellPresentation || state.preserveDroppablePresentation
                 || state.preserveTarinPresentation
                 ? state.updated.spriteVariant() : state.runtime.variantFor(state.updated, state.frame);
-            if (state.status == EntityStatus.ACTIVE && state.runtime.shouldDisappear(state.entity)) {
+            if (state.status == EntityStatus.ACTIVE && state.runtime.lifecycle.shouldDisappear(state.entity)) {
                 state.variant = (state.runtime.slowTransitionCountdown[state.entity.slot()] & 0x01) != 0 ? 0 : -1;
             }
             state.renderFlipAttribute = state.preserveGhiniPresentation || state.preserveMadBomberPresentation

@@ -200,7 +200,7 @@ final class EntityRoomInspection {
     boolean gameplayEntityTimersInteractive(boolean creditsGameplay) {
         return (creditsGameplay || (runtime.gameplayWorld && runtime.transitionSequenceCounter == 0x04))
             && !runtime.roomTransitionActive
-            && runtime.entityTimersInteractive();
+            && runtime.backgroundMechanics.entityTimersInteractive();
     }
 
     boolean isLoadedEntityOfType(int slot, int type) {

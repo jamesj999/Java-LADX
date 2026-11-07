@@ -40,52 +40,52 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.genieControllerSlot = state.entity.slot();
                 }
                 if (state.runtime.geniePrivateState1[state.entity.slot()] == 0
-                    && (genieThresholdReached || state.runtime.genieState0Interactive(state.creditsGameplay))) {
-                    state.runtime.advanceGenieJar(state.entity, state.linkEntityY);
+                    && (genieThresholdReached || state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay))) {
+                    state.runtime.genie.advanceGenieJar(state.entity, state.linkEntityY);
                     if (!state.runtime.slots[state.entity.slot()].loaded()) {
                         return false;
                     }
                     state.updated = state.runtime.slots[state.entity.slot()];
                 }
                 if (state.runtime.geniePrivateState1[state.entity.slot()] == 2
-                    && state.runtime.genieState0Interactive(state.creditsGameplay)) {
-                    state.runtime.advanceGenieAppearance(state.entity);
+                    && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
+                    state.runtime.genie.advanceGenieAppearance(state.entity);
                     if (!state.runtime.slots[state.entity.slot()].loaded()) {
                         return false;
                     }
                     state.updated = state.runtime.slots[state.entity.slot()];
                 }
                 if (state.runtime.geniePrivateState1[state.entity.slot()] == 3
-                    && state.runtime.genieState0Interactive(state.creditsGameplay)) {
-                    state.runtime.advanceGenieSideProjectile(state.entity, state.frameCounter);
+                    && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
+                    state.runtime.genie.advanceGenieSideProjectile(state.entity, state.frameCounter);
                     if (!state.runtime.slots[state.entity.slot()].loaded()) {
                         return false;
                     }
                     state.updated = state.runtime.slots[state.entity.slot()];
                 }
                 if (state.runtime.geniePrivateState1[state.entity.slot()] == 4
-                    && state.runtime.genieState0Interactive(state.creditsGameplay)) {
+                    && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
                     if (state.handlerLinkCollisionEnabled
                         && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
-                        state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                        state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
                     }
-                    state.runtime.advanceGenieFireball(state.entity, state.frameCounter);
+                    state.runtime.genie.advanceGenieFireball(state.entity, state.frameCounter);
                     if (!state.runtime.slots[state.entity.slot()].loaded()) {
                         return false;
                     }
                     state.updated = state.runtime.slots[state.entity.slot()];
                 }
                 if (state.runtime.geniePrivateState1[state.entity.slot()] == 1
-                    && state.runtime.genieState0Interactive(state.creditsGameplay)) {
+                    && state.runtime.roomInspection.genieState0Interactive(state.creditsGameplay)) {
                     state.runtime.genieSharedBodySpeedX = state.runtime.genieSpeedX[state.entity.slot()] & 0xFF;
                     state.runtime.genieSharedBodySpeedY = state.runtime.genieSpeedY[state.entity.slot()] & 0xFF;
                     if (state.runtime.genieActiveState[state.entity.slot()] != 5
                         && state.handlerLinkCollisionEnabled
                         && RoomEntityCombatRules.overlapsLink(state.entity,
                             state.linkEntityX, state.linkEntityY)) {
-                        state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                        state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
                     }
-                    state.runtime.advanceGenieBody(state.entity, state.frameCounter, state.linkEntityX, state.linkEntityY,
+                    state.runtime.genie.advanceGenieBody(state.entity, state.frameCounter, state.linkEntityX, state.linkEntityY,
                         state.randomByteSupplier);
                     if (!state.runtime.slots[state.entity.slot()].loaded()) {
                         return false;
@@ -108,7 +108,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.pendingDialogRequests.add(new DialogRequest(
                         bossIntro.dialogTableId(), bossIntro.dialogLowId()));
                 }
-                state.runtime.requestArmosLinkPush(state.entity, state.linkEntityX, state.linkEntityY,
+                state.runtime.backgroundMechanics.requestArmosLinkPush(state.entity, state.linkEntityX, state.linkEntityY,
                     state.projectileLinkState.motionState());
                 ArmosKnightMotion.Update armosKnightUpdate = state.runtime.armosKnightMotion.advance(
                     state.entity, state.linkEntityX, state.linkEntityY, state.linkZ,
@@ -156,7 +156,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_HINOX, 74, state -> {
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
-                && state.handlerLinkCollisionEnabled && state.runtime.entityTimersInteractive()
+                && state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive()
                 && state.runtime.transitionSequenceCounter == 0x04
                 && !state.creditsGameplay
                 && true) {
@@ -229,7 +229,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
         registry.registerTick(RoomEntityRuntime.ENTITY_ROLLING_BONES, 75, state -> {
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
-                RoomEntity bar = state.runtime.firstLoadedEntityOfType(state.runtime.ENTITY_ROLLING_BONES_BAR);
+                RoomEntity bar = state.runtime.roomInspection.firstLoadedEntityOfType(state.runtime.ENTITY_ROLLING_BONES_BAR);
                 if (bar != null) {
                     RollingBonesMotion.BossUpdate bossUpdate = state.runtime.rollingBonesMotion.advanceBoss(
                         state.entity, bar, state.runtime.enemyTransitionCountdown[state.entity.slot()],
@@ -252,7 +252,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 if ((state.runtime.entityRoomStatus & 0x20) != 0) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 RollingBonesMotion.BarUpdate barUpdate = state.runtime.rollingBonesMotion.advanceBar(
@@ -284,7 +284,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 if (state.runtime.bowWowState != 0x80) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (!state.handlerInteractive) {
@@ -294,7 +294,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     // movement/Z physics and AI wait until the recoil ends.
                     if (state.runtime.enemyRecoilMotion.isActive(state.entity.slot())
                         && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
-                        state.runtime.slots[state.index] = state.runtime.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
+                        state.runtime.slots[state.index] = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
                         return false;
                     }
                     MoblinKingMotion.Update kingUpdate = state.runtime.moblinKingMotion.advance(
@@ -335,7 +335,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     if (kingUpdate.arrowRequest() != null) {
                         state.runtime.projectileLaunchRequests.add(new RoamingEnemyMotion.LaunchRequest(
                             state.entity.slot(), state.entity.type(), state.runtime.ENTITY_MOBLIN_ARROW));
-                        state.runtime.spawnEnemyProjectile(state.entity, new RoamingEnemyMotion.LaunchRequest(
+                        state.runtime.entityEnemySpawns.spawnEnemyProjectile(state.entity, new RoamingEnemyMotion.LaunchRequest(
                             state.entity.slot(), state.entity.type(), state.runtime.ENTITY_MOBLIN_ARROW),
                             kingUpdate.arrowRequest().direction());
                     }
@@ -357,7 +357,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 if (GopongaFlowerMotion.overlapsInteractiveLink(
                     state.entity, state.linkEntityX, state.linkEntityY, state.handlerLinkCollisionEnabled)) {
-                    state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
                 }
                 state.updated = withVariant(state.updated, GopongaFlowerMotion.frameVariant(state.frame));
                 state.preserveGopongaFlowerPresentation = true;
@@ -369,7 +369,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 if (GiantGopongaMotion.overlapsInteractiveLink(
                     state.entity, state.linkEntityX, state.linkEntityY, state.handlerLinkCollisionEnabled)) {
-                    state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
                 }
                 GiantGopongaMotion.Update giantUpdate = state.runtime.giantGopongaMotion.advance(
                     state.entity, state.frame, state.runtime.enemyTransitionCountdown[state.entity.slot()],
@@ -377,7 +377,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.updated = giantUpdate.entity();
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = giantUpdate.transitionCountdown();
                 if (giantUpdate.projectileSpawn() != null) {
-                    state.runtime.spawnGopongaProjectile(state.entity, giantUpdate.projectileSpawn());
+                    state.runtime.entityEnemySpawns.spawnGopongaProjectile(state.entity, giantUpdate.projectileSpawn());
                 }
                 state.preserveGiantGopongaPresentation = true;
             }
@@ -404,7 +404,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                         state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
                             slot, state.entity.type(), 0, false,
                             EntityCombatEvent.SoundChannel.JINGLE, 0x2F));
-                        state.runtime.disableEntityWithoutPersistence(slot);
+                        state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
                         return false;
                     }
                     if (segmentUpdate.bumpJingle()) {
@@ -428,7 +428,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.enemyTransitionCountdown[slot] = pokeyUpdate.transitionCountdown();
                     state.runtime.enemyFlashCountdown[slot] = pokeyUpdate.flashCountdown();
                     if (pokeyUpdate.segmentSpawn() != null) {
-                        state.runtime.spawnPokeySegment(pokeyUpdate.segmentSpawn());
+                        state.runtime.entityEnemySpawns.spawnPokeySegment(pokeyUpdate.segmentSpawn());
                     }
                     if (state.runtime.spriteHandlers != null) {
                         state.updated = withDefinition(state.updated,
@@ -463,7 +463,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     // this collision check, then copies hLinkFinalPosition
                     // and calls ResetPegasusBoots. It does not use the common
                     // hookshot-chain reset helper.
-                    state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.ZORA);
+                    state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.ZORA);
                 }
                 ZoraMotion.Update zoraUpdate = state.runtime.zoraMotion.advance(
                     state.updated, state.runtime.enemyTransitionCountdown[slot], state.runtime.enemyPhysicsFlags[slot],
@@ -472,7 +472,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.runtime.enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
                 state.runtime.enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
                 if (zoraUpdate.projectileSpawn() != null) {
-                    state.runtime.spawnZoraProjectile(zoraUpdate.projectileSpawn());
+                    state.runtime.entityEnemySpawns.spawnZoraProjectile(zoraUpdate.projectileSpawn());
                 }
                 if (zoraUpdate.splash()) {
                     state.runtime.transientVfxRequests.add(new TransientVfxRequest(
@@ -506,7 +506,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.runtime.enemyPhysicsFlags[slot] = zombieUpdate.physicsFlags();
                 state.applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
                 if (zombieUpdate.spawnRequest() != null) {
-                    state.runtime.spawnZombieChild(zombieUpdate.spawnRequest());
+                    state.runtime.entityEnemySpawns.spawnZombieChild(zombieUpdate.spawnRequest());
                 }
                 if (zombieUpdate.unloadRequested()) {
                     state.runtime.clearEntity(slot);
@@ -584,7 +584,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
         registry.registerTick(RoomEntityRuntime.ENTITY_WITCH, 87, state -> {
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
-                state.runtime.advanceWitchGotItemPresentation(state.entity.slot());
+                state.runtime.story.advanceWitchGotItemPresentation(state.entity.slot());
                 WitchMotion.Update witchUpdate = state.runtime.witchMotion.advance(
                     state.updated, state.runtime.enemyTransitionCountdown[state.entity.slot()],
                     new WitchMotion.Input(state.runtime.playerHasToadstool, state.runtime.linkItemB, state.runtime.linkItemA,
@@ -651,7 +651,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 }
                 state.applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
                 if (urchinUpdate.linkCollision()) {
-                    state.runtime.requestLinkPush(state.updated, EntityLinkCollisionRules.URCHIN);
+                    state.runtime.backgroundMechanics.requestLinkPush(state.updated, EntityLinkCollisionRules.URCHIN);
                 }
                 if (urchinUpdate.jingleId() >= 0) {
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(

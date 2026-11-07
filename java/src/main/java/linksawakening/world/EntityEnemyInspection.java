@@ -699,7 +699,7 @@ final class EntityEnemyInspection {
 
     int dogState(int slot) {
         runtime.validateEntitySlot(slot);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_DOG)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_DOG)) {
             throw new IllegalArgumentException("Entity slot does not contain a dog: " + slot);
         }
         return runtime.dogMotion.state(slot);
@@ -707,7 +707,7 @@ final class EntityEnemyInspection {
 
     int witchRatState(int slot) {
         runtime.validateEntitySlot(slot);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.witchRatMotion.state(slot);
@@ -715,7 +715,7 @@ final class EntityEnemyInspection {
 
     int witchRatTransitionCountdown(int slot) {
         runtime.validateEntitySlot(slot);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.enemyTransitionCountdown[slot];
@@ -723,7 +723,7 @@ final class EntityEnemyInspection {
 
     int witchRatSpeedZ(int slot) {
         runtime.validateEntitySlot(slot);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_WITCH_RAT)) {
             throw new IllegalArgumentException("Entity slot does not contain a Witch Rat: " + slot);
         }
         return runtime.witchRatMotion.speedZ(slot);

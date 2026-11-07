@@ -49,7 +49,7 @@ final class EntityEnemySpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_BOMB);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
             entityX, entityY, EntityStatus.ACTIVE, definition, variant, 0, 0, entityZ, -1, false);
@@ -92,12 +92,12 @@ final class EntityEnemySpawns {
         if (freeSlot < 0) {
             return false;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_MOBLIN_SWORD);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MOBLIN_SWORD);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, 0xFF, runtime.ENTITY_MOBLIN_SWORD,
             wall.x(), (wall.y() + 0x08) & 0xFF, EntityStatus.INIT,
             definition, variant, 0, 0, wall.z(), -1, false);
-        runtime.resetEnemyDropState(freeSlot);
+        runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.droppedItemBySlot[freeSlot] = runtime.ENTITY_HIDING_SLIME_KEY;
         runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_MOBLIN_SWORD);
         runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_MOBLIN_SWORD);
@@ -114,7 +114,7 @@ final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-            runtime.spriteDefinitionFor(runtime.ENTITY_PAIRODD_PROJECTILE);
+            runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_PAIRODD_PROJECTILE);
         int projectileVariant = projectileDefinition.supported()
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, runtime.ENTITY_PAIRODD_PROJECTILE,
@@ -141,7 +141,7 @@ final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-            runtime.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+            runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
         int projectileVariant = projectileDefinition.supported()
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1,
@@ -171,7 +171,7 @@ final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-            runtime.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
+            runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE);
         int projectileVariant = projectileDefinition.supported()
             ? projectileDefinition.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1,
@@ -200,7 +200,7 @@ final class EntityEnemySpawns {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_ZOMBIE);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ZOMBIE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity child = new RoomEntity(freeSlot, -1, runtime.ENTITY_ZOMBIE,
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
@@ -231,7 +231,7 @@ final class EntityEnemySpawns {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionForPokeySegment();
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionForPokeySegment();
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity segment = new RoomEntity(freeSlot, -1, runtime.ENTITY_POKEY,
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
@@ -264,7 +264,7 @@ final class EntityEnemySpawns {
         }
 
         EntitySpriteDefinition projectileDefinition =
-            runtime.spriteDefinitionFor(runtime.ENTITY_WIZROBE_PROJECTILE);
+            runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_WIZROBE_PROJECTILE);
         int projectileVariant = projectileDefinition.supported()
             ? spawn.direction() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, runtime.ENTITY_WIZROBE_PROJECTILE,
@@ -293,7 +293,7 @@ final class EntityEnemySpawns {
             return false;
         }
 
-        EntitySpriteDefinition cloneDefinition = runtime.spriteDefinitionForEvasiveState(
+        EntitySpriteDefinition cloneDefinition = runtime.slotProperties.spriteDefinitionForEvasiveState(
             source.spriteDefinition(), 1);
         int cloneVariant = cloneDefinition.supported() ? cloneDefinition.initialVariant() : -1;
         RoomEntity clone = new RoomEntity(freeSlot, -1, runtime.ENTITY_STALFOS_EVASIVE,
@@ -343,7 +343,7 @@ final class EntityEnemySpawns {
 
         EnemyProjectileMotion.SpawnData spawn = EnemyProjectileMotion.spawnData(
             request.projectileType(), direction);
-        EntitySpriteDefinition projectileDefinition = runtime.spriteDefinitionFor(request.projectileType());
+        EntitySpriteDefinition projectileDefinition = runtime.slotProperties.spriteDefinitionFor(request.projectileType());
         int projectileVariant = projectileDefinition.supported()
             ? spawn.initialVariant() : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, request.projectileType(),
@@ -377,7 +377,7 @@ final class EntityEnemySpawns {
 
         EnemyProjectileMotion.SpawnData spawn = EnemyProjectileMotion.spawnData(
             runtime.ENTITY_OCTOROK_ROCK, direction);
-        EntitySpriteDefinition projectileDefinition = runtime.spriteDefinitionFor(runtime.ENTITY_OCTOROK_ROCK);
+        EntitySpriteDefinition projectileDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_OCTOROK_ROCK);
         int projectileVariant = projectileDefinition.supported() ? 1 : -1;
         RoomEntity projectile = new RoomEntity(freeSlot, -1, runtime.ENTITY_OCTOROK_ROCK,
             byteValue(source.x() + signedByte(spawn.offsetX())),
@@ -403,7 +403,7 @@ final class EntityEnemySpawns {
             return false;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_CUCCO);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_CUCCO);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity angry = new RoomEntity(freeSlot, -1, runtime.ENTITY_CUCCO,
             request.x(), request.y(), EntityStatus.ACTIVE, definition, variant,

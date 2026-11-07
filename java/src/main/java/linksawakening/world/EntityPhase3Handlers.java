@@ -107,7 +107,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.enemyFlashCountdown[state.entity.slot()] > 0);
                 state.updated = pairoddUpdate.entity();
                 if (pairoddUpdate.spawnProjectile()) {
-                    state.runtime.spawnPairoddProjectile(state.entity, state.linkEntityX, state.linkEntityY);
+                    state.runtime.entityEnemySpawns.spawnPairoddProjectile(state.entity, state.linkEntityX, state.linkEntityY);
                 }
                 if (pairoddUpdate.teleportJingle()) {
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
@@ -143,7 +143,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     blooperBackgroundInteraction, state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()]);
                 RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
                     state.runtime.groundInteraction.apply(movement.entity(), state.frame,
-                        state.runtime.entityGroundStatus[state.entity.slot()], state.runtime.verticalSpeedZ(movement.entity()),
+                        state.runtime.entityGroundStatus[state.entity.slot()], state.runtime.backgroundMechanics.verticalSpeedZ(movement.entity()),
                         state.runtime.groundInteractionSideScrolling),
                     "Room entity ground interaction returned null");
                 BlooperMotion.Update blooperUpdate = state.runtime.blooperMotion.finish(movement, groundResult,
@@ -184,7 +184,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.preserveWingedOctorokPresentation = true;
                 state.runtime.wingedStateTwoThisFrame[state.entity.slot()] = wingedUpdate.skippedDefaultCollision();
                 if (wingedUpdate.rockSpawn() != null) {
-                    state.runtime.spawnWingedOctorokRock(state.updated, wingedUpdate.rockSpawn().direction());
+                    state.runtime.entityEnemySpawns.spawnWingedOctorokRock(state.updated, wingedUpdate.rockSpawn().direction());
                 }
                 if (wingedUpdate.jumped()) {
                     state.runtime.wingedSwordAttackThisFrame[state.entity.slot()] = true;
@@ -208,13 +208,13 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.updated = bushUpdate.entity();
                 if (bushUpdate.specialState()) {
                     state.updated = withDefinition(state.updated,
-                        state.runtime.spriteDefinitionForBushCrawlerState(0x02), state.updated.spriteVariant());
+                        state.runtime.slotProperties.spriteDefinitionForBushCrawlerState(0x02), state.updated.spriteVariant());
                 } else if (bushUpdate.crawlOverlayRendered()) {
                     state.updated = withDefinition(state.updated,
-                        state.runtime.spriteDefinitionForBushCrawlerCrawlState(bushUpdate.privateState4()),
+                        state.runtime.slotProperties.spriteDefinitionForBushCrawlerCrawlState(bushUpdate.privateState4()),
                         state.updated.spriteVariant());
                 } else {
-                    state.updated = withDefinition(state.updated, state.runtime.spriteDefinitionFor(state.runtime.ENTITY_BUSH_CRAWLER),
+                    state.updated = withDefinition(state.updated, state.runtime.slotProperties.spriteDefinitionFor(state.runtime.ENTITY_BUSH_CRAWLER),
                         state.updated.spriteVariant());
                 }
                 if (!bushUpdate.specialState()) {
@@ -225,7 +225,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 }
                 state.preserveBushCrawlerPresentation = true;
                 if (bushUpdate.liftRequested()
-                    && state.runtime.beginBushCrawlerLift(state.index, state.updated, bushUpdate.privateState4(),
+                    && state.runtime.liftThrow.beginBushCrawlerLift(state.index, state.updated, bushUpdate.privateState4(),
                         state.romLinkDirection)) {
                     return false;
                 }
@@ -275,7 +275,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     removePairoddProjectile = true;
                 }
                 if (removePairoddProjectile) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -297,7 +297,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     && state.objectCollision.collides(state.updated);
                 if (objectCollisionHit
                     || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -313,7 +313,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = projectileUpdate.transitionCountdown();
                 state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] = projectileUpdate.ignoreHitsCountdown();
                 if (projectileUpdate.unloadRequested()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 state.updated = projectileUpdate.entity();
@@ -353,15 +353,15 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 CrowMotion.Update crowUpdate = state.runtime.crowMotion.advance(state.entity,
                     state.runtime.enemyTransitionCountdown[state.entity.slot()], state.frame, state.linkEntityX, state.linkEntityY,
-                    state.runtime.entityRoomId != 0x58, state.runtime.kanaletCrowTakeoffTriggered(state.entity));
+                    state.runtime.entityRoomId != 0x58, state.runtime.slotProperties.kanaletCrowTakeoffTriggered(state.entity));
                 state.updated = crowUpdate.entity();
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = crowUpdate.transitionCountdown();
                 state.runtime.enemyPhysicsFlags[state.entity.slot()] = crowUpdate.physicsFlags();
                 if (crowUpdate.boomerangSound()) {
-                    state.runtime.playBoomerangSoundIfDue(state.updated);
+                    state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
                 }
                 if (crowUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -373,7 +373,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 CuccoMotion.Update cuccoUpdate = state.runtime.cuccoMotion.advance(state.entity, state.frame,
                     state.runtime.enemyTransitionCountdown[state.entity.slot()], state.runtime.enemyFlashCountdown[state.entity.slot()],
                     state.linkEntityX, state.linkEntityY, state.linkZ, state.handlerLinkCollisionEnabled,
-                    state.runtime.cuccoPowerBraceletHeld(), state.runtime.linkAttackStepAnimationCountdown != 0,
+                    state.runtime.liftThrow.cuccoPowerBraceletHeld(), state.runtime.linkAttackStepAnimationCountdown != 0,
                     state.randomByteSupplier, state.backgroundCollision,
                     state.runtime.indoorRoom, state.runtime.followingNpcState.marinFollowing(), state.runtime.transitionSequenceCounter);
                 state.updated = cuccoUpdate.entity();
@@ -386,7 +386,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                         cuccoUpdate.dialogTableId(), cuccoUpdate.dialogLowId()));
                 }
                 if (cuccoUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (cuccoUpdate.liftRequested()
@@ -394,19 +394,19 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         state.entity.slot(), state.entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.LIFT_WAVE_SFX));
-                    state.runtime.slots[state.index] = state.runtime.advanceLiftedEntity(
-                        state.runtime.renderLiftedEntity(state.runtime.slots[state.index], state.frame), state.linkEntityX, state.linkEntityY,
+                    state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(
+                        state.runtime.liftThrow.renderLiftedEntity(state.runtime.slots[state.index], state.frame), state.linkEntityX, state.linkEntityY,
                         state.linkZ, state.romLinkDirection);
                     return false;
                 }
                 if (cuccoUpdate.spawnRequest() != null
-                    && state.runtime.spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
+                    && state.runtime.entityEnemySpawns.spawnCuccoAngry(cuccoUpdate.spawnRequest())) {
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         state.entity.slot(), state.entity.type(), 0, false,
                         EntityCombatEvent.SoundChannel.WAVE, CuccoMotion.CUCCO_HURT_WAVE_SFX));
                 }
                 if (cuccoUpdate.boomerangSound()) {
-                    state.runtime.playBoomerangSoundIfDue(state.updated);
+                    state.runtime.projectiles.playBoomerangSoundIfDue(state.updated);
                 }
             }
             return true;
@@ -423,7 +423,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     state.runtime.enemyHealth[state.entity.slot()] = booBuddyUpdate.healthOverride();
                 }
                 if (booBuddyUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -459,7 +459,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.updated = evasiveUpdate.entity();
                 state.runtime.enemyTransitionCountdown[state.entity.slot()] = evasiveUpdate.transitionCountdown();
                 if (evasiveUpdate.cloneRequest() != null) {
-                    state.runtime.spawnEvasiveClone(state.entity, evasiveUpdate.cloneRequest());
+                    state.runtime.entityEnemySpawns.spawnEvasiveClone(state.entity, evasiveUpdate.cloneRequest());
                 }
                 if (evasiveUpdate.swordPokeRequested()) {
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
@@ -470,7 +470,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                         (state.updated.y() - state.updated.z()) & 0xFF));
                 }
                 if (evasiveUpdate.unloadRequested()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (state.runtime.spriteHandlers != null) {
@@ -569,7 +569,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 state.runtime.enemyPhysicsFlags[state.entity.slot()] = wizrobeUpdate.physicsFlags();
                 state.preserveWizrobePresentation = true;
                 if (wizrobeUpdate.projectileSpawn() != null) {
-                    state.runtime.spawnWizrobeProjectile(state.updated, wizrobeUpdate.projectileSpawn());
+                    state.runtime.entityEnemySpawns.spawnWizrobeProjectile(state.updated, wizrobeUpdate.projectileSpawn());
                 }
             }
             return true;
@@ -598,7 +598,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 if (armosUpdate.linkFinalPositionCopyRequested()
                     && state.projectileLinkState.motionState()
                         < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
-                    state.runtime.requestLinkPush(state.entity, EntityLinkCollisionRules.RESTORE_ONLY);
+                    state.runtime.backgroundMechanics.requestLinkPush(state.entity, EntityLinkCollisionRules.RESTORE_ONLY);
                 }
                 if (armosUpdate.woke()) {
                     // ArmosStatueEntityHandler's wake branch starts the same

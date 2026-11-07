@@ -64,7 +64,7 @@ final class EntityLiftThrowController {
             entity, sideScrolling, backgroundCollision, frame, runtime.entityGroundStatus[slot]);
         RoomEntity updated = update.entity();
         if (entity.type() == runtime.ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
-            updated = runtime.registerGenieJarImpact(updated);
+            updated = runtime.genie.registerGenieJarImpact(updated);
             if (updated.status() == EntityStatus.ACTIVE) {
                 return updated;
             }
@@ -127,7 +127,7 @@ final class EntityLiftThrowController {
                 || runtime.enemyIgnoreHitsCountdown[targetSlot] != 0) {
                 continue;
             }
-            runtime.applyPlayerProjectileDamage(target, runtime.DAMAGE_TYPE_THROW_AT,
+            runtime.projectiles.applyPlayerProjectileDamage(target, runtime.DAMAGE_TYPE_THROW_AT,
                 runtime.thrownEntityMotion.speedX(sourceSlot),
                 runtime.thrownEntityMotion.speedY(sourceSlot));
         }
@@ -182,7 +182,7 @@ final class EntityLiftThrowController {
 
         int slot = source.slot();
         RoomEntity carried = runtime.slots[slot];
-        EntitySpriteDefinition rockDefinition = runtime.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
+        EntitySpriteDefinition rockDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
         carried = withType(carried, runtime.ENTITY_LIFTABLE_ROCK, rockDefinition);
         carried = withVariant(carried, rockDefinition.supported()
             ? (privateState4 ^ 0x01) & 0x01 : -1);
@@ -197,7 +197,7 @@ final class EntityLiftThrowController {
         if (freeSlot < 0) {
             return true;
         }
-        EntitySpriteDefinition crawlerDefinition = runtime.spriteDefinitionFor(runtime.ENTITY_BUSH_CRAWLER);
+        EntitySpriteDefinition crawlerDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BUSH_CRAWLER);
         int crawlerVariant = crawlerDefinition.supported()
             ? crawlerDefinition.initialVariant() : -1;
         RoomEntity replacement = new RoomEntity(freeSlot, -1, runtime.ENTITY_BUSH_CRAWLER,
@@ -251,7 +251,7 @@ final class EntityLiftThrowController {
                 ? withVariant(entity, (frameCounter >>> 2) & 0x01) : entity;
         }
         runtime.enemyFlashCountdown[entity.slot()] = 0;
-        return withDefinition(entity, runtime.spriteDefinitionFor(runtime.ENTITY_BOMB), 0);
+        return withDefinition(entity, runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB), 0);
         }
 
     RoomEntity renderLiftedBomb(RoomEntity entity) {

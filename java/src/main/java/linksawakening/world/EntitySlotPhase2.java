@@ -22,7 +22,7 @@ final class EntitySlotPhase2 {
     static boolean run(EntityFrameExecution state) {
 
             if (state.status == EntityStatus.LIFTED) {
-                RoomEntity lifted = state.runtime.renderLiftedEntity(state.entity, state.frame);
+                RoomEntity lifted = state.runtime.liftThrow.renderLiftedEntity(state.entity, state.frame);
                 // Side-view pot pickup enters status LIFTED with the ROM's
                 // transition countdown set to $02. UpdateEntityTimers has
                 // already decremented it for this frame; EntityLiftedHandler
@@ -46,39 +46,39 @@ final class EntitySlotPhase2 {
                         state.entity.slot(), roosterUpdate.positionZ(), roosterUpdate.velocityZ(),
                         roosterUpdate.speedX(), roosterUpdate.speedY(),
                         roosterUpdate.romDirection()));
-                    state.runtime.playBoomerangSoundIfDue(state.entity);
+                    state.runtime.projectiles.playBoomerangSoundIfDue(state.entity);
                 }
-                state.runtime.slots[state.index] = state.runtime.advanceLiftedEntity(lifted, state.linkEntityX, state.linkEntityY, state.linkZ,
+                state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(lifted, state.linkEntityX, state.linkEntityY, state.linkZ,
                     liftedRomDirection);
                 return false;
             } else if (state.status == EntityStatus.THROWN) {
                 if (state.entity.type() == state.runtime.ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = state.runtime.advanceBombEntity(state.index, state.entity,
+                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
                         state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
                     state.entity = state.runtime.slots[state.index];
                     if (bombDecision.unloadAfterPresentation()) {
                         return false;
                     }
                 }
-                RoomEntity thrown = state.runtime.advanceThrownEntity(state.entity, state.backgroundCollision,
+                RoomEntity thrown = state.runtime.liftThrow.advanceThrownEntity(state.entity, state.backgroundCollision,
                     state.runtime.groundInteractionSideScrolling, state.romLinkDirection, state.frame);
                 state.runtime.slots[state.index] = thrown;
                 if (thrown.status() == EntityStatus.THROWN) {
-                    state.runtime.collideThrownEntityWithEntities(thrown, state.frame);
+                    state.runtime.liftThrow.collideThrownEntityWithEntities(thrown, state.frame);
                 }
                 return false;
             } else if (state.status == EntityStatus.FALLING) {
                 if (state.runtime.entityMapId == state.runtime.MAP_COLOR_DUNGEON
                     && ColorShellMotion.isColorShellType(state.entity.type())) {
                     state.runtime.colorShellMotion.enterState6(state.entity);
-                    RoomEntity activeShell = state.runtime.refreshColorShellDisplay(
+                    RoomEntity activeShell = state.runtime.slotProperties.refreshColorShellDisplay(
                         withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
                     state.runtime.slots[state.index] = activeShell;
                     return false;
                 }
-                RoomEntity falling = state.runtime.advanceFallingEntity(state.entity);
+                RoomEntity falling = state.runtime.backgroundMechanics.advanceFallingEntity(state.entity);
                 if (falling == null) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 int renderFlipAttribute = state.runtime.baseEntityFlipAttribute[state.entity.slot()];
@@ -93,28 +93,28 @@ final class EntitySlotPhase2 {
                 return false;
             } else if (state.status == EntityStatus.DYING) {
                 if (state.entity.type() == state.runtime.ENTITY_MOBLIN_KING) {
-                    state.runtime.advanceMoblinKingDestruction(state.entity, state.frame, state.randomByteSupplier);
+                    state.runtime.bossRewards.advanceMoblinKingDestruction(state.entity, state.frame, state.randomByteSupplier);
                     return false;
                 }
                 if (state.entity.type() == state.runtime.ENTITY_GENIE
                     && state.runtime.geniePrivateState1[state.entity.slot()] == 1) {
-                    state.runtime.advanceGenieDestruction(state.entity, state.frame, state.randomByteSupplier);
+                    state.runtime.genie.advanceGenieDestruction(state.entity, state.frame, state.randomByteSupplier);
                     return false;
                 }
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES) {
-                    state.runtime.advanceRollingBonesDestruction(state.entity, state.randomByteSupplier);
+                    state.runtime.bossRewards.advanceRollingBonesDestruction(state.entity, state.randomByteSupplier);
                     return false;
                 }
                 if (state.entity.type() == state.runtime.ENTITY_MOLDORM) {
-                    state.runtime.advanceMoldormDestruction(state.entity, state.frame);
+                    state.runtime.bossRewards.advanceMoldormDestruction(state.entity, state.frame);
                     return false;
                 }
                 if (isBossKeyDropProducer(state.entity.type())) {
-                    state.runtime.advanceBossKeyDropProducer(state.entity, state.randomByteSupplier);
+                    state.runtime.bossRewards.advanceBossKeyDropProducer(state.entity, state.randomByteSupplier);
                     return false;
                 }
                 if (state.runtime.dyingCountdown[state.entity.slot()] == 0) {
-                    state.runtime.handleTerminalEnemyDeath(state.entity, state.randomByteSupplier);
+                    state.runtime.bossRewards.handleTerminalEnemyDeath(state.entity, state.randomByteSupplier);
                 } else {
                     int slot = state.entity.slot();
                     int presentationCountdown = state.runtime.dyingCountdown[slot];
@@ -128,8 +128,8 @@ final class EntitySlotPhase2 {
                             EntityCombatEvent.SoundChannel.NOISE, 0x13));
                     }
                     RoomEntity updated = state.runtime.enemyIgnoreHitsCountdown[slot] > 0
-                        ? state.runtime.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity() : state.entity;
-                    updated = state.runtime.refreshColorShellDisplay(updated, state.status);
+                        ? state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity() : state.entity;
+                    updated = state.runtime.slotProperties.refreshColorShellDisplay(updated, state.status);
                     state.runtime.slots[state.index] = withDeathPresentation(updated,
                         state.runtime.deathSpriteVariantForCountdown(presentationCountdown),
                         state.runtime.powerRecoilDeath[slot]);
@@ -137,20 +137,20 @@ final class EntitySlotPhase2 {
                 return false;
             } else if (state.status == EntityStatus.BURNING) {
                 if (state.runtime.enemyTransitionCountdown[state.entity.slot()] == 0) {
-                    state.runtime.finishBurning(state.entity);
+                    state.runtime.lifecycle.finishBurning(state.entity);
                 } else {
-                    state.runtime.slots[state.index] = state.runtime.refreshColorShellDisplay(state.entity, state.status);
+                    state.runtime.slots[state.index] = state.runtime.slotProperties.refreshColorShellDisplay(state.entity, state.status);
                 }
                 return false;
             } else if (state.status == EntityStatus.STUNNED) {
                 if (state.entity.type() == state.runtime.ENTITY_BOMB) {
-                    BombMotion.Decision bombDecision = state.runtime.advanceBombEntity(state.index, state.entity,
+                    BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
                         state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
                     state.entity = state.runtime.slots[state.index];
                     if (bombDecision.unloadAfterPresentation()) {
                         return false;
                     }
-                    state.entity = state.runtime.applyBombStunnedPostActiveWork(state.entity, state.backgroundCollision, state.frame);
+                    state.entity = state.runtime.bombInteractions.applyBombStunnedPostActiveWork(state.entity, state.backgroundCollision, state.frame);
                     state.runtime.slots[state.index] = state.entity;
                 }
                 if (state.runtime.powerBraceletButtonHeld
@@ -159,16 +159,16 @@ final class EntitySlotPhase2 {
                         || (state.runtime.enemyPhysicsFlags[state.entity.slot()] & state.runtime.ENTITY_PHYSICS_GRABBABLE) != 0)
                     && RoomEntityPickupRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
                     if (state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
-                        state.runtime.slots[state.index] = state.runtime.advanceLiftedEntity(state.runtime.renderLiftedBomb(state.runtime.slots[state.index]),
+                        state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(state.runtime.liftThrow.renderLiftedBomb(state.runtime.slots[state.index]),
                             state.linkEntityX, state.linkEntityY, state.linkZ, state.romLinkDirection);
                     }
                     return false;
                 }
                 if (state.runtime.enemyStunnedCountdown[state.entity.slot()] == 0) {
-                    state.runtime.slots[state.index] = state.runtime.refreshColorShellDisplay(
+                    state.runtime.slots[state.index] = state.runtime.slotProperties.refreshColorShellDisplay(
                         withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
                 } else {
-                    state.runtime.slots[state.index] = state.runtime.refreshColorShellDisplay(state.entity, state.status);
+                    state.runtime.slots[state.index] = state.runtime.slotProperties.refreshColorShellDisplay(state.entity, state.status);
                 }
                 return false;
             } else if (state.status == EntityStatus.INIT) {
@@ -176,11 +176,11 @@ final class EntitySlotPhase2 {
                     && (state.runtime.entityRoomStatus & 0x10) != 0) {
                     // The handler's first instruction is the completed-room
                     // gate, including the INIT dispatch path.
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 state.status = EntityStatus.ACTIVE;
-                state.runtime.initializeEntityTimers(state.entity);
+                state.runtime.pickups.initializeEntityTimers(state.entity);
                 state.runtime.entityHandlers.initialize(state.entity, state.randomByteSupplier);
 
                 if (state.entity.type() == state.runtime.ENTITY_OCTOROK || state.entity.type() == state.runtime.ENTITY_MOBLIN) {
@@ -274,9 +274,9 @@ final class EntitySlotPhase2 {
                 }
             } else if (state.status == EntityStatus.ACTIVE) {
                 if (!state.freezeTarinTimers && !state.freezeMoblinKingTimers) {
-                    state.runtime.decrementSlowTransitionCountdown(state.entity.slot(), state.frame);
+                    state.runtime.lifecycle.decrementSlowTransitionCountdown(state.entity.slot(), state.frame);
                 }
-                if (state.runtime.shouldDisappear(state.entity)) {
+                if (state.runtime.lifecycle.shouldDisappear(state.entity)) {
                     if (state.runtime.slowTransitionCountdown[state.entity.slot()] == 0) {
                         state.runtime.clearEntity(state.entity.slot());
                         return false;
@@ -286,7 +286,7 @@ final class EntitySlotPhase2 {
             state.updated = state.entity;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && state.entity.type() == SideViewPlatformMotion.ENTITY_TYPE
-                && state.handlerLinkCollisionEnabled && state.runtime.entityTimersInteractive()
+                && state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive()
                 && !state.creditsGameplay && state.runtime.transitionSequenceCounter == 0x04) {
                 SideViewPlatformMotion.Frame platformFrame =
                     state.runtime.sideViewPlatformMotion.beginFrame(state.entity);
@@ -346,7 +346,7 @@ final class EntitySlotPhase2 {
             if (!state.runtime.entityHandlers.tick(31, state)) return false;
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && isCommonDroppableType(state.entity.type())) {
-                CommonDroppableUpdate droppableUpdate = state.runtime.advanceCommonDroppable(
+                CommonDroppableUpdate droppableUpdate = state.runtime.pickups.advanceCommonDroppable(
                     state.entity, state.linkEntityX, state.linkEntityY,
                     state.runtime.objectQuery == null ? null : state.runtime.objectQuery.sample(state.entity));
                 state.updated = droppableUpdate.entity();
@@ -375,7 +375,7 @@ final class EntitySlotPhase2 {
                 }
                 // The bar's room-clear check precedes its interaction guard.
                 if (state.entity.type() == state.runtime.ENTITY_ROLLING_BONES_BAR && (state.runtime.entityRoomStatus & 0x20) != 0) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
@@ -384,7 +384,7 @@ final class EntitySlotPhase2 {
                     && !state.rollingBonesHitThisFrame && state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
                     // ApplyRecoilIfNeeded_06 pops the handler return address:
                     // no jump physics or AI movement occurs during recoil.
-                    state.runtime.slots[state.index] = state.runtime.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
+                    state.runtime.slots[state.index] = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision).entity();
                     return false;
                 }
             }
@@ -404,7 +404,7 @@ final class EntitySlotPhase2 {
                     || state.handlerLinkCollisionEnabled)) {
                 // Bank-$03 AnimateRoamingEnemy and the bank-$04/$06/$07
                 // handlers apply the shared recoil before their own movement.
-                EnemyRecoilMotion.Update recoil = state.runtime.applyEnemyRecoilIfNeeded(
+                EnemyRecoilMotion.Update recoil = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(
                     state.entity, state.backgroundCollision);
                 state.entity = recoil.entity();
                 state.updated = state.entity;

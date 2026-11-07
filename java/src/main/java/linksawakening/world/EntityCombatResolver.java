@@ -168,7 +168,7 @@ final class EntityCombatResolver {
                 continue;
             }
 
-            boolean goombaStomp = runtime.canGoombaStomp(entity, linkEntityX, linkEntityY,
+            boolean goombaStomp = runtime.roomInspection.canGoombaStomp(entity, linkEntityX, linkEntityY,
                 linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter);
             boolean linkCollision = entity.type() != runtime.ENTITY_LIKE_LIKE
                 && !linkAirborne && linkInteractive
@@ -183,7 +183,7 @@ final class EntityCombatResolver {
                 && (entity.type() != runtime.ENTITY_LIKE_LIKE
                     || runtime.likeLikeMotion.state(entity.slot()) == 0)
                 && hidingZolSwordCollision
-                && runtime.moldormOrHeadOverlapsSword(
+                && runtime.backgroundMechanics.moldormOrHeadOverlapsSword(
                     entity, swordX, swordWidth, swordY, swordHeight);
             // $20:4B4A supplies the shield rectangle to the same collision
             // pass as the sword, but $03:6EA5 dispatches it separately.

@@ -205,7 +205,7 @@ final class EntityPickupController {
         if (update.newContainer()) runtime.pendingEntityEvents.add(new EntityCombatEvent(slot, entity.type(), 0, false,
             EntityCombatEvent.SoundChannel.JINGLE, 0x19));
         if (update.complete()) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
@@ -289,7 +289,7 @@ final class EntityPickupController {
         if (freeSlot < 0) {
             return;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_ZOL);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ZOL);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity zol = new RoomEntity(freeSlot, -1, runtime.ENTITY_ZOL, chest.x(), chest.y(),
             EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06, -1, false);
@@ -311,7 +311,7 @@ final class EntityPickupController {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         if (itemType == runtime.ENTITY_KEY_DROP_POINT && source.type() == runtime.ENTITY_ARMOS_KNIGHT) {
             variant = 3;
@@ -358,7 +358,7 @@ final class EntityPickupController {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported()
             ? Math.min(spriteVariant, definition.variantCount() - 1) : -1;
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType,

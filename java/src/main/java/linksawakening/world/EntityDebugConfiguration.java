@@ -24,7 +24,7 @@ final class EntityDebugConfiguration {
 
     void setMagicPowderTransitionCountdownForTest(int slot, int value) {
         runtime.validateCountdownTestValue(slot, value);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
                 + slot);
         }
@@ -33,7 +33,7 @@ final class EntityDebugConfiguration {
 
     void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
         runtime.validateCountdownTestValue(slot, value);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: "
                 + slot);
         }
@@ -51,7 +51,7 @@ final class EntityDebugConfiguration {
 
     void setBowWowTransitionCountdownForTest(int slot, int value) {
         runtime.validateCountdownTestValue(slot, value);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_BOW_WOW)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_BOW_WOW)) {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
         runtime.bowWowMotion.setTransitionCountdownForTest(slot, value);
@@ -327,7 +327,7 @@ final class EntityDebugConfiguration {
 
     void setKeyDropTransitionCountdownForTest(int slot, int value) {
         runtime.validateCountdownTestValue(slot, value);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_KEY_DROP_POINT)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_KEY_DROP_POINT)) {
             throw new IllegalArgumentException("Entity slot does not contain a key drop point: "
                 + slot);
         }
@@ -336,7 +336,7 @@ final class EntityDebugConfiguration {
 
     void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
         runtime.validateCountdownTestValue(slot, value);
-        if (!runtime.isLoadedEntityOfType(slot, runtime.ENTITY_HIDING_SLIME_KEY)) {
+        if (!runtime.roomInspection.isLoadedEntityOfType(slot, runtime.ENTITY_HIDING_SLIME_KEY)) {
             throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: "
                 + slot);
         }

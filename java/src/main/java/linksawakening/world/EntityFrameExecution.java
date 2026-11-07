@@ -154,19 +154,19 @@ final class EntityFrameExecution {
         state.handlerLinkCollisionEnabled = state.handlerLinkCollisionEnabled && !state.runtime.inventoryAppearing
             && !state.countdownBlocksInteraction;
         state.threeOfAKindInteractive = state.handlerLinkCollisionEnabled
-            && state.runtime.entityTimersInteractive();
-        state.handlerInteractive = state.runtime.entityHandlerInteractive(state.creditsGameplay);
+            && state.runtime.backgroundMechanics.entityTimersInteractive();
+        state.handlerInteractive = state.runtime.backgroundMechanics.entityHandlerInteractive(state.creditsGameplay);
         state.bowWowHandlerInteractive = state.runtime.transitionSequenceCounter == 0x04
             && !state.runtime.roomTransitionActive && !state.runtime.dialogActive && !state.runtime.inventoryAppearing
             && !state.runtime.witchGotItemPresentationActive();
-        state.projectileTimersInteractive = state.runtime.gameplayEntityTimersInteractive(state.creditsGameplay);
+        state.projectileTimersInteractive = state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(state.creditsGameplay);
         state.sideViewPotInteractive = state.handlerInteractive;
         state.sideViewPotLinkCollisionInteractive = state.sideViewPotInteractive
             && state.handlerLinkCollisionEnabled
             && state.projectileLinkState.motionState()
                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
         state.runtime.shouldGetLostInMysteriousWoods = false;
-        state.runtime.finalizePendingBombPresentations();
+        state.runtime.bombInteractions.finalizePendingBombPresentations();
         state.frame = state.frameCounter & 0xFF;
         state.romCollisionType = state.collisionType & 0xFF;
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
@@ -260,7 +260,7 @@ final class EntityFrameExecution {
         state.runtime.hookshotBridgeUpdates.clear();
         state.runtime.pendingSwitchBlockAnimationRequest = false;
         if (state.runtime.linkPlayingOcarinaCountdown >= 0x10 && state.runtime.ocarinaAnimationCounter == 0x14) {
-            state.runtime.spawnMusicalNote(state.linkEntityX, state.linkEntityY, state.runtime.ocarinaAnimationPhase);
+            state.runtime.entityPlayerSpawns.spawnMusicalNote(state.linkEntityX, state.linkEntityY, state.runtime.ocarinaAnimationPhase);
         }
         state.projectileEvents = new ArrayList<>();
         if (state.linkPositionHistory != null) {
@@ -280,12 +280,12 @@ final class EntityFrameExecution {
             if (!EntitySlotPhase5.run(state)) continue;
         }
         if (state.threeOfAKindInteractive) {
-            state.runtime.resolveThreeOfAKindPuzzle();
+            state.runtime.slotProperties.resolveThreeOfAKindPuzzle();
         }
-        state.runtime.updateHookshotChainOam(state.linkEntityX, state.linkEntityY, state.frame);
-        state.runtime.updatePincerBodyOam();
-        state.runtime.updateWingedOctorokOam();
-        state.runtime.updateBowWowChain(state.frame);
+        state.runtime.slotProperties.updateHookshotChainOam(state.linkEntityX, state.linkEntityY, state.frame);
+        state.runtime.slotProperties.updatePincerBodyOam();
+        state.runtime.slotProperties.updateWingedOctorokOam();
+        state.runtime.slotProperties.updateBowWowChain(state.frame);
         return List.copyOf(state.projectileEvents);
     
     }

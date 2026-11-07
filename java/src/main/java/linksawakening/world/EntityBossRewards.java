@@ -34,7 +34,7 @@ final class EntityBossRewards {
             if (entity.type() == runtime.ENTITY_MOBLIN_KING) {
                 runtime.pendingClearedEntityMask |= persistentClearMask(entity);
             }
-            runtime.disableEntityWithoutPersistence(entity.slot());
+            runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
             return;
         }
 
@@ -44,7 +44,7 @@ final class EntityBossRewards {
                 runtime.ENTITY_SWORD_SHIELD_PICKUP, runtime.enemyDropCounters, 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
-                entity.type(), runtime.enemyDropHealthGroup(entity.type()), runtime.droppedItemBySlot[entity.slot()],
+                entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()), runtime.droppedItemBySlot[entity.slot()],
                 runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.enemyDropBossBattle,
                 runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling, runtime.enemyDropCounters,
                 randomByteSupplier);
@@ -57,9 +57,9 @@ final class EntityBossRewards {
         runtime.killCount = (runtime.killCount + 1) & 0xFF;
         runtime.pendingClearedEntityMask |= persistentClearMask(entity);
         if (result.dropped()) {
-            runtime.spawnEnemyDrop(entity, result.itemType());
+            runtime.pickups.spawnEnemyDrop(entity, result.itemType());
         }
-        runtime.disableEntityWithoutPersistence(entity.slot());
+        runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
     }
 
     void advanceRollingBonesDestruction(RoomEntity entity,
@@ -78,12 +78,12 @@ final class EntityBossRewards {
             // ROM health-group tables select the miniboss healing fairy.
             if (runtime.enemyDropResolver != null) {
                 EnemyDropResolver.Result drop = runtime.enemyDropResolver.resolve(
-                    new EnemyDropResolver.Context(entity.type(), runtime.enemyDropHealthGroup(entity.type()),
+                    new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()),
                         runtime.droppedItemBySlot[slot], runtime.enemyDropMaxHearts, runtime.enemyDropHealth,
                         runtime.enemyDropBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
                         runtime.enemyDropCounters, randomByteSupplier));
                 runtime.enemyDropCounters = drop.counters();
-                if (drop.dropped()) runtime.spawnEnemyDrop(entity, drop.itemType());
+                if (drop.dropped()) runtime.pickups.spawnEnemyDrop(entity, drop.itemType());
             }
             int killIndex = runtime.killCount & 0xFF;
             runtime.killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
@@ -92,7 +92,7 @@ final class EntityBossRewards {
             if (runtime.entityMapId != 0x07) {
                 runtime.pendingRoomStatusMask |= 0x20;
             }
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         if (countdown < 0x80 && (countdown & 0x07) == 0) {
@@ -133,7 +133,7 @@ final class EntityBossRewards {
             runtime.swordMoblinAlertingSoundCounter = 4;
             handleTerminalEnemyDeath(source, random);
         } else if ((runtime.enemyTransitionCountdown[slot] & 7) == 0
-            && runtime.entityHandlerInteractive(false)) {
+            && runtime.backgroundMechanics.entityHandlerInteractive(false)) {
             int x = (source.x() + (random.getAsInt() & 0x1F) - 0x10) & 255;
             int y = (source.y() - source.z() + (random.getAsInt() & 0x1F) - 0x14) & 255;
             runtime.transientVfxRequests.add(new TransientVfxRequest(TransientVfxType.POOF, x, y));
@@ -191,7 +191,7 @@ final class EntityBossRewards {
         int countdown = runtime.enemyTransitionCountdown[slot];
         if (countdown == 0) {
             spawnMoldormHeartContainer(source);
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             runtime.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, source.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x1A));
@@ -218,11 +218,11 @@ final class EntityBossRewards {
         }
         int x = Math.max(0x18, Math.min(0x88, source.x()));
         int y = Math.max(0x20, Math.min(0x70, source.y()));
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_HEART_CONTAINER);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HEART_CONTAINER);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_HEART_CONTAINER,
             x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
-        runtime.resetEnemyDropState(freeSlot);
+        runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling, 0x10);
         runtime.enemyDropActive[freeSlot] = true;
         runtime.slowTransitionCountdown[freeSlot] = 0;
@@ -255,7 +255,7 @@ final class EntityBossRewards {
         int slot = entity.slot();
         if (runtime.enemyTransitionCountdown[slot] == 1) {
             runtime.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(slot));
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         runtime.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
@@ -289,8 +289,8 @@ final class EntityBossRewards {
                 default -> {
                     // func_006_564B: variant $02, z from hMultiPurpose3,
                     // speedZ $10, and private countdown 1 $10.
-                    runtime.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
-                    runtime.disableEntityWithoutPersistence(slot);
+                    runtime.pickups.spawnBossKeyDrop(source, 0x02, source.z(), 0x10, 0x10);
+                    runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, source.type(), 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x13));
@@ -326,8 +326,8 @@ final class EntityBossRewards {
                         runtime.killOrder[killIndex] = source.sourceLoadOrder() & 0xFF;
                         runtime.killCount = (runtime.killCount + 1) & 0xFF;
                         runtime.pendingClearedEntityMask |= persistentClearMask(source);
-                        runtime.spawnEnemyDrop(source, runtime.ENTITY_KEY_DROP_POINT);
-                        runtime.disableEntityWithoutPersistence(slot);
+                        runtime.pickups.spawnEnemyDrop(source, runtime.ENTITY_KEY_DROP_POINT);
+                        runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     } else {
                         handleTerminalEnemyDeath(source, randomByteSupplier);
                         // label_006_5355 -> label_006_6CC9 opens the Hinox
@@ -358,8 +358,8 @@ final class EntityBossRewards {
             default -> {
                 // func_007_7ED6: ConfigureNewEntity leaves z at zero;
                 // the producer supplies speedZ $18 and countdown 1 $20.
-                runtime.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
-                runtime.disableEntityWithoutPersistence(slot);
+                runtime.pickups.spawnBossKeyDrop(source, 0x00, 0x00, 0x18, 0x20);
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 runtime.pendingEntityEvents.add(new EntityCombatEvent(
                     slot, source.type(), 0, false,
                     EntityCombatEvent.SoundChannel.NOISE, 0x1A));

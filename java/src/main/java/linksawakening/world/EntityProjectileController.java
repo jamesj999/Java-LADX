@@ -175,7 +175,7 @@ final class EntityProjectileController {
         if (unloadOnHit) {
             // $7782-$7795 unloads a normal projectile hit. Blocking targets
             // and existing wall flames retain a nonzero collision byte.
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         int variant = runtime.magicRodFireballMotion.advanceSpriteVariant(slot, frame);
@@ -206,7 +206,7 @@ final class EntityProjectileController {
             ? ProjectileObjectCollision.NONE
             : projectileObjectCollision(moved, object, frame, slot);
         if (objectCollision == ProjectileObjectCollision.UNLOAD) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         // $7DF3-$7E00 restores BOTH coordinates from the active pre-movement
@@ -250,7 +250,7 @@ final class EntityProjectileController {
                                                    boolean timersInteractive) {
         int slot = entity.slot();
         if (timersInteractive) {
-            runtime.decrementSlowTransitionCountdown(slot, frame);
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame);
         }
 
         // func_018_7B02 renders before ReturnIfNonInteractive_18, even when
@@ -701,7 +701,7 @@ final class EntityProjectileController {
             runtime.unmaskedIronMaskMotion.initializeFromMasked(targetSlot,
                 runtime.roamingEnemyMotion.direction(targetSlot),
                 runtime.roamingEnemyMotion.speedX(targetSlot), runtime.roamingEnemyMotion.speedY(targetSlot));
-            runtime.spawnIronMasksMask(hookshotState.x(), hookshotState.y(),
+            runtime.entityPlayerSpawns.spawnIronMasksMask(hookshotState.x(), hookshotState.y(),
                 hookshot.spriteVariant() & 0x01, sourceSlot);
             unmasked = true;
         }

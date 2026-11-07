@@ -26,25 +26,26 @@ import java.util.function.IntUnaryOperator;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime extends EntityRuntimeState {
-    private final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
-    private final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
-    private final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
-    private final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
-    private final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
-    private final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
-    private final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
+    private void disableEntityWithoutPersistence(int slot) { lifecycle.disableEntityWithoutPersistence(slot); }
+    final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
+    final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
+    final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
+    final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
+    final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
+    final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
+    final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
     private final EntityEffectConsumption effects = new EntityEffectConsumption(this);
     private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
-    private final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
-    final EntityHandlerRegistry entityHandlers = createEntityHandlers();
-    private final EntityRewardController rewards = new EntityRewardController(this);
-    private final EntityStoryController story = new EntityStoryController(this);
-    private final GenieEntityController genie = new GenieEntityController(this);
-    private final EntityProjectileController projectiles = new EntityProjectileController(this);
-    private final EntityPickupController pickups = new EntityPickupController(this);
-    private final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
+    final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
+    final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
+    final EntityRewardController rewards = new EntityRewardController(this);
+    final EntityStoryController story = new EntityStoryController(this);
+    final GenieEntityController genie = new GenieEntityController(this);
+    final EntityProjectileController projectiles = new EntityProjectileController(this);
+    final EntityPickupController pickups = new EntityPickupController(this);
+    final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
     private final EntityCombatResolver combat = new EntityCombatResolver(this);
-    private final EntityBossRewards bossRewards = new EntityBossRewards(this);
+    final EntityBossRewards bossRewards = new EntityBossRewards(this);
     final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
     final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
 
@@ -67,8 +68,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     void setFreeMovementMode(boolean enabled) { freeMovementMode = enabled; }
 
     final WarpMotion warpMotion;
-
-    private EntityHandlerRegistry createEntityHandlers() { return this.roomInitialization.createEntityHandlers(); }
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
     public record LiftedEntityState(int slot, int type, int phase,
@@ -527,9 +526,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
         this.romTables = romTables;
-        initializeRomPresentation(romData);
+        roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
-        initializeRoomSlots(initial);
+        roomInitialization.initializeRoomSlots(initial);
     }
 
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
@@ -845,8 +844,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests() { return this.roomInspection.projectileLaunchRequests(); }
 
-    void resolveThreeOfAKindPuzzle() { this.slotProperties.resolveThreeOfAKindPuzzle(); }
-
     /**
      * Runs the room-entity portion of PickableCollectIfNeeded. A non-null
      * event means the entity completed its pickup collision and its first-eight
@@ -894,7 +891,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             }
             bombFinalPresentationPending[slot] = false;
             enemyFlashCountdown[slot] = 0;
-            entity = withDefinition(entity, spriteDefinitionFor(ENTITY_BOMB), 0);
+            entity = withDefinition(entity, slotProperties.spriteDefinitionFor(ENTITY_BOMB), 0);
         }
         slots[slot] = withStatus(entity, EntityStatus.LIFTED);
         return true;
@@ -944,24 +941,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     LiftedEntityState liftedEntityState() { return this.roomInspection.liftedEntityState(); }
 
-    RoomEntity advanceLiftedEntity(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.advanceLiftedEntity(entity, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
-
-    RoomEntity advanceThrownEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, boolean sideScrolling, int romLinkDirection, int frame) { return liftThrow.advanceThrownEntity(entity, backgroundCollision, sideScrolling, romLinkDirection, frame); }
-
-    RoomEntity registerGenieJarImpact(RoomEntity jar) { return genie.registerGenieJarImpact(jar); }
-
     /** Applies the two source-ordered probes made by ApplyEntityInteractionWithBackground. */
-    boolean sideViewPotBackgroundCollision(RoomEntity original, RoomEntity moved, RoomEntityBackgroundCollision fallback, int frame) { return liftThrow.sideViewPotBackgroundCollision(original, moved, fallback, frame); }
 
     /** Mirrors EntityThrownHandler's post-bounce func_003_75A2 collision pass. */
-    void collideThrownEntityWithEntities(RoomEntity thrown, int frame) { liftThrow.collideThrownEntityWithEntities(thrown, frame); }
-
-    RoomEntity advancePlacedBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advancePlacedBombEntity(entity, backgroundCollision, frame); }
-
-    RoomEntity advanceEnemyBombEntity(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) { return liftThrow.advanceEnemyBombEntity(entity, backgroundCollision, frame); }
 
     /** Mirrors CuccoEntityHandler's B-slot-first Power Bracelet check. */
-    boolean cuccoPowerBraceletHeld() { return liftThrow.cuccoPowerBraceletHeld(); }
 
     /**
      * Runs the ported portion of DefaultEnemyDamageCollisionHandler for the
@@ -1018,26 +1002,16 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public List<EntityCombatEvent> resolveCombat(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, boolean swordCollisionActive, int swordX, int swordWidth, int swordY, int swordHeight, EnemyAttackContext attackContext) { return combat.resolveCombat(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity, linkInteractive, swordCollisionActive, swordX, swordWidth, swordY, swordHeight, attackContext); }
 
-    boolean moldormOrHeadOverlapsSword(RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight) { return this.backgroundMechanics.moldormOrHeadOverlapsSword(entity, swordX, swordWidth, swordY, swordHeight); }
-
     /** Supplies the persistent world clock before this frame's entity pass. */
     void setBoomerangSoundCounterForFrame(int counter) { this.entityRuntimeConfiguration.setBoomerangSoundCounterForFrame(counter); }
 
-    void playBoomerangSoundIfDue(RoomEntity entity) { projectiles.playBoomerangSoundIfDue(entity); }
-
     /** Advances entity $01 through the ROM boomerang handler's two states. */
-    void advanceBoomerangEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int linkEntityZ, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceBoomerangEntity(index, entity, frame, linkEntityX, linkEntityY, linkEntityZ, linkMotionState, handlerInteractive, timersInteractive); }
 
     /** Advances entity {@code $DF} through the ROM sword-beam handler. */
-    void advanceSwordBeamEntity(int index, RoomEntity entity, int frame, int linkEntityX, int linkEntityY, int romLinkDirection, boolean handlerInteractive) { projectiles.advanceSwordBeamEntity(index, entity, frame, linkEntityX, linkEntityY, romLinkDirection, handlerInteractive); }
 
     /** Advances entity {@code $04} through MagicRodFireballEntityHandler. */
-    void advanceMagicRodFireballEntity(int index, RoomEntity entity, int frame, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicRodFireballEntity(index, entity, frame, handlerInteractive, timersInteractive); }
-
-    private boolean isMagicRodBurnableObject(RoomEntityObjectSample object) { return projectiles.isMagicRodBurnableObject(object); }
 
     /** Advances entity {@code $08} through MagicPowderSprinkleEntityHandler. */
-    void advanceMagicPowderSprinkleEntity(int index, RoomEntity entity, int frame, int linkMotionState, boolean handlerInteractive, boolean timersInteractive) { projectiles.advanceMagicPowderSprinkleEntity(index, entity, frame, linkMotionState, handlerInteractive, timersInteractive); }
 
     void setTorchPaletteTransitionState(int targetAddress, boolean active) { this.entityRuntimeConfiguration.setTorchPaletteTransitionState(targetAddress, active); }
 
@@ -1049,10 +1023,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return (((entity.y() + 0x07 - 0x10) & 0xFF) & 0xF0);
     }
 
-    private boolean collideMagicPowderWithEntities(RoomEntity sprinkle, int frame) { return projectiles.collideMagicPowderWithEntities(sprinkle, frame); }
-
     /** Shared result path of ApplySwordIntersectionWithObjects ($7CAB). */
-    private ProjectileObjectCollision projectileObjectCollision(RoomEntity entity, RoomEntityObjectSample object, int frame, int slot) { return projectiles.projectileObjectCollision(entity, object, frame, slot); }
 
     enum ProjectileObjectCollision {
         NONE, BLOCKED, UNLOAD
@@ -1061,22 +1032,15 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     /** Common bank-$03 collision pass for entity {@code $DF}. */
     record ProjectileEntityCollision(boolean unload, boolean blocked) {}
 
-    private ProjectileEntityCollision collideSwordBeamWithEntities(RoomEntity beam, int frame) { return projectiles.collideSwordBeamWithEntities(beam, frame); }
-
     /** Common bank-$03 collision pass with DAMAGE_TYPE_MAGIC_ROD ($0A). */
-    private boolean collideMagicRodFireballWithEntities(RoomEntity fireball, int frame) { return projectiles.collideMagicRodFireballWithEntities(fireball, frame); }
 
     /**
      * Port of the common bank-$03 func_003_75A2 pass for player arrows. The
      * active arrow checks targets in descending slot order and uses the same
      * alternating frame cadence and unsigned twelve-pixel windows as the ROM.
      */
-    boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) { return projectiles.collidePlayerArrowWithEntities(arrow, frame); }
 
     /** Common bank-$03 collision pass for the active boomerang. */
-    private boolean collideBoomerangWithEntities(RoomEntity boomerang, int frame) { return projectiles.collideBoomerangWithEntities(boomerang, frame); }
-
-    private boolean ironMaskBlocksProjectile(RoomEntity target, int direction) { return projectiles.ironMaskBlocksProjectile(target, direction); }
 
     /**
      * Ports the BouncingBombite-specific portion of bank-$03
@@ -1084,7 +1048,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * order, on alternating frames, and uses the active Bombite's transition
      * byte as the source-side explosion latch.
      */
-    boolean collideBouncingBombiteWithEntities(RoomEntity source, int frame) { return projectiles.collideBouncingBombiteWithEntities(source, frame); }
 
     /**
      * Ports the Iron Mask target branch of bank-$03 {@code func_003_75A2} for
@@ -1092,19 +1055,10 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * owned by their entity-specific runtimes; this branch is special because
      * it changes the target's private state and creates a visible mask entity.
      */
-    boolean collideHookshotWithEntities(RoomEntity hookshot, HookshotChainMotion.State hookshotState, int frame) { return projectiles.collideHookshotWithEntities(hookshot, hookshotState, frame); }
-
-    void spawnIronMasksMask(int x, int y, int variant, int sourceHookshotSlot) { this.entityPlayerSpawns.spawnIronMasksMask(x, y, variant, sourceHookshotSlot); }
-
-    private void applyPlayerArrowDamage(RoomEntity arrow, RoomEntity target) { projectiles.applyPlayerArrowDamage(arrow, target); }
-
-    void applyPlayerProjectileDamage(RoomEntity target, int damageType, int speedX, int speedY) { projectiles.applyPlayerProjectileDamage(target, damageType, speedX, speedY); }
 
     int initialHealth(int type) { return this.slotProperties.initialHealth(type); }
 
     int contactDamage(int type) { return this.slotProperties.contactDamage(type); }
-
-    void advanceHookshotBridgeEntity(int index, RoomEntity entity) { this.backgroundMechanics.advanceHookshotBridgeEntity(index, entity); }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) { return this.lifecycle.clearEntity(slot); }
@@ -1162,20 +1116,12 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     /** Creates the ROM's type-$08 Magic Powder sprinkle entity. */
     int spawnMagicPowderSprinkle(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) { return this.entityPlayerSpawns.spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection); }
 
-    void spawnMusicalNote(int linkEntityX, int linkEntityY, int animationPhase) { this.entityPlayerSpawns.spawnMusicalNote(linkEntityX, linkEntityY, animationPhase); }
-
-    RoomEntity advanceMusicalNoteEntity(RoomEntity entity) { return this.slotProperties.advanceMusicalNoteEntity(entity); }
-
     int activePlayerArrowCount() { return this.roomInspection.activePlayerArrowCount(); }
 
     /** Mirrors the player projectile handlers that feed wActiveProjectileCount. */
     int activeProjectileCount() { return this.roomInspection.activeProjectileCount(); }
 
     boolean boomerangActive() { return this.roomInspection.boomerangActive(); }
-
-    int activeBoomerangSlot() { return this.roomInspection.activeBoomerangSlot(); }
-
-    int boomerangDirection(int slot) { return this.roomInspection.boomerangDirection(slot); }
 
     int boomerangSpeedX(int slot) { return this.roomInspection.boomerangSpeedX(slot); }
 
@@ -1230,53 +1176,15 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ, boolean initializeMotion, int privateState4) { return this.entityEnemySpawns.spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ, initializeMotion, privateState4); }
 
-    int spawnTarinTransformationBomb(RoomEntity tarin) { return this.entityEnemySpawns.spawnTarinTransformationBomb(tarin); }
-
-    boolean tarinTransformationHandlerInteractive() { return this.roomInspection.tarinTransformationHandlerInteractive(); }
-
-    boolean tarinTransformationTimersInteractive() { return this.roomInspection.tarinTransformationTimersInteractive(); }
-
     /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */
-    boolean genieState0Interactive(boolean creditsGameplay) { return this.roomInspection.genieState0Interactive(creditsGameplay); }
 
     /** Mirrors UpdateEntityTimers' gameplay and presentation gates. */
-    boolean gameplayEntityTimersInteractive(boolean creditsGameplay) { return this.backgroundMechanics.gameplayEntityTimersInteractive(creditsGameplay); }
 
     /** Creates the temporary type-$05 entity used by bombed bushes, grass, and pots. */
     int spawnLiftableRockSmash(int entityX, int entityY, int sourceSpriteVariant) { return this.entityPlayerSpawns.spawnLiftableRockSmash(entityX, entityY, sourceSpriteVariant); }
 
     /** Creates one of the four silent type-$05 rubble entities from bank-$36. */
     int spawnLiftableRockRubble(int entityX, int entityY) { return this.entityPlayerSpawns.spawnLiftableRockRubble(entityX, entityY); }
-
-    void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) { this.genie.advanceGenieJar(jarEntity, linkEntityY); }
-
-    private RoomEntity advanceGenieJarAttract(RoomEntity jar) { return genie.advanceGenieJarAttract(jar); }
-
-    void advanceGenieAppearance(RoomEntity appearance) { this.genie.advanceGenieAppearance(appearance); }
-
-    void advanceGenieBody(RoomEntity body, int frameCounter, int linkEntityX, int linkEntityY, IntSupplier randomByteSupplier) { this.genie.advanceGenieBody(body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier); }
-
-    private int spawnGenieAimedFireball(RoomEntity body, int bodySlot, int linkEntityX, int linkEntityY) { return genie.spawnGenieAimedFireball(body, bodySlot, linkEntityX, linkEntityY); }
-
-    void advanceGenieDestruction(RoomEntity genie, int frameCounter, IntSupplier randomByteSupplier) { this.genie.advanceGenieDestruction(genie, frameCounter, randomByteSupplier); }
-
-    void advanceGenieSideProjectile(RoomEntity projectile, int frameCounter) { this.genie.advanceGenieSideProjectile(projectile, frameCounter); }
-
-    void advanceGenieFireball(RoomEntity fireball, int frameCounter) { this.genie.advanceGenieFireball(fireball, frameCounter); }
-
-    private int spawnGenieBody(GenieMotion.BodySpawnRequest request) { return genie.spawnGenieBody(request); }
-
-    private int spawnGenieEntity(int x, int y, int privateState1, int transitionCountdown, int health, int physicsFlags, int hitboxFlags) { return genie.spawnGenieEntity(x, y, privateState1, transitionCountdown, health, physicsFlags, hitboxFlags); }
-
-    int spawnLiftableRockAnimation(int entityX, int entityY, int sourceSpriteVariant, int initialCountdown, int physicsFlags, int soundId) { return this.entityPlayerSpawns.spawnLiftableRockAnimation(entityX, entityY, sourceSpriteVariant, initialCountdown, physicsFlags, soundId); }
-
-    int spawnBombFromBombArrow(RoomEntity arrow) { return this.entityPlayerSpawns.spawnBombFromBombArrow(arrow); }
-
-    void applyInitialBombArrowCandidateState(int slot, int romDirection) { this.bombInteractions.applyInitialBombArrowCandidateState(slot, romDirection); }
-
-    void markArrowAsBombArrow(int slot) { this.bombInteractions.markArrowAsBombArrow(slot); }
-
-    boolean isLoadedEntityOfType(int slot, int type) { return this.roomInspection.isLoadedEntityOfType(slot, type); }
 
     boolean bombActive() { return this.roomInspection.bombActive(); }
 
@@ -1285,8 +1193,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int bombPrivateCountdown1ForTest(int slot) { return this.roomInspection.bombPrivateCountdown1ForTest(slot); }
 
     void setBombTransitionCountdownForTest(int slot, int value) { this.entityDebugConfiguration.setBombTransitionCountdownForTest(slot, value); }
-
-    boolean spawnHookshotBridge(int bridgeX, int bridgeY, int direction, int transitionCountdown) { return this.entityPlayerSpawns.spawnHookshotBridge(bridgeX, bridgeY, direction, transitionCountdown); }
 
     boolean hookshotActive() { return this.roomInspection.hookshotActive(); }
 
@@ -1307,10 +1213,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     void setEntityInertiaForTest(int slot, int value) { this.entityDebugConfiguration.setEntityInertiaForTest(slot, value); }
 
     int pokeyPrivateState1(int slot) { return this.roomInspection.pokeyPrivateState1(slot); }
-
-    int pokeySpeedX(int slot) { return this.roomInspection.pokeySpeedX(slot); }
-
-    int pokeySpeedY(int slot) { return this.roomInspection.pokeySpeedY(slot); }
 
     int pokeyTransitionCountdown(int slot) { return this.roomInspection.pokeyTransitionCountdown(slot); }
 
@@ -1347,15 +1249,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         }
     }
 
-    void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) { this.slotProperties.updateHookshotChainOam(linkEntityX, linkEntityY, frameCounter); }
-
     void setLinkVelocityZ(int velocity) { this.entityRuntimeConfiguration.setLinkVelocityZ(velocity); }
-
-    void updateBowWowChain(int frame) { this.slotProperties.updateBowWowChain(frame); }
-
-    void updatePincerBodyOam() { this.slotProperties.updatePincerBodyOam(); }
-
-    void updateWingedOctorokOam() { this.slotProperties.updateWingedOctorokOam(); }
 
     List<WingedOctorokOam.Entry> wingedOctorokOam() { return this.roomInspection.wingedOctorokOam(); }
 
@@ -1363,17 +1257,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int wingedOctorokSpeedX(int slot) { return this.roomInspection.wingedOctorokSpeedX(slot); }
 
-    int wingedOctorokSpeedY(int slot) { return this.roomInspection.wingedOctorokSpeedY(slot); }
-
-    int wingedOctorokSpeedZ(int slot) { return this.roomInspection.wingedOctorokSpeedZ(slot); }
-
     int bushCrawlerState(int slot) { return this.roomInspection.bushCrawlerState(slot); }
-
-    int bushCrawlerPrivateState1(int slot) { return this.roomInspection.bushCrawlerPrivateState1(slot); }
-
-    int bushCrawlerPrivateState4(int slot) { return this.roomInspection.bushCrawlerPrivateState4(slot); }
-
-    int bushCrawlerSpeedX(int slot) { return this.roomInspection.bushCrawlerSpeedX(slot); }
 
     int bushCrawlerSpeedY(int slot) { return this.roomInspection.bushCrawlerSpeedY(slot); }
 
@@ -1493,10 +1377,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int transitionCountdownForTest(int slot) { return this.roomInspection.transitionCountdownForTest(slot); }
 
     int hinoxStateForTest(int slot) { return this.roomInspection.hinoxStateForTest(slot); }
-
-    int hinoxSpeedXForTest(int slot) { return this.roomInspection.hinoxSpeedXForTest(slot); }
-
-    int hinoxSpeedYForTest(int slot) { return this.roomInspection.hinoxSpeedYForTest(slot); }
 
     void setHinoxStateForTest(int slot, int state) { this.entityDebugConfiguration.setHinoxStateForTest(slot, state); }
 
@@ -1628,34 +1508,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     List<HookshotBridgeUpdate> hookshotBridgeUpdates() { return this.roomInspection.hookshotBridgeUpdates(); }
 
-    RoomEntity firstLoadedEntityOfType(int type) { return this.roomInspection.firstLoadedEntityOfType(type); }
-
     /** Mirrors bank-$03 ApplyLinkCollisionWithEnemy's Goomba stomp branch. */
-    boolean canGoombaStomp(RoomEntity entity, int linkEntityX, int linkEntityY, boolean linkAirborne, int linkVerticalVelocity, boolean linkInteractive, int frameCounter) { return this.roomInspection.canGoombaStomp(entity, linkEntityX, linkEntityY, linkAirborne, linkVerticalVelocity, linkInteractive, frameCounter); }
-
-    private boolean hasNoGroundInteractionOverride(int slot) { return this.roomInspection.hasNoGroundInteractionOverride(slot); }
-
-    boolean hasNoGroundInteraction(RoomEntity entity) { return this.backgroundMechanics.hasNoGroundInteraction(entity); }
-
-    RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated, ZolGelMotion.Split split) { return this.lifecycle.applyZolSplit(original, updated, split); }
-
-    void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) { this.bossRewards.handleTerminalEnemyDeath(entity, randomByteSupplier); }
 
     /** Ports {@code RollingBonesEntityHandler}'s long miniboss destruction sequence. */
-    void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) { this.bossRewards.advanceRollingBonesDestruction(entity, randomByteSupplier); }
 
     /** Bank $15:7C37..7CA5: two death waits, then DidKillEnemy. */
-    void advanceMoblinKingDestruction(RoomEntity source, int frame, IntSupplier random) { this.bossRewards.advanceMoblinKingDestruction(source, frame, random); }
-
-    void advanceMoldormDestruction(RoomEntity source, int frameCounter) { this.bossRewards.advanceMoldormDestruction(source, frameCounter); }
-
-    private void advanceMoldormBossExplosion(RoomEntity source) { this.bossRewards.advanceMoldormBossExplosion(source); }
-
-    void spawnMoldormHeartContainer(RoomEntity source) { this.bossRewards.spawnMoldormHeartContainer(source); }
-
-    private void createMoldormPoof(RoomEntity source, int x, int y) { this.bossRewards.createMoldormPoof(source, x, y); }
-
-    void advanceCollectedHeartContainer(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { this.bossRewards.advanceCollectedHeartContainer(entity, linkEntityX, linkEntityY, linkZ); }
 
     void startSwordPickup(int slot) {
         swordPickupSequenceActive[slot] = true;
@@ -1671,21 +1528,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         pendingMusicTrack = 0x10;
     }
 
-    void startInstrumentPickup(int slot) { rewards.startInstrumentPickup(slot); }
-
-    void advanceKidnapWarningKid(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY) { story.advanceKidnapWarningKid(entity, frameCounter, linkEntityX, linkEntityY); }
-
-    void advanceMadamMeowMeow(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceMadamMeowMeow(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
-
-    void advanceOwlStatue(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int linkMotionState, boolean linkAirborne) { story.advanceOwlStatue(entity, linkEntityX, linkEntityY, linkZ, linkMotionState, linkAirborne); }
-
     void setOwlStatueDialogId(int globalDialogId) { this.entityRuntimeConfiguration.setOwlStatueDialogId(globalDialogId); }
-
-    void advanceRichard(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) { story.advanceRichard(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne); }
-
-    boolean sourceNpcInteractionAllowed(int xDistance, int yDistance, boolean linkAirborne, int entityDirection) { return this.roomInspection.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne, entityDirection); }
-
-    void advanceInstrumentPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ, IntSupplier randomByteSupplier) { rewards.advanceInstrumentPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier); }
 
     public boolean heartPiecePickupActive() { return this.roomInspection.heartPiecePickupActive(); }
 
@@ -1695,19 +1538,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public List<HeartPiecePickupMotion.Update> consumeHeartPieceUpdates() { return this.effects.consumeHeartPieceUpdates(); }
 
-    void advanceHeartPiecePickup(RoomEntity entity, int x, int y, int z) { pickups.advanceHeartPiecePickup(entity, x, y, z); }
-
     public String instrumentTrace() { return this.roomInspection.instrumentTrace(); }
 
     public String moblinKingTrace() { return this.roomInspection.moblinKingTrace(); }
 
     public InstrumentWarpVisual instrumentWarpVisual() { return this.roomInspection.instrumentWarpVisual(); }
-
-    private void spawnInstrumentParticle(RoomEntity source, int offsetIndex, int variant) { rewards.spawnInstrumentParticle(source, offsetIndex, variant); }
-
-    void advanceInstrumentParticle(RoomEntity entity) { rewards.advanceInstrumentParticle(entity); }
-
-    void advanceWitchGotItemPresentation(int slot) { story.advanceWitchGotItemPresentation(slot); }
 
     void presentWitchGotItem(int slot) {
         pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
@@ -1715,11 +1550,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** ProcessPowerUp ($03:6400) and ApplyGotItem ($00:1033). */
-    void advancePowerUpPickup(RoomEntity entity, int frame, int linkX, int linkY, int linkZ) { rewards.advancePowerUpPickup(entity, frame, linkX, linkY, linkZ); }
-
-    void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceToadstoolPickup(entity, linkEntityX, linkEntityY, linkZ); }
-
-    void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) { rewards.advanceSwordPickup(entity, frameCounter, linkEntityX, linkEntityY, linkZ); }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY,
                                     int linkZ, boolean finalPose) {
@@ -1732,12 +1562,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         slots[slot] = withZ(held, linkZ & 0xFF);
     }
 
-    void advanceOwlEvent(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean handlerLinkInteractive) { story.advanceOwlEvent(entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive); }
-
-    private void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) { story.advanceDepartingOwl(entity, slot, frameCounter); }
-
-    RoomEntity owlPresentation(RoomEntity entity, int frameCounter) { return this.roomInspection.owlPresentation(entity, frameCounter); }
-
     void setOwlDialogResolver(IntUnaryOperator resolver) { this.entityRuntimeConfiguration.setOwlDialogResolver(resolver); }
 
     void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) { this.entityRuntimeConfiguration.setOwlInstrumentFlags(instrument1Flags, instrument2Flags); }
@@ -1749,26 +1573,12 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
-    void handleBowWowTargetContact(RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) { this.lifecycle.handleBowWowTargetContact(source, contact, randomByteSupplier); }
 
     /**
      * Ports the boss-specific death handlers that eventually create entity
      * {@code $30}. Boss entities stay on their active handler while DYING, so
      * they must not enter the ordinary EnemyDropResolver path.
      */
-    void advanceBossKeyDropProducer(RoomEntity source, IntSupplier randomByteSupplier) { this.bossRewards.advanceBossKeyDropProducer(source, randomByteSupplier); }
-
-    void spawnBossKeyDrop(RoomEntity source, int spriteVariant, int z, int speedZ, int privateCountdown1) { pickups.spawnBossKeyDrop(source, spriteVariant, z, speedZ, privateCountdown1); }
-
-    int spawnKeyDropAt(int itemType, int x, int y, int spriteVariant, int z, int speedZ, int privateCountdown1) { return pickups.spawnKeyDropAt(itemType, x, y, spriteVariant, z, speedZ, privateCountdown1); }
-
-    int enemyDropHealthGroup(int entityType) { return this.roomInspection.enemyDropHealthGroup(entityType); }
-
-    void spawnEnemyDrop(RoomEntity source, int itemType) { pickups.spawnEnemyDrop(source, itemType); }
-
-    boolean spawnKanaletWallMoblin(RoomEntity wall) { return this.entityEnemySpawns.spawnKanaletWallMoblin(wall); }
-
-    boolean kanaletCrowTakeoffTriggered(RoomEntity crow) { return this.slotProperties.kanaletCrowTakeoffTriggered(crow); }
 
     /**
      * Mirrors the shovel's delayed random reward branch in
@@ -1808,66 +1618,19 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return -1;
     }
 
-    void spawnPairoddProjectile(RoomEntity source, int linkEntityX, int linkEntityY) { this.entityEnemySpawns.spawnPairoddProjectile(source, linkEntityX, linkEntityY); }
-
-    void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) { this.entityEnemySpawns.spawnGopongaProjectile(source, spawn); }
-
-    void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) { this.entityEnemySpawns.spawnZoraProjectile(spawn); }
-
     /** Mirrors ZombieEntityHandler's SpawnNewEntityInRange call with E=$05. */
-    void spawnZombieChild(ZombieMotion.SpawnRequest spawn) { this.entityEnemySpawns.spawnZombieChild(spawn); }
 
     /** Mirrors PokeyEntityHandler's SpawnNewEntity plus its detached-segment setup. */
-    void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) { this.entityEnemySpawns.spawnPokeySegment(spawn); }
-
-    void spawnWizrobeProjectile(RoomEntity source, WizrobeMotion.ProjectileSpawn spawn) { this.entityEnemySpawns.spawnWizrobeProjectile(source, spawn); }
-
-    boolean spawnEvasiveClone(RoomEntity source, StalfosEvasiveMotion.CloneRequest request) { return this.entityEnemySpawns.spawnEvasiveClone(source, request); }
-
-    void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request) { this.entityEnemySpawns.spawnEnemyProjectile(source, request); }
-
-    void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request, int direction) { this.entityEnemySpawns.spawnEnemyProjectile(source, request, direction); }
-
-    void spawnWingedOctorokRock(RoomEntity source, int direction) { this.entityEnemySpawns.spawnWingedOctorokRock(source, direction); }
 
     /**
      * Ports BushCrawlerEntityHandler's Power Bracelet branch: the source
      * slot becomes a lifted type-$05 entity and a fresh type-$BB slot starts
      * the private-state-$02 wandering handler at the same position.
      */
-    boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) { return liftThrow.beginBushCrawlerLift(index, source, privateState4, romLinkDirection); }
 
     /** Ports CuccoState2Handler's outdoor angry-Cucco spawn setup. */
-    boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) { return this.entityEnemySpawns.spawnCuccoAngry(request); }
-
-    void spawnLaserSensor(RoomEntity parent) { this.entityEnemySpawns.spawnLaserSensor(parent); }
-
-    boolean spawnLaserBeam(RoomEntity parent) { return this.entityEnemySpawns.spawnLaserBeam(parent); }
-
-    EntitySpriteDefinition spriteDefinitionFor(int entityType) { return this.slotProperties.spriteDefinitionFor(entityType); }
-
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) { return this.slotProperties.spriteDefinitionForBushCrawlerState(privateState1); }
-
-    EntitySpriteDefinition spriteDefinitionForPokeySegment() { return this.slotProperties.spriteDefinitionForPokeySegment(); }
-
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) { return this.slotProperties.spriteDefinitionForBushCrawlerCrawlState(privateState4); }
-
-    private EntityRoomLoader.RoomTable spriteRoomTable() { return this.roomInspection.spriteRoomTable(); }
-
-    EntitySpriteDefinition spriteDefinitionForChest(int itemType) { return this.slotProperties.spriteDefinitionForChest(itemType); }
-
-    void initializeChestEntity(RoomEntity entity) { pickups.initializeChestEntity(entity); }
 
     /** Returns true when the source handler unloaded the chest this frame. */
-    boolean advanceChestEntity(int index, RoomEntity entity) { return pickups.advanceChestEntity(index, entity); }
-
-    private void spawnChestZol(RoomEntity chest) { pickups.spawnChestZol(chest); }
-
-    void finalizePendingBombPresentations() { this.bombInteractions.finalizePendingBombPresentations(); }
-
-    BombMotion.Decision advanceBombEntity( int index, RoomEntity entity, List<EntityProjectileEvent> projectileEvents, int linkEntityX, int linkEntityY, EnemyProjectileCollision.LinkState projectileLinkState) { return this.bombInteractions.advanceBombEntity(index, entity, projectileEvents, linkEntityX, linkEntityY, projectileLinkState); }
-
-    void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) { liftThrow.advanceLiftableRockSmash(index, entity, frameCounter); }
 
     static int liftableRockSmashVariant(int sourceVariant, boolean swampLeaves,
                                                 int countdown) {
@@ -1882,10 +1645,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return base + frame;
     }
 
-    private void queueBombExplosionInteractions( RoomEntity bomb, BombMotion.Decision decision, List<EntityProjectileEvent> projectileEvents, int linkEntityX, int linkEntityY, EnemyProjectileCollision.LinkState projectileLinkState) { this.bombInteractions.queueBombExplosionInteractions(bomb, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState); }
-
     /** Mirrors BombExplosionHandler's separate privateState4 enemy-bomb path. */
-    private void queueEnemyBombLinkCollision( RoomEntity bomb, List<EntityProjectileEvent> projectileEvents, int linkEntityX, int linkEntityY, EnemyProjectileCollision.LinkState projectileLinkState) { this.bombInteractions.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState); }
 
     /**
      * Ports the damage-table part of CheckExplosionInteractionWithEntities.
@@ -1893,22 +1653,8 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * damage routine, even when the selected damage-table value is zero or a
      * source-specific special value.
      */
-    private void applyBombDamage(RoomEntity bomb, RoomEntity target) { this.bombInteractions.applyBombDamage(bomb, target); }
-
-    RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) { return liftThrow.renderLiftedEntity(entity, frameCounter); }
-
-    RoomEntity renderLiftedBomb(RoomEntity entity) { return liftThrow.renderLiftedBomb(entity); }
-
-    boolean tryLiftBombIfRequested(int index, BombMotion.Decision decision, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) { return liftThrow.tryLiftBombIfRequested(index, decision, linkEntityX, linkEntityY, linkZ, romLinkDirection); }
 
     /** Mirrors EntityStunnedHandler's recoil/bounce/clear-speed tail for a bomb. */
-    RoomEntity applyBombStunnedPostActiveWork( RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) { return this.bombInteractions.applyBombStunnedPostActiveWork(stunned, backgroundCollision, frame); }
-
-    EntitySpriteDefinition spriteDefinitionForEvasiveState( EntitySpriteDefinition fallback, int privateState1) { return this.slotProperties.spriteDefinitionForEvasiveState(fallback, privateState1); }
-
-    RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) { return this.slotProperties.refreshColorShellDisplay(entity, status); }
-
-    void finishBurning(RoomEntity entity) { this.lifecycle.finishBurning(entity); }
 
     int slowTransitionCountdown(int slot) { return this.roomInspection.slowTransitionCountdown(slot); }
 
@@ -1954,8 +1700,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int octorokDirection(int slot) { return this.enemyInspection.octorokDirection(slot); }
 
-    int octorokSpeedX(int slot) { return this.enemyInspection.octorokSpeedX(slot); }
-
     int octorokSpeedY(int slot) { return this.enemyInspection.octorokSpeedY(slot); }
 
     int ironMaskState(int slot) { return this.enemyInspection.ironMaskState(slot); }
@@ -1963,8 +1707,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int ironMaskTransitionCountdown(int slot) { return this.enemyInspection.ironMaskTransitionCountdown(slot); }
 
     int ironMaskDirection(int slot) { return this.enemyInspection.ironMaskDirection(slot); }
-
-    int ironMaskSpeedX(int slot) { return this.enemyInspection.ironMaskSpeedX(slot); }
 
     int ironMaskSpeedY(int slot) { return this.enemyInspection.ironMaskSpeedY(slot); }
 
@@ -2082,15 +1824,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int blooperSpeedY(int slot) { return this.enemyInspection.blooperSpeedY(slot); }
 
-    int blooperPrivateCountdown3(int slot) { return this.enemyInspection.blooperPrivateCountdown3(slot); }
-
     int pincerState(int slot) { return this.enemyInspection.pincerState(slot); }
-
-    int pincerHoleX(int slot) { return this.enemyInspection.pincerHoleX(slot); }
-
-    int pincerHoleY(int slot) { return this.enemyInspection.pincerHoleY(slot); }
-
-    int pincerLungeVariant(int slot) { return this.enemyInspection.pincerLungeVariant(slot); }
 
     int pincerSpeedX(int slot) { return this.enemyInspection.pincerSpeedX(slot); }
 
@@ -2120,19 +1854,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int zolPrivateCountdown1(int slot) { return this.enemyInspection.zolPrivateCountdown1(slot); }
 
-    void setZolPrivateCountdown1ForTest(int slot, int value) { this.entityDebugConfiguration.setZolPrivateCountdown1ForTest(slot, value); }
-
     int hidingZolState(int slot) { return this.enemyInspection.hidingZolState(slot); }
 
     int hidingZolTransitionCountdown(int slot) { return this.enemyInspection.hidingZolTransitionCountdown(slot); }
-
-    int hidingZolPrivateState1(int slot) { return this.enemyInspection.hidingZolPrivateState1(slot); }
-
-    int hidingZolSpeedX(int slot) { return this.enemyInspection.hidingZolSpeedX(slot); }
-
-    int hidingZolSpeedY(int slot) { return this.enemyInspection.hidingZolSpeedY(slot); }
-
-    int hidingZolSpeedZ(int slot) { return this.enemyInspection.hidingZolSpeedZ(slot); }
 
     int spikeTrapState(int slot) { return this.enemyInspection.spikeTrapState(slot); }
 
@@ -2244,8 +1968,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int wizrobeProjectileSpeedY(int slot) { return this.enemyInspection.wizrobeProjectileSpeedY(slot); }
 
-    int wizrobeProjectileDirection(int slot) { return this.enemyInspection.wizrobeProjectileDirection(slot); }
-
     void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) { this.entityDebugConfiguration.setWizrobeProjectileForTest(slot, newSpeedX, newSpeedY, direction); }
 
     int peaHatState(int slot) { return this.enemyInspection.peaHatState(slot); }
@@ -2253,10 +1975,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int peaHatSlowTransitionCountdown(int slot) { return this.enemyInspection.peaHatSlowTransitionCountdown(slot); }
 
     int peaHatPrivateState1(int slot) { return this.enemyInspection.peaHatPrivateState1(slot); }
-
-    int peaHatPrivateState2(int slot) { return this.enemyInspection.peaHatPrivateState2(slot); }
-
-    int peaHatPrivateState3(int slot) { return this.enemyInspection.peaHatPrivateState3(slot); }
 
     int peaHatPrivateState4(int slot) { return this.enemyInspection.peaHatPrivateState4(slot); }
 
@@ -2275,10 +1993,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     int armosKnightState(int slot) { return this.enemyInspection.armosKnightState(slot); }
 
     int armosKnightTransitionCountdown(int slot) { return this.enemyInspection.armosKnightTransitionCountdown(slot); }
-
-    int armosKnightSpeedX(int slot) { return this.enemyInspection.armosKnightSpeedX(slot); }
-
-    int armosKnightSpeedY(int slot) { return this.enemyInspection.armosKnightSpeedY(slot); }
 
     int armosKnightSpeedZ(int slot) { return this.enemyInspection.armosKnightSpeedZ(slot); }
 
@@ -2468,17 +2182,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int fishSpeedX(int slot) { return this.enemyInspection.fishSpeedX(slot); }
 
-    int fishSpeedZ(int slot) { return this.enemyInspection.fishSpeedZ(slot); }
-
     int fishTransitionCountdown(int slot) { return this.enemyInspection.fishTransitionCountdown(slot); }
 
     int crowState(int slot) { return this.enemyInspection.crowState(slot); }
-
-    int crowSpeedX(int slot) { return this.enemyInspection.crowSpeedX(slot); }
-
-    int crowSpeedY(int slot) { return this.enemyInspection.crowSpeedY(slot); }
-
-    int crowSpeedZ(int slot) { return this.enemyInspection.crowSpeedZ(slot); }
 
     int crowTransitionCountdown(int slot) { return this.enemyInspection.crowTransitionCountdown(slot); }
 
@@ -2486,11 +2192,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int booBuddySpeedX(int slot) { return this.enemyInspection.booBuddySpeedX(slot); }
 
-    int booBuddySpeedY(int slot) { return this.enemyInspection.booBuddySpeedY(slot); }
-
     int booBuddyTransitionCountdown(int slot) { return this.enemyInspection.booBuddyTransitionCountdown(slot); }
-
-    int booBuddyTriggerCount() { return this.enemyInspection.booBuddyTriggerCount(); }
 
     void setBooBuddyTriggerCount(int value) { this.entityRuntimeConfiguration.setBooBuddyTriggerCount(value); }
 
@@ -2526,12 +2228,6 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         };
     }
 
-    private void initializeCommonDroppable(RoomEntity entity) { pickups.initializeCommonDroppable(entity); }
-
-    CommonDroppableUpdate advanceCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY, RoomEntityObjectSample objectUnderEntity) { return pickups.advanceCommonDroppable(entity, linkEntityX, linkEntityY, objectUnderEntity); }
-
-    private void revealCommonDroppable(RoomEntity entity, int linkEntityX, int linkEntityY) { pickups.revealCommonDroppable(entity, linkEntityX, linkEntityY); }
-
     record CommonDroppableUpdate(RoomEntity entity, boolean hidden) {
     }
 
@@ -2540,29 +2236,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
                                             SlimeKeyRewardEvent reward) {
     }
 
-    SlimeKeyTransitionUpdate advanceHidingSlimeKey(RoomEntity entity, int slot, int linkEntityX, int linkEntityY, int linkZ) { return pickups.advanceHidingSlimeKey(entity, slot, linkEntityX, linkEntityY, linkZ); }
-
-    void initializeEntityTimers(RoomEntity entity) { pickups.initializeEntityTimers(entity); }
-
-    void resetEnemyDropState(int slot) { pickups.resetEnemyDropState(slot); }
-
-    void decrementEnemyDropCountdowns(RoomEntity entity) { pickups.decrementEnemyDropCountdowns(entity); }
-
-    boolean checkForKeyDropQuicksandHole(RoomEntity entity) { return pickups.checkForKeyDropQuicksandHole(entity); }
-
-    boolean polsVoiceBalladOcarinaTrigger() { return this.enemyInspection.polsVoiceBalladOcarinaTrigger(); }
-
-    void decrementSlowTransitionCountdown(int slot, int frameCounter) { this.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter); }
-
-    boolean shouldDisappear(RoomEntity entity) { return this.lifecycle.shouldDisappear(entity); }
-
     /**
      * The standard bank-$06 floating handler is available only where its
      * standard sprite definition was loaded. Color Dungeon's $86 handler is
      * a separate bank-$36 path and remains intentionally deferred.
      */
-
-    boolean isDisabledFollower(int type) { return this.enemyInspection.isDisabledFollower(type); }
 
     static int deathSpriteVariantForCountdown(int countdown) {
         if (countdown >= 0x20 || countdown <= 0) {
@@ -2571,36 +2249,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         return ((countdown << 1) & 0x30) >>> 4;
     }
 
-    boolean beginFalling(RoomEntity entity, RoomEntityGroundInteraction.PitTransition transition, boolean ignoreHitsDecrementedBeforeHandler) { return this.backgroundMechanics.beginFalling(entity, transition, ignoreHitsDecrementedBeforeHandler); }
-
     /** Port of bank-$03 EntityFallHandler's pre-impact falling branch. */
-    RoomEntity advanceFallingEntity(RoomEntity entity) { return this.backgroundMechanics.advanceFallingEntity(entity); }
-
-    void disableEntityWithoutPersistence(int slot) { this.lifecycle.disableEntityWithoutPersistence(slot); }
-
-    int verticalSpeedZ(RoomEntity entity) { return this.backgroundMechanics.verticalSpeedZ(entity); }
-
-    boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) { return this.lifecycle.decrementEnemyCombatCountdowns(slot, decrementIgnoreHits); }
-
-    void decrementEnemyStatusCountdowns(int slot) { this.lifecycle.decrementEnemyStatusCountdowns(slot); }
 
     /** Shared gameplay gates in ReturnIfNonInteractive_03 and _19. */
-    boolean entityHandlerInteractive(boolean creditsGameplay) { return this.backgroundMechanics.entityHandlerInteractive(creditsGameplay); }
-
-    boolean sideViewPotPowerBraceletHeld() { return liftThrow.sideViewPotPowerBraceletHeld(); }
-
-    void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) { liftThrow.pendingLinkPotContact(sourceSlot, contact); }
 
     /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
-    boolean entityTimersInteractive() { return this.backgroundMechanics.entityTimersInteractive(); }
-
-    void requestArmosLinkPush(RoomEntity entity, int linkEntityX, int linkEntityY, int linkMotionState) { this.backgroundMechanics.requestArmosLinkPush(entity, linkEntityX, linkEntityY, linkMotionState); }
-
-    void requestLinkPush(RoomEntity entity, EntityLinkCollisionRules.LinkPushPolicy policy) { this.backgroundMechanics.requestLinkPush(entity, policy); }
-
-    private void resetHookshotChainAfterLinkPush() { this.backgroundMechanics.resetHookshotChainAfterLinkPush(); }
-
-    EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded( RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) { return this.backgroundMechanics.applyEnemyRecoilIfNeeded(entity, backgroundCollision); }
 
     static void validateEntitySlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
@@ -2626,8 +2279,5 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             throw new IllegalArgumentException("ROM direction must be between 0 and 3");
         }
     }
-    private void initializeRomPresentation(byte[] romData) { this.roomInitialization.initializeRomPresentation(romData); }
-
-    private void initializeRoomSlots(RoomEntitySnapshot initial) { this.roomInitialization.initializeRoomSlots(initial); }
 
 }

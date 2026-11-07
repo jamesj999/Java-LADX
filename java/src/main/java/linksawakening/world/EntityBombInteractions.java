@@ -76,7 +76,7 @@ final class EntityBombInteractions {
         }
 
         EntitySpriteDefinition definition = switch (decision.phase()) {
-            case NORMAL -> runtime.spriteDefinitionFor(runtime.ENTITY_BOMB);
+            case NORMAL -> runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
             case WARNING -> runtime.spriteHandlers == null
                 ? EntitySpriteDefinition.unsupported(runtime.ENTITY_BOMB)
                 : runtime.spriteHandlers.forBombRightBeforeExploding();
@@ -244,7 +244,7 @@ final class EntityBombInteractions {
         int slot = stunned.slot();
         RoomEntity moved = stunned;
         if (runtime.enemyRecoilMotion.isActive(slot)) {
-            moved = runtime.applyEnemyRecoilIfNeeded(moved, backgroundCollision).entity();
+            moved = runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(moved, backgroundCollision).entity();
         }
         moved = runtime.thrownEntityMotion.advance(
             moved, runtime.groundInteractionSideScrolling, backgroundCollision, frame,

@@ -110,7 +110,7 @@ final class EntitySlotLifecycle {
                 runtime.startToadstoolPickup(entity.slot());
             } else if (entity.type()
                 == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
-                runtime.startInstrumentPickup(entity.slot());
+                runtime.rewards.startInstrumentPickup(entity.slot());
             } else if (entity.type() == 0x33 || entity.type() == 0x34) {
                 runtime.powerUpPickupCountdown[entity.slot()] = 0x30;
                 runtime.entityInteractionCountdown = 0x30;
@@ -130,7 +130,7 @@ final class EntitySlotLifecycle {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        runtime.resetEnemyDropState(slot);
+        runtime.pickups.resetEnemyDropState(slot);
         runtime.sideViewPlatformMotion.clear(slot);
         runtime.sideViewPotMotion.clear(slot);
         runtime.genieMotion.clear(slot);
@@ -308,14 +308,14 @@ final class EntitySlotLifecycle {
             runtime.liftedEffectiveDirection = 0;
         }
         runtime.slots[slot] = RoomEntity.disabled(slot);
-        runtime.updatePincerBodyOam();
+        runtime.slotProperties.updatePincerBodyOam();
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
             ? 1 << entity.sourceLoadOrder() : 0;
     }
 
     RoomEntity applyZolSplit(RoomEntity original, RoomEntity updated,
                                       ZolGelMotion.Split split) {
-        EntitySpriteDefinition gelDefinition = runtime.spriteDefinitionFor(runtime.ENTITY_GEL);
+        EntitySpriteDefinition gelDefinition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GEL);
         int gelVariant = gelDefinition.supported() ? 0 : -1;
         int slot = original.slot();
         RoomEntity gel = new RoomEntity(slot, original.sourceLoadOrder(), runtime.ENTITY_GEL,
@@ -387,14 +387,14 @@ final class EntitySlotLifecycle {
             runtime.entityInertia[targetSlot] = (runtime.entityInertia[targetSlot] + 1) & 0xFF;
             return;
         }
-        runtime.handleTerminalEnemyDeath(target, randomByteSupplier);
+        runtime.bossRewards.handleTerminalEnemyDeath(target, randomByteSupplier);
     }
 
     void finishBurning(RoomEntity entity) {
         int slot = entity.slot();
         runtime.enemyTransitionCountdown[slot] = 0;
         if (entity.type() == runtime.ENTITY_GIBDO) {
-            EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_STALFOS_EVASIVE);
+            EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_STALFOS_EVASIVE);
             RoomEntity stalfos = withType(entity, runtime.ENTITY_STALFOS_EVASIVE, definition);
             runtime.slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
             runtime.enemyHealth[slot] = runtime.initialHealth(runtime.ENTITY_STALFOS_EVASIVE);
@@ -429,7 +429,7 @@ final class EntitySlotLifecycle {
     boolean shouldDisappear(RoomEntity entity) { return runtime.enemyInspection.shouldDisappear(entity); }
 
     void disableEntityWithoutPersistence(int slot) {
-        runtime.resetEnemyDropState(slot);
+        runtime.pickups.resetEnemyDropState(slot);
         runtime.sideViewPlatformMotion.clear(slot);
         runtime.sideViewPotMotion.clear(slot);
         runtime.genieMotion.clear(slot);
@@ -608,7 +608,7 @@ final class EntitySlotLifecycle {
         if (runtime.bombPrivateCountdown3[slot] > 0) {
             runtime.bombPrivateCountdown3[slot]--;
         }
-        if (runtime.owlPrivateCountdown1[slot] > 0 && runtime.entityTimersInteractive()) {
+        if (runtime.owlPrivateCountdown1[slot] > 0 && runtime.backgroundMechanics.entityTimersInteractive()) {
             runtime.owlPrivateCountdown1[slot]--;
         }
         runtime.hinoxMotion.decrementPrivateCountdown1(slot);

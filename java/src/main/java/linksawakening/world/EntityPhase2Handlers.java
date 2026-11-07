@@ -22,7 +22,7 @@ final class EntityPhase2Handlers {
     static void install(EntityHandlerRegistry registry) {
         registry.registerTick(RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM, 27, state -> {
 if (state.wasInitializing && true) {
-                state.runtime.initializeChestEntity(state.entity);
+                state.runtime.pickups.initializeChestEntity(state.entity);
                 state.updated = withPositionAndVariant(state.entity, state.entity.x(),
                     (state.entity.y() - 0x08) & 0xFF, state.entity.spriteVariant());
             }
@@ -40,7 +40,7 @@ if (state.wasInitializing && true) {
         registry.registerTick(RoomEntityRuntime.ENTITY_CHEST_WITH_ITEM, 29, state -> {
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
-                if (state.runtime.advanceChestEntity(state.index, state.entity)) {
+                if (state.runtime.pickups.advanceChestEntity(state.index, state.entity)) {
                     return false;
                 }
                 state.updated = state.runtime.slots[state.index];
@@ -56,7 +56,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                     // DroppableSeashellEntityHandler uses UnloadEntityAndReturn
                     // for these gates, which deliberately does not mark the
                     // source load-order bit as completed.
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 RoomEntityObjectSample objectUnderEntity = state.runtime.objectQuery == null
@@ -85,7 +85,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
                 // calling the shared reveal helper and unloads without touching
                 // the source persistence mask.
-                state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
             return true;
@@ -94,7 +94,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true) {
                 int slot = state.entity.slot();
-                SlimeKeyTransitionUpdate keyUpdate = state.runtime.advanceHidingSlimeKey(
+                SlimeKeyTransitionUpdate keyUpdate = state.runtime.pickups.advanceHidingSlimeKey(
                     state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
                 state.runtime.enemyTransitionCountdown[slot] = keyUpdate.nextTransitionCountdown();
                 if (keyUpdate.reward() != null) {
@@ -103,7 +103,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                         0, keyUpdate.reward().dialogLowId()));
                 }
                 if (keyUpdate.unload()) {
-                    state.runtime.disableEntityWithoutPersistence(slot);
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     return false;
                 }
                 state.keyDropTransitionActive = keyUpdate.holdAboveLink();
@@ -118,7 +118,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 // shared transition-byte decrement before bank-$03's handler
                 // reads it.
                 int slot = state.entity.slot();
-                if (state.runtime.checkForKeyDropQuicksandHole(state.updated)) {
+                if (state.runtime.pickups.checkForKeyDropQuicksandHole(state.updated)) {
                     state.runtime.pendingKeyQuicksandEvents.add(new KeyQuicksandEvent(slot));
                     state.runtime.slots[state.index] = withStatus(state.updated, EntityStatus.FALLING);
                     state.runtime.enemyTransitionCountdown[slot] = 0x2F;
@@ -136,7 +136,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 }
                 boolean hookshotRoom = state.runtime.entityRoomId == 0x80;
                 if (hookshotRoom) {
-                    state.updated = withDefinition(state.updated, state.runtime.spriteDefinitionFor(state.runtime.ENTITY_HOOKSHOT_CHAIN), 0);
+                    state.updated = withDefinition(state.updated, state.runtime.slotProperties.spriteDefinitionFor(state.runtime.ENTITY_HOOKSHOT_CHAIN), 0);
                 }
                 KeyDropPointMotion.Update keyUpdate = KeyDropPointMotion.advance(
                     state.runtime.enemyTransitionCountdown[slot], state.updated.spriteVariant(), hookshotRoom);
@@ -169,7 +169,7 @@ if (state.wasInitializing && true) {
         registry.registerTick(RoomEntityRuntime.ENTITY_POLS_VOICE, 35, state -> {
 if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && true
-                && state.runtime.polsVoiceBalladOcarinaTrigger()) {
+                && state.runtime.enemyInspection.polsVoiceBalladOcarinaTrigger()) {
                 // The handler checks this before rendering, recoil, movement,
                 // or the ordinary collision path. Its private countdown $1F
                 // is the shared EntityDeathHandler's visible death timer.
@@ -190,7 +190,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 // RenderMiniMoldorm records the history before the bank-$04
                 // recoil helper runs, so keep this ordering explicit.
                 state.runtime.miniMoldormMotion.beginFrame(state.entity, state.runtime.enemyIgnoreHitsCountdown[slot] != 0);
-                EnemyRecoilMotion.Update recoil = state.runtime.applyEnemyRecoilIfNeeded(
+                EnemyRecoilMotion.Update recoil = state.runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(
                     state.entity, state.backgroundCollision);
                 state.entity = recoil.entity();
                 state.updated = state.entity;

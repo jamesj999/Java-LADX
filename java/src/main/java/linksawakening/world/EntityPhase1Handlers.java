@@ -23,13 +23,13 @@ final class EntityPhase1Handlers {
         registry.registerTick(RoomEntityRuntime.ENTITY_KANALET_BOMBABLE_WALL, 1, state -> {
 if (true) {
                 if ((state.runtime.entityRoomStatus & 0x10) != 0) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 state.runtime.droppedItemBySlot[state.entity.slot()] = state.runtime.ENTITY_HIDING_SLIME_KEY;
                 if (state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] != 0) {
-                    if (state.runtime.spawnKanaletWallMoblin(state.entity)) {
-                        state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    if (state.runtime.entityEnemySpawns.spawnKanaletWallMoblin(state.entity)) {
+                        state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                         return false;
                     }
                 }
@@ -39,7 +39,7 @@ if (true) {
         registry.registerTick(RoomEntityRuntime.ENTITY_TARIN, 2, state -> {
 if (!state.runtime.indoorRoom && true
                 && (state.runtime.entityRoomStatus & 0x10) != 0) {
-                state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
             return true;
@@ -47,7 +47,7 @@ if (!state.runtime.indoorRoom && true
         registry.registerTick(RoomEntityRuntime.ENTITY_MARIN_INDOOR, 3, state -> {
 if (state.runtime.indoorRoom && true && state.runtime.chestPlayerLevelsKnown
                 && state.runtime.chestSwordLevel != 0) {
-                state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
             return true;
@@ -130,7 +130,7 @@ if (state.status == EntityStatus.ACTIVE
                     contact = SideViewPotContact.resolve(
                         state.entity, state.linkEntityX, state.linkEntityY, state.linkAirborne, state.runtime.currentLinkSpeedY);
                     if (contact.collided()) {
-                        state.runtime.pendingLinkPotContact(state.entity.slot(), contact);
+                        state.runtime.liftThrow.pendingLinkPotContact(state.entity.slot(), contact);
                         if (contact.restoreFinalPositionX()) {
                             effectiveLinkX = state.runtime.currentLinkFinalPositionXConfigured
                                 ? state.runtime.currentLinkFinalPositionX : state.linkEntityX;
@@ -143,7 +143,7 @@ if (state.status == EntityStatus.ACTIVE
                 if (state.runtime.groundInteractionSideScrolling
                     && state.sideViewPotInteractive
                     && SideViewPotContact.liftWindow(state.entity, effectiveLinkX, effectiveLinkY)
-                    && state.runtime.sideViewPotPowerBraceletHeld()
+                    && state.runtime.liftThrow.sideViewPotPowerBraceletHeld()
                     && state.runtime.linkAttackStepAnimationCountdown == 0
                     && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
                     state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
@@ -161,7 +161,7 @@ if (state.status == EntityStatus.ACTIVE
                 if (state.sideViewPotInteractive) {
                     SideViewPotMotion.Update potUpdate = state.runtime.sideViewPotMotion.advance(state.entity);
                     RoomEntity movedPot = potUpdate.entity();
-                    boolean collision = state.runtime.sideViewPotBackgroundCollision(state.entity, movedPot,
+                    boolean collision = state.runtime.liftThrow.sideViewPotBackgroundCollision(state.entity, movedPot,
                         state.backgroundCollision, state.frame);
                     if (collision) {
                         state.runtime.spawnLiftableRockSmash(movedPot.x(),
@@ -187,7 +187,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_HOOKSHOT_BRIDGE, 10, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceHookshotBridgeEntity(state.index, state.entity);
+                state.runtime.backgroundMechanics.advanceHookshotBridgeEntity(state.index, state.entity);
                 return false;
             }
             return true;
@@ -251,7 +251,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
                 // $7C59 checks enemies before background interaction. The
                 // collision pass may clear the timer, but this pass still
                 // follows the already-selected outgoing handler branch.
-                boolean unmasked = state.runtime.collideHookshotWithEntities(state.entity, step.state(), state.frame);
+                boolean unmasked = state.runtime.projectiles.collideHookshotWithEntities(state.entity, step.state(), state.frame);
                 if (unmasked) {
                     step = new HookshotChainMotion.Step(
                         HookshotChainMotion.completeWallPoke(step.state()),
@@ -312,7 +312,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
                             ? state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN
                             : state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_UP;
                         if (object.objectId() == bridgeObject
-                            && state.runtime.spawnHookshotBridge(object.objectLeft() + 0x08,
+                            && state.runtime.entityPlayerSpawns.spawnHookshotBridge(object.objectLeft() + 0x08,
                                 object.objectTop() + 0x10,
                                 bridgeObject == state.runtime.OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN ? 0 : 1,
                                 step.state().transitionCountdown())) {
@@ -332,7 +332,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_BOOMERANG, 12, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceBoomerangEntity(state.index, state.entity, state.frame, state.linkEntityX, state.linkEntityY,
+                state.runtime.projectiles.advanceBoomerangEntity(state.index, state.entity, state.frame, state.linkEntityX, state.linkEntityY,
                     state.linkZ, state.projectileLinkState.motionState(), state.handlerInteractive,
                     state.projectileTimersInteractive);
                 return false;
@@ -341,7 +341,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_SWORD_BEAM, 13, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceSwordBeamEntity(state.index, state.entity, state.frame, state.linkEntityX, state.linkEntityY,
+                state.runtime.projectiles.advanceSwordBeamEntity(state.index, state.entity, state.frame, state.linkEntityX, state.linkEntityY,
                     state.romLinkDirection, state.handlerInteractive);
                 return false;
             }
@@ -349,7 +349,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_MAGIC_ROD_FIREBALL, 14, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceMagicRodFireballEntity(state.index, state.entity, state.frame,
+                state.runtime.projectiles.advanceMagicRodFireballEntity(state.index, state.entity, state.frame,
                     state.handlerInteractive, state.projectileTimersInteractive);
                 return false;
             }
@@ -358,7 +358,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         registry.registerTick(RoomEntityRuntime.ENTITY_MAGIC_POWDER_SPRINKLE, 15, state -> {
 if (state.status == EntityStatus.ACTIVE
                 && true) {
-                state.runtime.advanceMagicPowderSprinkleEntity(state.index, state.entity, state.frame,
+                state.runtime.projectiles.advanceMagicPowderSprinkleEntity(state.index, state.entity, state.frame,
                     state.projectileLinkState.motionState(),
                     state.handlerInteractive && !state.creditsGameplay, state.projectileTimersInteractive);
                 return false;
@@ -367,7 +367,7 @@ if (state.status == EntityStatus.ACTIVE
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_MUSICAL_NOTE, 16, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                RoomEntity note = state.runtime.advanceMusicalNoteEntity(state.entity);
+                RoomEntity note = state.runtime.slotProperties.advanceMusicalNoteEntity(state.entity);
                 if (note == null) {
                     return false;
                 }
@@ -378,15 +378,15 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_BOMB, 17, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                BombMotion.Decision bombDecision = state.runtime.advanceBombEntity(state.index, state.entity,
+                BombMotion.Decision bombDecision = state.runtime.bombInteractions.advanceBombEntity(state.index, state.entity,
                     state.projectileEvents, state.linkEntityX, state.linkEntityY, state.projectileLinkState);
                 state.entity = state.runtime.slots[state.index];
                 if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
                     state.runtime.slots[state.index] = state.runtime.bombPrivateState4[state.entity.slot()] != 0
-                        ? state.runtime.advanceEnemyBombEntity(state.entity, state.backgroundCollision, state.frame)
-                        : state.runtime.advancePlacedBombEntity(state.entity, state.backgroundCollision, state.frame);
+                        ? state.runtime.liftThrow.advanceEnemyBombEntity(state.entity, state.backgroundCollision, state.frame)
+                        : state.runtime.liftThrow.advancePlacedBombEntity(state.entity, state.backgroundCollision, state.frame);
                 }
-                state.runtime.tryLiftBombIfRequested(state.index, bombDecision, state.linkEntityX, state.linkEntityY,
+                state.runtime.liftThrow.tryLiftBombIfRequested(state.index, bombDecision, state.linkEntityX, state.linkEntityY,
                     state.linkZ, state.romLinkDirection);
                 return false;
             }
@@ -396,31 +396,31 @@ if (state.status == EntityStatus.ACTIVE && true) {
 if (state.status == EntityStatus.ACTIVE && true) {
                 if (state.runtime.playerArrowBombArrow[state.entity.slot()]
                     && state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) != 0) {
-                    int explosionSlot = state.runtime.spawnBombFromBombArrow(state.entity);
+                    int explosionSlot = state.runtime.entityPlayerSpawns.spawnBombFromBombArrow(state.entity);
                     if (explosionSlot >= 0) {
                         state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
                             explosionSlot, state.runtime.ENTITY_BOMB, 0, false,
                             EntityCombatEvent.SoundChannel.NOISE, 0x0C));
                     }
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 // ArrowEntityHandler jumps straight to rendering/rebound
                 // while its transition countdown is nonzero ($6A3D-$6A40).
                 boolean hitEntity = state.runtime.playerArrowMotion.transitionCountdown(state.entity.slot()) == 0
-                    && state.runtime.collidePlayerArrowWithEntities(state.entity, state.frame);
+                    && state.runtime.projectiles.collidePlayerArrowWithEntities(state.entity, state.frame);
                 if (hitEntity && !state.runtime.playerArrowBombArrow[state.entity.slot()]) {
                     // func_003_75A2 reaches jr_003_7737 after an ordinary
                     // arrow target hit. With no wall-collision byte set on
                     // the active arrow, the state-0 arrow unloads there.
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 PlayerArrowMotion.Update arrowUpdate = state.runtime.playerArrowMotion.advance(
                     state.entity, state.backgroundCollision, state.frame, state.runtime.entityGroundStatus[state.entity.slot()],
                     state.runtime.groundInteractionSideScrolling, state.handlerInteractive, state.projectileTimersInteractive);
                 if (arrowUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (arrowUpdate.collidedWithWall()) {
@@ -439,7 +439,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         registry.registerTick(RoomEntityRuntime.ENTITY_LIFTABLE_ROCK, 19, state -> {
 if (state.status == EntityStatus.ACTIVE && true
                 && state.runtime.liftableRockSmashActive[state.entity.slot()]) {
-                state.runtime.advanceLiftableRockSmash(state.index, state.entity, state.frame);
+                state.runtime.liftThrow.advanceLiftableRockSmash(state.index, state.entity, state.frame);
                 return false;
             }
             return true;
@@ -447,7 +447,7 @@ if (state.status == EntityStatus.ACTIVE && true
         registry.registerTick(RoomEntityRuntime.ENTITY_HEART_CONTAINER, 20, state -> {
 if (state.status == EntityStatus.ACTIVE && true
                 && state.runtime.enemyTransitionCountdown[state.entity.slot()] != 0) {
-                state.runtime.advanceCollectedHeartContainer(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+                state.runtime.bossRewards.advanceCollectedHeartContainer(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
                 return false;
             }
             return true;
@@ -455,14 +455,14 @@ if (state.status == EntityStatus.ACTIVE && true
         registry.registerTick(RoomEntityRuntime.ENTITY_MADAM_MEOWMEOW, 21, state -> {
 if (state.status == EntityStatus.ACTIVE
                 && true) {
-                state.runtime.advanceMadamMeowMeow(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
+                state.runtime.story.advanceMadamMeowMeow(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
                 return false;
             }
             return true;
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_RICHARD, 22, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceRichard(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
+                state.runtime.story.advanceRichard(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
                 return false;
             }
             return true;
@@ -505,7 +505,7 @@ if (state.status == EntityStatus.ACTIVE
                     state.runtime.slots[state.index] = state.entity;
                 }
                 if (state.runtime.swordPickupSequenceActive[state.entity.slot()]) {
-                    state.runtime.advanceSwordPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
+                    state.runtime.rewards.advanceSwordPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
                     return false;
                 }
             }
@@ -515,11 +515,11 @@ if (state.status == EntityStatus.ACTIVE
 if (state.status == EntityStatus.ACTIVE && true) {
                 if (!state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]
                     && (state.runtime.playerHasToadstool || state.runtime.playerMagicPowderCount != 0)) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (state.runtime.toadstoolPickupSequenceActive[state.entity.slot()]) {
-                    state.runtime.advanceToadstoolPickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+                    state.runtime.rewards.advanceToadstoolPickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
                     return false;
                 }
             }
@@ -527,7 +527,7 @@ if (state.status == EntityStatus.ACTIVE && true) {
         });
         registry.registerTick(RoomEntityRuntime.ENTITY_OWL_EVENT, 26, state -> {
 if (state.status == EntityStatus.ACTIVE && true) {
-                state.runtime.advanceOwlEvent(state.entity, state.frame, state.linkEntityX, state.linkEntityY,
+                state.runtime.story.advanceOwlEvent(state.entity, state.frame, state.linkEntityX, state.linkEntityY,
                     state.handlerLinkCollisionEnabled);
                 return false;
             }

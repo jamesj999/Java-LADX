@@ -86,7 +86,7 @@ final class EntityRewardController {
             }
         } else if (runtime.instrumentPickupState[slot] == 3 && !runtime.dialogActive
             && !runtime.inventoryAppearing && !runtime.roomTransitionActive) {
-            runtime.decrementSlowTransitionCountdown(slot, frameCounter);
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
             // $03:5E29: the warp controller advances its fade every eight
             // frames, then starts the fullscreen hint controller ($07:6523).
             if (runtime.instrumentHintCountdown[slot] > 0) {
@@ -120,7 +120,7 @@ final class EntityRewardController {
                 runtime.instrumentPickupSequenceActive[slot] = false;
                 runtime.pendingInstrumentCompletions.add(
                     new InstrumentCompletionEvent(slot, runtime.entityMapId & 0xFF));
-                runtime.disableEntityWithoutPersistence(slot);
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return;
             }
         }
@@ -162,7 +162,7 @@ final class EntityRewardController {
     void advanceInstrumentParticle(RoomEntity entity) {
         int slot = entity.slot();
         if (runtime.enemyTransitionCountdown[slot] == 0) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         int x = addFallingSpeedToPosition(entity.x(), runtime.instrumentParticleSpeedX[slot],
@@ -187,7 +187,7 @@ final class EntityRewardController {
             runtime.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
             runtime.pendingMusicTrack = runtime.owlDefaultMusicResolver.applyAsInt(runtime.entityRoomId);
             runtime.toadstoolPickupSequenceActive[slot] = false;
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         runtime.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
@@ -213,7 +213,7 @@ final class EntityRewardController {
             return;
         }
         if (runtime.swordPickupState[slot] == 1) {
-            runtime.decrementSlowTransitionCountdown(slot, frameCounter);
+            runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
         }
         switch (runtime.swordPickupState[slot]) {
             case 0 -> {
@@ -269,7 +269,7 @@ final class EntityRewardController {
                     runtime.pendingMusicTrack = 0x05;
                     runtime.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
                     runtime.swordPickupSequenceActive[slot] = false;
-                    runtime.disableEntityWithoutPersistence(slot);
+                    runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 }
             }
         }

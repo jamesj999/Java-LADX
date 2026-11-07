@@ -109,7 +109,7 @@ final class EntityStoryController {
         // translating the Link probe keeps the statue's world position unchanged.
         if (linkZ == 0 && linkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE
             && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY - 1)) {
-            runtime.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            runtime.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
         }
         if (!runtime.gameplayWorld || runtime.transitionSequenceCounter != 0x04
             || runtime.dialogActive || runtime.inventoryAppearing || runtime.roomTransitionActive
@@ -118,7 +118,7 @@ final class EntityStoryController {
         }
         int dx = signedByte((linkEntityX - entity.x()) & 0xFF);
         int dy = signedByte((linkEntityY - entity.y()) & 0xFF);
-        if (runtime.sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
+        if (runtime.roomInspection.sourceNpcInteractionAllowed(dx, dy, linkAirborne, directionToLink(dx, dy))) {
             runtime.pendingDialogRequests.add(new DialogRequest(
                 runtime.owlStatueDialogId >>> 8, runtime.owlStatueDialogId & 0xFF));
         }
@@ -149,7 +149,7 @@ final class EntityStoryController {
         RoomEntity updated = withVariant(entity, variant);
         if (runtime.richardState[slot] < 3
             && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
-            runtime.requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
+            runtime.backgroundMechanics.requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
         }
 
         switch (runtime.richardState[slot]) {
@@ -163,7 +163,7 @@ final class EntityStoryController {
                 }
             }
             case 1 -> {
-                if (!runtime.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
+                if (!runtime.roomInspection.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
                     directionToLink(xDistance, yDistance))) {
                     runtime.slots[slot] = updated;
                     return;
@@ -206,7 +206,7 @@ final class EntityStoryController {
                 updated = withPositionAndVariant(updated, x, updated.y(), variant);
             }
             case 4 -> {
-                if (runtime.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
+                if (runtime.roomInspection.sourceNpcInteractionAllowed(xDistance, yDistance, linkAirborne,
                     directionToLink(xDistance, yDistance))) {
                     int dialog = runtime.entityGoldenLeavesCount == 0x06 ? 0x3E : 0x3D;
                     runtime.pendingDialogRequests.add(new DialogRequest(1, dialog));
@@ -219,7 +219,7 @@ final class EntityStoryController {
                     runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, runtime.ENTITY_RICHARD, 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x06));
-                    runtime.disableEntityWithoutPersistence(slot);
+                    runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     return;
                 }
             }
@@ -247,7 +247,7 @@ final class EntityStoryController {
                         runtime.owlDefaultMusicResolver.applyAsInt(runtime.entityRoomId);
                 } else if (runtime.entityRoomId == runtime.ROOM_OW_WEST_OF_TAIL_CAVE) {
                     if (runtime.chestSwordLevel == 0 || (runtime.instrument1Flags & 0x02) == 0) {
-                        runtime.disableEntityWithoutPersistence(slot);
+                        runtime.lifecycle.disableEntityWithoutPersistence(slot);
                         return;
                     }
                     runtime.owlPreviousMusicTrack[slot] =
@@ -258,7 +258,7 @@ final class EntityStoryController {
                 } else if (runtime.entityRoomId == runtime.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
                     if (runtime.chestSwordLevel == 0 || runtime.instrument2Flags != 0
                         || runtime.bowWowState != 0x01 || (runtime.instrument1Flags & 0x02) == 0) {
-                        runtime.disableEntityWithoutPersistence(slot);
+                        runtime.lifecycle.disableEntityWithoutPersistence(slot);
                         return;
                     }
                     runtime.owlPreviousMusicTrack[slot] =
@@ -268,7 +268,7 @@ final class EntityStoryController {
                     return;
                 } else {
                     if (runtime.chestSwordLevel == 0) {
-                        runtime.disableEntityWithoutPersistence(slot);
+                        runtime.lifecycle.disableEntityWithoutPersistence(slot);
                         return;
                     }
                     if (runtime.entityRoomId != 0x80) {
@@ -295,7 +295,7 @@ final class EntityStoryController {
                 } else {
                     runtime.owlBoomerangSfxCounter[slot]--;
                 }
-                RoomEntity flying = runtime.owlPresentation(entity, frameCounter);
+                RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
                 int x = addFallingSpeedToPosition(
                     flying.x(), runtime.owlSpeedX[slot], runtime.owlXAccumulator, slot);
                 int y = addFallingSpeedToPosition(
@@ -319,9 +319,9 @@ final class EntityStoryController {
                     return;
                 }
                 if (RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                    runtime.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    runtime.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
                 }
-                runtime.slots[slot] = runtime.owlPresentation(entity, frameCounter);
+                runtime.slots[slot] = runtime.roomInspection.owlPresentation(entity, frameCounter);
                 int globalDialogId = runtime.owlDialogResolver.applyAsInt(runtime.entityRoomId);
                 runtime.pendingDialogRequests.add(new DialogRequest(
                     (globalDialogId >>> 8) & 0xFF, globalDialogId & 0xFF));
@@ -333,7 +333,7 @@ final class EntityStoryController {
                     return;
                 }
                 runtime.blockLinkForOwl(slot);
-                runtime.slots[slot] = runtime.owlPresentation(entity, frameCounter);
+                runtime.slots[slot] = runtime.roomInspection.owlPresentation(entity, frameCounter);
                 if (runtime.dialogActive) {
                     if (runtime.enemyTransitionCountdown[slot] > 0) {
                         runtime.enemyTransitionCountdown[slot]++;
@@ -361,7 +361,7 @@ final class EntityStoryController {
 
     void advanceDepartingOwl(RoomEntity entity, int slot, int frameCounter) {
         runtime.blockLinkForOwl(slot);
-        RoomEntity flying = runtime.owlPresentation(entity, frameCounter);
+        RoomEntity flying = runtime.roomInspection.owlPresentation(entity, frameCounter);
         int x = addFallingSpeedToPosition(
             flying.x(), runtime.owlSpeedX[slot], runtime.owlXAccumulator, slot);
         int y = addFallingSpeedToPosition(
@@ -376,7 +376,7 @@ final class EntityStoryController {
         }
         if (x < 0x08 || x > 0x98 || y < 0x10 || y > 0x88 || z >= 0x40) {
             runtime.pendingMusicTrack = runtime.enemyDropActivePowerUp ? 0x49 : runtime.owlPreviousMusicTrack[slot];
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
         }
 

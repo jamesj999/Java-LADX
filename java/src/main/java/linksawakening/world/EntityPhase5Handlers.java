@@ -27,7 +27,7 @@ if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 if (state.projectileLinkState.motionState() == 0
                     && (state.linkZ & 0xFF) == 0
                     && state.runtime.linkAttackStepAnimationCountdown == 0
-                    && state.runtime.cuccoPowerBraceletHeld()
+                    && state.runtime.liftThrow.cuccoPowerBraceletHeld()
                     && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)
                     && state.runtime.beginLift(state.entity.slot(), state.romLinkDirection)) {
                     state.runtime.pendingRoosterLinkStateRequests.add(new RoosterLinkStateRequest(

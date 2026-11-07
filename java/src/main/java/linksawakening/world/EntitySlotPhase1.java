@@ -30,7 +30,7 @@ final class EntitySlotPhase1 {
                 return false;
             }
             if (state.entity.type() == 0x35 && (state.runtime.entityRoomStatus & 0x10) != 0) {
-                state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
             if (state.runtime.enemyProjectileSpawnedThisFrame[state.entity.slot()]
@@ -48,7 +48,7 @@ final class EntitySlotPhase1 {
                     state.runtime.enemyIgnoreHitsCountdown[state.entity.slot()] >>>= 2;
                 }
                 if ((state.runtime.entityRoomStatus & 0x10) != 0) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 state.runtime.droppedItemBySlot[state.entity.slot()] = state.runtime.ENTITY_HIDING_SLIME_KEY;
@@ -64,15 +64,15 @@ final class EntitySlotPhase1 {
             state.wasInitializing = state.initialStatus == EntityStatus.INIT;
             state.freezeTarinTimers = !state.runtime.indoorRoom && state.entity.type() == state.runtime.ENTITY_TARIN
                 && state.runtime.tarinRaccoonMotion.state(state.entity.slot()) != 0
-                && !state.runtime.tarinTransformationTimersInteractive();
+                && !state.runtime.roomInspection.tarinTransformationTimersInteractive();
             state.freezeThreeOfAKindTimers = state.entity.type() == state.runtime.ENTITY_THREE_OF_A_KIND
                 && !state.threeOfAKindInteractive;
             state.freezeHinoxTimers = state.entity.type() == state.runtime.ENTITY_HINOX
                 && state.initialStatus == EntityStatus.ACTIVE
-                && (state.creditsGameplay || !state.handlerLinkCollisionEnabled || !state.runtime.entityTimersInteractive()
+                && (state.creditsGameplay || !state.handlerLinkCollisionEnabled || !state.runtime.backgroundMechanics.entityTimersInteractive()
                     || state.runtime.transitionSequenceCounter != 0x04);
             state.freezeGenieTimers = state.entity.type() == state.runtime.ENTITY_GENIE
-                && (!state.runtime.gameplayEntityTimersInteractive(state.creditsGameplay)
+                && (!state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(state.creditsGameplay)
                     || state.runtime.witchGotItemPresentationActive());
             state.freezeWitchTimers = state.entity.type() == state.runtime.ENTITY_WITCH
                 && !state.projectileTimersInteractive;
@@ -94,12 +94,12 @@ final class EntitySlotPhase1 {
                 && !state.freezeBowWowTimers
                 && !state.freezeMoblinKingTimers
                 && !state.rollingBonesHitThisFrame
-                && state.runtime.decrementEnemyCombatCountdowns(state.entity.slot(), !state.wasInitializing
+                && state.runtime.lifecycle.decrementEnemyCombatCountdowns(state.entity.slot(), !state.wasInitializing
                     && state.entity.type() != state.runtime.ENTITY_BOO_BUDDY && state.entity.type() != state.runtime.ENTITY_BOW_WOW);
             if (!state.freezeTarinTimers && !state.freezeThreeOfAKindTimers && !state.freezeHinoxTimers
                 && !state.freezeGenieTimers && !state.freezePowderTimers && !state.freezeBooBuddyTimers
                 && !state.freezeBowWowTimers && !state.freezeWitchTimers && !state.freezeMoblinKingTimers) {
-                state.runtime.decrementEnemyStatusCountdowns(state.entity.slot());
+                state.runtime.lifecycle.decrementEnemyStatusCountdowns(state.entity.slot());
                 if (state.entity.type() == state.runtime.ENTITY_GENIE
                     && state.runtime.geniePrivateCountdown1[state.entity.slot()] > 0) {
                     state.runtime.geniePrivateCountdown1[state.entity.slot()]--;
@@ -111,7 +111,7 @@ final class EntitySlotPhase1 {
             }
             if (!state.runtime.entityHandlers.tick(4, state)) return false;
             if (!state.runtime.entityHandlers.tick(5, state)) return false;
-            if (state.entity.sourceLoadOrder() == -1 && state.runtime.isDisabledFollower(state.entity.type())) {
+            if (state.entity.sourceLoadOrder() == -1 && state.runtime.enemyInspection.isDisabledFollower(state.entity.type())) {
                 state.runtime.clearEntity(state.entity.slot());
                 return false;
             }
@@ -190,7 +190,7 @@ final class EntitySlotPhase1 {
                 && state.entity.type() != state.runtime.ENTITY_DOG
                 && state.entity.type() != state.runtime.ENTITY_URCHIN;
             if (state.status == EntityStatus.ACTIVE) {
-                state.runtime.decrementEnemyDropCountdowns(state.entity);
+                state.runtime.pickups.decrementEnemyDropCountdowns(state.entity);
             }
             if (!state.runtime.entityHandlers.tick(7, state)) return false;
             if (!state.runtime.entityHandlers.tick(8, state)) return false;
@@ -225,7 +225,7 @@ final class EntitySlotPhase1 {
                 if (warpUpdate.destinationReady()) {
                     state.runtime.pendingDungeonWarpRequests.add(new DungeonWarpRequest(
                         slot, warpUpdate.destination()));
-                    state.runtime.disableEntityWithoutPersistence(slot);
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 }
                 return false;
             }
@@ -242,7 +242,7 @@ final class EntitySlotPhase1 {
             if (!state.runtime.entityHandlers.tick(22, state)) return false;
             if (state.status == EntityStatus.ACTIVE && state.entity.type() == 0x42
                 && state.runtime.indoorRoom && state.runtime.entityMapId != 0x16) {
-                state.runtime.advanceOwlStatue(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ,
+                state.runtime.story.advanceOwlStatue(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ,
                     state.projectileLinkState.motionState(), state.linkAirborne);
                 return false;
             }
@@ -250,12 +250,12 @@ final class EntitySlotPhase1 {
             if (state.status == EntityStatus.ACTIVE
                 && (state.entity.type() == state.runtime.ENTITY_KID_71 || state.entity.type() == state.runtime.ENTITY_KID_72)
                 && state.runtime.bowWowState == 0x80) {
-                state.runtime.advanceKidnapWarningKid(state.entity, state.frame, state.linkEntityX, state.linkEntityY);
+                state.runtime.story.advanceKidnapWarningKid(state.entity, state.frame, state.linkEntityX, state.linkEntityY);
                 return false;
             }
             if (state.status == EntityStatus.ACTIVE && state.entity.type() == 0x35
                 && state.runtime.heartPiecePickup[state.entity.slot()] != null) {
-                state.runtime.advanceHeartPiecePickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+                state.runtime.pickups.advanceHeartPiecePickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
                 return false;
             }
             if (state.status == EntityStatus.ACTIVE && state.entity.type() == 0x39
@@ -271,19 +271,19 @@ final class EntitySlotPhase1 {
             if (state.status == EntityStatus.ACTIVE
                 && state.entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
                 && state.runtime.instrumentParticleKind[state.entity.slot()] == 1) {
-                state.runtime.advanceInstrumentParticle(state.entity);
+                state.runtime.rewards.advanceInstrumentParticle(state.entity);
                 return false;
             }
             if (state.status == EntityStatus.ACTIVE
                 && state.entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS
                 && state.runtime.instrumentPickupSequenceActive[state.entity.slot()]) {
-                state.runtime.advanceInstrumentPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ,
+                state.runtime.rewards.advanceInstrumentPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ,
                     state.randomByteSupplier);
                 return false;
             }
             if (!state.runtime.entityHandlers.tick(24, state)) return false;
             if (state.status == EntityStatus.ACTIVE && state.runtime.powerUpPickupCountdown[state.entity.slot()] != 0) {
-                state.runtime.advancePowerUpPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
+                state.runtime.rewards.advancePowerUpPickup(state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
                 return false;
             }
             if (!state.runtime.entityHandlers.tick(25, state)) return false;

@@ -44,7 +44,7 @@ final class EntitySlotPhase3 {
                 }
                 boolean entityCollisionExplosion = state.entity.type() == state.runtime.ENTITY_BOUNCING_BOMBITE
                     && state.runtime.bombiteMotion.state(state.entity.slot()) == 2
-                    && state.runtime.collideBouncingBombiteWithEntities(state.updated, state.frame);
+                    && state.runtime.projectiles.collideBouncingBombiteWithEntities(state.updated, state.frame);
                 if (bombiteUpdate.explode() || entityCollisionExplosion) {
                     // BombiteExplode writes the already-positioned source
                     // coordinates into a fresh type-$02 enemy bomb and then
@@ -58,7 +58,7 @@ final class EntitySlotPhase3 {
                             EntityCombatEvent.SoundChannel.NOISE,
                             state.runtime.BOMBITE_EXPLOSION_SOUND_ID));
                     }
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
             }
@@ -83,7 +83,7 @@ final class EntitySlotPhase3 {
                     state.updated = roamingUpdate.entity();
                     if (roamingUpdate.launchRequest() != null) {
                         state.runtime.projectileLaunchRequests.add(roamingUpdate.launchRequest());
-                        state.runtime.spawnEnemyProjectile(state.entity, roamingUpdate.launchRequest());
+                        state.runtime.entityEnemySpawns.spawnEnemyProjectile(state.entity, roamingUpdate.launchRequest());
                     }
                 }
             }
@@ -109,7 +109,7 @@ final class EntitySlotPhase3 {
                 state.updated = zolGelUpdate.entity();
                 state.runtime.gelClingingToLink |= zolGelUpdate.clinging();
                 if (zolGelUpdate.split() != null) {
-                    state.updated = state.runtime.applyZolSplit(state.entity, state.updated, zolGelUpdate.split());
+                    state.updated = state.runtime.lifecycle.applyZolSplit(state.entity, state.updated, zolGelUpdate.split());
                 }
             }
             if (!state.runtime.entityHandlers.tick(46, state)) return false;
@@ -127,10 +127,10 @@ final class EntitySlotPhase3 {
                 LaserMotion.ParentUpdate laserUpdate = state.runtime.laserMotion.advanceParent(state.entity);
                 state.updated = laserUpdate.entity();
                 if (laserUpdate.spawnSensor()) {
-                    state.runtime.spawnLaserSensor(state.entity);
+                    state.runtime.entityEnemySpawns.spawnLaserSensor(state.entity);
                 }
                 if (laserUpdate.spawnBeam()) {
-                    if (state.runtime.spawnLaserBeam(state.entity)) {
+                    if (state.runtime.entityEnemySpawns.spawnLaserBeam(state.entity)) {
                         state.runtime.pendingEntityEvents.add(new EntityCombatEvent(
                             state.entity.slot(), state.entity.type(), 0, false,
                             EntityCombatEvent.SoundChannel.NOISE, 0x08));
@@ -151,7 +151,7 @@ final class EntitySlotPhase3 {
                     state.runtime.enemyFlashCountdown[ownerSlot] = 0x10;
                 }
                 if (sensorUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 state.updated = sensorUpdate.entity();
@@ -164,7 +164,7 @@ final class EntitySlotPhase3 {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
                     state.projectileEvents.add(event);
                     if (event.remove()) {
-                        state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                        state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                         return false;
                     }
                     // Bank-$15 moves the beam before consuming the collision
@@ -173,7 +173,7 @@ final class EntitySlotPhase3 {
                     LaserMotion.BeamUpdate beamUpdate = state.runtime.laserMotion.advanceBeam(
                         state.entity, state.backgroundCollision);
                     if (beamUpdate.unloaded()) {
-                        state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                        state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                         return false;
                     }
                     state.updated = beamUpdate.entity();
@@ -186,7 +186,7 @@ final class EntitySlotPhase3 {
                     LaserMotion.BeamUpdate beamUpdate = state.runtime.laserMotion.advanceBeam(
                         state.entity, state.backgroundCollision);
                     if (beamUpdate.unloaded()) {
-                        state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                        state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                         return false;
                     }
                     state.updated = beamUpdate.entity();
@@ -206,7 +206,7 @@ final class EntitySlotPhase3 {
                         EntityProjectileEvent event = collisionEvent.orElseThrow();
                         state.projectileEvents.add(event);
                         if (event.remove()) {
-                            state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                            state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                             return false;
                         }
                         preexistingCollision |= event.startsWallTransition();
@@ -217,7 +217,7 @@ final class EntitySlotPhase3 {
                     state.runtime.entityGroundStatus[state.entity.slot()], state.runtime.groundInteractionSideScrolling,
                     state.handlerInteractive, state.projectileTimersInteractive);
                 if (projectileUpdate.unloaded()) {
-                    state.runtime.disableEntityWithoutPersistence(state.entity.slot());
+                    state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                     return false;
                 }
                 if (projectileUpdate.collidedWithWall()) {

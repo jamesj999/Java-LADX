@@ -89,7 +89,7 @@ final class GenieEntityController {
         }
         if (update.rockSpawn() != null && update.rockSpawnSucceeded()) {
             GenieMotion.RockSpawnRequest rock = update.rockSpawn();
-            runtime.spawnLiftableRockAnimation(rock.x(), rock.y(), rock.spriteVariant(),
+            runtime.entityPlayerSpawns.spawnLiftableRockAnimation(rock.x(), rock.y(), rock.spriteVariant(),
                 rock.privateCountdown1(), rock.physicsFlags(), -1);
         }
         if (update.noiseSfx() >= 0) {
@@ -98,7 +98,7 @@ final class GenieEntityController {
                 EntityCombatEvent.SoundChannel.NOISE, update.noiseSfx()));
         }
         if (update.sourceUnloaded()) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
         }
 
@@ -131,12 +131,12 @@ final class GenieEntityController {
                     && runtime.slots[runtime.genieControllerSlot].type() == runtime.ENTITY_GENIE) {
                     runtime.genieActiveState[runtime.genieControllerSlot] = 3;
                 }
-                runtime.disableEntityWithoutPersistence(slot);
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
             }
             return;
         }
         if (countdown == 0) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         if (countdown == 0x06) {
@@ -260,7 +260,7 @@ final class GenieEntityController {
         if (runtime.genieActiveState[slot] == 3) {
             int countdown = runtime.enemyTransitionCountdown[slot];
             if (countdown == 0) {
-                runtime.disableEntityWithoutPersistence(slot);
+                runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return;
             }
             if (countdown == 0x04) {
@@ -395,8 +395,8 @@ final class GenieEntityController {
             default -> {
                 int countdown = runtime.enemyTransitionCountdown[slot];
                 if (countdown == 0) {
-                    runtime.spawnMoldormHeartContainer(genie);
-                    runtime.disableEntityWithoutPersistence(slot);
+                    runtime.bossRewards.spawnMoldormHeartContainer(genie);
+                    runtime.lifecycle.disableEntityWithoutPersistence(slot);
                     runtime.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, runtime.ENTITY_GENIE, 0, false,
                         EntityCombatEvent.SoundChannel.NOISE, 0x1A));
@@ -442,7 +442,7 @@ final class GenieEntityController {
         }
         runtime.slots[slot] = moved;
         if (runtime.enemyTransitionCountdown[slot] == 0) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
         }
         }
 
@@ -456,7 +456,7 @@ final class GenieEntityController {
             fireball.z(), runtime.genieSpeedZ[slot], runtime.genieSpeedZAccumulator, slot);
         runtime.genieSpeedZ[slot] = (runtime.genieSpeedZ[slot] - 2) & 0xFF;
         if ((z & 0x80) != 0) {
-            runtime.disableEntityWithoutPersistence(slot);
+            runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         runtime.slots[slot] = withZ(withPositionAndVariant(fireball, x, y,
@@ -476,7 +476,7 @@ final class GenieEntityController {
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_GENIE);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_GENIE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_GENIE,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,

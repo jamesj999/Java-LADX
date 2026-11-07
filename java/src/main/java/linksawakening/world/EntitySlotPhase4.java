@@ -39,7 +39,7 @@ final class EntitySlotPhase4 {
             if (state.status == EntityStatus.ACTIVE && !state.wasInitializing
                 && !state.runtime.indoorRoom && state.entity.type() == state.runtime.ENTITY_TARIN
                 && (state.runtime.tarinRaccoonMotion.state(state.entity.slot()) == 0
-                    || state.runtime.tarinTransformationHandlerInteractive())) {
+                    || state.runtime.roomInspection.tarinTransformationHandlerInteractive())) {
                 RoomEntityBackgroundInteraction tarinBackgroundInteraction = state.runtime.backgroundInteraction;
                 if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {
                     tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(
@@ -79,7 +79,7 @@ final class EntitySlotPhase4 {
                 if (tarinUpdate.pushLink()) {
                     if (RoomEntityCombatRules.overlapsLink(
                         state.updated, state.linkEntityX, state.linkEntityY)) {
-                        state.runtime.requestLinkPush(state.updated, EntityLinkCollisionRules.STANDARD_PUSH);
+                        state.runtime.backgroundMechanics.requestLinkPush(state.updated, EntityLinkCollisionRules.STANDARD_PUSH);
                     }
                 }
                 if (tarinUpdate.soundId() >= 0) {
@@ -91,7 +91,7 @@ final class EntitySlotPhase4 {
                     }
                 }
                 if (tarinUpdate.spawnBomb()) {
-                    state.runtime.spawnTarinTransformationBomb(state.updated);
+                    state.runtime.entityEnemySpawns.spawnTarinTransformationBomb(state.updated);
                 }
                 if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
                     state.runtime.pendingRoomStatusPersistenceRequests.add(
@@ -122,7 +122,7 @@ final class EntitySlotPhase4 {
                         state.runtime.bowWowState);
                     state.updated = bowWowUpdate.entity();
                     if (bowWowUpdate.targetContact() != null) {
-                        state.runtime.handleBowWowTargetContact(state.entity, bowWowUpdate.targetContact(),
+                        state.runtime.lifecycle.handleBowWowTargetContact(state.entity, bowWowUpdate.targetContact(),
                             state.randomByteSupplier);
                     }
                 } else {

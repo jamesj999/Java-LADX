@@ -28,7 +28,7 @@ final class EntityPlayerSpawns {
             return;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_IRON_MASKS_MASK);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_IRON_MASKS_MASK);
         int selectedVariant = definition.supported()
             ? Math.min(variant & 0x01, definition.variantCount() - 1) : -1;
         RoomEntity mask = new RoomEntity(freeSlot, -1, runtime.ENTITY_IRON_MASKS_MASK,
@@ -69,7 +69,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_CHAIN);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_CHAIN);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity chain = new RoomEntity(freeSlot, -1, runtime.ENTITY_HOOKSHOT_CHAIN,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
@@ -95,7 +95,7 @@ final class EntityPlayerSpawns {
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_PUSHED_BLOCK);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_PUSHED_BLOCK);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_PUSHED_BLOCK,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
@@ -112,7 +112,7 @@ final class EntityPlayerSpawns {
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
         int variant = definition.supported() ? spriteVariant : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_LIFTABLE_ROCK,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
@@ -138,7 +138,7 @@ final class EntityPlayerSpawns {
     int spawnRoomEventKeyDrop() {
         int itemType = runtime.entityMapId >= 0x0A && runtime.entityMapId != 0xFF
             ? runtime.ENTITY_HIDING_SLIME_KEY : runtime.ENTITY_KEY_DROP_POINT;
-        return runtime.spawnKeyDropAt(itemType, 0x28, 0x3C, 0, 0x70, 0, 0);
+        return runtime.pickups.spawnKeyDropAt(itemType, 0x28, 0x3C, 0, 0x70, 0, 0);
     }
 
     int spawnArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -157,7 +157,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_ARROW);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_ARROW);
         int variant = romDirection;
         RoomEntity arrow = new RoomEntity(freeSlot, -1, runtime.ENTITY_ARROW,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
@@ -180,8 +180,8 @@ final class EntityPlayerSpawns {
         if (runtime.bombArrowCooldown != 0) {
             int bombSlot = runtime.latestDroppedBombEntityIndex;
             runtime.bombArrowCooldown = 0;
-            if (runtime.isLoadedEntityOfType(bombSlot, runtime.ENTITY_BOMB)) {
-                runtime.disableEntityWithoutPersistence(bombSlot);
+            if (runtime.roomInspection.isLoadedEntityOfType(bombSlot, runtime.ENTITY_BOMB)) {
+                runtime.lifecycle.disableEntityWithoutPersistence(bombSlot);
             }
             runtime.latestDroppedBombEntityIndex = -1;
             runtime.playerArrowBombArrow[freeSlot] = true;
@@ -207,7 +207,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_BOOMERANG);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOOMERANG);
         RoomEntity boomerang = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOOMERANG,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
@@ -241,7 +241,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_SWORD_BEAM);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_SWORD_BEAM);
         int variant = definition.supported() ? romDirection : -1;
         RoomEntity beam = new RoomEntity(freeSlot, -1, runtime.ENTITY_SWORD_BEAM,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
@@ -282,7 +282,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_MAGIC_ROD_FIREBALL);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MAGIC_ROD_FIREBALL);
         MagicRodFireballMotion.SpawnData spawn =
             MagicRodFireballMotion.spawnData(romDirection, pieceOfPower);
         int variant = definition.supported() ? spawn.initialVariant() : -1;
@@ -320,7 +320,7 @@ final class EntityPlayerSpawns {
 
         int[] xOffsets = {0x0E, -0x0E, 0x00, 0x00};
         int[] yOffsets = {0x00, 0x00, -0x0C, 0x0C};
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(
             runtime.ENTITY_MAGIC_POWDER_SPRINKLE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity sprinkle = new RoomEntity(freeSlot, -1,
@@ -355,7 +355,7 @@ final class EntityPlayerSpawns {
         }
 
         int phase = animationPhase & 0x01;
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_MUSICAL_NOTE);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_MUSICAL_NOTE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         int x = linkEntityX + (phase == 0 ? 0x08 : -0x08);
         RoomEntity note = new RoomEntity(freeSlot, -1, runtime.ENTITY_MUSICAL_NOTE,
@@ -380,7 +380,7 @@ final class EntityPlayerSpawns {
     int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         runtime.validateRomDirection(romDirection);
         runtime.lastBombPlacementPlayedBump = false;
-        runtime.finalizePendingBombPresentations();
+        runtime.bombInteractions.finalizePendingBombPresentations();
         if (runtime.bombActive()) {
             return -1;
         }
@@ -389,7 +389,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_BOMB);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
@@ -416,13 +416,13 @@ final class EntityPlayerSpawns {
         if (runtime.bombArrowCooldown != 0) {
             runtime.bombArrowCooldown = 0;
             int arrowSlot = runtime.latestShotArrowEntityIndex;
-            if (runtime.isLoadedEntityOfType(arrowSlot, runtime.ENTITY_ARROW)) {
-                runtime.markArrowAsBombArrow(arrowSlot);
+            if (runtime.roomInspection.isLoadedEntityOfType(arrowSlot, runtime.ENTITY_ARROW)) {
+                runtime.bombInteractions.markArrowAsBombArrow(arrowSlot);
             }
         } else {
             runtime.bombArrowCooldown = runtime.BOMB_ARROW_COOLDOWN;
             runtime.latestDroppedBombEntityIndex = freeSlot;
-            runtime.applyInitialBombArrowCandidateState(freeSlot, romDirection);
+            runtime.bombInteractions.applyInitialBombArrowCandidateState(freeSlot, romDirection);
         }
         return freeSlot;
     }
@@ -451,7 +451,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_LIFTABLE_ROCK);
         boolean swampLeaves = !runtime.indoorRoom && runtime.spriteSelection != null
             && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
             && runtime.spriteSelection.roomId() == 0x32;
@@ -488,7 +488,7 @@ final class EntityPlayerSpawns {
             return -1;
         }
 
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_BOMB);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_BOMB);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
             arrow.x(), arrow.y(), EntityStatus.ACTIVE, definition, variant,
@@ -524,7 +524,7 @@ final class EntityPlayerSpawns {
         if (freeSlot < 0) {
             return false;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_BRIDGE);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_HOOKSHOT_BRIDGE);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity bridge = new RoomEntity(freeSlot, -1, runtime.ENTITY_HOOKSHOT_BRIDGE,
             bridgeX & 0xFF, bridgeY & 0xFF, EntityStatus.ACTIVE,
@@ -562,12 +562,12 @@ final class EntityPlayerSpawns {
 
         int x = (objectLeft & 0xF0) + 0x08;
         int y = (objectTop & 0xF0) + 0x10;
-        EntitySpriteDefinition definition = runtime.spriteDefinitionFor(itemType);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(itemType);
         int variant = definition.supported() ? definition.initialVariant() : -1;
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, x & 0xFF, y & 0xFF,
             EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = drop;
-        runtime.resetEnemyDropState(freeSlot);
+        runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.slowTransitionCountdown[freeSlot] = 0x80;
         runtime.slowTimerInitialized[freeSlot] = true;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -607,7 +607,7 @@ final class EntityPlayerSpawns {
         if (freeSlot < 0) {
             return -1;
         }
-        EntitySpriteDefinition definition = runtime.spriteDefinitionForChest(itemType);
+        EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionForChest(itemType);
         int spriteVariant = definition.supported() ? itemType : -1;
         int x = (objectLeft & 0xF0) + 0x08;
         int y = (objectTop & 0xF0) + 0x10;
