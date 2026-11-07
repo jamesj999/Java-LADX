@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 final class RomSoundEffectEngine {
-    private static final int PLAY_ACTIVE_JINGLE = 0x4204;
-    private static final int PLAY_ACTIVE_WAVE = 0x53ED;
-    private static final int PLAY_ACTIVE_NOISE = 0x64EC;
+    private static final int PLAY_ACTIVE_JINGLE = linksawakening.rom.RomSymbols.PlayActiveJingle.address();
+    private static final int PLAY_ACTIVE_WAVE = linksawakening.rom.RomSymbols.PlayActiveWaveSfx.address();
+    private static final int PLAY_ACTIVE_NOISE = linksawakening.rom.RomSymbols.PlayActiveNoiseSfx.address();
 
     private static final int W_ACTIVE_JINGLE = 0xD360;
     private static final int W_ACTIVE_WAVE = 0xD370;

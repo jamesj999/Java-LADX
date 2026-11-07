@@ -6,11 +6,11 @@ import java.util.Objects;
 
 public final class AreaMusicResolver {
     private static final int SELECT_MUSIC_BANK = 0x02;
-    private static final int OVERWORLD_MUSIC_TRACKS_ADDR = 0x4000;
+    private static final int OVERWORLD_MUSIC_TRACKS_ADDR = linksawakening.rom.RomSymbols.OverworldMusicTracks.address();
     private static final int OVERWORLD_MUSIC_TRACKS_LENGTH = 0x100;
-    private static final int HOUSE_MUSIC_TRACKS_ADDR = 0x4100;
+    private static final int HOUSE_MUSIC_TRACKS_ADDR = linksawakening.rom.RomSymbols.HouseMusicTracks.address();
     private static final int HOUSE_MUSIC_TRACKS_LENGTH = 0x20;
-    private static final int MUSIC_OVERRIDES_POWER_UP_ADDR = 0x4120;
+    private static final int MUSIC_OVERRIDES_POWER_UP_ADDR = linksawakening.rom.RomSymbols.MusicOverridesPowerUpTrack.address();
     private static final int MUSIC_OVERRIDES_POWER_UP_LENGTH = 0x26;
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;

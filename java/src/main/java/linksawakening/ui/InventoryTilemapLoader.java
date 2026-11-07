@@ -8,16 +8,16 @@ public final class InventoryTilemapLoader {
     public static final int HEIGHT = 18;
 
     private static final int INVENTORY_TILEMAP_BANK = 0x08;
-    private static final int INVENTORY_TILEMAP_ADDR = 0x6748;
+    private static final int INVENTORY_TILEMAP_ADDR = linksawakening.rom.RomSymbols.InventoryTilemap.address();
     private static final int INVENTORY_ATTRMAP_BANK = 0x24;
-    private static final int INVENTORY_ATTRMAP_ADDR = 0x6354;
+    private static final int INVENTORY_ATTRMAP_ADDR = linksawakening.rom.RomSymbols.InventoryAttrmap.address();
     private static final int INVENTORY_PALETTES_BANK = 0x20;
-    private static final int INVENTORY_PALETTES_ADDR = 0x5D61;
+    private static final int INVENTORY_PALETTES_ADDR = linksawakening.rom.RomSymbols.InventoryPalettes.address();
     private static final int INVENTORY_BG_PALETTE_COUNT = 8;
     private static final int INVENTORY_OBJECT_PALETTE_OFFSET = 0x40;
     private static final int INVENTORY_OBJECT_PALETTE_COUNT = 8;
     private static final int OCARINA_POPUP_BANK = 0x20;
-    private static final int OCARINA_POPUP_ADDR = 0x604B;
+    private static final int OCARINA_POPUP_ADDR = linksawakening.rom.RomSymbols.Data_020_604B.address();
     private static final int OCARINA_POPUP_BYTE_COUNT = 0xC0;
 
     private final int[] baseTilemap;

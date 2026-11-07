@@ -13,13 +13,13 @@ import java.util.Objects;
 public final class FileMenuRomData {
 
     public static final int FILE_MENU_BANK = 0x01;
-    public static final int SELECTION_CURSOR_Y_ADDRESS = 0x48E4;
-    public static final int NAME_ENTRY_CHARACTER_TABLE_ADDRESS = 0x4BB5;
-    public static final int NAME_CURSOR_Y_ADDRESS = 0x4B30;
-    public static final int NAME_CURSOR_X_ADDRESS = 0x4B70;
-    public static final int NAME_POSITION_X_ADDRESS = 0x4BB0;
+    public static final int SELECTION_CURSOR_Y_ADDRESS = linksawakening.rom.RomSymbols.Data_001_48E4.address();
+    public static final int NAME_ENTRY_CHARACTER_TABLE_ADDRESS = linksawakening.rom.RomSymbols.NameEntryCharacterTable.address();
+    public static final int NAME_CURSOR_Y_ADDRESS = linksawakening.rom.RomSymbols.Data_001_4B30.address();
+    public static final int NAME_CURSOR_X_ADDRESS = linksawakening.rom.RomSymbols.Data_001_4B70.address();
+    public static final int NAME_POSITION_X_ADDRESS = linksawakening.rom.RomSymbols.Data_001_4BB0.address();
     public static final int CODEPOINT_TO_TILE_MAP_BANK = 0x1C;
-    public static final int CODEPOINT_TO_TILE_MAP_ADDRESS = 0x4641;
+    public static final int CODEPOINT_TO_TILE_MAP_ADDRESS = linksawakening.rom.RomSymbols.CodepointToTileMap.address();
 
     private static final int SELECTION_CURSOR_Y_COUNT = 4;
     private static final int NAME_ENTRY_CHARACTER_COUNT = 0x40;

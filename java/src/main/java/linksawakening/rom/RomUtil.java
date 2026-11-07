@@ -12,13 +12,7 @@ public final class RomUtil {
     }
 
     public static int romOffset(int bank, int address) {
-        if (bank < 0) {
-            throw new IllegalArgumentException("Bank cannot be negative");
-        }
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
+        return RomBank.romOffset(bank, address);
     }
 
     public static int decodeRgb555(int color) {
