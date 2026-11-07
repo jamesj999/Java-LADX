@@ -6,4 +6,5 @@ import java.util.function.IntSupplier;
 @FunctionalInterface
 interface EntityHandler {
     void initialize(RoomEntity entity, IntSupplier randomByteSupplier);
+    default RoomEntity advance(RoomEntity entity, EntityFrameContext context) { return entity; }
 }

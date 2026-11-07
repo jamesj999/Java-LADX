@@ -775,6 +775,17 @@ public final class RoomEntityRuntime {
         registry.register(ENTITY_SPIKED_BEETLE, (entity, random) -> spikedBeetleMotion.initialize(entity.slot()));
         registry.register(ENTITY_BOMBER, (entity, random) -> bomberMotion.initialize(entity.slot()));
         registry.register(ENTITY_MAD_BOMBER, (entity, random) -> madBomberMotion.initialize(entity.slot()));
+        registry.registerAdvance(ENTITY_BUTTERFLY, (entity, context) -> butterflyMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
+                    context.randomByteSupplier()));
+        registry.registerAdvance(ENTITY_KEESE, (entity, context) -> keeseMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
+                    context.randomByteSupplier()));
+        registry.registerAdvance(ENTITY_TEKTITE, (entity, context) -> tektiteMotion.advance(entity, context.linkEntityX(), context.linkEntityY(),
+                    context.randomByteSupplier(), context.backgroundCollision()));
+        registry.registerAdvance(ENTITY_LEEVER, (entity, context) -> leeverMotion.advance(entity, context.frameCounter(), context.linkEntityX(), context.linkEntityY(),
+                    context.randomByteSupplier(), context.backgroundCollision()));
+        registry.registerAdvance(ENTITY_ANTI_FAIRY, (entity, context) -> antiFairyMotion.advance(entity, context.frameCounter(), context.backgroundCollision(),
+                    context.randomByteSupplier()));
+        registry.registerAdvance(ENTITY_GIBDO, (entity, context) -> gibdoMotion.advance(entity, context.randomByteSupplier(), context.backgroundCollision()));
         return registry;
     }
 
@@ -3197,15 +3208,11 @@ public final class RoomEntityRuntime {
                 updated = sparkMotion.applyInitializationOffset(entity);
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_BUTTERFLY) {
-                updated = butterflyMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier);
+                && entityHandlers.hasAdvance(entity.type())) {
+                updated = entityHandlers.advance(entity, context.withRuntimeInputs(
+                    frame, linkEntityX, linkEntityY, backgroundCollision));
             }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_KEESE) {
-                updated = keeseMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier);
-            }
+
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_BOMBER) {
                 BomberMotion.Update bomberUpdate = bomberMotion.advance(
@@ -3349,21 +3356,9 @@ public final class RoomEntityRuntime {
                     pendingDialogRequests.add(new DialogRequest(1, DIALOG_MOBLIN));
                 }
             }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_TEKTITE) {
-                updated = tektiteMotion.advance(entity, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_LEEVER) {
-                updated = leeverMotion.advance(entity, frame, linkEntityX, linkEntityY,
-                    randomByteSupplier, backgroundCollision);
-            }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_ANTI_FAIRY) {
-                updated = antiFairyMotion.advance(entity, frame, backgroundCollision,
-                    randomByteSupplier);
-            }
+
+
+
             if (status == EntityStatus.ACTIVE && !wasInitializing && isSparkType(entity.type())) {
                 updated = sparkMotion.advance(entity, frame, backgroundCollision);
             }
@@ -3875,10 +3870,7 @@ public final class RoomEntityRuntime {
                 enemyTransitionCountdown[entity.slot()] = cardUpdate.transitionCountdown();
                 preserveThreeOfAKindPresentation = true;
             }
-            if (status == EntityStatus.ACTIVE && !wasInitializing
-                && entity.type() == ENTITY_GIBDO) {
-                updated = gibdoMotion.advance(entity, randomByteSupplier, backgroundCollision);
-            }
+
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_LIKE_LIKE) {
                 LikeLikeMotion.Update likeLikeUpdate = likeLikeMotion.advance(
