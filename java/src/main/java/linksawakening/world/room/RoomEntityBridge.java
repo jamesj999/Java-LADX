@@ -643,6 +643,10 @@ final class RoomEntityBridge {
     }
 
     EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) {
+        return collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ, false, 0, 0, 0, 0);
+    }
+
+    EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ, boolean swordActive, int swordX, int swordWidth, int swordY, int swordHeight) {
         if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
             return null;
         }
@@ -650,7 +654,7 @@ final class RoomEntityBridge {
         session.context.followingLinkDirection = linkDirection & 0xFF;
         EntityPickupEvent event = session.context.entityBridge.entityRuntime.collectIfNeeded(
             frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive,
-            linkDirection, linkZ);
+            linkDirection, linkZ, swordActive, swordX, swordWidth, swordY, swordHeight);
         if (event == null) {
             return null;
         }

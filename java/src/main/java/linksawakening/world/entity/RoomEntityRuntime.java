@@ -497,6 +497,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     /** Pickup collision with Link's ROM-facing Z available for floating items. */
     public EntityPickupEvent collectIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) { return this.lifecycle.collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ); }
+    public EntityPickupEvent collectIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ, boolean swordActive, int swordX, int swordWidth, int swordY, int swordHeight) { return this.lifecycle.collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ, swordActive, swordX, swordWidth, swordY, swordHeight); }
 
     /**
      * Starts EntityGetLiftedUp's shared state transition. Directions are the

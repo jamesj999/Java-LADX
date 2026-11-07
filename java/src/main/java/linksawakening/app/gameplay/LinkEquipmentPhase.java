@@ -155,9 +155,13 @@ final class LinkEquipmentPhase {
                         playerState.powerBraceletLevel());
                     roomSession.setToadstoolPlayerState(
                         playerState.hasToadstool(), playerState.magicPowderCount());
+                    var sword = equipmentController.activeSword();
+                    var box = sword == null ? linksawakening.equipment.Sword.CollisionBox.inactive()
+                        : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(),
+                            link.direction(), playerState.runningWithPegasusBoots());
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
                         frameCounter, link.romEntityX(), link.romEntityY(), link.isAirborne(), true,
-                        link.direction(), link.romEntityZ());
+                        link.direction(), link.romEntityZ(), box.active(), box.x(), box.width(), box.y(), box.height());
                     if (pickup != null) {
                         if (pickup.type() == 0x36) {
                             playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);

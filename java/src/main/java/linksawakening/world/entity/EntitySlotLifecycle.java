@@ -54,6 +54,16 @@ public final class EntitySlotLifecycle {
                                              boolean linkInteractive,
                                              int linkDirection,
                                              int linkZ) {
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ, false, 0, 0, 0, 0);
+    }
+
+    EntityPickupEvent collectIfNeeded(int frameCounter,
+                                             int linkEntityX,
+                                             int linkEntityY,
+                                             boolean linkAirborne,
+                                             boolean linkInteractive,
+                                             int linkDirection,
+                                             int linkZ, boolean swordActive, int swordX, int swordWidth, int swordY, int swordHeight) {
         if (!linkInteractive) {
             return null;
         }
@@ -64,6 +74,8 @@ public final class EntitySlotLifecycle {
             if (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL) {
                 runtime.secretSeashellMotion.ensureInitialized(entity.slot(), runtime.entityRoomId);
             }
+            boolean swordPickup = swordActive
+                && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
             boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
             boolean floating = isRuntimeFloatingItem(entity);
             if (!entity.loaded() || entity.status() != EntityStatus.ACTIVE
@@ -81,14 +93,14 @@ public final class EntitySlotLifecycle {
                 || (entity.type() == runtime.ENTITY_DROPPABLE_SECRET_SEASHELL
                     && (runtime.secretSeashellMotion.privateState3(entity.slot()) != 0
                         || runtime.secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
-                || (!floating && !RoomEntityPickupRules.collisionCadenceMatches(
+                || (!swordPickup && !floating && !RoomEntityPickupRules.collisionCadenceMatches(
                     frameCounter, entity.slot()))
-                || (!floating && linkAirborne)
+                || (!swordPickup && !floating && linkAirborne)
                 || (floating && !FloatingItemMotion.linkZAllowsCollection(
                     runtime.groundInteractionSideScrolling, linkZ))
-                || !(floating
+                || !(swordPickup || (floating
                     ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
-                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))) {
+                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)))) {
                 continue;
             }
 

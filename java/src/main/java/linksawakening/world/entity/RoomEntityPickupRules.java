@@ -100,6 +100,12 @@ public final class RoomEntityPickupRules {
         return yDistance < HITBOX_HEIGHT + 0x04;
     }
 
+    public static boolean overlapsSword(RoomEntity entity, int x, int width, int y, int height) {
+        return canBeCollectedBySword(entity.type()) && x != 0 && width > 0 && height > 0
+            && unsignedByteAbs(entity.x() + HITBOX_X - x) < HITBOX_WIDTH + width
+            && unsignedByteAbs(entity.y() - entity.z() + HITBOX_Y - y) < HITBOX_HEIGHT + height;
+    }
+
     private static int unsignedByteAbs(int value) {
         int difference = value & 0xFF;
         return difference < 0x80 ? difference : 0x100 - difference;
