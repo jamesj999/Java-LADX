@@ -65,6 +65,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomStoryState roomStoryState = new RoomStoryState(this);
     final RoomDoorInteractions roomDoorInteractions = new RoomDoorInteractions(this);
     final RoomObjectMutations roomObjectMutations = new RoomObjectMutations(this);
     final RoomTransitionController roomTransitionController = new RoomTransitionController(this);
@@ -470,37 +471,16 @@ public final class RoomSession {
         return activeRoom != null;
     }
 
-    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        if (activeRoom == null || entityBridge.entityRuntime == null
-            || !entityBridge.entityRuntime.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
-            return false;
-        }
-        activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        return true;
-    }
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) { return roomStoryState.applyMarinWakeUpPresentation(x, y, spriteVariant); }
 
     /** Tarin's indoor handler updates his facing every 32 frames, even during the bed scene. */
-    public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        if (activeRoom != null && activeRoom.mapId() == 0x10 && activeRoom.roomId() == 0xA3
-            && tarinFlag != 1 && tarinFlag != 2
-            && entityBridge.entityRuntime != null && (frameCounter & 0x1F) == 0) {
-            entityBridge.entityRuntime.updateHouseTarinPresentation(linkX, linkY);
-            activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-        }
-    }
+    public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) { roomStoryState.updateHouseTarinPresentation(frameCounter, linkX, linkY); }
 
     /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
-    public void setBirdKeyOwned(boolean owned) {
-        hasBirdKey = owned;
-    }
+    public void setBirdKeyOwned(boolean owned) { roomStoryState.setBirdKeyOwned(owned); }
 
     /** Supplies wHasTailKey to the active owl-event handler. */
-    public void setTailKeyOwned(boolean owned) {
-        hasTailKey = owned;
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setTailKeyOwned(owned);
-        }
-    }
+    public void setTailKeyOwned(boolean owned) { roomStoryState.setTailKeyOwned(owned); }
 
     public int currentRoomId() {
         return activeRoom.roomId();
@@ -544,45 +524,10 @@ public final class RoomSession {
      * a previously played file can incorrectly unload opening entities such
      * as the beach sword and owl.
      */
-    public void initializeNewGameWorldState() {
-        Arrays.fill(roomState.overworldRoomStatus, (byte) 0);
-        Arrays.fill(roomState.indoorARoomStatus, (byte) 0);
-        Arrays.fill(roomState.indoorBRoomStatus, (byte) 0);
-        Arrays.fill(roomState.colorDungeonRoomStatus, (byte) 0);
-        shouldGetLostInMysteriousWoods = false;
-        recentRoomEntityClears.reset();
-        Arrays.fill(roomState.dungeonProgressFlags, (byte) 0);
-        roomState.dungeonItemState.reset();
-        followingNpcState = FollowingNpcState.none();
-        followingNpcRoomNeedsSync = true;
-        followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
-        hasBirdKey = false;
-        hasTailKey = false;
-        bowWowState = 0;
-        richardSpokenFlag = 0;
-        tarinFlag = 0;
-        playerShieldLevel = 0;
-        entityInputs.entityGoldenLeavesCount = 0;
-        enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
-        boomerangSoundCounter = 0;
-        boomerangSoundClockProvided = false;
-        dungeonTitleMessageCountdown = 0;
-        switchBlocksState = 0;
-        switchableObjectAnimationStage = 0;
-        switchButtonPressed = 0;
-        currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-        clearTransientRoomState();
-    }
+    public void initializeNewGameWorldState() { roomStoryState.initializeNewGameWorldState(); }
 
     /** Restores the room-status WRAM tables loaded by the source save path. */
-    public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus,
-                                    byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        roomState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
-        if (entityBridge.entityRuntime != null && activeRoom != null) {
-            entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-            entityBridge.entityRuntime.setTailKeyOwned(hasTailKey);
-        }
-    }
+    public void restoreRoomStatuses(byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) { roomStoryState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus); }
 
     public byte[] dungeonItemFlagsSnapshot() { return roomState.dungeonItemFlagsSnapshot(); }
 
@@ -657,23 +602,7 @@ public final class RoomSession {
      * {@link #setFollowingNpcState(FollowingNpcState, int, int, int, int, int)}
      * so spawning and selection stay in one ROM-shaped path.
      */
-    public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        if (activeRoom == null || activeRoom.entities() == null
-            || activeRoom.entities().spriteSelection() == null) {
-            return;
-        }
-        Map<Integer, EntitySpriteDefinition> merged = new HashMap<>(
-            activeRoom.entities().spriteSelection().spriteOverrides());
-        if (overrides != null) {
-            merged.putAll(overrides);
-        }
-        RoomEntitySnapshot updated = activeRoom.entities().withSpriteSelection(
-            activeRoom.entities().spriteSelection().withSpriteOverrides(merged));
-        activeRoom.replaceEntities(updated);
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setSpriteSelection(updated.spriteSelection());
-        }
-    }
+    public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) { roomStoryState.setFollowerSpriteOverrides(overrides); }
 
     /**
      * Binds the current WRAM-like follower flags and Link coordinates to the
@@ -681,68 +610,23 @@ public final class RoomSession {
      * state change, matching the room-transition caller in room_transition.asm.
      * Coordinates are hLinkPositionX/Y/Z and entityYOffset is wC13B.
      */
-    public void setFollowingNpcState(FollowingNpcState state,
-                                     int linkX,
-                                     int linkY,
-                                     int linkZ,
-                                     int entityYOffset,
-                                     int linkDirection) {
-        if (state == null) {
-            throw new IllegalArgumentException("Follower state cannot be null");
-        }
-        followingLinkX = linkX & 0xFF;
-        followingLinkY = linkY & 0xFF;
-        followingLinkZ = linkZ & 0xFF;
-        followingEntityYOffset = entityYOffset & 0xFF;
-        followingLinkDirection = linkDirection & 0xFF;
-        if (!state.equals(followingNpcState)) {
-            followingNpcRoomNeedsSync = true;
-        }
-        followingNpcState = state;
-        synchronizeFollowingNpcEntitiesIfNeeded();
-    }
+    public void setFollowingNpcState(FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) { roomStoryState.setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection); }
 
-    public FollowingNpcState followingNpcState() {
-        return followingNpcState;
-    }
+    public FollowingNpcState followingNpcState() { return roomStoryState.followingNpcState(); }
 
     /** Mirrors wIsBowWowFollowingLink, including BOW_WOW_KIDNAPPED=$80. */
-    public int bowWowState() {
-        return bowWowState & 0xFF;
-    }
+    public int bowWowState() { return roomStoryState.bowWowState(); }
 
-    public void setBowWowState(int state) {
-        if ((state & ~0xFF) != 0) {
-            throw new IllegalArgumentException("BowWow state must be an unsigned byte");
-        }
-        bowWowState = state;
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setBowWowState(state);
-        }
-    }
+    public void setBowWowState(int state) { roomStoryState.setBowWowState(state); }
 
-    public int richardSpokenFlag() {
-        return richardSpokenFlag & 0xFF;
-    }
+    public int richardSpokenFlag() { return roomStoryState.richardSpokenFlag(); }
 
-    public void setRichardSpokenFlag(int flag) {
-        if ((flag & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
-        }
-        richardSpokenFlag = flag;
-    }
+    public void setRichardSpokenFlag(int flag) { roomStoryState.setRichardSpokenFlag(flag); }
 
     /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
-    public int tarinFlag() {
-        return tarinFlag & 0xFF;
-    }
+    public int tarinFlag() { return roomStoryState.tarinFlag(); }
 
-    public void setTarinFlag(int flag) {
-        if ((flag & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Tarin flag must be an unsigned byte");
-        }
-        tarinFlag = flag;
-    }
+    public void setTarinFlag(int flag) { roomStoryState.setTarinFlag(flag); }
 
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) { entityInputs.setEntityActionButtonsHeld(actionButtonsHeld); }
@@ -779,38 +663,14 @@ public final class RoomSession {
     public void setEntityInventorySlots(int itemA, int itemB) { entityInputs.setEntityInventorySlots(itemA, itemB); }
 
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
-    public void setChestPlayerLevels(int shieldLevel, int swordLevel,
-                                     int powerBraceletLevel) {
-        if ((shieldLevel & ~0xFF) != 0 || (swordLevel & ~0xFF) != 0
-            || (powerBraceletLevel & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
-        }
-        playerShieldLevel = shieldLevel;
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
-            if (activeRoom != null) {
-                activeRoom.replaceEntities(entityBridge.entityRuntime.snapshot());
-            }
-        }
-    }
+    public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) { roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel); }
 
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) { entityInputs.setToadstoolPlayerState(hasToadstool, magicPowderCount); }
 
-    public void setEntityDefaultMusicTrack(int trackId) {
-        if ((trackId & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Default music track must be an unsigned byte");
-        }
-        entityDefaultMusicTrack = trackId;
-        updateWitchEnvironment();
-    }
+    public void setEntityDefaultMusicTrack(int trackId) { roomStoryState.setEntityDefaultMusicTrack(trackId); }
 
-    void updateWitchEnvironment() {
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setWitchEnvironment(indoorTorchPaletteEffect.effectAddress(),
-                indoorTorchPaletteEffect.paletteDataFlags(), entityDefaultMusicTrack);
-        }
-    }
+    void updateWitchEnvironment() { roomStoryState.updateWitchEnvironment(); }
 
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
     public void setEntityGoldenLeavesCount(int goldenLeavesCount) { entityInputs.setEntityGoldenLeavesCount(goldenLeavesCount); }
@@ -833,9 +693,7 @@ public final class RoomSession {
     public void setEntityFinalPositionX(int positionX) { entityInputs.setEntityFinalPositionX(positionX); }
 
     /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
-    public boolean shouldGetLostInMysteriousWoods() {
-        return shouldGetLostInMysteriousWoods;
-    }
+    public boolean shouldGetLostInMysteriousWoods() { return roomStoryState.shouldGetLostInMysteriousWoods(); }
 
     /** Starts the source UseOcarina countdown consumed by active entities. */
     public boolean startOcarina(int countdown, int songFlags, int selectedSong) { return roomTransitionController.startOcarina(countdown, songFlags, selectedSong); }
@@ -1913,60 +1771,7 @@ public final class RoomSession {
 
     void synchronizeSwitchBlockCollisionState() { roomLoadCoordinator.synchronizeSwitchBlockCollisionState(); }
 
-    void synchronizeFollowingNpcEntitiesIfNeeded() {
-        if (!followingNpcRoomNeedsSync || activeRoom == null || entityBridge.entityRuntime == null
-            || activeRoom.entities() == null) {
-            return;
-        }
-        FollowingNpcRoomContext room = new FollowingNpcRoomContext(
-            activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL,
-            activeRoom.mapId(),
-            activeRoom.roomId());
-        FollowingNpcEntitySpawner.Result result = followingNpcEntitySpawner.synchronize(
-            activeRoom.entities(), room, followingNpcState,
-            followingLinkX, followingLinkY, followingLinkZ,
-            followingEntityYOffset, followingLinkDirection, followingLinkPositionHistory);
-        followingNpcState = result.state();
-        followingNpcRoomNeedsSync = false;
-        activeRoom.replaceEntities(result.snapshot());
-        entityBridge.entityRuntime = RoomEntityRuntime.from(
-            result.snapshot(), activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            entityRandomByteSource, entitySpriteHandlerCatalog, enemyCombatTables,
-            chestContentsTable, romTables, romData);
-        entityBridge.entityRuntime.setColorShellWorld(colorShellWorld);
-        entityBridge.entityRuntime.setFollowingNpcState(followingNpcState);
-        entityBridge.entityRuntime.setEntityMapId(activeRoom.mapId());
-        entityBridge.entityRuntime.setEntityRoomId(activeRoom.roomId());
-        entityBridge.entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
-            && activeRoom.mapId() < roomState.dungeonProgressFlags.length
-            && (roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
-        entityBridge.entityRuntime.setOwlDialogResolver(owlEventDialogResolver::globalDialogId);
-        entityBridge.entityRuntime.setOwlDefaultMusicResolver(owlEventDialogResolver::defaultMusicTrack);
-        entityBridge.entityRuntime.setGroundInteraction(this::entityGroundInteraction);
-        entityBridge.entityRuntime.setBackgroundInteraction(entityBackgroundInteraction);
-        entityBridge.entityRuntime.setObjectQuery(this::entityObjectSample);
-        entityBridge.entityRuntime.setObjectIntersectionQuery(this::entityObjectIntersectionSample);
-        entityBridge.entityRuntime.setGroundInteractionSideScrolling(
-            activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL);
-        entityBridge.entityRuntime.setActionButtonsHeld(entityInputs.actionButtonAHeld, entityInputs.actionButtonBHeld);
-        entityBridge.entityRuntime.setTalkState(
-            entityInputs.entityInventoryAppearing, entityInputs.entityDialogCooldown, entityInputs.entityWindowY);
-        entityBridge.entityRuntime.setJoypadHeld(entityInputs.joypadHeld);
-        entityBridge.entityRuntime.setPressedButtonsMask(entityInputs.entityPressedButtonsMask);
-        entityBridge.entityRuntime.setPowerBraceletButtonHeld(entityInputs.powerBraceletButtonHeld);
-        entityBridge.entityRuntime.setBombButtonHeld(entityInputs.bombButtonHeld);
-        entityBridge.entityRuntime.setLiftedLinkC13B(followingEntityYOffset);
-        entityBridge.entityRuntime.setEntityRoomStatus(activeRoomStatusFlags());
-        entityBridge.entityRuntime.setDungeonMinibossReady(activeRoom.mapId() >= 0
-            && activeRoom.mapId() < roomState.dungeonProgressFlags.length
-            && (roomState.dungeonProgressFlags[activeRoom.mapId()] & 0x01) != 0);
-        entityBridge.entityRuntime.setTailKeyOwned(hasTailKey);
-        entityBridge.entityRuntime.setSecretSeashellPegasusCollisionState(
-            entityInputs.secretSeashellScreenShakeActive, entityInputs.secretSeashellPegasusCollisionActive,
-            entityInputs.secretSeashellPegasusCollisionX, entityInputs.secretSeashellPegasusCollisionY);
-        configureEnemyDropRuntime();
-    }
+    void synchronizeFollowingNpcEntitiesIfNeeded() { roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded(); }
 
     void configureEnemyDropRuntime() { roomLoadCoordinator.configureEnemyDropRuntime(); }
 
@@ -2320,18 +2125,7 @@ public final class RoomSession {
         roomState.overworldRoomStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
     }
 
-    void markHeartContainerCollected() {
-        if (activeRoom == null) {
-            return;
-        }
-        byte[] activeStatus = indoorStatusTableForMap(activeRoom.mapId());
-        activeStatus[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
-        if (activeRoom.mapId() == 0x06) {
-            roomState.indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
-        } else if (activeRoom.mapId() == 0x03) {
-            roomState.indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
-        }
-    }
+    void markHeartContainerCollected() { roomStoryState.markHeartContainerCollected(); }
 
     void harvestSlimeKeyRewardEvents() {
         if (entityBridge.entityRuntime == null) {
@@ -2346,14 +2140,7 @@ public final class RoomSession {
         entityBridge.pendingSlimeKeyRewardEvents.addAll(rewards);
     }
 
-    void markActiveRoomCompleted() {
-        if (activeRoom == null) {
-            return;
-        }
-        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? roomState.overworldRoomStatus : indoorStatusTableForMap(activeRoom.mapId());
-        status[activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_1;
-    }
+    void markActiveRoomCompleted() { roomStoryState.markActiveRoomCompleted(); }
 
     /** Mirrors EntityCheckThrowAtTriggers' $35..$3C shutter-object test. */
     void harvestThrownRoomEventCollisions() {
