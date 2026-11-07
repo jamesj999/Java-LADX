@@ -25,6 +25,22 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
+        drawTo(buffer, gpu, RenderPipeline.LEGACY_RGBA);
+    }
+
+    public void drawTo(byte[] buffer, GPU gpu, RenderPipeline pipeline) {
+        if (pipeline == RenderPipeline.HARDWARE) {
+            // Reject incomplete migrations before any layer can mutate the GPU or output.
+            for (RenderLayer layer : layers) {
+                if (!(layer instanceof HardwareRenderLayer)) {
+                    throw new IllegalStateException("Layer not migrated: " + layer.getClass().getName());
+                }
+            }
+            HardwareFrame frame = new HardwareFrame(true);
+            for (RenderLayer layer : layers) ((HardwareRenderLayer) layer).submit(frame, gpu);
+            frame.compose(buffer);
+            return;
+        }
         IndexedRenderer.clear(buffer);
         RenderContext context = new RenderContext(buffer, gpu);
         for (RenderLayer layer : layers) {

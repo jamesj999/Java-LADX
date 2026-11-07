@@ -1,7 +1,7 @@
 package linksawakening.render;
 
 /** Draws a software OAM list in entry order, with transparent OBJ color zero. */
-public final class SpriteListRenderLayer implements RenderLayer {
+public final class SpriteListRenderLayer implements HardwareRenderLayer {
     public record Sprite(int tileIndex, int x, int y, int paletteIndex,
                          boolean flipX, boolean flipY, int height) {}
 
@@ -18,6 +18,24 @@ public final class SpriteListRenderLayer implements RenderLayer {
                                  linksawakening.gpu.EntitySpriteTileSnapshot tiles) {
         this(sprites, palettes);
         this.tiles = tiles;
+    }
+
+    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        for (Sprite sprite : sprites) {
+            int[] palette = palettes[Math.min(sprite.paletteIndex(), palettes.length - 1)];
+            if (sprite.height() == 16) {
+                int base = sprite.tileIndex() & 0xFE;
+                int top = sprite.flipY() ? base + 1 : base;
+                int bottom = sprite.flipY() ? base : base + 1;
+                frame.append(tiles == null ? gpu.getTile(top) : tiles.tile(top), sprite.x(), sprite.y(),
+                    sprite.flipX(), sprite.flipY(), palette, false);
+                frame.append(tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom), sprite.x(), sprite.y() + 8,
+                    sprite.flipX(), sprite.flipY(), palette, false);
+            } else {
+                frame.append(gpu.getTile(sprite.tileIndex()), sprite.x(), sprite.y(),
+                    sprite.flipX(), sprite.flipY(), palette, false);
+            }
+        }
     }
 
     @Override
