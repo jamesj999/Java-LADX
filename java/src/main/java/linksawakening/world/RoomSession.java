@@ -65,6 +65,8 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 public final class RoomSession {
+    final RoomTileRedraw roomTileRedraw = new RoomTileRedraw(this);
+    final RoomCollisionQueries roomCollisionQueries = new RoomCollisionQueries(this);
     final RoomPlayerItemActions roomPlayerItemActions = new RoomPlayerItemActions(this);
     final RoomPuzzleController roomPuzzleController = new RoomPuzzleController(this);
     final RoomStoryState roomStoryState = new RoomStoryState(this);
@@ -1119,33 +1121,11 @@ public final class RoomSession {
 
     public EntityPickupEvent collectEntityIfNeeded(int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive, int linkDirection, int linkZ) { return entityBridge.collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ); }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY) {
-        return boundaryState(linkX, linkY, false);
-    }
+    public RoomBoundaryState boundaryState(int linkX, int linkY) { return roomCollisionQueries.boundaryState(linkX, linkY); }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
-        return boundaryState(linkX, linkY, linkAirborne, 0);
-    }
+    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) { return roomCollisionQueries.boundaryState(linkX, linkY, linkAirborne); }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne,
-                                           int linkPhysicsModifier) {
-        boolean sideViewEntityActive = activeRoom.entities() != null
-            && !activeRoom.entities().slots().isEmpty()
-            && activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
-        return new RoomBoundaryState(
-            activeRoom.mapCategory(),
-            activeRoom.roomId(),
-            activeRoom.indoorHasSouthEntrance(),
-            activeRoom.hasWarps(),
-            closedShutterMask,
-            linkX,
-            linkY,
-            activeRoom.mapId(),
-            linkAirborne,
-            linkPhysicsModifier,
-            sideViewEntityActive
-        );
-    }
+    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) { return roomCollisionQueries.boundaryState(linkX, linkY, linkAirborne, linkPhysicsModifier); }
 
     void setActiveRoom(LoadedRoom room) { roomLoadCoordinator.setActiveRoom(room); }
 
@@ -1581,19 +1561,7 @@ public final class RoomSession {
 
     void writeColorShellObject(RoomEntity entity, int objectId) { roomObjectMutations.writeColorShellObject(entity, objectId); }
 
-    void refreshActiveRoomTilemap() {
-        RoomTilemap tilemap = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            ? roomTilemapBuilder.buildOverworld(activeRoom.roomId(), activeRoom.roomObjectsArea())
-            : roomTilemapBuilder.buildIndoor(activeRoom.mapId(), activeRoom.roomId(),
-                activeRoom.roomObjectsArea());
-        activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
-        applyHookshotBridgeTileOverrides();
-        applyBombedWallTileOverrides();
-        applyBombedBlockTileOverrides();
-        applyBombedCaveDoorTileOverrides();
-        applyRetainedTorchTiles();
-        shutterTileOverrides.forEach((index, tile) -> activeRoom.tileIds()[index] = tile);
-    }
+    void refreshActiveRoomTilemap() { roomTileRedraw.refreshActiveRoomTilemap(); }
 
     /** $02:599D selects each shutter; $02:5C04 closes it over eight frames. */
     boolean tickShutterClosing() { return roomPuzzleController.tickShutterClosing(); }
@@ -1602,156 +1570,19 @@ public final class RoomSession {
 
     void openActiveRoomShutterDoors(boolean persistDirectionalStatus) { roomPuzzleController.openActiveRoomShutterDoors(persistDirectionalStatus); }
 
-    RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
-        OverworldCollision.GroundInteractionSample sample =
-            overworldCollision.groundInteractionSample(entity.x(), entity.y());
-        return new RoomEntityObjectSample(sample.objectId(), sample.physicsFlag(),
-            sample.objectLeft(), sample.objectTop());
-    }
+    RoomEntityObjectSample entityObjectSample(RoomEntity entity) { return roomCollisionQueries.entityObjectSample(entity); }
 
-    RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) {
-        OverworldCollision.GroundInteractionSample sample =
-            overworldCollision.entityInteractionSample(entity.x(), entity.y());
-        return new RoomEntityObjectSample(sample.objectId(), sample.physicsFlag(),
-            sample.objectLeft(), sample.objectTop());
-    }
+    RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) { return roomCollisionQueries.entityObjectIntersectionSample(entity); }
 
-    void applyHookshotBridgeUpdates(
-            List<HookshotBridgeUpdate> updates) {
-        if (activeRoom == null || updates == null || updates.isEmpty()) {
-            return;
-        }
-        int[] objects = activeRoom.roomObjectsArea();
-        boolean changed = false;
-        for (HookshotBridgeUpdate update : updates) {
-            int areaIndex = hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
-            if (areaIndex < 0 || areaIndex >= objects.length) {
-                continue;
-            }
-            HookshotBridgeUpdate previous =
-                hookshotBridgeTileOverrides.put(areaIndex, update);
-            if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
-                objects[areaIndex] = 0x9D;
-                changed = true;
-            }
-        }
-        if (changed) {
-            refreshActiveRoomTilemap();
-        }
-    }
+    void applyHookshotBridgeUpdates( List<HookshotBridgeUpdate> updates) { roomTileRedraw.applyHookshotBridgeUpdates(updates); }
 
-    void applyHookshotBridgeTileOverrides() {
-        if (activeRoom == null || hookshotBridgeTileOverrides.isEmpty()) {
-            return;
-        }
-        int[] tileIds = activeRoom.tileIds();
-        for (HookshotBridgeUpdate update
-            : hookshotBridgeTileOverrides.values()) {
-            int tileX = (update.objectLeft() & 0xFF) >>> 3;
-            int tileY = (update.objectTop() & 0xFF) >>> 3;
-            if (tileX < 0 || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY < 0 || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
-                continue;
-            }
-            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            int bottomLeft = topLeft + RoomConstants.ROOM_TILE_WIDTH;
-            if (update.direction() == HookshotBridgeMotion.PULL_DOWN_DIRECTION) {
-                tileIds[topLeft] = 0x04;
-                tileIds[topLeft + 1] = 0x05;
-                tileIds[bottomLeft] = update.active() ? 0x08 : 0x04;
-                tileIds[bottomLeft + 1] = update.active() ? 0x09 : 0x05;
-            } else {
-                tileIds[topLeft] = update.active() ? 0x0A : 0x04;
-                tileIds[topLeft + 1] = update.active() ? 0x0B : 0x05;
-                tileIds[bottomLeft] = 0x04;
-                tileIds[bottomLeft + 1] = 0x05;
-            }
-        }
-    }
+    void applyHookshotBridgeTileOverrides() { roomTileRedraw.applyHookshotBridgeTileOverrides(); }
 
-    void applyBombedWallTileOverrides() {
-        if (activeRoom == null || bombedWallTileOverrides.isEmpty()) {
-            return;
-        }
-        int[] tileIds = activeRoom.tileIds();
-        for (Map.Entry<Integer, Integer> entry : bombedWallTileOverrides.entrySet()) {
-            int areaOffset = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
-            int objectRow = (areaOffset >>> 4) & 0x0F;
-            int objectColumn = areaOffset & 0x0F;
-            int tileX = objectColumn * 2;
-            int tileY = objectRow * 2;
-            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
-                continue;
-            }
+    void applyBombedWallTileOverrides() { roomTileRedraw.applyBombedWallTileOverrides(); }
 
-            int[] replacement = entry.getValue() == 0
-                ? new int[] { 0x72, 0x72, 0x73, 0x73 }
-                : new int[] { 0x69, 0x79, 0x69, 0x79 };
-            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = replacement[0];
-            tileIds[topLeft + 1] = replacement[1];
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = replacement[2];
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = replacement[3];
-        }
-    }
+    void applyBombedBlockTileOverrides() { roomTileRedraw.applyBombedBlockTileOverrides(); }
 
-    void applyBombedBlockTileOverrides() {
-        if (activeRoom == null || bombedBlockTileOverrides.isEmpty()) {
-            return;
-        }
-        int[] tileIds = activeRoom.tileIds();
-        for (int areaIndex : bombedBlockTileOverrides) {
-            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
-            int objectRow = (areaOffset >>> 4) & 0x0F;
-            int objectColumn = areaOffset & 0x0F;
-            int tileX = objectColumn * 2;
-            int tileY = objectRow * 2;
-            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
-                continue;
-            }
-
-            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = 0x10;
-            tileIds[topLeft + 1] = 0x12;
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = 0x11;
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] = 0x13;
-        }
-    }
-
-    void applyBombedCaveDoorTileOverrides() {
-        if (activeRoom == null || bombedCaveDoorTileOverrides.isEmpty()) {
-            return;
-        }
-        int[] tileIds = activeRoom.tileIds();
-        for (int areaIndex : bombedCaveDoorTileOverrides) {
-            int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
-            int objectRow = (areaOffset >>> 4) & 0x0F;
-            int objectColumn = areaOffset & 0x0F;
-            int tileX = objectColumn * 2;
-            int tileY = objectRow * 2;
-            if (objectRow >= RoomConstants.OBJECTS_PER_COLUMN
-                || objectColumn >= RoomConstants.OBJECTS_PER_ROW
-                || tileX + 1 >= RoomConstants.ROOM_TILE_WIDTH
-                || tileY + 1 >= RoomConstants.ROOM_TILE_HEIGHT) {
-                continue;
-            }
-
-            RomAddress tileTable = RomSymbols.BombedCaveDoorTilesIndexesGBC;
-            int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = new Rom(romData).u8(tileTable);
-            tileIds[topLeft + 1] = new Rom(romData).u8(tileTable.plus(1));
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
-                new Rom(romData).u8(tileTable.plus(2));
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
-                new Rom(romData).u8(tileTable.plus(3));
-        }
-    }
+    void applyBombedCaveDoorTileOverrides() { roomTileRedraw.applyBombedCaveDoorTileOverrides(); }
 
     static int hookshotObjectAreaIndex(int objectLeft, int objectTop) {
         return RoomConstants.ROOM_OBJECTS_BASE + (objectTop & 0xF0)
@@ -1769,69 +1600,17 @@ public final class RoomSession {
      * ApplyEntityCollisionWithObject. The shared room physics query supplies
      * the active overworld/indoor table.
      */
-    boolean entityBackgroundCollision(RoomEntity entity, int direction,
-                                              int nextX, int nextY) {
-        return entityBackgroundCollisionResult(entity, direction, nextX, nextY).blocked();
-    }
+    boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) { return roomCollisionQueries.entityBackgroundCollision(entity, direction, nextX, nextY); }
 
-    EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY) {
-        int ignoreHitsCountdown = entityBridge.entityRuntime == null
-            ? 0 : entityBridge.entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
-        return entityBackgroundCollisionResult(
-            entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
-    }
+    EntityBackgroundCollisionResult entityBackgroundCollisionResult( RoomEntity entity, int direction, int nextX, int nextY) { return roomCollisionQueries.entityBackgroundCollisionResult(entity, direction, nextX, nextY); }
 
-    EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY,
-            int ignoreHitsCountdown) {
-        return entityBackgroundCollisionResult(entity, direction, nextX, nextY,
-            ignoreHitsCountdown, 0);
-    }
+    EntityBackgroundCollisionResult entityBackgroundCollisionResult( RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) { return roomCollisionQueries.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown); }
 
-    EntityBackgroundCollisionResult entityBackgroundCollisionResult(
-            RoomEntity entity, int direction, int nextX, int nextY,
-            int ignoreHitsCountdown, int frameCounter) {
-        EntityCollisionPointProbe.Sample sample = entityCollisionPointProbe.sample(
-            entity, direction, nextX, nextY);
-        int pointX = sample.x();
-        int pointY = sample.y();
-        int objectId = overworldCollision.objectIdAtPoint(pointX, pointY);
-        int physicsFlag = overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
-        int ledgeTimer = entityBridge.entityRuntime == null
-            ? 0 : entityBridge.entityRuntime.ledgeTransitionTimer(entity.slot());
-        if ((entity.z() & 0x80) != 0) {
-            ledgeTimer = 0;
-        }
-        int thrownDirection = entityBridge.entityRuntime == null
-            ? 0xFF : entityBridge.entityRuntime.thrownDirection(entity.slot());
-        EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
-            frameCounter, activeRoom != null
-                && activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-            thrownDirection, ledgeTimer, switchBlocksState,
-            overworldCollision.linkStandingOnSwitchBlock());
-        EntityBackgroundCollisionResolution resolution =
-            entityBackgroundCollisionResolver.resolveWithState(
-                entity, direction, sample, objectId, physicsFlag,
-                ignoreHitsCountdown, state);
-        if (entityBridge.entityRuntime != null) {
-            entityBridge.entityRuntime.setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
-        }
-        return resolution.result();
-    }
+    EntityBackgroundCollisionResult entityBackgroundCollisionResult( RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) { return roomCollisionQueries.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter); }
 
-    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
-            RoomEntity entity, int direction, int nextX, int nextY) {
-        return entityBackgroundCollisionResult(entity, direction, nextX, nextY);
-    }
+    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest( RoomEntity entity, int direction, int nextX, int nextY) { return roomCollisionQueries.entityBackgroundCollisionResultForTest(entity, direction, nextX, nextY); }
 
-    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
-            RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
-        int ignoreHitsCountdown = entityBridge.entityRuntime == null
-            ? 0 : entityBridge.entityRuntime.enemyIgnoreHitsCountdown(entity.slot());
-        return entityBackgroundCollisionResult(entity, direction, nextX, nextY,
-            ignoreHitsCountdown, frameCounter);
-    }
+    EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest( RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) { return roomCollisionQueries.entityBackgroundCollisionResultForTest(entity, direction, nextX, nextY, frameCounter); }
 
     /**
      * Mirrors the terrain/status and conveyor portion of bank-$03's
@@ -1839,55 +1618,7 @@ public final class RoomSession {
      * options byte stay ROM-backed; the runtime invokes this after the
      * entity-family handler has completed its movement for the frame.
      */
-    RoomEntityGroundInteraction.Result entityGroundInteraction(
-            RoomEntity entity, int frameCounter, int previousGroundStatus,
-            int speedZ, boolean sideScrolling) {
-        int options = romTables.entityOptions1(entity.type());
-        if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
-            return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
-        }
-
-        // The ROM skips ground interaction while an entity is moving upward;
-        // a negative Z byte denotes a falling entity and continues through
-        // the shared helper.
-        int z = entity.z() & 0xFF;
-        if (z != 0 && (z & 0x80) == 0) {
-            return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
-        }
-
-        OverworldCollision.GroundInteractionSample sample =
-            overworldCollision.groundInteractionSample(entity.x(), entity.y());
-        int physicsFlag = sample.physicsFlag();
-        int groundStatus = groundStatusFor(sample);
-        boolean deepWaterOrLava = physicsFlag == PhysicsFlags.DEEP_WATER
-            || physicsFlag == PhysicsFlags.LAVA;
-        boolean retainsDeepWaterStatus = entity.type() == ENTITY_FISH
-            || entity.type() == ENTITY_PEAHAT
-            || entity.type() == ENTITY_ROOSTER
-            || entity.type() == ENTITY_BOW_WOW
-            || entity.type() == ENTITY_MARIN_AT_THE_SHORE;
-        if (deepWaterOrLava && !retainsDeepWaterStatus) {
-            // The source unloads ordinary entities before jumping directly to
-            // .createWaterSplash, so this splash is not gated by options or
-            // the status-transition speed test.
-            return RoomEntityGroundInteraction.Result.unloaded(entity, 0x00, true);
-        }
-
-        boolean splash = splashAllowed(options, previousGroundStatus, groundStatus,
-            speedZ, sideScrolling);
-        int movementIndex = physicsFlag - PhysicsFlags.CAT_CONVEYOR;
-        RoomEntity updated = entity;
-        if (movementIndex >= 0 && movementIndex < ENTITY_CONVEYOR_MOVEMENT_X.length
-            && (frameCounter & 0x03) == 0) {
-            updated = withEntityPosition(entity,
-                entity.x() + ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
-                entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
-        }
-
-        RoomEntityGroundInteraction.PitTransition pit = pitTransitionFor(
-            entity, sample, currentLinkMotionState);
-        return new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
-    }
+    RoomEntityGroundInteraction.Result entityGroundInteraction( RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling) { return roomCollisionQueries.entityGroundInteraction(entity, frameCounter, previousGroundStatus, speedZ, sideScrolling); }
 
     static RoomEntityGroundInteraction.PitTransition pitTransitionFor(
             RoomEntity entity, OverworldCollision.GroundInteractionSample sample,
@@ -1955,11 +1686,7 @@ public final class RoomSession {
             entity.z(), -1, false);
     }
 
-    boolean pairoddProjectileObjectCollision(RoomEntity entity) {
-        int physicsFlag = overworldCollision.objectPhysicsFlagAtEntityPosition(
-            entity.x(), entity.y());
-        return PairoddProjectileObjectCollision.collidesWithPhysicsFlag(physicsFlag);
-    }
+    boolean pairoddProjectileObjectCollision(RoomEntity entity) { return roomCollisionQueries.pairoddProjectileObjectCollision(entity); }
 
     void loadRoomSpecificTilesIfNeeded(int roomId) { roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(roomId); }
 
