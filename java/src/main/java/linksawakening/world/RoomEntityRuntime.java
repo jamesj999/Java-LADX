@@ -1,5 +1,7 @@
 package linksawakening.world;
 
+import static linksawakening.world.EntityTypeRules.*;
+
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
@@ -26,16 +28,16 @@ public final class RoomEntityRuntime {
     private static final int[] INSTRUMENT_MUSIC_TRACKS = {
         0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E
     };
-    private static final int ENTITY_CHEST_WITH_ITEM = 0x07;
-    private static final int ENTITY_KEY_DROP_POINT = 0x30;
-    private static final int ENTITY_MASTER_STALFOS = 0x5F;
-    private static final int ENTITY_GENIE = 0x5C;
-    private static final int ENTITY_DESERT_LANMOLA = 0x87;
-    private static final int ENTITY_ARMOS_KNIGHT = 0x88;
-    private static final int ENTITY_HINOX = HinoxMotion.ENTITY_TYPE;
-    private static final int ENTITY_ROLLING_BONES =
+    static final int ENTITY_CHEST_WITH_ITEM = 0x07;
+    static final int ENTITY_KEY_DROP_POINT = 0x30;
+    static final int ENTITY_MASTER_STALFOS = 0x5F;
+    static final int ENTITY_GENIE = 0x5C;
+    static final int ENTITY_DESERT_LANMOLA = 0x87;
+    static final int ENTITY_ARMOS_KNIGHT = 0x88;
+    static final int ENTITY_HINOX = HinoxMotion.ENTITY_TYPE;
+    static final int ENTITY_ROLLING_BONES =
         EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
-    private static final int ENTITY_ROLLING_BONES_BAR =
+    static final int ENTITY_ROLLING_BONES_BAR =
         EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
     private static final int ENTITY_THREE_OF_A_KIND =
         EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
@@ -45,51 +47,51 @@ public final class RoomEntityRuntime {
     private static final int ENTITY_KID_71 = 0x71;
     private static final int ENTITY_KID_72 = 0x72;
     private static final int ENTITY_MADAM_MEOWMEOW = 0x79;
-    private static final int ENTITY_MOBLIN_KING = 0xE4;
-    private static final int ENTITY_OCTOROK = 0x09;
-    private static final int ENTITY_OCTOROK_ROCK = 0x0A;
-    private static final int ENTITY_MOBLIN = 0x0B;
-    private static final int ENTITY_IRON_MASK = 0x24;
-    private static final int ENTITY_IRON_MASKS_MASK = 0x32;
-    private static final int ENTITY_MOBLIN_ARROW = 0x0C;
-    private static final int ENTITY_TEKTITE = 0x0D;
-    private static final int ENTITY_LEEVER = 0x0E;
-    private static final int ENTITY_ANTI_FAIRY = 0x15;
-    private static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
-    private static final int ENTITY_SPARK_CLOCKWISE = 0x17;
-    private static final int ENTITY_ZOL = 0x1B;
-    private static final int ENTITY_GEL = 0x1C;
-    private static final int ENTITY_HIDING_ZOL = 0x9B;
-    private static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
-    private static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
-    private static final int ENTITY_WINGED_OCTOROK =
+    static final int ENTITY_MOBLIN_KING = 0xE4;
+    static final int ENTITY_OCTOROK = 0x09;
+    static final int ENTITY_OCTOROK_ROCK = 0x0A;
+    static final int ENTITY_MOBLIN = 0x0B;
+    static final int ENTITY_IRON_MASK = 0x24;
+    static final int ENTITY_IRON_MASKS_MASK = 0x32;
+    static final int ENTITY_MOBLIN_ARROW = 0x0C;
+    static final int ENTITY_TEKTITE = 0x0D;
+    static final int ENTITY_LEEVER = 0x0E;
+    static final int ENTITY_ANTI_FAIRY = 0x15;
+    static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
+    static final int ENTITY_SPARK_CLOCKWISE = 0x17;
+    static final int ENTITY_ZOL = 0x1B;
+    static final int ENTITY_GEL = 0x1C;
+    static final int ENTITY_HIDING_ZOL = 0x9B;
+    static final int ENTITY_STAR = EntitySpriteHandlerCatalog.ENTITY_STAR;
+    static final int ENTITY_BLOOPER = EntitySpriteHandlerCatalog.ENTITY_BLOOPER;
+    static final int ENTITY_WINGED_OCTOROK =
         EntitySpriteHandlerCatalog.ENTITY_WINGED_OCTOROK;
-    private static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
-    private static final int ENTITY_BUSH_CRAWLER =
+    static final int ENTITY_PINCER = EntitySpriteHandlerCatalog.ENTITY_PINCER;
+    static final int ENTITY_BUSH_CRAWLER =
         EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER;
-    private static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
-    private static final int ENTITY_MINI_MOLDORM =
+    static final int ENTITY_MIMIC = EntitySpriteHandlerCatalog.ENTITY_MIMIC;
+    static final int ENTITY_MINI_MOLDORM =
         EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM;
-    private static final int ENTITY_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
-    private static final int ENTITY_MASKED_MIMIC_GORIYA =
+    static final int ENTITY_MOLDORM = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
+    static final int ENTITY_MASKED_MIMIC_GORIYA =
         EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA;
     private static final int ENTITY_SPIKE_TRAP = 0x27;
-    private static final int ENTITY_PAIRODD = 0x57;
+    static final int ENTITY_PAIRODD = 0x57;
     private static final int ENTITY_PAIRODD_PROJECTILE = 0x58;
-    private static final int ENTITY_WATER_TEKTITE = 0x99;
-    private static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
-    private static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
+    static final int ENTITY_WATER_TEKTITE = 0x99;
+    static final int ENTITY_FISH = FishMotion.ENTITY_TYPE;
+    static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
     private static final int ENTITY_KNIGHT = 0x51;
     private static final int ENTITY_KANALET_BOMBABLE_WALL = 0x94;
-    private static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
-    private static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
-    private static final int ENTITY_DROPPABLE_HEART = 0x2D;
-    private static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
-    private static final int ENTITY_DROPPABLE_ARROWS = 0x37;
-    private static final int ENTITY_DROPPABLE_BOMBS = 0x38;
-    private static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
+    static final int ENTITY_BOO_BUDDY = BooBuddyMotion.ENTITY_TYPE;
+    static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
+    static final int ENTITY_DROPPABLE_HEART = 0x2D;
+    static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    static final int ENTITY_DROPPABLE_ARROWS = 0x37;
+    static final int ENTITY_DROPPABLE_BOMBS = 0x38;
+    static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
     private static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
-    private static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
+    static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     private static final int ENTITY_RICHARD = 0x95;
     private static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
     private static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
@@ -97,12 +99,12 @@ public final class RoomEntityRuntime {
     private static final int DIALOG_SLIME_KEY = 0xA2;
     private static final int DIALOG_GOLDEN_LEAF = 0xE8;
     private static final int DIALOG_FINAL_GOLDEN_LEAF = 0xE9;
-    private static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
-    private static final int ENTITY_STALFOS_EVASIVE = 0x1E;
+    static final int ENTITY_STALFOS_AGGRESSIVE = 0x1A;
+    static final int ENTITY_STALFOS_EVASIVE = 0x1E;
     private static final int ENTITY_GIBDO = 0x1F;
-    private static final int ENTITY_LIKE_LIKE = 0x23;
-    private static final int ENTITY_GOOMBA = 0x9F;
-    private static final int ENTITY_SNAKE = 0xA1;
+    static final int ENTITY_LIKE_LIKE = 0x23;
+    static final int ENTITY_GOOMBA = 0x9F;
+    static final int ENTITY_SNAKE = 0xA1;
     private static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
     private static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
     private static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
@@ -111,10 +113,10 @@ public final class RoomEntityRuntime {
     private static final int GENIE_OPTIONS1 = 0xD0;
     private static final int WIZROBE_PROJECTILE_OPTIONS1 =
         ENTITY_OPT1_NO_GROUND_INTERACTION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int ENTITY_PHYSICS_HARMLESS = 0x80;
+    static final int ENTITY_PHYSICS_HARMLESS = 0x80;
     private static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
-    private static final int ENTITY_PHYSICS_SHADOW = 0x10;
-    private static final int HITFLAGS_IGNORE_HITS = 0x80;
+    static final int ENTITY_PHYSICS_SHADOW = 0x10;
+    static final int HITFLAGS_IGNORE_HITS = 0x80;
     private static final int LIFTABLE_ROCK_SMASH_PHYSICS_FLAGS =
         0x04 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_PROJECTILE_NOCLIP
             | 0x10;
@@ -123,8 +125,8 @@ public final class RoomEntityRuntime {
     private static final int LIFTABLE_ROCK_SMASH_MODE_ROCK = 0;
     private static final int LIFTABLE_ROCK_SMASH_MODE_BUSH = 1;
     private static final int LIFTABLE_ROCK_SMASH_MODE_GRASS = 0xFF;
-    private static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
-    private static final int CHEST_INITIAL_PHYSICS_FLAGS = 0xC2;
+    static final int BOMB_INITIAL_PHYSICS_FLAGS = 0xD2;
+    static final int CHEST_INITIAL_PHYSICS_FLAGS = 0xC2;
     private static final int CHEST_OPTIONS1 = 0x02;
     private static final int CHEST_OPEN_NOISE_ID = 0x04;
     private static final int CHEST_TREASURE_JINGLE_ID = 0x01;
@@ -133,35 +135,35 @@ public final class RoomEntityRuntime {
     private static final int BOMB_EXPLOSION_PHYSICS_LOW_BITS = 0x08;
     private static final int BOMB_ARROW_COOLDOWN = 0x06;
     private static final int BOMB_ARROW_EXPLOSION_COUNTDOWN = 0x17;
-    private static final int EVASIVE_PHYSICS_FLAGS = 0x12;
-    private static final int IRON_MASK_INITIAL_PHYSICS_FLAGS = 0x12;
-    private static final int GOOMBA_INITIAL_PHYSICS_FLAGS = 0x12;
+    static final int EVASIVE_PHYSICS_FLAGS = 0x12;
+    static final int IRON_MASK_INITIAL_PHYSICS_FLAGS = 0x12;
+    static final int GOOMBA_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int EVASIVE_CLONE_PHYSICS_FLAGS = 0x52;
     private static final int EVASIVE_CLONE_OPTIONS = ENTITY_OPT1_NO_GROUND_INTERACTION
         | ENTITY_OPT1_SPLASH_IN_WATER | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int ENTITY_PEAHAT = 0xA0;
-    private static final int ENTITY_ARMOS_STATUE = 0x0F;
-    private static final int ENTITY_HIDING_GHINI = 0x10;
-    private static final int ENTITY_GIANT_GHINI = 0x11;
-    private static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
-    private static final int ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS = 0x84;
+    static final int ENTITY_PEAHAT = 0xA0;
+    static final int ENTITY_ARMOS_STATUE = 0x0F;
+    static final int ENTITY_HIDING_GHINI = 0x10;
+    static final int ENTITY_GIANT_GHINI = 0x11;
+    static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
+    static final int ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS = 0x84;
     private static final int ARMOS_KNIGHT_OPTIONS1 = 0xC4;
     private static final int HINOX_OPTIONS1 = 0x94;
-    private static final int ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS = 0x80;
-    private static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
-    private static final int ENTITY_GHINI = 0x12;
-    private static final int ENTITY_POLS_VOICE = PolsVoiceMotion.ENTITY_TYPE;
-    private static final int ENTITY_KEESE = 0x19;
-    private static final int ENTITY_HARDHAT_BEETLE = 0x20;
-    private static final int ENTITY_SPIKED_BEETLE = SpikedBeetleMotion.ENTITY_TYPE;
-    private static final int ENTITY_WIZROBE = 0x21;
-    private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
-    private static final int ENTITY_GHOST = 0xD4;
-    private static final int ENTITY_ROOSTER = 0xD5;
-    private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    static final int ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS = 0x80;
+    static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
+    static final int ENTITY_GHINI = 0x12;
+    static final int ENTITY_POLS_VOICE = PolsVoiceMotion.ENTITY_TYPE;
+    static final int ENTITY_KEESE = 0x19;
+    static final int ENTITY_HARDHAT_BEETLE = 0x20;
+    static final int ENTITY_SPIKED_BEETLE = SpikedBeetleMotion.ENTITY_TYPE;
+    static final int ENTITY_WIZROBE = 0x21;
+    static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
+    static final int ENTITY_GHOST = 0xD4;
+    static final int ENTITY_ROOSTER = 0xD5;
+    static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_INDOOR = 0x3E;
     private static final int ENTITY_TARIN = TarinRaccoonMotion.ENTITY_TYPE;
-    private static final int ENTITY_BOW_WOW = 0x6D;
+    static final int ENTITY_BOW_WOW = 0x6D;
     private static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
     private static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
     private static final int SECRET_SEASHELL_HIDDEN_OPTIONS1 =
@@ -184,38 +186,38 @@ public final class RoomEntityRuntime {
     private static final int DROPPABLE_OBJECT_SHORT_GRASS = 0x04;
     private static final int DROPPABLE_OBJECT_SHOVEL_HOLE = 0xCC;
     private static final int ENTITY_HEART_CONTAINER = 0x36;
-    private static final int ENTITY_MOBLIN_SWORD = 0x14;
-    private static final int ENTITY_LASER = 0x2A;
-    private static final int ENTITY_LASER_BEAM = 0x2B;
+    static final int ENTITY_MOBLIN_SWORD = 0x14;
+    static final int ENTITY_LASER = 0x2A;
+    static final int ENTITY_LASER_BEAM = 0x2B;
     private static final int ENTITY_ARROW = 0x00;
     private static final int ENTITY_BOOMERANG = BoomerangMotion.ENTITY_TYPE;
     private static final int ENTITY_MAGIC_ROD_FIREBALL = 0x04;
     private static final int ENTITY_MAGIC_POWDER_SPRINKLE = 0x08;
     private static final int ENTITY_MUSICAL_NOTE = 0xC9;
     private static final int ENTITY_SWORD_BEAM = 0xDF;
-    private static final int ENTITY_BOMB = 0x02;
-    private static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
+    static final int ENTITY_BOMB = 0x02;
+    static final int ENTITY_SWORD_SHIELD_PICKUP = 0x31;
     private static final int ENTITY_OWL_EVENT = 0x41;
     private static final int ROOM_OW_TAIL_KEY_CHEST = 0x41;
     private static final int ROOM_OW_EAST_OF_MOBLIN_HIDEOUT = 0x36;
     private static final int ROOM_OW_WEST_OF_TAIL_CAVE = 0xD2;
     private static final int ENTITY_WITCH = WitchMotion.ENTITY_TYPE;
     private static final int ROOM_OW_BEACH_WITH_SWORD = 0xF2;
-    private static final int ENTITY_BOUNCING_BOMBITE = 0x55;
-    private static final int ENTITY_TIMER_BOMBITE = 0x56;
-    private static final int ENTITY_MAD_BOMBER = 0x93;
-    private static final int ENTITY_BOMBER = 0xBA;
-    private static final int BOMBITE_INITIAL_PHYSICS_FLAGS = 0x02;
-    private static final int SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS = 0xB1;
-    private static final int KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS = 0xB1;
+    static final int ENTITY_BOUNCING_BOMBITE = 0x55;
+    static final int ENTITY_TIMER_BOMBITE = 0x56;
+    static final int ENTITY_MAD_BOMBER = 0x93;
+    static final int ENTITY_BOMBER = 0xBA;
+    static final int BOMBITE_INITIAL_PHYSICS_FLAGS = 0x02;
+    static final int SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS = 0xB1;
+    static final int KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS = 0xB1;
     private static final int BOMBITE_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER;
     private static final int KEY_DROP_POINT_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
     private static final int BOMBITE_EXPLOSION_SOUND_ID = 0x0C;
     private static final int BOMBITE_EXPLOSION_COUNTDOWN = 0x17;
-    private static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
+    static final int MAD_BOMBER_INITIAL_PHYSICS_FLAGS = 0x12;
     private static final int MAD_BOMBER_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION;
-    private static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
+    static final int BOMBER_INITIAL_PHYSICS_FLAGS = 0x13;
     private static final int BOMBER_OPTIONS1 = ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int BOMBER_THROW_JINGLE_ID = 0x08;
     private static final int LIFTED_THROW_JINGLE_ID = 0x08;
@@ -232,26 +234,26 @@ public final class RoomEntityRuntime {
     private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_DOWN = 0x9E;
     private static final int OBJECT_HOOKSHOT_BRIDGE_PULL_UP = 0x9F;
     private static final int OBJECT_HOOKSHOT_BRIDGE_REPLACEMENT = 0x9D;
-    private static final int ENTITY_LIFTABLE_ROCK = 0x05;
-    private static final int ENTITY_LIFTABLE_STATUE = 0x9D;
-    private static final int ENTITY_WRECKING_BALL = 0xA8;
-    private static final int ENTITY_SIDE_VIEW_POT = 0xD6;
-    private static final int ENTITY_CUCCO = 0x6C;
-    private static final int ENTITY_GOPONGA_FLOWER = GopongaFlowerMotion.ENTITY_TYPE;
-    private static final int ENTITY_GIANT_GOPONGA_FLOWER = GiantGopongaMotion.ENTITY_TYPE;
-    private static final int ENTITY_GOPONGA_FLOWER_PROJECTILE =
+    static final int ENTITY_LIFTABLE_ROCK = 0x05;
+    static final int ENTITY_LIFTABLE_STATUE = 0x9D;
+    static final int ENTITY_WRECKING_BALL = 0xA8;
+    static final int ENTITY_SIDE_VIEW_POT = 0xD6;
+    static final int ENTITY_CUCCO = 0x6C;
+    static final int ENTITY_GOPONGA_FLOWER = GopongaFlowerMotion.ENTITY_TYPE;
+    static final int ENTITY_GIANT_GOPONGA_FLOWER = GiantGopongaMotion.ENTITY_TYPE;
+    static final int ENTITY_GOPONGA_FLOWER_PROJECTILE =
         GopongaProjectileMotion.ENTITY_TYPE;
-    private static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
-    private static final int ENTITY_PIRANHA_PLANT = PiranhaMotion.ENTITY_TYPE;
-    private static final int ENTITY_ZORA = ZoraMotion.ENTITY_TYPE;
-    private static final int ENTITY_ZOMBIE = ZombieMotion.ENTITY_TYPE;
-    private static final int ENTITY_BUZZ_BLOB = BuzzBlobMotion.ENTITY_TYPE;
-    private static final int ENTITY_SAND_CRAB = SandCrabMotion.ENTITY_TYPE;
-    private static final int ENTITY_DOG = DogMotion.ENTITY_TYPE;
-    private static final int ENTITY_URCHIN = UrchinMotion.ENTITY_TYPE;
-    private static final int ENTITY_WITCH_RAT = WitchRatMotion.ENTITY_TYPE;
-    private static final int ENTITY_HORSE_PIECE = 0x98;
-    private static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
+    static final int ENTITY_POKEY = PokeyMotion.ENTITY_TYPE;
+    static final int ENTITY_PIRANHA_PLANT = PiranhaMotion.ENTITY_TYPE;
+    static final int ENTITY_ZORA = ZoraMotion.ENTITY_TYPE;
+    static final int ENTITY_ZOMBIE = ZombieMotion.ENTITY_TYPE;
+    static final int ENTITY_BUZZ_BLOB = BuzzBlobMotion.ENTITY_TYPE;
+    static final int ENTITY_SAND_CRAB = SandCrabMotion.ENTITY_TYPE;
+    static final int ENTITY_DOG = DogMotion.ENTITY_TYPE;
+    static final int ENTITY_URCHIN = UrchinMotion.ENTITY_TYPE;
+    static final int ENTITY_WITCH_RAT = WitchRatMotion.ENTITY_TYPE;
+    static final int ENTITY_HORSE_PIECE = 0x98;
+    static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
     private static final int OBJECT_BUSH = 0x5C;
     private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
     private static final int OBJECT_TORCH_UNLIT = 0xAB;
@@ -264,7 +266,7 @@ public final class RoomEntityRuntime {
     private static final int BOOMERANG_SFX_ID = 0x2D;
     static final int BOOMERANG_SFX_COUNTER_PERIOD = 0x1A;
     private static final int SWORD_BEAM_JINGLE_ID = 0x3B;
-    private static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
+    static final int IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS =
         0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW | ENTITY_PHYSICS_GRABBABLE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int DIALOG_MOBLIN = 0x90;
@@ -276,7 +278,7 @@ public final class RoomEntityRuntime {
         | ENTITY_OPT1_NO_WALL_COLLISION;
     private static final int IRON_MASKS_MASK_OPTIONS1 = ENTITY_OPT1_SPLASH_IN_WATER
         | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-    private static final int FAIRY_INITIAL_PHYSICS_FLAGS = 0xB1;
+    static final int FAIRY_INITIAL_PHYSICS_FLAGS = 0xB1;
     private static final int FAIRY_OPTIONS1 = ENTITY_OPT1_NO_GROUND_INTERACTION
         | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
@@ -5334,18 +5336,9 @@ public final class RoomEntityRuntime {
             backgroundCollision, frame, entityGroundStatus[slot]).entity();
     }
 
-    private static boolean isLiftableEntity(RoomEntity entity) {
-        return switch (entity.type()) {
-            case ENTITY_BOMB, ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
-                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT, ENTITY_ROOSTER,
-                ENTITY_CUCCO, ENTITY_HORSE_PIECE -> true;
-            default -> false;
-        };
-    }
 
-    private static boolean checksThrownRoomEventTriggers(int entityType) {
-        return entityType != ENTITY_SIDE_VIEW_POT;
-    }
+
+
 
     /** Mirrors CuccoEntityHandler's B-slot-first Power Bracelet check. */
     private boolean cuccoPowerBraceletHeld() {
@@ -9194,47 +9187,19 @@ public final class RoomEntityRuntime {
         return List.copyOf(hookshotBridgeUpdates);
     }
 
-    private static boolean isFollowingNpcType(int type) {
-        return type == ENTITY_GHOST || type == ENTITY_ROOSTER
-            || type == ENTITY_MARIN_AT_THE_SHORE || type == ENTITY_BOW_WOW;
-    }
 
-    private static boolean isGhiniType(int type) {
-        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI
-            || type == ENTITY_GHINI;
-    }
 
-    private static boolean isHidingGhiniType(int type) {
-        return type == ENTITY_HIDING_GHINI || type == ENTITY_GIANT_GHINI;
-    }
 
-    private static boolean isSparkType(int type) {
-        return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
-    }
 
-    private static boolean isZolGelType(int type) {
-        return type == ENTITY_ZOL || type == ENTITY_GEL;
-    }
 
-    private static boolean isRoamingEnemyType(int type) {
-        return type == ENTITY_OCTOROK || type == ENTITY_MOBLIN || type == ENTITY_IRON_MASK;
-    }
 
-    private static boolean usesBank6Recoil(int type) {
-        return type == ENTITY_KEESE || type == ENTITY_TEKTITE
-            || type == ENTITY_ANTI_FAIRY || type == ENTITY_STALFOS_AGGRESSIVE
-            || type == ENTITY_HARDHAT_BEETLE || type == ENTITY_ARMOS_STATUE
-            || type == ENTITY_WIZROBE
-            || type == ENTITY_CROW
-            || type == ENTITY_BOO_BUDDY
-            || type == ENTITY_SPARK_COUNTER_CLOCKWISE
-            || type == ENTITY_SPARK_CLOCKWISE
-            || type == ENTITY_POLS_VOICE
-            || type == ENTITY_ZOL || type == ENTITY_GEL
-            || type == ENTITY_ROLLING_BONES
-            || type == ENTITY_LIKE_LIKE || type == ENTITY_ARMOS_KNIGHT
-            || type == ENTITY_HINOX;
-    }
+
+
+
+
+
+
+
 
     private RoomEntity firstLoadedEntityOfType(int type) {
         for (RoomEntity candidate : slots) {
@@ -9245,33 +9210,7 @@ public final class RoomEntityRuntime {
         return null;
     }
 
-    private static boolean usesSharedRecoil(int type) {
-        return type == ENTITY_HARDHAT_BEETLE
-            || type == ENTITY_LEEVER || type == ENTITY_PEAHAT
-            || type == ENTITY_WATER_TEKTITE
-            || type == ENTITY_STALFOS_EVASIVE
-            || type == ENTITY_MOBLIN_SWORD
-            || type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE
-            || type == ENTITY_MAD_BOMBER
-            || type == ENTITY_BOMBER
-            || type == ENTITY_GOOMBA
-            || type == ENTITY_SNAKE
-            || type == ENTITY_HIDING_ZOL
-            || type == ENTITY_STAR
-            || type == ENTITY_BLOOPER
-            || type == ENTITY_WINGED_OCTOROK
-            || type == ENTITY_BUSH_CRAWLER
-            || type == ENTITY_PAIRODD
-            || type == ENTITY_MIMIC
-            || type == ENTITY_MASKED_MIMIC_GORIYA
-            || type == ENTITY_MINI_MOLDORM
-            || type == ENTITY_ZOMBIE
-            || type == ENTITY_BUZZ_BLOB
-            || type == ENTITY_SAND_CRAB
-            || type == ENTITY_URCHIN
-            || isRoamingEnemyType(type) || usesBank6Recoil(type)
-            || isGhiniType(type);
-    }
+
 
     /** Mirrors bank-$03 ApplyLinkCollisionWithEnemy's Goomba stomp branch. */
     private boolean canGoombaStomp(RoomEntity entity, int linkEntityX, int linkEntityY,
@@ -9291,26 +9230,15 @@ public final class RoomEntityRuntime {
             : (linkVerticalVelocity & 0x80) != 0;
     }
 
-    private static boolean isBombiteType(int type) {
-        return type == ENTITY_BOUNCING_BOMBITE || type == ENTITY_TIMER_BOMBITE;
-    }
 
-    private static boolean isEnemyProjectileType(int type) {
-        return type == ENTITY_OCTOROK_ROCK || type == ENTITY_MOBLIN_ARROW;
-    }
 
-    private static boolean isLaserType(int type) {
-        return type == ENTITY_LASER || type == ENTITY_LASER_BEAM;
-    }
 
-    private static boolean isDynamicFollowingNpc(RoomEntity entity) {
-        return entity.sourceLoadOrder() == -1 && isFollowingNpcType(entity.type());
-    }
 
-    private static boolean isBossKeyDropProducer(int entityType) {
-        return entityType == ENTITY_MASTER_STALFOS || entityType == ENTITY_DESERT_LANMOLA
-            || entityType == ENTITY_ARMOS_KNIGHT || entityType == ENTITY_HINOX;
-    }
+
+
+
+
+
 
     private boolean hasNoGroundInteractionOverride(int slot) {
         return entityOptions1Override[slot] >= 0
@@ -13482,89 +13410,9 @@ public final class RoomEntityRuntime {
         return (((value - center + radius) & 0xFF) < radius * 2);
     }
 
-    private static int initialPhysicsFlags(int type) {
-        return switch (type) {
-            case ENTITY_GENIE -> GenieMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_HINOX -> 0x0C;
-            case ENTITY_MOBLIN_KING -> 0x13;
-            case ENTITY_ROLLING_BONES_BAR -> 0x42;
-            case ENTITY_STALFOS_EVASIVE -> EVASIVE_PHYSICS_FLAGS;
-            case ENTITY_STAR -> 0x12;
-            case ENTITY_BLOOPER -> 0x02;
-            case ENTITY_WINGED_OCTOROK -> 0x12;
-            case ENTITY_BUSH_CRAWLER -> 0x12;
-            case ENTITY_PINCER -> 0x02;
-            case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_WIZROBE -> 0x02;
-            case ENTITY_MIMIC -> 0x12;
-            case ENTITY_MASKED_MIMIC_GORIYA -> 0x12;
-            case ENTITY_MINI_MOLDORM -> 0x02;
-            case ENTITY_MOLDORM -> MoldormMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_SWORD_SHIELD_PICKUP -> SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_KEY_DROP_POINT -> KEY_DROP_POINT_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_LIKE_LIKE -> LIKE_LIKE_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_POLS_VOICE -> 0x12;
-            case ENTITY_SPIKED_BEETLE -> 0x12;
-            case ENTITY_WIZROBE_PROJECTILE -> 0x42;
-            case ENTITY_IRON_MASKS_MASK -> IRON_MASKS_MASK_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BOMB -> BOMB_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_CHEST_WITH_ITEM -> CHEST_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BOUNCING_BOMBITE, ENTITY_TIMER_BOMBITE ->
-                BOMBITE_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_FISH -> FishMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_CROW -> CrowMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_CUCCO -> CuccoMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GOPONGA_FLOWER -> GopongaFlowerMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GIANT_GOPONGA_FLOWER -> GiantGopongaMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_GOPONGA_FLOWER_PROJECTILE ->
-                GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_POKEY -> PokeyMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_PIRANHA_PLANT -> PiranhaMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_ZORA -> ZoraMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_ZOMBIE -> ZombieMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BUZZ_BLOB -> BuzzBlobMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_SAND_CRAB -> SandCrabMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_DOG -> DogMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_URCHIN -> UrchinMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_WITCH_RAT -> WitchRatMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_ROOSTER -> RoosterMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BOO_BUDDY -> BooBuddyMotion.INITIAL_PHYSICS_FLAGS;
-            case ENTITY_DROPPABLE_FAIRY -> FAIRY_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_HIDING_SLIME_KEY ->
-                0x02 | ENTITY_PHYSICS_HARMLESS | ENTITY_PHYSICS_SHADOW
-                    | ENTITY_PHYSICS_GRABBABLE;
-            case ENTITY_MAD_BOMBER -> MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_BOMBER -> BOMBER_INITIAL_PHYSICS_FLAGS;
-            case ENTITY_LIFTABLE_ROCK, ENTITY_LIFTABLE_STATUE,
-                ENTITY_WRECKING_BALL, ENTITY_SIDE_VIEW_POT,
-                ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
-            default -> 0;
-        };
-    }
 
-    private static int initialHitboxFlags(int type) {
-        if (type == ENTITY_GENIE) {
-            return GenieMotion.INITIAL_HITBOX_FLAGS;
-        }
-        if (type == ENTITY_SIDE_VIEW_POT) {
-            // HITFLAGS_COLLISION_BOX_SMALL | HITFLAGS_HITBOX_SIDE_VIEW_POT
-            // | HITFLAGS_IGNORE_HITS (bank $0D hitbox table, entry $D6).
-            return 0xBD;
-        }
-        if (type == ENTITY_MOLDORM) {
-            return MoldormMotion.INITIAL_HITBOX_FLAGS;
-        }
-        if (type == ENTITY_MOBLIN_KING) {
-            return 0x84;
-        }
-        if (type == ENTITY_ARMOS_KNIGHT) {
-            return ARMOS_KNIGHT_INITIAL_HITBOX_FLAGS;
-        }
-        return type == ENTITY_HINOX ? 0x08 : 0;
-    }
+
+
 
     private boolean polsVoiceBalladOcarinaTrigger() {
         return linkPlayingOcarinaCountdown == 0x01
@@ -13590,37 +13438,18 @@ public final class RoomEntityRuntime {
             && slowTransitionCountdown[entity.slot()] < 0x1C;
     }
 
-    private static int persistentClearMask(RoomEntity entity) {
-        return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8
-            ? 1 << entity.sourceLoadOrder() : 0;
-    }
 
-    private static boolean requiresHeldPickupTransition(int type) {
-        return switch (type) {
-            case 0x30, 0x31, 0x36, 0x3C -> true;
-            default -> false;
-        };
-    }
+
+
 
     /**
      * The standard bank-$06 floating handler is available only where its
      * standard sprite definition was loaded. Color Dungeon's $86 handler is
      * a separate bank-$36 path and remains intentionally deferred.
      */
-    private static boolean isRuntimeFloatingItem(RoomEntity entity) {
-        return FloatingItemMotion.isFloatingItem(entity.type())
-            && entity.spriteDefinition().supported();
-    }
 
-    private static boolean isCommonDroppableType(int type) {
-        return type == ENTITY_DROPPABLE_HEART
-            || type == ENTITY_DROPPABLE_RUPEE
-            || type == ENTITY_DROPPABLE_FAIRY
-            || type == ENTITY_DROPPABLE_ARROWS
-            || type == ENTITY_DROPPABLE_BOMBS
-            || type == ENTITY_DROPPABLE_MAGIC_POWDER
-            || type == ENTITY_HIDING_SLIME_KEY;
-    }
+
+
 
     private boolean isDisabledFollower(int type) {
         return switch (type) {
