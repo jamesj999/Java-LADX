@@ -234,9 +234,14 @@ public final class EntityRoomLoader {
 
     private static int initialSpriteVariant(RoomTable table, int roomId, int type,
                                             EntitySpriteDefinition definition, int x, int y) {
+        // OwlEventEntityHandler ($06:68A0–68B4) skips rendering in state zero,
+        // except for the three encounters that begin with the owl already perched.
         // EntityInitSecretSeashell immediately suppresses the display-list
         // variant while privateState3 is non-zero.  Keep the room snapshot
         // hidden even before the first ACTIVE handler tick.
+        if (type == ENTITY_OWL_EVENT && roomId != 0xD2 && roomId != 0x16 && roomId != 0x36) {
+            return -1;
+        }
         if (type == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             return -1;
         }
