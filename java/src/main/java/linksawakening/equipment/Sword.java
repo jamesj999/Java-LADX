@@ -342,6 +342,42 @@ public final class Sword implements EquippedItem {
         }
     }
 
+    public void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
+                       int direction, int offsetX, int offsetY) {
+        if (state == STATE_NONE && !spinAttackActive()) {
+            return;
+        }
+        int effectiveDirection = effectiveDirection(direction);
+        int romDir = toRomDirection(effectiveDirection);
+        int lookupState = effectiveBladeRenderState();
+        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
+        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
+        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
+
+        int[] palette = chargedFlashActive() ? swordPalette.charged() : swordPalette.normal();
+
+        // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
+        // Tile $FF for the left half means only the right half is drawn
+        // (the vertical blade cases).
+        int tile0 = romTables.swordSpriteTile(swordDir, 0);
+        int tile1 = romTables.swordSpriteTile(swordDir, 1);
+        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
+        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
+        if (tile0 != 0xFF) {
+            submit8x16(sink, tile0, bladeX, bladeY, attr0, palette);
+        }
+        if (tile1 != 0xFF) {
+            submit8x16(sink, tile1, bladeX + 8, bladeY, attr1, palette);
+        }
+    }
+    private void submit8x16(linksawakening.render.OamSink sink, int tile, int x, int y,
+                            int attrs, int[] palette) {
+        boolean fx = (attrs & 32) != 0, fy = (attrs & 64) != 0;
+        sink.append(spriteSheet.tile(fy ? tile + 1 : tile), x, y, fx, fy, palette, false);
+        sink.append(spriteSheet.tile(fy ? tile : tile + 1), x, y + 8, fx, fy, palette, false);
+    }
+
+
     public int attackDirection(int linkDirection) {
         lastKnownDirection = linkDirection;
         return effectiveDirection(linkDirection);
