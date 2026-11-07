@@ -60,7 +60,7 @@ final class BooBuddyHandler {
             state.updated = booBuddyUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), booBuddyUpdate.transitionCountdown());
             if (booBuddyUpdate.healthOverride() >= 0) {
-              state.runtime.enemyHealth[state.entity.slot()] = booBuddyUpdate.healthOverride();
+              state.slot().setHealth(state.entity.slot(), booBuddyUpdate.healthOverride());
             }
             if (booBuddyUpdate.unloaded()) {
               state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());

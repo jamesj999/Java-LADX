@@ -67,7 +67,7 @@ final class BushCrawlerHandler {
               // BushCrawlerEntityHandler writes $04 immediately before
               // its default enemy collision path on every interactive
               // normal pass. The static health group is $00.
-              state.runtime.enemyHealth[state.entity.slot()] = 0x04;
+              state.slot().setHealth(state.entity.slot(), 0x04);
             }
             state.preserveBushCrawlerPresentation = true;
             if (bushUpdate.liftRequested()

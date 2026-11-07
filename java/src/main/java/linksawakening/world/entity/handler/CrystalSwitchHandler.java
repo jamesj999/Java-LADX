@@ -17,7 +17,7 @@ final class CrystalSwitchHandler {
             // CrystalSwitchEntityHandler writes $FF before dispatching
             // its normal collision helper, so sword damage can never
             // turn this entity into a dying state.
-            state.runtime.enemyHealth[state.entity.slot()] = 0xFF;
+            state.slot().setHealth(state.entity.slot(), 0xFF);
             if (state.slot().flashCountdown(state.entity.slot()) > 0) {
               // The handler consumes the collision flash as its trigger.
               state.slot().setFlashCountdown(state.entity.slot(), 0);

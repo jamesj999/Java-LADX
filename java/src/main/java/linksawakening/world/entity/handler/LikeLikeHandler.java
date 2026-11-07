@@ -30,16 +30,15 @@ final class LikeLikeHandler {
                     state.link().linkItemA(),
                     state.link().linkItemB(),
                     state.projectileLinkState.shieldLevel(),
-                    state.runtime.slowTransitionCountdown[state.entity.slot()],
+                    state.slot().slowTransitionCountdown(state.entity.slot()),
                     state.randomByteSupplier,
                     state.backgroundCollision);
             state.updated = likeLikeUpdate.entity();
-            state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                likeLikeUpdate.slowTransitionCountdown();
+            state.slot().setSlowTransitionCountdown(state.entity.slot(), likeLikeUpdate.slowTransitionCountdown());
             if (likeLikeUpdate.event() != null) {
               state.emit(likeLikeUpdate.event());
               if (likeLikeUpdate.event().kind() == LikeLikeEvent.Kind.RELEASE) {
-                state.runtime.slowTimerInitialized[state.entity.slot()] = true;
+                state.slot().setSlowTimerInitialized(state.entity.slot(), true);
               }
             }
             if (likeLikeUpdate.spriteVariant() >= 0) {

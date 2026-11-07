@@ -19,7 +19,7 @@ final class DogHandler {
         state -> {
           if (state.status == EntityStatus.ACTIVE) {
             // DogEntityHandler writes this before ReturnIfNonInteractive_19.
-            state.runtime.enemyHealth[state.entity.slot()] = DogMotion.HANDLER_HEALTH;
+            state.slot().setHealth(state.entity.slot(), DogMotion.HANDLER_HEALTH);
           }
           return true;
         });

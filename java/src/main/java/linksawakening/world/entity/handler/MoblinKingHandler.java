@@ -62,7 +62,7 @@ final class MoblinKingHandler {
                       state.linkEntityX,
                       state.linkEntityY,
                       state.slot().transitionCountdown(state.entity.slot()),
-                      state.runtime.slowTransitionCountdown[state.entity.slot()],
+                      state.slot().slowTransitionCountdown(state.entity.slot()),
                       state.frame,
                       state.randomByteSupplier,
                       state.backgroundCollision,
@@ -73,15 +73,13 @@ final class MoblinKingHandler {
                               state.entity, state.linkEntityX, state.linkEntityY));
               state.updated = kingUpdate.entity();
               state.slot().setTransitionCountdown(state.entity.slot(), kingUpdate.transitionCountdown());
-              state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                  kingUpdate.slowTransitionCountdown();
-              state.runtime.slowTimerInitialized[state.entity.slot()] = true;
-              state.runtime.entityOptions1Override[state.entity.slot()] =
-                  state.runtime.moblinKingMotion.state(state.entity.slot()) == 5
+              state.slot().setSlowTransitionCountdown(state.entity.slot(), kingUpdate.slowTransitionCountdown());
+              state.slot().setSlowTimerInitialized(state.entity.slot(), true);
+              state.slot().setOptions1Override(state.entity.slot(), state.runtime.moblinKingMotion.state(state.entity.slot()) == 5
                       ? 0x84
                       : state.runtime.moblinKingMotion.state(state.entity.slot()) >= 2
                           ? 0xC4
-                          : 0x40;
+                          : 0x40);
               if (state.runtime.moblinKingMotion.state(state.entity.slot()) == 5) {
                 state.slot().orPhysicsFlags(state.entity.slot(), ENTITY_PHYSICS_HARMLESS);
               } else {

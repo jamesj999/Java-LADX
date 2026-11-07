@@ -316,9 +316,9 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final ThrownEntityMotion thrownEntityMotion = new ThrownEntityMotion();
 
-    public final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] slowTimerInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -355,7 +355,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -370,7 +370,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyIgnoreHitsCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] enemyHitboxFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public final int[] warpState = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -394,7 +394,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] baseEntityFlipAttribute = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final boolean[] enemyProjectileSpawnedThisFrame =
         new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -444,7 +444,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] entityPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    public final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];
 

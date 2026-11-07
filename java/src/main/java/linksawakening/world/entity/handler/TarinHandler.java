@@ -64,12 +64,11 @@ final class TarinHandler {
                             state.link().inventoryAppearing(),
                             state.link().dialogCooldown(),
                             state.link().windowY(),
-                            state.runtime.slowTransitionCountdown[state.entity.slot()],
+                            state.slot().slowTransitionCountdown(state.entity.slot()),
                             state.slot().transitionCountdown(state.entity.slot())),
                         tarinBackgroundInteraction);
                 state.updated = tarinUpdate.entity();
-                state.runtime.slowTransitionCountdown[state.entity.slot()] =
-                    tarinUpdate.slowTransitionCountdown();
+                state.slot().setSlowTransitionCountdown(state.entity.slot(), tarinUpdate.slowTransitionCountdown());
                 state.slot().setTransitionCountdown(state.entity.slot(), tarinUpdate.transitionCountdown());
                 state.preserveTarinPresentation = true;
                 state.runtime.shouldGetLostInMysteriousWoods = tarinUpdate.shouldGetLost();

@@ -27,9 +27,8 @@ final class SpikedBeetleHandler {
                     state.slot().ignoreHits(state.entity.slot()));
             state.updated = spikedBeetleUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), spikedBeetleUpdate.transitionCountdown());
-            state.runtime.entityOptions1Override[state.entity.slot()] =
-                spikedBeetleUpdate.options1();
-            state.runtime.enemyHitboxFlags[state.entity.slot()] = spikedBeetleUpdate.hitboxFlags();
+            state.slot().setOptions1Override(state.entity.slot(), spikedBeetleUpdate.options1());
+            state.slot().setHitboxFlags(state.entity.slot(), spikedBeetleUpdate.hitboxFlags());
             state.preserveSpikedBeetlePresentation = true;
           }
           return true;

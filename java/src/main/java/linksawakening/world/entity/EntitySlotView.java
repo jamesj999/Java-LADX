@@ -20,4 +20,16 @@ public final class EntitySlotView {
   public void orPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] |= mask; }
   public int flashCountdown(int slot) { return state.enemyFlashCountdown[slot]; }
   public void setFlashCountdown(int slot, int value) { state.enemyFlashCountdown[slot] = value; }
+  public int health(int slot) { return state.enemyHealth[slot]; }
+  public void setHealth(int slot, int value) { state.enemyHealth[slot] = value; }
+  public int hitboxFlags(int slot) { return state.enemyHitboxFlags[slot]; }
+  public void setHitboxFlags(int slot, int value) { state.enemyHitboxFlags[slot] = value; }
+  public int options1Override(int slot) { return state.entityOptions1Override[slot]; }
+  public void setOptions1Override(int slot, int value) { state.entityOptions1Override[slot] = value; }
+  public int pokeyInertia(int slot) { return state.entityInertia[slot]; }
+  public void setPokeyInertia(int slot, int value) { state.entityInertia[slot] = value; }
+  public int slowTransitionCountdown(int slot) { return state.slowTransitionCountdown[slot]; }
+  public void setSlowTransitionCountdown(int slot, int value) { state.slowTransitionCountdown[slot] = value; }
+  public boolean slowTimerInitialized(int slot) { return state.slowTimerInitialized[slot]; }
+  public void setSlowTimerInitialized(int slot, boolean value) { state.slowTimerInitialized[slot] = value; }
 }

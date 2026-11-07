@@ -38,7 +38,7 @@ final class MaskedMimicGoriyaHandler {
                     state.slot().ignoreHits(slot),
                     state.frame);
             state.updated = maskedMimicUpdate.entity();
-            state.runtime.entityOptions1Override[slot] = maskedMimicUpdate.options1();
+            state.slot().setOptions1Override(slot, maskedMimicUpdate.options1());
             state.preserveMaskedMimicPresentation = true;
           }
           return true;

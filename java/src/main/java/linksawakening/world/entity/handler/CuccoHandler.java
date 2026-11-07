@@ -41,7 +41,7 @@ final class CuccoHandler {
             state.updated = cuccoUpdate.entity();
             state.slot().setTransitionCountdown(state.entity.slot(), cuccoUpdate.transitionCountdown());
             state.slot().setFlashCountdown(state.entity.slot(), cuccoUpdate.flashCountdown());
-            state.runtime.enemyHealth[state.entity.slot()] = CuccoMotion.HEALTH_OVERRIDE;
+            state.slot().setHealth(state.entity.slot(), CuccoMotion.HEALTH_OVERRIDE);
             state.preserveCuccoPresentation = true;
             if (cuccoUpdate.dialogLowId() >= 0) {
               state.emit(

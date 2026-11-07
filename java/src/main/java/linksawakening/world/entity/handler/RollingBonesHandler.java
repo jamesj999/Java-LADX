@@ -43,7 +43,7 @@ final class RollingBonesHandler {
                       state.entity,
                       bar,
                       state.slot().transitionCountdown(state.entity.slot()),
-                      state.runtime.enemyHealth[state.entity.slot()],
+                      state.slot().health(state.entity.slot()),
                       state.backgroundCollision);
               state.updated = bossUpdate.entity();
               state.slot().setTransitionCountdown(state.entity.slot(), bossUpdate.transitionCountdown());

@@ -28,11 +28,11 @@ final class PokeyHandler {
               PokeyMotion.Update segmentUpdate =
                   state.runtime.pokeyMotion.advanceSegment(
                       state.updated,
-                      state.runtime.entityInertia[slot],
+                      state.slot().pokeyInertia(slot),
                       state.slot().transitionCountdown(slot),
                       state.backgroundCollision);
               state.updated = segmentUpdate.entity();
-              state.runtime.entityInertia[slot] = segmentUpdate.inertia();
+              state.slot().setPokeyInertia(slot, segmentUpdate.inertia());
               state.slot().setTransitionCountdown(slot, segmentUpdate.transitionCountdown());
               if (segmentUpdate.unloadRequested()) {
                 state.emit(
@@ -62,17 +62,17 @@ final class PokeyHandler {
                         0x09));
               }
             } else {
-              if (state.runtime.entityInertia[slot] < 0x02) {
+              if (state.slot().pokeyInertia(slot) < 0x02) {
                 // PokeyEntityHandler replaces the normal group-$00
                 // health with two hit points until its body is fully
                 // separated.
-                state.runtime.enemyHealth[slot] = 0x02;
+                state.slot().setHealth(slot, 0x02);
               }
               PokeyMotion.Update pokeyUpdate =
                   state.runtime.pokeyMotion.advanceMain(
                       state.updated,
                       state.frame,
-                      state.runtime.entityInertia[slot],
+                      state.slot().pokeyInertia(slot),
                       state.slot().transitionCountdown(slot),
                       state.slot().flashCountdown(slot),
                       state.linkEntityX,
@@ -80,7 +80,7 @@ final class PokeyHandler {
                       state.randomByteSupplier,
                       state.backgroundCollision);
               state.updated = pokeyUpdate.entity();
-              state.runtime.entityInertia[slot] = pokeyUpdate.inertia();
+              state.slot().setPokeyInertia(slot, pokeyUpdate.inertia());
               state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());
               state.slot().setFlashCountdown(slot, pokeyUpdate.flashCountdown());
               if (pokeyUpdate.segmentSpawn() != null) {

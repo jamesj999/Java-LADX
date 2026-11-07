@@ -114,7 +114,7 @@ final class MoldormHandler {
                     transitionForMotion,
                     state.slot().ignoreHits(slot),
                     state.slot().flashCountdown(slot),
-                    state.runtime.enemyHealth[slot],
+                    state.slot().health(slot),
                     state.randomByteSupplier,
                     moldormBackgroundInteraction);
             state.updated = moldormUpdate.entity();
