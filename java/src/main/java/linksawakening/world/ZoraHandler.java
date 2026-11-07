@@ -1,0 +1,63 @@
+package linksawakening.world;
+
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.TransientVfxRequest;
+
+/** ROM handler stages for Zora. */
+final class ZoraHandler {
+  static void installPhase4(EntityHandlerRegistry registry) {
+    registry.registerTick(
+        RoomEntityRuntime.ENTITY_ZORA,
+        EntityTickStage.PHASE_4_ZORA,
+        state -> {
+          if (state.status == EntityStatus.ACTIVE
+              && !state.wasInitializing
+
+              && !state.creditsGameplay
+              && state.handlerLinkCollisionEnabled) {
+            int slot = state.entity.slot();
+            if (RoomEntityCombatRules.overlapsLink(
+                state.entity, state.linkEntityX, state.linkEntityY)) {
+              // Zora writes ENTITY_PHYSICS_HARMLESS immediately before
+              // this collision check, then copies hLinkFinalPosition
+              // and calls ResetPegasusBoots. It does not use the common
+              // hookshot-chain reset helper.
+              state.runtime.backgroundMechanics.requestLinkPush(
+                  state.entity, EntityLinkCollisionRules.ZORA);
+            }
+            ZoraMotion.Update zoraUpdate =
+                state.runtime.zoraMotion.advance(
+                    state.updated,
+                    state.runtime.enemyTransitionCountdown[slot],
+                    state.runtime.enemyPhysicsFlags[slot],
+                    state.linkEntityX,
+                    state.linkEntityY,
+                    state.randomByteSupplier,
+                    state.runtime.objectQuery);
+            state.updated = zoraUpdate.entity();
+            state.runtime.enemyTransitionCountdown[slot] = zoraUpdate.transitionCountdown();
+            state.runtime.enemyPhysicsFlags[slot] = zoraUpdate.physicsFlags();
+            if (zoraUpdate.projectileSpawn() != null) {
+              state.runtime.entityEnemySpawns.spawnZoraProjectile(zoraUpdate.projectileSpawn());
+            }
+            if (zoraUpdate.splash()) {
+              state.runtime.transientVfxRequests.add(
+                  new TransientVfxRequest(
+                      TransientVfxType.WATER_SPLASH,
+                      state.updated.x(),
+                      (state.updated.y() - state.updated.z()) & 0xFF));
+              state.runtime.pendingEntityEvents.add(
+                  new EntityCombatEvent(
+                      slot,
+                      state.entity.type(),
+                      0,
+                      false,
+                      EntityCombatEvent.SoundChannel.JINGLE,
+                      0x0E));
+            }
+            state.preserveZoraPresentation = true;
+          }
+          return true;
+        });
+  }
+}
