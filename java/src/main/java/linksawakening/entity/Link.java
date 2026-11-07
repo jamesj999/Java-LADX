@@ -1211,6 +1211,10 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     /** Advance the walking-cycle timer without processing input or collision. */
+    public void apply(LinkCommand command) {
+        Objects.requireNonNull(command, "command").applyTo(this);
+    }
+
     public void update() {
         linkStateMachine.update();
     }

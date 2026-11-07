@@ -26,7 +26,8 @@ final class CompiledCode {
     }
 
     static String implementation(Class<?> owner, Class<?> contract) throws Exception {
-        var directory = Path.of(owner.getResource("").toURI());
+        var directory = Path.of(owner.getProtectionDomain().getCodeSource().getLocation().toURI())
+            .resolve(owner.getPackageName().replace('.', '/'));
         try (var files = java.nio.file.Files.list(directory)) {
             for (var file : files.filter(f -> f.getFileName().toString()
                     .startsWith(owner.getSimpleName() + "$")).toList()) {

@@ -157,8 +157,7 @@ final class EntityPhase {
                     if (nextStream == 0) {
                         var request = platformRequests.get(platformRequestIndex++);
                         if (link != null && request.standing()) {
-                            link.applySideViewPlatformContact(request.horizontalDelta(),
-                                request.positionY(), request.speedY(), request.standing());
+                            link.apply(LinkCommandAdapter.from(request));
                             roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
                             roomTransitionCoordinator.handleOverworldBoundary(link);
                             if (scrollController.isActive()
@@ -169,54 +168,26 @@ final class EntityPhase {
                     } else if (nextStream == 1) {
                         var request = finalPositionRequests.get(finalPositionRequestIndex++);
                         if (link != null) {
-                            link.restoreRomFinalPosition();
-                            if (request.clearLinkPositionIncrement()) {
-                                link.clearRomPositionIncrement();
-                            }
-                            if (request.markLinkPushing()) {
-                                link.markRomLinkPushing(0x03);
-                            }
+                            link.apply(LinkCommandAdapter.from(request));
                         }
-                        if (request.resetPegasusBoots()) {
-                            if (link != null) {
-                                link.resetPegasusBoots();
-                            } else if (playerState != null) {
-                                playerState.setRunningWithPegasusBoots(false);
-                            }
+                        if (request.resetPegasusBoots() && link == null && playerState != null) {
+                            playerState.setRunningWithPegasusBoots(false);
                         }
                     } else {
                         var request = potContactRequests.get(potContactRequestIndex++);
                         if (link != null) {
-                            if (request.restoreFinalPositionX()) {
-                                link.restoreRomFinalPositionX();
-                            }
-                            if (request.resetPegasusBoots()) {
-                                link.resetPegasusBoots();
-                            }
-                            if (request.speedX() != 0) {
-                                link.applyRomSpeedX(request.speedX());
-                            }
-                            if (request.ignoreCollisionCountdown() != 0) {
-                                link.setCollisionIgnoreFrames(
-                                    request.ignoreCollisionCountdown());
-                            }
-                            if (request.snapTop()) {
-                                link.applySideViewPotContact(request.positionY(), request.speedY());
-                            }
+                            link.apply(LinkCommandAdapter.from(request));
                         }
                     }
                 }
                 for (var request : roomSession.consumeLinkMotionBlockRequests()) {
                     if (link != null) {
-                        link.applyRomFinalPosition((request.positionDeltaX() * 16) & 0xFF,
-                            (request.positionDeltaY() * 16) & 0xFF);
-                        link.blockNextRomMotionFrame();
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                 }
                 for (var request : roomSession.consumeWarpLinkStateRequests()) {
                     if (link != null) {
-                        link.applyWarpState3(request.positionX(), request.visualPositionY(),
-                            request.immunityCountdown());
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                     Sword warpSword = equipmentController.activeSword();
                     if (warpSword != null) {
@@ -224,20 +195,16 @@ final class EntityPhase {
                     }
                 }
                 if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {
-                    link.blockNextRomMotionFrame();
+                    link.apply(linksawakening.entity.LinkCommand.Action.BLOCK_MOTION);
                 }
                 for (var request : roomSession.consumeLinkFallenPoseRequests()) {
                     if (link != null) {
-                        link.showRomFallenPose();
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                 }
                 for (var request : roomSession.consumeLinkFacingRequests()) {
                     if (link != null) {
-                        if (request.preserveWalkingPhase()) {
-                            link.faceRomDirectionPreservingWalkPhase(request.romDirection());
-                        } else {
-                            link.setRomDirection(request.romDirection());
-                        }
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                 }
                 var linkAttackClearRequests = roomSession.consumeLinkAttackClearRequests();
@@ -253,21 +220,20 @@ final class EntityPhase {
                             && linkAttackClearRequests.get(linkAttackClearIndex).sourceSlot()
                                 > linkAttackStepRequests.get(linkAttackStepIndex).sourceSlot());
                     if (applyClear) {
-                        linkAttackClearIndex++;
+                        var request = linkAttackClearRequests.get(linkAttackClearIndex++);
                         if (link != null) {
-                            link.clearRomAttackStepAnimationCountdown();
+                            link.apply(LinkCommandAdapter.from(request));
                         }
                     } else {
-                        linkAttackStepIndex++;
+                        var request = linkAttackStepRequests.get(linkAttackStepIndex++);
                         if (link != null) {
-                            link.startRomItemAttackStep();
+                            link.apply(LinkCommandAdapter.from(request));
                         }
                     }
                 }
                 for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {
                     if (link != null) {
-                        if (request.powerUp()) link.showPowerUpPickupPose();
-                        else link.showHeldItemPose();
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                     Sword heldPoseSword = equipmentController.activeSword();
                     if (heldPoseSword != null) {
@@ -278,7 +244,7 @@ final class EntityPhase {
                     int acquisitionBaseDirection = link == null ? Link.DIRECTION_DOWN
                         : link.direction();
                     if (link != null) {
-                        link.showSwordAcquisitionSpinPose(request.countdown());
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                     Sword acquisitionSword = itemRegistry == null ? null
                         : itemRegistry.lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword
@@ -293,7 +259,7 @@ final class EntityPhase {
                 }
                 for (var request : roomSession.consumeLinkSwordFinalPoseRequests()) {
                     if (link != null) {
-                        link.showSwordAcquisitionFinalPose();
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                     if (itemRegistry != null
                         && itemRegistry.lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword) {
@@ -386,11 +352,10 @@ final class EntityPhase {
                             playerState.setItemA(PlayerState.INVENTORY_EMPTY);
                         }
                         if (link != null) {
-                            link.applyLikeLikeCapture(event.entityX(), event.entityY(),
-                                event.pinLinkPosition());
+                            link.apply(LinkCommandAdapter.from(event));
                         }
                     } else if (link != null) {
-                        link.releaseLikeLikeCapture();
+                        link.apply(LinkCommandAdapter.from(event));
                     }
                 }
                 dialogInteractions.openEntityDialogRequests();
@@ -422,11 +387,10 @@ final class EntityPhase {
                         continue;
                     }
                     if (hookshotPull) {
-                        link.applyRomFinalPosition(event.linkSpeedX(), event.linkSpeedY());
+                        link.apply(LinkCommandAdapter.from(event));
                         continue;
                     }
-                    link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
-                    link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
+                    link.apply(LinkCommandAdapter.from(event));
                     Sword reflectedSword = equipmentController.activeSword();
                     if (reflectedSword != null) {
                         reflectedSword.resetSpinAttack();
@@ -434,16 +398,12 @@ final class EntityPhase {
                 }
                 for (var request : roomSession.consumeRoosterLinkStateRequests()) {
                     if (link != null) {
-                        link.applyRoosterFlightState(request.positionZ(), request.velocityZ(),
-                            request.speedX(), request.speedY(), request.romDirection());
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                 }
                 for (var request : roomSession.consumeHinoxLinkEffectRequests()) {
                     if (link != null) {
-                        link.applyHinoxGrabState(request.heldX(), request.heldY(), request.heldZ(),
-                            request.speedX(), request.speedY(), request.velocityZ(),
-                            request.airborneState(), request.motionBlocked(),
-                            request.applyHeldLinkPose());
+                        link.apply(LinkCommandAdapter.from(request));
                     }
                     if (request.damage() != 0 && playerState != null) {
                         playerState.applyRomEnemyDamage(request.damage());
