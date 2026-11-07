@@ -1,5 +1,7 @@
 package linksawakening.gpu;
 
+import linksawakening.rom.RomSymbols;
+
 /** Named ROM tile uploads used by the compatibility GPU facade. */
 class RomTileLoader extends Vram {
     private final AnimatedTiles animatedTiles = new AnimatedTiles(this);
@@ -10,20 +12,20 @@ class RomTileLoader extends Vram {
 
     private static final int BANK_SIZE = 0x4000;
 
-    private static final int INTRO_3_TILES_BANK = 0x30;
-    private static final int INTRO_3_TILES_ADDR = 0x5400;
+    private static final int INTRO_3_TILES_BANK = (RomSymbols.Intro3Tiles.bank() | 0x20);
+    private static final int INTRO_3_TILES_ADDR = RomSymbols.Intro3Tiles.address();
     private static final int INTRO_3_TILES_COUNT = 0x60;
 
-    private static final int INTRO_1_TILES_BANK = 0x30;
-    private static final int INTRO_1_TILES_ADDR = 0x4000;
+    private static final int INTRO_1_TILES_BANK = (RomSymbols.Intro1Tiles.bank() | 0x20);
+    private static final int INTRO_1_TILES_ADDR = RomSymbols.Intro1Tiles.address();
     private static final int INTRO_1_TILES_COUNT = 0x100;
 
-    private static final int INTRO_RAIN_TILES_BANK = 0x01;
-    private static final int INTRO_RAIN_TILES_ADDR = 0x6D4A;
+    private static final int INTRO_RAIN_TILES_BANK = RomSymbols.IntroRainTiles.bank();
+    private static final int INTRO_RAIN_TILES_ADDR = RomSymbols.IntroRainTiles.address();
     private static final int INTRO_RAIN_TILES_COUNT = 0x08;
 
-    private static final int TITLE_LOGO_TILES_BANK = 0x2F;
-    private static final int TITLE_LOGO_TILES_ADDR = 0x4900;
+    private static final int TITLE_LOGO_TILES_BANK = (RomSymbols.TitleLogoTiles.bank() | 0x20);
+    private static final int TITLE_LOGO_TILES_ADDR = RomSymbols.TitleLogoTiles.address();
     private static final int TITLE_LOGO_TILES_COUNT = 0x70;
 
     private static final int TITLE_DX_TILES_BANK = 0x38;
@@ -47,8 +49,8 @@ class RomTileLoader extends Vram {
     // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
     // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
     // time to vTilesSwitchBlockA/B ($9040/$9080).
-    private static final int SWITCH_BLOCK_TILES_BANK = 0x2C;
-    private static final int SWITCH_BLOCK_TILES_ADDR = 0x6800;
+    private static final int SWITCH_BLOCK_TILES_BANK = (RomSymbols.SwitchBlockTiles.bank() | 0x20);
+    private static final int SWITCH_BLOCK_TILES_ADDR = RomSymbols.SwitchBlockTiles.address();
     private static final int SWITCH_BLOCK_TILE_COUNT = 0x04;
     private static final int PRESSED_FLOOR_SWITCH_TILES_BANK = 0x32;
     private static final int PRESSED_FLOOR_SWITCH_TILES_ADDR = 0x7F00;
@@ -68,31 +70,31 @@ class RomTileLoader extends Vram {
     private static final int OVERWORLD2_TILES_ADDR = 0x4000;
     private static final int OVERWORLD2_TILES_COUNT = 0x100;
 
-    private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = 0x0C;
-    private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = 0x4C00;
+    private static final int INVENTORY_OVERWORLD_ITEMS_TILES_BANK = RomSymbols.InventoryOverworldItemsTiles.bank();
+    private static final int INVENTORY_OVERWORLD_ITEMS_TILES_ADDR = RomSymbols.InventoryOverworldItemsTiles.address();
     private static final int INVENTORY_OVERWORLD_ITEMS_TILES_COUNT = 0x40;
-    private static final int INVENTORY_INDOOR_ITEMS_TILES_BANK = 0x12;
-    private static final int INVENTORY_INDOOR_ITEMS_TILES_ADDR = 0x7D00;
+    private static final int INVENTORY_INDOOR_ITEMS_TILES_BANK = RomSymbols.InventoryIndoorItemsTiles.bank();
+    private static final int INVENTORY_INDOOR_ITEMS_TILES_ADDR = RomSymbols.InventoryIndoorItemsTiles.address();
 
-    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_BANK = 0x0C;
-    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = 0x4800;
+    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_BANK = RomSymbols.InventoryEquipmentItemsTiles.bank();
+    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = RomSymbols.InventoryEquipmentItemsTiles.address();
     private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_COUNT = 0x80;
 
     // TilesGfxSource._08.._0A in home/interrupts.asm. The source label is
     // OcarinaSymbolsTiles in bank $0C at $6960; the GBC loader selects $2C.
-    private static final int OCARINA_SYMBOLS_TILES_BANK = 0x2C;
-    private static final int OCARINA_SYMBOLS_TILES_ADDR = 0x6960;
+    private static final int OCARINA_SYMBOLS_TILES_BANK = (RomSymbols.OcarinaSymbolsTiles.bank() | 0x20);
+    private static final int OCARINA_SYMBOLS_TILES_ADDR = RomSymbols.OcarinaSymbolsTiles.address();
     private static final int SHARED_VFX_TILES_BANK = 0x2C;
     private static final int SHARED_VFX_TILES_ADDR = 0x4200;
 
     // SaveMenuTiles in bank0.asm:2E5E. Unlike the GBC-adjusted menu sheet,
     // this source is copied from bank $0F by LoadSaveMenuTiles.
-    private static final int SAVE_MENU_TILES_BANK = 0x0F;
-    private static final int SAVE_MENU_TILES_ADDR = 0x4400;
+    private static final int SAVE_MENU_TILES_BANK = RomSymbols.SaveMenuTiles.bank();
+    private static final int SAVE_MENU_TILES_ADDR = RomSymbols.SaveMenuTiles.address();
     private static final int SAVE_MENU_TILES_COUNT = 0x50;
 
-    private static final int LINK_CHARACTER_TILES_BANK = 0x0C;
-    private static final int LINK_CHARACTER_TILES_ADDR = 0x4000;
+    private static final int LINK_CHARACTER_TILES_BANK = RomSymbols.LinkCharacterTiles.bank();
+    private static final int LINK_CHARACTER_TILES_ADDR = RomSymbols.LinkCharacterTiles.address();
     private static final int LINK_CHARACTER_TILES_COUNT = 0x40;
 
     // NpcTilesBankTable in bank0.asm:$2E6F, adjusted for the GBC banks used
@@ -256,8 +258,8 @@ class RomTileLoader extends Vram {
 
     // --- Indoor BG tile loading, mirroring LoadIndoorTiles (bank0.asm:4831) ---
 
-    private static final int DUNGEONS_TILES_BANK = 0x0D;
-    private static final int DUNGEONS_TILES_ADDR = 0x4000;
+    private static final int DUNGEONS_TILES_BANK = RomSymbols.DungeonsTiles.bank();
+    private static final int DUNGEONS_TILES_ADDR = RomSymbols.DungeonsTiles.address();
     private static final int DUNGEONS_TILES_COUNT = 0x60;
     private static final int DUNGEONS_TILES_VRAM_INDEX = 0x120;
 
@@ -265,12 +267,12 @@ class RomTileLoader extends Vram {
     private static final int INDOOR_TILES_COUNT_PER_SET = 0x10;
     private static final int INDOOR_TILES_VRAM_INDEX = 0x100;
 
-    private static final int DUNGEON_FLOOR_PTRS_BANK = 0x20;
-    private static final int DUNGEON_FLOOR_PTRS_ADDR = 0x4589;
-    private static final int DUNGEON_WALLS_PTRS_BANK = 0x20;
-    private static final int DUNGEON_WALLS_PTRS_ADDR = 0x45A9;
-    private static final int DUNGEON_ITEMS_PTRS_BANK = 0x20;
-    private static final int DUNGEON_ITEMS_PTRS_ADDR = 0x45CA;
+    private static final int DUNGEON_FLOOR_PTRS_BANK = RomSymbols.DungeonFloorTilesPointers.bank();
+    private static final int DUNGEON_FLOOR_PTRS_ADDR = RomSymbols.DungeonFloorTilesPointers.address();
+    private static final int DUNGEON_WALLS_PTRS_BANK = RomSymbols.DungeonWallsTilesPointers.bank();
+    private static final int DUNGEON_WALLS_PTRS_ADDR = RomSymbols.DungeonWallsTilesPointers.address();
+    private static final int DUNGEON_ITEMS_PTRS_BANK = RomSymbols.DungeonItemsTilesPointers.bank();
+    private static final int DUNGEON_ITEMS_PTRS_ADDR = RomSymbols.DungeonItemsTilesPointers.address();
     private static final int DUNGEON_WALLS_TILES_COUNT = 0x20;
     private static final int DUNGEON_FLOOR_TILES_COUNT = 0x10;
     private static final int DUNGEON_ITEMS_TILES_COUNT = 0x10;
@@ -287,8 +289,8 @@ class RomTileLoader extends Vram {
     private static final int COLOR_DUNGEON_ROOM_TILES_TABLE_ADDR = 0x45EA;
     private static final int COLOR_DUNGEON_WALLS_POINTER_ADDR = 0x45C9;
 
-    private static final int INDOORS_TILESETS_TABLE_BANK = 0x20;
-    private static final int INDOORS_TILESETS_TABLE_ADDR = 0x6EB3;
+    private static final int INDOORS_TILESETS_TABLE_BANK = RomSymbols.IndoorsTilesetsTable.bank();
+    private static final int INDOORS_TILESETS_TABLE_ADDR = RomSymbols.IndoorsTilesetsTable.address();
 
     private static final int W_TILESET_NO_UPDATE = 0xFF;
 

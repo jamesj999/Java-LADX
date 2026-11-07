@@ -74,3 +74,21 @@ FontTiles
 PlayActiveJingle
 PlayActiveWaveSfx
 PlayActiveNoiseSfx
+
+# GPU ROM upload sources (GBC bank adjustment remains explicit).
+Intro3Tiles
+Intro1Tiles
+IntroRainTiles
+TitleLogoTiles
+SwitchBlockTiles
+InventoryOverworldItemsTiles
+InventoryIndoorItemsTiles
+InventoryEquipmentItemsTiles
+OcarinaSymbolsTiles
+SaveMenuTiles
+LinkCharacterTiles
+DungeonsTiles
+DungeonFloorTilesPointers
+DungeonWallsTilesPointers
+DungeonItemsTilesPointers
+IndoorsTilesetsTable
