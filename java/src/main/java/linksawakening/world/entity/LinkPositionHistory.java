@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.Arrays;
 
 /**

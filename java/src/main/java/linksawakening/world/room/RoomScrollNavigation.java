@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.transition.ScrollController;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;

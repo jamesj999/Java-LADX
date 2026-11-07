@@ -1,13 +1,6 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.EntityRomConstants;
-
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;

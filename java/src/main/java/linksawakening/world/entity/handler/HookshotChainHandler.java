@@ -10,12 +10,6 @@ import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.HookshotChainMotion;
 
 import linksawakening.vfx.TransientVfxType;

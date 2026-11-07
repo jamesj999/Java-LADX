@@ -8,12 +8,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.FollowingNpcState;
 
-
-
-
-
-
-
 import linksawakening.world.entity.event.DialogRequest;
 import static linksawakening.world.entity.EntityMotionMath.withinUnsignedWindow;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;

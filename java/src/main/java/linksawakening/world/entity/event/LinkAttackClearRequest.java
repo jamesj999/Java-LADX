@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** A source handler's direct write clearing Link's attack animation countdown. */
 public record LinkAttackClearRequest(int sourceSlot) implements EntityRequest {

@@ -5,15 +5,7 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.ThreeOfAKindMotion;
-
-
 
 /** ROM handler stages for ThreeOfAKind. */
 final class ThreeOfAKindHandler {

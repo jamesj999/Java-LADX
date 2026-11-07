@@ -1,4 +1,9 @@
-package linksawakening.world;
+package linksawakening.world.object;
+
+import linksawakening.world.room.*;
+import linksawakening.world.entity.*;
+
+import linksawakening.world.object.SwitchBlockLinkInteraction;
 
 import org.junit.jupiter.api.Test;
 

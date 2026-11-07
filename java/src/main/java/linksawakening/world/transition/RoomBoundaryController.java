@@ -1,7 +1,5 @@
 package linksawakening.world.transition;
 
-
-
 import linksawakening.entity.Link;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;

@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.transition.RoomBoundaryDecision;

@@ -6,15 +6,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.GiantGopongaMotion;
-
-
 
 /** ROM handler stages for GiantGopongaFlower. */
 final class GiantGopongaFlowerHandler {

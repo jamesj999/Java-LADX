@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /** Bank-$06 SparkClockwise/CounterClockwiseEntityHandler's orbit loop. */
 public final class SparkMotion {
     // Data_006_661D and Data_006_6625. The tables are indexed by

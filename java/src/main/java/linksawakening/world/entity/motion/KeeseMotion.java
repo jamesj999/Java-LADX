@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$06 KeeseEntityHandler state and movement. */

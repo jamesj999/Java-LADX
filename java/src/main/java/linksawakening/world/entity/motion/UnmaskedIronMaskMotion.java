@@ -5,7 +5,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$03 movement used after an Iron Mask's mask has been removed. */

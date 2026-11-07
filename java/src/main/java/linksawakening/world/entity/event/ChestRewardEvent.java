@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Reward application requested by EntityInitChestWithItem. */
 public record ChestRewardEvent(int slot, int itemType) implements EntityRequest {

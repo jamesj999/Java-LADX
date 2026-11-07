@@ -3,12 +3,6 @@ package linksawakening.world.entity.handler;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import static linksawakening.world.entity.EntityTypeRules.isFollowingNpcType;
 
 /** ROM handler stages for FollowingNpcType. */

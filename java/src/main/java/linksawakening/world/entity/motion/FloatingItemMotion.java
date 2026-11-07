@@ -2,9 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.event.FloatingItemPickupEffect;
 
-
-
-
 /** Pure ROM rules shared by the two bank-$06 floating-item handlers. */
 public final class FloatingItemMotion {
     public static final int ENTITY_FLOATING_ITEM = 0x86;
@@ -19,8 +16,6 @@ public final class FloatingItemMotion {
     private static final int[] SIDE_SCROLLING_Z = {
         0x00, 0x00, 0x01, 0x02, 0x02, 0x02, 0x01, 0x00
     };
-
-
 
     private FloatingItemMotion() {
     }

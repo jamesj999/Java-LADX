@@ -6,7 +6,6 @@ import linksawakening.world.entity.PlayerProjectileLaunchSpeed;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /**
  * Handler-owned movement state for the ordinary player arrow (entity $00).
  * The tables and transition constants are the shared bank-$03 arrow path;

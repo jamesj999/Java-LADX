@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.PincerBodyOam;
 
-
-
-
-
-
-
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
@@ -16,18 +10,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import static linksawakening.world.entity.EntityMotionMath.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import linksawakening.entity.EntitySpriteSelection;
-import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.gpu.EntitySpriteTileSnapshot;
-import linksawakening.rom.RomTables;
-import linksawakening.vfx.TransientVfxType;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.IntSupplier;
-import java.util.function.IntUnaryOperator;
 import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 /** Read-only views over ROM slot state for gameplay and diagnostics. */

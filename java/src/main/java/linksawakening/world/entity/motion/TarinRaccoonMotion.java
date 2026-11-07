@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 /** Bank-$05 outdoor {@code TarinEntityHandler}, including the raccoon transformation. */
 public final class TarinRaccoonMotion {
     public static final int ENTITY_TYPE = 0x3F;

@@ -1,9 +1,6 @@
 package linksawakening.world.transition;
 
-
-
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 /** Decodes the bank-$14 scanline wave table used by RenderTransitionEffect. */

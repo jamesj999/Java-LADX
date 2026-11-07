@@ -5,7 +5,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$06 Zol/Gel inching, leaping, and split state machine. */

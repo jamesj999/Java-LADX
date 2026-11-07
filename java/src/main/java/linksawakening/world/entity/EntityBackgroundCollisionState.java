@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** ROM state read by ApplyEntityCollisionWithObject's ledge branch. */
 public record EntityBackgroundCollisionState(int frameCounter, boolean indoorRoom,
                                       int thrownDirection, int ledgeTimer,

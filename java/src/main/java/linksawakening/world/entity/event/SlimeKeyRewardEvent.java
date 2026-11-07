@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */
 public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) implements EntityRequest {

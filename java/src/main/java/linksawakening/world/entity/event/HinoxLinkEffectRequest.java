@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Link-side HRAM effects emitted by Hinox's grab/throw handler. */
 public record HinoxLinkEffectRequest(int sourceSlot, int heldX, int heldY, int heldZ,

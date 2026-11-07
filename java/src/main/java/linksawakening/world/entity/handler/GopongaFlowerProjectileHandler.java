@@ -5,15 +5,7 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.GopongaProjectileMotion;
-
-
 
 /** ROM handler stages for GopongaFlowerProjectile. */
 final class GopongaFlowerProjectileHandler {

@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.transition.Warp;
 
 import linksawakening.world.entity.event.HeartContainerRewardEvent;

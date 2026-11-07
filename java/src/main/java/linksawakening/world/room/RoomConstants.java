@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 public final class RoomConstants {
     public static final int OBJECTS_PER_ROW = 10;
     public static final int OBJECTS_PER_COLUMN = 8;

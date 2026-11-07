@@ -4,14 +4,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
-
-
 /** ROM handler stages for Type0X42. */
 final class Type0X42Handler {
   static void install(EntityHandlerRegistration registry) {

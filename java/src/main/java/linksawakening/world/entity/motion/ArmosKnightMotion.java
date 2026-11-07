@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 import linksawakening.world.entity.event.ScreenShakeRequest;
 
 /** Bank-$06 ArmosKnightEntityHandler's active state machine. */

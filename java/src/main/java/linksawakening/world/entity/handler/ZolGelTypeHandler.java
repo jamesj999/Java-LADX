@@ -5,12 +5,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.ZolGelMotion;
 
 import static linksawakening.world.entity.EntityTypeRules.isZolGelType;

@@ -1,4 +1,4 @@
-package linksawakening.world;
+package linksawakening.world.object;
 
 import java.util.List;
 

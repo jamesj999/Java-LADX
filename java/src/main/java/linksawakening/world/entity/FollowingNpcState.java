@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * The persistent follower flags consumed by CreateFollowingNpcEntity in
  * bank $01. Values are kept in the same byte-shaped form as the WRAM flags so

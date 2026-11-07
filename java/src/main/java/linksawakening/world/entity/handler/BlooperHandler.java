@@ -7,12 +7,6 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BlooperMotion;
 
 import java.util.Objects;

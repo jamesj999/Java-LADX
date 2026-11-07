@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Status propagation requested by CheckForEntityFallingDownQuicksandHole. */
 public record KeyQuicksandEvent(int slot) implements EntityRequest {

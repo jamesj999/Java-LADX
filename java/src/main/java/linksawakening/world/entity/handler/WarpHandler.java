@@ -5,15 +5,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.WarpMotion;
-
-import linksawakening.world.transition.Warp;
 
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;

@@ -2,12 +2,6 @@ package linksawakening.world.entity.handler;
 
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 /** Family registration only; EntityTickStage defines the execution order. */
 public final class EntityHandlerFamilies {
   public static void install(EntityHandlerRegistration registry) {

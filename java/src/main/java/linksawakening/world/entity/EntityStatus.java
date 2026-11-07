@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Runtime status values used by the disassembly's entity status table. */
 public enum EntityStatus {
     DISABLED(0),

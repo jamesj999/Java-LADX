@@ -7,12 +7,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.RoosterMotion;
 
 import linksawakening.world.entity.event.RoosterLinkStateRequest;

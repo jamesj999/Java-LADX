@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Resolves the ROM {@code GetObjectUnderEntity} sample for a host entity. */
 @FunctionalInterface
 public interface RoomEntityObjectQuery {

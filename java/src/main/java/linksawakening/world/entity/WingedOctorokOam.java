@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.List;
 
 /** The handler-generated two-entry GPU-tile rectangle for a Winged Octorok. */

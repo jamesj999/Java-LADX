@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.PlayerProjectileLaunchSpeed;
 import linksawakening.world.entity.RoomEntity;
 
-
 /**
  * Handler-owned state for the ROM's Magic Rod fireball entity ({@code $04}).
  *

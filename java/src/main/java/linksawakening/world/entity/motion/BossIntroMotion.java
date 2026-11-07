@@ -1,8 +1,5 @@
 package linksawakening.world.entity.motion;
 
-
-
-
 /** Bank-$00 BossIntro's delayed one-shot music and dialog request. */
 public final class BossIntroMotion {
     private static final int MUSIC_BOSS = 0x19;

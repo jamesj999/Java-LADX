@@ -6,7 +6,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$07 Hiding Zol reveal, bounce, and hide state machine. */

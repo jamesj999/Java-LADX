@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 /** Bank-$06 GopongaProjectileEntityHandler movement, timers, and animation. */
 public final class GopongaProjectileMotion {
     public static final int ENTITY_TYPE = 0x7D;

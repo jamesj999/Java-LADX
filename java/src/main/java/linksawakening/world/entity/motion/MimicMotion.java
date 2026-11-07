@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 /** Bank-$19 movement and input state for entity $28 (Mimic). */
 public final class MimicMotion {
     // Data_019_6AAC. Index $00 is the first opcode of the handler, but the

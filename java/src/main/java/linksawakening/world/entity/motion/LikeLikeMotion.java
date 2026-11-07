@@ -5,7 +5,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
 import linksawakening.world.entity.event.LikeLikeEvent;
 
 import java.util.function.IntSupplier;

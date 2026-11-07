@@ -2,7 +2,6 @@ package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.MagicPowderObjectAction;
-import linksawakening.vfx.TransientVfxType;
 
 /** A ROM powder-sprinkle object mutation applied by RoomSession. */
 public record MagicPowderObjectRequest(int sourceSlot, int location,

@@ -5,12 +5,6 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 /** ROM handler stages for SwordShieldPickup. */

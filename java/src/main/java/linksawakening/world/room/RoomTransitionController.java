@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.event.EntityCombatEvent;
 
 import linksawakening.world.transition.ScrollController;

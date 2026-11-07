@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 public record LinkHeldItemPoseRequest(int sourceSlot, boolean powerUp) implements EntityRequest {
     public LinkHeldItemPoseRequest(int sourceSlot) { this(sourceSlot, false); }

@@ -6,15 +6,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.PairoddMotion;
-
-
 
 /** ROM handler stages for Pairodd. */
 final class PairoddHandler {

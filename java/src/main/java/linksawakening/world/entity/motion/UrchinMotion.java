@@ -6,7 +6,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
 /** Bank-$15 UrchinEntityHandler direction, shield push, and fixed-point movement. */
 public final class UrchinMotion {
     public static final int ENTITY_TYPE = 0xC5;

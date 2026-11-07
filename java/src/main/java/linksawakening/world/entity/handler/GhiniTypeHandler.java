@@ -4,12 +4,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
 import static linksawakening.world.entity.EntityTypeRules.isHidingGhiniType;
 

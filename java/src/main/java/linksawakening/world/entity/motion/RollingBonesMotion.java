@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /** Active state machines from bank $06's Rolling Bones and rolling-bar handlers. */
 public final class RollingBonesMotion {
     static final int ENTITY_BOSS = 0x81;

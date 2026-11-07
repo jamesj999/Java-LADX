@@ -1,12 +1,6 @@
 package linksawakening.world.room;
 
-import linksawakening.world.SwitchBlockAnimation;
-
-
-
-
-
-
+import linksawakening.world.object.SwitchBlockAnimation;
 
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -15,7 +9,6 @@ import linksawakening.world.entity.RoomEntitySnapshot;
 
 import linksawakening.world.transition.Warp;
 
-import linksawakening.entity.Link;
 import linksawakening.rom.RomTables;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;

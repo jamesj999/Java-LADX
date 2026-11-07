@@ -7,12 +7,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.MoldormMotion;
 

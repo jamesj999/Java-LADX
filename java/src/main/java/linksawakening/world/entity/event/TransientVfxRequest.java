@@ -1,6 +1,5 @@
 package linksawakening.world.entity.event;
 
-
 import linksawakening.vfx.TransientVfxType;
 
 /** A ROM transient-VFX creation requested by an entity handler this frame. */

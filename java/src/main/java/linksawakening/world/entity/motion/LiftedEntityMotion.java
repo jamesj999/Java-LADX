@@ -1,8 +1,5 @@
 package linksawakening.world.entity.motion;
 
-
-
-
 /**
  * The position/carry presentation portion of bank-$03's EntityLiftedHandler.
  *

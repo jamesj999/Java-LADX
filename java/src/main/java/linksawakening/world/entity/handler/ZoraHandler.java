@@ -8,12 +8,6 @@ import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.ZoraMotion;
 
 import linksawakening.vfx.TransientVfxType;

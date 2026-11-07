@@ -1,7 +1,5 @@
 package linksawakening.world.transition;
 
-
-
 public record RoomBoundaryDecision(Type type,
                                    int direction,
                                    int linkTargetX,

@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 /** Bank-$07 PincerEntityHandler's hidden, lunge, and return state machine. */
 public final class PincerMotion {
     private static final int ENTITY_TYPE = 0xB0;

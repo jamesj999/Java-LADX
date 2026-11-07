@@ -6,15 +6,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.SecretSeashellMotion;
-
-
 
 /** ROM handler stages for DroppableSecretSeashell. */
 final class DroppableSecretSeashellHandler {

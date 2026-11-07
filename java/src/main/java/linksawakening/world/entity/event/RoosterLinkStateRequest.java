@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Link HRAM writes emitted by Rooster's active lifted handler. */
 public record RoosterLinkStateRequest(int sourceSlot, int positionZ, int velocityZ,

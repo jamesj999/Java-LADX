@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntityRuntime;
 
 import java.util.function.Supplier;

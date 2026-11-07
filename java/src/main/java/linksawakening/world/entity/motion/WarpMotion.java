@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.RoomEntity;
 
-
 import linksawakening.world.entity.event.WarpDestination;
 
 import linksawakening.rom.Rom;
@@ -101,8 +100,6 @@ public final class WarpMotion {
     private static boolean withinUnsignedWindow(int value, int center, int bias, int size) {
         return ((value - center + bias) & 0xFF) < size;
     }
-
-
 
     public record Update(RoomEntity entity, int state, int countdown, boolean motionBlocked,
                  int musicTrack, int jingleId, int immunityCountdown,

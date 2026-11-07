@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 public record RoomTilemap(int[] tileIds, int[] tileAttrs, int[] gbcOverlay, int[] renderValues) {
 
     public RoomTilemap {

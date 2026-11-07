@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Source-shaped state-0 Link contact for entity $D6. */
 public final class SideViewPotContact {
     private static final int COLLISION_X = 0x08;

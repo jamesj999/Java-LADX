@@ -1,15 +1,8 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.transition.Warp;
 
 import linksawakening.world.entity.event.DialogRequest;
-import linksawakening.entity.Link;
 import linksawakening.rom.RomTables;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;

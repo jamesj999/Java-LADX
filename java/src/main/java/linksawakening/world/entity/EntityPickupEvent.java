@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** The ROM entity slot and type that completed a Link pickup collision. */
 public record EntityPickupEvent(int slot, int type, int persistentClearMask,
                                 int sourceVariant) {

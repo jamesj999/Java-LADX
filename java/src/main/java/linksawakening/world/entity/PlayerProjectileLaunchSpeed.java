@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Final arrow/fireball speeds from {@code label_140F}, after generic spawning. */
 public final class PlayerProjectileLaunchSpeed {
     // ROM $13AD/$13B5: the branch at $1414 adds four ONLY with Piece of Power.

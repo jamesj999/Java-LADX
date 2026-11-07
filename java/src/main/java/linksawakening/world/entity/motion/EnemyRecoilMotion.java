@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /**
  * Shared sword-recoil state used by the bank-$03 roaming enemies and the
  * bank-$06 Hard Hat Beetle handler.

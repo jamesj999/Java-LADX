@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$04 motion and state machines shared by the two Bombite handlers. */

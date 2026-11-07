@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /**
  * Per-slot state for the bank-$04 Beamos parent, Link sensor, and bank-$15
  * laser beam handlers.

@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 import static linksawakening.world.entity.EntityMotionMath.*;

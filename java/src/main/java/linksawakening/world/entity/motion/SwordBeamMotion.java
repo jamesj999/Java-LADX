@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 /**
  * Handler-owned motion state for the ROM's sword-beam entity ({@code $DF}).
  *

@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * Room-side effects used by the bank-$36 Color Shell puzzle handler. The
  * relative object offset is measured from the object pointer computed by

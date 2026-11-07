@@ -4,14 +4,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
-
-
 /** ROM handler stages for KanaletBombableWall. */
 final class KanaletBombableWallHandler {
   static void install(EntityHandlerRegistration registry) {

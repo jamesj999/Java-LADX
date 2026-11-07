@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -14,7 +8,6 @@ import linksawakening.world.entity.event.LiftedEntityState;
 
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 
-import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.EntityTypeRules;
 
 import linksawakening.world.transition.Warp;

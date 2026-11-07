@@ -2,15 +2,10 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 
-
-
-
 /** HeartPieceState1..8Handler ($03:5A6D), including the locked meter animation. */
 public final class HeartPiecePickupMotion {
     private int state = 1;
     private int inertia;
-
-
 
     public HeartPiecePickupUpdate advance(int countdown, boolean dialogActive, int pieces) {
         boolean locked = state == 4 || state == 5;

@@ -1,11 +1,5 @@
 package linksawakening.world.entity.event;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntity;
 
 /**

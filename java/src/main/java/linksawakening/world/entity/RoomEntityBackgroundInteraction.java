@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.Objects;
 
 /** Rich entity/background probe corresponding to the ROM collision helper. */

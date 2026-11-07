@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) implements EntityRequest {
     public LinkSwordSpinPoseRequest {

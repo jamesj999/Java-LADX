@@ -56,7 +56,7 @@ import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.ActiveRoom;
-import linksawakening.world.OverworldBushInteraction;
+import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.room.RoomLoader;

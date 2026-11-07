@@ -4,14 +4,6 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
-
-
 /** ROM handler stages for Moblin. */
 final class MoblinHandler {
   static void install(EntityHandlerRegistration registry) {

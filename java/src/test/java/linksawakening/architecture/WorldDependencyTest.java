@@ -55,7 +55,7 @@ class WorldDependencyTest {
         for (var type : classes()) {
             if (!type.name().startsWith("linksawakening/world/")) continue;
             for (String reference : type.references()) {
-            assertTrue(!reference.startsWith("linksawakening/app/"), type.name() + " -> " + reference);
+                assertTrue(!reference.startsWith("linksawakening/app/"), type.name() + " -> " + reference);
             }
         }
     }
@@ -86,7 +86,7 @@ class WorldDependencyTest {
     private static final Set<String> APP_WORLD_API = Set.of(
         "room/ActiveRoom", "room/ChestContentsTable", "room/DroppableRupeeSystem", "entity/EnemyAttackContext",
         "entity/EntityPickupEvent", "entity/EntityStatus",
-        "OverworldBushInteraction", "room/OverworldTilesetTable", "entity/RomRandomByteSource",
+        "object/OverworldBushInteraction", "room/OverworldTilesetTable", "entity/RomRandomByteSource",
         "room/RoomConstants", "entity/RoomEntity", "entity/RoomEntitySnapshot", "room/RoomLoadListener", "room/RoomLoader",
         "room/RoomRenderSnapshot", "room/RoomSession", "room/RoomTransitionCoordinator",
         "transition/RoomBoundaryController", "transition/ScrollController",
@@ -111,7 +111,9 @@ class WorldDependencyTest {
             for (String reference : type.references()) {
                 if (!reference.startsWith("linksawakening/world/")
                     || reference.startsWith("linksawakening/world/entity/event/")) continue;
-                String facade = reference.substring("linksawakening/world/".length()).split("\\$")[0];
+                String facade = reference.substring("linksawakening/world/".length());
+                int nested = facade.indexOf('$');
+                if (nested >= 0) facade = facade.substring(0, nested);
                 assertTrue(APP_WORLD_API.contains(facade), type.name() + " -> " + reference);
             }
         }
@@ -127,5 +129,17 @@ class WorldDependencyTest {
                     type.name() + " -> " + reference);
             }
         }
+    }
+
+    @Test
+    void scanIncludesAppFacadesAndInternalImplementationClasses() throws Exception {
+        var compiled = classes();
+        Set<String> names = compiled.stream().map(CompiledType::name)
+            .collect(java.util.stream.Collectors.toSet());
+        assertTrue(names.contains("linksawakening/app/gameplay/EntityPhase"));
+        assertTrue(names.contains("linksawakening/world/room/RoomSession"));
+        assertTrue(names.contains("linksawakening/world/entity/handler/HinoxHandler"));
+        assertTrue(compiled.stream().filter(t -> t.name().startsWith("linksawakening/app/"))
+            .flatMap(t -> t.references().stream()).anyMatch(r -> r.startsWith("linksawakening/world/")));
     }
 }

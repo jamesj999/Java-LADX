@@ -1,6 +1,8 @@
 package linksawakening.world.room;
 
-import linksawakening.world.*;
+import linksawakening.world.object.SwitchBlockAnimation;
+
+
 
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomSession;

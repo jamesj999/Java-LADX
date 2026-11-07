@@ -7,12 +7,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 
 import static linksawakening.world.entity.EntityTypeRules.isEnemyProjectileType;

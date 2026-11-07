@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 
-
 /** Source-shaped initial jar state for bank-$04's Genie handler. */
 public final class GenieMotion {
     public static final int JAR_HEALTH_THRESHOLD = 0x03;

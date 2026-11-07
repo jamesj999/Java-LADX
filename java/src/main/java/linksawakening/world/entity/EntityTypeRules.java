@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 import linksawakening.world.entity.motion.CrowMotion;

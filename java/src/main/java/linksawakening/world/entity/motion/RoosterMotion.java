@@ -1,8 +1,5 @@
 package linksawakening.world.entity.motion;
 
-
-
-
 /** Bank-$19 RoosterEntityHandler's active lifted/carry state. */
 public final class RoosterMotion {
     static final int ENTITY_TYPE = 0xD5;

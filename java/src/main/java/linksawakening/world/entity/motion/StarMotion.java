@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$07 StarEntityHandler's random diagonal movement and bounce loop. */

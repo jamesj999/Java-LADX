@@ -9,12 +9,6 @@ import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.TarinRaccoonMotion;
 
 import linksawakening.world.entity.event.DialogRequest;

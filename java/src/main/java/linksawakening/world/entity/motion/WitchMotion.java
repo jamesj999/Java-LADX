@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 /** State and timing port of bank-$05 {@code WitchEntityHandler}. */
 public final class WitchMotion {
     public static final int ENTITY_TYPE = 0x40;

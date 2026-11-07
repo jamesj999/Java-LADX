@@ -6,7 +6,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 import java.util.List;
 import java.util.function.IntSupplier;
 

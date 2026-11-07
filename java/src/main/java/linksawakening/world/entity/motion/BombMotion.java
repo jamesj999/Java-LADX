@@ -1,8 +1,5 @@
 package linksawakening.world.entity.motion;
 
-
-
-
 import java.util.OptionalInt;
 
 /**

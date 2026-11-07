@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.entity.EntitySpriteDefinition;
 import static linksawakening.world.entity.EntityMotionMath.*;
 

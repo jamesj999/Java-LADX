@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 import java.util.Optional;

@@ -6,14 +6,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
-
-
 /** ROM handler stages for CrystalSwitch. */
 final class CrystalSwitchHandler {
   static void install(EntityHandlerRegistration registry) {

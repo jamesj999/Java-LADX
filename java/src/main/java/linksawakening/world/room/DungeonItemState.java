@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import java.util.Arrays;
 import java.util.Objects;
 

@@ -8,12 +8,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.UrchinMotion;
 
 import linksawakening.entity.EntitySpriteDefinition;

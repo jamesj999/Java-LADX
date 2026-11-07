@@ -5,14 +5,6 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
-
-
 /** ROM handler stages for WaterTektite. */
 final class WaterTektiteHandler {
   static void install(EntityHandlerRegistration registry) {

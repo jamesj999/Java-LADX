@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * Link-side effects emitted by entity handlers after a ROM hitbox collision.
  *

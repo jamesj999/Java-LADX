@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Source-ordered dispatch sites; these are engine phases, not ROM entity IDs. */
 public enum EntityTickStage {
   PHASE_1_KANALET_BOMBABLE_WALL,

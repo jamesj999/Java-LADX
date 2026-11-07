@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** The padded-room object cell sampled by an entity handler. */
 public record RoomEntityObjectSample(int objectId, int physicsFlag,
                                      int objectLeft, int objectTop) {

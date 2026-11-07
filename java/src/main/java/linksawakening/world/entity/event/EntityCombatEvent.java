@@ -1,11 +1,5 @@
 package linksawakening.world.entity.event;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntity;
 
 /** A single room-entity combat result produced by the ROM collision pass. */

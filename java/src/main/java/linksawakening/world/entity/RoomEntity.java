@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.entity.EntitySpriteDefinition;
 
 /** One of the sixteen entity slots populated by the room definition stream. */

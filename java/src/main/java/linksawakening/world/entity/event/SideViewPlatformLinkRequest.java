@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** Link-side position/speed writes emitted by the side-view platform handler. */
 public record SideViewPlatformLinkRequest(int sourceSlot, int horizontalDelta,

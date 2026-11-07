@@ -1,12 +1,6 @@
 package linksawakening.world.room;
 
-import linksawakening.world.OverworldBushInteraction;
-
-
-
-
-
-
+import linksawakening.world.object.OverworldBushInteraction;
 
 import linksawakening.world.entity.LinkPositionHistory;
 

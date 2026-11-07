@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.function.IntSupplier;
 
 /** Slot-preserving ROM type behavior across initialization and ordered frame stages. */

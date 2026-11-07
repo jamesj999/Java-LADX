@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.rom.RomBank;
 
 /** OwlStatueEntityHandler and bank-$36 GetOwlStatueDialogId's ROM lookup. */

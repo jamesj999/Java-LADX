@@ -59,7 +59,7 @@ import linksawakening.ui.FileSaveController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.OverworldBushInteraction;
+import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;

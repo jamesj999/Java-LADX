@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import java.util.Arrays;
 
 /** Mirrors wRecentRooms, wRecentRoomsIndex, and wEntitiesClearedRooms. */

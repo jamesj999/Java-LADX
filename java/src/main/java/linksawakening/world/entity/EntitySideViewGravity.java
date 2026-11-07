@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Side-view branch of bank-$03's shared gravity routine, {@code func_003_6B7B}. */
 public final class EntitySideViewGravity {
     private static final int[] GRAVITY = {0x02, 0x01, 0x02, 0x02};

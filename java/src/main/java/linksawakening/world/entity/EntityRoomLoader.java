@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.FloatingItemMotion;
 import linksawakening.world.entity.motion.WarpMotion;
 

@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.Objects;
 
 import linksawakening.rom.RomTables;

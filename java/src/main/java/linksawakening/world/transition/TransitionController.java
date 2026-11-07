@@ -1,7 +1,5 @@
 package linksawakening.world.transition;
 
-
-
 /**
  * Room-to-room fade transition state machine, ported from the LADX disassembly's
  * {@code ApplyMapFadeOutTransition} path (bank0.asm:866) and its per-frame

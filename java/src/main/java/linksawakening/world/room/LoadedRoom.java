@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntitySnapshot;
 
 import linksawakening.world.transition.Warp;

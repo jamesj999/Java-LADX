@@ -8,15 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.ArmosMotion;
-
-
 
 /** ROM handler stages for ArmosStatue. */
 final class ArmosStatueHandler {

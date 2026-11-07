@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.vfx.TransientVfxType;
 
 /** A ROM handler request to start the source screen-shake timer. */
 public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) implements EntityRequest {

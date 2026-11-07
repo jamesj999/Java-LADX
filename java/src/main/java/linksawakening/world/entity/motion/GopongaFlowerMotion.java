@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
 /** Small deterministic runtime portion of bank-$06's Goponga flower handler. */
 public final class GopongaFlowerMotion {
     public static final int ENTITY_TYPE = 0x7E;

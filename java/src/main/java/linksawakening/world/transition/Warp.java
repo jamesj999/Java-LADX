@@ -1,7 +1,5 @@
 package linksawakening.world.transition;
 
-
-
 import java.util.Objects;
 
 /**

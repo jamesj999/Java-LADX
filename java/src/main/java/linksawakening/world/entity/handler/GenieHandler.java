@@ -7,12 +7,6 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 

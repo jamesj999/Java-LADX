@@ -7,15 +7,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.HidingZolMotion;
-
-
 
 /** ROM handler stages for HidingZol. */
 final class HidingZolHandler {

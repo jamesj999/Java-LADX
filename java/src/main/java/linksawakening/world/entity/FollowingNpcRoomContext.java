@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** Room/map inputs used by bank $01's follower-exclusion checks. */
 public record FollowingNpcRoomContext(boolean indoor, boolean sideScrolling,
                                       int mapId, int roomId) {

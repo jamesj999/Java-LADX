@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import java.util.EnumMap;
 import java.util.Objects;
 import java.util.function.BiFunction;

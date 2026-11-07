@@ -6,12 +6,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.GopongaFlowerMotion;
 
 import static linksawakening.world.entity.EntitySnapshots.withVariant;

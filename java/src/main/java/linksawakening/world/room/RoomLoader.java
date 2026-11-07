@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntitySnapshot;
 

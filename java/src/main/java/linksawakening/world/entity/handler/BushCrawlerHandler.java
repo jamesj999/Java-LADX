@@ -6,12 +6,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BushCrawlerMotion;
 
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;

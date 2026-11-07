@@ -6,7 +6,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$03 state shared by Octorok, Moblin, and masked Iron Mask roaming. */

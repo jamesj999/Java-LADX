@@ -1,11 +1,5 @@
 package linksawakening.world.entity.event;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntity;
 
 /** A source-shaped bomb-explosion interaction request that has not been applied to room state. */

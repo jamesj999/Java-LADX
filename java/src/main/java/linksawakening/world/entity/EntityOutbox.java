@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.event.EntityEvent;
 
-
-
-
-
-
-
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;

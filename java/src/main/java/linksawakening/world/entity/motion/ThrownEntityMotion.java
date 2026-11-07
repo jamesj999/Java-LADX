@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntitySideViewGravity;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /**
  * ROM-shaped speed and fixed-point motion for the generic thrown-entity path.
  * The tables are Data_014_5313, Data_014_5323, and Data_014_5333 from bank

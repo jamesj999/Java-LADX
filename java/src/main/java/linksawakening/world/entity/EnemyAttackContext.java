@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * Player-state inputs for bank-$03's sword and shield collision paths.
  *

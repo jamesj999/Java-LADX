@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
-
 /**
  * Bank-$03's hidden secret-seashell state and reveal physics.
  *

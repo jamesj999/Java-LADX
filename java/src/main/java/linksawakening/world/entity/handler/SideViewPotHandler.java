@@ -8,15 +8,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.SideViewPotContact;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.SideViewPotMotion;
-
-
 
 /** ROM handler stages for SideViewPot. */
 final class SideViewPotHandler {

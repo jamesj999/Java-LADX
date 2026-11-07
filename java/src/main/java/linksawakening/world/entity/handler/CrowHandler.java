@@ -5,15 +5,7 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.CrowMotion;
-
-
 
 /** ROM handler stages for Crow. */
 final class CrowHandler {

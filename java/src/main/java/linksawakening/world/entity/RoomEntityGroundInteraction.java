@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * Source-shaped room-ground pass executed after an active entity handler has
  * produced its frame update. The session owns ROM object physics; the entity

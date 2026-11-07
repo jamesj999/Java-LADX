@@ -7,7 +7,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,8 +52,6 @@ public final class MoldormMotion {
     private final MoldormSegmentPosition[] vulnerableTail =
         new MoldormSegmentPosition[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-
-
 
     public record Update(RoomEntity entity, int transitionCountdown, int headSpriteVariant,
                   int speedX, int speedY, int collisionFlags, int inertia,

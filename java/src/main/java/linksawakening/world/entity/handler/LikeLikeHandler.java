@@ -5,12 +5,6 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.LikeLikeMotion;
 
 import linksawakening.world.entity.event.LikeLikeEvent;

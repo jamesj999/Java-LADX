@@ -1,13 +1,7 @@
 package linksawakening.world.room;
 
-import linksawakening.world.BombObjectInteraction;
-import linksawakening.world.OverworldBushInteraction;
-
-
-
-
-
-
+import linksawakening.world.object.BombObjectInteraction;
+import linksawakening.world.object.OverworldBushInteraction;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.BombExplosionEvent;

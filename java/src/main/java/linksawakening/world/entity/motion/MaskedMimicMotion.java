@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 /** Bank-$19 ordinary Masked Mimic/Goriya movement for entity $8F. */
 public final class MaskedMimicMotion {
     static final int NORMAL_OPTIONS1 = 0x48;

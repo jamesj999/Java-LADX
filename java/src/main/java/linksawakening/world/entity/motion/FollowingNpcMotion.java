@@ -5,7 +5,6 @@ import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 /**
  * The ordinary overworld follow movement shared by the bank-$19 Ghost and
  * Rooster handlers. It ports their frame gates, direction display selection,

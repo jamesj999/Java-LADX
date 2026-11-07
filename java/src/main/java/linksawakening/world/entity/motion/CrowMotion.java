@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 /** Bank-$06 CrowEntityHandler's proximity, flight, and bounds state machine. */
 public final class CrowMotion {
     public static final int ENTITY_TYPE = 0x7A;

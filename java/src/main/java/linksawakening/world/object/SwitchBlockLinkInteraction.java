@@ -1,4 +1,4 @@
-package linksawakening.world;
+package linksawakening.world.object;
 
 /**
  * ROM-shaped Link collision rules for the two switchable block object IDs.

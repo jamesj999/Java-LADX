@@ -1,4 +1,4 @@
-package linksawakening.world;
+package linksawakening.world.object;
 
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -21,7 +21,6 @@ public final class OverworldBushInteraction {
     private int readRomByte(int offset) {
         return new Rom(romData).u8(RomAddress.fromOffset(offset));
     }
-
 
     private static final int BANK_SIZE = 0x4000;
 

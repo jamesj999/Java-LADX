@@ -1,7 +1,5 @@
 package linksawakening.world.transition;
 
-
-
 public record RoomBoundaryState(int mapCategory,
                                 int roomId,
                                 boolean indoorHasSouthEntrance,

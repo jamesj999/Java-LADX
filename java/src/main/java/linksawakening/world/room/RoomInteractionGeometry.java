@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntityGroundInteraction;
 import linksawakening.world.entity.RoomEntity;
 

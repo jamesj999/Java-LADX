@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$15 FishEntityHandler's hidden swim and jump loop. */

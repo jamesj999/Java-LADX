@@ -6,15 +6,7 @@ import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.MimicMotion;
-
-
 
 /** ROM handler stages for Mimic. */
 final class MimicHandler {

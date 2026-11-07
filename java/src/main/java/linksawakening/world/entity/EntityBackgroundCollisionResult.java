@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * The value returned by the entity/background probe corresponding to the
  * disassembly's {@code ApplyEntityCollisionWithObject} call.

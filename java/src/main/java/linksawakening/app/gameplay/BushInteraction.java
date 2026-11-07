@@ -10,7 +10,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.ActiveRoom;
-import linksawakening.world.OverworldBushInteraction;
+import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 

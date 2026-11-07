@@ -5,7 +5,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-
 /** ROM bank-$07 Moblin Sword state machine plus bank-$03 falling presentation state. */
 public final class MoblinSwordMotion {
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};

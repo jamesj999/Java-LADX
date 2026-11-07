@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
-
 import java.util.Objects;
 
 /** Fixed-point motion for the side-view pot's dedicated throw state. */

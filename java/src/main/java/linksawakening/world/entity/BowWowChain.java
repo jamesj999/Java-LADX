@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.world.entity.RoomEntity;
 
 import java.util.ArrayList;

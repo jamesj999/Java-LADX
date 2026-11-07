@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.rom.RomSymbols;
 
 public final class IndoorRoomPointerTables {

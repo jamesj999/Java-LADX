@@ -1,14 +1,7 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.LiftedEntityMotion;
 
-import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import static linksawakening.world.entity.RoomEntityRuntime.LIFTABLE_ROCK_SMASH_MODE_ROCK;
 

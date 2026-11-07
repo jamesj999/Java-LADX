@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.rom.RomBank;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;

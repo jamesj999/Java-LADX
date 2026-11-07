@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.FloatingItemMotion;
 
 /** Exact collision and sword-collection rules shared by static pickable handlers. */

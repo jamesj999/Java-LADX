@@ -1,11 +1,5 @@
 package linksawakening.world.room;
 
-
-
-
-
-
-
 import linksawakening.world.transition.Warp;
 
 import linksawakening.rom.Rom;

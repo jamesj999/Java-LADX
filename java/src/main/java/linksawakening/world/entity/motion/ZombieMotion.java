@@ -7,7 +7,6 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityObjectQuery;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
-
 import java.util.Objects;
 import java.util.function.IntSupplier;
 

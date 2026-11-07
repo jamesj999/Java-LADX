@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /**
  * Background collision query used by handlers that move an entity one axis at
  * a time. The proposed coordinates are the ROM entity position after the

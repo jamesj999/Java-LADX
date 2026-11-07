@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 
-
 /** Fixed-point motion state for indoor hookshot bridge entity {@code $68}. */
 public final class HookshotBridgeMotion {
     public static final int ENTITY_TYPE = 0x68;

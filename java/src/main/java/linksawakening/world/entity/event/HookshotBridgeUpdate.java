@@ -1,8 +1,5 @@
 package linksawakening.world.entity.event;
 
-
-import linksawakening.vfx.TransientVfxType;
-
 /** A ROM bridge handler request to replace one padded object cell and draw its columns. */
 public record HookshotBridgeUpdate(int objectLeft, int objectTop, int direction,
                                    boolean active) implements EntityRequest {

@@ -5,12 +5,6 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BombiteMotion;
 
 import static linksawakening.world.entity.EntitySnapshots.withVariant;

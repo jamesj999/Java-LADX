@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.event.BombExplosionEvent;
 
-
-
-
-
-
-
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.BoomerangMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;

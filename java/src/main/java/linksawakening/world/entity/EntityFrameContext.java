@@ -2,12 +2,6 @@ package linksawakening.world.entity;
 
 import linksawakening.world.entity.LinkPositionHistory;
 
-
-
-
-
-
-
 import java.util.function.IntSupplier;
 
 /** Immutable frame inputs; referenced collision and RNG services retain their identity. */

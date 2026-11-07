@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import linksawakening.world.*;
+
 
 import linksawakening.world.room.RoomObjectParseResult;
 import linksawakening.world.room.RoomObjectParser;

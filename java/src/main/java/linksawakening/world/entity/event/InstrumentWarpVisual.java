@@ -1,11 +1,5 @@
 package linksawakening.world.entity.event;
 
-
-
-
-
-
-
 /** Render state for $03:5E29/$20:6D0E and the fullscreen controller $07:6523. */
 public record InstrumentWarpVisual(int backgroundFade, int objectFade, int commandBatches,
                                    int[] tiles, int[] attributes, int centerX, int centerY, int[] swirl) {

@@ -1,11 +1,5 @@
 package linksawakening.world.entity;
 
-
-
-
-
-
-
 /** ROM collision constants and predicates for the currently ported enemies. */
 public final class RoomEntityCombatRules {
     private static final int ENTITY_PUSHED_BLOCK = 0x06;

@@ -4,7 +4,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
 /** Bank-$06 GiantGopongaFlowerEntityHandler state and projectile launch. */
 public final class GiantGopongaMotion {
     public static final int ENTITY_TYPE = 0x7C;

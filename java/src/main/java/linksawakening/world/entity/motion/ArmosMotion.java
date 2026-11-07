@@ -6,7 +6,6 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-
 import java.util.function.IntSupplier;
 
 /** Bank-$06 ArmosStatueEntityHandler states 0, 1, and 2. */
