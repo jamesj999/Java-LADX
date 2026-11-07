@@ -97,7 +97,8 @@ final class EntitySlotPhase1 {
                 state.entity.slot(),
                 !state.wasInitializing
                     && state.entity.type() != state.runtime.ENTITY_BOO_BUDDY
-                    && state.entity.type() != state.runtime.ENTITY_BOW_WOW);
+                    && state.entity.type() != state.runtime.ENTITY_BOW_WOW
+                    && state.entity.type() != 0x5B);
     if (!state.freezeTarinTimers
         && !state.freezeThreeOfAKindTimers
         && !state.freezeHinoxTimers

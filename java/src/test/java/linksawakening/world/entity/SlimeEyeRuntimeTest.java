@@ -201,12 +201,44 @@ final class SlimeEyeRuntimeTest {
         r.enemyTransitionCountdown[0] = 0;
         sword(r, r.slots[0], false);
         assertEquals(EntityStatus.DYING, r.slots[0].status());
-        tick(r);
+        tick(r); // active handler's lethal collision frame
+        tick(r); // first destruction handler visit
         assertEquals(1, r.slimeEye.state(0));
         assertEquals(0x40, r.enemyTransitionCountdown[0]);
         r.lifecycle.disableEntityWithoutPersistence(0);
         assertFalse(r.slimeEye.half(0));
         assertEquals(0, r.slimeEye.state(0));
+    }
+
+    @Test void halfPegasusHitClearsBootsBeforeDamageAndRecoilSkipsHopIntegration() throws Exception {
+        var r = runtime(); tick(r);
+        set(r, "half", 1); set(r, "state", 1);
+        r.slots[0] = EntitySnapshots.withZ(r.slots[0], 1);
+        r.enemyTransitionCountdown[0] = 0; r.enemyHealth[0] = 5;
+        var e = r.slots[0];
+        var events = r.resolveCombat(frame, 80, 88, false, true, true,
+            e.x() + 8, 4, e.y() - e.z() + 8, 4, new EnemyAttackContext(1, false, false, false, true));
+        assertEquals(4, r.enemyHealth[0], "6DDF clears boots before damage type is selected");
+        assertEquals(0x10, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
+        assertTrue(events.getFirst().linkCollisionResponse().active());
+        tick(r);
+        int z = r.slots[0].z();
+        assertEquals(0x18, r.enemyFlashCountdown[0], "Fresh hit flash is not aged before its source call site");
+        for (int i = 0; i < 10; i++) {
+            tick(r);
+            assertEquals(z, r.slots[0].z(), "04:6DC8 discards the half handler return during recoil");
+        }
+        assertEquals(0, r.enemyIgnoreHitsCountdown[0]);
+    }
+    @Test void ordinaryHalfSwordHitRequestsFourFrameLinkPush() throws Exception {
+        var r = runtime(); tick(r);
+        set(r, "half", 1); set(r, "state", 0);
+        r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0); r.enemyHealth[0] = 5;
+        var e = r.slots[0];
+        var events = r.resolveCombat(frame, 80, 88, false, true, true,
+            e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard());
+        assertEquals(4, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
+        assertEquals(1, events.getFirst().enemyDamage());
     }
 
     @Test void romDisplayListsPreserveBodyStretchHalfAndShadowOffsets() throws Exception {

@@ -45,12 +45,15 @@ final class SlimeEyeSessionTest {
             save(game.headlessFrame(), output.resolve("session-body.png"));
             int ticks = 0;
             var initialEye = eyes(room).getFirst();
-            // One matched initial combat pose, then buttons only through the split.
-            link.setRoomEntryRomPosition(initialEye.x(), initialEye.y() + 16);
-            link.setDirection(Link.DIRECTION_UP);
-            while (eyes(room).size() == 1 && ticks < 512) {
-                game.headlessButton("a", ticks >= 192 || ticks % 24 < 8);
-                game.headlessButton("b", ticks >= 192);
+            // This older assisted fixture keeps target placement explicit. The separate
+            // SlimeEyeControlsTest covers the whole encounter using buttons only.
+            while (eyes(room).size() == 1 && ticks < 900) {
+                var eye = eyes(room).getFirst();
+                link.setRoomEntryRomPosition(eye.x(), eye.y() + 16);
+                link.setDirection(Link.DIRECTION_UP);
+                int phase = ticks % 256;
+                game.headlessButton("a", phase >= 192 || phase % 24 < 8);
+                game.headlessButton("b", phase >= 192);
                 game.headlessFrame(); ticks++;
             }
             game.headlessButton("a", false); game.headlessButton("b", false);
@@ -74,7 +77,7 @@ final class SlimeEyeSessionTest {
             assertTrue(sounds.contains(GameplaySoundEvent.BOSS_EXPLOSION));
             assertTrue(pcmSamples[0] > 0);
             Files.writeString(output.resolve("session-setup.txt"),
-                "Production GameSession with headless PCM; opening wake/shield skipped; sword/boots granted; max HP14; direct map02 room5A load; Link start80,96 facing up; scroll shake6 injected after180 frames; split uses one initial combat pose then only a/b inputs (first192 frames sword pulses, then hold sword+boots), no per-frame reposition or boot resets; half defeat repositions Link below target each frame, while actual sword input drives collision; no boss state or OAM writes.\nSounds=" + sounds + "\nPCM shorts=" + pcmSamples[0] + "\n");
+                "Production GameSession with headless PCM; opening wake/shield skipped; sword/boots granted; max HP14; direct map02 room5A load; Link start80,96 facing up; scroll shake6 injected after180 frames; assisted fixture repositions Link below target each frame for body and halves, while actual sword input drives collision; no boss state or OAM writes.\nSounds=" + sounds + "\nPCM shorts=" + pcmSamples[0] + "\n");
         } finally {
             var close = GameSession.class.getDeclaredMethod("cleanup"); close.setAccessible(true); close.invoke(game);
         }

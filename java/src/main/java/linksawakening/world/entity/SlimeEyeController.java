@@ -16,7 +16,7 @@ public final class SlimeEyeController {
         moving = new int[16], angry = new int[16], dropping = new int[16],
         private1 = new int[16], splitting = new int[16], variant = new int[16],
         speedX = new int[16], speedY = new int[16], speedZ = new int[16],
-        accX = new int[16], accY = new int[16], accZ = new int[16];
+        accX = new int[16], accY = new int[16], accZ = new int[16], swordHitFrame = new int[16];
     private final boolean[] dying = new boolean[16];
     private Rom rom;
     private int screenShakeCountdown;
@@ -32,7 +32,7 @@ public final class SlimeEyeController {
     int speedZ(int slot) { return speedZ[slot]; }
     void clear(int slot) {
         for (int[] table : new int[][] {state, half, stretch, moving, angry, dropping,
-                private1, splitting, variant, speedX, speedY, speedZ, accX, accY, accZ})
+                private1, splitting, variant, speedX, speedY, speedZ, accX, accY, accZ, swordHitFrame})
             table[slot] = 0;
         dying[slot] = false;
     }
@@ -42,6 +42,10 @@ public final class SlimeEyeController {
     }
 
     public void advance(EntityFrameExecution frame) {
+        try { advanceHandler(frame); }
+        finally { swordHitFrame[frame.entity.slot()] = 0; }
+    }
+    private void advanceHandler(EntityFrameExecution frame) {
         RoomEntity entity = frame.entity;
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
@@ -79,6 +83,9 @@ public final class SlimeEyeController {
                 return;
             }
         }
+        // Main's combat pass precedes tick. Restore the fresh write that the
+        // common flash tick would otherwise age before the ROM collision site.
+        if (hitThisFrame(slot, frame.frame)) runtime.enemyFlashCountdown[slot] = 0x18;
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         render(slot);
         if (runtime.slowTransitionCountdown[slot] != 0) {
@@ -86,6 +93,9 @@ public final class SlimeEyeController {
             frame.emit(new LinkFallenPoseRequest(slot));
         }
         if (entity.status() == EntityStatus.DYING) {
+            // The lethal collision occurs inside the active handler in ROM.
+            // Its destruction handler starts on the following slot visit.
+            if (hitThisFrame(slot, frame.frame)) return;
             if (!dying[slot]) { state[slot] = 0; dying[slot] = true; }
             advanceDeath(frame); return;
         }
@@ -124,6 +134,8 @@ public final class SlimeEyeController {
             }
             case 2 -> { if (runtime.enemyTransitionCountdown[s] == 0) state[s] = 3; }
             case 3 -> {
+                if (runtime.enemyIgnoreHitsCountdown[s] > 0 && !hitThisFrame(s, f.frame))
+                    runtime.enemyIgnoreHitsCountdown[s]--;
                 if (splitting[s] != 0) {
                     if (splitting[s] == 1) { split(e); return; }
                     f.emit(new LinkMotionBlockRequest(s, 0, (f.frame & 1) == 0 ? -1 : 0));
@@ -169,9 +181,14 @@ public final class SlimeEyeController {
             if (angry[s] == 0) angry[s] = 1;
             else { state[s] = 2; speedX[s] = speedY[s] = 0; sound(s, 0x24); }
         }
-        if (runtime.enemyRecoilMotion.isActive(s)) {
-            e = runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(e, f.backgroundCollision).entity();
-            runtime.slots[s] = e;
+        if (runtime.enemyIgnoreHitsCountdown[s] != 0 && !hitThisFrame(s, f.frame)) {
+            if (runtime.enemyRecoilMotion.isActive(s)) {
+                e = runtime.backgroundMechanics.applyEnemyRecoilIfNeeded(e, f.backgroundCollision).entity();
+                runtime.slots[s] = e;
+            } else runtime.enemyIgnoreHitsCountdown[s]--;
+            // ApplyRecoilIfNeeded_04 discards the caller return address.
+            // The half's state machine, including Z, does not run this frame.
+            return;
         }
         switch (state[s]) {
             case 0 -> {
@@ -222,6 +239,7 @@ public final class SlimeEyeController {
         }
     }
 
+    private boolean hitThisFrame(int slot, int frame) { return swordHitFrame[slot] == (frame & 255) + 1; }
     private void stunLink(int s, int countdown) {
         runtime.slowTransitionCountdown[s] = countdown;
         runtime.slowTimerInitialized[s] = true;
@@ -311,10 +329,17 @@ public final class SlimeEyeController {
         boolean hit = sword && overlaps(e, hitbox, sx, sw, sy, sh);
         if (hit) {
             if (!isHalf && stretch[s] == 4 && attack.pegasusBoots()) { splitting[s] = 0x0C; return; }
-            if (!isHalf && attack.pegasusBoots()) return;
-            var damage = runtime.enemyCombatTables == null ? null : runtime.enemyCombatTables.resolveSwordDamage(0x5B, attack);
+            // 6DDF clears wIsRunningWithPegasusBoots before ApplySwordDamagesToEnemy
+            // selects its damage type. Retaining the pre-collision context doubles
+            // the first half hit incorrectly (the ROM takes five HP to four).
+            EnemyAttackContext damageAttack = attack.pegasusBoots()
+                ? new EnemyAttackContext(attack.swordLevel(), attack.redTunic(), attack.pieceOfPower(),
+                    attack.spinAttack(), false, attack.usingShield(), attack.romDirection(), attack.linkZ())
+                : attack;
+            var damage = runtime.enemyCombatTables == null ? null : runtime.enemyCombatTables.resolveSwordDamage(0x5B, damageAttack);
             int amount = damage == null ? 1 : damage.numericDamage();
             if (amount == 0) return;
+            swordHitFrame[s] = (frame & 255) + 1;
             runtime.enemyHealth[s] = Math.max(0, runtime.enemyHealth[s] - amount);
             runtime.enemyIgnoreHitsCountdown[s] = attack.powerRecoil() ? 0x20 : 0x0A;
             runtime.enemyFlashCountdown[s] = 0x18;
@@ -323,7 +348,21 @@ public final class SlimeEyeController {
                 state[s] = 0;
                 runtime.slots[s] = withStatus(e, EntityStatus.DYING);
             }
-            events.add(new EntityCombatEvent(s, 0x5B, 0, true, amount, -1, EntityCombatEvent.SoundChannel.JINGLE, 3));
+            // Bank 03:7081–70B6 applies the Slime Eye sword response to both halves
+            // as well as the unsplit body. Pegasus hits call 6DDF (reset boots,
+            // ignore collisions $10, push $14); normal unstretched hits push $10
+            // and ignore collisions for four frames. A fully stretched normal
+            // strike takes the ordinary damage branch without this push.
+            EntityCombatEvent.LinkCollisionResponse response = EntityCombatEvent.LinkCollisionResponse.NONE;
+            if (isHalf || stretch[s] != 4) {
+                var vector = linksawakening.world.entity.motion.EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                    e.x(), e.y(), e.z(), lx, ly, attack.pegasusBoots() ? 0x14 : 0x10);
+                response = new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255,
+                    attack.pegasusBoots() ? 0x10 : 4);
+            }
+            events.add(new EntityCombatEvent(s, 0x5B, 0, true, amount, -1,
+                EntityCombatEvent.SoundChannel.JINGLE, 3, EntityCombatEvent.SoundChannel.NONE, -1,
+                null, response));
         } else if (!airborne && !(isHalf && dropping[s] != 0) && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
                 && overlaps(e, isHalf ? 24 : stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
             int damage = runtime.enemyCombatTables == null ? 4 : runtime.enemyCombatTables.contactDamage(0x5B);

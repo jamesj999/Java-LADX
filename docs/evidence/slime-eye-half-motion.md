@@ -1,5 +1,9 @@
 # Slime Eye — connected encounter and bounded comparison evidence
 
+Follow-up: [controls-only full fight and live ROM checkpoints](slime-eye-controls.md)
+supersedes this milestone's assisted-half limitation and fixed-standing pilot
+evidence. The original fixed-pose/isolated-trace comparisons remain bounded.
+
 The former unused half-motion helper is now called by a registered entity `$5B`
 handler. `SlimeEyeController` owns the bank-04 slot state and uses the existing
 room runtime, combat outbox, lifecycle, boss reward and ROM sprite services.
@@ -68,21 +72,14 @@ boots with 14-heart capacity, directly load map `02` room `5A`, place Link at
 frames. The real gameplay frame decrements it to 5 and passes it into the
 boss ceiling trigger. No boss state or OAM bytes are written.
 
-For the bounded input-only split, Link is placed once below the dropped body.
-The next 192 frames use sword input pulses (8 held, 16 released), followed by
-held sword + boots. From that matched pose through the two-half split there
-are no further position writes, boots resets, direct combat calls or boss
-state writes. Actual `a`/`b` inputs, boot charging and the held-blade ROM
-collision table produce the split.
-
-Subsequent half defeat uses test positioning of Link below the chosen half
-each frame and actual sword button pulses. This verifies the production
-attack/consumption pipeline, not a real-input-only complete fight. Both halves
-die and exactly one heart container remains. The sound sink wraps and forwards
-the actual session sink, recording hit, jump, bounce, strong bump and terminal
-boss explosion. The production PCM path received 1,710,400 shorts. This is
-sound routing evidence, not an emulator waveform comparison. Exact setup and
-routed sound list are written to ignored `session-setup.txt`.
+The subsequent live comparison found the missing ROM sword push and recoil
+return behavior. After those corrections, the old fixed-standing split pilot
+no longer works because correct sword recoil pushes Link out of range. Its
+capture harness now explicitly repositions Link for both body and half combat;
+it remains an assisted attack-pipeline check. The new `SlimeEyeControlsTest`
+completes the whole encounter with actual movement/buttons after one initial
+setup. See the follow-up evidence for the current verified inputs, captures,
+test counts and live comparison limitations.
 
 ## Isolated emulator comparison
 
