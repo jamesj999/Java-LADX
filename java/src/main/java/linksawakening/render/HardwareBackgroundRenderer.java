@@ -1,0 +1,172 @@
+package linksawakening.render;
+
+import linksawakening.gpu.GPU;
+import linksawakening.gpu.Tile;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.world.RoomConstants;
+
+/** Indexed counterpart of the legacy BG rasterizer; preserves its scroll arithmetic. */
+final class HardwareBackgroundRenderer {
+    private static final int ATTR_FLIP_X = 32, ATTR_FLIP_Y = 64;
+    public static void renderRoom(HardwareFrame buffer, GPU gpu, int[] tileIds, int[] tileAttrs,
+                                  int[][] palettes, int offsetX, int offsetY) {
+        for (int y = 0; y < RoomConstants.ROOM_TILE_HEIGHT; y++) {
+            for (int x = 0; x < RoomConstants.ROOM_TILE_WIDTH; x++) {
+                int mapIndex = y * RoomConstants.ROOM_TILE_WIDTH + x;
+                renderTile(buffer, gpu, tileIds[mapIndex], tileAttrs[mapIndex], palettes,
+                    x * 8 + offsetX, y * 8 + offsetY, true);
+            }
+        }
+    }
+
+    /** Renders a room with the source-style per-scanline BG scroll effect. */
+    public static void renderRoomLineScroll(HardwareFrame buffer, GPU gpu, int[] tileIds,
+                                             int[] tileAttrs, int[][] palettes,
+                                             int[] lineOffsets) {
+        renderRoomLineScroll(buffer, gpu, tileIds, tileAttrs, palettes, lineOffsets, 0, 0);
+    }
+
+    /** Renders a room with scanline scroll plus the source hardware BG offsets. */
+    public static void renderRoomLineScroll(HardwareFrame buffer, GPU gpu, int[] tileIds,
+                                             int[] tileAttrs, int[][] palettes,
+                                             int[] lineOffsets, int scrollX, int scrollY) {
+        if (lineOffsets == null || lineOffsets.length == 0) {
+            renderRoom(buffer, gpu, tileIds, tileAttrs, palettes, -scrollX, -scrollY);
+            return;
+        }
+        for (int screenY = 0; screenY < RoomConstants.ROOM_PIXEL_HEIGHT; screenY++) {
+            int offset = lineOffsets[Math.min(screenY, lineOffsets.length - 1)];
+            int sourceY = Math.floorMod(screenY + offset + scrollY,
+                RoomConstants.ROOM_PIXEL_HEIGHT);
+            int mapY = sourceY / 8;
+            int tileY = sourceY & 0x07;
+            for (int screenX = 0; screenX < RoomConstants.ROOM_PIXEL_WIDTH; screenX++) {
+                int sourceX = Math.floorMod(screenX + offset + scrollX,
+                    RoomConstants.ROOM_PIXEL_WIDTH);
+                int mapX = sourceX / 8;
+                int tileX = sourceX & 0x07;
+                int mapIndex = mapY * RoomConstants.ROOM_TILE_WIDTH + mapX;
+                renderBackgroundPixel(buffer, gpu, tileIds[mapIndex], tileAttrs[mapIndex],
+                    palettes, screenX, screenY, tileX, tileY);
+            }
+        }
+    }
+
+    public static void renderBackground(HardwareFrame buffer, GPU gpu, int[] tilemap, int[] attrmap,
+                                        int[][] palettes, int width, int height) {
+        renderBackground(buffer, gpu, tilemap, attrmap, palettes, width, height, width, height, 0, 0);
+    }
+
+    public static void renderBackground(HardwareFrame buffer, GPU gpu, int[] tilemap, int[] attrmap,
+                                        int[][] palettes, int mapWidth, int mapHeight,
+                                        int viewportWidth, int viewportHeight,
+                                        int scrollX, int scrollY) {
+        int fineX = Math.floorMod(scrollX, 8);
+        int fineY = Math.floorMod(scrollY, 8);
+        int baseTileX = Math.floorMod(scrollX / 8, mapWidth);
+        int baseTileY = Math.floorMod(scrollY / 8, mapHeight);
+        int tilesWide = viewportWidth + (fineX == 0 ? 0 : 1);
+        int tilesHigh = viewportHeight + (fineY == 0 ? 0 : 1);
+        for (int y = 0; y < tilesHigh; y++) {
+            for (int x = 0; x < tilesWide; x++) {
+                int mapX = (baseTileX + x) & (mapWidth - 1);
+                int mapY = (baseTileY + y) & (mapHeight - 1);
+                int mapIndex = mapY * mapWidth + mapX;
+                renderTile(buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes,
+                    x * 8 - fineX, y * 8 - fineY, false);
+            }
+        }
+    }
+
+    public static void renderBackgroundLineScroll(HardwareFrame buffer, GPU gpu, int[] tilemap, int[] attrmap,
+                                                  int[][] palettes, int mapWidth, int mapHeight,
+                                                  int viewportWidth, int viewportHeight,
+                                                  int[] lineScrollX, int scrollY) {
+        renderBackgroundLineScroll(buffer, gpu, tilemap, attrmap, palettes, mapWidth, mapHeight,
+            viewportWidth, viewportHeight, lineScrollX, scrollY, null);
+    }
+
+    public static void renderBackgroundLineScroll(HardwareFrame buffer, GPU gpu, int[] tilemap, int[] attrmap,
+            int[][] palettes, int mapWidth, int mapHeight, int viewportWidth, int viewportHeight,
+            int[] lineScrollX, int scrollY, int[] lineScrollY) {
+        int viewportPixelWidth = viewportWidth * 8;
+        int viewportPixelHeight = viewportHeight * 8;
+        for (int py = 0; py < viewportPixelHeight; py++) {
+            int sourceY = Math.floorMod((lineScrollY == null ? scrollY : lineScrollY[py]) + py, mapHeight * 8);
+            int mapY = sourceY / 8;
+            int tileY = sourceY & 0x07;
+            int scrollX = lineScrollX[Math.min(py, lineScrollX.length - 1)];
+            for (int px = 0; px < viewportPixelWidth; px++) {
+                int sourceX = Math.floorMod(scrollX + px, mapWidth * 8);
+                int mapX = sourceX / 8;
+                int tileX = sourceX & 0x07;
+                int mapIndex = mapY * mapWidth + mapX;
+                renderBackgroundPixel(buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes,
+                    px, py, tileX, tileY);
+            }
+        }
+    }
+
+    public static void renderBackgroundTiles(HardwareFrame buffer, GPU gpu, int[] tilemap, int[] attrmap,
+                                             int[][] palettes, int width, int height) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int mapIndex = y * width + x;
+                renderTile(buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes,
+                    x * 8, y * 8, false);
+            }
+        }
+    }
+
+    private static void renderTile(HardwareFrame buffer, GPU gpu, int tileId, int attributes,
+                                   int[][] palettes, int screenX, int screenY,
+                                   boolean skipOffscreen) {
+        int tileIndex = IndexedRenderer.resolveSignedBgTileIndex(tileId & 0xFF);
+        int attr = attributes & 0xFF;
+        int paletteIndex = attr & 0x07;
+        boolean flipX = (attr & ATTR_FLIP_X) != 0;
+        boolean flipY = (attr & ATTR_FLIP_Y) != 0;
+
+        Tile tile = gpu.getTile(tileIndex);
+        if (tile == null) {
+            return;
+        }
+        if (skipOffscreen && (screenX + 8 <= 0 || screenX >= Framebuffer.WIDTH
+            || screenY + 8 <= 0 || screenY >= Framebuffer.HEIGHT)) {
+            return;
+        }
+
+        int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
+        for (int ty = 0; ty < 8; ty++) {
+            for (int tx = 0; tx < 8; tx++) {
+                int px = screenX + tx;
+                int py = screenY + ty;
+                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
+                    continue;
+                }
+                int sourceX = flipX ? 7 - tx : tx;
+                int sourceY = flipY ? 7 - ty : ty;
+                buffer.backgroundPixel(px, py, tile.getPixel(sourceX, sourceY), palette, (attr & 128) != 0);
+            }
+        }
+    }
+
+    private static void renderBackgroundPixel(HardwareFrame buffer, GPU gpu, int tileId, int attributes,
+                                              int[][] palettes, int screenX, int screenY,
+                                              int tileX, int tileY) {
+        int tileIndex = IndexedRenderer.resolveSignedBgTileIndex(tileId & 0xFF);
+        int attr = attributes & 0xFF;
+        int paletteIndex = attr & 0x07;
+        boolean flipX = (attr & ATTR_FLIP_X) != 0;
+        boolean flipY = (attr & ATTR_FLIP_Y) != 0;
+        Tile tile = gpu.getTile(tileIndex);
+        if (tile == null) {
+            return;
+        }
+        int sourceX = flipX ? 7 - tileX : tileX;
+        int sourceY = flipY ? 7 - tileY : tileY;
+        int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
+        buffer.backgroundPixel(screenX, screenY, tile.getPixel(sourceX, sourceY), palette, (attr & 128) != 0);
+    }
+
+}

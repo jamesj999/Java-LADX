@@ -8,7 +8,7 @@ import linksawakening.gpu.Tile;
 public final class HardwareFrame implements RenderLayer, OamSink {
     private static final int WIDTH = Framebuffer.WIDTH;
     private static final int HEIGHT = Framebuffer.HEIGHT;
-    private final int[] background = new int[WIDTH * HEIGHT];
+    private final int[][] backgroundPalettes = new int[WIDTH * HEIGHT][];
     private final byte[] backgroundIndex = new byte[WIDTH * HEIGHT];
     private final boolean[] backgroundPriority = new boolean[WIDTH * HEIGHT];
     private final int[] objects = new int[WIDTH * HEIGHT];
@@ -25,10 +25,18 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void backgroundTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                int[] palette, boolean priority) {
         stamp(tile, x, y, flipX, flipY, (pixel, index) -> {
-            background[pixel] = palette[index];
+            backgroundPalettes[pixel] = palette;
             backgroundIndex[pixel] = (byte) index;
             backgroundPriority[pixel] = priority;
         });
+    }
+
+    public void backgroundPixel(int x, int y, int index, int[] palette, boolean priority) {
+        if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) return;
+        int pixel = y * WIDTH + x;
+        backgroundIndex[pixel] = (byte) index;
+        backgroundPalettes[pixel] = palette;
+        backgroundPriority[pixel] = priority;
     }
 
     private record ObjectTile(Tile tile, int x, int y, boolean flipX, boolean flipY,
@@ -58,11 +66,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                 objectBehind[pixel] = entry.behind();
             });
         }
-        for (int pixel = 0; pixel < background.length; pixel++) {
+        for (int pixel = 0; pixel < backgroundIndex.length; pixel++) {
             boolean hidden = backgroundPriorityEnabled && backgroundIndex[pixel] != 0
                 && (backgroundPriority[pixel] || objectBehind[pixel]);
             int rgb = objectOrder[pixel] != Integer.MAX_VALUE && !hidden
-                ? objects[pixel] : background[pixel];
+                ? objects[pixel] : backgroundPalettes[pixel] == null ? 0 : backgroundPalettes[pixel][backgroundIndex[pixel]];
             int offset = pixel * 4;
             buffer[offset] = (byte) (rgb >> 16);
             buffer[offset + 1] = (byte) (rgb >> 8);
