@@ -138,6 +138,30 @@ public final class MagicRod implements EquippedItem {
         }
     }
 
+    public void submitOam(linksawakening.render.OamSink sink, int linkPixelX, int linkPixelY,
+                       int direction, int offsetX, int offsetY) {
+        if (attackStepCountdown == 0 || romTables == null) {
+            return;
+        }
+
+        int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK)
+            < FORWARD_SWING_THRESHOLD ? 0 : 4;
+        int romDirection = toRomDirection(direction);
+        int tableIndex = rowOffset + romDirection;
+        int x = linkPixelX + romTables.magicRodXOffset(tableIndex) + offsetX;
+        int y = linkPixelY + romTables.magicRodYOffset(tableIndex) + offsetY;
+        int tile0 = romTables.magicRodTile(tableIndex, 0);
+        int tile1 = romTables.magicRodTile(tableIndex, 1);
+        int attr0 = romTables.magicRodAttribute(tableIndex, 0);
+        int attr1 = romTables.magicRodAttribute(tableIndex, 1);
+        if (tile0 != 0xFF) {
+            sink.append(spriteSheet.tile(tile0), x, y, (attr0 & 32) != 0, (attr0 & 64) != 0, tunicPalette.forObjectPalette(attr0 & 0x07), false);
+        }
+        if (tile1 != 0xFF) {
+            sink.append(spriteSheet.tile(tile1), x + 8, y, (attr1 & 32) != 0, (attr1 & 64) != 0, tunicPalette.forObjectPalette(attr1 & 0x07), false);
+        }
+    }
+
     int attackStepCountdownForTest() {
         return attackStepCountdown;
     }

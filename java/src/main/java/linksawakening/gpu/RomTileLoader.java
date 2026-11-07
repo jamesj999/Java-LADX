@@ -1,5 +1,7 @@
 package linksawakening.gpu;
 
+import linksawakening.rom.GbcBanks;
+
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;

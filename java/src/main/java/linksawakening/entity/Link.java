@@ -2468,6 +2468,84 @@ public final class Link implements RocsFeather.JumpTarget {
         renderEquippedItems(displayBuffer, offsetX, offsetY);
     }
 
+    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        if (likeLikeCaptured) {
+            return;
+        }
+        Tile[] composedTiles = new Tile[4];
+        int animationState = resolveAnimationState();
+        spriteSheet.resolveTiles(animationState, composedTiles);
+
+        boolean leftFlipX = spriteSheet.leftHalfFlipX(animationState);
+        boolean leftFlipY = spriteSheet.leftHalfFlipY(animationState);
+        boolean rightFlipX = spriteSheet.rightHalfFlipX(animationState);
+        boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
+
+        int originX = pixelX() + offsetX;
+        int renderY = pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : zPixels());
+        int originY = renderY + offsetY;
+        int[] palette = playerState != null
+            && (playerState.invincibilityCounter() & 0x04) != 0
+            // DrawLinkSprite's GBC path selects object palette 4 from bit 2
+            // of wInvincibilityCounter while Link is flashing.
+            ? tunicPalette.forObjectPalette(4)
+            : tunicPalette.forTunic(
+                playerState == null ? PlayerState.TUNIC_GREEN : playerState.tunicType());
+
+        if (revolvingDoorPaletteVariant >= 0 && revolvingDoorFrame < 0x38) {
+            palette = romTables.revolvingDoorPalette(revolvingDoorPaletteVariant);
+        }
+
+        // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
+        // GB 8x16 flipY swaps the two stacked tiles inside a column and flips
+        // each vertically.
+        Tile leftTop = composedTiles[leftFlipY ? 1 : 0];
+        Tile leftBottom = composedTiles[leftFlipY ? 0 : 1];
+        Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
+        Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
+
+        sink.append(leftTop,     originX,     originY,     leftFlipX,  leftFlipY,
+            palette, false);
+        sink.append(leftBottom,  originX,     originY + 8, leftFlipX,  leftFlipY,
+            palette, false);
+        sink.append(rightTop,    originX + 8, originY,     rightFlipX, rightFlipY,
+            palette, false);
+        sink.append(rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
+            palette, false);
+
+        // Let equipped items paint their own sprites on top (e.g. the sword
+        // blade during a swing). Matches the disassembly's ordering where
+        // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
+        // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
+        submitEquippedOam(sink, offsetX, offsetY);
+    }
+    private void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        if (itemRegistry == null || playerState == null) {
+            return;
+        }
+        EquippedItem a = itemRegistry.lookup(playerState.itemA());
+        if (a != null) {
+            a.submitOam(sink, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
+        }
+        EquippedItem b = itemRegistry.lookup(playerState.itemB());
+        if (b != null && b != a) {
+            b.submitOam(sink, pixelX(), pixelY() - zPixels(), direction, offsetX, offsetY);
+        }
+        if (swordAcquisitionAnimationState >= 0) {
+            // ApplyLinkMotionState draws the sword during the pickup spin
+            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
+            // sword handler from the registry, but do not draw it twice if a
+            // save already has the sword equipped.
+            EquippedItem acquisitionSword = itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
+                acquisitionSword.submitOam(sink, pixelX(), pixelY() - zPixels(),
+                    direction, offsetX, offsetY);
+            }
+        }
+    }
+
+
+
     private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY) {
         if (itemRegistry == null || playerState == null) {
             return;

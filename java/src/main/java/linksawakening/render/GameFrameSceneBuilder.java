@@ -43,13 +43,14 @@ public final class GameFrameSceneBuilder {
             int y = state.dialogController().boxPosition() == linksawakening.dialog.DialogController.BoxPosition.BOTTOM
                 ? 0x6B - 16 : 0x23 - 16;
             int[][] palettes = state.room().entities().spriteSelection().objectPalettes();
-            layers.add(context -> {
-                for (int half = 0; half < 2; half++) {
-                    int attr = pairs[offset + half * 2 + 1];
-                    IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), pairs[offset + half * 2],
-                        0x8E - 8 + half * 8, y, (attr & 32) != 0, (attr & 64) != 0, palettes[attr & 7]);
-                }
-            });
+            var heartSprites = new ArrayList<SpriteListRenderLayer.Sprite>();
+            for (int half = 0; half < 2; half++) {
+                int attr = pairs[offset + half * 2 + 1];
+                heartSprites.add(new SpriteListRenderLayer.Sprite(pairs[offset + half * 2],
+                    0x8E - 8 + half * 8, y, attr & 7, (attr & 32) != 0, (attr & 64) != 0, 16));
+            }
+            java.util.Collections.reverse(heartSprites);
+            layers.add(new SpriteListRenderLayer(heartSprites, palettes));
         }
         return FrameScene.of(layers);
     }
@@ -148,11 +149,7 @@ public final class GameFrameSceneBuilder {
 
         if (fileMenu == null && snapshot != null && snapshot.animatedTiles() != null) {
             byte[] data = snapshot.animatedTiles();
-            layers.add(context -> {
-                for (int i = 0; i < data.length; i++) {
-                    context.gpu().writeVRAM(snapshot.animatedTilesDestination() + i, data[i]);
-                }
-            });
+            layers.add(new TileUploadRenderLayer(data, snapshot.animatedTilesDestination()));
         }
         if (fileMenu == null && snapshot != null && snapshot.lineScrollY() != null) {
             int[] lineY = snapshot.lineScrollY();

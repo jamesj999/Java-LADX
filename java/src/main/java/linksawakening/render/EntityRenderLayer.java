@@ -15,7 +15,7 @@ import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
-public final class EntityRenderLayer implements RenderLayer {
+public final class EntityRenderLayer implements HardwareRenderLayer {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;
@@ -83,6 +83,15 @@ public final class EntityRenderLayer implements RenderLayer {
             }
         }
         renderSnapshot(context, snapshot, objectPalettes, currentRoomOffset());
+    }
+
+    @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        var commands = new java.util.ArrayList<java.util.function.Consumer<OamSink>>();
+        OamSink sink = (tile, x, y, fx, fy, palette, behind) ->
+            commands.add(target -> target.append(tile, x, y, fx, fy, palette, behind));
+        render(new RenderContext(new byte[0], gpu, sink));
+        // Preserve the existing entity painter submission order.
+        for (var command : commands) command.accept(frame);
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities,
@@ -206,7 +215,7 @@ public final class EntityRenderLayer implements RenderLayer {
                 paletteIndex = 4;
             }
             int[] palette = resolvePalette(palettes, paletteIndex);
-            IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(),
+            OamDrawing.draw8x16(context, context.gpu(),
                 entry.tileIndex(), entry.rawX() + offsetX - OAM_X_SCREEN_ORIGIN,
                 entry.rawY() + offsetY - OAM_Y_SCREEN_ORIGIN,
                 (attributes & OAM_XFLIP) != 0, (attributes & OAM_YFLIP) != 0, palette);
@@ -371,11 +380,11 @@ public final class EntityRenderLayer implements RenderLayer {
         int base = EntitySpriteTileSnapshot.BASE_TILE_INDEX;
         if (tiles == null || oam.tile() < base
             || oam.tile() >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
-            IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(), oam.tile(),
+            OamDrawing.draw8x16(context, context.gpu(), oam.tile(),
                 screenX, screenY, (attributes & OAM_XFLIP) != 0,
                 (attributes & OAM_YFLIP) != 0, palette);
         } else {
-            IndexedRenderer.drawSpriteTile8x16(context.buffer(), tiles, oam.tile(),
+            OamDrawing.draw8x16(context, tiles, oam.tile(),
                 screenX, screenY, (attributes & OAM_XFLIP) != 0,
                 (attributes & OAM_YFLIP) != 0, palette);
         }

@@ -247,4 +247,7 @@ public final class RomSymbols {
     public static final RomAddress IndoorsAEntitiesPointersTable = new RomAddress(0x16, 0x4200);
     public static final RomAddress IndoorsBEntitiesPointersTable = new RomAddress(0x16, 0x4400);
     public static final RomAddress ColorDungeonEntitiesPointersTable = new RomAddress(0x16, 0x4600);
+    public static final RomAddress ColorDungeonWallsTilesPointers = new RomAddress(0x20, 0x45C9);
+    public static final RomAddress data_020_45EA = new RomAddress(0x20, 0x45EA);
+    public static final RomAddress ColorDungeonTiles = new RomAddress(0x35, 0x6000);
 }
