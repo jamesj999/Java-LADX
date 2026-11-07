@@ -7295,6 +7295,18 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void ballPlayingChildrenPushLinkAtGroundPositionEvenWhileHopping() {
+        for (int type : new int[] {0x71, 0x72}) {
+            RoomEntity kid = new RoomEntity(0, 0, type, 0x50, 0x60,
+                EntityStatus.ACTIVE, pairDefinition(type, 4), 0, 0, 0, 8, -1, false);
+            RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(kid), false, () -> 0);
+            runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x60, () -> 0));
+            assertEquals(List.of(new LinkFinalPositionRequest(0, true, true, false)),
+                runtime.consumePendingLinkFinalPositionRequests());
+        }
+    }
+
+    @Test
     void villageChildrenThrowABallAndRetireItsSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);

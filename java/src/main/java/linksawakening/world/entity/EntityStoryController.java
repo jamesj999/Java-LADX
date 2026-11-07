@@ -42,6 +42,7 @@ public final class EntityStoryController {
             advanceKidnapWarningKid(entity, frame, linkX, linkY);
             return;
         }
+        pushLinkFromKid(entity, linkX, linkY);
         if (runtime.spriteHandlers != null)
             entity = withDefinition(entity, runtime.spriteHandlers.forKidPlaying(),
                 (entity.type() == 0x71 ? 2 : 0) | (runtime.kidPlayState[slot] == 1 ? 1 : 0));
@@ -89,6 +90,14 @@ public final class EntityStoryController {
         }
     }
 
+    // Both 06:6234 and 06:613C restore visual Y to ground Y before testing
+    // contact, so the child's hopping height does not move its collision box.
+    private void pushLinkFromKid(RoomEntity entity, int linkX, int linkY) {
+        if (RoomEntityCombatRules.overlapsLink(withZ(entity, 0), linkX, linkY)) {
+            runtime.backgroundMechanics.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+        }
+    }
+
     public void advanceKidnapWarningKid(RoomEntity entity, int frameCounter,
                                          int linkEntityX, int linkEntityY) {
         int slot = entity.slot();
@@ -123,6 +132,7 @@ public final class EntityStoryController {
                 }
             }
             default -> {
+                pushLinkFromKid(entity, linkEntityX, linkEntityY);
                 int z = addFallingSpeedToPosition(entity.z(), runtime.kidZSpeed[slot] & 255,
                     runtime.kidSpeedYAccumulator, slot);
                 runtime.kidZSpeed[slot] -= 2;
