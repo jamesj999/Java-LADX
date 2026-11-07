@@ -148,6 +148,14 @@ final class LinkStateMachine {
             return;
         }
 
+        // Source $43E6/$4440/$445F/$4503. The grass OAM flip depends on
+        // this byte, including steps suppressed by slow ground or a wall.
+        if (link.linkAirborne.airborne) link.romConsecutiveStepsCount = 0xFF;
+        else if (link.playerState != null && link.playerState.runningWithPegasusBoots())
+            link.romConsecutiveStepsCount = (link.romConsecutiveStepsCount + 2) & 0xFF;
+        else if (mask != 0) link.romConsecutiveStepsCount = (link.romConsecutiveStepsCount + 1) & 0xFF;
+        else if (pegasusBootsChargeMeter == 0) link.romConsecutiveStepsCount = 7;
+
         int speedX;
         int speedY;
         if (link.linkAirborne.directionalLedgeJumpMotionLocked) {
@@ -382,6 +390,8 @@ final class LinkStateMachine {
     /** Clears scripted presentation/capture state before a debug game reset. */
     void resetTransientStateForDebug() {
         debugNoClip = false;
+        link.clearGroundEffects();
+        link.romConsecutiveStepsCount = 7;
         romInteractiveMotionBlocked = false;
         link.linkSideView.standingOnSideViewEntity = false;
         link.linkSideView.sideViewPlatformVerticalSpeedPending = -1;
@@ -469,6 +479,7 @@ final class LinkStateMachine {
             && physicsRoomCategory == mapCategory) {
             return;
         }
+        link.clearGroundEffects();
         physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
         physicsRoomLoadToken = loadToken;
         physicsRoomMapId = mapId;
@@ -480,6 +491,7 @@ final class LinkStateMachine {
     /** Applies the room-entry physics default after a completed warp. */
     void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId,
                                       int mapCategory) {
+        link.clearGroundEffects();
         physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
         physicsRoomLoadToken = loadToken;
         physicsRoomMapId = mapId;

@@ -145,6 +145,7 @@ public final class ActiveRoom {
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities);
+        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities, null, null,
+            mapCategory == 0 && roomId == 0x32 ? 6 : 0);
     }
 }

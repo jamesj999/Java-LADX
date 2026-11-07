@@ -219,7 +219,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void hideSpritesUnderDialog(boolean bottom) {
         if (closedWindowY == 0 || inventoryCutoffY >= 0) return; // $5F6A-$5F6E: fully open inventory has no dialog filter.
         oam.removeIf(entry -> {
-            if (entry.source().equals("LinkRenderLayer") || entry.source().equals("LinkShadowRenderLayer")
+            if (entry.source().equals("LinkRenderLayer") || entry.source().equals("LinkShadowRenderLayer") || entry.source().equals("LinkGrassRenderLayer")
                 || entry.source().equals("DialogRenderLayer")) return false;
             int rawY = (entry.entryY() + 16) & 255;
             return bottom ? rawY >= 0x58 : rawY < 0x3E;

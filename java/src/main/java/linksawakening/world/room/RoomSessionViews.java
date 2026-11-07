@@ -134,7 +134,7 @@ final class RoomSessionViews {
         RoomRenderSnapshot snapshot = session.context.activeRoom.renderSnapshot();
         return new RoomRenderSnapshot(snapshot.tileIds(), snapshot.tileAttrs(), snapshot.palettes(),
             snapshot.entities(), session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().instrumentWarpVisual(),
-            session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().heartPieceVisual());
+            session.context.entityBridge.entityRuntime == null ? null : session.context.entityBridge.entityRuntime.inspection().heartPieceVisual(), snapshot.linkGrassPalette());
     }
 
     LiftedEntityState liftedEntityState() {

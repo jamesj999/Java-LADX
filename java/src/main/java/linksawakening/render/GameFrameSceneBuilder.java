@@ -90,6 +90,9 @@ public final class GameFrameSceneBuilder {
                     sprites.add(StorySprites.linkShadow(state.link(),
                         state.room().entities().spriteSelection().objectPalettes()[0],
                         state.scrollController(), state.frameCounter()));
+                    sprites.add(StorySprites.linkGrass(state.link(),
+                        state.room().entities().spriteSelection().objectPalettes(),
+                        state.scrollController(), state.room().linkGrassPalette()));
                 }
                 if (state.link().isTarinShieldPresentationVisible()
                     && state.room().entities() != null

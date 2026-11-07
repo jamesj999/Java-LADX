@@ -74,6 +74,8 @@ public final class Link implements RocsFeather.JumpTarget {
     boolean movingThisFrame;
     private int groundMotionCounter;
     private int worldMotionFrame = -1;
+    int romConsecutiveStepsCount = 7;
+    private boolean grassGroundEffectActive;
     boolean topDownFeatherStarted;
 
     int romLinkPushing;
@@ -390,7 +392,19 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void update() {
         linkStateMachine.update();
+        // ApplyLinkGroundPhysics uses the completed motion position. Dialogs
+        // and scrolling reuse this result while ordinary Link updates pause.
+        grassGroundEffectActive = collision != null && !linkSideView.sideScrolling
+            && !linkAirborne.airborne && !linkAirborne.fallingIntoPit
+            && linkStateMachine.motionState != 0x02 && romEntityY() < 0x88
+            && collision.objectPhysicsFlagAtPoint(pixelX() + 8, pixelY() + 12)
+                == linksawakening.physics.PhysicsFlags.GRASS;
     }
+
+    public boolean grassGroundEffectActive() { return grassGroundEffectActive; }
+    public boolean grassGroundEffectFlipX() { return (romConsecutiveStepsCount & 8) != 0; }
+    public int romConsecutiveStepsCount() { return romConsecutiveStepsCount; }
+    void clearGroundEffects() { grassGroundEffectActive = false; }
 
     public void tickAnimation() {
         walkTickCounter++;

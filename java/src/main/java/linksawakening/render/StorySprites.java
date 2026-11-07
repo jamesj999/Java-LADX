@@ -57,6 +57,34 @@ final class StorySprites {
         };
     }
 
+    static HardwareRenderLayer linkGrass(Link link, int[][] palettes,
+            ScrollController scroll, int paletteIndex) {
+        return (frame, gpu) -> {
+            frame.submittingLayer("LinkGrassRenderLayer");
+            if (!link.grassGroundEffectActive()) return;
+            int offsetX = -scroll.screenShakeHorizontal(), offsetY = 0;
+            if (scroll.isActive()) {
+                offsetX += scroll.linkScreenX()
+                    + (link.pixelX() - scroll.linkScreenX()) * scroll.offset() / scroll.target()
+                    - link.pixelX();
+                offsetY = scroll.linkScreenY()
+                    + (link.pixelY() - scroll.linkScreenY()) * scroll.offset() / scroll.target()
+                    - link.pixelY();
+            }
+            int[] palette = palettes[paletteIndex];
+            boolean flip = link.grassGroundEffectFlipX();
+            // $02:787D writes reserved OAM slots0/1 before body slots2/3.
+            // Appending after the body gives those overlays priority in the
+            // current painter-order compositor.
+            frame.append8x16(gpu.getTile(0x1A), gpu.getTile(0x1B),
+                link.pixelX() - 1 + offsetX, link.pixelY() + 8 + offsetY,
+                flip, false, palette, false);
+            frame.append8x16(gpu.getTile(0x1A), gpu.getTile(0x1B),
+                link.pixelX() + 7 + offsetX, link.pixelY() + 8 + offsetY,
+                !flip, false, palette, false);
+        };
+    }
+
     static HardwareRenderLayer linkShadow(Link link, int[] palette, ScrollController scroll, int frameNumber) {
         return (frame, gpu) -> {
             // Preserve OBJ source metadata used by dialog filtering and parity reports.

@@ -6,7 +6,12 @@ import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.RoomEntitySnapshot;
 
 public record RoomRenderSnapshot(int[] tileIds, int[] tileAttrs, int[][] palettes,
-                                 RoomEntitySnapshot entities, InstrumentWarpVisual instrumentWarp, HeartPieceVisual heartPiece) {
+                                 RoomEntitySnapshot entities, InstrumentWarpVisual instrumentWarp, HeartPieceVisual heartPiece, int linkGrassPalette) {
+
+    public RoomRenderSnapshot(int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities,
+                              InstrumentWarpVisual warp, HeartPieceVisual heartPiece) {
+        this(tiles, attrs, palettes, entities, warp, heartPiece, 0);
+    }
 
     public RoomRenderSnapshot(int[] tiles, int[] attrs, int[][] palettes, RoomEntitySnapshot entities,
                               InstrumentWarpVisual warp) {
