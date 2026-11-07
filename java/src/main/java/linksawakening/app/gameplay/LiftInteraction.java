@@ -4,9 +4,9 @@ import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.IntUnaryOperator;
 

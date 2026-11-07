@@ -1,8 +1,8 @@
 package linksawakening.entity;
 
 import linksawakening.rom.RomBank;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.EntityStatus;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntityStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

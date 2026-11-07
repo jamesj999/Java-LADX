@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.screen.Screen;
 
 import linksawakening.cutscene.CutsceneManager;
@@ -13,13 +15,13 @@ import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.RoomSession;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
-import linksawakening.world.Warp;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 public record RenderStateAssembler(
         GPU gpu,

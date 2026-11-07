@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.gameplay.DialogInteractions;
 
 import linksawakening.app.screen.TitleScreen;
@@ -15,14 +17,14 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.RomTables;
 import linksawakening.ui.InventoryController;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.RoomSession;
-import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
-import linksawakening.world.Warp;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.function.Supplier;

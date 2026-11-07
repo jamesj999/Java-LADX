@@ -124,26 +124,12 @@ The guard scans physics, save, state excluding PlayerState, scene, startup and
 config, including a check against literal BackgroundSceneSpec constructors.
 These packages have zero remaining literal ROM locations from this audit.
 
-### Deferred declarations for assignment
+### Former deferred declarations — completed
 
-These are the 15 original-metric declarations, at current source lines; paired
-constants with other suffixes and inline reads also need auditing by their owners.
-
-- WarpMotion.java:19 — DUNGEON_WARPS_BANK.
-- EntityRoomLoader.java:15 — ENTITY_POINTER_BANK.
-- RoomSession.java:135 — BOMBED_CAVE_DOOR_TILES_BANK.
-- RoomSession.java:136 — BOMBED_CAVE_DOOR_TILES_GBC_ADDR.
-- RoomSession.java:137 — INDOOR_MAP_LAYOUT_BANK.
-- RoomSession.java:138 — INDOOR_MAP_LAYOUT_BASE_ADDR.
-- RoomSession.java:139 — COLOR_DUNGEON_MAP_LAYOUT_ADDR.
-- RoomSession.java:140 — EAGLES_TOWER_COLLAPSED_MAP_LAYOUT_ADDR.
-- EnemyDropResolver.java:12 — DESTROYED_HEALTH_GROUP_OFFSETS_BANK.
-- EnemyDropResolver.java:18 — DROP_TABLE_BY_INDEX_BANK.
-- EnemyDropResolver.java:22 — RANDOM_DROP_CHANCE_TABLE_BANK.
-- EnemyDropResolver.java:26 — RANDOM_DROP_CHANCE_TABLE_LOW_HEALTH_BANK.
-- EnemyDropResolver.java:30 — DROP_TABLE_RANDOM_BANK.
-- EnemyDropResolver.java:34 — THRESHOLD_LOW_HEALTH_TABLE_BANK.
-- RomEnemyCombatTables.java:10 — BOW_WOW_EATABLE_BANK.
+All 15 declarations formerly assigned here are migrated to RomSymbols and Rom
+reads. Exact symbol matches and preserved offsets are recorded in the entity
+runtime follow-up below; no discrepancies were found. Map-layout reads now
+live in RoomWorldState. There are no open declarations in this assignment.
 
 ## Entity runtime follow-up
 

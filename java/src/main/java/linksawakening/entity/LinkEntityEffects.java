@@ -1,5 +1,7 @@
 package linksawakening.entity;
 
+import linksawakening.world.transition.Warp;
+
 import static linksawakening.entity.Link.*;
 
 /** ROM-faithful entityeffects collaborator for Link. */

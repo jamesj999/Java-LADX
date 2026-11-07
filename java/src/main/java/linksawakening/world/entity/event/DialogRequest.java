@@ -1,8 +1,5 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
-
 /** A ROM dialog-table entry requested by an entity handler this frame. */
 public record DialogRequest(int tableId, int dialogLowId, boolean forceTop) implements EntityRequest {
     public DialogRequest(int tableId, int dialogLowId) { this(tableId, dialogLowId, false); }

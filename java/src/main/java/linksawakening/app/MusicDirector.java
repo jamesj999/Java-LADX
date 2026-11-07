@@ -5,10 +5,10 @@ import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
 import linksawakening.state.PlayerState;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 /** Session-local track selection and finite intro continuation. */
 public final class MusicDirector {

@@ -1,8 +1,10 @@
 package linksawakening.state;
 
+import linksawakening.world.entity.event.FloatingItemPickupEffect;
+
 import linksawakening.save.SaveSlotState;
-import linksawakening.world.ChestContentsTable;
-import linksawakening.world.FloatingItemMotion;
+import linksawakening.world.room.ChestContentsTable;
+import linksawakening.world.entity.motion.FloatingItemMotion;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -370,7 +372,7 @@ public final class PlayerState implements LinkPlayerState {
 
     /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
-        switch (FloatingItemMotion.pickupEffect(entityType, sourceVariant)) {
+        switch (FloatingItemPickupEffect.pickupEffect(entityType, sourceVariant)) {
             case TEN_RUPEES -> addRupeeBuffer = 10;
             case MAGIC_POWDER -> {
                 giveInventoryItem(INVENTORY_MAGIC_POWDER);

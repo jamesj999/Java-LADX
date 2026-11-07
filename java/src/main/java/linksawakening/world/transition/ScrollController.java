@@ -1,0 +1,117 @@
+package linksawakening.world.transition;
+
+import linksawakening.world.entity.ScreenShake;
+
+import linksawakening.world.room.RoomRenderSnapshot;
+
+public final class ScrollController {
+    public static final int NONE = 0;
+    public static final int UP = 1;
+    public static final int DOWN = 2;
+    public static final int LEFT = 3;
+    public static final int RIGHT = 4;
+
+    private Runnable completion;
+    private int direction = NONE;
+    private int offset;
+    private int target;
+    private int linkScreenX;
+    private int linkScreenY;
+    private RoomRenderSnapshot previousRoom;
+    private final ScreenShake screenShakeMotion = ScreenShake.create();
+    private boolean scriptedScreenShakeActive;
+    private int scriptedScreenShakeHorizontal;
+
+    public void start(int direction, int linkScreenX, int linkScreenY,
+                      RoomRenderSnapshot previousRoom, int target) {
+        this.completion = null;
+        this.direction = direction;
+        this.linkScreenX = linkScreenX;
+        this.linkScreenY = linkScreenY;
+        this.previousRoom = previousRoom;
+        this.target = target;
+        this.offset = 0;
+    }
+
+    /** Runs once after the destination has finished scrolling into view. */
+    public void onCompletion(Runnable completion) {
+        this.completion = completion;
+    }
+
+    public boolean tick(int speed) {
+        if (!isActive()) {
+            return false;
+        }
+        offset += speed;
+        if (offset < target) {
+            return false;
+        }
+        offset = 0;
+        direction = NONE;
+        target = 0;
+        previousRoom = null;
+        Runnable finished = completion;
+        completion = null;
+        if (finished != null) {
+            finished.run();
+        }
+        return true;
+    }
+
+    public boolean isActive() {
+        return direction != NONE;
+    }
+
+    public int direction() {
+        return direction;
+    }
+
+    public int offset() {
+        return offset;
+    }
+
+    public int target() {
+        return target;
+    }
+
+    public int linkScreenX() {
+        return linkScreenX;
+    }
+
+    public int linkScreenY() {
+        return linkScreenY;
+    }
+
+    public RoomRenderSnapshot previousRoom() {
+        return previousRoom;
+    }
+
+    /** Starts the ROM's shared screen-shake timer. */
+    public void startScreenShake(int countdown, int phase) {
+        screenShakeMotion.start(countdown, phase);
+    }
+
+    /** Advances the ROM screen-shake timer once before the gameplay frame renders. */
+    public void tickScreenShake() {
+        screenShakeMotion.tick();
+    }
+
+    public int screenShakeHorizontal() {
+        return scriptedScreenShakeActive
+            ? scriptedScreenShakeHorizontal : screenShakeMotion.horizontal();
+    }
+
+    public int screenShakeVertical() {
+        return screenShakeMotion.vertical();
+    }
+
+    public int screenShakeCountdown() {
+        return screenShakeMotion.countdown();
+    }
+
+    /** Applies a source-specific shake that does not use the shared phase table. */
+    public void setScriptedScreenShakeHorizontal(boolean active, int horizontal) {
+        scriptedScreenShakeActive = active;
+        scriptedScreenShakeHorizontal = active ? horizontal : 0;
+    }
+}

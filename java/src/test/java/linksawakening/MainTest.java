@@ -15,8 +15,8 @@ import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.state.PlayerState;
-import linksawakening.world.IndoorRoomPointerTables;
-import linksawakening.world.RoomPointerTable;
+import linksawakening.world.room.IndoorRoomPointerTables;
+import linksawakening.world.room.RoomPointerTable;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

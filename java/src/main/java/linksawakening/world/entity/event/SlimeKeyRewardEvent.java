@@ -1,12 +1,11 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
 
 /** Reward, room-completion, and dialog state emitted by HidingSlimeKeyEntityHandler. */
 public record SlimeKeyRewardEvent(int slot, int goldenLeavesCount, int dialogLowId) implements EntityRequest {
     public SlimeKeyRewardEvent {
-        if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Slime Key entity slot out of range: " + slot);
         }
         if (goldenLeavesCount < 0 || goldenLeavesCount > 0x63) {

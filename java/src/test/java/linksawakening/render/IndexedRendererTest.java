@@ -2,7 +2,7 @@ package linksawakening.render;
 
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
-import linksawakening.world.RoomConstants;
+import linksawakening.world.room.RoomConstants;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

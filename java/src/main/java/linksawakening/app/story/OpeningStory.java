@@ -14,10 +14,10 @@ import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 import java.util.function.Consumer;
@@ -171,7 +171,7 @@ public record OpeningStory(
             link.blockNextRomMotionFrame();
         }
         if (update.grantShield()) {
-            playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SHIELD);
+            playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SHIELD);
             link.showStandingShieldDownPose();
             // MUSIC_OBTAIN_ITEM is a jingle in the ROM.  The host music
             // player loops direct tracks, so resume the house track when

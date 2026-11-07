@@ -1,8 +1,10 @@
 package linksawakening.app.gameplay;
 
+
+
 import linksawakening.entity.Link;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 /** Advances scrolling before warp transitions and clears platform state at the gate. */
 public final class TransitionPhase implements Runnable {

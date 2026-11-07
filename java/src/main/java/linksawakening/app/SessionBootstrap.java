@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -52,22 +54,22 @@ import linksawakening.ui.InventoryTilemapLoader;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.OverworldBushInteraction;
-import linksawakening.world.OverworldTilesetTable;
-import linksawakening.world.RoomBoundaryController;
-import linksawakening.world.RoomLoader;
-import linksawakening.world.RoomSession;
-import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.transition.RoomBoundaryController;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 import java.io.IOException;
 import java.io.InputStream;
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;

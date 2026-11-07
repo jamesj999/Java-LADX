@@ -1,7 +1,7 @@
 package linksawakening.physics;
 
 import linksawakening.rom.RomTables;
-import linksawakening.world.SwitchBlockLinkInteraction;
+import linksawakening.world.object.SwitchBlockLinkInteraction;
 
 /**
  * Queries against the active overworld room's 16x16 object grid. Matches the

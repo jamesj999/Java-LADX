@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
-import linksawakening.world.InstrumentWarpVisual;
+import linksawakening.world.entity.event.InstrumentWarpVisual;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 /**
  * Owns an isolated, window-free game session for input replay and capture.
  * Frames use the same input, simulation and composition paths as the desktop.
@@ -12,11 +14,11 @@ import linksawakening.equipment.Sword;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryMenu;
-import linksawakening.world.RoomSession;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 public final class HeadlessGameDriver {
     private final GameSession session = new GameSession();
@@ -67,7 +69,7 @@ public final class HeadlessGameDriver {
             roomSession.activeRoom().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x81 || e.type() == 0x82 || e.type() == 0x59)
                 .map(e -> "%d,%d,%d,%d,%d,%d".formatted(e.type(), e.x(), e.y(), e.z(),
-                    roomSession.entityHealth(e.slot()), e.status() == linksawakening.world.EntityStatus.ACTIVE ? 5 : 1))
+                    roomSession.entityHealth(e.slot()), e.status() == linksawakening.world.entity.EntityStatus.ACTIVE ? 5 : 1))
                 .collect(java.util.stream.Collectors.joining(";")));
     }
     public String headlessEntityPositions() {
@@ -82,7 +84,7 @@ public final class HeadlessGameDriver {
             link.romEntityX(), link.romEntityY(), dialogController.isActive(),
             dialogController.isWaitingForPageAdvance(), dialogController.visibleText(),
             playerState.shieldLevel(), playerState.health(), playerState.swordLevel(), (int) roomSession.activeRoom().entities().loadedEntities().stream()
-                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), tarin == null ? -1 : tarin.x(), tarin == null ? -1 : tarin.y(),
+                .filter(entity -> entity.type() == 0xC5 && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE).count(), playerState.hasToadstool(), playerState.magicPowderCount(), inventoryMenu.instrumentPaletteTick(), tarin == null ? -1 : tarin.x(), tarin == null ? -1 : tarin.y(),
                 (roomSession.overworldRoomStatusSnapshot()[0x51] & 0x10) != 0,
                 playerState.tailKeyCount(), gpu.animatedTilesFrameCount(),
                 roomSession.currentDungeonItemFlagsSnapshot()[4] & 0xFF,

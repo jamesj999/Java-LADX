@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
 
 /** Link-side HRAM effects emitted by Hinox's grab/throw handler. */
 public record HinoxLinkEffectRequest(int sourceSlot, int heldX, int heldY, int heldZ,
@@ -10,7 +9,7 @@ public record HinoxLinkEffectRequest(int sourceSlot, int heldX, int heldY, int h
                                      boolean motionBlocked,
                                      boolean applyHeldLinkPose) implements EntityRequest {
     public HinoxLinkEffectRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Hinox source slot out of range: " + sourceSlot);
         }
         for (int value : new int[] {heldX, heldY, heldZ, speedX, speedY, velocityZ,

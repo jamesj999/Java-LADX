@@ -1,5 +1,8 @@
 package linksawakening.render;
 
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.equipment.ItemRegistry;
@@ -14,7 +17,9 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
-import linksawakening.world.*;
+import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomSession;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

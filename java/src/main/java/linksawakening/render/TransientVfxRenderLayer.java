@@ -1,9 +1,11 @@
 package linksawakening.render;
 
+
+
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 public final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private static final int ATTR_FLIP_X = 0x20;

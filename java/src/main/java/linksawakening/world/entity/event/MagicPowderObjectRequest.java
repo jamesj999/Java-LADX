@@ -1,15 +1,14 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.world.RoomEntityRuntime.MagicPowderObjectAction;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.event.MagicPowderObjectAction;
 
 /** A ROM powder-sprinkle object mutation applied by RoomSession. */
 public record MagicPowderObjectRequest(int sourceSlot, int location,
                                        int objectLeft, int objectTop,
                                        MagicPowderObjectAction action) implements EntityRequest {
     public MagicPowderObjectRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Magic Powder source slot out of range: "
                 + sourceSlot);
         }

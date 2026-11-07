@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteSelection;
@@ -7,15 +9,15 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
-import linksawakening.world.EntityStatus;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.HookshotChainOam;
-import linksawakening.world.PincerBodyOam;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntitySnapshot;
-import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.WingedOctorokOam;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.HookshotChainOam;
+import linksawakening.world.entity.PincerBodyOam;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.entity.WingedOctorokOam;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -188,8 +190,8 @@ final class EntityRenderLayerTest {
             EntityStatus.ACTIVE, head, 0, 0, 0, 0, -1, false);
         RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity)
             .withBowWowChainOam(List.of(
-                new linksawakening.world.BowWowChain.Entry(3, 0x40, 0x50, 0x4E),
-                new linksawakening.world.BowWowChain.Entry(3, 0x60, 0x50, 0x4E)));
+                new linksawakening.world.entity.BowWowChain.Entry(3, 0x40, 0x50, 0x4E),
+                new linksawakening.world.entity.BowWowChain.Entry(3, 0x60, 0x50, 0x4E)));
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         new EntityRenderLayer(snapshot, palettes, new ScrollController())
             .render(new RenderContext(buffer, gpu));
@@ -522,7 +524,7 @@ final class EntityRenderLayerTest {
             new EntitySpriteDefinition.OamAttribute(0x22, 0x00),
             new EntitySpriteDefinition.OamAttribute(0x22, 0x00));
         EntitySpriteSelection selection = new EntitySpriteSelection(
-            linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
             .withSpriteOverride(0x6D, following);
         RoomEntity entity = new RoomEntity(0, 0, 0x6D, 24, 32, EntityStatus.ACTIVE,
@@ -681,7 +683,7 @@ final class EntityRenderLayerTest {
         RoomEntity entity = new RoomEntity(0, 0, 0x02, 8, 16, EntityStatus.ACTIVE,
             single, 0, 0, 0, 0, -1, false);
         EntitySpriteSelection selection = new EntitySpriteSelection(
-            linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] { 0xFF, 0xFF, 0xFF, 0xFF }, true, palettes);
         RoomEntitySnapshot previousEntities = snapshot(selection, entity);
         RoomEntitySnapshot currentEntities = snapshot(selection);
@@ -720,7 +722,7 @@ final class EntityRenderLayerTest {
         RoomEntity currentEntity = new RoomEntity(0, 0, 0x02, 152, 16, EntityStatus.ACTIVE,
             single, 0, 0, 0, 0, -1, false);
         EntitySpriteSelection selection = new EntitySpriteSelection(
-            linksawakening.world.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
+            linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD, 0, 0,
             new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes);
         RoomEntitySnapshot previousEntities = snapshot(selection, previousTiles, previousEntity);
         RoomEntitySnapshot currentEntities = snapshot(selection, currentTiles, currentEntity);

@@ -1,8 +1,8 @@
 package linksawakening.entity;
 
 import linksawakening.rom.RomBank;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomPaletteLoader;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.room.RoomPaletteLoader;
 
 /** Reads room sprite groups, sheet selectors, and object palettes from the ROM. */
 public final class EntitySpriteCatalog {

@@ -1,7 +1,6 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
 
 /** A ROM handler request carrying the complete Link-side push response. */
 public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots,
@@ -19,7 +18,7 @@ public record LinkFinalPositionRequest(int sourceSlot, boolean resetPegasusBoots
     }
 
     public LinkFinalPositionRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Link final-position source slot out of range: "
                 + sourceSlot);
         }

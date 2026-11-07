@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
@@ -9,13 +11,13 @@ import linksawakening.scene.BackgroundScene;
 import linksawakening.state.PlayerState;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.ui.FileSaveController;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.RoomSession;
-import linksawakening.world.Warp;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.Warp;
 
 import java.io.IOException;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

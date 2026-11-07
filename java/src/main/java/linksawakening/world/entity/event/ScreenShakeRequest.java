@@ -1,12 +1,11 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
 
 /** A ROM handler request to start the source screen-shake timer. */
 public record ScreenShakeRequest(int sourceSlot, int countdown, int phase) implements EntityRequest {
     public ScreenShakeRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Screen-shake source slot out of range: "
                 + sourceSlot);
         }

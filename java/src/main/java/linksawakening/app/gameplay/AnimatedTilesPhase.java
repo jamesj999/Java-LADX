@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

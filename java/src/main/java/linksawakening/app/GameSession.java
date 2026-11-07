@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+
+
 import linksawakening.app.host.HeadlessHost;
 import linksawakening.app.host.Host;
 import linksawakening.app.host.DesktopHost;
@@ -56,16 +58,16 @@ import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileSaveController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.OverworldBushInteraction;
-import linksawakening.world.RoomSession;
-import linksawakening.world.RoomTransitionCoordinator;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
-import linksawakening.world.RomRandomByteSource;
+import linksawakening.world.entity.RomRandomByteSource;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 public class GameSession {
 

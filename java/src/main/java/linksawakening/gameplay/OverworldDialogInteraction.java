@@ -1,15 +1,17 @@
 package linksawakening.gameplay;
 
+
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.Warp;
 
 import java.util.Objects;
 
-import static linksawakening.world.RoomConstants.OBJECTS_PER_COLUMN;
-import static linksawakening.world.RoomConstants.OBJECTS_PER_ROW;
-import static linksawakening.world.RoomConstants.ROOM_OBJECTS_BASE;
-import static linksawakening.world.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+import static linksawakening.world.room.RoomConstants.OBJECTS_PER_COLUMN;
+import static linksawakening.world.room.RoomConstants.OBJECTS_PER_ROW;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 
 public final class OverworldDialogInteraction {
 

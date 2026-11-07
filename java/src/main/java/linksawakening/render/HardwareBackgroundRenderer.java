@@ -3,7 +3,7 @@ package linksawakening.render;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 import linksawakening.gpu.Framebuffer;
-import linksawakening.world.RoomConstants;
+import linksawakening.world.room.RoomConstants;
 
 /** Indexed counterpart of the legacy BG rasterizer; preserves its scroll arithmetic. */
 final class HardwareBackgroundRenderer {

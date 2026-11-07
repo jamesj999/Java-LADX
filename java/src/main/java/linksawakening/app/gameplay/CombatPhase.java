@@ -1,15 +1,17 @@
 package linksawakening.app.gameplay;
 
+
+
 import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.PlayerState;
-import linksawakening.world.EnemyAttackContext;
-import linksawakening.world.EntityCombatEvent;
-import linksawakening.world.Warp;
+import linksawakening.world.entity.EnemyAttackContext;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 

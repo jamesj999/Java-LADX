@@ -1,7 +1,9 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.Link;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
 /** Renders data_005_4cc6 while Tarin holds the shield above Link. */
 @Deprecated

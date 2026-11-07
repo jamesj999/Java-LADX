@@ -10,10 +10,10 @@ import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.input.InputConfig;
 import linksawakening.state.PlayerState;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.RoomSession;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.RoomConstants.*;
+import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.Supplier;
 

@@ -1,5 +1,7 @@
 package linksawakening.render;
 
+
+
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.entity.Link;
 import linksawakening.equipment.ItemRegistry;
@@ -8,13 +10,13 @@ import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSprite;
-import linksawakening.world.RoomConstants;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomEntity;
-import linksawakening.world.RoomEntitySnapshot;
-import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import linksawakening.world.room.RoomConstants;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

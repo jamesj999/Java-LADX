@@ -399,18 +399,18 @@ final class PlayerStateTest {
         PlayerState playerState = new PlayerState();
         playerState.initializeNewGame(99, 20, 20);
 
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SHIELD);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_BOMB);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_RUPEES_50);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_SEASHELL);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_FLIPPERS);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_MEDICINE);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_TAIL_KEY);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_ANGLER_KEY);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_FACE_KEY);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_BIRD_KEY);
-        playerState.applyChestReward(linksawakening.world.ChestContentsTable.CHEST_GOLD_LEAF);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SHIELD);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_BOMB);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_RUPEES_50);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SEASHELL);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_FLIPPERS);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_MEDICINE);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_TAIL_KEY);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_ANGLER_KEY);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_FACE_KEY);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_BIRD_KEY);
+        playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_GOLD_LEAF);
 
         assertEquals(1, playerState.powerBraceletLevel());
         assertEquals(1, playerState.shieldLevel());
@@ -426,7 +426,7 @@ final class PlayerStateTest {
         assertEquals(1, playerState.birdKeyCount());
         assertEquals(1, playerState.goldenLeavesCount());
         assertEquals(1, playerState.chestItemCount(
-            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET));
+            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
     }
 
     @Test
@@ -497,7 +497,7 @@ final class PlayerStateTest {
         playerState.applyEntityPickup(0x2D);
         playerState.applyEntityPickup(0x2E);
         playerState.applyChestReward(
-            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET);
+            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET);
 
         byte[] bytes = SaveRamImage.empty().bytes();
         int main = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset();
@@ -575,7 +575,7 @@ final class PlayerStateTest {
         assertEquals(0, playerState.addRupeeBuffer());
         assertEquals(0, playerState.subtractHealthBuffer());
         assertEquals(0, playerState.chestItemCount(
-            linksawakening.world.ChestContentsTable.CHEST_POWER_BRACELET));
+            linksawakening.world.room.ChestContentsTable.CHEST_POWER_BRACELET));
         assertArrayEquals(new int[] {1, 2, 0, 0, 0}, saved.nameBytes());
     }
 }

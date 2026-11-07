@@ -1,6 +1,6 @@
 package linksawakening.gameplay;
 
-import linksawakening.world.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

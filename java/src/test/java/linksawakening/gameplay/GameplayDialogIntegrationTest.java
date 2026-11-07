@@ -1,18 +1,20 @@
 package linksawakening.gameplay;
 
+
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
-import linksawakening.world.Warp;
+import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static linksawakening.world.RoomConstants.ROOM_OBJECTS_AREA_SIZE;
-import static linksawakening.world.RoomConstants.ROOM_OBJECTS_BASE;
-import static linksawakening.world.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_AREA_SIZE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 import static linksawakening.rom.RomBank.romOffset;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

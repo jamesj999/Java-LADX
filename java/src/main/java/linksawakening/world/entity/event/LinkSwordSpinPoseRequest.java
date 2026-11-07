@@ -1,11 +1,10 @@
 package linksawakening.world.entity.event;
 
-import linksawakening.world.*;
-import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.RoomEntity;
 
 public record LinkSwordSpinPoseRequest(int sourceSlot, int countdown) implements EntityRequest {
     public LinkSwordSpinPoseRequest {
-        if (sourceSlot < 0 || sourceSlot >= EntityRoomLoader.MAX_ENTITIES) {
+        if (sourceSlot < 0 || sourceSlot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Sword-spin source slot out of range: "
                 + sourceSlot);
         }

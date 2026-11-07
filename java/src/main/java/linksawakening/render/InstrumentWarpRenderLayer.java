@@ -2,7 +2,7 @@ package linksawakening.render;
 
 import java.util.List;
 import linksawakening.gpu.Framebuffer;
-import linksawakening.world.InstrumentWarpVisual;
+import linksawakening.world.entity.event.InstrumentWarpVisual;
 
 /** Applies the ROM's saturating RGB555 palette increments to a rendered plane. */
 final class InstrumentWarpRenderLayer implements RenderLayer {
@@ -19,7 +19,7 @@ final class InstrumentWarpRenderLayer implements RenderLayer {
     }
 
     static RenderLayer swirl(InstrumentWarpVisual visual,
-                             linksawakening.world.RoomEntitySnapshot entities, int frame) {
+                             linksawakening.world.entity.RoomEntitySnapshot entities, int frame) {
         int[] commands = visual.swirl();
         int[][] palettes = visual.objectPalettes(entities.spriteSelection().objectPalettes());
         return context -> {
