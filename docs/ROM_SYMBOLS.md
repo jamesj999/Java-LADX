@@ -79,3 +79,23 @@ retain identical addresses; no discrepancies. All byte reads are typed.
 Guard covers the parser and all physics sources; both suites pass.
 Remaining original-metric world declarations: 56; this turn removed 39 named
 location declarations (including ADDRESS and BANK_SECOND_HALF variants).
+
+RoomPaletteLoader migrated 18 declarations and inline palette-transition locations
+at 15 exact symbol addresses; no discrepancies. Typed reads preserve decoding
+and bounds. The historical palette-map/table distinction is now symbolic.
+
+Current original-metric literal declaration totals:
+
+- entity: 6.
+- equipment: 1.
+- gameplay: 6.
+- gpu: 13.
+- render: 1.
+- vfx: 3.
+- world: 38.
+
+World remaining: RoomTilemapBuilder 17, OverworldBushInteraction 6;
+entity-runtime-owned WarpMotion 1, EntityRoomLoader 1 and RoomSession 6.
+EnemyDropResolver 6 and RomEnemyCombatTables 1 left untouched because their
+entity/combat ownership is ambiguous. Physics has zero matching declarations.
+This turn migrated 57 named declarations across seven files, plus inline tables.

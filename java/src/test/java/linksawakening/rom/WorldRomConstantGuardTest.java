@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class WorldRomConstantGuardTest {
     private static final List<String> MIGRATED = List.of(
         "OverworldTilesetTable", "IndoorRoomPointerTables",
-        "RoomObjectParser", "RoomLoader", "ChestContentsTable", "DungeonRoomEventTable", "ManboTransitionWave", "ManboWarpResolver");
+        "RoomPaletteLoader", "RoomObjectParser", "RoomLoader", "ChestContentsTable", "DungeonRoomEventTable", "ManboTransitionWave", "ManboWarpResolver");
     // No genuine non-ROM _BANK/_ADDR literals in these files currently need exemption.
     private static final Set<String> NON_ROM_ALLOW_LIST = Set.of();
     private static final Pattern LITERAL = Pattern.compile(

@@ -176,4 +176,19 @@ public final class RomSymbols {
     public static final RomAddress EntranceObjectIds = new RomAddress(0x00, 0x37B4);
     public static final RomAddress Data_002_5BF4 = new RomAddress(0x02, 0x5BF4);
     public static final RomAddress Data_002_5BFC = new RomAddress(0x02, 0x5BFC);
+    public static final RomAddress IndoorPaletteMaps = new RomAddress(0x21, 0x4413);
+    public static final RomAddress DungeonPalettesA = new RomAddress(0x21, 0x43EF);
+    public static final RomAddress DungeonPalettesB = new RomAddress(0x21, 0x4401);
+    public static final RomAddress Data_021_6750 = new RomAddress(0x21, 0x6750);
+    public static final RomAddress InteriorPalettes = new RomAddress(0x21, 0x443F);
+    public static final RomAddress Data_021_67D0 = new RomAddress(0x21, 0x67D0);
+    public static final RomAddress Data_021_73B0 = new RomAddress(0x21, 0x73B0);
+    public static final RomAddress Data_021_74A0 = new RomAddress(0x21, 0x74A0);
+    public static final RomAddress OverworldPaletteMap = new RomAddress(0x21, 0x42EF);
+    public static final RomAddress OverworldPalettes = new RomAddress(0x21, 0x42B1);
+    public static final RomAddress ObjectPalettes = new RomAddress(0x21, 0x5518);
+    public static final RomAddress Data_021_5548 = new RomAddress(0x21, 0x5548);
+    public static final RomAddress Data_021_56C8 = new RomAddress(0x21, 0x56C8);
+    public static final RomAddress IndoorSpritePaletteIndexData = new RomAddress(0x21, 0x523A);
+    public static final RomAddress TilemapPaletteTable = new RomAddress(0x21, 0x51F6);
 }
