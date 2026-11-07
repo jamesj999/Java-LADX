@@ -113,3 +113,5 @@ linksawakening.world.ZombieRuntimeTest
 linksawakening.world.ZoraRuntimeTest
 linksawakening.MainOpeningRouteTest
 linksawakening.render.GameFrameSceneBuilderFileMenuTest
+
+linksawakening.audio.music.FrameAudioPlayerTest
