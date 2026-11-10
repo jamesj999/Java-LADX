@@ -35,7 +35,11 @@ final class LinkMotion {
             moveDirection = signedSpeed > 0 ? Link.DIRECTION_DOWN : Link.DIRECTION_UP;
         }
 
-        int probeMask = link.collision != null && !link.linkStateMachine.debugNoClip && !link.linkAirborne.directionalLedgeJumpMotionLocked
+        // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too.
+        // BackgroundCollisionHandler ($02:6E45) returns until landing.
+        int probeMask = link.collision != null && !link.linkStateMachine.debugNoClip
+            && !link.linkEntityEffects.marinBedJumpMotionLocked
+            && !link.linkAirborne.directionalLedgeJumpMotionLocked
             ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
