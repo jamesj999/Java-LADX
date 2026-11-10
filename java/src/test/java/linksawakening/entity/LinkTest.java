@@ -1773,7 +1773,7 @@ final class LinkTest {
     }
 
     @Test
-    void overworldLedgeUsesImmediateUnstuckingFallInsteadOfDirectionalCountdown()
+    void overworldLedgeEntersUnstuckingWithoutDirectionalCountdown()
             throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -1793,14 +1793,17 @@ final class LinkTest {
             collision.objectPhysicsFlagAtPoint(0x26, 0x38));
         link.update();
 
-        assertTrue(link.isAirborne());
+        assertFalse(link.isAirborne(), "The unstucking handler runs on the next frame");
         assertEquals(0x02, link.romMotionState());
-        assertTrue(link.pixelY() > 0x28);
+        assertEquals(0x28, link.pixelY());
         assertEquals(List.of(GameplaySoundEvent.LEDGE_FALL), soundSink.events);
+        link.update();
+        assertTrue(link.isAirborne());
+        assertEquals(0x28 + 21, link.pixelY());
         // Unlike LinkMotionDefault, LinkMotionUnstuckingHandler does not
         // call UpdateLinkWalkingAnimation while descending.
         int frame = 1;
-        while (link.isAirborne()) {
+        while (link.romMotionState() == 0x02) {
             assertEquals(0x64 + Math.min(2, (frame - 1) / 8),
                 resolvedAnimationState(link), "frame " + frame);
             assertTrue(frame < 64, "cliff fall must land");
@@ -1808,6 +1811,10 @@ final class LinkTest {
             frame++;
         }
         assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+        assertTrue(link.isAirborne(), "$02:49B6 writes 1 even on the landing frame");
+        assertEquals(0x64, resolvedAnimationState(link));
+        link.update();
+        assertFalse(link.isAirborne());
     }
 
     @Test

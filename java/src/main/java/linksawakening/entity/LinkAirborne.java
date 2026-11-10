@@ -33,17 +33,21 @@ final class LinkAirborne {
     LinkAirborne(Link link) { this.link = link; }
 
     void tickJump() {
+        tickJump(true);
+    }
+
+    private void tickJump(boolean animate) {
         if (!airborne || link.linkEntityEffects.roosterCarryActive) {
             return;
         }
 
-        if (!spinningPitWarpArrival && !link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
+        if (animate && !spinningPitWarpArrival && !link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         // $02:4523–4561 changes only axes with held input. With no
         // input, momentum is retained; reversing takes 32 speed steps.
         if (!spinningPitWarpArrival && !link.linkSideView.sideScrolling && !link.linkEntityEffects.marinBedJumpMotionLocked
-            && !directionalLedgeJumpMotionLocked && !overworldLedgeFallActive
+            && !directionalLedgeJumpMotionLocked
             && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
             int mask = link.buildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
@@ -55,7 +59,8 @@ final class LinkAirborne {
                 link.linkMotion.lastRomSpeedY = steerAirSpeed(link.linkMotion.lastRomSpeedY, target);
             }
         }
-        if (zSubPixels > 0 || zVelocity > 0) {
+        // $02:4563 tests hLinkPositionZ, not its fractional byte wC149.
+        if ((zSubPixels >> Link.SUB_PIXEL_SHIFT) > 0 || zVelocity > 0) {
             return;
         }
 
@@ -72,12 +77,25 @@ final class LinkAirborne {
         }
         zSubPixels = 0;
         zVelocity = 0;
+        link.linkAnimator.jumpAnimationCounter = 0;
+        link.linkAnimator.jumpAnimationFrame = 0;
         if (linkOverPit()) {
             enterPitGroundState();
         } else {
             groundStatus = Link.GROUND_STATUS_NORMAL;
             fallingIntoPit = false;
         }
+    }
+
+    void tickOverworldLedgeFall() {
+        // $02:49AA applies gravity without moving XY, then $49B6 writes
+        // wIsLinkInTheAir=1 even on landing, before UpdateLinkAnimation.
+        // The next default-motion frame clears it again. hLinkPhysicsModifier
+        // remains 1; only wLinkMotionState changes back to default.
+        tickJump(false);
+        link.linkStateMachine.physicsModifier = 1;
+        airborne = true;
+        if (!swordSuppressesJumpAnimation()) tickJumpAnimation();
     }
 
     static int steerAirSpeed(int speedByte, int target) {

@@ -66,6 +66,8 @@ final class LinkAnimator {
     int swordAcquisitionAnimationState = -1;
     int marinWakeUpBedVariant = -1;
     int bedJumpRenderZ = -1;
+    /** DrawLinkSprite uses wC145, cached before ledge motion ($00:1033). */
+    int ledgeJumpRenderY = Integer.MIN_VALUE;
     int jumpAnimationCounter;
     int jumpAnimationFrame;
 
@@ -83,7 +85,7 @@ final class LinkAnimator {
         boolean rightFlipY = link.spriteSheet.rightHalfFlipY(animationState);
 
         int originX = link.linkMotion.pixelX() + offsetX;
-        int renderY = link.linkMotion.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : link.zPixels());
+        int renderY = renderY();
         int originY = renderY + offsetY;
         int[] palette = link.playerState != null
             && (link.playerState.invincibilityCounter() & 0x04) != 0
@@ -204,7 +206,9 @@ final class LinkAnimator {
         }
         // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
         // while link.linkAirborne.airborne, selecting the alternate normal pose after the flip.
-        int normalFrame = link.linkAirborne.airborne ? 1 : link.walkFrame;
+        int normalFrame = link.linkAirborne.airborne
+            || (ledgeJumpRenderY != Integer.MIN_VALUE && link.romConsecutiveStepsCount == 0xFF)
+                ? 1 : link.walkFrame;
         int baseState = LinkAnimator.ANIMATION_STATE[link.direction][normalFrame];
         if (link.linkEntityEffects.carryingLiftedObjectState == 1) {
             return LinkAnimator.LIFTING_ANIMATION_STATE[link.direction][link.walkFrame];
@@ -358,7 +362,7 @@ final class LinkAnimator {
         boolean rightFlipY = link.spriteSheet.rightHalfFlipY(animationState);
 
         int originX = link.pixelX() + offsetX;
-        int renderY = link.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : link.zPixels());
+        int renderY = renderY();
         int originY = renderY + offsetY;
         int[] palette = link.playerState != null
             && (link.playerState.invincibilityCounter() & 0x04) != 0
@@ -413,5 +417,10 @@ final class LinkAnimator {
                     link.direction, offsetX, offsetY);
             }
         }
+    }
+
+    private int renderY() {
+        return ledgeJumpRenderY != Integer.MIN_VALUE ? ledgeJumpRenderY
+            : link.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : link.zPixels());
     }
 }

@@ -26,6 +26,9 @@ final class LinkStateMachine {
             return;
         }
         link.linkAnimator.bedJumpRenderZ = -1;
+        link.linkAnimator.ledgeJumpRenderY =
+            link.linkAirborne.overworldLedgeFallActive || link.linkAirborne.directionalLedgeJumpMotionLocked
+                ? link.pixelY() - link.zPixels() : Integer.MIN_VALUE;
         frameCounter = (frameCounter + 1) & 0xFF;
         if (pegasusBootsCollisionCountdown > 0) {
             pegasusBootsCollisionCountdown--;
@@ -113,9 +116,10 @@ final class LinkStateMachine {
         }
 
         if (link.linkAirborne.overworldLedgeFallActive) {
-            link.linkMotion.lastRomSpeedY = 0xFF;
-            link.linkMotion.subY--;
-            link.linkAirborne.tickJump();
+            link.linkMotion.lastRomSpeedX = carriedSpeedX & 0xFF;
+            link.linkMotion.lastRomSpeedY = carriedSpeedY & 0xFF;
+            if (physicsModifier == 0) link.linkMotion.beginOverworldLedgeUnstuckingMotion();
+            link.linkAirborne.tickOverworldLedgeFall();
             return;
         }
 
@@ -439,6 +443,7 @@ final class LinkStateMachine {
         link.linkAnimator.marinWakeUpBedVariant = -1;
         link.linkEntityEffects.marinBedJumpMotionLocked = false;
         link.linkAnimator.bedJumpRenderZ = -1;
+        link.linkAnimator.ledgeJumpRenderY = Integer.MIN_VALUE;
         link.linkAirborne.directionalLedgeJumpMotionLocked = false;
         link.linkAirborne.overworldLedgeFallActive = false;
         link.linkEntityEffects.likeLikeCaptured = false;
