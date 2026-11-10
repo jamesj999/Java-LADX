@@ -89,7 +89,24 @@ public final class RoomSession extends RoomSessionRules {
                        TransientVfxSystem transientVfxSystem,
                        DroppableRupeeSystem droppableRupeeSystem,
                        RoomLoadListener roomLoadListener) {
-        context = new RoomSessionContext(this, romData, gpu, roomLoader, overworldTilesetTable, overworldCollision, transientVfxSystem, droppableRupeeSystem, roomLoadListener);
+        this(romData, gpu, roomLoader, overworldTilesetTable, overworldCollision,
+            transientVfxSystem, droppableRupeeSystem, roomLoadListener,
+            new linksawakening.world.entity.RomRandomByteSource());
+    }
+
+    /** Shares GetRandomByte's single wRandomSeed with equipment and world actions. */
+    public RoomSession(byte[] romData,
+                       GPU gpu,
+                       RoomLoader roomLoader,
+                       OverworldTilesetTable overworldTilesetTable,
+                       OverworldCollision overworldCollision,
+                       TransientVfxSystem transientVfxSystem,
+                       DroppableRupeeSystem droppableRupeeSystem,
+                       RoomLoadListener roomLoadListener,
+                       linksawakening.world.entity.RomRandomByteSource randomByteSource) {
+        context = new RoomSessionContext(this, romData, gpu, roomLoader, overworldTilesetTable,
+            overworldCollision, transientVfxSystem, droppableRupeeSystem, roomLoadListener,
+            randomByteSource);
     }
     public void loadInitialOverworld(int roomId) { context.roomLoadCoordinator.loadInitialOverworld(roomId); }
     /** Called only when a warp crosses the indoor/overworld boundary. */

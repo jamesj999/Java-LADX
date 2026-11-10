@@ -240,7 +240,7 @@ public final class SessionBootstrap {
         itemRegistry = new ItemRegistry();
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
             new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
-            callbacks.roomMusic()::accept);
+            callbacks.roomMusic()::accept, random);
         roomSession.setColorShellSoundSink(gameplaySoundSink);
         LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
