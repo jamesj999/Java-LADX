@@ -18,6 +18,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final int[] hudTiles = new int[WIDTH * HEIGHT], hudAttributes = new int[WIDTH * HEIGHT];
     private java.util.function.IntUnaryOperator paletteTransform = color -> color;
     private final java.util.function.IntUnaryOperator[] bgTransforms = new java.util.function.IntUnaryOperator[WIDTH * HEIGHT];
+    private java.util.function.IntUnaryOperator objectPaletteTransform = color -> color;
     private String submittingLayer = "unknown";
     private final String[] bgSources = new String[WIDTH * HEIGHT], objSources = new String[WIDTH * HEIGHT];
     private final int[] objFlags = new int[WIDTH * HEIGHT];
@@ -184,9 +185,19 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     }
 
     public void withPaletteTransform(java.util.function.IntUnaryOperator transform, Runnable submission) {
-        var previous = paletteTransform;
-        paletteTransform = transform.andThen(previous);
-        try { submission.run(); } finally { paletteTransform = previous; }
+        withPaletteTransforms(transform, transform, submission);
+    }
+
+    public void withPaletteTransforms(java.util.function.IntUnaryOperator background,
+                                      java.util.function.IntUnaryOperator object, Runnable submission) {
+        var previousBg = paletteTransform;
+        var previousObj = objectPaletteTransform;
+        paletteTransform = background.andThen(previousBg);
+        objectPaletteTransform = object.andThen(previousObj);
+        try { submission.run(); } finally {
+            paletteTransform = previousBg;
+            objectPaletteTransform = previousObj;
+        }
     }
 
     public void copyBackgroundRows(HardwareFrame source, int rows) {
@@ -208,11 +219,11 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final java.util.List<ObjectTile> oam = new java.util.ArrayList<>();
     @Override public void append(Tile tile, int x, int y, boolean flipX, boolean flipY,
                                  int[] palette, boolean behindBackground) {
-        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer, y, paletteTransform));
+        oam.add(new ObjectTile(tile, x, y, flipX, flipY, palette, oam.size(), behindBackground, submittingLayer, y, objectPaletteTransform));
     }
     @Override public void appendFromEntry(int entryY, Tile tile, int x, int y, boolean fx, boolean fy,
                                           int[] palette, boolean behind) {
-        oam.add(new ObjectTile(tile, x, y, fx, fy, palette, oam.size(), behind, submittingLayer, entryY, paletteTransform));
+        oam.add(new ObjectTile(tile, x, y, fx, fy, palette, oam.size(), behind, submittingLayer, entryY, objectPaletteTransform));
     }
 
     /** bank1.asm $5F6A-$5FB2: skip reserved Link/prompt entries 0-8, hide whole other entries. */

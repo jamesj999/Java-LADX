@@ -61,5 +61,7 @@ public final class InventoryController {
         menu.submit(frame, gpu, palettes);
     }
     public boolean canSubmitFullyOpenWindow() { return menu.isFullyOpen(); }
+    public boolean inventoryAppearing() { return menu.inventoryAppearing(); }
+    public linksawakening.ui.InventoryTransition transition() { return menu.transition(); }
     public int windowY() { return menu.windowY(); }
 }

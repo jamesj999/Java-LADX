@@ -32,7 +32,7 @@ final class InventoryControllerTest {
 
         input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
         controller.dispatchToggleInput();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 60; i++) {
             controller.tick();
         }
 

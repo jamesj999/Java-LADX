@@ -14,7 +14,7 @@ import static linksawakening.world.room.RoomConstants.*;
 import static linksawakening.app.gameplay.GameplaySimulation.*;
 
 final class LinkEquipmentPhase {
-    void tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
+    void tick(GameplaySimulation context, boolean dialogBlocksGameplay, boolean inventoryBlockedAtStart) {
         var roomSession = context.roomSession();
         var transitionController = context.transitionController();
         var roomTransitionCoordinator = context.roomTransitionCoordinator();
@@ -35,7 +35,6 @@ final class LinkEquipmentPhase {
         var debugScroll = context.debugScroll();
         var direction = context.direction();
             if (!dialogBlocksGameplay) {
-                if (link == null || !link.isPassingOut()) inventoryController.tick();
                 if (playerState != null) {
                     playerState.tickResourceBuffers(frameCounter);
                     var resourceSound = playerState.takeResourceSound();
@@ -51,11 +50,9 @@ final class LinkEquipmentPhase {
 
             if (context.passOutController().tick(context, dialogBlocksGameplay)) return;
 
-            if (!dialogBlocksGameplay && inventoryMenu.isFullyOpen()) {
-                inventoryController.dispatchMenuInput();
-            }
-
-            boolean linkActive = !scrollController.isActive()
+            // LinkMotionMapFadeInHandler ($00:19DE-$00:1A21) restores normal
+            // motion and returns; held movement starts on the following frame.
+            boolean linkActive = !inventoryBlockedAtStart && !scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay

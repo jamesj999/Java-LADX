@@ -18,7 +18,7 @@ public final class InventoryRenderLayer implements HardwareRenderLayer {
 
     @Override public boolean supportsHardware() { return true; }
     @Override public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        if (inventoryController.windowY() < 128)
+        if (inventoryController.inventoryAppearing())
             frame.hideGameplayObjectsUnderWindow(inventoryController.windowY());
         inventoryController.submit(frame, gpu, roomPalettes);
     }

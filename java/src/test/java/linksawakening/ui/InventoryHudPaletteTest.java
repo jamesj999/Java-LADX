@@ -27,7 +27,7 @@ final class InventoryHudPaletteTest {
             assertEquals(0x123456, rgb(pixels, pixel));
         }
         menu.requestToggle();
-        for (int frame = 0; frame < 16; frame++) menu.tick();
+        for (int frame = 0; frame < 60; frame++) menu.tick();
         assertTrue(menu.isFullyOpen());
         menu.render(pixels, gpu, roomPalettes);
         assertNotEquals(0x123456, rgb(pixels, 160 * 128));

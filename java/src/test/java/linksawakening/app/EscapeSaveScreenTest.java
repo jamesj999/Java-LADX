@@ -47,7 +47,7 @@ final class EscapeSaveScreenTest {
             case DIALOG -> state.dialogController().open("Test");
             case INVENTORY -> {
                 press(game, "start");
-                frames(game, 40);
+                frames(game, 60);
                 assertTrue(state.inventoryMenu().isFullyOpen());
             }
             case SCROLL -> state.scrollController().start(ScrollController.RIGHT, 80, 80,
@@ -68,7 +68,7 @@ final class EscapeSaveScreenTest {
             }
             case INVENTORY -> {
                 press(game, "start");
-                frames(game, 40);
+                frames(game, 60);
                 assertTrue(state.inventoryMenu().isFullyClosed());
             }
             case SCROLL -> state.scrollController().tick(160);
@@ -122,6 +122,34 @@ final class EscapeSaveScreenTest {
         game.headlessFrame();
         assertEquals(RenderScreen.FILE_SAVE, screen(game));
         assertTrue(running(game));
+    }
+
+    @Test
+    void dxInventoryReturnKeepsMotionAndSaveBlockedUntilTheFadeFinishes() throws Exception {
+        GameSession game = readyGame();
+        var menu = game.diagnostics().inventoryMenu();
+        press(game, "start");
+        frames(game, 60);
+        assertTrue(menu.isFullyOpen());
+        menu.requestToggle();
+        game.headlessButton("down", true);
+        int x = game.diagnostics().headlessState().x(), y = game.diagnostics().headlessState().y();
+        for (int frame = 0; menu.shouldBlockOverworldInput(); frame++) {
+            assertTrue(frame < 60, "DX return must finish");
+            game.headlessButton("escape", true);
+            game.headlessFrame();
+            game.headlessButton("escape", false);
+            assertEquals(RenderScreen.OVERWORLD, screen(game));
+            assertEquals(x, game.diagnostics().headlessState().x());
+            assertEquals(y, game.diagnostics().headlessState().y());
+        }
+        // $00:1A0F restores normal motion then returns; movement begins next frame.
+        game.headlessFrame();
+        assertTrue(game.diagnostics().headlessState().y() > y);
+        assertEquals(RenderScreen.OVERWORLD, screen(game), "Blocked Escape must not queue a save");
+        game.headlessButton("down", false);
+        press(game, "escape");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
     }
 
     private static GameSession readyGame() throws Exception {

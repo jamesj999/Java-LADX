@@ -48,7 +48,7 @@ final class InventoryInstrumentPanelTest {
         var menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), new PlayerState(),
             linksawakening.gameplay.GameplaySoundSink.none(), rom);
         menu.requestToggle();
-        for (int i = 0; i < 16; i++) menu.tick();
+        for (int i = 0; i < 60; i++) menu.tick();
         byte[] flags = new byte[8];
         byte[] empty = new byte[160 * 144 * 4];
         menu.setWorldContext(true, 0x0E, flags);

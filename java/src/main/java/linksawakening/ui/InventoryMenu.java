@@ -8,26 +8,8 @@ import linksawakening.state.PlayerState;
 
 import java.util.Objects;
 
-/**
- * Port of the DMG inventory-slide mechanic from the LADX disassembly
- * (see bank1.asm:InitializeInventoryBar and bank2.asm:jr_002_61C6).
- *
- * The GB Window layer holds a single 20x18 inventory tilemap. Its Y origin
- * (wWindowY) slides between $00 (fully open, covering the screen) and $80
- * (fully closed, leaving only the top 2 rows visible as the status bar).
- * Each slide step advances wWindowY by wSubscreenScrollIncrement (+/-8).
- *
- * <p>While the menu is fully open, the cursor navigates the 10-slot subscreen
- * (bank20.asm:moveInventoryCursor): left/right step by 1, up/down step by 2,
- * giving a 2-column x 5-row grid. A/B press swaps the cursor's subscreen slot
- * with the corresponding button slot.
- */
+/** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
 public final class InventoryMenu {
-
-    private static final int WINDOW_Y_OPEN = 0x00;
-    private static final int WINDOW_Y_CLOSED = 0x80;
-    private static final int SCROLL_STEP = 0x08;
-    private static final int CLOSED_INCREMENT = +SCROLL_STEP;
 
     // Subscreen grid: 2 cols x 5 rows. Even slot index = left column,
     // odd = right column. Up/down moves by 2 slots (next row, same col);
@@ -50,9 +32,7 @@ public final class InventoryMenu {
     private boolean showInstruments = true;
     private int instrumentPaletteFrame;
 
-    private int windowY = WINDOW_Y_CLOSED;
-    private int subscreenScrollIncrement = CLOSED_INCREMENT;
-    private boolean inventoryAppearing = false;
+    private final InventoryTransition transition = new InventoryTransition();
     private int cursorSlot = 0;
     // Mirrors wInventoryCursorFrameCounter (bank20.asm:62A2). Bit 4 drives
     // the cursor blink (on for 16 frames, off for 16). Reset on any dpad
@@ -87,10 +67,10 @@ public final class InventoryMenu {
 
     /**
      * Called when the player presses the menu button. Ignored while the menu
-     * is mid-slide, matching the disassembly guard on wInventoryAppearing.
+     * is fading/loading. DX accepts menu input only in subtype $08 ($20:63C4).
      */
     public void requestToggle() {
-        if (inventoryAppearing) {
+        if (isTransitioning()) {
             return;
         }
         if (ocarinaSongMenu.isVisible()) {
@@ -100,64 +80,41 @@ public final class InventoryMenu {
             ocarinaSongMenu.requestClose(true);
             return;
         }
-        toggleInventorySlide();
+        toggleInventory();
     }
 
-    private void toggleInventorySlide() {
-        if (inventoryAppearing) {
-            return;
+    private void toggleInventory() {
+        if (isFullyClosed()) {
+            instrumentPaletteFrame = 0;
+            transition.open(!showInstruments);
+            soundSink.play(GameplaySoundEvent.INVENTORY_OPEN); // $02:6176.
+        } else if (isFullyOpen()) {
+            transition.close();
+            soundSink.play(GameplaySoundEvent.INVENTORY_CLOSE); // CloseInventory $20:6441.
         }
-        boolean opening = isFullyClosed();
-        if (opening) instrumentPaletteFrame = 0;
-        subscreenScrollIncrement = -subscreenScrollIncrement;
-        inventoryAppearing = true;
-        soundSink.play(opening ? GameplaySoundEvent.INVENTORY_OPEN : GameplaySoundEvent.INVENTORY_CLOSE);
     }
 
-    /**
-     * Advances the slide by one frame. Called every tick before rendering.
-     */
     public void tick() {
-        if (ocarinaSongMenu.tick()
-                && ocarinaSongMenu.consumeCloseInventoryRequest()
-                && isFullyOpen()) {
-            toggleInventorySlide();
+        if (isFullyOpen() && ocarinaSongMenu.tick()
+                && ocarinaSongMenu.consumeCloseInventoryRequest()) {
+            toggleInventory();
         }
-        if (inventoryAppearing) {
-            windowY += subscreenScrollIncrement;
-            if (windowY <= WINDOW_Y_OPEN) {
-                windowY = WINDOW_Y_OPEN;
-                inventoryAppearing = false;
-            } else if (windowY >= WINDOW_Y_CLOSED) {
-                windowY = WINDOW_Y_CLOSED;
-                inventoryAppearing = false;
-            }
-        }
-        if (isFullyOpen()) {
+        boolean wasInteractive = isFullyOpen();
+        transition.tick();
+        if (wasInteractive) {
             instrumentPaletteFrame = (instrumentPaletteFrame + 1) & 127;
             cursorFrameCounter = (cursorFrameCounter + 1) & 0xFF;
         }
     }
 
-    public boolean isFullyClosed() {
-        return windowY == WINDOW_Y_CLOSED && !inventoryAppearing;
-    }
-
-    public boolean isFullyOpen() {
-        return windowY == WINDOW_Y_OPEN && !inventoryAppearing;
-    }
-
-    public boolean shouldBlockOverworldInput() {
-        return inventoryAppearing || windowY != WINDOW_Y_CLOSED;
-    }
-
-    public int windowY() {
-        return windowY;
-    }
-
-    public boolean isTransitioning() {
-        return inventoryAppearing;
-    }
+    public boolean isFullyClosed() { return !transition.blocksWorld(); }
+    public boolean isFullyOpen() { return transition.interactive(); }
+    public boolean shouldBlockOverworldInput() { return transition.blocksWorld(); }
+    public int windowY() { return transition.windowY(); }
+    public int displayedWindowY() { return transition.displayedWindowY(); }
+    public boolean isTransitioning() { return shouldBlockOverworldInput() && !isFullyOpen(); }
+    public boolean inventoryAppearing() { return transition.appearing(); }
+    public InventoryTransition transition() { return transition; }
 
     public int cursorSlot() {
         return cursorSlot;
@@ -267,15 +224,15 @@ public final class InventoryMenu {
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
-        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+        if (dungeonPanel != null && !showInstruments && windowY() == 0)
             dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
-        int offsetY = windowY;
+        int offsetY = displayedWindowY();
         if (offsetY >= Framebuffer.HEIGHT) {
             return;
         }
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
-        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+        if (instrumentPanel != null && showInstruments && windowY() == 0) {
             inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.render(
@@ -283,18 +240,18 @@ public final class InventoryMenu {
             gpu,
             tilemap,
             attrmap,
-            isFullyClosed() && roomPalettes != null ? roomPalettes : inventoryPalettes,
+            windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
             InventoryTilemapLoader.WIDTH,
             InventoryTilemapLoader.HEIGHT,
             0,
             offsetY
         );
 
-        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+        if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
         }
 
-        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+        if (dungeonPanel != null && !showInstruments && windowY() == 0)
             dungeonPanel.render(displayBuffer, tilemap, attrmap, inventoryPalettes, offsetY,
                 dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes());
 
@@ -328,7 +285,7 @@ public final class InventoryMenu {
         HudOverlay.apply(tiles, attributes, playerState);
         InventorySubscreenOverlay.apply(tiles, attributes, playerState, cursorSlot, false);
         return new ClosedWindow(tiles, attributes,
-            roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, windowY);
+            roomPalettes == null ? tilemapLoader.palettes() : roomPalettes, displayedWindowY());
     }
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
         if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
@@ -338,15 +295,15 @@ public final class InventoryMenu {
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
-        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+        if (dungeonPanel != null && !showInstruments && windowY() == 0)
             dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
-        int offsetY = windowY;
+        int offsetY = displayedWindowY();
         if (offsetY >= Framebuffer.HEIGHT) {
             return;
         }
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
-        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+        if (instrumentPanel != null && showInstruments && windowY() == 0) {
             inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.submit(
@@ -354,18 +311,18 @@ public final class InventoryMenu {
             gpu,
             tilemap,
             attrmap,
-            isFullyClosed() && roomPalettes != null ? roomPalettes : inventoryPalettes,
+            windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
             InventoryTilemapLoader.WIDTH,
             InventoryTilemapLoader.HEIGHT,
             0,
             offsetY
         );
 
-        if (instrumentPanel != null && showInstruments && !isFullyClosed()) {
+        if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
         }
 
-        if (dungeonPanel != null && !showInstruments && !isFullyClosed())
+        if (dungeonPanel != null && !showInstruments && windowY() == 0)
             dungeonPanel.submit(frameModel, tilemap, attrmap, inventoryPalettes, offsetY,
                 dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes());
 

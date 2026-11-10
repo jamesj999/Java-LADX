@@ -61,6 +61,11 @@ public final class GameFrameSceneBuilder {
                 }
             }
         }
+        if (state.screen() == RenderScreen.OVERWORLD && state.inventoryController() != null
+                && state.inventoryController().transition().blocksWorld()) {
+            for (int i = 0; i < layers.size(); i++)
+                layers.set(i, new InventoryFadeRenderLayer(layers.get(i), state.inventoryController().transition()));
+        }
         return FrameScene.of(layers);
     }
 
@@ -72,7 +77,9 @@ public final class GameFrameSceneBuilder {
             state.room().tileAttrs(), backgroundPalettes, state.room().entities());
         layers.add(new RoomRenderLayer(room, state.scrollController(), state.transitionController()));
         List<RenderLayer> sprites = new ArrayList<>();
-        if (state.room().entities() != null
+        boolean showWorldSprites = state.inventoryController() == null
+            || state.inventoryController().transition().worldSpritesVisible();
+        if (showWorldSprites && state.room().entities() != null
             && state.room().entities().spriteSelection() != null) {
             int[][] objectPalettes = state.room().entities().spriteSelection().objectPalettes();
             layers.add(new EntityRenderLayer(state.room().entities(),
@@ -118,9 +125,9 @@ public final class GameFrameSceneBuilder {
         if (state.droppableRupeeSystem() != null) {
             sprites.add(new DroppableRupeeRenderLayer(state.droppableRupeeSystem(), state.scrollController()));
         }
-        if (warp == null) {
+        if (showWorldSprites && warp == null) {
             layers.addAll(sprites);
-        } else {
+        } else if (showWorldSprites) {
             layers.add(new InstrumentWarpRenderLayer(sprites, warp.objectFade()));
         }
         if (state.inventoryController() != null && (warp == null || warp.commandBatches() == 0)) {

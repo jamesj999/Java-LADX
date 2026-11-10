@@ -27,7 +27,7 @@ final class DialogStoryPhase {
                 // $00:0F22 runs before world transitions and dialog gates.
                 // The separate inventory gameplay handler does not run it.
                 roomSession.advanceBoomerangSoundClock(
-                    inventoryMenu == null || inventoryMenu.isFullyClosed());
+                    inventoryMenu == null || inventoryMenu.transition().worldHandlerActive());
             }
             scrollController.tickScreenShake();
             if (roomSession != null && link != null && dialogController != null
