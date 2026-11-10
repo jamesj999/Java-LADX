@@ -139,6 +139,7 @@ public final class RomTables {
     private final byte[] entityCollisionPointsY;
     private final int[] entityFineCollisionShapes;
     private final int[] linkFineCollisionShapes;
+    private byte[] pitWarpArrivalDirections;
     private byte[] waterCurrentX;
     private byte[] waterCurrentY;
     private final byte[] linkSpeedX;
@@ -329,6 +330,7 @@ public final class RomTables {
                              staticSwordCollisionX, staticSwordCollisionY,
                              loadUnsignedTable(romData, 2, 0x4E66, 7),
                              loadRevolvingDoorPalettes(romData));
+        result.pitWarpArrivalDirections = loadSignedTable(romData, 2, 0x46C5, 4);
         result.waterCurrentX = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C40), RomBank.romOffset(2, 0x7C48));
         result.waterCurrentY = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C48), RomBank.romOffset(2, 0x7C50));
         return result;
@@ -464,6 +466,8 @@ public final class RomTables {
     }
 
     /** Signed current speeds from Data_002_7C40/7C48. */
+    public int pitWarpArrivalDirection(int frameCounter) { return pitWarpArrivalDirections[(frameCounter >>> 2) & 3]; }
+
     public int waterCurrentSpeedX(int index) { return waterCurrentX[index & 7]; }
     public int waterCurrentSpeedY(int index) { return waterCurrentY[index & 7]; }
 

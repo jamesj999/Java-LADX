@@ -216,7 +216,7 @@ final class LinkAnimator {
         if (override >= 0) {
             return override;
         }
-        if (link.linkAirborne.airborne && jumpAnimationFrame < 3 && !link.linkAirborne.swordSuppressesJumpAnimation()) {
+        if (link.linkAirborne.airborne && !link.linkAirborne.spinningPitWarpArrival && jumpAnimationFrame < 3 && !link.linkAirborne.swordSuppressesJumpAnimation()) {
             return LinkAnimator.JUMP_ANIMATION_STATE[link.direction][jumpAnimationFrame];
         }
         if (link.spriteSheet != null) {

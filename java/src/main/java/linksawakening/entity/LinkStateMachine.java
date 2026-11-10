@@ -75,6 +75,17 @@ final class LinkStateMachine {
             return;
         }
 
+        if (link.linkAirborne.spinningPitWarpArrival) {
+            // $02:4511 clears XY increments; $02:478C selects facing globally.
+            link.direction = Link.javaDirectionForRomDirection(
+                link.romTables.pitWarpArrivalDirection(frameCounter));
+            link.linkMotion.forcedSpeedPending = false;
+            link.linkMotion.forcedSpeedXOnly = false;
+            link.movingThisFrame = false;
+            link.linkAirborne.tickJump();
+            return;
+        }
+
         if (link.linkSideView.sideScrolling) {
             link.linkSideView.updateSideViewMotion(platformVerticalSpeedForThisUpdate);
             return;
@@ -449,6 +460,7 @@ final class LinkStateMachine {
         physicsRoomCategory = -1;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
+        link.linkAirborne.spinningPitWarpArrival = false;
         link.linkMotion.forcedSpeedPending = false;
         link.linkMotion.forcedSpeedXOnly = false;
         link.linkDamage.collisionIgnoreFramesRemaining = 0;

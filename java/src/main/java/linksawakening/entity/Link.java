@@ -219,6 +219,7 @@ public final class Link implements RocsFeather.JumpTarget {
         linkAirborne.zSubPixels = z << SUB_PIXEL_SHIFT;
         linkAirborne.zVelocity = 0;
         linkAirborne.airborne = z != 0;
+        linkAirborne.spinningPitWarpArrival = z != 0;
     }
 
     public record WaterSplash(int romX, int romY) {}

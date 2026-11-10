@@ -1387,6 +1387,40 @@ final class LinkTest {
     }
 
     @Test
+    void pitWarpArrivalSpinsWithGlobalFramePhaseAndLocksInputUntilLanding() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, emptyRoomObjectsArea());
+        link.setRoomEntryPixelPosition(64, 64);
+        link.linkStateMachine.frameCounter = 0;
+        link.setPitWarpArrival(0x70);
+        int[] directions = {Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_UP};
+        int frame = 0;
+        while (link.isAirborne() && frame < 128) {
+            frame++;
+            link.update();
+            assertEquals(directions[(frame >>> 2) & 3], link.direction(), "frame " + frame);
+            assertEquals(64, link.pixelX());
+            assertEquals(64, link.pixelY());
+            assertEquals(0, link.romSpeedX());
+            assertEquals(0, link.romSpeedY());
+            assertEquals(link.isAirborne(), link.linkAirborne.spinningPitWarpArrival);
+        }
+        assertTrue(frame > 16 && frame < 128);
+        assertFalse(link.linkAirborne.spinningPitWarpArrival);
+        assertEquals(0, link.romEntityZ());
+        int finalDirection = link.direction();
+        assertEquals(directions[(frame >>> 2) & 3], finalDirection);
+        link.inputState.onKeyEvent(link.inputConfig.rightKey(), GLFW_RELEASE);
+        link.update();
+        assertEquals(finalDirection, link.direction());
+        assertEquals(64, link.pixelX());
+        link.inputState.onKeyEvent(link.inputConfig.rightKey(), GLFW_PRESS);
+        link.update();
+        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        assertTrue(link.pixelX() > 64);
+    }
+
+    @Test
     void waterEntryQueuesRomPositionSplashForBothBranchesAndGatesRecovery() throws Exception {
         RomTables tables = RomTables.loadFromRom(loadRom());
         for (boolean flippers : new boolean[] {false, true}) {
