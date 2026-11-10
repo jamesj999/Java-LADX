@@ -115,7 +115,9 @@ final class RoomSessionContext {
     int boomerangSoundCounter;
     boolean boomerangSoundClockProvided;
     int enemyDropMaxHearts = 3;
+    Runnable mapBoundaryWarp = () -> {};
     int enemyDropHealth = 6;
+    Boolean enemyDropLowHealth;
     boolean enemyDropActivePowerUp;
     /** WRAM wSwitchBlocksState; the source reset value is zero. */
     int switchBlocksState;

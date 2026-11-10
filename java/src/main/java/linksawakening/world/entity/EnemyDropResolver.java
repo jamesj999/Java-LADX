@@ -96,6 +96,12 @@ public final class EnemyDropResolver {
     /** Resolves one enemy death while preserving the source routine's branch order. */
     public Result resolve(Context context) {
         Objects.requireNonNull(context, "Context cannot be null");
+        return resolve(context, isLowHealth(context.maxHearts(), context.health()));
+    }
+
+    /** Uses the UpdateHealth latch supplied by the gameplay frame. */
+    public Result resolve(Context context, boolean lowHealth) {
+        Objects.requireNonNull(context, "Context cannot be null");
 
         int droppedItem = context.droppedItem();
         if (droppedItem == ENTITY_NONE) {
@@ -134,7 +140,7 @@ public final class EnemyDropResolver {
             return new Result(0x33, counters, 0);
         }
 
-        int chanceMask = (isLowHealth(context.maxHearts(), context.health())
+        int chanceMask = (lowHealth
             ? randomDropChanceTableLowHealth : randomDropChanceTable)[tableIndex];
         int randomReads = 1;
         if ((nextRandomByte(context.randomByteSupplier()) & chanceMask) != 0) {

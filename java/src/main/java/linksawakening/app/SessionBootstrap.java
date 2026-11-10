@@ -282,8 +282,7 @@ public final class SessionBootstrap {
                     }
                     int romDirection = link.applyRomItemDirectionFromInput();
                     if (playerState.swordLevel() != 2
-                        || playerState.health() != playerState.maxHearts()
-                            * PlayerState.HP_PER_HEART
+                        || !playerState.fullHearts()
                         || roomSession.activeProjectileCount() != 0) {
                         return false;
                     }
@@ -486,6 +485,7 @@ public final class SessionBootstrap {
                 }
             }, link::canUseItems));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
+        roomSession.onMapBoundaryWarp(playerState::clearActivePowerUpForWarp);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
     }

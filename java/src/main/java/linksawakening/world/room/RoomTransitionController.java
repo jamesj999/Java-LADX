@@ -21,6 +21,11 @@ final class RoomTransitionController {
         // Scrolling between adjacent rooms does not take this path.
         session.context.recentRoomEntityClears.reset();
         boolean wasIndoor = session.context.activeRoom != null && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
+        // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).
+        // $00:1904/$00:1952 clear only when destination indoor status differs.
+        if (wasIndoor != (warp.category() != Warp.CATEGORY_OVERWORLD)) {
+            session.context.mapBoundaryWarp.run();
+        }
         session.context.dungeonTitleMessageCountdown = 0;
         if (warp.category() == Warp.CATEGORY_OVERWORLD) {
             if (wasIndoor) {

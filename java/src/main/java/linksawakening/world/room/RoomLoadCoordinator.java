@@ -217,6 +217,11 @@ final class RoomLoadCoordinator {
         session.context.entityBridge.entityRuntime.configuration().setEnemyDropCounters(session.context.enemyDropCounters);
         session.context.entityBridge.entityRuntime.configuration().setEnemyDropPlayerState(
             session.context.enemyDropMaxHearts, session.context.enemyDropHealth, session.context.enemyDropActivePowerUp);
+        if (session.context.enemyDropLowHealth != null) {
+            session.context.entityBridge.entityRuntime.configuration().setEnemyDropPlayerState(
+                session.context.enemyDropMaxHearts, session.context.enemyDropHealth,
+                session.context.enemyDropActivePowerUp, session.context.enemyDropLowHealth);
+        }
         session.context.entityBridge.entityRuntime.configuration().setEnemyDropBossBattle(session.roomHasBossBattle());
     }
 

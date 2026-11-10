@@ -18,6 +18,12 @@ import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 /** Boss destruction and source-shaped reward production. */
 public final class EntityBossRewards {
+    private EnemyDropResolver.Result resolveDrop(EnemyDropResolver.Context context) {
+        return runtime.enemyDropLowHealth == null
+            ? runtime.enemyDropResolver.resolve(context)
+            : runtime.enemyDropResolver.resolve(context, runtime.enemyDropLowHealth);
+    }
+
     private final RoomEntityRuntime runtime;
     EntityBossRewards(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
@@ -47,7 +53,7 @@ public final class EntityBossRewards {
                 runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.enemyDropBossBattle,
                 runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling, runtime.enemyDropCounters,
                 randomByteSupplier);
-            result = runtime.enemyDropResolver.resolve(context);
+            result = resolveDrop(context);
             runtime.enemyDropCounters = result.counters();
         }
 
@@ -76,7 +82,7 @@ public final class EntityBossRewards {
             // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
             // ROM health-group tables select the miniboss healing fairy.
             if (runtime.enemyDropResolver != null) {
-                EnemyDropResolver.Result drop = runtime.enemyDropResolver.resolve(
+                EnemyDropResolver.Result drop = resolveDrop(
                     new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()),
                         runtime.droppedItemBySlot[slot], runtime.enemyDropMaxHearts, runtime.enemyDropHealth,
                         runtime.enemyDropBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,

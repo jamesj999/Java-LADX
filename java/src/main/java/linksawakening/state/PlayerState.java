@@ -85,6 +85,31 @@ public final class PlayerState implements LinkPlayerState {
     private int addHealthBuffer;
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
+    private int rupeeUpdateDelay;
+    private final java.util.List<linksawakening.gameplay.GameplaySoundEvent> resourceSounds = new java.util.ArrayList<>();
+    // ThresholdLowHealthTable ($02:6308), including the overlapping code bytes at 0–2.
+    private static final int[] LOW_HEALTH_THRESHOLDS = {
+        0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25
+    };
+    private boolean onLowHealth;
+    private boolean fullHearts;
+
+    /** PerformOverworldAudioTasks ($14:4B0C), before world simulation. */
+    public void latchFullHearts() {
+        fullHearts = health == maxHearts * HP_PER_HEART;
+    }
+
+    public boolean fullHearts() { return fullHearts; }
+    private int timeToNextLowHealthSound;
+
+    public boolean isOnLowHealth() { return onLowHealth; }
+
+    /** Resolves queued writes to hWaveSfx: the last ROM write wins. */
+    public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
+        var sound = resourceSounds.isEmpty() ? null : resourceSounds.get(resourceSounds.size() - 1);
+        resourceSounds.clear();
+        return sound;
+    }
     private int powerUpHits;
     private final int[] chestItemCounts = new int[0x22];
 
@@ -143,6 +168,10 @@ public final class PlayerState implements LinkPlayerState {
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
+        rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
     }
@@ -188,6 +217,10 @@ public final class PlayerState implements LinkPlayerState {
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
+        rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
     }
 
     public int rupees() {
@@ -286,9 +319,16 @@ public final class PlayerState implements LinkPlayerState {
     public void tickResourceBuffers(int frameCounter) {
         if ((frameCounter & 0x01) == 0) {
             tickRupeeBuffer();
-        } else {
-            tickHealthBuffer();
         }
+        onLowHealth = health < LOW_HEALTH_THRESHOLDS[maxHearts];
+        if (onLowHealth) {
+            timeToNextLowHealthSound = (timeToNextLowHealthSound - 1) & 0xFF;
+            if (timeToNextLowHealthSound == 0xFF) {
+                resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS);
+                timeToNextLowHealthSound = 0x30;
+            }
+        }
+        if ((frameCounter & 1) != 0) tickHealthBuffer();
     }
 
     /** Applies the immediate state portion of a bank3 pickable handler. */
@@ -297,7 +337,7 @@ public final class PlayerState implements LinkPlayerState {
             case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
             // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
             case 0x2F -> addHealthBuffer = (addHealthBuffer + 0x30) & 0xFF;
-            case 0x2E -> addRupeeBuffer = Math.min(0xFF, addRupeeBuffer + 1);
+            case 0x2E -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 1);
             case 0x33 -> setActivePowerUp(ACTIVE_POWER_UP_PIECE_OF_POWER);
             case 0x34 -> setActivePowerUp(ACTIVE_POWER_UP_GUARDIAN_ACORN);
             case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
@@ -395,6 +435,8 @@ public final class PlayerState implements LinkPlayerState {
 
     /** Applies the immediate reward writes performed by EntityInitChestWithItem. */
     public void applyChestReward(int chestItem) {
+        if (chestItem >= ChestContentsTable.CHEST_RUPEES_50
+                && chestItem <= ChestContentsTable.CHEST_RUPEES_500) rupeeUpdateDelay = 0x18;
         if (chestItem < 0 || chestItem > ChestContentsTable.CHEST_ZOL) {
             throw new IllegalArgumentException("Chest item must be an unsigned chest variant: "
                 + chestItem);
@@ -441,15 +483,15 @@ public final class PlayerState implements LinkPlayerState {
             case ChestContentsTable.CHEST_GOLD_LEAF ->
                 goldenLeavesCount = incrementByte(goldenLeavesCount);
             case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer =
-                Math.min(MAX_RUPEES, addRupeeBuffer + 50);
+                Math.min(0xFFFF, addRupeeBuffer + 50);
             case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer =
-                Math.min(MAX_RUPEES, addRupeeBuffer + 20);
+                Math.min(0xFFFF, addRupeeBuffer + 20);
             case ChestContentsTable.CHEST_RUPEES_100 -> addRupeeBuffer =
-                Math.min(MAX_RUPEES, addRupeeBuffer + 100);
+                Math.min(0xFFFF, addRupeeBuffer + 100);
             case ChestContentsTable.CHEST_RUPEES_200 -> addRupeeBuffer =
-                Math.min(MAX_RUPEES, addRupeeBuffer + 200);
+                Math.min(0xFFFF, addRupeeBuffer + 200);
             case ChestContentsTable.CHEST_RUPEES_500 -> addRupeeBuffer =
-                Math.min(MAX_RUPEES, addRupeeBuffer + 500);
+                Math.min(0xFFFF, addRupeeBuffer + 500);
             case ChestContentsTable.CHEST_SEASHELL -> setSeashells(seashells + 1);
             case ChestContentsTable.CHEST_MESSAGE, ChestContentsTable.CHEST_ZOL -> {
                 // The source marks these rooms complete without applying a
@@ -665,6 +707,11 @@ public final class PlayerState implements LinkPlayerState {
         powerUpHits = 0;
     }
 
+    /** Warp loads ($00:1904/$00:1952) clear only wActivePowerUp. */
+    public void clearActivePowerUpForWarp() {
+        activePowerUp = ACTIVE_POWER_UP_NONE;
+    }
+
     /** Number of accepted enemy hits taken while the current power-up was active. */
     public int powerUpHits() {
         return powerUpHits;
@@ -774,6 +821,10 @@ public final class PlayerState implements LinkPlayerState {
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
         addRupeeBuffer = 0;
+        rupeeUpdateDelay = 0;
+        resourceSounds.clear();
+        onLowHealth = false;
+        timeToNextLowHealthSound = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
     }
@@ -803,6 +854,9 @@ public final class PlayerState implements LinkPlayerState {
                 addHealthBuffer = 0;
             } else {
                 health++;
+                if ((health & 7) == 6) {
+                    resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP);
+                }
                 addHealthBuffer--;
                 return;
             }
@@ -814,18 +868,29 @@ public final class PlayerState implements LinkPlayerState {
         if (health > 0) {
             health--;
         }
+        // UpdateHealth.noHealth ($02:63A3): consume medicine on a lethal tick.
+        if (health == 0 && hasMedicine) {
+            medicineCount = Math.max(0, medicineCount - 1);
+            hasMedicine = medicineCount != 0;
+            health = HP_PER_HEART;
+            addHealthBuffer = (addHealthBuffer + 0x80) & 0xFF;
+            invincibilityCounter = 0xA0;
+        }
     }
 
     private void tickRupeeBuffer() {
+        if (rupeeUpdateDelay != 0) {
+            rupeeUpdateDelay--;
+            return;
+        }
         if (addRupeeBuffer == 0) {
             return;
         }
-        if (rupees >= MAX_RUPEES) {
-            addRupeeBuffer = 0;
-            return;
-        }
-        rupees++;
-        addRupeeBuffer--;
+        resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.RUPEE);
+        int step = Math.min(9, (addRupeeBuffer >> 5) + 1);
+        addRupeeBuffer -= step;
+        rupees = Math.min(MAX_RUPEES, rupees + step);
+        if (rupees == MAX_RUPEES) addRupeeBuffer = 0;
     }
 
     private void giveInventoryItem(int inventoryId) {

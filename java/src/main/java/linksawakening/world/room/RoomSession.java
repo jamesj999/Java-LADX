@@ -92,6 +92,11 @@ public final class RoomSession extends RoomSessionRules {
         context = new RoomSessionContext(this, romData, gpu, roomLoader, overworldTilesetTable, overworldCollision, transientVfxSystem, droppableRupeeSystem, roomLoadListener);
     }
     public void loadInitialOverworld(int roomId) { context.roomLoadCoordinator.loadInitialOverworld(roomId); }
+    /** Called only when a warp crosses the indoor/overworld boundary. */
+    public void onMapBoundaryWarp(Runnable callback) {
+        context.mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
+    }
+
     public void loadWarpDestination(Warp warp) { context.roomTransitionController.loadWarpDestination(warp); }
     /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
     public int tickDungeonTitleMessage(boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) { return context.roomTransitionController.tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement); }
@@ -466,6 +471,12 @@ public final class RoomSession extends RoomSessionRules {
     void initializeSwitchBlockTiles() { context.roomLoadCoordinator.initializeSwitchBlockTiles(); }
     void synchronizeSwitchBlockCollisionState() { context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState(); }
     void synchronizeFollowingNpcEntitiesIfNeeded() { context.roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded(); }
+    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
+        setEnemyDropPlayerState(maxHearts, health, activePowerUp);
+        context.enemyDropLowHealth = lowHealth;
+        configureEnemyDropRuntime();
+    }
+
     void configureEnemyDropRuntime() { context.roomLoadCoordinator.configureEnemyDropRuntime(); }
     boolean roomHasBossBattle() { return context.roomLoadCoordinator.roomHasBossBattle(); }
     void clearTransientRoomState() { context.roomTransientState.clearTransientRoomState(); }

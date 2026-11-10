@@ -12,6 +12,95 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void frameHealthFlagsStayLatchedAcrossHealthChanges() {
+        PlayerState state = new PlayerState();
+        state.setMaxHearts(3);
+        state.setHealth(24);
+        state.latchFullHearts();
+        state.setHealth(4);
+        assertTrue(state.fullHearts());
+        state.tickResourceBuffers(0);
+        assertTrue(state.isOnLowHealth());
+        state.setHealth(24);
+        assertTrue(state.isOnLowHealth());
+        state.tickResourceBuffers(2);
+        assertFalse(state.isOnLowHealth());
+        state.setHealth(23);
+        state.latchFullHearts();
+        assertFalse(state.fullHearts());
+        state.applyEntityPickup(0x2D);
+        state.tickResourceBuffers(3);
+        assertEquals(24, state.health());
+        assertFalse(state.fullHearts());
+        state.latchFullHearts();
+        assertTrue(state.fullHearts());
+    }
+
+    @Test
+    void lowHealthBeepRunsOnEvenFramesAndReloadsAfterUnderflow() {
+        PlayerState state = new PlayerState();
+        state.setHealth(4);
+        state.applyEntityPickup(0x2E);
+        state.tickResourceBuffers(0);
+        assertTrue(state.isOnLowHealth());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS, state.takeResourceSound());
+        for (int frame = 1; frame <= 48; frame++) {
+            state.tickResourceBuffers(frame);
+            assertEquals(null, state.takeResourceSound());
+        }
+        state.tickResourceBuffers(49);
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS, state.takeResourceSound());
+        state.setHealth(5);
+        state.tickResourceBuffers(50);
+        assertFalse(state.isOnLowHealth());
+    }
+
+    @Test
+    void refillChimeWinsOverLowHealthBeepInTheSameFrame() {
+        PlayerState state = new PlayerState();
+        state.setMaxHearts(6);
+        state.setHealth(5);
+        state.applyEntityPickup(0x2D);
+        state.tickResourceBuffers(1);
+        assertEquals(6, state.health());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP, state.takeResourceSound());
+        state.tickResourceBuffers(3);
+        assertEquals(null, state.takeResourceSound());
+    }
+
+    @Test
+    void rupeeBufferUsesSixteenBitsAndAccelerates() {
+        PlayerState state = new PlayerState();
+        for (int i = 0; i < 300; i++) state.applyEntityPickup(0x2E);
+        assertEquals(300, state.addRupeeBuffer());
+        state.tickResourceBuffers(0);
+        assertEquals(9, state.rupees());
+        assertEquals(291, state.addRupeeBuffer());
+        assertEquals(linksawakening.gameplay.GameplaySoundEvent.RUPEE, state.takeResourceSound());
+    }
+
+    @Test
+    void lethalHealthTickConsumesMedicineAndQueuesRevival() {
+        PlayerState state = new PlayerState();
+        state.setHealth(1);
+        state.setHasMedicine(true);
+        state.setMedicineCount(1);
+        state.applyRomEnemyDamage(2);
+        state.tickResourceBuffers(0);
+        assertEquals(1, state.health());
+        assertEquals(1, state.medicineCount());
+        state.tickResourceBuffers(1);
+        assertEquals(8, state.health());
+        assertEquals(0x80, state.addHealthBuffer());
+        assertEquals(0xA0, state.invincibilityCounter());
+        assertEquals(0, state.medicineCount());
+        assertFalse(state.hasMedicine());
+        assertEquals(1, state.subtractHealthBuffer());
+        state.tickResourceBuffers(3);
+        assertEquals(9, state.health());
+    }
+
+    @Test
     void fairyPickupHealsSixHeartsThroughTheResourceBuffer() {
         PlayerState playerState = new PlayerState();
         playerState.setMaxHearts(10);

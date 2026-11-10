@@ -38,6 +38,8 @@ final class LinkEquipmentPhase {
                 inventoryController.tick();
                 if (playerState != null) {
                     playerState.tickResourceBuffers(frameCounter);
+                    var resourceSound = playerState.takeResourceSound();
+                    if (resourceSound != null) context.gameplaySoundSink().play(resourceSound);
                 }
                 if (transientVfxSystem != null) {
                     transientVfxSystem.tick();

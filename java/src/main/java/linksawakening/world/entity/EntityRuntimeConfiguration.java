@@ -157,7 +157,13 @@ public final class EntityRuntimeConfiguration {
         EntitySlotValidation.validateEnemyDropByte(health, "Health");
         runtime.enemyDropMaxHearts = maxHearts;
         runtime.enemyDropHealth = health;
+        runtime.enemyDropLowHealth = null;
         runtime.enemyDropActivePowerUp = activePowerUp;
+    }
+
+    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
+        setEnemyDropPlayerState(maxHearts, health, activePowerUp);
+        runtime.enemyDropLowHealth = lowHealth;
     }
 
     public void setEnemyDropBossBattle(boolean bossBattle) {
