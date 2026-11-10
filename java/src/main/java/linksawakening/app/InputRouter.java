@@ -111,7 +111,7 @@ public record InputRouter(
             return;
         }
 
-        inventoryController.dispatchToggleInput();
+        if (link == null || !link.recoveryBlocksInput()) inventoryController.dispatchToggleInput();
 
         // Debug: F1 dumps Link's surrounding cells with object IDs and
         // physics flags, to diagnose walk-through-wall/tree reports.
@@ -204,7 +204,8 @@ public record InputRouter(
             && inputState.isDown(inputConfig.selectKey());
     }
     public boolean canPresentFileSave() {
-        return !scrollController.isActive()
+        return (link == null || !link.recoveryBlocksInput())
+            && !scrollController.isActive()
             && !transitionController.isInputBlocked()
             && (inventoryController == null || !inventoryController.shouldBlockOverworldInput())
             && (dialogController == null || !GameplayDialogInput.blocksGameplay(dialogController));

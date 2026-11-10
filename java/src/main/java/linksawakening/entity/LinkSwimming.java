@@ -22,6 +22,7 @@ final class LinkSwimming {
         if (link.linkStateMachine.motionState == Link.LINK_MOTION_RECOVER
             || link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) return true;
         int object = link.collision.objectIdAtPoint(link.pixelX() + 8, link.pixelY() + 12);
+        link.pendingWaterSplash = new Link.WaterSplash(link.romEntityX(), (link.romEntityY() - 2) & 0xFF);
         link.soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
         if (object == 6 || !link.playerHasFlippers()) {
             link.linkStateMachine.recoverCountdown = 0x50;

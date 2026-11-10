@@ -1387,6 +1387,35 @@ final class LinkTest {
     }
 
     @Test
+    void waterEntryQueuesRomPositionSplashForBothBranchesAndGatesRecovery() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        for (boolean flippers : new boolean[] {false, true}) {
+            PlayerState player = new PlayerState();
+            player.setHasFlippers(flippers);
+            int[] objects = emptyRoomObjectsArea();
+            objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
+            Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_OVERWORLD);
+            link.setRoomEntryPixelPosition(16, 16);
+            link.setPixelPosition(32, 32);
+            assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
+            Link.WaterSplash splash = link.consumeWaterSplash();
+            assertNotNull(splash);
+            assertEquals(40, splash.romX());
+            assertEquals(46, splash.romY());
+            assertEquals(null, link.consumeWaterSplash());
+            assertEquals(!flippers, link.recoveryBlocksInput());
+            if (!flippers) {
+                for (int i = 0; i < 79; i++) {
+                    link.update();
+                    assertTrue(link.recoveryBlocksInput());
+                }
+                link.update();
+                assertFalse(link.recoveryBlocksInput());
+            }
+        }
+    }
+
+    @Test
     void raftAndSlowWaterCurrentBypassDrowningEntry() throws Exception {
         RomTables tables = RomTables.loadFromRom(loadRom());
         int[] objects = emptyRoomObjectsArea();

@@ -439,6 +439,7 @@ final class LinkStateMachine {
         physicsModifier = 0;
         recoverCountdown = 0;
         recoveringInWater = false;
+        link.pendingWaterSplash = null;
         physicsRoomLoadToken = -1;
         physicsRoomMapId = -1;
         physicsRoomId = -1;

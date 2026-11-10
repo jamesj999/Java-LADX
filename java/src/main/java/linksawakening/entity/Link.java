@@ -202,6 +202,18 @@ public final class Link implements RocsFeather.JumpTarget {
      * ground and linkAirborne.airborne motion both remain interactive; falling into or
      * slipping across a pit uses the non-interactive falling state.
      */
+    /** wC167: suppress menus and CheckItemsToUse throughout water recovery. */
+    public boolean recoveryBlocksInput() { return linkStateMachine.recoveringInWater; }
+
+    public record WaterSplash(int romX, int romY) {}
+    WaterSplash pendingWaterSplash;
+
+    public WaterSplash consumeWaterSplash() {
+        WaterSplash result = pendingWaterSplash;
+        pendingWaterSplash = null;
+        return result;
+    }
+
     public int romMotionState() {
         if (linkAirborne.groundStatus == GROUND_STATUS_PIT || linkAirborne.fallingIntoPit) {
             return 0x06;
