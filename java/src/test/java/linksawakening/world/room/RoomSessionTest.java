@@ -360,7 +360,9 @@ final class RoomSessionTest {
         assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
         assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
         assertEquals(0x10, session.overworldRoomStatusForTest(0xF2) & 0x10);
-        assertEquals(0x05, session.consumePendingMusicTrack());
+        // $03:5BCE-5BD7 requests MUSIC_OVERWORLD_INTRO; MUSIC_OVERWORLD is only
+        // written to hDefaultMusicTrack/hNextDefaultMusicTrack.
+        assertEquals(0x31, session.consumePendingMusicTrack());
 
         session.loadInitialOverworld(0xF2);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
