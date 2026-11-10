@@ -4,6 +4,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.render.OpenGlFramePresenter;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.system.MemoryStack;
 import java.util.function.BiConsumer;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -44,15 +45,10 @@ public final class DesktopHost implements Host {
             throw new IllegalStateException("Failed to create window");
         }
 
+        centerWindowOnPrimaryMonitor();
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1);
-        glfwShowWindow(window);
-
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        }
+        framePresenter = OpenGlFramePresenter.initialize(window);
 
         keyCallback = new GLFWKeyCallback() {
             @Override
@@ -61,7 +57,28 @@ public final class DesktopHost implements Host {
             }
         };
         glfwSetKeyCallback(window, keyCallback);
-        framePresenter = OpenGlFramePresenter.initialize(window);
+        glfwShowWindow(window);
+        glfwPollEvents();
+    }
+
+    private void centerWindowOnPrimaryMonitor() {
+        long monitor = glfwGetPrimaryMonitor();
+        if (monitor == 0) return;
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            var x = stack.mallocInt(1);
+            var y = stack.mallocInt(1);
+            var width = stack.mallocInt(1);
+            var height = stack.mallocInt(1);
+            var windowWidth = stack.mallocInt(1);
+            var windowHeight = stack.mallocInt(1);
+            // Positions and work areas use screen coordinates, unlike the GL
+            // viewport, which must use framebuffer pixels on HiDPI displays.
+            glfwGetMonitorWorkarea(monitor, x, y, width, height);
+            glfwGetWindowSize(window, windowWidth, windowHeight);
+            glfwSetWindowPos(window,
+                x.get(0) + (width.get(0) - windowWidth.get(0)) / 2,
+                y.get(0) + (height.get(0) - windowHeight.get(0)) / 2);
+        }
     }
 
     @Override public boolean shouldClose() { return glfwWindowShouldClose(window); }
@@ -78,6 +95,10 @@ public final class DesktopHost implements Host {
         if (keyCallback != null) keyCallback.free();
         glfwDestroyWindow(window);
         glfwTerminate();
-        if (errorCallback != null) errorCallback.free();
+        if (errorCallback != null) {
+            glfwSetErrorCallback(null);
+            errorCallback.free();
+            errorCallback = null;
+        }
     }
 }

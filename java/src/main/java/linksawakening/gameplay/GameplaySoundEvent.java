@@ -22,6 +22,7 @@ public enum GameplaySoundEvent {
     SWORD_FULLY_CHARGED,
     SPIN_ATTACK,
     CUT_GRASS,
+    URCHIN_PUSH,
     INVENTORY_OPEN,
     INVENTORY_CLOSE,
     MENU_MOVE,

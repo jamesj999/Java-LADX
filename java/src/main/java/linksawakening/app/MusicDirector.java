@@ -8,13 +8,10 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 
-import static linksawakening.world.room.RoomConstants.*;
-
-/** Session-local track selection and finite intro continuation. */
+/** Session-local track selection, preserving ROM area and event track ownership. */
 public final class MusicDirector {
     private final FrameMusicPlayer musicPlayer;
     private final GameplayMusicController gameplayMusicController;
-    private boolean overworldIntroContinuationPending;
 
     public MusicDirector(FrameMusicPlayer player, GameplayMusicController controller) {
         musicPlayer = player;
@@ -25,9 +22,11 @@ public final class MusicDirector {
         if (gameplayMusicController == null || playerState == null || room == null) {
             return;
         }
-        gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState));
+        RoomMusicContext context = RoomMusicContext.from(room, playerState);
+        if (roomSession != null && roomSession.musicSelectionIsScroll()) context = context.forScroll();
+        gameplayMusicController.selectAfterTransition(context);
         if (roomSession != null) {
-            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.currentTrackId());
+            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
         }
     }
 
@@ -41,8 +40,6 @@ public final class MusicDirector {
     public void playDirectMusic(int trackId) {
         if (gameplayMusicController != null) {
             gameplayMusicController.playDirect(trackId);
-            overworldIntroContinuationPending =
-                (trackId & 0xFF) == MusicTrackIds.MUSIC_OVERWORLD_INTRO;
         }
     }
 
@@ -70,14 +67,6 @@ public final class MusicDirector {
             musicPlayer.update();
             if (gameplayMusicController != null) {
                 gameplayMusicController.tickFadeOut();
-            }
-            if (overworldIntroContinuationPending
-                && gameplayMusicController != null
-                && gameplayMusicController.currentTrackId()
-                    == MusicTrackIds.MUSIC_OVERWORLD_INTRO
-                && !musicPlayer.isMusicPlaying()) {
-                overworldIntroContinuationPending = false;
-                gameplayMusicController.playDirect(MusicTrackIds.MUSIC_OVERWORLD);
             }
         }
     }

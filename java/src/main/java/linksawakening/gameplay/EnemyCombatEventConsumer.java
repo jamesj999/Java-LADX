@@ -67,6 +67,8 @@ public final class EnemyCombatEventConsumer {
         }
         if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
             switch (id) {
+                // UrchinEntityHandler, $15:7413-7415.
+                case 0x3E -> soundSink.play(GameplaySoundEvent.URCHIN_PUSH);
                 case 0x0B -> soundSink.play(GameplaySoundEvent.STRONG_BUMP);
                 case 0x20 -> soundSink.play(GameplaySoundEvent.ENEMY_BOUNCE);
                 case 0x24 -> soundSink.play(GameplaySoundEvent.ENEMY_JUMP);

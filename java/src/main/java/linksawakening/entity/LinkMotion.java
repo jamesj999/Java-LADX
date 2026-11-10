@@ -22,6 +22,8 @@ final class LinkMotion {
     LinkMotion(Link link) { this.link = link; }
 
     void tryMoveAxis(int signedSpeed, boolean isXAxis) {
+        int previousSubX = subX;
+        int previousSubY = subY;
         int candidateSubX = isXAxis ? subX + signedSpeed : subX;
         int candidateSubY = isXAxis ? subY : subY + signedSpeed;
 
@@ -35,17 +37,18 @@ final class LinkMotion {
             moveDirection = signedSpeed > 0 ? Link.DIRECTION_DOWN : Link.DIRECTION_UP;
         }
 
-        // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too.
-        // BackgroundCollisionHandler ($02:6E45) returns until landing.
+        // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
+        // BackgroundCollisionHandler ($02:6E45) skips all probes until landing.
         int probeMask = link.collision != null && !link.linkStateMachine.debugNoClip
-            && !link.linkEntityEffects.marinBedJumpMotionLocked
-            && !link.linkAirborne.directionalLedgeJumpMotionLocked
+            && !link.linkEntityEffects.marinBedJumpMotionLocked && !link.linkAirborne.directionalLedgeJumpMotionLocked
             ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection) : 0;
         if (probeMask != 0) {
             // BackgroundCollisionHandler $02:6EC6 / $02:6F01 restores the
             // blocked axis, then Data_002_6E39 shifts the other axis by
             // [0, +1, -1, 0] according to the two leading-edge probes.
             int adjustment = probeMask == 1 ? 1 : probeMask == 2 ? -1 : 0;
+            if (isXAxis) subX = previousSubX;
+            else subY = previousSubY;
             if (isXAxis) subY += adjustment << Link.SUB_PIXEL_SHIFT;
             else subX += adjustment << Link.SUB_PIXEL_SHIFT;
             collisionProbePixelX[moveDirection] = candidatePixelX;
@@ -162,6 +165,7 @@ final class LinkMotion {
         link.linkAirborne.airborne = true;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0x1C;
+        link.linkAnimator.ledgeJumpRenderY = pixelY() - link.zPixels();
         link.linkAnimator.jumpAnimationCounter = 0;
         link.linkAnimator.jumpAnimationFrame = 0;
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
@@ -188,18 +192,22 @@ final class LinkMotion {
         }
 
         link.linkStateMachine.resetPegasusBoots();
+        link.linkAnimator.ledgeJumpRenderY = pixelY() - link.zPixels();
         subX = (link.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
         link.linkStateMachine.motionState = 0x02;
         link.linkStateMachine.physicsModifier = 0;
         link.linkAirborne.overworldLedgeFallActive = true;
-        beginOverworldLedgeUnstuckingMotion();
+        // The collision changes wLinkMotionState only. The dispatcher runs
+        // LinkMotionUnstuckingHandler on the following frame ($02:4960).
         link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
     }
 
     /** Ports LinkMotionUnstuckingHandler's initial downward search. */
     void beginOverworldLedgeUnstuckingMotion() {
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0xFF;
         subY += 16 << Link.SUB_PIXEL_SHIFT;
         link.linkAirborne.zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
         for (int step = 0; step < 16; step++) {

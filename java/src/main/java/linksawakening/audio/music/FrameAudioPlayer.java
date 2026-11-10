@@ -26,6 +26,7 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         apu = new GameBoyApu(sampleRate);
         music = new MusicDriver(rom, apu);
         effects = new SoundEffectPlayer(apu, rom);
+        music.setSoundEffectState(effects::ownsChannel, effects::takeWaveRestoreRequest);
     }
 
     @Override public void play(MusicTrack track) {
@@ -43,7 +44,7 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         remainder += sampleRate;
         int frames = remainder / 60;
         remainder %= 60;
-        output.play(apu.render(frames), sampleRate);
+        output.playFrame(apu.render(frames), sampleRate);
     }
 
     @Override public boolean isMusicPlaying() { return music.isPlaying(); }

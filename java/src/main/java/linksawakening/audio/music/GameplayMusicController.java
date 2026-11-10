@@ -8,6 +8,7 @@ public final class GameplayMusicController {
     private final MusicTrackPlayer player;
 
     private int currentTrackId = MusicTrackIds.MUSIC_NONE;
+    private int defaultTrackId = MusicTrackIds.MUSIC_NONE;
     private boolean continueMusicAfterWarp;
     private int fadeOutCountdown;
     private int nextDefaultMusicTrack = MusicTrackIds.MUSIC_NONE;
@@ -26,7 +27,17 @@ public final class GameplayMusicController {
             return;
         }
 
+        // RoomTransitionPrepareHandler.C1CFIsZero, $02:7AE9-7B34: scrolling
+        // indoors/swordless leaves music alone; overworld scrolling compares
+        // hDefaultMusicTrack, not the currently playing event track.
+        int areaTrackId = resolver.resolveDefault(context);
+        if (context.scrollingTransition()
+                && (context.indoor() || context.swordLevel() == 0 || areaTrackId == defaultTrackId)) {
+            return;
+        }
+        defaultTrackId = areaTrackId;
         int nextTrackId = resolver.resolve(context);
+        nextDefaultMusicTrack = nextTrackId;
         if (nextTrackId == currentTrackId) {
             return;
         }
@@ -43,6 +54,12 @@ public final class GameplayMusicController {
         continueMusicAfterWarp = false;
         fadeOutCountdown = 0;
         int nextTrackId = trackId & 0xFF;
+        // SwordShieldPickable.playSwordFanfare ($03:5BCE-5BD7), also
+        // MarinAsFollower ($18:5A0F-5A16), set the default separately.
+        if (nextTrackId == MusicTrackIds.MUSIC_OVERWORLD_INTRO) {
+            defaultTrackId = MusicTrackIds.MUSIC_OVERWORLD;
+            nextDefaultMusicTrack = MusicTrackIds.MUSIC_OVERWORLD;
+        }
         if (nextTrackId == currentTrackId) {
             return;
         }
@@ -64,6 +81,8 @@ public final class GameplayMusicController {
     }
 
     public int nextDefaultMusicTrack() { return nextDefaultMusicTrack; }
+
+    public int defaultTrackId() { return defaultTrackId; }
 
     public void continueMusicAfterNextWarp() {
         continueMusicAfterWarp = true;

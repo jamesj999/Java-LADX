@@ -225,6 +225,25 @@ final class FileMenuControllerTest {
     }
 
     @Test
+    void startCommitsAnUntouchedBlankNameWithoutInsertingACharacter() {
+        FileMenuController controller = newController(0, new int[3][5]);
+        press(controller, GLFW_KEY_A);
+        FileMenuAction action = press(controller, GLFW_KEY_ENTER);
+        assertEquals(FileMenuAction.Type.CREATE_FILE, action.type());
+        assertArrayEquals(new int[5], action.nameBytes());
+    }
+
+    @Test
+    void startHasPriorityOverSimultaneousCharacterEntry() {
+        FileMenuController controller = newController(0, new int[3][5]);
+        press(controller, GLFW_KEY_A);
+        InputState input = new InputState();
+        input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);
+        input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+        assertArrayEquals(new int[5], controller.tick(input, INPUT).nameBytes());
+    }
+
+    @Test
     void creationAAddsCharactersBBackspacesAndStartCommitsFiveBytes() {
         FileMenuController controller = newController(0, new int[3][5]);
         press(controller, GLFW_KEY_A);
@@ -239,7 +258,7 @@ final class FileMenuControllerTest {
         assertEquals(3, controller.snapshot().namePosition());
         FileMenuAction action = press(controller, GLFW_KEY_ENTER);
 
-        assertEquals(FileMenuAction.Type.START_NEW_GAME, action.type());
+        assertEquals(FileMenuAction.Type.CREATE_FILE, action.type());
         assertEquals(0, action.selectedSlot());
         assertArrayEquals(new int[] { 1, 1, 1, 1, 1 }, action.nameBytes());
     }

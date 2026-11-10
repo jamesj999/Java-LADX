@@ -87,14 +87,30 @@ final class NoiseChannel {
     }
 
     double render() {
-        if (!active) {
-            return 0.0;
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0;
+        double steps = lfsrStepsPerSample();
+        if (steps == 0) return digitalOutput();
+        double remaining = steps;
+        double sum = 0;
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - lfsrStepAccumulator);
+            sum += digitalOutput() * span;
+            lfsrStepAccumulator += span;
+            remaining -= span;
+            if (lfsrStepAccumulator >= 1.0) {
+                lfsrStepAccumulator = 0;
+                advanceLfsr();
+            }
         }
-
-        double sample = ((lfsr & 0x01) == 0 ? 1.0 : -1.0) * (volume / 15.0);
-        advanceForOneOutputSample();
-        return sample;
+        return sum / steps;
     }
+
+    private double digitalOutput() {
+        return 1.0 - ((lfsr & 1) == 0 ? volume / 7.5 : 0);
+    }
+
+    boolean dacEnabled() { return (envelopeRegister & 0xF8) != 0; }
 
     private void trigger() {
         active = (envelopeRegister & 0xF8) != 0;
@@ -103,14 +119,6 @@ final class NoiseChannel {
         lfsr = 0x7FFF;
         lfsrStepAccumulator = 0.0;
         envelopeClockAccumulator = 0.0;
-    }
-
-    private void advanceForOneOutputSample() {
-        lfsrStepAccumulator += lfsrStepsPerSample();
-        while (lfsrStepAccumulator >= 1.0) {
-            lfsrStepAccumulator -= 1.0;
-            advanceLfsr();
-        }
     }
 
     private void advanceLfsr() {

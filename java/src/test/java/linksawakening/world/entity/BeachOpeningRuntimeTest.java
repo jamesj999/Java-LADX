@@ -123,7 +123,9 @@ final class BeachOpeningRuntimeTest {
 
         assertTrue(foundSwordDialog);
         assertTrue(foundOverworldIntro);
-        assertTrue(foundNormalOverworld);
+        // $03:5BD3-5BD7 only sets hDefaultMusicTrack to MUSIC_OVERWORLD; it
+        // never requests it through wMusicTrackToPlay.
+        assertFalse(foundNormalOverworld);
         assertTrue(foundSpinNoise, "rewards=" + rewards + ", status="
             + runtime.inspection().snapshot().slots().get(0).status() + ", state="
             + runtime.inspection().swordPickupStateForTest(0) + ", slow="

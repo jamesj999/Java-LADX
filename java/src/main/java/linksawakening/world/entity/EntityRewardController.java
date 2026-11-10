@@ -272,7 +272,7 @@ public final class EntityRewardController {
                 }
                 if (runtime.enemyTransitionCountdown[slot] == 0) {
                     // The ROM leaves MUSIC_OVERWORLD_INTRO playing after the pose;
-                    // MusicDirector continues to the overworld theme when it finishes.
+                    // the track data itself continues into the overworld loop.
                     runtime.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
                     runtime.swordPickupSequenceActive[slot] = false;
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);

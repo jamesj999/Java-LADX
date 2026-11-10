@@ -46,7 +46,6 @@ final class MarinWakeUpLinkStateTest {
         assertEquals(0xA3, game.headlessState().room());
     }
 
-
     @Test
     void leavingBedAppliesMarinsSourceLinkMotion() {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),

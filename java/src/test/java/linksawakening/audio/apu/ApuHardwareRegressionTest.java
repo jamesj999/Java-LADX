@@ -94,8 +94,13 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR44, 0x80);
         short[] pcm = apu.render(40);
         int lfsr = 0x7FFF;
+        double capacitor = 0;
+        double charge = Math.pow(0.998943, 64);
         for (int i = 0; i < 40; i++) {
-            assertEquals((lfsr & 1) == 0 ? 4096 : -4096, pcm[i * 2]);
+            double input = (lfsr & 1) == 0 ? -1 : 1;
+            double output = input - capacitor;
+            capacitor = input - output * charge;
+            assertEquals((short) Math.round(output * 4096), pcm[i * 2]);
             int feedback = (lfsr ^ (lfsr >>> 1)) & 1;
             lfsr = (lfsr >>> 1) | (feedback << 14);
         }
@@ -109,9 +114,8 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR43, shift << 4);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
         short[] pcm = apu.render(65_536);
-        for (short sample : pcm) {
-            assertEquals(-4096, sample);
-        }
+        assertEquals(4096, pcm[0]);
+        assertEquals(0, pcm[pcm.length - 2], "a stopped LFSR is DC removed by the capacitor");
     }
 
     @Test

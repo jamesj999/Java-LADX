@@ -89,12 +89,6 @@ public record InputRouter(
             return;
         }
 
-        if (shouldEnterFileSave(inputConfig, inputState, key, action)
-            && canPresentFileSave()) {
-            fileSave.run();
-            return;
-        }
-
         if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig, dialogController)) {
             consumeDialogInput.run();
             return;
@@ -193,16 +187,33 @@ public record InputRouter(
     public static boolean shouldEnterFileSelection(Screen screen, int key, int action) {
         return screen instanceof TitleScreen && key == GLFW_KEY_ENTER && action == GLFW_PRESS;
     }
+    /** presentSaveScreenIfNeeded ($00:0E46), before ordinary frame input. */
+    public boolean tryPresentFileSave() {
+        if (link != null && link.isPassingOut()
+            || roomSession != null && roomSession.tailCaveKeyholeSequenceActive()
+            || story.get().marinWakeUpBlocksKeyInput()) return false;
+        if (shouldEnterFileSave(inputConfig, inputState, inputConfig.selectKey(), GLFW_PRESS)
+            && canPresentFileSave()) {
+            fileSave.run();
+            return true;
+        }
+        return false;
+    }
+
     public static boolean shouldEnterFileSave(InputConfig inputConfig, InputState inputState,
                                        int key, int action) {
-        if (inputConfig == null || inputState == null || action != GLFW_PRESS
-            || key != inputConfig.selectKey()) {
+        if (inputConfig == null || inputState == null || action != GLFW_PRESS) {
             return false;
         }
         return inputState.isDown(inputConfig.aKey())
             && inputState.isDown(inputConfig.bKey())
             && inputState.isDown(inputConfig.menuOpenKey())
-            && inputState.isDown(inputConfig.selectKey());
+            && inputState.isDown(inputConfig.selectKey())
+            // The ROM compares the whole mask with $F0: all directions must be released.
+            && !inputState.isDown(inputConfig.upKey())
+            && !inputState.isDown(inputConfig.downKey())
+            && !inputState.isDown(inputConfig.leftKey())
+            && !inputState.isDown(inputConfig.rightKey());
     }
     public boolean canPresentFileSave() {
         return (link == null || !link.recoveryBlocksInput())

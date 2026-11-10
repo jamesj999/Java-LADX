@@ -26,6 +26,11 @@ public final class GameBoyApu {
     private static final int REGISTER_COUNT = NR52 + 1;
     private static final double MIX_AMPLITUDE = 4096.0;
 
+    // CGB capacitor charge factor at the 4,194,304 Hz APU clock (Pan Docs,
+    // Audio_details.md, "Obscure Behavior"). Convert it to the output sample rate.
+    private final double capacitorCharge;
+    private double leftCapacitor;
+    private double rightCapacitor;
     private final int sampleRate;
     private final int[] registers = new int[REGISTER_COUNT];
     private final SquareChannel channel1;
@@ -38,6 +43,7 @@ public final class GameBoyApu {
             throw new IllegalArgumentException("sampleRate must be positive");
         }
         this.sampleRate = sampleRate;
+        capacitorCharge = Math.pow(0.998943, 4_194_304.0 / sampleRate);
         channel1 = new SquareChannel(sampleRate);
         channel2 = new SquareChannel(sampleRate);
         channel3 = new WaveChannel(sampleRate);
@@ -46,6 +52,7 @@ public final class GameBoyApu {
     }
 
     public void reset() {
+        leftCapacitor = rightCapacitor = 0;
         for (int i = 0; i < registers.length; i++) {
             registers[i] = 0;
         }
@@ -179,8 +186,20 @@ public final class GameBoyApu {
                 right += sample4;
             }
 
-            pcm[frame * 2] = toPcm(left, leftVolume());
-            pcm[frame * 2 + 1] = toPcm(right, rightVolume());
+            // The capacitors follow NR50, persist across render calls, and disconnect
+            // when all DACs are off. Four channels need at most +/-8 after the HPF;
+            // the 4096 scale leaves that range representable without routine clipping.
+            if (channel1.dacEnabled() || channel2.dacEnabled()
+                    || channel3.dacEnabled() || channel4.dacEnabled()) {
+                left *= leftVolume();
+                right *= rightVolume();
+                double leftOut = left - leftCapacitor;
+                double rightOut = right - rightCapacitor;
+                leftCapacitor = left - leftOut * capacitorCharge;
+                rightCapacitor = right - rightOut * capacitorCharge;
+                pcm[frame * 2] = toPcm(leftOut, 1);
+                pcm[frame * 2 + 1] = toPcm(rightOut, 1);
+            }
         }
         return pcm;
     }
