@@ -147,8 +147,11 @@ public final class ZolGelMotion {
                     speedX[slot] = 0;
                     speedY[slot] = 0;
                     if ((randomByteSupplier.getAsInt() & 0x0F) != 0) {
-                        transitionCountdown[slot] = 0;
-                        state[slot] = 2;
+                        // IncrementEntityState ($06:7D0B) returns HL pointing
+                        // to wEntitiesStateTable, not the countdown table.
+                        // LD [HL],B ($7D0E) cancels the leap: inch again in
+                        // state zero after the retained $10-frame pause.
+                        state[slot] = 0;
                         int[] moved = physics(entity, x, y,
                             backgroundInteraction, frameCounter);
                         x = moved[0];

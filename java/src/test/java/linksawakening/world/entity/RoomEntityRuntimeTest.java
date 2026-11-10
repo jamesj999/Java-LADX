@@ -5836,7 +5836,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void zolStateOneNonLeapBranchAdvancesToRomStateTwo() {
+    void zolStateOneNonLeapBranchClearsStateRatherThanCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
@@ -5847,8 +5847,21 @@ final class RoomEntityRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
         }
 
-        assertEquals(2, runtime.enemies().zolState(0));
-        assertEquals(0, runtime.enemies().zolTransitionCountdown(0));
+        assertEquals(0, runtime.enemies().zolState(0));
+        assertEquals(0x10, runtime.enemies().zolTransitionCountdown(0));
+        int pausedX = runtime.inspection().snapshot().slots().get(0).x();
+        int pausedY = runtime.inspection().snapshot().slots().get(0).y();
+        for (int frame = 8; frame < 23; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 64, sequence(0x01)));
+            RoomEntity paused = runtime.inspection().snapshot().slots().get(0);
+            assertEquals(pausedX, paused.x(), "pause X frame " + frame);
+            assertEquals(pausedY, paused.y(), "pause Y frame " + frame);
+            assertEquals(0, paused.z(), "no leap frame " + frame);
+            assertEquals(0, runtime.enemies().zolState(0));
+        }
+        runtime.tick(EntityTestFrames.frame(runtime, 23, 80, 64, sequence(0x01)));
+        assertEquals(1, runtime.enemies().zolState(0));
+        assertEquals(7, runtime.enemies().zolTransitionCountdown(0));
     }
 
     @Test
