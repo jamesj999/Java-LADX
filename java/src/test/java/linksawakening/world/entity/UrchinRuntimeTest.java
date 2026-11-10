@@ -195,6 +195,14 @@ final class UrchinRuntimeTest {
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x3E, events.get(0).soundId());
+        var sounds = new java.util.ArrayList<linksawakening.gameplay.GameplaySoundEvent>();
+        linksawakening.gameplay.EnemyCombatEventConsumer.consume(events, sounds::add);
+        assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.URCHIN_PUSH), sounds);
+        var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
+            linksawakening.audio.sfx.SoundEffectCatalog.fromRom(rom));
+        var effect = map.resolve(sounds.getFirst()).orElseThrow();
+        assertEquals(linksawakening.audio.sfx.SoundEffectNamespace.JINGLE, effect.namespace());
+        assertEquals(0x3E, effect.id());
     }
 
     @Test

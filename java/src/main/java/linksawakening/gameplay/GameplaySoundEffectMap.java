@@ -40,6 +40,7 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.SWORD_FULLY_CHARGED, SoundEffectNamespace.JINGLE, 0x04);
         put(effects, catalog, GameplaySoundEvent.SPIN_ATTACK, SoundEffectNamespace.NOISE, 0x03);
         put(effects, catalog, GameplaySoundEvent.CUT_GRASS, SoundEffectNamespace.NOISE, 0x05);
+        put(effects, catalog, GameplaySoundEvent.URCHIN_PUSH, SoundEffectNamespace.JINGLE, 0x3E);
         put(effects, catalog, GameplaySoundEvent.INVENTORY_OPEN, SoundEffectNamespace.JINGLE, 0x11);
         put(effects, catalog, GameplaySoundEvent.INVENTORY_CLOSE, SoundEffectNamespace.JINGLE, 0x12);
         put(effects, catalog, GameplaySoundEvent.MENU_MOVE, SoundEffectNamespace.JINGLE, 0x0A);
