@@ -26,6 +26,7 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         apu = new GameBoyApu(sampleRate);
         music = new MusicDriver(rom, apu);
         effects = new SoundEffectPlayer(apu, rom);
+        music.setSoundEffectState(effects::ownsChannel, effects::takeWaveRestoreRequest);
     }
 
     @Override public void play(MusicTrack track) {
