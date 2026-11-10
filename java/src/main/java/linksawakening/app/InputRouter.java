@@ -74,6 +74,7 @@ public record InputRouter(
         screen.get().onKey(key, action);
     }
     public void gameplayKey(int key, int action) {
+        if (link != null && link.isPassingOut()) return;
         if (action != GLFW_PRESS) return;
 
         if (roomSession != null && roomSession.tailCaveKeyholeSequenceActive()) {

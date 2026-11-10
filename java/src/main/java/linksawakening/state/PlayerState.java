@@ -151,6 +151,7 @@ public final class PlayerState implements LinkPlayerState {
         magicPowderCount = 0;
         hasToadstool = false;
         this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
+        deathCount = 0;
         heartPieces = 0;
         seashells = 0;
         hasFlippers = false;
@@ -238,6 +239,14 @@ public final class PlayerState implements LinkPlayerState {
     public void setMaxHearts(int value) {
         maxHearts = clamp(value, 1, MAX_HEARTS);
         health = Math.min(health, maxHearts * HP_PER_HEART);
+    }
+
+    private int deathCount;
+    public int deathCount() { return deathCount; }
+    public void setDeathCount(int value) { deathCount = clamp(value, 0, 999); }
+    public void incrementDeathCount() { setDeathCount(deathCount + 1); }
+    public int deathCountBcd() {
+        return (deathCount / 100 << 8) | (deathCount / 10 % 10 << 4) | deathCount % 10;
     }
 
     public int health() {
@@ -787,6 +796,8 @@ public final class PlayerState implements LinkPlayerState {
     public void applySavedGame(SaveSlotState saved) {
         Objects.requireNonNull(saved, "saved");
         setMaxHearts(saved.maxHearts());
+        int deaths = saved.deathCountBcd();
+        setDeathCount((deaths >>> 8 & 15) * 100 + (deaths >>> 4 & 15) * 10 + (deaths & 15));
         setHealth(saved.health());
         setRupees(saved.rupees());
         setHeartPieces(saved.heartPieces());

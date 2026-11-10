@@ -74,6 +74,7 @@ final class LinkAnimator {
             return;
         }
         int animationState = resolveAnimationState();
+        if (animationState == 0xFF) return;
         link.spriteSheet.resolveTiles(animationState, composedTiles);
 
         boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);
@@ -348,6 +349,7 @@ final class LinkAnimator {
         }
         Tile[] composedTiles = new Tile[4];
         int animationState = resolveAnimationState();
+        if (animationState == 0xFF) return;
         link.spriteSheet.resolveTiles(animationState, composedTiles);
 
         boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);

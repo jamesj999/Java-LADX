@@ -21,6 +21,10 @@ final class LinkStateMachine {
     LinkStateMachine(Link link) { this.link = link; }
 
     void update() {
+        if (motionState == Link.LINK_MOTION_PASS_OUT) {
+            link.movingThisFrame = false;
+            return;
+        }
         link.linkAnimator.bedJumpRenderZ = -1;
         frameCounter = (frameCounter + 1) & 0xFF;
         if (pegasusBootsCollisionCountdown > 0) {

@@ -112,6 +112,8 @@ final class RoomSessionContext {
     FollowingNpcState followingNpcState = FollowingNpcState.none();
     EnemyDropResolver.CounterState enemyDropCounters =
         new EnemyDropResolver.CounterState(0, 0);
+    linksawakening.world.transition.Warp respawnPoint;
+    int respawnIndoorRoom;
     int boomerangSoundCounter;
     boolean boomerangSoundClockProvided;
     int enemyDropMaxHearts = 3;

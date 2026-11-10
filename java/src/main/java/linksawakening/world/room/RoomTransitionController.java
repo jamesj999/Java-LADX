@@ -19,6 +19,21 @@ final class RoomTransitionController {
         // GameplayWorldLoadRoomHandler ($01:442B) clears $C000..$D2FF,
         // including the recent-room ring and transient entity-clear masks.
         // Scrolling between adjacent rooms does not take this path.
+        if (warp.category() != Warp.CATEGORY_SIDESCROLL) {
+            Warp spawn = warp;
+            int indoorRoom = session.indoorRoomPositionForSave();
+            if (indoorRoom < 0) indoorRoom = session.respawnIndoorRoom();
+            if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
+                var rom = new linksawakening.rom.Rom(session.context.romData);
+                var address = new linksawakening.rom.RomAddress(0x14,
+                    warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
+                spawn = new Warp(rom.u8(address), rom.u8(address.plus(1)), rom.u8(address.plus(2)),
+                    rom.u8(address.plus(3)), rom.u8(address.plus(4)), -1);
+                indoorRoom = warp.destMap() == 0xFF ? 0x3A
+                    : rom.u8(new linksawakening.rom.RomAddress(0x14, 0x4E41 + warp.destMap()));
+            }
+            session.setRespawnPoint(spawn, indoorRoom);
+        }
         session.context.recentRoomEntityClears.reset();
         boolean wasIndoor = session.context.activeRoom != null && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
         // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).

@@ -97,6 +97,24 @@ public final class RoomSession extends RoomSessionRules {
         context.mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
     }
 
+    /** Source wSpawnLocationData, retained across scrolling but updated by non-side-view warps. */
+    public Warp respawnPoint() { return context.respawnPoint; }
+    public int respawnIndoorRoom() { return context.respawnIndoorRoom; }
+    public void setRespawnPoint(Warp point, int indoorRoom) {
+        context.respawnPoint = point;
+        context.respawnIndoorRoom = indoorRoom;
+    }
+    /** $01:4244 clears only the Piece of Power counter, preserving the acorn counter. */
+    public void clearGameOverPowerCounter() {
+        context.enemyDropCounters = new EnemyDropResolver.CounterState(
+            context.enemyDropCounters.guardianAcornCounter(), 0);
+        configureEnemyDropRuntime();
+    }
+    public void resetGameOverSwitchBlocks() {
+        context.recentRoomEntityClears.reset();
+        context.switchBlocksState = 0;
+        context.switchableObjectAnimationStage = 0;
+    }
     public void loadWarpDestination(Warp warp) { context.roomTransitionController.loadWarpDestination(warp); }
     /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
     public int tickDungeonTitleMessage(boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) { return context.roomTransitionController.tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement); }

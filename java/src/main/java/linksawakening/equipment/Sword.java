@@ -363,6 +363,18 @@ public final class Sword implements EquipmentItem {
      * collisions use it to cancel a charged or active spin before Link's next
      * motion update.
      */
+    /** The room-load WRAM clear also discards any pre-death sword animation. */
+    public void resetAfterGameOver() {
+        resetSpinAttack();
+        state = STATE_NONE;
+        timer = 0;
+        animationMotionBlocked = false;
+        motionBlockedBeforeAnimation = false;
+        facingLockCountdown = 0;
+        facingLockedBeforeAnimation = false;
+        suppressesJumpAnimation = false;
+    }
+
     public void resetSpinAttack() {
         boolean wasActive = spinAttackActive();
         spinAttackQueued = false;
