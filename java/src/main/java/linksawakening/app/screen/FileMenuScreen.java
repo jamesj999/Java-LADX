@@ -8,7 +8,6 @@ import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuAction;
 import linksawakening.ui.FileMenuController;
 
-import java.io.IOException;
 
 import static linksawakening.world.room.RoomConstants.*;
 
@@ -34,15 +33,11 @@ public final class FileMenuScreen implements Screen {
                 throw new IllegalStateException("File menu controller is not initialized");
             }
             FileMenuAction action = dependencies.fileMenuController().get().tick(dependencies.inputState().get(), dependencies.inputConfig().get());
-            if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
-                try {
-                    dependencies.saveRamStore().get().createNewGame(action.selectedSlot(), action.nameBytes());
-                    dependencies.saveRamStore().get().flush();
-                } catch (IOException exception) {
-                    throw new IllegalStateException("Failed to persist new save file", exception);
-                }
-                dependencies.selectSlot().accept(action.selectedSlot());
-                dependencies.startNewGame().run();
+            if (action.type() == FileMenuAction.Type.CREATE_FILE) {
+                // $01:4B26 -> label_001_4555: creation returns to file selection.
+                // Only selecting a stored nonzero name can start gameplay.
+                dependencies.persistFileMenuMutation().accept(() ->
+                    dependencies.saveRamStore().get().createNewGame(action.selectedSlot(), action.nameBytes()));
             } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
                 SaveSlotState saved = dependencies.saveRamStore().get().readSlot(action.selectedSlot());
                 dependencies.selectSlot().accept(action.selectedSlot());

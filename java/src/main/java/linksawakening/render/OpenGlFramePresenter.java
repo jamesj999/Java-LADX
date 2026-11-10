@@ -11,8 +11,10 @@ import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 
 public final class OpenGlFramePresenter {
@@ -34,7 +36,7 @@ public final class OpenGlFramePresenter {
 
     public static OpenGlFramePresenter initialize(long window) {
         GL.createCapabilities();
-        GL11.glViewport(0, 0, Framebuffer.WIDTH * Framebuffer.SCALE, Framebuffer.HEIGHT * Framebuffer.SCALE);
+        updateFramebufferViewport(window);
 
         GlShader shader = new GlShader();
 
@@ -73,9 +75,14 @@ public final class OpenGlFramePresenter {
     }
 
     public void present(byte[] indexedDisplayBuffer) {
-        uploadTexture(indexedDisplayBuffer);
-
         glfwMakeContextCurrent(window);
+        // Query pixels before every draw, including the first visible frame. On
+        // macOS the backing scale can change when showing/moving the window,
+        // independently of its logical size and of window resize events.
+        if (!updateFramebufferViewport(window)) {
+            return; // A minimized window may have no drawable framebuffer.
+        }
+        uploadTexture(indexedDisplayBuffer);
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
@@ -88,6 +95,16 @@ public final class OpenGlFramePresenter {
         GL30.glBindVertexArray(0);
 
         glfwSwapBuffers(window);
+    }
+
+    private static boolean updateFramebufferViewport(long window) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            var width = stack.mallocInt(1);
+            var height = stack.mallocInt(1);
+            glfwGetFramebufferSize(window, width, height);
+            GL11.glViewport(0, 0, width.get(0), height.get(0));
+            return width.get(0) > 0 && height.get(0) > 0;
+        }
     }
 
     public void cleanup() {

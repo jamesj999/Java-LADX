@@ -6,7 +6,7 @@ public record FileMenuAction(Type type, int selectedSlot, int targetSlot, int[] 
 
     public enum Type {
         NONE,
-        START_NEW_GAME,
+        CREATE_FILE,
         LOAD_GAME,
         ERASE_SLOT,
         COPY_SLOT
