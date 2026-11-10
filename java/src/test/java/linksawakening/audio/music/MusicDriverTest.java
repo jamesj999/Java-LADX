@@ -159,7 +159,7 @@ final class MusicDriverTest {
         driver.tick60Hz();
         assertEquals(0xF0, apu.readRegister(GameBoyApu.NR12));
         driver.tick60Hz();
-        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
         driver.tick60Hz();
 
         assertEquals(0x80, apu.readRegister(GameBoyApu.NR11));
@@ -388,7 +388,7 @@ final class MusicDriverTest {
         driver.tick60Hz();
         driver.tick60Hz();
 
-        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
     }
 
     @Test
@@ -408,11 +408,11 @@ final class MusicDriverTest {
         driver.tick60Hz();
         assertEquals(0x70, apu.readRegister(GameBoyApu.NR12));
         driver.tick60Hz();
-        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
         driver.tick60Hz();
         driver.tick60Hz();
 
-        assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
     }
 
     @Test
@@ -438,6 +438,59 @@ final class MusicDriverTest {
             0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.tick60Hz();
         assertTrue(driver.isChannelActive(1));
+    }
+
+    @Test
+    void endedTrackSilencesItsLastSustainedNote() {
+        byte[] rom = syntheticRomWithOneChannel(new byte[] {
+                (byte) 0x9D, (byte) 0xF0, 0, (byte) 0x80, (byte) 0xA0, 0x4A, 0
+        });
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+        driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.tick60Hz();
+        assertTrue(apu.isChannelActive(1));
+        for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
+        org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
+        apu.render(800); // Hardware keeps the DAC enabled; capacitor transient settles.
+        org.junit.jupiter.api.Assertions.assertArrayEquals(new short[1600], apu.render(800));
+    }
+
+    @Test
+    void sfxOwnershipInhibitsMusicRegistersButSequencingContinues() {
+        byte[] rom = syntheticRomWithOneChannel(new byte[] {
+                (byte) 0x9D, (byte) 0xF0, 0x11, (byte) 0x80, (byte) 0xA0, 0x4A, 0
+        });
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+        driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.setSoundEffectState(channel -> channel == 1, () -> false);
+        java.util.List<Integer> writes = new java.util.ArrayList<>();
+        apu.setRegisterObserver((register, value) -> writes.add(register));
+        for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
+        org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
+        assertTrue(writes.isEmpty(), writes.toString());
+    }
+
+    @Test
+    void nextWaveNoteRestoresMusicWaveRamAfterSfxRelease() {
+        byte[] rom = syntheticRomWithChannel3(new byte[] {
+                (byte) 0x9D, 0, 0x56, 0x20, (byte) 0xA0, 0x4A, 0x4C, 0
+        });
+        for (int i = 0; i < 16; i++) rom[RomBank.romOffset(0x1B, 0x5600) + i] = (byte) (i + 32);
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+        driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+        driver.tick60Hz();
+        java.util.concurrent.atomic.AtomicBoolean owned = new java.util.concurrent.atomic.AtomicBoolean(true);
+        java.util.concurrent.atomic.AtomicBoolean restore = new java.util.concurrent.atomic.AtomicBoolean(true);
+        driver.setSoundEffectState(channel -> channel == 3 && owned.get(), () -> restore.getAndSet(false));
+        for (int i = 0; i < 16; i++) apu.writeWaveRam(i, 0xFF);
+        owned.set(false);
+        for (int i = 0; i < 16 && restore.get(); i++) driver.tick60Hz();
+        org.junit.jupiter.api.Assertions.assertFalse(restore.get());
+        for (int i = 0; i < 16; i++) assertEquals(i + 32, apu.readWaveRam(i));
     }
 
     private static byte[] syntheticRomWithOneChannel(byte[] definition) {

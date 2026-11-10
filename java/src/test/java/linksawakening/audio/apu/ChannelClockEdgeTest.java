@@ -19,11 +19,11 @@ class ChannelClockEdgeTest {
         channel.writeEnvelope(0xF0);
         channel.writePolynomial(polynomial);
         channel.writeControl(0x80);
-        // All-one seed outputs low until the zero shifted into the top reaches bit zero.
-        for (int i = 0; i < width; i++) assertEquals(-1.0, channel.render());
-        assertEquals(1.0, channel.render());
+        // All-one seed outputs digital zero (DAC +1) until bit zero clears.
+        for (int i = 0; i < width; i++) assertEquals(1.0, channel.render());
+        assertEquals(-1.0, channel.render());
         channel.writeControl(0x80);
-        for (int i = 0; i < width; i++) assertEquals(-1.0, channel.render());
+        for (int i = 0; i < width; i++) assertEquals(1.0, channel.render());
     }
 
     @Test void sweepOverflowDisablesAtTrigger() {

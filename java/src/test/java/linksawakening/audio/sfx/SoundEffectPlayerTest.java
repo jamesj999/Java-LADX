@@ -227,6 +227,58 @@ final class SoundEffectPlayerTest {
         assertEquals(0x55, apu.readRegister(GameBoyApu.NR42));
     }
 
+    @Test
+    void anotherNamespaceDoesNotAbandonAnActiveJingle() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.JINGLE, 1).orElseThrow());
+        assertTrue(player.ownsChannel(1));
+        player.play(player.catalog().find(SoundEffectNamespace.NOISE, 2).orElseThrow());
+        assertTrue(player.ownsChannel(1));
+        assertTrue(player.ownsChannel(4));
+        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+            apu.render(800);
+            player.tick60Hz();
+        }
+        assertFalse(player.isPlaying());
+        for (int channel = 1; channel <= 4; channel++) assertFalse(player.ownsChannel(channel));
+        assertFalse(apu.isChannelActive(3));
+        short[] tail = apu.render(1600);
+        for (short sample : tail) assertEquals(0, sample);
+    }
+
+    @Test
+    void waveCompletionReleasesChannelAndRequestsMusicWaveformRestore() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow());
+        assertTrue(player.ownsChannel(3));
+        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+            apu.render(800);
+            player.tick60Hz();
+        }
+        assertFalse(player.isPlaying());
+        assertFalse(player.ownsChannel(3));
+        assertFalse(apu.isChannelActive(3));
+        assertTrue(player.takeWaveRestoreRequest());
+        assertFalse(player.takeWaveRestoreRequest());
+    }
+
+    @Test
+    void explicitStopSilencesOnlySfxOwnedChannels() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.JINGLE, 1).orElseThrow());
+        player.stop();
+        assertFalse(player.isPlaying());
+        assertEquals(0, apu.readRegister(GameBoyApu.NR30));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR22));
+        assertTrue(player.takeWaveRestoreRequest());
+        apu.render(800); // Let the CGB output capacitors settle after the stop writes.
+        for (short sample : apu.render(800)) assertEquals(0, sample);
+    }
+
     private static void assertWavePattern63Cc(GameBoyApu apu) {
         int[] expectedData01F63Cc = {
                 0xFF, 0xFF, 0xEE, 0xDD, 0xEE, 0xDD, 0xEE, 0xFF,

@@ -75,6 +75,10 @@ public final class SoundEffectPlayer {
         return isPlaying() ? currentEffect : null;
     }
 
+    public boolean ownsChannel(int channel) { return engine.ownsChannel(channel); }
+
+    public boolean takeWaveRestoreRequest() { return engine.takeWaveRestoreRequest(); }
+
     public void stop() {
         currentEffect = null;
         engine.stop();

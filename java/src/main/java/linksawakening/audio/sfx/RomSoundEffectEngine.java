@@ -30,7 +30,6 @@ final class RomSoundEffectEngine {
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
 
-    private SoundEffectNamespace activeNamespace;
 
     RomSoundEffectEngine(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
@@ -43,43 +42,62 @@ final class RomSoundEffectEngine {
         Objects.requireNonNull(effect, "effect");
         tables.beginHandlerAddress(effect);
         tables.continueHandlerAddress(effect);
-        clearAudioState();
-        activeNamespace = effect.namespace();
-        write8(activeAddress(activeNamespace), effect.id());
-        enableApu();
-        new Cpu(entryAddress(activeNamespace)).run();
-        if (read8(activeAddress(activeNamespace)) == effect.id()) {
-            write8(activeAddress(activeNamespace), 0);
-        }
-        if (!hasNamespaceState(activeNamespace)) {
-            activeNamespace = null;
-        }
+        // Requests and continuation ids are distinct in _PlaySfx (1F:401E).
+        // Keep the other namespaces alive, including their ownership flags.
+        write8(activeAddress(effect.namespace()), effect.id());
+        if ((apu.readRegister(GameBoyApu.NR52) & 0x80) == 0) enableApu();
+        new Cpu(entryAddress(effect.namespace())).run();
+        write8(activeAddress(effect.namespace()), 0);
     }
 
     void tick60Hz() {
-        if (activeNamespace == null) {
-            return;
+        // ROM order matters: jingles can cancel wave effects.
+        for (SoundEffectNamespace namespace : SoundEffectNamespace.values()) {
+            new Cpu(entryAddress(namespace)).run();
         }
-        runTick();
+        write8(W_ACTIVE_JINGLE, 0);
+        write8(W_ACTIVE_WAVE, 0);
+        write8(W_ACTIVE_NOISE, 0);
     }
 
     boolean isPlaying() {
-        return activeNamespace != null && hasNamespaceState(activeNamespace);
+        return read8(0xD361) != 0 || read8(0xD371) != 0 || read8(0xD379) != 0
+                || read8(W_ACTIVE_JINGLE) != 0 || read8(W_ACTIVE_WAVE) != 0
+                || read8(W_ACTIVE_NOISE) != 0;
+    }
+
+    boolean ownsChannel(int channel) {
+        if (channel < 1 || channel > 4) throw new IllegalArgumentException("Channel out of range: " + channel);
+        return (read8(0xD30F + channel * 0x10) & 0x80) != 0;
+    }
+
+    boolean takeWaveRestoreRequest() {
+        boolean requested = read8(0xD3E7) != 0;
+        write8(0xD3E7, 0);
+        return requested;
     }
 
     void stop() {
-        activeNamespace = null;
+        // Apply the ROM shutdown register sequence only to channels owned by SFX.
+        // func_01F_7B5C / label_01F_632D; leave music-owned channels alone.
+        boolean restoreWave = ownsChannel(3) || read8(0xD3E7) != 0;
+        for (int channel = 1; channel <= 4; channel++) {
+            if (!ownsChannel(channel)) continue;
+            if (channel == 3) {
+                apu.writeRegister(GameBoyApu.NR30, 0);
+            } else {
+                int envelope = switch (channel) {
+                    case 1 -> GameBoyApu.NR12;
+                    case 2 -> GameBoyApu.NR22;
+                    default -> GameBoyApu.NR42;
+                };
+                apu.writeRegister(envelope, 0x08);
+                apu.writeRegister(envelope + 2, 0x80);
+                if (channel == 1) apu.writeRegister(GameBoyApu.NR10, 0);
+            }
+        }
         clearAudioState();
-    }
-
-    private void runTick() {
-        if (activeNamespace == null) {
-            return;
-        }
-        new Cpu(entryAddress(activeNamespace)).run();
-        if (!hasNamespaceState(activeNamespace)) {
-            activeNamespace = null;
-        }
+        if (restoreWave) write8(0xD3E7, 1);
     }
 
     private void enableApu() {
@@ -109,20 +127,6 @@ final class RomSoundEffectEngine {
             case WAVE -> W_ACTIVE_WAVE;
             case NOISE -> W_ACTIVE_NOISE;
         };
-    }
-
-    private boolean hasNamespaceState(SoundEffectNamespace namespace) {
-        int[] addresses = switch (namespace) {
-            case JINGLE -> new int[] { 0xD360, 0xD361, 0xD390, 0xD394, 0xD3A0, 0xD3BC, 0xD3C6, 0xD3E2 };
-            case WAVE -> new int[] { 0xD370, 0xD371, 0xD392, 0xD396, 0xD3BE, 0xD3C8, 0xD3CD, 0xD3DC, 0xD3DD, 0xD3DE, 0xD3E1 };
-            case NOISE -> new int[] { 0xD34F, 0xD378, 0xD379, 0xD393, 0xD398, 0xD3BF, 0xD3C9, 0xD3DF, 0xD3E0, 0xD3E8 };
-        };
-        for (int address : addresses) {
-            if (read8(address) != 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private int read8(int address) {

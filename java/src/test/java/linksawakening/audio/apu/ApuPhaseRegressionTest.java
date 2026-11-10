@@ -17,9 +17,9 @@ final class ApuPhaseRegressionTest {
             channel.tick();
             channel.render();
         }
-        assertTrue(channel.render() < 0);
+        assertTrue(channel.render() > 0);
         channel.writeFrequencyHigh(0x80);
-        assertTrue(channel.render() < 0);
+        assertTrue(channel.render() > 0);
     }
 
     @ParameterizedTest
@@ -39,7 +39,7 @@ final class ApuPhaseRegressionTest {
                 audible.render(); silent.render();
             }
             for (int i = 0; i < 100; i++) {
-                assertEquals(Math.signum(audible.render()), Math.signum(silent.render()));
+                assertEquals((1 - audible.render()) / 14, 1 - silent.render(), 1e-9);
             }
         } else {
             SquareChannel audible = new SquareChannel(65_536);
@@ -55,7 +55,7 @@ final class ApuPhaseRegressionTest {
                 audible.render(); silent.render();
             }
             for (int i = 0; i < 1000; i++) {
-                assertEquals(Math.signum(audible.render()), Math.signum(silent.render()));
+                assertEquals((1 - audible.render()) / 14, 1 - silent.render(), 1e-9);
             }
         }
     }
@@ -69,11 +69,11 @@ final class ApuPhaseRegressionTest {
         channel.writeDac(0x80);
         channel.writeOutputLevel(0x40);
         channel.writeFrequencyHigh(0x80);
-        assertEquals(-1.0 / 15, channel.render(), 1e-9);
+        assertEquals(1.0 / 15, channel.render(), 1e-9);
         channel.writeOutputLevel(0x60);
-        assertEquals(-0.6, channel.render(), 1e-9);
+        assertEquals(0.6, channel.render(), 1e-9);
         channel.writeOutputLevel(0);
-        assertEquals(0, channel.render());
+        assertEquals(1, channel.render());
     }
 
     @Test

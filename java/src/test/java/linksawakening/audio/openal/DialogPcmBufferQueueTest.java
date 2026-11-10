@@ -10,16 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class DialogPcmBufferQueueTest {
 
     @Test
-    void trimsOldestQueuedBuffersWhileSourceIsPlaying() {
+    void fullQueueRetainsEveryBufferUntilDeviceProcessesIt() {
         DialogPcmBufferQueue queue = new DialogPcmBufferQueue(3);
-        queue.trackQueued(10);
-        queue.trackQueued(11);
-        queue.trackQueued(12);
-
-        assertEquals(List.of(10), queue.buffersToDropBeforeQueueing());
-        queue.trackQueued(13);
-
+        queue.trackQueued(10, 800);
+        queue.trackQueued(11, 800);
+        queue.trackQueued(12, 800);
+        org.junit.jupiter.api.Assertions.assertTrue(queue.isFull());
+        assertEquals(2400, queue.queuedFrames());
+        assertEquals(List.of(10, 11, 12), queue.liveBuffers());
+        queue.markDeleted(10);
+        org.junit.jupiter.api.Assertions.assertFalse(queue.isFull());
+        queue.trackQueued(13, 800);
         assertEquals(List.of(11, 12, 13), queue.liveBuffers());
+        assertEquals(2400, queue.queuedFrames());
     }
 
     @Test
