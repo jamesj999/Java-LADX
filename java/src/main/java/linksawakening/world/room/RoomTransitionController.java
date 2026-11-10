@@ -72,7 +72,7 @@ final class RoomTransitionController {
             session.context.roomState.overworldRoomStatus[nextRoomId] |= (byte) session.ROOM_STATUS_DISCOVERED;
         }
         session.loadRoomSpecificTilesIfNeeded(nextRoomId);
-        session.loadOverworld(nextRoomId);
+        session.context.roomLoadCoordinator.loadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
             session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
                 0, session.ENTITY_OWL_EVENT, 0, false,
@@ -84,7 +84,7 @@ final class RoomTransitionController {
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) {
         RoomRenderSnapshot previousRoom = session.renderSnapshot();
         session.loadRoomSpecificTilesIfNeeded(session.ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        session.loadOverworld(session.ROOM_OW_MYSTERIOUS_WOODS_LOST);
+        session.context.roomLoadCoordinator.loadOverworld(session.ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(ScrollController.UP, linkScreenX, linkScreenY,
             previousRoom, session.scrollTarget(ScrollController.UP));
         session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
