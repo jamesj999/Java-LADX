@@ -57,6 +57,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public static final int GROUND_STATUS_NORMAL = 0x00;
     public static final int GROUND_STATUS_PIT = 0x07;
     public static final int LINK_MOTION_DEFAULT = 0x00;
+    public static final int LINK_MOTION_PASS_OUT = 0x07;
     public static final int LINK_MOTION_SWIMMING = 0x01;
 
     final InputState inputState;
@@ -201,6 +202,31 @@ public final class Link implements RocsFeather.JumpTarget {
      * ground and linkAirborne.airborne motion both remain interactive; falling into or
      * slipping across a pit uses the non-interactive falling state.
      */
+    private int passOutCountdown = -1;
+    private int passOutPaletteEffect;
+    public boolean isPassingOut() { return romMotionState() == LINK_MOTION_PASS_OUT; }
+    public boolean gameOverScreenPending() { return isPassingOut() && passOutCountdown == 0; }
+    public int passOutCountdown() { return passOutCountdown; }
+    /** wBGPaletteEffectAddress is held at $10 during the pass-out animation. */
+    public int passOutBgPaletteEffectAddress() { return isPassingOut() && !gameOverScreenPending() ? 0x10 : 0; }
+    public int passOutPaletteEffect() { return passOutPaletteEffect; }
+    public int passOutPaletteFrames() { return isPassingOut() ? 192 - passOutCountdown : 0; }
+    public void beginPassOut() {
+        linkStateMachine.motionState = LINK_MOTION_PASS_OUT;
+        linkStateMachine.physicsModifier = 0;
+        if (playerState != null) playerState.setInvincibilityCounter(0);
+        linkDamage.collisionIgnoreFramesRemaining = 0;
+        linkMotion.forcedSpeedPending = false;
+        linkMotion.lastRomSpeedX = 0;
+        linkMotion.lastRomSpeedY = 0;
+        movingThisFrame = false;
+    }
+    public void presentPassOut(int countdown, int animationState, int paletteEffect) {
+        passOutCountdown = countdown;
+        passOutPaletteEffect = paletteEffect;
+        linkAnimator.romAnimationStateOverride = animationState;
+    }
+
     public int romMotionState() {
         if (linkAirborne.groundStatus == GROUND_STATUS_PIT || linkAirborne.fallingIntoPit) {
             return 0x06;

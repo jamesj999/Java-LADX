@@ -52,6 +52,15 @@ public final class GameFrameSceneBuilder {
             java.util.Collections.reverse(heartSprites);
             layers.add(new SpriteListRenderLayer(heartSprites, palettes));
         }
+        if (state.link() != null && state.link().isPassingOut()
+            && state.screen() == RenderScreen.OVERWORLD) {
+            for (int i = 0; i < layers.size(); i++) {
+                RenderLayer layer = layers.get(i);
+                if (!(layer instanceof LinkRenderLayer)) {
+                    layers.set(i, new PassOutPaletteRenderLayer(layer, state.link().passOutPaletteFrames()));
+                }
+            }
+        }
         return FrameScene.of(layers);
     }
 

@@ -35,7 +35,7 @@ final class LinkEquipmentPhase {
         var debugScroll = context.debugScroll();
         var direction = context.direction();
             if (!dialogBlocksGameplay) {
-                inventoryController.tick();
+                if (link == null || !link.isPassingOut()) inventoryController.tick();
                 if (playerState != null) {
                     playerState.tickResourceBuffers(frameCounter);
                 }
@@ -46,6 +46,8 @@ final class LinkEquipmentPhase {
                     droppableRupeeSystem.tick(link.pixelX(), link.pixelY(), playerState);
                 }
             }
+
+            if (context.passOutController().tick(context, dialogBlocksGameplay)) return;
 
             if (!dialogBlocksGameplay && inventoryMenu.isFullyOpen()) {
                 inventoryController.dispatchMenuInput();
