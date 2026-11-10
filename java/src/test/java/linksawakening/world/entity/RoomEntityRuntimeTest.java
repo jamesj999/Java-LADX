@@ -8050,10 +8050,10 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x80, runtime.inspection().slowTransitionCountdown(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedX(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedY(0));
-        assertEquals(0x1E, runtime.inspection().dropSpeedZ(0));
-        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(0x20, runtime.inspection().dropSpeedZ(0));
+        assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
-        for (int frame = 2; frame <= 34; frame++) {
+        for (int frame = 2; frame <= 35; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x20, 0x30, () -> 0));
         }
         RoomEntity bounced = runtime.inspection().snapshot().slots().get(0);
@@ -8084,7 +8084,9 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x18, runtime.inspection().dropPrivateCountdown1(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedX(0));
         assertEquals(0x0C, runtime.inspection().dropSpeedY(0));
-        assertEquals(0x1E, runtime.inspection().dropSpeedZ(0));
+        assertEquals(0x20, runtime.inspection().dropSpeedZ(0));
+        assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
     }
 
     @Test
@@ -8110,7 +8112,7 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x00, runtime.inspection().droppablePrivateState4(0));
         assertEquals(0x0A, runtime.options1(0));
         assertEquals(0x18, runtime.inspection().dropPrivateCountdown1(0));
-        assertEquals(0x00, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test
@@ -8166,12 +8168,10 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(0x00, runtime.inspection().droppablePrivateState3(0));
         assertEquals(0x0A, runtime.options1(0));
-        // The shared reveal seeds $0C away from Link; the fairy handler then
-        // follows its own far-distance length-$09 attraction branch in the
-        // same frame, leaving $F7 in both speed bytes here.
-        assertEquals(0xF7, runtime.inspection().fairySpeedX(0));
-        assertEquals(0xF7, runtime.inspection().fairySpeedY(0));
-        assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+        // $629C returns past the fairy handler on the reveal frame too.
+        assertEquals(0x0C, runtime.inspection().fairySpeedX(0));
+        assertEquals(0x0C, runtime.inspection().fairySpeedY(0));
+        assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
     }
 
     @Test

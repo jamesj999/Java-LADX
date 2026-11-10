@@ -76,6 +76,10 @@ public final class EntityPickupController {
                 return new CommonDroppableUpdate(withVariant(entity, -1), true);
             }
             revealCommonDroppable(entity, linkEntityX, linkEntityY);
+            // $629A falls through to .remainInvisible ($629C): POP AF removes
+            // the caller return address even on the reveal pass. Drawing,
+            // collection and BouncingEntityPhysics start next frame.
+            return new CommonDroppableUpdate(withVariant(entity, -1), true);
         }
 
         runtime.entityOptions1Override[slot] = hiddenState == 0
@@ -96,6 +100,7 @@ public final class EntityPickupController {
         runtime.slowTransitionCountdown[slot] = runtime.DROPPABLE_REVEAL_SLOW_COUNTDOWN;
         runtime.slowTimerInitialized[slot] = true;
 
+        runtime.entityOptions1Override[slot] = runtime.DROPPABLE_REVEALED_OPTIONS1;
         if (entity.type() == runtime.ENTITY_DROPPABLE_FAIRY) {
             Vector vector = vectorAwayFromLink(entity.x(), entity.y(),
                 linkEntityX, linkEntityY, runtime.DROPPABLE_REVEAL_VECTOR_LENGTH);
