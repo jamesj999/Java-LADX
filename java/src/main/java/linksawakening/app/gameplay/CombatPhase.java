@@ -59,7 +59,12 @@ final class CombatPhase {
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0
                         && (link == null || !link.isCollisionDamageImmune())) {
+                        int previousPowerUp = playerState.activePowerUp();
                         playerState.applyRomEnemyDamage(event.linkDamage());
+                        if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
+                            && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+                            context.musicDirector().restoreMusicAfterPowerUpEnds(roomSession);
+                        }
                         roomSession.resetGuardianAcornCounterOnHurt();
                         if (event.linkCollisionResponse().active()) {
                             EntityCombatEvent.LinkCollisionResponse response =

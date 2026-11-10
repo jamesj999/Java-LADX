@@ -33,6 +33,13 @@ public final class EnemyProjectileEventConsumer {
     public static void consume(List<EntityProjectileEvent> events,
                                PlayerState playerState, Link link,
                                GameplaySoundSink soundSink, Runnable onContactHurt) {
+        consume(events, playerState, link, soundSink, onContactHurt, () -> {});
+    }
+
+    public static void consume(List<EntityProjectileEvent> events,
+                               PlayerState playerState, Link link,
+                               GameplaySoundSink soundSink, Runnable onContactHurt,
+                               Runnable onPowerUpEnded) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(playerState, "playerState");
         Objects.requireNonNull(soundSink, "soundSink");
@@ -78,7 +85,12 @@ public final class EnemyProjectileEventConsumer {
             // every generic damaging source, even when a guardian acorn
             // reduces the resulting damage to zero.
             playerState.setRunningWithPegasusBoots(false);
+            int previousPowerUp = playerState.activePowerUp();
             playerState.applyRomEnemyDamage(event.linkDamage());
+            if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
+                && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+                onPowerUpEnded.run();
+            }
             onContactHurt.run();
             applyLinkResponse(event, link);
         }

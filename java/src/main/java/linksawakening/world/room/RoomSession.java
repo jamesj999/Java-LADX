@@ -227,6 +227,12 @@ public final class RoomSession extends RoomSessionRules {
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) { context.roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel); }
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) { context.entityInputs.setToadstoolPlayerState(hasToadstool, magicPowderCount); }
+    public boolean inBossBattle() {
+        return context.entityBridge.entityRuntime != null
+            && context.entityBridge.entityRuntime.inspection().inBossBattle();
+    }
+    public int entityDefaultMusicTrack() { return context.entityDefaultMusicTrack; }
+
     public void setEntityDefaultMusicTrack(int trackId) { context.roomStoryState.setEntityDefaultMusicTrack(trackId); }
     void updateWitchEnvironment() { context.roomStoryState.updateWitchEnvironment(); }
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
