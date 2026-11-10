@@ -33,6 +33,15 @@ Run the relevant compare.py --help (opening also has capture.py) for local
 capture and comparison options. These tools require your own ROM and may
 generate screenshots and reference data: never publish extracted assets.
 
+## Controls
+
+During gameplay, **Escape** requests the same save screen as **Start + Select + A + B**.
+It uses the same gameplay gates: finish dialogs, inventory, recovery, room
+transitions and scripted opening/keyhole sequences first. A blocked Escape
+press is discarded; press it again when gameplay is ready.
+The save screen keeps its existing options and controls; Escape does nothing there.
+On the title, intro and file-selection/name-entry screens, Escape quits the app.
+
 ## Debug menu
 
 Set `"debugEnabled": true` in `java/src/main/resources/config/config.json`

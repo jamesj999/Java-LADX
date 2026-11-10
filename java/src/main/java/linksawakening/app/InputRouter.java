@@ -5,6 +5,8 @@ package linksawakening.app;
 import linksawakening.app.gameplay.DialogInteractions;
 
 import linksawakening.app.screen.TitleScreen;
+import linksawakening.app.screen.GameplayScreen;
+import linksawakening.app.screen.FileSaveScreen;
 import linksawakening.app.screen.Screen;
 import linksawakening.app.story.OpeningStory;
 
@@ -52,12 +54,20 @@ public record InputRouter(
         Runnable fileSave,
         Supplier<DialogInteractions> dialogs) {
     public void onKeyEvent(int key, int action) {
+        // Desktop shortcut only: Escape never enters the Game Boy button state.
+        if (key == GLFW_KEY_ESCAPE) {
+            if (action == GLFW_PRESS) {
+                Screen current = screen.get();
+                if (current instanceof GameplayScreen gameplay) {
+                    gameplay.requestFileSave();
+                } else if (!(current instanceof FileSaveScreen)) {
+                    stop.run();
+                }
+            }
+            return;
+        }
         if (inputState != null) {
             inputState.onKeyEvent(key, action);
-        }
-
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            stop.run();
         }
 
         if (action == GLFW_PRESS && config.debugEnabled()) {
@@ -189,10 +199,13 @@ public record InputRouter(
     }
     /** presentSaveScreenIfNeeded ($00:0E46), before ordinary frame input. */
     public boolean tryPresentFileSave() {
+        // Consume before gating: a blocked desktop request must not fire later.
+        boolean requested = screen.get() instanceof GameplayScreen gameplay
+            && gameplay.consumeFileSaveRequest();
         if (link != null && link.isPassingOut()
             || roomSession != null && roomSession.tailCaveKeyholeSequenceActive()
             || story.get().marinWakeUpBlocksKeyInput()) return false;
-        if (shouldEnterFileSave(inputConfig, inputState, inputConfig.selectKey(), GLFW_PRESS)
+        if ((requested || shouldEnterFileSave(inputConfig, inputState, inputConfig.selectKey(), GLFW_PRESS))
             && canPresentFileSave()) {
             fileSave.run();
             return true;
@@ -237,6 +250,7 @@ public record InputRouter(
             case "b" -> inputConfig.bKey();
             case "start" -> inputConfig.menuOpenKey();
             case "select" -> inputConfig.selectKey();
+            case "escape" -> GLFW_KEY_ESCAPE;
             default -> throw new IllegalArgumentException("Unknown button: " + button);
         };
         onKeyEvent(key, pressed ? GLFW_PRESS : GLFW_RELEASE);
