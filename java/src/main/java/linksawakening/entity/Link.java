@@ -206,6 +206,13 @@ public final class Link implements RocsFeather.JumpTarget {
     private int passOutPaletteEffect;
     public boolean isPassingOut() { return romMotionState() == LINK_MOTION_PASS_OUT; }
     public boolean gameOverScreenPending() { return isPassingOut() && passOutCountdown == 0; }
+    private int gameOverCountdown;
+    public int gameOverStage() { return isPassingOut() ? romPhysicsModifier() : 0; }
+    public int gameOverCountdown() { return gameOverCountdown; }
+    public void presentGameOverStage(int stage, int countdown) {
+        linkStateMachine.physicsModifier = stage;
+        gameOverCountdown = countdown;
+    }
     public int passOutCountdown() { return passOutCountdown; }
     /** wBGPaletteEffectAddress is held at $10 during the pass-out animation. */
     public int passOutBgPaletteEffectAddress() { return isPassingOut() && !gameOverScreenPending() ? 0x10 : 0; }

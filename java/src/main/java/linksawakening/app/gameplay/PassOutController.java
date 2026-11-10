@@ -7,11 +7,17 @@ import linksawakening.rom.Rom;
 public final class PassOutController {
     private linksawakening.entity.Link owner;
     private LinkPassOutAnimation animation;
+    private GameOverPresentation gameOver;
+    public linksawakening.ui.FileMenuFrameSnapshot snapshot() { return gameOver == null ? null : gameOver.snapshot(); }
 
     boolean tick(GameplaySimulation context, boolean dialog) {
         var link = context.link();
         if (link == null || context.playerState() == null) return false;
-        if (owner != link) { owner = link; animation = null; }
+        if (owner != link) { owner = link; animation = null; gameOver = null; }
+        if (gameOver != null) {
+            gameOver.tick(context);
+            return true;
+        }
         boolean transition = context.scrollController().isActive() || context.transitionController().isInputBlocked();
         boolean itemBlocked = link.romItemAnimationFrameBlocked()
             || (context.roomSession() != null && (context.roomSession().gotItemPresentationActive()
@@ -30,6 +36,7 @@ public final class PassOutController {
         context.scrollController().setScriptedScreenShakeHorizontal(false, 0);
         link.presentPassOut(animation.countdown(), animation.animationState(), animation.paletteEffect());
         link.update();
+        if (animation.finished()) gameOver = new GameOverPresentation(context);
         return true;
     }
 }

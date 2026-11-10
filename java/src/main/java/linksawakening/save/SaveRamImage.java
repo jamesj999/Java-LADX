@@ -248,6 +248,9 @@ public final class SaveRamImage {
         int slotOffset = SaveRamLayout.slotOffset(slot);
         int main = slotOffset + SaveRamLayout.mainOffset();
 
+        int deaths = playerState.deathCountBcd();
+        bytes[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET] = (byte) deaths;
+        bytes[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 1] = (byte) (deaths >>> 8);
         bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) playerState.itemB();
         bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) playerState.itemA();
         for (int index = 0; index < SaveRamLayout.SUBSCREEN_SLOT_COUNT; index++) {

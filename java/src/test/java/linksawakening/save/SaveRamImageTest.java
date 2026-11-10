@@ -12,6 +12,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 final class SaveRamImageTest {
 
     @Test
+    void deathCountRollsBcdDigitsCapsAndRoundTripsThroughSave() {
+        var player = new PlayerState();
+        player.setDeathCount(9);
+        player.incrementDeathCount();
+        assertEquals(0x10, player.deathCountBcd());
+        player.setDeathCount(99);
+        player.incrementDeathCount();
+        assertEquals(0x100, player.deathCountBcd());
+        player.setDeathCount(999);
+        player.incrementDeathCount();
+        assertEquals(999, player.deathCount());
+        assertEquals(0x999, player.deathCountBcd());
+        var image = SaveRamImage.empty();
+        image.writePlayerState(0, player);
+        assertEquals(0x999, image.readSlot(0).deathCountBcd());
+        var restored = new PlayerState();
+        restored.applySavedGame(image.readSlot(0));
+        assertEquals(999, restored.deathCount());
+    }
+
+    @Test
     void slotSummaryReadsDeathCountAsLittleEndianPackedBcd() {
         byte[] bytes = SaveRamImage.empty().bytes();
         int offset = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
@@ -289,8 +310,7 @@ final class SaveRamImageTest {
         assertEquals(PlayerState.TUNIC_BLUE, state.tunicType());
         assertEquals((byte) 0xA5,
             image.bytes()[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]);
-        assertEquals((byte) 0xB6,
-            image.bytes()[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET]);
+        assertEquals(0, image.readSlot(1).deathCountBcd());
         assertEquals((byte) 0xC7,
             image.bytes()[slotStart + SaveRamLayout.dx3Offset() + 1]);
         assertEquals(0x05, unsigned(image.bytes()[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET]));

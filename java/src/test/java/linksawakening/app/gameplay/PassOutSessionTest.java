@@ -26,6 +26,7 @@ class PassOutSessionTest {
         game.headlessButton("right", false);
         var player = game.diagnostics().playerState();
         player.setInvincibilityCounter(64);
+        player.setDeathCount(99);
         player.setHealth(0);
         int x = link.pixelX(), y = link.pixelY();
         game.headlessButton("right", true);
@@ -48,5 +49,53 @@ class PassOutSessionTest {
             assertEquals(i == 191, link.gameOverScreenPending());
             if (i < 191) { expected.advanceFrame(); game.headlessFrame(); }
         }
+        assertEquals(100, player.deathCount());
+        assertEquals(0x0100, player.deathCountBcd());
+        assertEquals(1, link.gameOverStage());
+        assertEquals(1, link.romPhysicsModifier()); // $FF9C aliases hGameOverStage.
+        assertEquals(16, link.gameOverCountdown());
+        game.headlessFrame();
+        assertEquals(2, link.gameOverStage());
+        assertEquals(15, link.gameOverCountdown());
+        game.headlessFrame();
+        assertEquals(3, link.gameOverStage());
+        assertEquals(14, link.gameOverCountdown());
+        for (int i = 13; i >= 1; i--) {
+            game.headlessFrame();
+            assertEquals(3, link.gameOverStage());
+            assertEquals(i, link.gameOverCountdown());
+        }
+        game.headlessFrame();
+        assertEquals(4, link.gameOverStage());
+        assertEquals(0, link.gameOverCountdown());
+        for (int i = 0; i < 20; i++) game.headlessFrame();
+        assertEquals(100, player.deathCount());
+        assertEquals(4, link.gameOverStage());
+        byte[] actual = game.headlessFrame();
+        byte[] romBytes;
+        try (var input = TestRom.open()) { romBytes = input.readAllBytes(); }
+        var rom = new Rom(romBytes);
+        var gpu = game.diagnostics().gpu();
+        for (int i = 0; i < 0x500; i++) {
+            assertEquals((byte) rom.u8(linksawakening.rom.RomSymbols.SaveMenuTiles.plus(i)),
+                gpu.readVRAM(0x800 + i), "Save-menu VRAM byte " + i);
+        }
+        int[] initialTiles = new int[1024], initialAttrs = new int[1024];
+        java.util.Arrays.fill(initialAttrs, 5);
+        for (int yTile = 0; yTile < 32; yTile++) for (int xTile = 0; xTile < 20; xTile++) {
+            initialTiles[yTile * 32 + xTile] = 0xAE + ((xTile ^ yTile) & 1);
+        }
+        var room = game.diagnostics().roomSession().renderSnapshot();
+        var frame = new linksawakening.ui.FileMenuFrameSnapshot("game_over", 0, false, false, 0, 0,
+            new int[5],
+            linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 8, 0x698F, initialTiles),
+            linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 0x24, 0x61E5, initialAttrs),
+            room.palettes(), room.entities().spriteSelection().objectPalettes(), java.util.List.of());
+        byte[] expectedFrame = new byte[actual.length];
+        new linksawakening.render.GameFrameSceneBuilder().build(
+            linksawakening.render.GameFrameState.empty()
+                .withScreen(linksawakening.render.RenderScreen.FILE_SAVE).withFileMenuFrame(frame))
+            .drawTo(expectedFrame, gpu);
+        assertArrayEquals(expectedFrame, actual, "ROM game-over background fills the session frame");
     }
 }
