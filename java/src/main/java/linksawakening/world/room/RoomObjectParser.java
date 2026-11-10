@@ -551,9 +551,11 @@ public final class RoomObjectParser {
     }
 
     private void handleTreeMacro(int location, int objectData) {
-        int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + location;
+        // TreeMacroHandler ($24:759D) adds in A; the padded-buffer
+        // address is an eight-bit offset, including off-screen starts $F9/$FF.
+        int areaIndex = (RoomConstants.ROOM_OBJECTS_BASE + location) & 0xFF;
         if ((areaIndex & 0x0F) == 0) {
-            areaIndex -= RoomConstants.ROOM_OBJECT_ROW_STRIDE;
+            areaIndex = (areaIndex - RoomConstants.ROOM_OBJECT_ROW_STRIDE) & 0xFF;
         }
         if (objectData == 0) {
             copyTreeObjectsToRoom(areaIndex);
@@ -565,7 +567,7 @@ public final class RoomObjectParser {
         }
         int step = (objectData & 0x40) != 0 ? RoomConstants.ROOM_OBJECT_ROW_STRIDE * 2 : 2;
         for (int i = 0; i < count; i++) {
-            copyTreeObjectsToRoom(areaIndex + i * step);
+            copyTreeObjectsToRoom((areaIndex + i * step) & 0xFF);
         }
     }
 
