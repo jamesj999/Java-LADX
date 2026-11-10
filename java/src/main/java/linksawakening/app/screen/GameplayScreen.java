@@ -14,6 +14,7 @@ public final class GameplayScreen implements Screen {
     private final BooleanSupplier interceptFrameInput;
     private record KeyEvent(int key, int action) {}
     private final List<KeyEvent> pendingKeys = new ArrayList<>();
+    private boolean fileSaveRequested;
 
     public GameplayScreen(Runnable tick, BiConsumer<Integer, Integer> keys) {
         this(tick, keys, () -> null);
@@ -46,7 +47,16 @@ public final class GameplayScreen implements Screen {
         tick.run();
     }
     @Override public void onKey(int key, int action) { pendingKeys.add(new KeyEvent(key, action)); }
-    public void clearPendingInput() { pendingKeys.clear(); }
+    public void requestFileSave() { fileSaveRequested = true; }
+    public boolean consumeFileSaveRequest() {
+        boolean requested = fileSaveRequested;
+        fileSaveRequested = false;
+        return requested;
+    }
+    public void clearPendingInput() {
+        pendingKeys.clear();
+        fileSaveRequested = false;
+    }
     @Override public linksawakening.render.GameFrameState renderState(linksawakening.render.GameFrameState state) {
         var snapshot = gameOver.get();
         return snapshot == null ? state : linksawakening.render.GameFrameState.empty()
