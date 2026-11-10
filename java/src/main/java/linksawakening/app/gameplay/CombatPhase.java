@@ -60,6 +60,7 @@ final class CombatPhase {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0
                         && (link == null || !link.isCollisionDamageImmune())) {
                         playerState.applyRomEnemyDamage(event.linkDamage());
+                        roomSession.resetGuardianAcornCounterOnHurt();
                         if (event.linkCollisionResponse().active()) {
                             EntityCombatEvent.LinkCollisionResponse response =
                                 event.linkCollisionResponse();

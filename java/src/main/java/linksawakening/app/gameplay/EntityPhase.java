@@ -275,7 +275,7 @@ final class EntityPhase {
                     scrollController.startScreenShake(request.countdown(), request.phase());
                 }
                 EnemyProjectileEventConsumer.consume(projectileEvents, playerState, link,
-                    gameplaySoundSink);
+                    gameplaySoundSink, roomSession::resetGuardianAcornCounterOnHurt);
                 var entityCombatEvents = roomSession.consumeEntityEvents();
                 EnemyCombatEventConsumer.consume(entityCombatEvents, gameplaySoundSink, transientVfxSystem);
                 for (var event : entityCombatEvents) {

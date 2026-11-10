@@ -27,6 +27,12 @@ public final class EnemyProjectileEventConsumer {
                                PlayerState playerState,
                                Link link,
                                GameplaySoundSink soundSink) {
+        consume(events, playerState, link, soundSink, () -> {});
+    }
+
+    public static void consume(List<EntityProjectileEvent> events,
+                               PlayerState playerState, Link link,
+                               GameplaySoundSink soundSink, Runnable onContactHurt) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(playerState, "playerState");
         Objects.requireNonNull(soundSink, "soundSink");
@@ -73,6 +79,7 @@ public final class EnemyProjectileEventConsumer {
             // reduces the resulting damage to zero.
             playerState.setRunningWithPegasusBoots(false);
             playerState.applyRomEnemyDamage(event.linkDamage());
+            onContactHurt.run();
             applyLinkResponse(event, link);
         }
     }
