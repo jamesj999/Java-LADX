@@ -4172,6 +4172,20 @@ final class RoomTransitionCoordinatorTest {
         }
         assertFalse(session.activeRoom().entities().slots().get(room25Zol.slot()).loaded());
 
+        // The Red Zol reuses its slot and spawns a second Gel (06:7C50).
+        // Clearing the room requires defeating both descendants.
+        int gelDeadline = frame + 0x400;
+        while (session.activeRoom().entities().loadedEntities().stream()
+                .anyMatch(entity -> entity.type() == 0x1C) && frame < gelDeadline) {
+            for (RoomEntity gel : session.activeRoom().entities().loadedEntities().stream()
+                    .filter(entity -> entity.type() == 0x1C
+                        && entity.status() == EntityStatus.ACTIVE).toList()) {
+                session.resolveEntityCombat(frame++, 0, 0, false, true, true,
+                    gel.x() - 8, 16, gel.y() - 8, 16);
+            }
+            tickInteractiveEntities(session, frame++, 0, 0);
+        }
+
         int room25StairRevealDeadline = frame + 0x40;
         while (session.activeRoomEventForTest() != 0 && frame < room25StairRevealDeadline) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
