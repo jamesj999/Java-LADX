@@ -1,5 +1,8 @@
 # Fresh-game combat route: both Java and the original ROM defeat Rolling Bones.
-# ROM columns preserve its verified route; Java uses a stationary jump for the final hit.
+# Enemy RNG shares one ROM seed, but rLY requires CPU cycle timing absent from Java.
+# Use well hearts, protected forest lanes and short shield/attack approaches.
+# The former Java-only 120-frame sword waits exposed Link to random walkers.
+# ROM columns retain explicitly validated inputs where the engines take different paths.
 # Optional ROM columns: buttons, frame count/target (- keeps Java target), idle frames.
 - 0 620
 a 8 122
@@ -98,7 +101,10 @@ right+b room=0xA1 4
 up+b y=72 4
 left+b room=0xA0 4
 up+b y=28 4
-left+b x=104 4
+left+b x=72 4
+down+a* y=48 24
+right+a* x=104 24
+up y=28 4
 up+b room=0x90 10 up+b room=0x90 4
 up+a* room=0x80 180
 a* dialog=0 180
@@ -153,19 +159,21 @@ left+a*+b x=24 4 left
 down+a*+b y=112 4 down+a
 right x=80 4
 down room=0x62 120
-down+a* y=88 4
-left+a* x=56 4
-up+a*+b room=0x52 4 up+b
-up+a*+b y=64 4 up+b
-right+a*+b x=88 4 right+b
-up+a*+b room=0x42 4 up+b
-a*+b 120 4 none 0 0
-up+a*+b y=88 4 up+a*+b
-right+a*+b x=120 4 right+b
-up+a*+b y=56 4 up+b
-right+a*+b room=0x43 4 right+b
+down+b y=88 4
+left+b x=40 4
+up+b room=0x52 4
+up+a*+b y=32 4
+none 0 0
+up+b room=0x42 4
+none 0 0
+up+b y=104 4
+right+a*+b x=88 4
+up+a*+b y=80 4
+right+a*+b x=120 4
+up+b y=56 4
+right+b room=0x43 4
 up+b y=44 4
-right+b x=104 4
+right+a*+b x=104 4
 down+b y=96 4
 right+b room=0x44 4
 down y=112 4
@@ -210,26 +218,26 @@ up y=112 4
 left x=8 4
 up y=96 4
 left+b room=0x43 4
-left+a*+b x=104 4 left+b
-up+b y=44 4
+left+a*+b x=72 4
+up+a*+b y=44 4
 left+a*+b x=8 4 left+b
 down+b y=56 4
 left+b room=0x42 4
 left+b x=120 4
-down+a*+b y=64 4 down+b
-a*+b 120 4
+down+b y=64 4
+none 0 0
 down+a*+b y=88 4
 left+a*+b x=88 4
 down+a*+b room=0x52 4 down+b
 left+a*+b x=56 4 left+b
 down+a*+b room=0x62 4
-down+a*+b y=64 4 down+b
-a*+b 120 4
+down+b y=64 4
+none 0 0
 down+a*+b y=88 4 down+b
 left+a*+b room=0x61 4
-left+a*+b x=88 4
+left+a*+b x=72 4
 up+a*+b room=0x51 4
-up y=96 4
+up+a* y=96 4
 right x=120 4
 start 8 60
 b 8 30
@@ -266,7 +274,10 @@ down+a*+b room=0x80 4
 right+a*+b x=104 4
 down+a*+b room=0x90 4
 down+a*+b room=0xA0 4
-down y=28 4
+down+a* y=47 24
+left+a* x=72 24
+up y=28 4
+right x=104 4
 right room=0xA1 4
 down y=72 4
 left room=0xA0 4
@@ -304,7 +315,7 @@ left+a*+b x=104 4
 a*+b 96 4 up+a*+b y=64 4
 a*+b 24 0
 left+a*+b x=40 4
-a*+b 120 4
+none 0 0
 up smallkeys=1 0 none smallkeys=1 0
 down y=72 4
 left+a*+b room=0x15 4
@@ -334,11 +345,14 @@ up+a*+b room=0x13 4
 up+a*+b y=112 4
 left+a*+b x=40 4
 left+b 1 1 up+b
-a*+b 360 4 a*+b 120 4
+a*+b 360 4 none 0 0
 up+a*+b y=56 24
-right+b 1 0
+b 24 0
+right+b 8 0
 a*+b 180 4
+up+b y=112 0
 left x=40 4
+up+b y=56 4
 up+a*+b y=28 4
 right+a*+b x=88 4
 down+a*+b y=56 48
@@ -349,47 +363,59 @@ right+a*+b x=136 4
 up+a*+b dialog=1 120
 a 8 122
 a 8 122
-right+a*+b room=0x14 4
-right+a*+b x=40 4
-right+a*+b x=88 4
-a+b 80 0
-none 1 60
-down+a*+b y=80 4
-left+a*+b x=40 4 a*+b 240 4
-right+a*+b x=120 4
-up+a*+b y=40 4
-right+a*+b x=136 4
-up+a*+b 180 4
-down+a*+b y=80 4
-left+a*+b x=40 4
-down+a*+b y=112 4
-left+a*+b x=24 20
-right+a*+b x=120 4
-up+a*+b y=48 4
-left+a*+b x=40 4
-down+a*+b y=112 4
-right+a*+b x=120 4
-up+b 1 0
-a*+b 240 4
-up+a*+b y=48 4
-left+a*+b x=40 4
-down+a*+b y=112 4
-right+a*+b x=120 4
-up+a*+b y=48 4
-left+a*+b x=80 4
-up+a*+b y=32 4
-a*+b 240 4
-down+a*+b y=64 4
-right+a*+b x=136 4
-down+a*+b y=112 4
+right+b room=0x14 4
+right+b x=40 0
+down+b y=96 0
+b 24 0
 right+b 1 0
-a*+b 240 4
-left x=80 0 none 0 0
-up y=96 0 none 0 0
-up+a* y=32 4 none 0 0
-a* 240 4 none 0 0
-down y=112 4 none 0 0
-right+a* x=137 4 none 0 0
+b 100 0
+a*+b 96 0
+up+b y=80 0
+right+a*+b x=120 0
+down+b y=96 0
+b 24 0
+left+b 1 0
+b 100 0
+a*+b 96 0
+up+b y=80 0
+left+a*+b x=40 0
+b 24 0
+down+b y=96 0
+right+b 1 0
+b 100 0
+a*+b 96 0
+up+b y=80 0
+right+a*+b x=120 0
+b 24 0
+down+b y=96 0
+left+b 1 0
+b 100 0
+a*+b 96 0
+up+a*+b y=48 0
+left+a*+b x=40 0
+left+a*+b x=80 0
+right+b x=80 0
+up+a*+b y=26 0
+a*+b 48 0
+up+a*+b y=26 0
+a*+b 48 0
+up+a*+b y=26 0
+a*+b 48 0
+up+a*+b y=26 0
+a*+b 48 0
+down+a*+b y=80 0
+left+a*+b x=40 0
+right+a*+b x=120 0
+left+a*+b x=80 0
+b 24 0
+up+b 1 0
+a*+b 120 0
+down+a*+b y=96 0
+b 24 0
+up+b 1 0
+a*+b 120 0
+up+a*+b y=64 0
+right+a*+b x=136 4
 up+a*+b y=64 4
 up+a*+b dialog=1 120
 a 8 122
@@ -408,10 +434,17 @@ none 16 0
 up+b room=0x0F 4
 up+a*+b y=80 4
 a*+b 240 4
-left+a*+b room=0x0E 4
-left+a*+b x=136 4
+start 8 60
+b 8 30
+start 8 60
+left+a* room=0x0E 4
+left+a* x=136 4
+b* 96 0
+start 8 60
+b 8 30
+start 8 60
 left+a*+b x=72 4
-none 32 0
+none 96 0
 up+a*+b dialog=1 120
 a 8 122
 a 8 122
@@ -433,8 +466,7 @@ up+b y=96 0
 right+b x=136 0
 up+b y=48 0
 left+b x=120 0
-up+b y=32 0
-none 64 0
+up+b y=26 0
 left+b x=24 0
 down+b y=64 0
 left+b room=0x04 4
@@ -444,34 +476,20 @@ up+b y=56 0
 right+b 100 0
 left+b room=0x03 4
 left+b x=104 0
-down+b 8 0 down+b 24 0
-left+b 1 0
-b 12 0
-b 12 0
-b 12 0
-b 12 0
-b 12 0
-b 12 0
-b 12 0
-b 12 0
-down+b y=64 0 up 12 0
-left x=75 0
-a* 48 0 left+a* x=40 0
+down+b y=96 0
+left+b x=64 0
 a* 48 0
-right+b x=88 0
-down+b y=80 0
+right+b x=120 0
+up+b y=64 0
+right+b x=136 0
 up+b 1 0
-b 120 0
-up y=54 0
-up+a* y=40 0
 a* 48 0
-down+b y=64 0 down y=64 0
-left+b x=94 0 none 0 0
-down+b 1 0 none 0 0
-b 120 0 none 0 0
-down+a* y=96 0 none 0 0
+# Java's remaining beetle reaches the bottom lane; ROM's is already defeated.
+left+b x=104 0 none 0 0
+down+b y=112 0 none 0 0
+left+b x=75 0 none 0 0
 a* 48 0 none 0 0
-up+b y=64 0 none 0 0
+up+b y=80 0 none 0 0
 right x=136 0
 up room=0x19 4
 none 64 0
