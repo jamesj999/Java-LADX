@@ -490,7 +490,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     boolean enemyDropActivePowerUp;
 
-    boolean enemyDropBossBattle;
+    boolean inBossBattle;
 
     int killCount;
 

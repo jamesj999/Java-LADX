@@ -7879,7 +7879,8 @@ final class RoomEntityRuntimeTest {
         runtime.debug().setEntityMapIdForTest(0x00);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.configuration().setEnemyDropPlayerState(3, 4, false);
-        runtime.configuration().setEnemyDropBossBattle(true);
+        runtime.slotView.setOptions1Override(15, 0x80);
+        runtime.initializeBossBattle(boss);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, sequence(0x00, 0x1F)));
         assertEquals(0xFF, runtime.enemies().transitionCountdown(15));

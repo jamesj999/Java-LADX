@@ -753,6 +753,8 @@ public final class EntityRoomInspection {
     public boolean freeMovementMode() { return runtime.freeMovementMode; }
     public int chestSwordLevel() { return runtime.chestSwordLevel; }
     public boolean chestPlayerLevelsKnown() { return runtime.chestPlayerLevelsKnown; }
+    public boolean inBossBattle() { return runtime.inBossBattle; }
+
     public boolean dungeonMinibossReady() { return runtime.dungeonMinibossReady; }
     public int defaultMusicTrack() { return runtime.defaultMusicTrack; }
     public ColorShellWorld colorShellWorld() { return runtime.colorShellWorld; }

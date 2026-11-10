@@ -61,7 +61,7 @@ public final class EntityBossRewards {
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
                 entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()), runtime.droppedItemBySlot[entity.slot()],
-                runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.enemyDropBossBattle,
+                runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.inBossBattle,
                 runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling, runtime.enemyDropCounters,
                 randomByteSupplier);
             result = runtime.enemyDropResolver.resolve(context);
@@ -96,7 +96,7 @@ public final class EntityBossRewards {
                 EnemyDropResolver.Result drop = runtime.enemyDropResolver.resolve(
                     new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()),
                         runtime.droppedItemBySlot[slot], runtime.enemyDropMaxHearts, runtime.enemyDropHealth,
-                        runtime.enemyDropBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
+                        runtime.inBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
                         runtime.enemyDropCounters, randomByteSupplier));
                 runtime.enemyDropCounters = drop.counters();
                 if (drop.dropped()) runtime.pickups.spawnEnemyDrop(entity, drop.itemType());
