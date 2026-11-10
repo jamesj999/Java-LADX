@@ -65,7 +65,7 @@ final class RoomSessionContext {
     final DroppableRupeeSystem droppableRupeeSystem;
     final RoomLoadListener roomLoadListener;
     final RoomTilemapBuilder roomTilemapBuilder;
-    final RomRandomByteSource entityRandomByteSource = new RomRandomByteSource();
+    final RomRandomByteSource entityRandomByteSource;
     final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     final FollowingNpcEntitySpawner followingNpcEntitySpawner;
     final RomEnemyCombatTables enemyCombatTables;
@@ -201,7 +201,9 @@ final class RoomSessionContext {
                        OverworldCollision overworldCollision,
                        TransientVfxSystem transientVfxSystem,
                        DroppableRupeeSystem droppableRupeeSystem,
-                       RoomLoadListener roomLoadListener) {
+                       RoomLoadListener roomLoadListener,
+                       RomRandomByteSource randomByteSource) {
+        entityRandomByteSource = java.util.Objects.requireNonNull(randomByteSource);
         roomSessionViews = new RoomSessionViews(session);
         roomTransitionController = new RoomTransitionController(session);
         roomPlayerItemActions = new RoomPlayerItemActions(session);

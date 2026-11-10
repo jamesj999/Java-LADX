@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySideViewGravity;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /**
  * Bank-$03's common {@code BouncingEntityPhysics} state for an enemy drop.
@@ -108,6 +109,27 @@ public final class EnemyDropMotion {
         int z = addSpeedToPosition(entity.z(), speedZ[slot], speedZAccumulator, slot);
         speedZ[slot] = (speedZ[slot] - TOP_DOWN_GRAVITY) & 0xFF;
         return withPosition(entity, x, y, z);
+    }
+
+    /** $03:7A36-$7A83 restores blocked axes to the cached pre-handler position. */
+    public RoomEntity resolveWalls(RoomEntity before, RoomEntity moved,
+                                   RoomEntityBackgroundInteraction background,
+                                   int ignoreHitsCountdown, int frameCounter) {
+        if (background == null) return moved;
+        int slot = moved.slot();
+        int x = moved.x();
+        int y = moved.y();
+        if (speedX[slot] != 0 && background.probe(moved,
+                (speedX[slot] & 0x80) == 0 ? 0 : 1,
+                x, y, ignoreHitsCountdown, frameCounter).blocked()) {
+            x = before.x();
+        }
+        if (speedY[slot] != 0 && background.probe(moved,
+                (speedY[slot] & 0x80) == 0 ? 3 : 2,
+                x, y, ignoreHitsCountdown, frameCounter).blocked()) {
+            y = before.y();
+        }
+        return withPosition(moved, x, y, moved.z());
     }
 
     public RoomEntity bounce(RoomEntity entity, int groundStatus, boolean sideScrolling,

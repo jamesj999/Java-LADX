@@ -242,7 +242,11 @@ public final class EntityRoomLoader {
         if (type == ENTITY_OWL_EVENT && roomId != 0xD2 && roomId != 0x16 && roomId != 0x36) {
             return -1;
         }
-        if (type == ENTITY_DROPPABLE_SECRET_SEASHELL) {
+        // EntityInitDiggableBushOrPotDroppable ($03:4F1E) and the tree/pot
+        // initializer set privateState3. DroppableRevealOrReturnIfNeeded
+        // ($03:61DE) returns before drawing, including during room scrolling.
+        if (type == ENTITY_DROPPABLE_SECRET_SEASHELL
+            || EntityTypeRules.isCommonDroppableType(type)) {
             return -1;
         }
         if (!definition.supported()) {

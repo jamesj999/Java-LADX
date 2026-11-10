@@ -22,6 +22,7 @@ final class EntitySlotPhase5 {
     if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_5_ROOSTER, state)) return false;
     if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_5_COLOR_SHELL_TYPE, state))
       return false;
+    RoomEntity beforeDropPhysics = state.updated;
     if (state.status == EntityStatus.ACTIVE
         && !state.wasInitializing
         && !state.keyDropTransitionActive
@@ -86,6 +87,15 @@ final class EntitySlotPhase5 {
       }
       if (state.status == EntityStatus.ACTIVE
           && state.runtime.enemyDropActive[state.updated.slot()]) {
+        // BouncingEntityPhysics calls the complete background helper before
+        // bouncing. Ground effects alone omit the neighbouring bush walls.
+        RoomEntityBackgroundInteraction dropBackground = state.runtime.backgroundInteraction;
+        if (dropBackground == null && state.backgroundCollision != null) {
+          dropBackground = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+        }
+        state.updated = state.runtime.enemyDropMotion.resolveWalls(beforeDropPhysics,
+            state.updated, dropBackground,
+            state.runtime.enemyIgnoreHitsCountdown[state.updated.slot()], state.frame);
         boolean dropGroundCollision =
             state.runtime.groundInteractionSideScrolling
                 && state.runtime.enemyDropMotion.speedY(state.updated.slot()) != 0
