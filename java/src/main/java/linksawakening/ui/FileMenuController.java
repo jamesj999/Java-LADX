@@ -282,6 +282,12 @@ public final class FileMenuController {
     }
 
     private FileMenuAction tickCreation(InputState inputState, InputConfig inputConfig) {
+        // FileCreationInteractiveHandler $01:4AB2 checks START before editing.
+        // Even an all-zero name is written, then $01:4B26 returns to selection;
+        // func_5DC0 leaves that slot empty. There is no empty-name error path.
+        if (inputState.wasPressed(inputConfig.menuOpenKey())) {
+            return new FileMenuAction(FileMenuAction.Type.CREATE_FILE, selectedSlot, currentName);
+        }
         if (inputState.wasPressed(inputConfig.leftKey())) {
             selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1)
                 % NAME_ENTRY_CHARACTER_COUNT;
@@ -301,10 +307,6 @@ public final class FileMenuController {
             namePosition = Math.min(NAME_LENGTH - 1, namePosition + 1);
         }
 
-        if (inputState.wasPressed(inputConfig.menuOpenKey())) {
-            savedNames[selectedSlot] = currentName.clone();
-            return new FileMenuAction(FileMenuAction.Type.START_NEW_GAME, selectedSlot, currentName);
-        }
         return FileMenuAction.none(selectedSlot);
     }
 

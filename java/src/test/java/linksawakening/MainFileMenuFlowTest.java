@@ -51,8 +51,8 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void committingAnEmptyFileUsesTheDedicatedNewGameBootstrap() {
-        CompiledCode.calls("linksawakening.app.screen.FileMenuScreen", "tick", "createNewGame", "selectSlot", "startNewGame");
+    void committingAFilePersistsThenReturnsToSelection() {
+        CompiledCode.calls("linksawakening.app.screen.FileMenuScreen", "tick", "persistFileMenuMutation");
     }
 
     @Test
@@ -114,11 +114,6 @@ final class MainFileMenuFlowTest {
     @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() {
         CompiledCode.calls("linksawakening.app.ScreenRouter", "startFileSelection", "saveFilesMask", "savedNames", "FileMenuController");
-    }
-
-    @Test
-    void newGamePersistsTheSelectedSlotBeforeEnteringGameplay() {
-        CompiledCode.calls("linksawakening.app.screen.FileMenuScreen", "tick", "createNewGame", "SaveRamStore.flush", "startNewGame");
     }
 
     @Test

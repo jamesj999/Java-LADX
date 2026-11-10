@@ -32,6 +32,28 @@ final class SaveRoundTripTest {
         roundTrip(directory.resolve("azle.sav"), 1);
     }
 
+    @Test
+    void blankNameReturnsToAnEmptySlotAndCannotStartAnonymousGameplay(@TempDir Path directory) throws Exception {
+        GameSession game = new GameSession();
+        game.initializeHeadlessIntro();
+        try {
+            Path path = directory.resolve("azle.sav");
+            set(game, "saveRamStore", SaveRamStore.open(path));
+            call(game, "router", ScreenRouter.class).startFileSelection();
+            press(game, "a");
+            press(game, "start");
+            assertEquals(RenderScreen.FILE_MENU, get(game, "currentScreen", Screen.class).renderScreen());
+            SaveRamStore reopened = SaveRamStore.open(path);
+            assertEquals(0, reopened.saveFilesMask());
+            assertArrayEquals(new int[5], reopened.savedNames()[0]);
+            press(game, "a");
+            assertTrue(get(game, "fileMenuController", linksawakening.ui.FileMenuController.class)
+                .snapshot().creation());
+        } finally {
+            call(game, "cleanup", Void.class);
+        }
+    }
+
     private void roundTrip(Path path, int gameOverOption) throws Exception {
         GameSession game = new GameSession();
         game.initializeHeadlessIntro();
@@ -42,10 +64,8 @@ final class SaveRoundTripTest {
             press(game, "a"); // empty file -> name entry
             press(game, "a"); // enter first ROM character
             press(game, "start");
-            // File creation returns to selection in the ROM; older versions entered gameplay.
-            if (get(game, "currentScreen", Screen.class).renderScreen() == RenderScreen.FILE_MENU) {
-                press(game, "a");
-            }
+            assertEquals(RenderScreen.FILE_MENU, get(game, "currentScreen", Screen.class).renderScreen());
+            press(game, "a");
             assertEquals(RenderScreen.OVERWORLD, get(game, "currentScreen", Screen.class).renderScreen());
             PlayerState player = get(game, "playerState", PlayerState.class);
             RoomSession room = get(game, "roomSession", RoomSession.class);
