@@ -19,6 +19,12 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
 
+    private final PcmStreamBuffering buffering = new PcmStreamBuffering();
+    private long backpressureCount;
+
+    public long underrunCount() { return buffering.underrunCount(); }
+    public long backpressureCount() { return backpressureCount; }
+
     private boolean available;
     private boolean closed;
     private String statusMessage;
@@ -40,15 +46,20 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     @Override
     public void play(short[] stereoPcm, int sampleRate) {
-        play(stereoPcm, sampleRate, false);
+        play(stereoPcm, sampleRate, false, false);
     }
 
     @Override
     public void playReplacing(short[] stereoPcm, int sampleRate) {
-        play(stereoPcm, sampleRate, true);
+        play(stereoPcm, sampleRate, true, false);
     }
 
-    private void play(short[] stereoPcm, int sampleRate, boolean replaceQueuedPlayback) {
+    @Override
+    public void playFrame(short[] stereoPcm, int sampleRate) {
+        play(stereoPcm, sampleRate, false, true);
+    }
+
+    private void play(short[] stereoPcm, int sampleRate, boolean replaceQueuedPlayback, boolean streaming) {
         if (!isAvailable() || stereoPcm == null || stereoPcm.length == 0 || sampleRate <= 0) {
             return;
         }
@@ -58,8 +69,10 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
             if (replaceQueuedPlayback) {
                 clearQueuedBuffers();
             } else {
+                if (streaming) buffering.observePlaying(AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING);
+                else buffering.reset();
                 unqueueProcessedBuffers();
-                dropOldestBuffersBeforeQueueing();
+                waitForQueueSpace(sampleRate);
             }
 
             pendingBuffer = new PendingOpenAlBuffer(AL10.alGenBuffers());
@@ -70,12 +83,14 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
             checkAlError("fill dialog buffer");
             AL10.alSourceQueueBuffers(source, pendingBuffer.id());
             checkAlError("queue dialog buffer");
-            bufferQueue.trackQueued(pendingBuffer.id());
+            bufferQueue.trackQueued(pendingBuffer.id(), stereoPcm.length / 2);
             pendingBuffer.markTracked();
 
-            if (AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) != AL10.AL_PLAYING) {
+            if (AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) != AL10.AL_PLAYING
+                    && (!streaming || buffering.ready(bufferQueue.queuedFrames(), sampleRate))) {
                 AL10.alSourcePlay(source);
-                checkAlError("play dialog source");
+                checkAlError("play PCM source");
+                if (streaming) buffering.started();
             }
         } catch (RuntimeException | LinkageError e) {
             deletePendingBuffer(pendingBuffer);
@@ -134,15 +149,29 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         checkAlError("unqueue dialog buffers");
     }
 
-    private void dropOldestBuffersBeforeQueueing() {
-        for (int ignored : bufferQueue.buffersToDropBeforeQueueing()) {
-            clearQueuedBuffers();
-            break;
+    private void waitForQueueSpace(int sampleRate) {
+        if (!bufferQueue.isFull()) return;
+        backpressureCount++;
+        // The frame producer can outrun the device. Never discard queued waveform
+        // segments: stopping/clearing here inserts an audible discontinuity.
+        if (AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) != AL10.AL_PLAYING) {
+            AL10.alSourcePlay(source);
+            buffering.started();
         }
-        checkAlError("drop old dialog buffers");
+        long deadline = System.nanoTime() + 1_000_000_000L
+                + bufferQueue.queuedFrames() * 1_000_000_000L / sampleRate;
+        while (bufferQueue.isFull()) {
+            java.util.concurrent.locks.LockSupport.parkNanos(1_000_000);
+            unqueueProcessedBuffers();
+            if (System.nanoTime() > deadline) throw new IllegalStateException("PCM device stopped consuming buffers");
+            if (Thread.currentThread().isInterrupted()) {
+                throw new IllegalStateException("PCM queue wait interrupted");
+            }
+        }
     }
 
     private void clearQueuedBuffers() {
+        buffering.reset();
         AL10.alSourceStop(source);
         while (AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED) > 0) {
             int buffer = AL10.alSourceUnqueueBuffers(source);

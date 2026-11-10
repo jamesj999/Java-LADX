@@ -50,9 +50,12 @@ class FrameAudioPlayerTest {
             rom = stream.readAllBytes();
         }
         List<short[]> chunks = new ArrayList<>();
-        PcmSoundOutput output = (pcm, rate) -> {
-            assertEquals(44101, rate);
-            chunks.add(pcm);
+        PcmSoundOutput output = new PcmSoundOutput() {
+            @Override public void play(short[] pcm, int rate) { fail("frame transport must use streaming output"); }
+            @Override public void playFrame(short[] pcm, int rate) {
+                assertEquals(44101, rate);
+                chunks.add(pcm);
+            }
         };
         try (var player = new FrameAudioPlayer(rom, 44101, output)) {
             for (int i = 0; i < 60; i++) player.update();

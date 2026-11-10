@@ -7,6 +7,7 @@ import java.util.List;
 final class DialogPcmBufferQueue {
 
     private final int maxBuffers;
+    private final java.util.Map<Integer, Integer> frames = new java.util.HashMap<>();
     private final ArrayDeque<Integer> liveBuffers = new ArrayDeque<>();
 
     DialogPcmBufferQueue(int maxBuffers) {
@@ -16,25 +17,26 @@ final class DialogPcmBufferQueue {
         this.maxBuffers = maxBuffers;
     }
 
-    void trackQueued(int buffer) {
+    void trackQueued(int buffer) { trackQueued(buffer, 0); }
+
+    void trackQueued(int buffer, int frameCount) {
         liveBuffers.addLast(buffer);
+        frames.put(buffer, frameCount);
     }
 
-    List<Integer> buffersToDropBeforeQueueing() {
-        List<Integer> buffers = new ArrayList<>();
-        while (liveBuffers.size() >= maxBuffers) {
-            buffers.add(liveBuffers.removeFirst());
-        }
-        return buffers;
-    }
+    boolean isFull() { return liveBuffers.size() >= maxBuffers; }
+
+    int queuedFrames() { return frames.values().stream().mapToInt(Integer::intValue).sum(); }
 
     void markDeleted(int buffer) {
         liveBuffers.remove(buffer);
+        frames.remove(buffer);
     }
 
     List<Integer> buffersToDeleteOnClose() {
         List<Integer> buffers = new ArrayList<>(liveBuffers);
         liveBuffers.clear();
+        frames.clear();
         return buffers;
     }
 

@@ -44,7 +44,7 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         remainder += sampleRate;
         int frames = remainder / 60;
         remainder %= 60;
-        output.play(apu.render(frames), sampleRate);
+        output.playFrame(apu.render(frames), sampleRate);
     }
 
     @Override public boolean isMusicPlaying() { return music.isPlaying(); }

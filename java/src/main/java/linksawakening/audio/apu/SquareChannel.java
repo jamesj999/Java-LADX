@@ -65,7 +65,7 @@ final class SquareChannel {
 
     void writeEnvelope(int value) {
         envelopeRegister = value & 0xFF;
-        volume = (envelopeRegister >>> 4) & 0x0F;
+        // The initial volume is reloaded by trigger, not by an NRx2 write.
         if ((envelopeRegister & 0xF8) == 0) {
             active = false;
         }
@@ -148,20 +148,24 @@ final class SquareChannel {
     }
 
     double render() {
-        if (!active) {
-            return 0.0;
-        }
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0; // Digital zero through an enabled DAC.
 
         int duty = (dutyRegister >>> 6) & 0x03;
-        int dutyStep = (int) phase & 0x07;
-        int patternValue = DUTY_PATTERNS[duty][dutyStep];
-        double sample = patternValue == 0 ? -1.0 : 1.0;
-
-        phase += frequencyHertz() * 8.0 / sampleRate;
-        phase %= 8.0;
-
-        return sample * (volume / 15.0);
+        double steps = frequencyHertz() * 8.0 / sampleRate;
+        double remaining = steps;
+        double highTime = 0;
+        // Integrate every duty edge in this output interval rather than point sampling.
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - (phase - Math.floor(phase)));
+            highTime += DUTY_PATTERNS[duty][(int) phase & 7] * span;
+            phase = (phase + span) % 8.0;
+            remaining -= span;
+        }
+        return 1.0 - (highTime / steps) * volume / 7.5;
     }
+
+    boolean dacEnabled() { return (envelopeRegister & 0xF8) != 0; }
 
     private void trigger() {
         length.trigger();

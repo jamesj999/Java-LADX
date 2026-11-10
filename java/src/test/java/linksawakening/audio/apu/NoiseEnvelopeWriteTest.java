@@ -5,30 +5,38 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NoiseEnvelopeWriteTest {
     @Test void initialVolumeWriteWaitsForTriggerButDacOffTakesEffectImmediately() {
-        GameBoyApu apu = new GameBoyApu(48000);
-        apu.writeRegister(GameBoyApu.NR52, 0x80);
-        apu.writeRegister(GameBoyApu.NR50, 0x77);
-        apu.writeRegister(GameBoyApu.NR51, 0x88);
-        apu.writeRegister(GameBoyApu.NR42, 0xF0);
-        apu.writeRegister(GameBoyApu.NR43, 3);
-        apu.writeRegister(GameBoyApu.NR44, 0x80);
-        assertEquals(4096, peak(apu.render(1600)));
-
+        NoiseChannel channel = new NoiseChannel(65536);
+        NoiseChannel reference = new NoiseChannel(65536);
+        for (NoiseChannel noise : new NoiseChannel[] {channel, reference}) {
+            noise.writeEnvelope(0xF0);
+            noise.writePolynomial(0x21);
+            noise.writeControl(0x80);
+            for (int i = 0; i < 40; i++) noise.render();
+        }
         // Same disabled envelope/direction; avoids model-specific live-write quirks.
-        apu.writeRegister(GameBoyApu.NR42, 0x30);
-        assertEquals(0x30, apu.readRegister(GameBoyApu.NR42));
-        assertTrue(apu.isChannelActive(4));
-        assertEquals(4096, peak(apu.render(1600)), "NR42 must not reload live volume");
-
-        apu.writeRegister(GameBoyApu.NR44, 0x80);
-        assertEquals(819, peak(apu.render(1600)), "Trigger loads initial volume 3/15");
-        apu.writeRegister(GameBoyApu.NR42, 0);
-        assertFalse(apu.isChannelActive(4));
-        assertEquals(0, peak(apu.render(1600)));
+        channel.writeEnvelope(0x30);
+        for (int i = 0; i < 1600; i++) assertEquals(reference.render(), channel.render());
+        channel.writeControl(0x80);
+        double minimum = 1;
+        for (int i = 0; i < 40; i++) minimum = Math.min(minimum, channel.render());
+        assertEquals(0.6, minimum, 1e-9, "digital volume 3 maps to DAC value 0.6");
+        channel.writeEnvelope(0);
+        assertFalse(channel.isActive());
+        assertEquals(0, channel.render());
     }
-    private static int peak(short[] pcm) {
-        int peak = 0;
-        for (short sample : pcm) peak = Math.max(peak, Math.abs((int) sample));
-        return peak;
+
+    @Test void squareInitialVolumeAlsoWaitsForTrigger() {
+        SquareChannel channel = new SquareChannel(65536);
+        SquareChannel reference = new SquareChannel(65536);
+        for (SquareChannel square : new SquareChannel[] {channel, reference}) {
+            square.writeEnvelope(0xF0);
+            square.writeDuty(0x80);
+            square.writeFrequencyHigh(0x80);
+        }
+        channel.writeEnvelope(0x30);
+        for (int i = 0; i < 1600; i++) assertEquals(reference.render(), channel.render());
+        channel.writeEnvelope(0);
+        assertFalse(channel.isActive());
+        assertEquals(0, channel.render());
     }
 }

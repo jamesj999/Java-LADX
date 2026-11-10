@@ -86,20 +86,23 @@ final class WaveChannel {
     }
 
     double render() {
-        if (!active) {
-            return 0.0;
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0;
+        int level = (outputLevelRegister >>> 5) & 3;
+        double steps = frequencyHertz() * 32.0 / sampleRate;
+        double remaining = steps;
+        double digitalSum = 0;
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - (position - Math.floor(position)));
+            int digital = level == 0 ? 0 : sampleAt((int) position & 31) >>> (level - 1);
+            digitalSum += digital * span;
+            position = (position + span) % 32.0;
+            remaining -= span;
         }
-
-        int sample = sampleAt((int) position & 0x1F);
-        int level = (outputLevelRegister >>> 5) & 0x03;
-        // NR32 shifts the four-bit sample before DAC conversion, including truncation.
-        double scaled = level == 0 ? 0.0 : ((sample >>> (level - 1)) - 7.5) / 7.5;
-
-        position += frequencyHertz() * 32.0 / sampleRate;
-        position %= 32.0;
-
-        return scaled;
+        return 1.0 - digitalSum / steps / 7.5;
     }
+
+    boolean dacEnabled() { return (dacRegister & 0x80) != 0; }
 
     private void trigger() {
         length.trigger();

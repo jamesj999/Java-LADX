@@ -34,6 +34,20 @@ final class SoundEffectPcmRendererTest {
         assertEquals(0x00, freshApu.readRegister(GameBoyApu.NR52));
     }
 
+    @Test
+    void completedNoiseOneShotsReachSilenceWithoutClippingOrAnAbruptFinalSample() throws IOException {
+        byte[] rom = loadRom();
+        GameBoyApu apu = new GameBoyApu(48000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu, rom);
+        for (int id : new int[] {2, 12}) {
+            SoundEffect effect = player.catalog().find(SoundEffectNamespace.NOISE, id).orElseThrow();
+            short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, player, effect);
+            assertTrue(hasNonZeroSample(pcm));
+            for (short sample : pcm) assertTrue(Math.abs((int) sample) < 32767);
+            for (int i = pcm.length - 64; i < pcm.length; i++) assertEquals(0, pcm[i], effect.name());
+        }
+    }
+
     private static boolean hasNonZeroSample(short[] pcm) {
         for (short sample : pcm) {
             if (sample != 0) {
