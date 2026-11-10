@@ -177,8 +177,8 @@ public final class InventoryMenu {
 
     /**
      * Move the cursor one step. {@code dx} and {@code dy} should each be -1,
-     * 0, or +1 (pass only one non-zero value per call — diagonals keep the
-     * current slot, matching the original's OR-reducing table lookup).
+     * 0, or +1. The ROM applies horizontal then vertical clamping and emits
+     * one cursor jingle only if the final slot differs from the initial slot.
      */
     public void moveCursor(int dx, int dy) {
         if (!isFullyOpen()) {
@@ -190,13 +190,12 @@ public final class InventoryMenu {
             }
             return;
         }
-        int next = cursorSlot;
-        if (dx != 0 && dy == 0) {
-            next += dx;
-        } else if (dy != 0 && dx == 0) {
-            next += dy * SUBSCREEN_COLS;
-        }
-        if (next >= 0 && next < PlayerState.SUBSCREEN_SLOT_COUNT && next != cursorSlot) {
+        // moveInventoryCursor, $20:5F1B-5F56 applies each axis before
+        // comparing the final selection once at $20:5F85-5F91.
+        int next = Math.max(0, Math.min(PlayerState.SUBSCREEN_SLOT_COUNT - 1, cursorSlot + dx));
+        next = Math.max(0, Math.min(PlayerState.SUBSCREEN_SLOT_COUNT - 1,
+            next + dy * SUBSCREEN_COLS));
+        if (next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
             if (playerState.subscreenItem(cursorSlot) == PlayerState.INVENTORY_OCARINA
@@ -211,6 +210,7 @@ public final class InventoryMenu {
         if (!isFullyOpen()) {
             return;
         }
+        if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
         int selectedItem = playerState.subscreenItem(cursorSlot);
         playerState.swapItemAWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
@@ -221,6 +221,7 @@ public final class InventoryMenu {
         if (!isFullyOpen()) {
             return;
         }
+        if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
         int selectedItem = playerState.subscreenItem(cursorSlot);
         playerState.swapItemBWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);

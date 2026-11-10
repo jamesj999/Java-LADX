@@ -30,22 +30,14 @@ public final class InventoryController {
         if (!menu.isFullyOpen()) {
             return;
         }
-        if (inputState.wasPressed(inputConfig.leftKey())) {
-            menu.moveCursor(-1, 0);
-        }
-        if (inputState.wasPressed(inputConfig.rightKey())) {
-            menu.moveCursor(+1, 0);
-        }
-        if (inputState.wasPressed(inputConfig.upKey())) {
-            menu.moveCursor(0, -1);
-        }
-        if (inputState.wasPressed(inputConfig.downKey())) {
-            menu.moveCursor(0, +1);
-        }
+        int dx = (inputState.wasPressed(inputConfig.rightKey()) ? 1 : 0)
+            - (inputState.wasPressed(inputConfig.leftKey()) ? 1 : 0);
+        int dy = (inputState.wasPressed(inputConfig.downKey()) ? 1 : 0)
+            - (inputState.wasPressed(inputConfig.upKey()) ? 1 : 0);
+        if (dx != 0 || dy != 0) menu.moveCursor(dx, dy);
         if (inputState.wasPressed(inputConfig.aKey())) {
             menu.pressA();
-        }
-        if (inputState.wasPressed(inputConfig.bKey())) {
+        } else if (inputState.wasPressed(inputConfig.bKey())) {
             menu.pressB();
         }
     }
