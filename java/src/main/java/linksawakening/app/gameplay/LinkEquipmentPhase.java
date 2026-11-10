@@ -84,14 +84,14 @@ final class LinkEquipmentPhase {
                 if (keyholeSequenceActive) {
                     link.blockNextRomMotionFrame();
                 }
-                boolean powerBraceletButtonHeld = lift.isPowerBraceletButtonHeld();
-                boolean bombButtonHeld = lift.isBombButtonHeld();
+                boolean powerBraceletButtonHeld = !link.recoveryBlocksInput() && lift.isPowerBraceletButtonHeld();
+                boolean bombButtonHeld = !link.recoveryBlocksInput() && lift.isBombButtonHeld();
                 if (roomSession != null && !keyholeSequenceActive) {
                     roomSession.setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
                     roomSession.setEntityBombButtonHeld(bombButtonHeld);
                     var liftedState = roomSession.liftedEntityState();
                     boolean bombBeingThrown = liftedState.type() == 0x02;
-                    boolean throwPressed = lift.isThrowButtonPressed(bombBeingThrown);
+                    boolean throwPressed = !link.recoveryBlocksInput() && lift.isThrowButtonPressed(bombBeingThrown);
                     if (throwPressed && liftedState.carryState() == 0x01) {
                         roomSession.throwLiftedEntity(link.direction());
                     }
@@ -110,7 +110,7 @@ final class LinkEquipmentPhase {
                         case Link.DIRECTION_UP -> 8;
                         default -> 4;
                     }) != 0);
-                if (!keyholeSequenceActive && !link.isCarryingLiftedObject()
+                if (!keyholeSequenceActive && !link.recoveryBlocksInput() && !link.isCarryingLiftedObject()
                     && !link.romItemAnimationFrameBlocked()) {
                     if (link.romMotionState() == 0x05
                         || (roomSession != null && roomSession.gelClingingToLink())) {
@@ -127,6 +127,12 @@ final class LinkEquipmentPhase {
                 } else {
                     link.tickRomLinkPushing();
                     link.update();
+                    var splash = link.consumeWaterSplash();
+                    if (splash != null && transientVfxSystem != null) {
+                        // VFX stores ROM/OAM coordinates, as entity VFX requests do.
+                        transientVfxSystem.spawn(linksawakening.vfx.TransientVfxType.WATER_SPLASH,
+                            splash.romX(), splash.romY());
+                    }
                 }
                 if (roomSession != null && playerState != null) {
                     int collisionProbeX = link.romCollisionProbePixelX();

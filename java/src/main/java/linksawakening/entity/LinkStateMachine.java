@@ -8,6 +8,10 @@ final class LinkStateMachine {
     private final Link link;
     int motionState = Link.LINK_MOTION_DEFAULT;
     int physicsModifier;
+    int recoverCountdown;
+    boolean recoveringInWater;
+    int slowWalkingSpeed;
+    int itemUsageContext;
     int revolvingDoorFrame;
     boolean revolvingDoorTransitionPending;
     int revolvingDoorPaletteVariant = -1;
@@ -66,6 +70,22 @@ final class LinkStateMachine {
             return;
         }
 
+        if (motionState == Link.LINK_MOTION_RECOVER) {
+            link.linkSwimming.updateRecover();
+            return;
+        }
+
+        if (link.linkAirborne.spinningPitWarpArrival) {
+            // $02:4511 clears XY increments; $02:478C selects facing globally.
+            link.direction = Link.javaDirectionForRomDirection(
+                link.romTables.pitWarpArrivalDirection(frameCounter));
+            link.linkMotion.forcedSpeedPending = false;
+            link.linkMotion.forcedSpeedXOnly = false;
+            link.movingThisFrame = false;
+            link.linkAirborne.tickJump();
+            return;
+        }
+
         if (link.linkSideView.sideScrolling) {
             link.linkSideView.updateSideViewMotion(platformVerticalSpeedForThisUpdate);
             return;
@@ -80,6 +100,8 @@ final class LinkStateMachine {
             link.movingThisFrame = false;
             return;
         }
+
+        if (link.pitWarpPending) return;
 
         if (link.linkAirborne.fallingIntoPit) {
             link.linkAirborne.tickPitFall();
@@ -172,7 +194,7 @@ final class LinkStateMachine {
         } else if (link.linkMotion.forcedSpeedPending) {
             speedX = link.linkMotion.forcedSpeedX;
             speedY = link.linkMotion.forcedSpeedXOnly
-                ? (byte) link.romTables.linkSpeedY(mask) : link.linkMotion.forcedSpeedY;
+                ? (byte) link.romTables.linkSpeedY(groundSpeedIndex(mask)) : link.linkMotion.forcedSpeedY;
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
         } else if (link.linkAirborne.airborne && !featherLaunchFrame) {
@@ -181,8 +203,8 @@ final class LinkStateMachine {
             speedX = carriedSpeedX;
             speedY = carriedSpeedY;
         } else {
-            speedX = (byte) link.romTables.linkSpeedX(mask);
-            speedY = (byte) link.romTables.linkSpeedY(mask);
+            speedX = (byte) link.romTables.linkSpeedX(groundSpeedIndex(mask));
+            speedY = (byte) link.romTables.linkSpeedY(groundSpeedIndex(mask));
         }
         if (platformVerticalSpeedForThisUpdate >= 0) {
             speedY = (byte) platformVerticalSpeedForThisUpdate;
@@ -257,14 +279,20 @@ final class LinkStateMachine {
         }
     }
 
+    // $02:4409-4427 selects the second row only for Piece of Power.
+    private int groundSpeedIndex(int mask) {
+        return (mask & 0x0F) | (link.playerState != null
+            && link.playerState.activePowerUp() == 1 ? 0x10 : 0);
+    }
+
     void updateDebugNoClip() {
         int mask = link.buildJoypadMask();
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1) {
             link.direction = newDirection;
         }
-        int speedX = (byte) link.romTables.linkSpeedX(mask);
-        int speedY = (byte) link.romTables.linkSpeedY(mask);
+        int speedX = (byte) link.romTables.linkSpeedX(groundSpeedIndex(mask));
+        int speedY = (byte) link.romTables.linkSpeedY(groundSpeedIndex(mask));
         link.linkMotion.lastRomSpeedX = speedX & 0xFF;
         link.linkMotion.lastRomSpeedY = speedY & 0xFF;
         link.movingThisFrame = speedX != 0 || speedY != 0;
@@ -422,12 +450,17 @@ final class LinkStateMachine {
         revolvingDoorTransitionPending = false;
         revolvingDoorPaletteVariant = -1;
         physicsModifier = 0;
+        recoverCountdown = 0;
+        recoveringInWater = false;
+        link.pendingWaterSplash = null;
+        link.pitWarpPending = false;
         physicsRoomLoadToken = -1;
         physicsRoomMapId = -1;
         physicsRoomId = -1;
         physicsRoomCategory = -1;
         link.linkAirborne.zSubPixels = 0;
         link.linkAirborne.zVelocity = 0;
+        link.linkAirborne.spinningPitWarpArrival = false;
         link.linkMotion.forcedSpeedPending = false;
         link.linkMotion.forcedSpeedXOnly = false;
         link.linkDamage.collisionIgnoreFramesRemaining = 0;

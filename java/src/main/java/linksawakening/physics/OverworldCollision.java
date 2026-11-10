@@ -93,9 +93,8 @@ public final class OverworldCollision {
     }
 
     /**
-     * Link's leading-edge collision query with the source's flipper exception.
-     * Deep-water physics remains solid for ordinary walking, but becomes
-     * passable once Link owns the flippers (bank2.asm:7706-7734).
+     * Link's leading-edge collision query. Water, lava and pits are passable;
+     * ground physics handles their consequences ($02:7461).
      */
     public boolean pointBlockedForLink(int pixelX, int pixelY, boolean hasFlippers) {
         if (roomObjectsArea == null) {
@@ -167,6 +166,11 @@ public final class OverworldCollision {
         return flag == PhysicsFlags.DEEP_WATER;
     }
 
+    public boolean linkOnPit(int x, int y) {
+        int flag = objectPhysicsFlagAtPoint(x + 8, y + 12);
+        return flag == 0x50 || flag == 0x51;
+    }
+
     public PitCell normalPitUnderLink(int linkPixelX, int linkPixelY) {
         int cellX = cellCoordinate(linkPixelX + 8);
         int cellY = cellCoordinate(linkPixelY + 12);
@@ -175,7 +179,7 @@ public final class OverworldCollision {
         }
         int objectId = objectIdAtCell(cellX, cellY);
         int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
-        if (!PhysicsFlags.isNormalPit(flag)) {
+        if (flag != 0x50 && flag != 0x51) {
             return null;
         }
         return new PitCell(cellX * CELL_SIZE, cellY * CELL_SIZE, flag);
@@ -289,7 +293,8 @@ public final class OverworldCollision {
             return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
         }
 
-        if (hasFlippers && physicsFlag == PhysicsFlags.DEEP_WATER) {
+        if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA
+            || PhysicsFlags.isPitCategory(physicsFlag)) {
             return false;
         }
 

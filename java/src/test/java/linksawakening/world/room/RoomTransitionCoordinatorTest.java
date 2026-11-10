@@ -458,6 +458,55 @@ final class RoomTransitionCoordinatorTest {
     }
 
     @Test
+    void warpPitFallsThenUsesWarpZeroWithoutDamage() throws Exception {
+        byte[] rom = loadRom();
+        RomTables tables = RomTables.loadFromRom(rom);
+        for (boolean sideView : new boolean[] {false, true}) {
+            OverworldCollision collision = new OverworldCollision(tables);
+            RoomSession session = newSession(rom, tables, collision);
+            session.loadIndoor(sideView ? 0 : 0x10, sideView ? 6 : 0xA3);
+            Warp warp = session.activeRoom().firstWarp();
+            assertEquals(sideView, warp.category() == Warp.CATEGORY_SIDESCROLL);
+            if (!sideView) {
+                int[] objects = roomWithPitAt(1, 1);
+                objects[0x11 + 0x10 + 1] = 0x1C;
+                collision.setRoom(objects);
+            }
+            assertEquals(0x51, collision.objectPhysicsFlagAtPoint(24, 28));
+            assertFalse(collision.pointBlockedForLink(24, 28, false));
+            PlayerState player = new PlayerState();
+            int health = player.health();
+            Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                tables, collision, null, player, new ItemRegistry());
+            link.setRoomEntryPixelPosition(64, 64);
+            link.setPixelPosition(16, 16);
+            TransitionController transition = new TransitionController();
+            RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(session,
+                new RoomBoundaryController(), transition, new ScrollController());
+            runUntilPitFallStarts(link);
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertFalse(transition.isActive());
+            runUntilPitFallFinishes(link);
+            int sourceX = link.romEntityX();
+            int sourceY = link.romEntityY();
+            assertTrue(link.pitWarpPending());
+            assertEquals(health, player.health());
+            assertEquals(0, player.subtractHealthBuffer());
+            coordinator.handleWarpAndIndoorBoundaries(link);
+            assertTrue(transition.isActive());
+            while (transition.isActive()) transition.tick();
+            assertEquals(warp.destRoom(), session.currentRoomId());
+            assertEquals(warp.category(), session.mapCategory());
+            assertEquals(sideView ? sourceY : (sourceX & 0xF0) + 8, link.romEntityX());
+            assertEquals(sideView ? warp.destY() : sourceY & 0xF0, link.romEntityY());
+            assertEquals(sideView ? 0 : 0x70, link.romEntityZ());
+            assertEquals(!sideView, link.isAirborne());
+            assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+            assertEquals(health, player.health());
+        }
+    }
+
+    @Test
     void newGameHouseSouthDoorReturnsLinkToTheRomOverworldDestination() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -5393,6 +5442,7 @@ final class RoomTransitionCoordinatorTest {
             // This connectivity helper models the sword-owned route after its
             // already-covered static sword collision removes a bush.
             boolean swordCuttable = object == 0x5C || object == 0xD3;
+            if (pitsBlock && collision.pointNormalPit(sampleX, sampleY)) return true;
             if (!swordCuttable && collision.pointBlockedForLink(sampleX, sampleY, false)
                 && (pitsBlock || !collision.pointNormalPit(sampleX, sampleY))) {
                 return true;

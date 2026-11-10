@@ -9,6 +9,8 @@ import linksawakening.state.PlayerState;
 final class LinkAirborne {
     private final Link link;
     boolean airborne;
+    /** wD475, set by the top-view pit warp and cleared at ground level. */
+    boolean spinningPitWarpArrival;
     int zSubPixels;
     int zVelocity;
     boolean fallingIntoPit;
@@ -35,12 +37,12 @@ final class LinkAirborne {
             return;
         }
 
-        if (!link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
+        if (!spinningPitWarpArrival && !link.linkEntityEffects.marinBedJumpMotionLocked && !swordSuppressesJumpAnimation()) tickJumpAnimation();
         zSubPixels += zVelocity;
         zVelocity -= 2;
         // $02:4523–4561 changes only axes with held input. With no
         // input, momentum is retained; reversing takes 32 speed steps.
-        if (!link.linkSideView.sideScrolling && !link.linkEntityEffects.marinBedJumpMotionLocked
+        if (!spinningPitWarpArrival && !link.linkSideView.sideScrolling && !link.linkEntityEffects.marinBedJumpMotionLocked
             && !directionalLedgeJumpMotionLocked && !overworldLedgeFallActive
             && (link.playerState == null || !link.playerState.runningWithPegasusBoots())) {
             int mask = link.buildJoypadMask();
@@ -58,6 +60,7 @@ final class LinkAirborne {
         }
 
         airborne = false;
+        spinningPitWarpArrival = false;
         link.linkEntityEffects.marinBedJumpMotionLocked = false;
         directionalLedgeJumpMotionLocked = false;
         directionalLedgeJumpSpeedX = 0;
@@ -104,7 +107,7 @@ final class LinkAirborne {
     }
 
     boolean linkOverPit() {
-        return link.collision != null && link.collision.linkOnNormalPit(link.linkMotion.pixelX(), link.linkMotion.pixelY());
+        return link.collision != null && link.collision.linkOnPit(link.linkMotion.pixelX(), link.linkMotion.pixelY());
     }
 
     void refreshGroundStatus() {
@@ -164,7 +167,7 @@ final class LinkAirborne {
     }
 
     void startPitFall() {
-        // Current top-view fall/recovery support is only for ordinary $50 pits.
+        // $02:7644 routes $50 and $51 through the same slip/fall path.
         groundStatus = Link.GROUND_STATUS_PIT;
         fallingIntoPit = true;
         airborne = false;
@@ -189,6 +192,10 @@ final class LinkAirborne {
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
+        if (pitSlipPhysicsFlag == 0x51) {
+            link.pitWarpPending = true;
+            return;
+        }
         if (link.playerState != null) {
             link.linkDamage.applyPitDamage();
         }

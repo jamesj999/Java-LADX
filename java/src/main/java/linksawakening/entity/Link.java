@@ -58,6 +58,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public static final int GROUND_STATUS_PIT = 0x07;
     public static final int LINK_MOTION_DEFAULT = 0x00;
     public static final int LINK_MOTION_SWIMMING = 0x01;
+    public static final int LINK_MOTION_RECOVER = 0x08;
 
     final InputState inputState;
     final InputConfig inputConfig;
@@ -201,6 +202,35 @@ public final class Link implements RocsFeather.JumpTarget {
      * ground and linkAirborne.airborne motion both remain interactive; falling into or
      * slipping across a pit uses the non-interactive falling state.
      */
+    /** wC167: suppress menus and CheckItemsToUse during recovery and falling. */
+    public boolean recoveryBlocksInput() {
+        return linkStateMachine.recoveringInWater || linkAirborne.fallingIntoPit || pitWarpPending;
+    }
+
+    boolean pitWarpPending;
+    public boolean consumePitWarp() {
+        boolean result = pitWarpPending;
+        pitWarpPending = false;
+        return result;
+    }
+    public boolean pitWarpPending() { return pitWarpPending; }
+    public void setPitWarpArrival(int z) {
+        linkStateMachine.motionState = LINK_MOTION_DEFAULT;
+        linkAirborne.zSubPixels = z << SUB_PIXEL_SHIFT;
+        linkAirborne.zVelocity = 0;
+        linkAirborne.airborne = z != 0;
+        linkAirborne.spinningPitWarpArrival = z != 0;
+    }
+
+    public record WaterSplash(int romX, int romY) {}
+    WaterSplash pendingWaterSplash;
+
+    public WaterSplash consumeWaterSplash() {
+        WaterSplash result = pendingWaterSplash;
+        pendingWaterSplash = null;
+        return result;
+    }
+
     public int romMotionState() {
         if (linkAirborne.groundStatus == GROUND_STATUS_PIT || linkAirborne.fallingIntoPit) {
             return 0x06;
@@ -392,6 +422,7 @@ public final class Link implements RocsFeather.JumpTarget {
 
     public void update() {
         linkStateMachine.update();
+        linkDamage.applySpikeGroundPhysics();
         // ApplyLinkGroundPhysics uses the completed motion position. Dialogs
         // and scrolling reuse this result while ordinary Link updates pause.
         grassGroundEffectActive = collision != null && !linkSideView.sideScrolling

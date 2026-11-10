@@ -139,6 +139,9 @@ public final class RomTables {
     private final byte[] entityCollisionPointsY;
     private final int[] entityFineCollisionShapes;
     private final int[] linkFineCollisionShapes;
+    private byte[] pitWarpArrivalDirections;
+    private byte[] waterCurrentX;
+    private byte[] waterCurrentY;
     private final byte[] linkSpeedX;
     private final byte[] linkSpeedY;
     private final byte[] airSpeedX;
@@ -312,7 +315,7 @@ public final class RomTables {
         byte[] staticSwordCollisionY = loadSignedTable(
             romData, STATIC_SWORD_COLLISION_TABLE_BANK, STATIC_SWORD_COLLISION_Y_ADDR, STATIC_SWORD_COLLISION_TABLE_LEN);
 
-        return new RomTables(flags, options1, hitboxFlags, collisionPointsX,
+        RomTables result = new RomTables(flags, options1, hitboxFlags, collisionPointsX,
                              collisionPointsY, fineCollisionShapes, linkFineCollisionShapes,
                              speedX, speedY, loadSignedTable(romData, 2, 0x68B1, 4),
                              loadSignedTable(romData, 2, 0x44E7, 4), swimmingX, swimmingY,
@@ -327,6 +330,10 @@ public final class RomTables {
                              staticSwordCollisionX, staticSwordCollisionY,
                              loadUnsignedTable(romData, 2, 0x4E66, 7),
                              loadRevolvingDoorPalettes(romData));
+        result.pitWarpArrivalDirections = loadSignedTable(romData, 2, 0x46C5, 4);
+        result.waterCurrentX = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C40), RomBank.romOffset(2, 0x7C48));
+        result.waterCurrentY = java.util.Arrays.copyOfRange(romData, RomBank.romOffset(2, 0x7C48), RomBank.romOffset(2, 0x7C50));
+        return result;
     }
 
     /** LinkMotionRevolvingDoorHandler and Data_002_4E1C. */
@@ -458,9 +465,15 @@ public final class RomTables {
         return objectPhysicsFlag(PHYSICS_TABLE_OVERWORLD, objectId);
     }
 
-    /** Signed 8-bit speed increment for the given D-Pad mask (R<<3|L<<2|U<<1|D). */
+    /** Signed current speeds from Data_002_7C40/7C48. */
+    public int pitWarpArrivalDirection(int frameCounter) { return pitWarpArrivalDirections[(frameCounter >>> 2) & 3]; }
+
+    public int waterCurrentSpeedX(int index) { return waterCurrentX[index & 7]; }
+    public int waterCurrentSpeedY(int index) { return waterCurrentY[index & 7]; }
+
+    /** Signed ground speed for the D-Pad mask and power-up row bit. */
     public int linkSpeedX(int joypadMask) {
-        return linkSpeedX[joypadMask & 0x0F];
+        return linkSpeedX[joypadMask & 0x1F];
     }
 
     /** ApplyLinkGroundMotion's per-axis targets, including opposite-button inputs. */
@@ -468,7 +481,7 @@ public final class RomTables {
     public int airSpeedY(int axisMask) { return airSpeedY[axisMask & 3]; }
 
     public int linkSpeedY(int joypadMask) {
-        return linkSpeedY[joypadMask & 0x0F];
+        return linkSpeedY[joypadMask & 0x1F];
     }
 
     /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */

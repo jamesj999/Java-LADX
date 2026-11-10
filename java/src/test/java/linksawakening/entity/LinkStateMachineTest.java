@@ -5,6 +5,36 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class LinkStateMachineTest {
+    @Test void spikesReverseSpeedBufferOneHeartAndGateRepeatedHits() {
+        PlayerState player = new PlayerState();
+        Link link = new Link(null, null, null, null, null, player, null);
+        link.linkMotion.lastRomSpeedX = 0x14;
+        link.linkMotion.lastRomSpeedY = 0xF1;
+        link.linkDamage.hurtBySpikes();
+        assertEquals(0xEC, link.romSpeedX());
+        assertEquals(0x0F, link.romSpeedY());
+        assertTrue(link.linkAirborne.airborne);
+        assertEquals(0x10, link.linkAirborne.zVelocity);
+        assertEquals(2 << Link.SUB_PIXEL_SHIFT, link.linkAirborne.zSubPixels);
+        assertEquals(0x10, link.linkDamage.collisionIgnoreFramesRemaining);
+        assertEquals(0x30, player.invincibilityCounter());
+        assertEquals(4, player.subtractHealthBuffer());
+        link.linkDamage.hurtBySpikes();
+        assertEquals(4, player.subtractHealthBuffer());
+        assertEquals(0xEC, link.romSpeedX());
+    }
+
+    @Test void sideViewSpikesPreserveVerticalJumpRegisters() {
+        PlayerState player = new PlayerState();
+        Link link = new Link(null, null, null, null, null, player, null);
+        link.linkSideView.sideScrolling = true;
+        link.linkAirborne.zVelocity = 7;
+        link.linkDamage.hurtBySpikes();
+        assertEquals(7, link.linkAirborne.zVelocity);
+        assertEquals(0, link.linkAirborne.zSubPixels);
+        assertEquals(4, player.subtractHealthBuffer());
+    }
+
     @Test void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
         Link link = new Link(null, null, null, null, null, null, null);
         link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;

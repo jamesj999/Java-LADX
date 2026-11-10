@@ -298,6 +298,10 @@ public final class PlayerState implements LinkPlayerState {
     }
 
     /** Amount of health still waiting in the ROM's wSubtractHealthBuffer. */
+    public void addSubtractHealthBuffer(int amount) {
+        subtractHealthBuffer = (subtractHealthBuffer + amount) & 0xFF;
+    }
+
     public int subtractHealthBuffer() {
         return subtractHealthBuffer;
     }
