@@ -157,6 +157,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
+        resetRoomVariables();
         roomInitialization.initializeRoomSlots(initial);
     }
 
@@ -615,7 +616,48 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int initialHealth(int type) { return this.slotProperties.initialHealth(type); }
 
-    int contactDamage(int type) { return this.slotProperties.contactDamage(type); }
+    /** ResetRoomVariables ($20:4CC6), called by LoadRoom ($00:30FC).
+     * The battle flag survives boss death, but not a room load/warp.
+     */
+    void resetRoomVariables() { inBossBattle = false; }
+
+    /** EntityInitHandler $03:48B5-4910. No boss-handler writes are outstanding:
+     * this is the sole set site; $20:4CC6 is the sole clear site.
+     * Indoor/wD478/mini-boss checks at $03:48F0-4908 only select intro setup.
+     * Defeated bosses (including Master Stalfos prerequisite failures) must be
+     * unloaded before calling this initialization hook.
+     */
+    boolean initializeBossBattle(RoomEntity entity) {
+        int options = entityOptions1Override[entity.slot()] >= 0
+            ? entityOptions1Override[entity.slot()]
+            : romTables == null ? 0 : romTables.entityOptions1(entity.type());
+        return initializeBossBattle(entity, options);
+    }
+
+    private boolean initializeBossBattle(RoomEntity entity, int options) {
+        if ((options & 0x80) == 0) return true;
+        // $03:48BE-48C4 rejects an already defeated room boss.
+        if ((entityRoomStatus & 0x30) != 0) {
+            lifecycle.disableEntityWithoutPersistence(entity.slot());
+            return false;
+        }
+        inBossBattle = true;
+        return true;
+    }
+
+    void initializeHealthGroup(int slot) {
+        // ConfigureEntityHealth, $03:489B-489F, before setting initial HP.
+        // Active spawns bypass the INIT dispatch; use their fresh ROM options,
+        // not an override remaining from the previous occupant of this slot.
+        if (slots[slot].status() == EntityStatus.ACTIVE) {
+            initializeBossBattle(slots[slot], romTables == null ? 0
+                : romTables.entityOptions1(slots[slot].type()));
+        }
+        enemyHealthGroup[slot] = enemyCombatTables == null ? 0
+            : enemyCombatTables.healthGroup(slots[slot].type());
+    }
+
+    int contactDamage(int slot) { return this.slotProperties.contactDamage(slot); }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) { return this.lifecycle.clearEntity(slot); }

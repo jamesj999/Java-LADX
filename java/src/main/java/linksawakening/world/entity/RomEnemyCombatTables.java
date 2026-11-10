@@ -52,6 +52,11 @@ public final class RomEnemyCombatTables {
         return contactDamageByGroup[healthGroup(entityType)];
     }
 
+    public int contactDamageForGroup(int healthGroup) {
+        checkHealthGroup(healthGroup);
+        return contactDamageByGroup[healthGroup];
+    }
+
     /** Mirrors bank-$14's CanBowWowEatEntity lookup. */
     public boolean canBowWowEatEntity(int entityType) {
         return bowWowEatableByEntity[entityType & 0xFF] != 0;
@@ -76,18 +81,25 @@ public final class RomEnemyCombatTables {
     /** Mirrors the two table lookups in ApplySwordDamagesToEnemy. */
     public SwordDamageResult resolveSwordDamage(int entityType,
                                                 EnemyAttackContext attackContext) {
+        return resolveSwordDamage(entityType, healthGroup(entityType), attackContext);
+    }
+
+    public SwordDamageResult resolveSwordDamage(int entityType, int healthGroup,
+                                                EnemyAttackContext attackContext) {
         Objects.requireNonNull(attackContext, "Attack context cannot be null");
         int attackType = attackContext.effectiveDamageType();
         if (attackType < 0) {
-            int healthGroup = healthGroup(entityType);
             return new SwordDamageResult(entityType & 0xFF, healthGroup, -1, 0, 0);
         }
-        return resolveAttackDamage(entityType, attackType);
+        return resolveAttackDamage(entityType, healthGroup, attackType);
     }
 
     /** Mirrors the bank-$03 damage-table lookup for a fixed projectile type. */
     public SwordDamageResult resolveAttackDamage(int entityType, int attackType) {
-        int healthGroup = healthGroup(entityType);
+        return resolveAttackDamage(entityType, healthGroup(entityType), attackType);
+    }
+
+    public SwordDamageResult resolveAttackDamage(int entityType, int healthGroup, int attackType) {
         int entry = damageTypeEntry(healthGroup, attackType);
         int rawValue = damageValue(attackType, entry);
         return new SwordDamageResult(entityType & 0xFF, healthGroup, attackType,

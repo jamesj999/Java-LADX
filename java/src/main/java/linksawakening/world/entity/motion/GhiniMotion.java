@@ -138,7 +138,7 @@ public final class GhiniMotion {
         return state[slot] != 0;
     }
 
-    int state(int slot) {
+    public int state(int slot) {
         return state[slot];
     }
 

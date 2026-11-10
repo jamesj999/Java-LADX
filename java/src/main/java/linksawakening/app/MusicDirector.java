@@ -31,6 +31,13 @@ public final class MusicDirector {
         }
     }
 
+    public void restoreMusicAfterPowerUpEnds(RoomSession roomSession) {
+        if (gameplayMusicController != null && roomSession != null) {
+            gameplayMusicController.restoreAfterPowerUpEnds(
+                roomSession.inBossBattle(), roomSession.entityDefaultMusicTrack());
+        }
+    }
+
     public void playDirectMusic(int trackId) {
         if (gameplayMusicController != null) {
             gameplayMusicController.playDirect(trackId);

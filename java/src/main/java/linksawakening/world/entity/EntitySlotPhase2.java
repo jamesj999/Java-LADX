@@ -160,6 +160,7 @@ final class EntitySlotPhase2 {
     } else if (state.status == EntityStatus.INIT) {
       if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3, state))
         return false;
+      if (!state.runtime.initializeBossBattle(state.entity)) return false;
       state.status = EntityStatus.ACTIVE;
       state.runtime.pickups.initializeEntityTimers(state.entity);
       state.runtime.entityHandlers.initialize(state.entity, state.randomByteSupplier);

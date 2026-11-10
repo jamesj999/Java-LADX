@@ -180,6 +180,15 @@ public final class RoomSession extends RoomSessionRules {
     int overworldRoomStatusForTest(int roomId) { return context.roomSessionViews.overworldRoomStatusForTest(roomId); }
     int indoorRoomStatusForTest(int mapId, int roomId) { return context.roomSessionViews.indoorRoomStatusForTest(mapId, roomId); }
     void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) { context.roomSessionViews.setEnemyDropCountersForTest(droppedItemCount, droppedBombArrowCount); }
+    /** Accepted contact hurt, including enemy projectiles ($03:6DB8). */
+    public void resetGuardianAcornCounterOnHurt() {
+        var runtime = context.entityBridge.entityRuntime;
+        var counters = runtime == null ? context.enemyDropCounters
+            : runtime.inspection().enemyDropCounters();
+        context.enemyDropCounters = EnemyDropResolver.resetGuardianAcornCounter(counters);
+        if (runtime != null) runtime.configuration().setEnemyDropCounters(context.enemyDropCounters);
+    }
+
     EnemyDropResolver.CounterState enemyDropCountersForTest() { return context.roomSessionViews.enemyDropCountersForTest(); }
     void setSwitchButtonPressedForTest(int value) { context.roomSessionViews.setSwitchButtonPressedForTest(value); }
     int switchButtonPressedForTest() { return context.roomSessionViews.switchButtonPressedForTest(); }
@@ -241,6 +250,12 @@ public final class RoomSession extends RoomSessionRules {
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) { context.roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel); }
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) { context.entityInputs.setToadstoolPlayerState(hasToadstool, magicPowderCount); }
+    public boolean inBossBattle() {
+        return context.entityBridge.entityRuntime != null
+            && context.entityBridge.entityRuntime.inspection().inBossBattle();
+    }
+    public int entityDefaultMusicTrack() { return context.entityDefaultMusicTrack; }
+
     public void setEntityDefaultMusicTrack(int trackId) { context.roomStoryState.setEntityDefaultMusicTrack(trackId); }
     void updateWitchEnvironment() { context.roomStoryState.updateWitchEnvironment(); }
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */

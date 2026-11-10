@@ -166,9 +166,6 @@ public final class EntityRuntimeConfiguration {
         runtime.enemyDropLowHealth = lowHealth;
     }
 
-    public void setEnemyDropBossBattle(boolean bossBattle) {
-        runtime.enemyDropBossBattle = bossBattle;
-    }
 
     public void setEntityMapId(int mapId) {
         if (mapId < -1 || mapId > 0xFF) {

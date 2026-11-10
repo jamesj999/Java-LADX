@@ -723,7 +723,7 @@ public final class EntityProjectileController {
         runtime.enemyRecoilMotion.configureFromSpeed(targetSlot, speedX, speedY);
 
         RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
-            ? null : runtime.enemyCombatTables.resolveAttackDamage(target.type(), damageType);
+            ? null : runtime.enemyCombatTables.resolveAttackDamage(target.type(), runtime.enemyHealthGroup[target.slot()], damageType);
         int rawDamage = damageResult == null
             ? RoomEntityCombatRules.basicSwordDamage(target.type())
             : damageResult.rawValue();

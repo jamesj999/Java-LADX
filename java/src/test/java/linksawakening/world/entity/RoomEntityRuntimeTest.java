@@ -559,6 +559,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void moldormContactUsesTheLargerLinkRecoilMagnitude() {
+        var enemy = new RoomEntity(0, 0, 0x59, 0x40, 0x50,
+            EntityStatus.ACTIVE, pairDefinition(0x59, 2), 0, 0, 0, 0, -1, false);
+        var runtime = RoomEntityRuntime.from(snapshot(enemy));
+        var events = runtime.resolveCombat(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, events.size());
+        assertEquals(new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),
+            events.get(0).linkCollisionResponse());
+    }
+
+    @Test
+    void rollingBonesBarContactUsesHorizontalRecoilOnBothSides() {
+        for (int linkX : new int[]{0x3C, 0x44}) {
+            var enemy = new RoomEntity(0, 0, 0x82, 0x40, 0x50,
+                EntityStatus.ACTIVE, pairDefinition(0x82, 2), 0, 0, 0, 0, -1, false);
+            var runtime = RoomEntityRuntime.from(snapshot(enemy));
+            var events = runtime.resolveCombat(1, linkX, 0x58, false, true, false, 0, 0, 0, 0);
+            assertEquals(1, events.size());
+            assertEquals(new EntityCombatEvent.LinkCollisionResponse(
+                linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10), events.get(0).linkCollisionResponse());
+        }
+    }
+
+    @Test
     void specialEnemyHandlersDoNotReceiveTheGenericLinkRecoilResponse() {
         assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x1C));
         // Beetles only use the special branch for shield contact ($03:6F2A).
@@ -1389,6 +1413,8 @@ final class RoomEntityRuntimeTest {
         assertTrue(events.get(0).swordHit());
         assertEquals(0, events.get(0).linkDamage());
         assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x2F, runtime.enemies().dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertFalse(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
@@ -1422,6 +1448,8 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, events.size());
         assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x20, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x40, runtime.enemies().dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
@@ -7855,7 +7883,8 @@ final class RoomEntityRuntimeTest {
         runtime.debug().setEntityMapIdForTest(0x00);
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
         runtime.configuration().setEnemyDropPlayerState(3, 4, false);
-        runtime.configuration().setEnemyDropBossBattle(true);
+        runtime.slotView.setOptions1Override(15, 0x80);
+        runtime.initializeBossBattle(boss);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, sequence(0x00, 0x1F)));
         assertEquals(0xFF, runtime.enemies().transitionCountdown(15));

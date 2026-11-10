@@ -30,6 +30,7 @@ public final class EntityPlayerSpawns {
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, selectedVariant,
             0, 0, 0, -1, false);
         runtime.slots[freeSlot] = mask;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -70,6 +71,7 @@ public final class EntityPlayerSpawns {
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = chain;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.hookshotChainMotion.initializeSpawn(freeSlot, linkEntityX & 0xFF,
             linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_HARMLESS
@@ -94,6 +96,7 @@ public final class EntityPlayerSpawns {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_PUSHED_BLOCK,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.enemyPhysicsFlags[freeSlot] = 2 | runtime.ENTITY_PHYSICS_HARMLESS
             | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
         runtime.enemyHealth[freeSlot] = 0;
@@ -111,6 +114,7 @@ public final class EntityPlayerSpawns {
         int variant = definition.supported() ? spriteVariant : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_LIFTABLE_ROCK,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.enemyPhysicsFlags[freeSlot] = 0x02 | runtime.ENTITY_PHYSICS_HARMLESS
             | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP | runtime.ENTITY_PHYSICS_SHADOW;
         runtime.enemyHealth[freeSlot] = runtime.initialHealth(runtime.ENTITY_LIFTABLE_ROCK);
@@ -158,6 +162,7 @@ public final class EntityPlayerSpawns {
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = arrow;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.playerArrowMotion.clear(freeSlot);
         runtime.playerArrowMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
@@ -207,6 +212,7 @@ public final class EntityPlayerSpawns {
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, romDirection, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = boomerang;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.boomerangMotion.clear(freeSlot);
         runtime.boomerangMotion.initializeSpawn(freeSlot, romDirection, pressedButtonsMask);
         runtime.thrownDirection[freeSlot] = romDirection;
@@ -242,6 +248,7 @@ public final class EntityPlayerSpawns {
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = beam;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.swordBeamMotion.clear(freeSlot);
         runtime.swordBeamMotion.initializeSpawn(freeSlot, romDirection);
         runtime.thrownDirection[freeSlot] = romDirection;
@@ -286,6 +293,7 @@ public final class EntityPlayerSpawns {
             (linkEntityY + spawn.offsetY()) & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = fireball;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.magicRodFireballMotion.clear(freeSlot);
         runtime.magicRodFireballMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
         runtime.thrownDirection[freeSlot] = romDirection;
@@ -324,6 +332,7 @@ public final class EntityPlayerSpawns {
             (linkEntityY + yOffsets[romDirection]) & 0xFF,
             EntityStatus.ACTIVE, definition, variant, 0, 0, linkEntityZ & 0xFF, -1, false);
         runtime.slots[freeSlot] = sprinkle;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.magicPowderState[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = runtime.MAGIC_POWDER_TRANSITION_COUNTDOWN;
         runtime.slowTransitionCountdown[freeSlot] = 0;
@@ -357,6 +366,7 @@ public final class EntityPlayerSpawns {
             x & 0xFF, (linkEntityY - 0x08) & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = note;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.musicalNoteInertia[freeSlot] = runtime.MUSICAL_NOTE_INITIAL_INERTIA;
         runtime.musicalNoteSpeedX[freeSlot] = phase == 0 ? 0x06 : 0x01;
         runtime.musicalNoteSpeedY[freeSlot] = runtime.MUSICAL_NOTE_SPEED_Y;
@@ -390,6 +400,7 @@ public final class EntityPlayerSpawns {
             linkEntityX & 0xFF, linkEntityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, (linkEntityZ + 1) & 0xFF, -1, false);
         runtime.slots[freeSlot] = bomb;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.bombDirection[freeSlot] = romDirection;
         runtime.thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
         runtime.placedBombMotionInitialized[freeSlot] = true;
@@ -456,6 +467,7 @@ public final class EntityPlayerSpawns {
             entityX & 0xFF, entityY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = smash;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.liftableRockSmashActive[freeSlot] = true;
         runtime.liftableRockSmashCountdown[freeSlot] = initialCountdown;
         runtime.liftableRockSmashSourceVariant[freeSlot] = sourceSpriteVariant;
@@ -489,6 +501,7 @@ public final class EntityPlayerSpawns {
             arrow.x(), arrow.y(), EntityStatus.ACTIVE, definition, variant,
             0, 0, arrow.z(), -1, false);
         runtime.slots[freeSlot] = bomb;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.bombDirection[freeSlot] = runtime.playerArrowMotion.direction(arrow.slot());
         runtime.bombFinalPresentationPending[freeSlot] = false;
         runtime.bombPrivateState4[freeSlot] = 0;
@@ -525,6 +538,7 @@ public final class EntityPlayerSpawns {
             bridgeX & 0xFF, bridgeY & 0xFF, EntityStatus.ACTIVE,
             definition, variant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = bridge;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.hookshotBridgeMotion.initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
         runtime.enemyPhysicsFlags[freeSlot] = runtime.ENTITY_PHYSICS_HARMLESS
             | runtime.ENTITY_PHYSICS_PROJECTILE_NOCLIP;
@@ -562,6 +576,7 @@ public final class EntityPlayerSpawns {
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, x & 0xFF, y & 0xFF,
             EntityStatus.ACTIVE, definition, variant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = drop;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.slowTransitionCountdown[freeSlot] = 0x80;
         runtime.slowTimerInitialized[freeSlot] = true;
@@ -610,6 +625,7 @@ public final class EntityPlayerSpawns {
             x & 0xFF, y & 0xFF, EntityStatus.INIT, definition, spriteVariant,
             0, 0, 0, -1, false);
         runtime.slots[freeSlot] = chest;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyPhysicsFlags[freeSlot] = runtime.CHEST_INITIAL_PHYSICS_FLAGS;
         runtime.enemyHitboxFlags[freeSlot] = 0;

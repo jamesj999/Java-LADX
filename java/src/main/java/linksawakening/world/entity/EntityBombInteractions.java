@@ -158,7 +158,7 @@ public final class EntityBombInteractions {
 
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
         int linkDamage = runtime.enemyCombatTables == null
-            ? 0x08 : runtime.enemyCombatTables.contactDamage(runtime.ENTITY_BOMB);
+            ? 0x08 : runtime.enemyCombatTables.contactDamageForGroup(runtime.enemyHealthGroup[bomb.slot()]);
         EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
             bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
@@ -178,7 +178,7 @@ public final class EntityBombInteractions {
     void applyBombDamage(RoomEntity bomb, RoomEntity target) {
         int targetSlot = target.slot();
         RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
-            ? null : runtime.enemyCombatTables.resolveAttackDamage(target.type(), runtime.DAMAGE_TYPE_BOMB);
+            ? null : runtime.enemyCombatTables.resolveAttackDamage(target.type(), runtime.enemyHealthGroup[target.slot()], runtime.DAMAGE_TYPE_BOMB);
         int rawDamage = damageResult == null
             ? RoomEntityCombatRules.basicSwordDamage(target.type())
             : damageResult.rawValue();

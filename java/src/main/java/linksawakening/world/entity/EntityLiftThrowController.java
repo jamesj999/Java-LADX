@@ -70,6 +70,7 @@ public final class EntityLiftThrowController {
                 runtime.slots[slot] = new RoomEntity(slot, -1, 0x9D,
                     (entity.x() + xs[piece]) & 255, (entity.y() + ys[piece]) & 255,
                     EntityStatus.ACTIVE, definition, 0, 0, 0, entity.z(), -1, false);
+                runtime.initializeHealthGroup(slot);
                 runtime.enemyPhysicsFlags[slot] = 0xC1;
                 runtime.enemyHitboxFlags[slot] = 0;
                 runtime.dynamicEntitySpawnedThisFrame[slot] = true;
@@ -255,6 +256,7 @@ public final class EntityLiftThrowController {
             carried.x(), carried.y(), EntityStatus.ACTIVE, crawlerDefinition,
             crawlerVariant, 0, 0, carried.z(), -1, false);
         runtime.slots[freeSlot] = replacement;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = -1;
         runtime.enemyTransitionCountdown[freeSlot] = 0x40;

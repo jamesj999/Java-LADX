@@ -268,6 +268,7 @@ public final class SlimeEyeController {
         runtime.slots[s] = new RoomEntity(s, -1, type, x & 255, y & 255,
             EntityStatus.ACTIVE,
             definition, definition.initialVariant(), 0, 0, z, -1, false);
+        runtime.initializeHealthGroup(s);
         runtime.enemyHealth[s] = runtime.initialHealth(type);
         runtime.enemyPhysicsFlags[s] = EntityTypeRules.initialPhysicsFlags(type);
         runtime.enemyIgnoreHitsCountdown[s] = 1;
@@ -336,7 +337,7 @@ public final class SlimeEyeController {
                 ? new EnemyAttackContext(attack.swordLevel(), attack.redTunic(), attack.pieceOfPower(),
                     attack.spinAttack(), false, attack.usingShield(), attack.romDirection(), attack.linkZ())
                 : attack;
-            var damage = runtime.enemyCombatTables == null ? null : runtime.enemyCombatTables.resolveSwordDamage(0x5B, damageAttack);
+            var damage = runtime.enemyCombatTables == null ? null : runtime.enemyCombatTables.resolveSwordDamage(0x5B, runtime.enemyHealthGroup[s], damageAttack);
             int amount = damage == null ? 1 : damage.numericDamage();
             if (amount == 0) return;
             swordHitFrame[s] = (frame & 255) + 1;
@@ -365,7 +366,7 @@ public final class SlimeEyeController {
                 null, response));
         } else if (!airborne && !(isHalf && dropping[s] != 0) && RoomEntityCombatRules.collisionCadenceMatches(frame, s)
                 && overlaps(e, isHalf ? 24 : stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
-            int damage = runtime.enemyCombatTables == null ? 4 : runtime.enemyCombatTables.contactDamage(0x5B);
+            int damage = runtime.enemyCombatTables == null ? 4 : runtime.enemyCombatTables.contactDamageForGroup(runtime.enemyHealthGroup[s]);
             var vector = linksawakening.world.entity.motion.EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 e.x(), e.y(), e.z(), lx, ly, 0x14);
             events.add(new EntityCombatEvent(s, 0x5B, damage, false, 0, -1,

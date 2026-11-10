@@ -22,6 +22,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EnemyProjectileEventConsumerTest {
 
     @Test
+    void acceptedProjectileHurtResetsOnlyAcornCounterAndRejectedHitDoesNotReset() {
+        PlayerState player = new PlayerState();
+        player.setHealth(16);
+        var counters = new java.util.concurrent.atomic.AtomicReference<>(
+            new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
+        var event = new EntityProjectileEvent(0, 0x0A,
+            EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 8,
+            EntityProjectileEvent.SoundChannel.WAVE, 3, false, false);
+        Runnable reset = () -> counters.updateAndGet(
+            linksawakening.world.entity.EnemyDropResolver::resetGuardianAcornCounter);
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null,
+            new RecordingSoundSink(), reset);
+        assertEquals(0, counters.get().guardianAcornCounter());
+        assertEquals(23, counters.get().pieceOfPowerKillCount());
+        counters.set(new linksawakening.world.entity.EnemyDropResolver.CounterState(7, 23));
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null,
+            new RecordingSoundSink(), reset);
+        assertEquals(7, counters.get().guardianAcornCounter());
+    }
+
+    @Test
     void appliesProjectileDamageThroughTheExistingHealthAndInvincibilityState() {
         PlayerState player = new PlayerState();
         player.setHealth(16);

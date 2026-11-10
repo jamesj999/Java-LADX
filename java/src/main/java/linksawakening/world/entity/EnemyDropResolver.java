@@ -62,6 +62,11 @@ public final class EnemyDropResolver {
         }
     }
 
+    /** ApplyLinkCollisionWithEnemy ($03:6DB8), preserving the other counter. */
+    public static CounterState resetGuardianAcornCounter(CounterState counters) {
+        return new CounterState(0, counters.pieceOfPowerKillCount());
+    }
+
     /** Inputs corresponding to the WRAM and hardware state used by SpawnEnemyDrop. */
     public record Context(int entityType, int healthGroup, int droppedItem, int maxHearts,
                           int health, boolean bossBattle, boolean activePowerUp,

@@ -342,7 +342,7 @@ final class EntityCombatResolver {
             } else if (swordHit) {
                 RomEnemyCombatTables.SwordDamageResult swordResult =
                     runtime.enemyCombatTables == null ? null
-                        : runtime.enemyCombatTables.resolveSwordDamage(entity.type(), attackContext);
+                        : runtime.enemyCombatTables.resolveSwordDamage(entity.type(), runtime.enemyHealthGroup[entity.slot()], attackContext);
                 int swordDamage = swordResult == null
                     ? RoomEntityCombatRules.basicSwordDamage(entity.type())
                     : swordResult.numericDamage();
@@ -402,6 +402,15 @@ final class EntityCombatResolver {
                     runtime.enemyRecoilMotion.clear(entity.slot());
                     runtime.slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && runtime.enemyHealth[entity.slot()] == 0) {
+                    // ApplySwordDamagesToEnemy falls through on death to
+                    // $03:73B6-73E4. Moldorm already received $28/$C8 above;
+                    // ordinary lethal hits also flash for $18. The recoil
+                    // caller retains its $20 ignore/$40 death override.
+                    // Final Nightmare ($E6), form 3, also uses $28/$C8
+                    // ($03:73BF-73C8); wire this when its form handler exists.
+                    if (entity.type() != runtime.ENTITY_MOLDORM) {
+                        runtime.enemyFlashCountdown[entity.slot()] = 0x18;
+                    }
                     runtime.dyingCountdown[entity.slot()] = entity.type() == runtime.ENTITY_MOLDORM
                         ? 0 : (attackContext.powerRecoil() ? 0x40 : 0x2F);
                     if (entity.type() == runtime.ENTITY_MOBLIN_KING) {
@@ -411,6 +420,10 @@ final class EntityCombatResolver {
                     if (entity.type() == runtime.ENTITY_MOLDORM) {
                         runtime.bossDeathProducerState[entity.slot()] = 0;
                         runtime.moldormDestructionTailState[entity.slot()] = 0;
+                    }
+                    if (entity.type() == 0x12) {
+                        runtime.bossRewards.cascadeGhiniDeath(entity,
+                            runtime.frameContext(frameCounter).randomByteSupplier());
                     }
                     runtime.powerRecoilDeath[entity.slot()] = attackContext.powerRecoil();
                     runtime.slots[entity.slot()] = withDeathPresentation(
@@ -441,7 +454,7 @@ final class EntityCombatResolver {
             // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
             // immediately after starting the cling, before damage/recoil.
             int linkDamage = linkCollision && entity.type() != runtime.ENTITY_GEL
-                ? runtime.contactDamage(entity.type()) : 0;
+                ? runtime.contactDamage(entity.slot()) : 0;
             if ((runtime.enemyPhysicsFlags[entity.slot()] & runtime.ENTITY_PHYSICS_HARMLESS) != 0) {
                 // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
                 // result for harmless entities but suppresses Link damage.
@@ -456,10 +469,18 @@ final class EntityCombatResolver {
                 || entity.type() == runtime.ENTITY_MOBLIN;
             if (linkDamage > 0 && (!swordHit || bodyRecoilBeforeSword)
                 && RoomEntityCombatRules.usesStandardLinkContactResponse(entity.type())) {
-                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
-                linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
-                    vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+                if (entity.type() == runtime.ENTITY_ROLLING_BONES_BAR) {
+                    // $03:6DE9-6DED / $03:6FA7-6FB8: horizontal only.
+                    int speedX = ((linkEntityX - entity.x()) & 0xFF) < 0x80 ? 0x18 : 0xE8;
+                    linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(speedX, 0, 0x10);
+                } else {
+                    // $03:6DFA-6E02 selects the magnitude of Link's recoil.
+                    int speed = entity.type() == runtime.ENTITY_MOLDORM ? 0x18 : 0x14;
+                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, speed);
+                    linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
+                        vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+                }
             }
             if (linkDamage > 0 && !swordHit && entity.type() == runtime.ENTITY_MOBLIN_KING
                 && runtime.moblinKingMotion.state(entity.slot()) == 9

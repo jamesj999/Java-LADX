@@ -222,19 +222,11 @@ final class RoomLoadCoordinator {
                 session.context.enemyDropMaxHearts, session.context.enemyDropHealth,
                 session.context.enemyDropActivePowerUp, session.context.enemyDropLowHealth);
         }
-        session.context.entityBridge.entityRuntime.configuration().setEnemyDropBossBattle(session.roomHasBossBattle());
     }
 
     boolean roomHasBossBattle() {
-        if (session.context.activeRoom == null || session.context.activeRoom.entities() == null) {
-            return false;
-        }
-        for (RoomEntity entity : session.context.activeRoom.entities().loadedEntities()) {
-            if ((session.context.romTables.entityOptions1(entity.type()) & 0x80) != 0) {
-                return true;
-            }
-        }
-        return false;
+        return session.context.entityBridge.entityRuntime != null
+            && session.context.entityBridge.entityRuntime.inspection().inBossBattle();
     }
 
     void loadRoomSpecificTilesIfNeeded(int roomId) {

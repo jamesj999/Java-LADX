@@ -10,6 +10,7 @@ public final class GameplayMusicController {
     private int currentTrackId = MusicTrackIds.MUSIC_NONE;
     private boolean continueMusicAfterWarp;
     private int fadeOutCountdown;
+    private int nextDefaultMusicTrack = MusicTrackIds.MUSIC_NONE;
 
     public GameplayMusicController(AreaMusicResolver resolver, MusicCatalog catalog, MusicTrackPlayer player) {
         this.resolver = Objects.requireNonNull(resolver, "resolver");
@@ -53,6 +54,16 @@ public final class GameplayMusicController {
         }
         player.play(catalog.requireTrack(nextTrackId));
     }
+
+    /** ApplyLinkCollisionWithEnemy, $03:6DCE-6DDD. */
+    public void restoreAfterPowerUpEnds(boolean inBossBattle, int defaultTrack) {
+        if (inBossBattle) return;
+        int track = defaultTrack & 0xFF;
+        if (track != 0x22) playDirect(track);
+        nextDefaultMusicTrack = track;
+    }
+
+    public int nextDefaultMusicTrack() { return nextDefaultMusicTrack; }
 
     public void continueMusicAfterNextWarp() {
         continueMusicAfterWarp = true;

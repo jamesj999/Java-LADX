@@ -27,6 +27,23 @@ public final class EntityBossRewards {
     private final RoomEntityRuntime runtime;
     EntityBossRewards(RoomEntityRuntime runtime) { this.runtime = runtime; }
 
+    /** ApplySwordDamagesToEnemy, $03:7361: preserve descending RNG order. */
+    void cascadeGhiniDeath(RoomEntity killed, IntSupplier random) {
+        if (killed.type() != 0x12) return;
+        int[] drops = {0x2D, 0x2E, 0x38, 0x37};
+        for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
+            RoomEntity other = runtime.slots[slot];
+            if (slot == killed.slot() || other == null
+                || (other.type() != 0x10 && other.type() != 0x11)
+                || runtime.ghiniMotion.state(slot) != 0
+                || other.status() == EntityStatus.DISABLED) continue;
+            runtime.slots[slot] = withStatus(other, EntityStatus.DYING);
+            runtime.dyingCountdown[slot] = 0x1F;
+            runtime.droppedItemBySlot[slot] = drops[random.getAsInt() & 3];
+        }
+        runtime.droppedItemBySlot[killed.slot()] = 0x2E;
+    }
+
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
         boolean swallowedShield = entity.type() == runtime.ENTITY_LIKE_LIKE
             && runtime.likeLikeMotion.privateState1(entity.slot()) != 0;
@@ -49,8 +66,8 @@ public final class EntityBossRewards {
                 runtime.ENTITY_SWORD_SHIELD_PICKUP, runtime.enemyDropCounters, 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
-                entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()), runtime.droppedItemBySlot[entity.slot()],
-                runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.enemyDropBossBattle,
+                entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()), runtime.droppedItemBySlot[entity.slot()],
+                runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.inBossBattle,
                 runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling, runtime.enemyDropCounters,
                 randomByteSupplier);
             result = resolveDrop(context);
@@ -83,9 +100,9 @@ public final class EntityBossRewards {
             // ROM health-group tables select the miniboss healing fairy.
             if (runtime.enemyDropResolver != null) {
                 EnemyDropResolver.Result drop = resolveDrop(
-                    new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()),
+                    new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()),
                         runtime.droppedItemBySlot[slot], runtime.enemyDropMaxHearts, runtime.enemyDropHealth,
-                        runtime.enemyDropBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
+                        runtime.inBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
                         runtime.enemyDropCounters, randomByteSupplier));
                 runtime.enemyDropCounters = drop.counters();
                 if (drop.dropped()) runtime.pickups.spawnEnemyDrop(entity, drop.itemType());
@@ -227,6 +244,7 @@ public final class EntityBossRewards {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_HEART_CONTAINER,
             x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling, 0x10);
         runtime.enemyDropActive[freeSlot] = true;
