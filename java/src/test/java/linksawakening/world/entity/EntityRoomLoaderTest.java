@@ -21,6 +21,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EntityRoomLoaderTest {
 
     @Test
+    void roomDropsAreInvisibleBeforeTheFirstSimulationTick() throws java.io.IOException {
+        byte[] rom;
+        try (var input = linksawakening.testing.TestRom.open()) {
+            rom = input.readAllBytes();
+        }
+        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        int hearts = 0;
+        for (int room = 0; room < 256; room++) {
+            for (RoomEntity entity : loader.load(EntityRoomLoader.RoomTable.OVERWORLD, room).loadedEntities()) {
+                if (EntityTypeRules.isCommonDroppableType(entity.type())) {
+                    assertEquals(-1, entity.spriteVariant(), "room " + Integer.toHexString(room));
+                    if (entity.type() == 0x2D) hearts++;
+                }
+            }
+        }
+        assertTrue(hearts > 0, "Exercise actual bush hearts from the ROM entity lists");
+    }
+
+    @Test
     void decodesLocationAndUnsignedTypeIntoFixedEntitySlots() {
         byte[] rom = syntheticRom();
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5000);
