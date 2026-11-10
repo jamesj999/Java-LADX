@@ -121,6 +121,9 @@ public final class RoomSession extends RoomSessionRules {
     public void startAdjacentOverworldScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) { context.roomTransitionController.startAdjacentOverworldScroll(scrollController, direction, linkScreenX, linkScreenY); }
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) { context.roomTransitionController.startMysteriousWoodsLostScroll(scrollController, linkScreenX, linkScreenY); }
     public void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) { context.roomTransitionController.startAdjacentIndoorScroll(scrollController, direction, linkScreenX, linkScreenY); }
+    /** Whether the most recent load follows room_transition.asm rather than the warp loader. */
+    public boolean musicSelectionIsScroll() { return context.roomLoadCoordinator.musicSelectionIsScroll; }
+
     public void loadOverworld(int roomId) { context.roomLoadCoordinator.loadOverworld(roomId); }
     public void loadIndoor(int mapId, int roomId) { context.roomLoadCoordinator.loadIndoor(mapId, roomId); }
     /** Restores hMapRoom and the independently saved source wIndoorRoom byte. */

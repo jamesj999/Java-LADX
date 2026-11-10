@@ -17,6 +17,7 @@ import static linksawakening.world.room.RoomSession.*;
 /** RoomLoadCoordinator operations for the live room session. */
 final class RoomLoadCoordinator {
     private final RoomSession session;
+    boolean musicSelectionIsScroll;
     RoomLoadCoordinator(RoomSession session) { this.session = session; }
 
     void loadInitialOverworld(int roomId) {
@@ -26,6 +27,11 @@ final class RoomLoadCoordinator {
     }
 
     void loadOverworld(int roomId) {
+        loadOverworld(roomId, false);
+    }
+
+    void loadOverworld(int roomId, boolean scrolling) {
+        musicSelectionIsScroll = scrolling;
         session.context.roomLoadSerial++;
         session.context.indoorMapPosition = -1;
         session.clearTransientRoomState();
@@ -56,6 +62,7 @@ final class RoomLoadCoordinator {
     }
 
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
+        musicSelectionIsScroll = transitionDirection < 4;
         session.context.roomLoadSerial++;
         session.context.indoorMapPosition = session.findIndoorMapPosition(mapId, roomId);
         session.clearTransientRoomState();

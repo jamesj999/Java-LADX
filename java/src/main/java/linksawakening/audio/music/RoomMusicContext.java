@@ -12,7 +12,18 @@ public record RoomMusicContext(int roomId,
                                boolean sideScrolling,
                                int swordLevel,
                                boolean bossDefeated,
-                               int activePowerUp) {
+                               int activePowerUp,
+                               boolean scrollingTransition) {
+
+    public RoomMusicContext(int roomId, int mapId, boolean indoor, boolean sideScrolling,
+                            int swordLevel, boolean bossDefeated, int activePowerUp) {
+        this(roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, false);
+    }
+
+    public RoomMusicContext forScroll() {
+        return new RoomMusicContext(roomId, mapId, indoor, sideScrolling, swordLevel,
+            bossDefeated, activePowerUp, true);
+    }
 
     public RoomMusicContext {
         roomId &= 0xFF;
@@ -30,7 +41,7 @@ public record RoomMusicContext(int roomId,
             category == Warp.CATEGORY_SIDESCROLL,
             playerState.swordLevel(),
             false,
-            0
+            playerState.activePowerUp()
         );
     }
 

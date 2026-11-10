@@ -146,6 +146,85 @@ final class GameplayMusicControllerTest {
         assertEquals(MusicTrackIds.MUSIC_NONE, controller.currentTrackId());
     }
 
+    @Test
+    void swordIntroSurvivesOverworldScrollsUntilTheAreaTrackChanges() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xF2, 0));
+        controller.playDirect(MusicTrackIds.MUSIC_OVERWORLD_INTRO);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xE2, 1).forScroll());
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xD2, 1).forScroll());
+        assertEquals(List.of(0x1D, 0x31), player.playedTrackIds);
+        assertEquals(0x05, controller.defaultTrackId());
+        assertEquals(0x05, controller.nextDefaultMusicTrack());
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xB2, 1).forScroll());
+        assertEquals(List.of(0x1D, 0x31, 0x04), player.playedTrackIds);
+        assertEquals(0x04, controller.defaultTrackId());
+    }
+
+    @Test
+    void warpReplacesSwordIntroEvenWhenDestinationUsesOverworldMusic() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.playDirect(0x31);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xE2, 1));
+        assertEquals(List.of(0x31, 0x05), player.playedTrackIds);
+    }
+
+    @Test
+    void indoorScrollPreservesBossAndOtherDirectTracks() {
+        for (int eventTrack : new int[] {0x18, 0x10, 0x49}) {
+            var player = new RecordingMusicTrackPlayer();
+            var controller = controller(player);
+            controller.selectAfterTransition(RoomMusicContext.indoor(0, 0x17, 1));
+            controller.playDirect(eventTrack);
+            controller.selectAfterTransition(RoomMusicContext.indoor(0, 0x18, 1).forScroll());
+            assertEquals(List.of(0x14, eventTrack), player.playedTrackIds);
+            assertEquals(0x14, controller.defaultTrackId());
+        }
+    }
+
+    @Test
+    void overworldScrollPreservesOtherEventTracksInTheSameMusicArea() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xE2, 1));
+        controller.playDirect(0x49);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xD2, 1).forScroll());
+        assertEquals(List.of(0x05, 0x49), player.playedTrackIds);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0xB2, 1).forScroll());
+        assertEquals(List.of(0x05, 0x49, 0x04), player.playedTrackIds);
+    }
+
+    @Test
+    void swordlessScrollDoesNotReplaceEventMusic() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0x92, 0));
+        controller.playDirect(0x22);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0x82, 0).forScroll());
+        assertEquals(List.of(0x1D, 0x22), player.playedTrackIds);
+    }
+
+    @Test
+    void powerUpTrackDoesNotBecomeTheAreaDefault() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.selectAfterTransition(new RoomMusicContext(0xE2, 0, false, false, 1, false, 1));
+        assertEquals(0x49, controller.currentTrackId());
+        assertEquals(0x05, controller.defaultTrackId());
+        controller.selectAfterTransition(new RoomMusicContext(0xD2, 0, false, false, 1, false, 1).forScroll());
+        assertEquals(List.of(0x49), player.playedTrackIds);
+        controller.selectAfterTransition(new RoomMusicContext(0xB2, 0, false, false, 1, false, 1).forScroll());
+        assertEquals(List.of(0x49, 0x04), player.playedTrackIds);
+        assertEquals(0x04, controller.defaultTrackId());
+    }
+
+    private static GameplayMusicController controller(RecordingMusicTrackPlayer player) {
+        var rom = loadRom();
+        return new GameplayMusicController(AreaMusicResolver.fromRom(rom), MusicCatalog.fromRom(rom), player);
+    }
+
     private static byte[] loadRom() {
         try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
