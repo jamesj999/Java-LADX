@@ -92,6 +92,14 @@ public final class PlayerState implements LinkPlayerState {
         0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25
     };
     private boolean onLowHealth;
+    private boolean fullHearts;
+
+    /** PerformOverworldAudioTasks ($14:4B0C), before world simulation. */
+    public void latchFullHearts() {
+        fullHearts = health == maxHearts * HP_PER_HEART;
+    }
+
+    public boolean fullHearts() { return fullHearts; }
     private int timeToNextLowHealthSound;
 
     public boolean isOnLowHealth() { return onLowHealth; }

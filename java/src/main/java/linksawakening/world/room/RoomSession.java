@@ -466,6 +466,12 @@ public final class RoomSession extends RoomSessionRules {
     void initializeSwitchBlockTiles() { context.roomLoadCoordinator.initializeSwitchBlockTiles(); }
     void synchronizeSwitchBlockCollisionState() { context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState(); }
     void synchronizeFollowingNpcEntitiesIfNeeded() { context.roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded(); }
+    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
+        setEnemyDropPlayerState(maxHearts, health, activePowerUp);
+        context.enemyDropLowHealth = lowHealth;
+        configureEnemyDropRuntime();
+    }
+
     void configureEnemyDropRuntime() { context.roomLoadCoordinator.configureEnemyDropRuntime(); }
     boolean roomHasBossBattle() { return context.roomLoadCoordinator.roomHasBossBattle(); }
     void clearTransientRoomState() { context.roomTransientState.clearTransientRoomState(); }

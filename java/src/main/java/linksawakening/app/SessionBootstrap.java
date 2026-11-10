@@ -282,8 +282,7 @@ public final class SessionBootstrap {
                     }
                     int romDirection = link.applyRomItemDirectionFromInput();
                     if (playerState.swordLevel() != 2
-                        || playerState.health() != playerState.maxHearts()
-                            * PlayerState.HP_PER_HEART
+                        || !playerState.fullHearts()
                         || roomSession.activeProjectileCount() != 0) {
                         return false;
                     }

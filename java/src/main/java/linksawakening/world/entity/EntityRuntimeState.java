@@ -486,6 +486,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
     int enemyDropMaxHearts = 3;
 
     int enemyDropHealth = 6;
+    Boolean enemyDropLowHealth;
 
     boolean enemyDropActivePowerUp;
 

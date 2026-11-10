@@ -105,7 +105,7 @@ final class EntityPhase {
                     playerState == null ? 0 : playerState.goldenLeavesCount());
                 roomSession.setEnemyDropPlayerState(
                     playerState.maxHearts(), playerState.health(),
-                    playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
+                    playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE, playerState.isOnLowHealth());
                 roomSession.setFreeMovementMode(link != null && link.debugNoClip());
                 roomSession.setEntityLinkVelocityZ(link == null ? 0 : link.zVelocity());
                 var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(

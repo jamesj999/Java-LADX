@@ -19,6 +19,10 @@ final class DialogStoryPhase {
         var link = context.link();
         var story = context.story();
         var dialogSounds = context.dialogSounds();
+            if (context.playerState() != null
+                    && (inventoryMenu == null || inventoryMenu.isFullyClosed())) {
+                context.playerState().latchFullHearts();
+            }
             if (roomSession != null) {
                 // $00:0F22 runs before world transitions and dialog gates.
                 // The separate inventory gameplay handler does not run it.

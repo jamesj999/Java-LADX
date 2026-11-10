@@ -116,6 +116,7 @@ final class RoomSessionContext {
     boolean boomerangSoundClockProvided;
     int enemyDropMaxHearts = 3;
     int enemyDropHealth = 6;
+    Boolean enemyDropLowHealth;
     boolean enemyDropActivePowerUp;
     /** WRAM wSwitchBlocksState; the source reset value is zero. */
     int switchBlocksState;

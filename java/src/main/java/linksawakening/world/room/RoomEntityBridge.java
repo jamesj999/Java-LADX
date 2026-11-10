@@ -308,6 +308,7 @@ final class RoomEntityBridge {
         }
         session.context.enemyDropMaxHearts = maxHearts;
         session.context.enemyDropHealth = health;
+        session.context.enemyDropLowHealth = null;
         session.context.enemyDropActivePowerUp = activePowerUp;
         session.configureEnemyDropRuntime();
     }

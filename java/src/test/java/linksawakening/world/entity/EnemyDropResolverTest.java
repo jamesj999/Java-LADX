@@ -172,6 +172,17 @@ final class EnemyDropResolverTest {
     }
 
     @Test
+    void latchedLowHealthOverridesLiveHealthForDropChance() throws IOException {
+        EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
+        assertEquals(0x2E, resolver.resolve(context(0x09, 0x02, 0,
+            3, 24, false, false, false,
+            new CounterState(0, 0), new RecordingRandom(0x02)), true).itemType());
+        assertEquals(EnemyDropResolver.ENTITY_NONE, resolver.resolve(context(0x09, 0x02, 0,
+            3, 1, false, false, false,
+            new CounterState(0, 0), new RecordingRandom(0x02)), false).itemType());
+    }
+
+    @Test
     void normalAndLowHealthMasksUseTheCurrentHealthAgainstClampedThreshold() throws IOException {
         EnemyDropResolver resolver = new EnemyDropResolver(loadRom());
 

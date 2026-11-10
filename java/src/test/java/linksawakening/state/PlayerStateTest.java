@@ -12,6 +12,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PlayerStateTest {
     @Test
+    void frameHealthFlagsStayLatchedAcrossHealthChanges() {
+        PlayerState state = new PlayerState();
+        state.setMaxHearts(3);
+        state.setHealth(24);
+        state.latchFullHearts();
+        state.setHealth(4);
+        assertTrue(state.fullHearts());
+        state.tickResourceBuffers(0);
+        assertTrue(state.isOnLowHealth());
+        state.setHealth(24);
+        assertTrue(state.isOnLowHealth());
+        state.tickResourceBuffers(2);
+        assertFalse(state.isOnLowHealth());
+        state.setHealth(23);
+        state.latchFullHearts();
+        assertFalse(state.fullHearts());
+        state.applyEntityPickup(0x2D);
+        state.tickResourceBuffers(3);
+        assertEquals(24, state.health());
+        assertFalse(state.fullHearts());
+        state.latchFullHearts();
+        assertTrue(state.fullHearts());
+    }
+
+    @Test
     void lowHealthBeepRunsOnEvenFramesAndReloadsAfterUnderflow() {
         PlayerState state = new PlayerState();
         state.setHealth(4);
