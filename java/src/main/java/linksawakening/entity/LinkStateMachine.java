@@ -90,6 +90,8 @@ final class LinkStateMachine {
             return;
         }
 
+        if (link.pitWarpPending) return;
+
         if (link.linkAirborne.fallingIntoPit) {
             link.linkAirborne.tickPitFall();
             return;
@@ -440,6 +442,7 @@ final class LinkStateMachine {
         recoverCountdown = 0;
         recoveringInWater = false;
         link.pendingWaterSplash = null;
+        link.pitWarpPending = false;
         physicsRoomLoadToken = -1;
         physicsRoomMapId = -1;
         physicsRoomId = -1;

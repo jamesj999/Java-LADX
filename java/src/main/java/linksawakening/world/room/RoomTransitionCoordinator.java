@@ -38,6 +38,23 @@ public final class RoomTransitionCoordinator {
         }
         ActiveRoom room = roomSession.activeRoom();
 
+        // $02:5136-5167 uses wWarp0, independent of the door warp positions.
+        if (link.pitWarpPending() && room.hasWarps()) {
+            link.consumePitWarp();
+            Warp source = room.firstWarp();
+            boolean sideView = source.category() == Warp.CATEGORY_SIDESCROLL;
+            Warp target = new Warp(source.category(), source.destMap(), source.destRoom(),
+                sideView ? link.romEntityY() : (link.romEntityX() & 0xF0) + 8,
+                sideView ? source.destY() : link.romEntityY() & 0xF0,
+                source.tileLocation());
+            transitionController.startFadeOut(() -> {
+                applyWarp(target, link);
+                link.setPitWarpArrival(sideView ? 0 : 0x70);
+            });
+            return;
+        }
+        if (link.isFallingIntoPit()) return;
+
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             link.initializeRoomPhysicsForRoom(roomSession.roomLoadToken(), room.mapId(),
                 room.roomId(), room.mapCategory());

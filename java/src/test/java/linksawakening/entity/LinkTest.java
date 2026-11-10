@@ -1588,6 +1588,8 @@ final class LinkTest {
 
         assertTrue(link.pixelX() > 0x24);
         assertFalse(link.isFallingIntoPit());
+        assertTrue(link.pitWarpPending());
+        assertTrue(link.recoveryBlocksInput());
         assertEquals(PlayerState.HP_PER_HEART, playerState.health());
         assertEquals(0, playerState.invincibilityCounter());
     }

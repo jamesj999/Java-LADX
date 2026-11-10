@@ -104,7 +104,7 @@ final class LinkAirborne {
     }
 
     boolean linkOverPit() {
-        return link.collision != null && link.collision.linkOnNormalPit(link.linkMotion.pixelX(), link.linkMotion.pixelY());
+        return link.collision != null && link.collision.linkOnPit(link.linkMotion.pixelX(), link.linkMotion.pixelY());
     }
 
     void refreshGroundStatus() {
@@ -164,7 +164,7 @@ final class LinkAirborne {
     }
 
     void startPitFall() {
-        // Current top-view fall/recovery support is only for ordinary $50 pits.
+        // $02:7644 routes $50 and $51 through the same slip/fall path.
         groundStatus = Link.GROUND_STATUS_PIT;
         fallingIntoPit = true;
         airborne = false;
@@ -189,6 +189,10 @@ final class LinkAirborne {
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
+        if (pitSlipPhysicsFlag == 0x51) {
+            link.pitWarpPending = true;
+            return;
+        }
         if (link.playerState != null) {
             link.linkDamage.applyPitDamage();
         }

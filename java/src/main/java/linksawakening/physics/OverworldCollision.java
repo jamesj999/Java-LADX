@@ -166,6 +166,11 @@ public final class OverworldCollision {
         return flag == PhysicsFlags.DEEP_WATER;
     }
 
+    public boolean linkOnPit(int x, int y) {
+        int flag = objectPhysicsFlagAtPoint(x + 8, y + 12);
+        return flag == 0x50 || flag == 0x51;
+    }
+
     public PitCell normalPitUnderLink(int linkPixelX, int linkPixelY) {
         int cellX = cellCoordinate(linkPixelX + 8);
         int cellY = cellCoordinate(linkPixelY + 12);
@@ -174,7 +179,7 @@ public final class OverworldCollision {
         }
         int objectId = objectIdAtCell(cellX, cellY);
         int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
-        if (!PhysicsFlags.isNormalPit(flag)) {
+        if (flag != 0x50 && flag != 0x51) {
             return null;
         }
         return new PitCell(cellX * CELL_SIZE, cellY * CELL_SIZE, flag);
