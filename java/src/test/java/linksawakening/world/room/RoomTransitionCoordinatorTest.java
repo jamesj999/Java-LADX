@@ -726,19 +726,13 @@ final class RoomTransitionCoordinatorTest {
             playerState.powerBraceletLevel());
         link.setPixelPosition(0x50, 0x50);
         int[] routeToForest = {
-            ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
-            ScrollController.UP, ScrollController.RIGHT, ScrollController.RIGHT,
-            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.LEFT,
-            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
-            ScrollController.LEFT, ScrollController.UP, ScrollController.LEFT,
-            ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
-            ScrollController.LEFT, ScrollController.DOWN, ScrollController.UP,
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.UP,
+            ScrollController.UP, ScrollController.RIGHT, ScrollController.UP,
+            ScrollController.LEFT, ScrollController.UP, ScrollController.UP,
             ScrollController.UP, ScrollController.UP
         };
         int[] expectedRooms = {
-            0xE2, 0xE1, 0xE0, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4,
-            0xD3, 0xD4, 0xD5, 0xC5, 0xC4, 0xB4, 0xB3, 0xA3,
-            0xA2, 0xA1, 0xA0, 0xB0, 0xA0, 0x90, 0x80
+            0xF1, 0xF0, 0xE0, 0xD0, 0xD1, 0xC1, 0xC0, 0xB0, 0xA0, 0x90, 0x80
         };
         for (int index = 0; index < routeToForest.length; index++) {
             walkToAndCrossOverworldBoundary(
@@ -891,15 +885,12 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x65, session.currentRoomId());
 
         int[] routeToRaccoon = {
-            ScrollController.RIGHT, ScrollController.DOWN, ScrollController.RIGHT,
-            ScrollController.UP, ScrollController.UP, ScrollController.LEFT,
+            ScrollController.LEFT, ScrollController.UP, ScrollController.UP,
             ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN,
-            ScrollController.UP, ScrollController.UP, ScrollController.LEFT,
-            ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN
+            ScrollController.DOWN, ScrollController.LEFT, ScrollController.UP
         };
         int[] raccoonRouteRooms = {
-            0x66, 0x76, 0x77, 0x67, 0x57, 0x56, 0x55, 0x54,
-            0x64, 0x54, 0x44, 0x43, 0x42, 0x41, 0x51
+            0x64, 0x54, 0x44, 0x43, 0x42, 0x52, 0x62, 0x61, 0x51
         };
         for (int index = 0; index < routeToRaccoon.length; index++) {
             walkToAndCrossOverworldBoundary(
@@ -1688,15 +1679,10 @@ final class RoomTransitionCoordinatorTest {
         assertEquals(0x20, session.overworldRoomStatusForTest(0xD2) & 0x20);
 
         int[] routeToKidnappingWarning = {
-            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.LEFT,
-            ScrollController.RIGHT, ScrollController.RIGHT, ScrollController.UP,
-            ScrollController.LEFT, ScrollController.UP, ScrollController.LEFT,
-            ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT,
-            ScrollController.LEFT, ScrollController.DOWN
+            ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT, ScrollController.UP
         };
         int[] kidnappingWarningRooms = {
-            0xD3, 0xD4, 0xD3, 0xD4, 0xD5, 0xC5, 0xC4,
-            0xB4, 0xB3, 0xA3, 0xA2, 0xA1, 0xA0, 0xB0
+            0xC2, 0xC1, 0xC0, 0xB0
         };
         for (int index = 0; index < routeToKidnappingWarning.length; index++) {
             try {
@@ -1943,14 +1929,22 @@ final class RoomTransitionCoordinatorTest {
             .anyMatch(entity -> entity.type() == 0x41));
 
         int[] routeToGopongaSwamp = {
-            ScrollController.LEFT, ScrollController.UP, ScrollController.DOWN,
-            ScrollController.LEFT, ScrollController.LEFT
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.DOWN,
+            ScrollController.LEFT, ScrollController.LEFT, ScrollController.LEFT,
+            ScrollController.LEFT, ScrollController.UP, ScrollController.RIGHT,
+            ScrollController.RIGHT, ScrollController.UP, ScrollController.RIGHT,
+            ScrollController.DOWN
         };
-        int[] gopongaSwampRouteRooms = {0x35, 0x25, 0x35, 0x34, 0x33};
+        int[] gopongaSwampRouteRooms = {
+            0x35, 0x34, 0x44, 0x43, 0x42, 0x41, 0x40,
+            0x30, 0x31, 0x32, 0x22, 0x23, 0x33
+        };
         for (int index = 0; index < routeToGopongaSwamp.length; index++) {
+            // Enter the eastern swamp channel, where both flowers are reachable.
+            int next = index + 1 < routeToGopongaSwamp.length
+                ? routeToGopongaSwamp[index + 1] : ScrollController.RIGHT;
             walkToAndCrossOverworldBoundary(
-                session, coordinator, scroll, collision, link, routeToGopongaSwamp[index],
-                index + 1 < routeToGopongaSwamp.length ? routeToGopongaSwamp[index + 1] : ScrollController.NONE);
+                session, coordinator, scroll, collision, link, routeToGopongaSwamp[index], next);
             assertEquals(gopongaSwampRouteRooms[index], session.currentRoomId());
         }
         assertEquals(2, session.activeRoom().entities().loadedEntities().stream()
@@ -4808,6 +4802,14 @@ final class RoomTransitionCoordinatorTest {
             + link.pixelX() + "," + link.pixelY() + ") toward " + direction
             + "\n" + collisionGrid(collision));
         link.setPixelPosition(exit[0], exit[1]);
+        // Gameplay publishes the destination Link pose before the room-load
+        // CreateFollowingNpcEntity call. This low-level harness must do so too.
+        int arrivalX = direction == ScrollController.LEFT ? 140
+            : direction == ScrollController.RIGHT ? 3 : exit[0];
+        int arrivalY = direction == ScrollController.UP ? 111
+            : direction == ScrollController.DOWN ? 0 : exit[1];
+        session.setFollowingNpcState(session.followingNpcState(),
+            arrivalX + 8, arrivalY + 16, 0, 0, link.direction());
         crossOverworldBoundary(coordinator, scroll, link, direction);
     }
 
