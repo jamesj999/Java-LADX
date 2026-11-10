@@ -23,6 +23,11 @@ final class SaveRoundTripTest {
     }
 
     @Test
+    void saveChordAlsoWorksWithStartPressedLast(@TempDir Path directory) throws Exception {
+        roundTrip(directory.resolve("azle.sav"), -2);
+    }
+
+    @Test
     void gameOverSaveAndContinueFlushesGameplay(@TempDir Path directory) throws Exception {
         roundTrip(directory.resolve("azle.sav"), 0);
     }
@@ -77,7 +82,13 @@ final class SaveRoundTripTest {
             game.headlessFrame();
             SaveCoordinator saves = call(game, "saves", SaveCoordinator.class);
             if (gameOverOption < 0) {
-                saves.startFileSave();
+                playWakeUpPrefix(game);
+                String chord = gameOverOption == -2 ? "select+b+a+start" : "start+a+b+select";
+                game.headlessButton(chord, true);
+                game.headlessFrame();
+                game.headlessButton(chord, false);
+                game.headlessFrame();
+                assertEquals(RenderScreen.FILE_SAVE, get(game, "currentScreen", Screen.class).renderScreen());
                 press(game, "down");
                 press(game, "a");
             } else {
@@ -105,14 +116,40 @@ final class SaveRoundTripTest {
                 assertEquals(expected.itemB(), restored.itemB());
                 assertEquals(expected.shieldLevel(), restored.shieldLevel());
                 assertEquals(expected.tarinFlag(), get(relaunched, "roomSession", RoomSession.class).tarinFlag());
-                assertArrayEquals(expected.overworldRoomStatus(),
-                    get(relaunched, "roomSession", RoomSession.class).overworldRoomStatusSnapshot());
+                RoomSession restoredRoom = get(relaunched, "roomSession", RoomSession.class);
+                assertArrayEquals(expected.overworldRoomStatus(), restoredRoom.overworldRoomStatusSnapshot());
+                assertArrayEquals(expected.indoorARoomStatus(), restoredRoom.indoorARoomStatusSnapshot());
+                assertArrayEquals(expected.indoorBRoomStatus(), restoredRoom.indoorBRoomStatusSnapshot());
+                assertArrayEquals(expected.colorDungeonRoomStatus(), restoredRoom.colorDungeonRoomStatusSnapshot());
+                assertArrayEquals(expected.dungeonItemFlags(), restoredRoom.dungeonItemFlagsSnapshot());
+                assertArrayEquals(expected.colorDungeonItemFlags(), restoredRoom.colorDungeonItemFlagsSnapshot());
+                assertArrayEquals(expected.dungeonProgressFlags(), restoredRoom.dungeonProgressFlagsSnapshot());
+                var restoredLink = get(relaunched, "link", linksawakening.entity.Link.class);
+                assertEquals(expected.spawnPositionX(), restoredLink.roomEntryRomPositionX());
+                assertEquals(expected.spawnPositionY(), restoredLink.roomEntryRomPositionY());
+                assertEquals(expected.spawnMapRoom(), restoredRoom.currentRoomId());
             } finally {
                 call(relaunched, "cleanup", Void.class);
             }
         } finally {
             call(game, "cleanup", Void.class);
         }
+    }
+
+    private static void playWakeUpPrefix(GameSession game) throws Exception {
+        // Existing opening replay through the bed exit (first eight commands).
+        var commands = java.nio.file.Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv"))
+            .stream().filter(line -> !line.isBlank() && !line.startsWith("#")).limit(8).toList();
+        for (String command : commands) {
+            String[] fields = command.split("\\s+");
+            int held = Integer.parseInt(fields[1]);
+            int idle = Integer.parseInt(fields[2]);
+            if (held > 0) game.headlessButton(fields[0], true);
+            for (int frame = 0; frame < held; frame++) game.headlessFrame();
+            if (held > 0) game.headlessButton(fields[0], false);
+            for (int frame = 0; frame < idle; frame++) game.headlessFrame();
+        }
+        assertFalse(get(game, "dialogController", linksawakening.dialog.DialogController.class).isActive());
     }
 
     private static void press(GameSession game, String button) {

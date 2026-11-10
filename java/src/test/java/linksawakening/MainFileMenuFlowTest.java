@@ -36,7 +36,7 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void fileSaveChordRequiresAllFourSourceButtonsWithSelectPressedLast() {
+    void fileSaveChordRequiresExactlyTheFourSourceButtonsRegardlessOfLastKey() {
         InputConfig inputConfig = new InputConfig(
             GLFW_KEY_ENTER, 1, 2, 3, 4, 5, 6, GLFW_KEY_TAB);
         InputState inputState = new InputState();
@@ -46,6 +46,10 @@ final class MainFileMenuFlowTest {
         inputState.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
 
         assertTrue(InputRouter.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
+        assertTrue(InputRouter.shouldEnterFileSave(inputConfig, inputState, 5, GLFW_PRESS));
+        inputState.onKeyEvent(1, GLFW_PRESS);
+        assertFalse(InputRouter.shouldEnterFileSave(inputConfig, inputState, 5, GLFW_PRESS));
+        inputState.onKeyEvent(1, GLFW_RELEASE);
         inputState.onKeyEvent(6, GLFW_RELEASE);
         assertFalse(InputRouter.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
     }
@@ -98,7 +102,7 @@ final class MainFileMenuFlowTest {
 
     @Test
     void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() {
-        CompiledCode.calls("linksawakening.app.InputRouter", "gameplayKey", "marinWakeUpBlocksKeyInput", "shouldEnterFileSave", "dispatchToggleInput");
+        CompiledCode.calls("linksawakening.app.InputRouter", "gameplayKey", "marinWakeUpBlocksKeyInput", "dispatchToggleInput");
     }
 
     @Test

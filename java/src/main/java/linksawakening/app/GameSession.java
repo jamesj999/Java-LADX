@@ -162,7 +162,7 @@ public class GameSession {
     private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(() -> cutsceneManager, () -> inputState, () -> dialogController, () -> inputConfig, this::routeDialogSounds, () -> currentScreen = titleScreen, () -> { currentScreen = titleScreen; musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack()); }));
     private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(() -> fileMenuController, () -> inputState, () -> inputConfig, () -> saveRamStore, slot -> currentSaveSlot = slot, () -> saves().startNewGame(), saved -> saves().startSavedGame(saved), mutation -> saves().persistFileMenuMutation(mutation), this::completeInputFrame));
     private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(() -> fileSaveController, () -> inputState, () -> inputConfig, () -> { fileSaveController = null; currentScreen = this.gameplayScreen; }, () -> saves().saveCurrentPlayerState(), () -> router().startFileSelection(), this::completeInputFrame));
-    private final Screen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, (key, action) -> inputRouter().gameplayKey(key, action), () -> this.passOutController.snapshot());
+    private final GameplayScreen gameplayScreen = new GameplayScreen(this::tickGameplayScreen, (key, action) -> inputRouter().gameplayKey(key, action), () -> this.passOutController.snapshot(), () -> inputRouter().tryPresentFileSave());
     private Screen currentScreen = titleScreen;
 
     private final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
@@ -240,6 +240,7 @@ public class GameSession {
         if (debugMenu != null && debugMenu.isOpen()) {
             debugMenu.key(key, action);
             inputState.clear();
+            gameplayScreen.clearPendingInput();
             return;
         }
         if (currentAppConfig().debugEnabled()
@@ -251,6 +252,7 @@ public class GameSession {
                 debugMenu.open(roomSession.mapCategory(), roomSession.mapId(),
                     roomSession.currentRoomId(), link.pixelX(), link.pixelY());
                 inputState.clear();
+                gameplayScreen.clearPendingInput();
             }
             return;
         }
@@ -268,6 +270,7 @@ public class GameSession {
         transientVfxSystem.clear();
         droppableRupeeSystem.clear();
         inputState.clear();
+        gameplayScreen.clearPendingInput();
     }
 
     private void update() {
