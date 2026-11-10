@@ -342,6 +342,10 @@ public final class EntitySlotLifecycle {
             (split.originalX() - 4) & 0xFF, split.originalY(), EntityStatus.ACTIVE,
             gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
             split.originalZ(), -1, false);
+        // ConfigureNewEntity ($03:485B) reloads these for the new type.
+        runtime.enemyPhysicsFlags[slot] = initialPhysicsFlags(runtime.ENTITY_GEL);
+        runtime.enemyHitboxFlags[slot] = initialHitboxFlags(runtime.ENTITY_GEL);
+        runtime.entityOptions1Override[slot] = -1;
         runtime.enemyTransitionCountdown[slot] = 0;
         runtime.enemyStunnedCountdown[slot] = 0;
         runtime.enemyHealthGroup[slot] = runtime.enemyCombatTables == null ? 0
@@ -362,6 +366,9 @@ public final class EntitySlotLifecycle {
                 split.originalZ(), -1, false);
             runtime.slots[freeSlot] = spawnedGel;
             runtime.initializeHealthGroup(freeSlot);
+            runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_GEL);
+            runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(runtime.ENTITY_GEL);
+            runtime.entityOptions1Override[freeSlot] = -1;
             runtime.enemyTransitionCountdown[freeSlot] = 0;
             runtime.enemyStunnedCountdown[freeSlot] = 0;
             runtime.dyingCountdown[freeSlot] = 0;

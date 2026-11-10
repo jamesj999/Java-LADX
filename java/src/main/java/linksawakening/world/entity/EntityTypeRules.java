@@ -246,6 +246,9 @@ public final class EntityTypeRules {
 
     static int initialPhysicsFlags(int type) {
         return switch (type) {
+            // PhysicsFlagsForEntity ($03:4000), Zol/Gel entries $1B/$1C.
+            case ENTITY_ZOL -> 0x12;
+            case ENTITY_GEL -> 0x11;
             case ENTITY_GENIE -> GenieMotion.INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_STATUE -> ARMOS_INITIAL_PHYSICS_FLAGS;
             case ENTITY_ARMOS_KNIGHT -> ARMOS_KNIGHT_INITIAL_PHYSICS_FLAGS;
@@ -308,6 +311,10 @@ public final class EntityTypeRules {
     }
 
     static int initialHitboxFlags(int type) {
+        if (type == ENTITY_GEL) {
+            // HitboxFlagsForEntity ($03:40FB): small Gel contact hitbox.
+            return 0x10;
+        }
         if (type == ENTITY_GENIE) {
             return GenieMotion.INITIAL_HITBOX_FLAGS;
         }

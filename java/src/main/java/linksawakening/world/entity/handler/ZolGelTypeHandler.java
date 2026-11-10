@@ -21,6 +21,12 @@ final class ZolGelTypeHandler {
               {
                 state.zolGelMotion().initialize(
                     state.entity.slot(), state.entity.type(), state.randomByteSupplier);
+                if (state.entity.type() == 0x1B) {
+                  // EntityInitZol ($03:4953) overrides health-group zero's
+                  // default one HP. The first ordinary sword hit must survive
+                  // long enough for AnimateZolGel's flash-$08 split.
+                  state.slot().setHealth(state.entity.slot(), 2);
+                }
               }
               return true;
             });

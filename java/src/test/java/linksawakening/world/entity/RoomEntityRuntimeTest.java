@@ -5790,14 +5790,18 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void zolSplittingTurnsTheOriginalSlotIntoAGelAndUsesTheLastFreeSlot() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
-        EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
+    void zolSplittingTurnsTheOriginalSlotIntoAGelAndUsesTheLastFreeSlot() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
+        assertEquals(1, combatTables.initialHealth(0x1B));
+        EntitySpriteDefinition definition = catalog.forEntityType(0x1B, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(
             new RoomEntity(0, 0, 0x1B, 64, 64, EntityStatus.INIT, definition, 0, 0, 0, 0, -1, false)),
-            false, sequence(0x01), catalog);
+            false, sequence(0x01), catalog, combatTables);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
+        assertEquals(2, runtime.enemies().enemyHealth(0));
         List<EntityCombatEvent> sword = runtime.resolveCombat(
             1, 120, 120, false, true, true, 72, 1, 72, 1);
         assertEquals(1, sword.size());
@@ -5819,6 +5823,13 @@ final class RoomEntityRuntimeTest {
         assertEquals(originalSlot.y(), spawnedSlot.y());
         assertEquals(originalSlot.z(), spawnedSlot.z());
         assertEquals(1, runtime.enemies().enemyHealth(15));
+        assertEquals(1, runtime.enemies().enemyHealth(0));
+        assertEquals(0x11, runtime.enemies().physicsFlags(0));
+        assertEquals(0x11, runtime.enemies().physicsFlags(15));
+        assertEquals(0x10, runtime.enemies().hitboxFlagsForTest(0));
+        assertEquals(0x10, runtime.enemies().hitboxFlagsForTest(15));
+        assertEquals(0x20, runtime.enemies().zolSpeedZ(0));
+        assertEquals(0x20, runtime.enemies().zolSpeedZ(15));
         assertFalse(runtime.enemies().enemyRecoilActive(0));
         assertFalse(runtime.enemies().enemyRecoilActive(15));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
