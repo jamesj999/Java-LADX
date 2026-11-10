@@ -460,10 +460,18 @@ final class EntityCombatResolver {
                 || entity.type() == runtime.ENTITY_MOBLIN;
             if (linkDamage > 0 && (!swordHit || bodyRecoilBeforeSword)
                 && RoomEntityCombatRules.usesStandardLinkContactResponse(entity.type())) {
-                EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x14);
-                linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
-                    vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+                if (entity.type() == runtime.ENTITY_ROLLING_BONES_BAR) {
+                    // $03:6DE9-6DED / $03:6FA7-6FB8: horizontal only.
+                    int speedX = ((linkEntityX - entity.x()) & 0xFF) < 0x80 ? 0x18 : 0xE8;
+                    linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(speedX, 0, 0x10);
+                } else {
+                    // $03:6DFA-6E02 selects the magnitude of Link's recoil.
+                    int speed = entity.type() == runtime.ENTITY_MOLDORM ? 0x18 : 0x14;
+                    EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, speed);
+                    linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
+                        vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
+                }
             }
             if (linkDamage > 0 && !swordHit && entity.type() == runtime.ENTITY_MOBLIN_KING
                 && runtime.moblinKingMotion.state(entity.slot()) == 9

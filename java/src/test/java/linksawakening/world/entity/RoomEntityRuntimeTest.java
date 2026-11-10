@@ -559,6 +559,30 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
+    void moldormContactUsesTheLargerLinkRecoilMagnitude() {
+        var enemy = new RoomEntity(0, 0, 0x59, 0x40, 0x50,
+            EntityStatus.ACTIVE, pairDefinition(0x59, 2), 0, 0, 0, 0, -1, false);
+        var runtime = RoomEntityRuntime.from(snapshot(enemy));
+        var events = runtime.resolveCombat(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
+        assertEquals(1, events.size());
+        assertEquals(new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),
+            events.get(0).linkCollisionResponse());
+    }
+
+    @Test
+    void rollingBonesBarContactUsesHorizontalRecoilOnBothSides() {
+        for (int linkX : new int[]{0x3C, 0x44}) {
+            var enemy = new RoomEntity(0, 0, 0x82, 0x40, 0x50,
+                EntityStatus.ACTIVE, pairDefinition(0x82, 2), 0, 0, 0, 0, -1, false);
+            var runtime = RoomEntityRuntime.from(snapshot(enemy));
+            var events = runtime.resolveCombat(1, linkX, 0x58, false, true, false, 0, 0, 0, 0);
+            assertEquals(1, events.size());
+            assertEquals(new EntityCombatEvent.LinkCollisionResponse(
+                linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10), events.get(0).linkCollisionResponse());
+        }
+    }
+
+    @Test
     void specialEnemyHandlersDoNotReceiveTheGenericLinkRecoilResponse() {
         assertFalse(RoomEntityCombatRules.usesStandardLinkContactResponse(0x1C));
         // Beetles only use the special branch for shield contact ($03:6F2A).
