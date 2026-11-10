@@ -60,7 +60,7 @@ class DebugMenuIntegrationTest {
         game.headlessFrame();
         assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
     }
-    @Test void openingHouseMenuRemainsInteractiveAndCanResumeThenQuit() throws Exception {
+    @Test void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
         var config = GameSession.class.getDeclaredField("appConfig");
@@ -92,7 +92,9 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         var running = GameSession.class.getDeclaredField("running");
         running.setAccessible(true);
-        assertFalse(running.getBoolean(game));
+        assertTrue(running.getBoolean(game));
+        game.headlessFrame(); // Wake-up blocks and discards the save request.
+        assertTrue(running.getBoolean(game));
     }
 
     @Test void configDisablesMenu() throws Exception {
