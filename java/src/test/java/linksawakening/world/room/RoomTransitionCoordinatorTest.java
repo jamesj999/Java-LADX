@@ -85,6 +85,30 @@ final class RoomTransitionCoordinatorTest {
     private static final int OBJECT_NORMAL_PIT = 0xE8;
 
     @Test
+    void warpClearsOnlyActivePowerUpAcrossIndoorBoundary() throws Exception {
+        byte[] rom = loadRom();
+        RomTables tables = RomTables.loadFromRom(rom);
+        RoomSession session = newSession(rom, tables, new OverworldCollision(tables));
+        PlayerState player = new PlayerState();
+        session.onMapBoundaryWarp(player::clearActivePowerUpForWarp);
+        session.loadInitialOverworld(0x82);
+        player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+        player.applyRomEnemyDamage(1);
+        session.startAdjacentOverworldScroll(new ScrollController(), ScrollController.RIGHT, 144, 64);
+        assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER, player.activePowerUp());
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
+        assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER, player.activePowerUp());
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
+        assertEquals(0, player.activePowerUp());
+        assertEquals(1, player.powerUpHits());
+        player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
+        assertEquals(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN, player.activePowerUp());
+        session.loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
+        assertEquals(0, player.activePowerUp());
+    }
+
+    @Test
     void downwardScrollAfterFlipAutomaticallyDropsClearOfDestinationWall() throws Exception {
         byte[] rom = loadRom();
         RomTables tables = RomTables.loadFromRom(rom);

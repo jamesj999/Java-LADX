@@ -485,6 +485,7 @@ public final class SessionBootstrap {
                 }
             }, link::canUseItems));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
+        roomSession.onMapBoundaryWarp(playerState::clearActivePowerUpForWarp);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
             roomSession, new RoomBoundaryController(), transitionController, scrollController);
     }

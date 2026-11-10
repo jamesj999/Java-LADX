@@ -707,6 +707,11 @@ public final class PlayerState implements LinkPlayerState {
         powerUpHits = 0;
     }
 
+    /** Warp loads ($00:1904/$00:1952) clear only wActivePowerUp. */
+    public void clearActivePowerUpForWarp() {
+        activePowerUp = ACTIVE_POWER_UP_NONE;
+    }
+
     /** Number of accepted enemy hits taken while the current power-up was active. */
     public int powerUpHits() {
         return powerUpHits;
