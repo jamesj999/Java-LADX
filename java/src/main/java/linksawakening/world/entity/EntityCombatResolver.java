@@ -402,6 +402,15 @@ final class EntityCombatResolver {
                     runtime.enemyRecoilMotion.clear(entity.slot());
                     runtime.slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
                 } else if (swordDamage > 0 && runtime.enemyHealth[entity.slot()] == 0) {
+                    // ApplySwordDamagesToEnemy falls through on death to
+                    // $03:73B6-73E4. Moldorm already received $28/$C8 above;
+                    // ordinary lethal hits also flash for $18. The recoil
+                    // caller retains its $20 ignore/$40 death override.
+                    // Final Nightmare ($E6), form 3, also uses $28/$C8
+                    // ($03:73BF-73C8); wire this when its form handler exists.
+                    if (entity.type() != runtime.ENTITY_MOLDORM) {
+                        runtime.enemyFlashCountdown[entity.slot()] = 0x18;
+                    }
                     runtime.dyingCountdown[entity.slot()] = entity.type() == runtime.ENTITY_MOLDORM
                         ? 0 : (attackContext.powerRecoil() ? 0x40 : 0x2F);
                     if (entity.type() == runtime.ENTITY_MOBLIN_KING) {

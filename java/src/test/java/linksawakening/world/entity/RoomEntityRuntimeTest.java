@@ -1413,6 +1413,8 @@ final class RoomEntityRuntimeTest {
         assertTrue(events.get(0).swordHit());
         assertEquals(0, events.get(0).linkDamage());
         assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x2F, runtime.enemies().dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertFalse(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
@@ -1446,6 +1448,8 @@ final class RoomEntityRuntimeTest {
 
         assertEquals(1, events.size());
         assertEquals(EntityStatus.DYING, runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
+        assertEquals(0x20, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0x40, runtime.enemies().dyingCountdown(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).deathSpriteVariant());
         assertTrue(runtime.inspection().snapshot().slots().get(0).powerRecoilDeath());
