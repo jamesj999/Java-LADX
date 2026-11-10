@@ -5369,6 +5369,7 @@ final class RoomTransitionCoordinatorTest {
             // This connectivity helper models the sword-owned route after its
             // already-covered static sword collision removes a bush.
             boolean swordCuttable = object == 0x5C || object == 0xD3;
+            if (pitsBlock && collision.pointNormalPit(sampleX, sampleY)) return true;
             if (!swordCuttable && collision.pointBlockedForLink(sampleX, sampleY, false)
                 && (pitsBlock || !collision.pointNormalPit(sampleX, sampleY))) {
                 return true;

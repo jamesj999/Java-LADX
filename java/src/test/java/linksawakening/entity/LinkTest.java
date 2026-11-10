@@ -1353,7 +1353,7 @@ final class LinkTest {
     }
 
     @Test
-    void deepWaterBlocksLinkUntilFlippersAreOwned() throws Exception {
+    void deepWaterStartsRecoveryWithoutFlippersAndSwimmingWithFlippers() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
@@ -1361,7 +1361,7 @@ final class LinkTest {
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
 
         Link withoutFlippers = linkInRoom(inputConfig, romTables, roomObjects);
-        withoutFlippers.setPixelPosition(0x20, 0x20);
+        withoutFlippers.setRoomEntryPixelPosition(0x20, 0x20);
         for (int i = 0; i < 20; i++) {
             withoutFlippers.update();
         }
@@ -1375,10 +1375,85 @@ final class LinkTest {
             withFlippers.update();
         }
 
-        assertEquals(0x24, withoutFlippers.pixelX());
+        assertEquals(Link.LINK_MOTION_RECOVER, withoutFlippers.romMotionState());
+        assertTrue(withoutFlippers.pixelX() > 0x24);
         assertTrue(withFlippers.isSwimming());
         assertEquals(0x01, withFlippers.romMotionState());
-        assertTrue(withFlippers.pixelX() > withoutFlippers.pixelX());
+        while (withoutFlippers.romMotionState() == Link.LINK_MOTION_RECOVER) withoutFlippers.update();
+        assertEquals(0x20, withoutFlippers.pixelX());
+        assertEquals(0x20, withoutFlippers.pixelY());
+        assertEquals(0x40, withoutFlippers.playerState.invincibilityCounter());
+
+    }
+
+    @Test
+    void raftAndSlowWaterCurrentBypassDrowningEntry() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
+        Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects);
+        link.setPixelPosition(0x20, 0x20);
+        link.linkStateMachine.itemUsageContext = 0x80;
+        assertFalse(link.linkSwimming.enterSwimmingIfNeeded());
+        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+        link.linkStateMachine.itemUsageContext = 0;
+        link.linkStateMachine.slowWalkingSpeed = 1;
+        link.linkStateMachine.physicsRoomId = 0x3E;
+        assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
+        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+        assertEquals(0xFA, link.romSpeedX());
+        assertTrue(link.pixelX() < 0x20);
+    }
+
+    @Test
+    void lavaIsPassableAndStartsRecoveryWithoutFlippers() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        int lava = -1;
+        for (int id = 0; id < 256; id++) {
+            if (tables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_INDOORS1, id) == PhysicsFlags.LAVA) { lava = id; break; }
+        }
+        assertTrue(lava >= 0);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = lava;
+        PlayerState player = new PlayerState();
+        Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_INDOORS1);
+        link.setRoomEntryPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 32 && link.romMotionState() != Link.LINK_MOTION_RECOVER; i++) link.update();
+        assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
+        assertEquals(lava, link.linkStateMachine.physicsModifier);
+        assertEquals(0x50, link.linkStateMachine.recoverCountdown);
+        for (int i = 0; i < 80; i++) link.update();
+        assertEquals(0x20, link.pixelX());
+        assertEquals(0x20, link.pixelY());
+        assertEquals(lava == 6 ? 4 : 0, player.subtractHealthBuffer());
+    }
+
+    @Test
+    void recoveryUsesRomCountdownPosesDamageConditionAndMapEntry() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        for (int object : new int[] {6, OBJECT_DEEP_WATER}) {
+            PlayerState player = new PlayerState();
+            Link link = linkInRoom(config, tables, emptyRoomObjectsArea(), player, RomTables.PHYSICS_TABLE_OVERWORLD);
+            link.setRoomEntryPixelPosition(16, 24);
+            link.setPixelPosition(64, 64);
+            link.linkStateMachine.motionState = Link.LINK_MOTION_RECOVER;
+            link.linkStateMachine.physicsModifier = object;
+            link.linkStateMachine.recoverCountdown = 0x50;
+            for (int frame = 1; frame < 80; frame++) {
+                link.update();
+                int remaining = 80 - frame;
+                assertEquals(remaining >= 64 ? 0x4C : remaining >= 48 ? 0x4E : 0xFF, resolvedAnimationState(link));
+                assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
+                assertEquals(64, link.pixelX());
+            }
+            link.update();
+            assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+            assertEquals(16, link.pixelX());
+            assertEquals(24, link.pixelY());
+            assertEquals(0x40, player.invincibilityCounter());
+            assertEquals(object == 6 ? 4 : 0, player.subtractHealthBuffer());
+        }
     }
 
     @Test
@@ -1482,7 +1557,7 @@ final class LinkTest {
             link.update();
         }
 
-        assertEquals(0x24, link.pixelX());
+        assertTrue(link.pixelX() > 0x24);
         assertFalse(link.isFallingIntoPit());
         assertEquals(PlayerState.HP_PER_HEART, playerState.health());
         assertEquals(0, playerState.invincibilityCounter());

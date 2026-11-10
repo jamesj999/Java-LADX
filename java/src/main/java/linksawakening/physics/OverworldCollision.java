@@ -93,9 +93,8 @@ public final class OverworldCollision {
     }
 
     /**
-     * Link's leading-edge collision query with the source's flipper exception.
-     * Deep-water physics remains solid for ordinary walking, but becomes
-     * passable once Link owns the flippers (bank2.asm:7706-7734).
+     * Link's leading-edge collision query. Water, lava and pits are passable;
+     * ground physics handles their consequences ($02:7461).
      */
     public boolean pointBlockedForLink(int pixelX, int pixelY, boolean hasFlippers) {
         if (roomObjectsArea == null) {
@@ -289,7 +288,8 @@ public final class OverworldCollision {
             return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
         }
 
-        if (hasFlippers && physicsFlag == PhysicsFlags.DEEP_WATER) {
+        if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA
+            || PhysicsFlags.isPitCategory(physicsFlag)) {
             return false;
         }
 

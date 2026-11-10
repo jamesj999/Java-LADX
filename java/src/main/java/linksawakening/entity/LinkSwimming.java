@@ -11,9 +11,25 @@ final class LinkSwimming {
     LinkSwimming(Link link) { this.link = link; }
 
     boolean enterSwimmingIfNeeded() {
-        if (!link.playerHasFlippers() || link.romTables == null || link.collision == null
-            || !link.collision.linkOnDeepWater(link.linkMotion.pixelX(), link.linkMotion.pixelY())) {
-            return false;
+        if (link.romTables == null || link.collision == null) return false;
+        int flag = link.collision.objectPhysicsFlagAtPoint(link.pixelX() + 8, link.pixelY() + 12);
+        if (flag != 7 && flag != 0x0B) return false;
+        if (link.linkStateMachine.slowWalkingSpeed != 0) {
+            applyWaterCurrent();
+            return true;
+        }
+        if (link.linkStateMachine.itemUsageContext == 0x80) return false;
+        if (link.linkStateMachine.motionState == Link.LINK_MOTION_RECOVER
+            || link.linkStateMachine.motionState == Link.LINK_MOTION_SWIMMING) return true;
+        int object = link.collision.objectIdAtPoint(link.pixelX() + 8, link.pixelY() + 12);
+        link.soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
+        if (object == 6 || !link.playerHasFlippers()) {
+            link.linkStateMachine.recoverCountdown = 0x50;
+            link.linkStateMachine.motionState = Link.LINK_MOTION_RECOVER;
+            link.linkStateMachine.physicsModifier = object;
+            link.linkMotion.subY += 2 << Link.SUB_PIXEL_SHIFT;
+            link.linkStateMachine.recoveringInWater = true;
+            return true;
         }
 
         link.linkStateMachine.motionState = Link.LINK_MOTION_SWIMMING;
@@ -28,6 +44,58 @@ final class LinkSwimming {
         link.linkMotion.lastRomSpeedX = swimmingSpeedX & 0xFF;
         link.linkMotion.lastRomSpeedY = swimmingSpeedY & 0xFF;
         return true;
+    }
+
+    // label_002_7C50: rapids/current movement bypasses swimming entry.
+    private void applyWaterCurrent() {
+        int object = link.collision.objectIdAtPoint(link.pixelX() + 8, link.pixelY() + 12);
+        int index = object - 0xE7;
+        if (object == 0x0E) {
+            index = switch (link.linkStateMachine.physicsRoomId) {
+                case 0x3E -> 1;
+                case 0x3D -> 2;
+                case 0x3C, 0x3F -> 3;
+                default -> -1;
+            };
+        }
+        if (index < 0) return;
+        int x = link.romTables.waterCurrentSpeedX(index);
+        int y = link.romTables.waterCurrentSpeedY(index);
+        link.linkMotion.lastRomSpeedX = x & 255;
+        link.linkMotion.lastRomSpeedY = y & 255;
+        if (x != 0) link.linkMotion.tryMoveAxis(x, true);
+        if (y != 0) link.linkMotion.tryMoveAxis(y, false);
+    }
+
+    void updateRecover() {
+        if (link.itemRegistry != null && link.itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+            instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
+        link.linkMotion.lastRomSpeedX = link.linkMotion.lastRomSpeedY = 0;
+        link.movingThisFrame = false;
+        if (link.linkStateMachine.recoverCountdown > 0) link.linkStateMachine.recoverCountdown--;
+        int countdown = link.linkStateMachine.recoverCountdown;
+        if (countdown != 0) {
+            link.linkAnimator.romAnimationStateOverride = countdown >= 0x40 ? 0x4C : countdown >= 0x30 ? 0x4E : 0xFF;
+            if (countdown == 0x40) link.soundSink.play(linksawakening.gameplay.GameplaySoundEvent.LINK_HURT);
+            return;
+        }
+        if (link.playerState != null) {
+            if (link.linkStateMachine.physicsModifier == 6) link.playerState.addSubtractHealthBuffer(4);
+            link.playerState.setInvincibilityCounter(0x40);
+        }
+        link.linkStateMachine.recoveringInWater = false;
+        link.linkStateMachine.physicsModifier = 0;
+        if (!link.collision.usesIndoorPhysicsTable() && link.linkStateMachine.physicsRoomId == 0x2B) {
+            link.linkMotion.roomEntrySubX = (0x48 - 8) << Link.SUB_PIXEL_SHIFT;
+            link.linkMotion.roomEntrySubY = (0x30 - 16) << Link.SUB_PIXEL_SHIFT;
+            link.linkMotion.hasRoomEntryPosition = true;
+        }
+        if (link.linkMotion.hasRoomEntryPosition) {
+            link.linkMotion.subX = link.linkMotion.roomEntrySubX;
+            link.linkMotion.subY = link.linkMotion.roomEntrySubY;
+        }
+        link.linkStateMachine.motionState = Link.LINK_MOTION_DEFAULT;
+        link.linkAnimator.romAnimationStateOverride = -1;
     }
 
     void updateSwimming() {

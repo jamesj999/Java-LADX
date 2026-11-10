@@ -58,6 +58,7 @@ public final class Link implements RocsFeather.JumpTarget {
     public static final int GROUND_STATUS_PIT = 0x07;
     public static final int LINK_MOTION_DEFAULT = 0x00;
     public static final int LINK_MOTION_SWIMMING = 0x01;
+    public static final int LINK_MOTION_RECOVER = 0x08;
 
     final InputState inputState;
     final InputConfig inputConfig;

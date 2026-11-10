@@ -8,6 +8,10 @@ final class LinkStateMachine {
     private final Link link;
     int motionState = Link.LINK_MOTION_DEFAULT;
     int physicsModifier;
+    int recoverCountdown;
+    boolean recoveringInWater;
+    int slowWalkingSpeed;
+    int itemUsageContext;
     int revolvingDoorFrame;
     boolean revolvingDoorTransitionPending;
     int revolvingDoorPaletteVariant = -1;
@@ -63,6 +67,11 @@ final class LinkStateMachine {
 
         if (debugNoClip) {
             updateDebugNoClip();
+            return;
+        }
+
+        if (motionState == Link.LINK_MOTION_RECOVER) {
+            link.linkSwimming.updateRecover();
             return;
         }
 
@@ -428,6 +437,8 @@ final class LinkStateMachine {
         revolvingDoorTransitionPending = false;
         revolvingDoorPaletteVariant = -1;
         physicsModifier = 0;
+        recoverCountdown = 0;
+        recoveringInWater = false;
         physicsRoomLoadToken = -1;
         physicsRoomMapId = -1;
         physicsRoomId = -1;
