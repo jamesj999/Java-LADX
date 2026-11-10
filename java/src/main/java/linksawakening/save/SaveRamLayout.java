@@ -3,9 +3,11 @@ package linksawakening.save;
 /**
  * ROM-derived offsets for the three save slots in the SRAM image.
  *
- * <p>The image starts at the first byte backed by the source's SRAM section
- * after the unused {@code $100} byte prefix.  It is intentionally not a CPU
- * address-space model: offsets here are file offsets.</p>
+ * <p>File offset zero corresponds to SRAM bank 0 at {@code $A000}; the
+ * first slot starts after the unused {@code $100} byte prefix. Only the used
+ * extent through SaveGame3.end is persisted. InitSaveFiles / func_001_4794
+ * ({@code $01:4794}) validates the magic bytes 1,3,5,7,9 independently for
+ * each slot. The ROM does not compute a payload checksum.</p>
  */
 public final class SaveRamLayout {
 
