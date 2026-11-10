@@ -27,6 +27,9 @@ class PassOutSessionTest {
         var player = game.diagnostics().playerState();
         player.setInvincibilityCounter(64);
         player.setDeathCount(99);
+        player.setActivePowerUp(linksawakening.state.PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+        player.applyRomEnemyDamage(1);
+        assertEquals(1, player.powerUpHits());
         player.setHealth(0);
         int x = link.pixelX(), y = link.pixelY();
         game.headlessButton("right", true);
@@ -49,6 +52,8 @@ class PassOutSessionTest {
             assertEquals(i == 191, link.gameOverScreenPending());
             if (i < 191) { expected.advanceFrame(); game.headlessFrame(); }
         }
+        assertEquals(0, player.activePowerUp());
+        assertEquals(0, player.powerUpHits());
         assertEquals(100, player.deathCount());
         assertEquals(0x0100, player.deathCountBcd());
         assertEquals(1, link.gameOverStage());
@@ -69,6 +74,8 @@ class PassOutSessionTest {
         assertEquals(4, link.gameOverStage());
         assertEquals(0, link.gameOverCountdown());
         for (int i = 0; i < 20; i++) game.headlessFrame();
+        assertEquals(0, player.activePowerUp());
+        assertEquals(0, player.powerUpHits());
         assertEquals(100, player.deathCount());
         assertEquals(4, link.gameOverStage());
         byte[] actual = game.headlessFrame();
@@ -90,7 +97,8 @@ class PassOutSessionTest {
             new int[5],
             linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 8, 0x698F, initialTiles),
             linksawakening.rom.RomBank.decodeBackgroundMap(romBytes, 0x24, 0x61E5, initialAttrs),
-            room.palettes(), room.entities().spriteSelection().objectPalettes(), java.util.List.of());
+            room.palettes(), room.entities().spriteSelection().objectPalettes(), java.util.List.of(
+                new linksawakening.ui.GameOverMenu(rom).cursor()));
         byte[] expectedFrame = new byte[actual.length];
         new linksawakening.render.GameFrameSceneBuilder().build(
             linksawakening.render.GameFrameState.empty()

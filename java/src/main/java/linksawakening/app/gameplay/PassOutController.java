@@ -8,10 +8,14 @@ public final class PassOutController {
     private linksawakening.entity.Link owner;
     private LinkPassOutAnimation animation;
     private GameOverPresentation gameOver;
+    private boolean handledFrame;
+    public boolean handledFrame() { return handledFrame; }
+    public void clear() { owner = null; animation = null; gameOver = null; }
     public linksawakening.ui.FileMenuFrameSnapshot snapshot() { return gameOver == null ? null : gameOver.snapshot(); }
 
     boolean tick(GameplaySimulation context, boolean dialog) {
         var link = context.link();
+        handledFrame = link != null && link.isPassingOut();
         if (link == null || context.playerState() == null) return false;
         if (owner != link) { owner = link; animation = null; gameOver = null; }
         if (gameOver != null) {
@@ -25,6 +29,7 @@ public final class PassOutController {
         if (LinkPassOutAnimation.shouldStart(context.playerState().health(), itemBlocked ? 1 : 0,
                 context.inventoryController().shouldBlockOverworldInput() ? 1 : 0,
                 dialog, transition, link.isPassingOut())) {
+            handledFrame = true;
             animation = new LinkPassOutAnimation(new Rom(context.romData()));
             link.beginPassOut();
             context.musicDirector().playDirectMusic(0);

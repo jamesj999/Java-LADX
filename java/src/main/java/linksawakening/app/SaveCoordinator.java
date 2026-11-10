@@ -55,6 +55,8 @@ public record SaveCoordinator(
         link.setDirection(Link.DIRECTION_DOWN);
         gpu.loadBaseTiles(romData);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
+        roomSession.setRespawnPoint(new Warp(Warp.CATEGORY_INDOOR, profile.mapId(), profile.roomId(),
+            profile.entryX(), profile.entryY(), -1), 0);
         link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
         initializeOpening.run();
         playHouseMusic.run();
@@ -87,7 +89,47 @@ public record SaveCoordinator(
             link.setDirection(Link.DIRECTION_DOWN);
         }
         link.setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
+        roomSession.setRespawnPoint(new Warp(saved.spawnIsIndoor() != 0 ? 1 : 0,
+            saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnPositionX(), saved.spawnPositionY(), -1),
+            saved.spawnIndoorRoom());
         restoreOpening.accept(saved);
+    }
+
+    /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
+    public void finishGameOver(int option) {
+        if (playerState.health() == 0) {
+            playerState.setHealth(new linksawakening.rom.Rom(romData).u8(
+                new linksawakening.rom.RomAddress(1, 0x5295).plus(playerState.maxHearts())));
+        }
+        if (option != 2) saveCurrentPlayerState();
+        clearOpening.run();
+        link.finishGameOver();
+        playerState.clearResourceBuffersForDebug();
+        playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+        roomSession.clearGameOverPowerCounter();
+        roomSession.resetGameOverSwitchBlocks();
+        if (option == 1) {
+            startFileSelection.run();
+            return;
+        }
+        if (option == 0 && currentSaveSlot >= 0) {
+            startSavedGame(saveRamStore.readSlot(currentSaveSlot));
+        } else {
+            Warp spawn = roomSession.respawnPoint();
+            if (spawn == null) throw new IllegalStateException("No game-over spawn point");
+            gpu.loadBaseTiles(romData);
+            if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
+                roomSession.loadInitialOverworld(spawn.destRoom());
+                link.setDirection(Link.DIRECTION_DOWN);
+            } else {
+                roomSession.loadIndoorFromSavedPosition(spawn.destMap(), spawn.destRoom(), roomSession.respawnIndoorRoom());
+                link.setDirection(Link.DIRECTION_UP);
+            }
+            link.setRoomEntryRomPosition(spawn.destX(), spawn.destY());
+            enterGameplay.run();
+        }
+        playerState.setInvincibilityCounter(0x80);
+        inputState.tickEdges();
     }
 
     public void persistFileMenuMutation(Runnable mutation) {
@@ -141,6 +183,12 @@ public record SaveCoordinator(
             return;
         }
 
+        Warp spawn = roomSession.respawnPoint();
+        if (spawn != null) {
+            saveRamStore.writeSpawnLocation(currentSaveSlot, spawn.category() == 0 ? 0 : 1,
+                spawn.destMap(), spawn.destRoom(), spawn.destX(), spawn.destY(), roomSession.respawnIndoorRoom());
+            return;
+        }
         ActiveRoom room = roomSession.activeRoom();
         boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
         int indoorRoom = roomSession.indoorRoomPositionForSave();

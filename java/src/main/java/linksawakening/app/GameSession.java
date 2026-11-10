@@ -411,8 +411,17 @@ public class GameSession {
     }
     private final linksawakening.app.gameplay.PassOutController passOutController = new linksawakening.app.gameplay.PassOutController();
 
+    private void finishGameOver(int option) {
+        var sword = equipmentController.activeSword();
+        if (sword != null) sword.resetAfterGameOver();
+        passOutController.clear();
+        saves().finishGameOver(option);
+        transientVfxSystem.clear();
+        droppableRupeeSystem.clear();
+    }
+
     private GameplaySimulation simulation() {
-        return new GameplaySimulation(passOutController, gpu, romData, roomSession, transitionController, roomTransitionCoordinator, debugNoClip, frameCounter, ROOM_PIXEL_HEIGHT, scrollController, inputConfig, inputState, playerState, inventoryMenu, inventoryController, dialogController, dialogTextLoader, gameplaySoundSink, musicPlayer, gameplayMusicController, musicDirector, transientVfxSystem, droppableRupeeSystem, itemRegistry, equipmentController, link,
+        return new GameplaySimulation(passOutController, this::finishGameOver, gpu, romData, roomSession, transitionController, roomTransitionCoordinator, debugNoClip, frameCounter, ROOM_PIXEL_HEIGHT, scrollController, inputConfig, inputState, playerState, inventoryMenu, inventoryController, dialogController, dialogTextLoader, gameplaySoundSink, musicPlayer, gameplayMusicController, musicDirector, transientVfxSystem, droppableRupeeSystem, itemRegistry, equipmentController, link,
             openingStory(), lifting(), bushes(), dialogs(), this::currentOverworldDialogBlockers, () -> inputRouter().tryDebugScreenScroll(), this::romDirectionForLink, this::routeDialogSounds);
     }
     public HeadlessGameDriver.Diagnostics diagnostics() {

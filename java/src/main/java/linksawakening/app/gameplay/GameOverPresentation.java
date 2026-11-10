@@ -7,6 +7,8 @@ import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** $01:420F-42D8. Cursor and interactive choices are deliberately a separate stage. */
 final class GameOverPresentation {
+    private final linksawakening.ui.GameOverMenu menu;
+    private boolean cursorVisible;
     private int stage = 1;
     private int countdown = 16;
     private FileMenuFrameSnapshot snapshot;
@@ -16,6 +18,7 @@ final class GameOverPresentation {
     private final int[][] objects;
 
     GameOverPresentation(GameplaySimulation context) {
+        menu = new linksawakening.ui.GameOverMenu(new linksawakening.rom.Rom(context.romData()));
         var room = context.roomSession().renderSnapshot();
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
@@ -25,6 +28,7 @@ final class GameOverPresentation {
         }
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
         context.playerState().incrementDeathCount();
+        context.roomSession().clearGameOverPowerCounter();
         context.playerState().setActivePowerUp(linksawakening.state.PlayerState.ACTIVE_POWER_UP_NONE);
         context.link().presentGameOverStage(stage, countdown);
         refresh(true);
@@ -49,6 +53,14 @@ final class GameOverPresentation {
                     context.musicDirector().playDirectMusic(0x03);
                 }
             }
+            case 4 -> {
+                cursorVisible = true;
+                int option = menu.tick(context.inputState(), context.inputConfig(), context.gameplaySoundSink());
+                if (option >= 0) {
+                    context.gameOverOutcome().accept(option);
+                    return;
+                }
+            }
             default -> { }
         }
         context.link().presentGameOverStage(stage, countdown);
@@ -64,7 +76,7 @@ final class GameOverPresentation {
             palettes = new int[8][4];
             for (int[] palette : palettes) Arrays.fill(palette, 0xF8F8F8);
         }
-        snapshot = new FileMenuFrameSnapshot("game_over", 0, false, false, 0, 0,
-            new int[5], tiles, attributes, palettes, objects, List.of());
+        snapshot = new FileMenuFrameSnapshot("game_over", menu.selected(), false, false, 0, 0,
+            new int[5], tiles, attributes, palettes, objects, cursorVisible ? List.of(menu.cursor()) : List.of());
     }
 }

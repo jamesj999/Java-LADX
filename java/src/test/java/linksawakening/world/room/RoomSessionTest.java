@@ -87,6 +87,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomSessionTest {
 
     @Test
+    void gameOverClearsOnlyPieceOfPowerDropCounter() {
+        RoomSession session = newSession();
+        session.loadInitialOverworld(0x92);
+        session.setEnemyDropCountersForTest(7, 9);
+        session.clearGameOverPowerCounter();
+        assertEquals(new EnemyDropResolver.CounterState(7, 0), session.enemyDropCountersForTest());
+    }
+
+    @Test
     void keyCavernOwlStatueUsesCurrentDungeonsStoneBeakAndKeepsWorldPosition() {
         for (boolean hasBeak : new boolean[]{false, true}) {
             RoomSession session = newSession();

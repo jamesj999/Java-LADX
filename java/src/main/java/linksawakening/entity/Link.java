@@ -218,6 +218,12 @@ public final class Link implements RocsFeather.JumpTarget {
     public int passOutBgPaletteEffectAddress() { return isPassingOut() && !gameOverScreenPending() ? 0x10 : 0; }
     public int passOutPaletteEffect() { return passOutPaletteEffect; }
     public int passOutPaletteFrames() { return isPassingOut() ? 192 - passOutCountdown : 0; }
+    public void finishGameOver() {
+        linkStateMachine.resetTransientStateForDebug();
+        passOutCountdown = -1;
+        passOutPaletteEffect = 0;
+        gameOverCountdown = 0;
+    }
     public void beginPassOut() {
         linkStateMachine.motionState = LINK_MOTION_PASS_OUT;
         linkStateMachine.physicsModifier = 0;

@@ -37,6 +37,7 @@ import java.util.function.BooleanSupplier;
 /** ROM-ordered simulation between transition advancement and input completion. */
 public record GameplaySimulation(
         PassOutController passOutController,
+        java.util.function.IntConsumer gameOverOutcome,
         GPU gpu,
         byte[] romData,
         RoomSession roomSession,
@@ -75,7 +76,7 @@ public record GameplaySimulation(
         if (!new DialogStoryPhase().tick(this)) return;
         boolean dialogBlocksGameplay = dialogBlockers.get().pausesGameplay();
         new LinkEquipmentPhase().tick(this, dialogBlocksGameplay);
-        if (link != null && link.isPassingOut()) return;
+        if (link != null && (link.isPassingOut() || passOutController.handledFrame())) return;
         Sword.CollisionBox swordBox = new CombatPhase().tick(this, dialogBlocksGameplay);
         new EntityPhase().tick(this, swordBox);
         completeGameplayFrame(dialogController);
