@@ -50,12 +50,13 @@ final class EntityPhase {
                 && shouldTickRoomEntities(
                     scrollController.isActive(),
                     transitionController.isInputBlocked(),
-                    inventoryController.shouldBlockOverworldInput(),
+                    inventoryController.shouldBlockOverworldInput()
+                        && !inventoryMenu.transition().worldHandlerActive(),
                     inventoryMenu != null && inventoryMenu.isTransitioning())) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
                 roomSession.setEntityTalkState(
-                    inventoryMenu != null && inventoryMenu.isTransitioning(),
+                    inventoryMenu != null && inventoryMenu.inventoryAppearing(),
                     dialogController == null ? 0 : dialogController.dialogCooldown(),
                     inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
                 roomSession.setEntityDialogAskSelectionIndex(

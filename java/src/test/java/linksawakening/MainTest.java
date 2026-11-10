@@ -135,9 +135,9 @@ final class MainTest {
     }
 
     @Test
-    void entityAnimationContinuesDuringInventoryMovementButNotWhileFullyOpen() {
+    void dxInventoryBlocksEntityAnimationDuringTransitionsAndWhileOpen() {
         assertTrue(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, false, false));
-        assertTrue(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, true));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, true));
         assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, false));
         assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(true, false, false, false));
         assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, true, false, false));

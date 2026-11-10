@@ -136,7 +136,7 @@ final class InventoryMenuSoundTest {
 
     private static void openMenu(InventoryMenu menu) {
         menu.requestToggle();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 60; i++) {
             menu.tick();
         }
     }

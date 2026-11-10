@@ -73,9 +73,20 @@ public record GameplaySimulation(
         Runnable dialogSounds) {
     /** The simulation's strict per-frame order, including opening-story gates. */
     public void tick() {
+        // GAMEPLAY_INVENTORY has its own handler ($00:0EA1/$20:5904):
+        // world resources, effects, Link and entities do not advance behind it.
+        boolean inventoryBlockedAtStart = inventoryController != null
+            && inventoryController.shouldBlockOverworldInput();
+        if (inventoryBlockedAtStart) {
+            boolean worldHandler = inventoryMenu.transition().worldHandlerActive();
+            boolean interactive = inventoryMenu.isFullyOpen();
+            inventoryController.tick();
+            if (interactive && inventoryMenu.isFullyOpen()) inventoryController.dispatchMenuInput();
+            if (!worldHandler) return;
+        }
         if (!new DialogStoryPhase().tick(this)) return;
         boolean dialogBlocksGameplay = dialogBlockers.get().pausesGameplay();
-        new LinkEquipmentPhase().tick(this, dialogBlocksGameplay);
+        new LinkEquipmentPhase().tick(this, dialogBlocksGameplay, inventoryBlockedAtStart);
         if (link != null && (link.isPassingOut() || passOutController.handledFrame())) return;
         Sword.CollisionBox swordBox = new CombatPhase().tick(this, dialogBlocksGameplay);
         new EntityPhase().tick(this, swordBox);
@@ -89,7 +100,7 @@ public record GameplaySimulation(
                                           boolean inventoryTransitioning) {
         return !scrollActive
             && !transitionInputBlocked
-            && (!inventoryBlocksInput || inventoryTransitioning);
+            && !inventoryBlocksInput;
     }
 
     public static void completeGameplayFrame(DialogController dialog) {
