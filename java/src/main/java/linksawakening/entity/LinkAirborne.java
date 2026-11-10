@@ -85,6 +85,26 @@ final class LinkAirborne {
             groundStatus = Link.GROUND_STATUS_NORMAL;
             fallingIntoPit = false;
         }
+        playLandingSound();
+    }
+
+    private void playLandingSound() {
+        // ApplyLinkGroundMotion $02:4582-$45AA: room-bottom landings skip
+        // ground effects; wells, deep water, lava and pits do not request
+        // the footstep noise. Deep-water entry owns its splash request.
+        if (link.romEntityY() >= 0x88) return;
+        int x = link.pixelX() + 8;
+        int y = link.pixelY() + 12;
+        if (link.collision != null) {
+            if (link.collision.objectIdAtPoint(x, y) == 0x61) return;
+            int physics = link.collision.objectPhysicsFlagAtPoint(x, y);
+            if (physics == 5) {
+                link.soundSink.play(GameplaySoundEvent.WATER_SPLASH);
+                return;
+            }
+            if (physics == 7 || physics == 0x0B || physics == 0x50 || physics == 0x51) return;
+        }
+        link.soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
     }
 
     void tickOverworldLedgeFall() {
