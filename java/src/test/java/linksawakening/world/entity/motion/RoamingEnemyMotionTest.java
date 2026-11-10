@@ -19,6 +19,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 final class RoamingEnemyMotionTest {
 
     @Test
+    void pausedEnemyDoesNotProbeWallsOrStopAgainAfterChoosingDirection() {
+        var motion = new RoamingEnemyMotion();
+        var source = entity(0, 0x0B, 0x40, 0x40);
+        motion.setStateForTest(0, 1, 3, 0, 1, 0);
+        for (int frame = 0; frame < 2; frame++) {
+            motion.advance(source, 0x50, 0x40, () -> 0,
+                (e, d, x, y) -> { throw new AssertionError("zero-speed wall probe"); });
+            assertEquals(0, motion.collisionFlags(0));
+        }
+        motion.advance(source, 0x50, 0x40, () -> 0, null);
+        assertEquals(0, motion.state(0));
+        motion.advance(source, 0x50, 0x40, () -> 0, null);
+        assertEquals(0, motion.state(0));
+    }
+
+    @Test
     void octorokLaunchesAtThePostDecrementCountdownTenWithoutConsumingRandomness() {
         RoamingEnemyMotion motion = new RoamingEnemyMotion();
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);

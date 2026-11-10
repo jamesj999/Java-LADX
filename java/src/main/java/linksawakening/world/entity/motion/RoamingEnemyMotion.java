@@ -129,10 +129,11 @@ public final class RoamingEnemyMotion {
                     : randomByteSupplier.getAsInt() & 0x03;
                 speedX[slot] = speedXFor(entity.type(), direction[slot]);
                 speedY[slot] = speedYFor(entity.type(), direction[slot]);
-            } else if (backgroundInteraction != null) {
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                    entity, direction[slot], entity.x(), entity.y(), ignoreHitsCountdown, frameCounter);
-                collisionsTable[slot] = result.blocked() ? result.collisionFlag() : 0;
+            } else {
+                // $03:7A30-7A64 clears collisions, then skips both wall
+                // probes when paused (both speeds are zero).
+                collisionsTable[slot] = 0;
+                horizontallyCollidedObject[slot] = 0;
             }
             return new Update(entity, launchRequest);
         }
