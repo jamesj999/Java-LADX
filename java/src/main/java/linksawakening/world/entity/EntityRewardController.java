@@ -147,6 +147,7 @@ public final class EntityRewardController {
             (source.x() + xOffsets[offsetIndex]) & 0xFF,
             (source.y() - 0x08) & 0xFF,
             EntityStatus.ACTIVE, definition, variant & 0x01, 0, 0, 0, -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.instrumentParticleKind[freeSlot] = 1;
         runtime.instrumentParticleSpeedX[freeSlot] = speedX[offsetIndex];
         runtime.instrumentParticleSpeedY[freeSlot] = 0xFD;

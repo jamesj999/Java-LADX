@@ -60,7 +60,7 @@ public final class EntityBossRewards {
                 runtime.ENTITY_SWORD_SHIELD_PICKUP, runtime.enemyDropCounters, 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
-                entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()), runtime.droppedItemBySlot[entity.slot()],
+                entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()), runtime.droppedItemBySlot[entity.slot()],
                 runtime.enemyDropMaxHearts, runtime.enemyDropHealth, runtime.enemyDropBossBattle,
                 runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling, runtime.enemyDropCounters,
                 randomByteSupplier);
@@ -94,7 +94,7 @@ public final class EntityBossRewards {
             // ROM health-group tables select the miniboss healing fairy.
             if (runtime.enemyDropResolver != null) {
                 EnemyDropResolver.Result drop = runtime.enemyDropResolver.resolve(
-                    new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.type()),
+                    new EnemyDropResolver.Context(entity.type(), runtime.roomInspection.enemyDropHealthGroup(entity.slot()),
                         runtime.droppedItemBySlot[slot], runtime.enemyDropMaxHearts, runtime.enemyDropHealth,
                         runtime.enemyDropBossBattle, runtime.enemyDropActivePowerUp, runtime.groundInteractionSideScrolling,
                         runtime.enemyDropCounters, randomByteSupplier));
@@ -238,6 +238,7 @@ public final class EntityBossRewards {
         int variant = definition.supported() ? definition.initialVariant() : -1;
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_HEART_CONTAINER,
             x, y, EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling, 0x10);
         runtime.enemyDropActive[freeSlot] = true;

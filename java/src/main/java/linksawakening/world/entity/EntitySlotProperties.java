@@ -75,7 +75,7 @@ public final class EntitySlotProperties {
 
     int initialHealth(int type) { return runtime.roomInspection.initialHealth(type); }
 
-    int contactDamage(int type) { return runtime.roomInspection.contactDamage(type); }
+    int contactDamage(int slot) { return runtime.roomInspection.contactDamage(slot); }
 
     public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();

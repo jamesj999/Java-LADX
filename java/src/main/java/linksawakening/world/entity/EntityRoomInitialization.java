@@ -126,6 +126,7 @@ if (romData != null) {
             }
             runtime.baseEntityFlipAttribute[entity.slot()] = entity.entityFlipAttribute();
             runtime.fallingVisualYOffset[entity.slot()] = initial.visualYOffset(entity.slot());
+            if (entity.loaded()) runtime.initializeHealthGroup(entity.slot());
             runtime.enemyHealth[entity.slot()] = entity.loaded() ? runtime.initialHealth(entity.type()) : 0;
             runtime.enemyPhysicsFlags[entity.slot()] = entity.loaded()
                 ? initialPhysicsFlags(entity.type()) : 0;

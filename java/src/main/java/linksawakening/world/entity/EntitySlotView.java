@@ -20,6 +20,22 @@ public final class EntitySlotView {
   public void orPhysicsFlags(int slot, int mask) { state.enemyPhysicsFlags[slot] |= mask; }
   public int flashCountdown(int slot) { return state.enemyFlashCountdown[slot]; }
   public void setFlashCountdown(int slot, int value) { state.enemyFlashCountdown[slot] = value; }
+  public int healthGroup(int slot) { return state.enemyHealthGroup[slot]; }
+  /**
+   * Writes wEntitiesHealthGroup ($C4D0) for a handler's slot.
+   * Outstanding handlers must wire these ROM writes when implemented:
+   * Facade spawned entities: $04:52C6 = $02, $04:5327 = $1B;
+   * flying tiles spawner: $07:7529 = $00;
+   * Angler Fish spawned entity: $05:566F = $00;
+   * Evil Eagle spawned entity: $05:5F2D = $02;
+   * Master Stalfos transition: $36:6076 = $00;
+   * Master Stalfos func_036_4F68 conditional __PATCH_0__ block = $09
+   * (no address in the unpatched ROM).
+   */
+  public void setHealthGroup(int slot, int value) {
+    EntitySlotValidation.validateByte(value, "Health group");
+    state.enemyHealthGroup[slot] = value;
+  }
   public int health(int slot) { return state.enemyHealth[slot]; }
   public void setHealth(int slot, int value) { state.enemyHealth[slot] = value; }
   public int hitboxFlags(int slot) { return state.enemyHitboxFlags[slot]; }

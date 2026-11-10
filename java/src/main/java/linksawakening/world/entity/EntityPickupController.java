@@ -292,6 +292,7 @@ public final class EntityPickupController {
         RoomEntity zol = new RoomEntity(freeSlot, -1, runtime.ENTITY_ZOL, chest.x(), chest.y(),
             EntityStatus.ACTIVE, definition, variant, 0, 0, 0x06, -1, false);
         runtime.slots[freeSlot] = zol;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.zolGelMotion.prepareChestSpawn(freeSlot);
         runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_ZOL);
         runtime.enemyHitboxFlags[freeSlot] = 0;
@@ -317,6 +318,7 @@ public final class EntityPickupController {
         RoomEntity drop = new RoomEntity(freeSlot, -1, itemType, source.x(), source.y(),
             EntityStatus.ACTIVE, definition, variant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = drop;
+        runtime.initializeHealthGroup(freeSlot);
         resetEnemyDropState(freeSlot);
         runtime.slowTransitionCountdown[freeSlot] = 0x80;
         runtime.slowTimerInitialized[freeSlot] = true;
@@ -363,6 +365,7 @@ public final class EntityPickupController {
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
             0, 0, z, -1, false);
         runtime.slots[freeSlot] = drop;
+        runtime.initializeHealthGroup(freeSlot);
         resetEnemyDropState(freeSlot);
         runtime.enemyDropMotion.initialize(freeSlot, runtime.groundInteractionSideScrolling, speedZ);
         runtime.enemyDropActive[freeSlot] = true;

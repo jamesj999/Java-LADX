@@ -342,7 +342,7 @@ final class EntityCombatResolver {
             } else if (swordHit) {
                 RomEnemyCombatTables.SwordDamageResult swordResult =
                     runtime.enemyCombatTables == null ? null
-                        : runtime.enemyCombatTables.resolveSwordDamage(entity.type(), attackContext);
+                        : runtime.enemyCombatTables.resolveSwordDamage(entity.type(), runtime.enemyHealthGroup[entity.slot()], attackContext);
                 int swordDamage = swordResult == null
                     ? RoomEntityCombatRules.basicSwordDamage(entity.type())
                     : swordResult.numericDamage();
@@ -445,7 +445,7 @@ final class EntityCombatResolver {
             // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
             // immediately after starting the cling, before damage/recoil.
             int linkDamage = linkCollision && entity.type() != runtime.ENTITY_GEL
-                ? runtime.contactDamage(entity.type()) : 0;
+                ? runtime.contactDamage(entity.slot()) : 0;
             if ((runtime.enemyPhysicsFlags[entity.slot()] & runtime.ENTITY_PHYSICS_HARMLESS) != 0) {
                 // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
                 // result for harmless entities but suppresses Link damage.

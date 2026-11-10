@@ -615,7 +615,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     int initialHealth(int type) { return this.slotProperties.initialHealth(type); }
 
-    int contactDamage(int type) { return this.slotProperties.contactDamage(type); }
+    void initializeHealthGroup(int slot) {
+        // ConfigureEntityHealth, $03:489B-489F, before setting initial HP.
+        enemyHealthGroup[slot] = enemyCombatTables == null ? 0
+            : enemyCombatTables.healthGroup(slots[slot].type());
+    }
+
+    int contactDamage(int slot) { return this.slotProperties.contactDamage(slot); }
 
     /** Unloads a slot and returns the persistent first-eight load-order bit. */
     public int clearEntity(int slot) { return this.lifecycle.clearEntity(slot); }

@@ -480,6 +480,7 @@ public final class GenieEntityController {
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, -1, runtime.ENTITY_GENIE,
             x & 0xFF, y & 0xFF, EntityStatus.ACTIVE, definition, variant,
             0, 0, 0, -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.genieActiveState[freeSlot] = 0;
         runtime.geniePrivateState1[freeSlot] = privateState1 & 0xFF;
         runtime.geniePrivateState2[freeSlot] = 0;

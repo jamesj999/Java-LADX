@@ -355,6 +355,7 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     final int[] enemyPhysicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
 
+    final int[] enemyHealthGroup = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];

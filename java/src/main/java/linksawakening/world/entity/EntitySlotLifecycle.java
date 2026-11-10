@@ -224,6 +224,7 @@ public final class EntitySlotLifecycle {
         runtime.powerRecoilDeath[slot] = false;
         runtime.enemyPhysicsFlags[slot] = 0;
         runtime.enemyHealth[slot] = 0;
+        runtime.enemyHealthGroup[slot] = 0;
         runtime.enemyFlashCountdown[slot] = 0;
         runtime.enemyIgnoreHitsCountdown[slot] = 0;
         runtime.chestSpeedY[slot] = 0;
@@ -343,6 +344,8 @@ public final class EntitySlotLifecycle {
             split.originalZ(), -1, false);
         runtime.enemyTransitionCountdown[slot] = 0;
         runtime.enemyStunnedCountdown[slot] = 0;
+        runtime.enemyHealthGroup[slot] = runtime.enemyCombatTables == null ? 0
+            : runtime.enemyCombatTables.healthGroup(runtime.ENTITY_GEL);
         runtime.enemyHealth[slot] = runtime.initialHealth(runtime.ENTITY_GEL);
         runtime.enemyFlashCountdown[slot] = 0;
         runtime.enemyIgnoreHitsCountdown[slot] = 0;
@@ -358,6 +361,7 @@ public final class EntitySlotLifecycle {
                 gelDefinition, gelVariant, original.entityFlipAttribute(), original.spriteTileOffset(),
                 split.originalZ(), -1, false);
             runtime.slots[freeSlot] = spawnedGel;
+            runtime.initializeHealthGroup(freeSlot);
             runtime.enemyTransitionCountdown[freeSlot] = 0;
             runtime.enemyStunnedCountdown[freeSlot] = 0;
             runtime.dyingCountdown[freeSlot] = 0;
@@ -416,6 +420,7 @@ public final class EntitySlotLifecycle {
             EntitySpriteDefinition definition = runtime.slotProperties.spriteDefinitionFor(runtime.ENTITY_STALFOS_EVASIVE);
             RoomEntity stalfos = withType(entity, runtime.ENTITY_STALFOS_EVASIVE, definition);
             runtime.slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
+            runtime.initializeHealthGroup(slot); // $03:4C89 reconfigures attributes/health.
             runtime.enemyHealth[slot] = runtime.initialHealth(runtime.ENTITY_STALFOS_EVASIVE);
             runtime.enemyFlashCountdown[slot] = 0;
             runtime.enemyIgnoreHitsCountdown[slot] = 0;
@@ -482,6 +487,7 @@ public final class EntitySlotLifecycle {
         runtime.powerRecoilDeath[slot] = false;
         runtime.enemyPhysicsFlags[slot] = 0;
         runtime.enemyHealth[slot] = 0;
+        runtime.enemyHealthGroup[slot] = 0;
         runtime.enemyFlashCountdown[slot] = 0;
         runtime.enemyIgnoreHitsCountdown[slot] = 0;
         runtime.chestSpeedY[slot] = 0;

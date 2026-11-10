@@ -62,6 +62,7 @@ public final class EntityStoryController {
                     var definition = runtime.spriteHandlers.forKidBall();
                     runtime.slots[ball] = new RoomEntity(ball, -1, 0x71, entity.x(), entity.y(),
                         EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+                    runtime.initializeHealthGroup(ball);
                     runtime.enemyPhysicsFlags[ball] = ENTITY_PHYSICS_HARMLESS;
                     runtime.enemyHitboxFlags[ball] = 0;
                     runtime.entityOptions1Override[ball] = runtime.ENTITY_OPT1_NO_GROUND_INTERACTION;

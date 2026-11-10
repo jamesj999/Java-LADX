@@ -48,10 +48,10 @@ public final class EntityRoomInspection {
             : runtime.enemyCombatTables.initialHealth(type);
     }
 
-    int contactDamage(int type) {
+    int contactDamage(int slot) {
         return runtime.enemyCombatTables == null
-            ? RoomEntityCombatRules.contactDamage(type)
-            : runtime.enemyCombatTables.contactDamage(type);
+            ? RoomEntityCombatRules.contactDamage(runtime.slots[slot].type())
+            : runtime.enemyCombatTables.contactDamageForGroup(runtime.enemyHealthGroup[slot]);
     }
 
     int activePlayerArrowCount() {
@@ -609,12 +609,12 @@ public final class EntityRoomInspection {
         return withDefinition(entity, runtime.spriteHandlers.forOwlEvent(flying), 0);
     }
 
-    int enemyDropHealthGroup(int entityType) {
+    int enemyDropHealthGroup(int slot) {
         if (runtime.enemyCombatTables == null) {
             throw new IllegalStateException(
                 "ROM enemy combat tables are required for enemy drop resolution");
         }
-        return runtime.enemyCombatTables.healthGroup(entityType);
+        return runtime.enemyHealthGroup[slot];
     }
 
     EntitySpriteDefinition spriteDefinitionFor(int entityType) {

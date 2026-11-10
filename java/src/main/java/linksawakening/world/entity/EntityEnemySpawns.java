@@ -56,6 +56,7 @@ public final class EntityEnemySpawns {
         RoomEntity bomb = new RoomEntity(freeSlot, -1, runtime.ENTITY_BOMB,
             entityX, entityY, EntityStatus.ACTIVE, definition, variant, 0, 0, entityZ, -1, false);
         runtime.slots[freeSlot] = bomb;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.bombDirection[freeSlot] = 0xFF;
         runtime.playerArrowBombArrow[freeSlot] = false;
         runtime.bombFinalPresentationPending[freeSlot] = false;
@@ -99,6 +100,7 @@ public final class EntityEnemySpawns {
         runtime.slots[freeSlot] = new RoomEntity(freeSlot, 0xFF, runtime.ENTITY_MOBLIN_SWORD,
             wall.x(), (wall.y() + 0x08) & 0xFF, EntityStatus.INIT,
             definition, variant, 0, 0, wall.z(), -1, false);
+        runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
         runtime.droppedItemBySlot[freeSlot] = runtime.ENTITY_HIDING_SLIME_KEY;
         runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(runtime.ENTITY_MOBLIN_SWORD);
@@ -123,6 +125,7 @@ public final class EntityEnemySpawns {
             source.x(), source.y(), EntityStatus.ACTIVE, projectileDefinition,
             projectileVariant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -150,6 +153,7 @@ public final class EntityEnemySpawns {
             runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE, spawn.x(), spawn.y(), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -180,6 +184,7 @@ public final class EntityEnemySpawns {
             runtime.ENTITY_GOPONGA_FLOWER_PROJECTILE, spawn.x(), spawn.y(), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, 0, -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -208,6 +213,7 @@ public final class EntityEnemySpawns {
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
             0, 0, 0, -1, false);
         runtime.slots[freeSlot] = child;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = -1;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -239,6 +245,7 @@ public final class EntityEnemySpawns {
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, definition, variant,
             0, 0, spawn.z(), -1, false);
         runtime.slots[freeSlot] = segment;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = -1;
         runtime.enemyTransitionCountdown[freeSlot] = spawn.transitionCountdown();
@@ -273,6 +280,7 @@ public final class EntityEnemySpawns {
             spawn.x(), spawn.y(), EntityStatus.ACTIVE, projectileDefinition,
             projectileVariant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = runtime.WIZROBE_PROJECTILE_OPTIONS1;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -302,6 +310,7 @@ public final class EntityEnemySpawns {
             request.x(), request.y(), EntityStatus.ACTIVE, cloneDefinition, cloneVariant,
             0, 0, request.z(), -1, false);
         runtime.slots[freeSlot] = clone;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = runtime.EVASIVE_CLONE_OPTIONS;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
@@ -353,6 +362,7 @@ public final class EntityEnemySpawns {
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -386,6 +396,7 @@ public final class EntityEnemySpawns {
             byteValue(source.y() + signedByte(spawn.offsetY())), EntityStatus.ACTIVE,
             projectileDefinition, projectileVariant, 0, 0, source.z(), -1, false);
         runtime.slots[freeSlot] = projectile;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -411,6 +422,7 @@ public final class EntityEnemySpawns {
             request.x(), request.y(), EntityStatus.ACTIVE, definition, variant,
             0, 0, request.z(), -1, false);
         runtime.slots[freeSlot] = angry;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.entityOptions1Override[freeSlot] = CuccoMotion.ANGRY_OPTIONS1;
@@ -436,6 +448,7 @@ public final class EntityEnemySpawns {
             EntitySpriteDefinition.unsupported(runtime.ENTITY_LASER), -1,
             0, 0, parent.z(), -1, false);
         runtime.slots[freeSlot] = sensor;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
@@ -459,6 +472,7 @@ public final class EntityEnemySpawns {
             EntitySpriteDefinition.unsupported(runtime.ENTITY_LASER_BEAM), -1,
             0, 0, parent.z(), -1, false);
         runtime.slots[freeSlot] = beam;
+        runtime.initializeHealthGroup(freeSlot);
         runtime.baseEntityFlipAttribute[freeSlot] = 0;
         runtime.enemyTransitionCountdown[freeSlot] = 0;
         runtime.enemyStunnedCountdown[freeSlot] = 0;
