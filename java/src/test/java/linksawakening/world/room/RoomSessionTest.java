@@ -4271,6 +4271,31 @@ final class RoomSessionTest {
     }
 
     @Test
+    void pushedBlockPlaysRumbleOnlyWhenMovementStarts() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x00, 0x04);
+        var sounds = new java.util.ArrayList<GameplaySoundEvent>();
+        session.setColorShellSoundSink(sounds::add);
+        for (int tick = 0; tick < 63; tick++) {
+            session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        }
+        assertTrue(sounds.isEmpty());
+        session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        assertEquals(java.util.List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
+        session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        assertEquals(1, sounds.size());
+
+        RoomSession blocked = newSession();
+        blocked.loadIndoor(0x00, 0x04);
+        blocked.setColorShellSoundSink(sounds::add);
+        blocked.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
+        for (int tick = 0; tick < 64; tick++) {
+            blocked.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        }
+        assertEquals(1, sounds.size());
+    }
+
+    @Test
     void staticSwordCollisionBreaksOnlyIndoorSwordCrystal() {
         RoomSession session = newSession();
         session.loadIndoor(0x0A, 0xB0);

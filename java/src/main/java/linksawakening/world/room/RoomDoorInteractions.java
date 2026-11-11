@@ -180,6 +180,8 @@ final class RoomDoorInteractions {
         if (spawnedSlot < 0) {
             return true;
         }
+        // EntityInitPushedBlock $03:5198-519A, after collision/allocation succeed.
+        session.context.colorShellSoundSink.play(GameplaySoundEvent.BLOCK_PUSH);
         session.context.activeRoom.roomObjectsArea()[sourceIndex] = session.OBJECT_FLOOR_OD;
         session.context.pushedBlockSourceLocation = touchedLocation;
         session.context.pushedBlockDestinationLocation = destination;

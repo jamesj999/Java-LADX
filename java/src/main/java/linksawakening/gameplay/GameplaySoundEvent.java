@@ -56,6 +56,7 @@ public enum GameplaySoundEvent {
     REVOLVING_DOOR,
     OPEN_KEY_CAVERN,
     DUNGEON_OPENED,
+    BLOCK_PUSH,
     FLOOR_SWITCH,
     SWITCH_BLOCK_TOGGLE,
     OCARINA_BALLAD,
