@@ -16,6 +16,7 @@ final class LinkMotion {
     int forcedSpeedX;
     int forcedSpeedY;
     int romCollisionType;
+    boolean doorWarpPending;
     final int[] collisionProbePixelX = new int[4];
     final int[] collisionProbePixelY = new int[4];
 
@@ -106,7 +107,18 @@ final class LinkMotion {
                     instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 link.soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
-            if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
+            if (physicsFlag == PhysicsFlags.DOOR) {
+                // ApplyCollisionWithDoor ($02:71BB-723A): only the top six
+                // pixels initiate a warp. The rest is a narrow walkable lane.
+                if (link.isCarryingLiftedObject()) {
+                    blocked = true;
+                } else if ((pointY & 15) < 6) {
+                    blocked = link.linkDamage.collisionIgnoreFramesRemaining != 0;
+                    if (!blocked) doorWarpPending = true;
+                } else {
+                    blocked = (pointX & 15) < 6 || (pointX & 15) >= 11;
+                }
+            } else if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
                 if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
@@ -282,6 +294,7 @@ final class LinkMotion {
     }
 
     void markRoomEntryPosition() {
+        doorWarpPending = false;
         roomEntrySubX = subX;
         roomEntrySubY = subY;
         hasRoomEntryPosition = true;

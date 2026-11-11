@@ -14,7 +14,6 @@ public final class RoomTransitionCoordinator {
     private final TransitionController transitionController;
     private final ScrollController scrollController;
 
-    private int suppressedWarpTile = -1;
 
     public RoomTransitionCoordinator(RoomSession roomSession,
                                      RoomBoundaryController boundaryController,
@@ -99,7 +98,6 @@ public final class RoomTransitionCoordinator {
                 roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
                 scrollController.onCompletion(() -> link.finishRoomScroll(
                     boundary.direction() == ScrollController.DOWN));
-                suppressedWarpTile = Warp.packTileLocation(boundary.linkTargetX(), boundary.linkTargetY());
                 return;
             }
         }
@@ -116,13 +114,14 @@ public final class RoomTransitionCoordinator {
             return;
         }
 
-        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
-        if (linkTile != suppressedWarpTile) {
-            suppressedWarpTile = -1;
-        }
-        if (linkTile == suppressedWarpTile) {
+        // LinkMotionMapFadeOutHandler selects a record only after
+        // ApplyCollisionWithDoor has requested the fade ($02:71BB).
+        if (!link.consumeDoorWarp()) return;
+        if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            transitionController.startFadeOut(() -> applyWarp(room.firstWarp(), link));
             return;
         }
+        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
         for (Warp warp : room.warps()) {
             if (warp.tileLocation() == linkTile) {
                 final Warp target = warp;
@@ -197,6 +196,5 @@ public final class RoomTransitionCoordinator {
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
         link.setRoomEntryPixelPosition(landingX, landingY);
-        suppressedWarpTile = Warp.packTileLocation(landingX, landingY);
     }
 }

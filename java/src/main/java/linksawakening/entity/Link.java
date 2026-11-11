@@ -215,6 +215,12 @@ public final class Link implements RocsFeather.JumpTarget {
         return result;
     }
     public boolean pitWarpPending() { return pitWarpPending; }
+    /** ApplyCollisionWithDoor requested a fade during a movement probe. */
+    public boolean consumeDoorWarp() {
+        boolean pending = linkMotion.doorWarpPending;
+        linkMotion.doorWarpPending = false;
+        return pending;
+    }
     public void setPitWarpArrival(int z) {
         linkStateMachine.motionState = LINK_MOTION_DEFAULT;
         linkAirborne.zSubPixels = z << SUB_PIXEL_SHIFT;
