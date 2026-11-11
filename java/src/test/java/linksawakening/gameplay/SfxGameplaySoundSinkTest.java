@@ -23,6 +23,8 @@ final class SfxGameplaySoundSinkTest {
 
         assertMapped(map, GameplaySoundEvent.ROC_FEATHER_JUMP,
                 SoundEffectNamespace.JINGLE, 0x0D, "JINGLE_FEATHER_JUMP");
+        assertMapped(map, GameplaySoundEvent.STAIRS,
+                SoundEffectNamespace.NOISE, 0x06, "NOISE_SFX_STAIRS");
         assertMapped(map, GameplaySoundEvent.PIT_FALL,
                 SoundEffectNamespace.WAVE, 0x0C, "WAVE_SFX_LINK_FALL");
         assertMapped(map, GameplaySoundEvent.SWORD_SWING_A,
