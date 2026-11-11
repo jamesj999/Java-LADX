@@ -1318,7 +1318,7 @@ final class RoomSessionTest {
         assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
         assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x04) & 0x02);
         assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x03) & 0x01);
-        assertEquals(List.of(GameplaySoundEvent.DOOR_CLOSED, GameplaySoundEvent.PUZZLE_SOLVED,
+        assertEquals(List.of(GameplaySoundEvent.BLOCK_PUSH, GameplaySoundEvent.DOOR_CLOSED, GameplaySoundEvent.PUZZLE_SOLVED,
             GameplaySoundEvent.DOOR_UNLOCKED), sounds);
 
         session.loadIndoor(0x00, 0x04);
