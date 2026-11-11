@@ -41,6 +41,8 @@ public final class Link implements RocsFeather.JumpTarget {
 
     final LinkMotion linkMotion = new LinkMotion(this);
 
+    final DialogGotItemSequence dialogGotItemSequence = new DialogGotItemSequence();
+
     final LinkAirborne linkAirborne = new LinkAirborne(this);
 
     final LinkSwimming linkSwimming = new LinkSwimming(this);
@@ -379,9 +381,9 @@ public final class Link implements RocsFeather.JumpTarget {
         return direction;
     }
 
-    /** Mirrors wIsLinkImmuneToCollisionDamage independently of hit flashing. */
+    /** wIsLinkImmuneToCollisionDamage plus the got-item damage gate ($03:6D7E). */
     public boolean isCollisionDamageImmune() {
-        return linkDamage.collisionDamageImmune;
+        return linkDamage.collisionDamageImmune || dialogGotItemActive();
     }
 
     public boolean isRoosterCarryActive() {
@@ -618,6 +620,50 @@ public final class Link implements RocsFeather.JumpTarget {
     public void leaveMarinWakeUpBed() { linkEntityEffects.leaveMarinWakeUpBed(); }
     public void clearRoosterCarryState() { linkEntityEffects.clearRoosterCarryState(); }
     public void showRomFallenPose() { linkAnimator.showRomFallenPose(); }
+    /** Read-only wDialogGotItem != 0; ground physics must use this, not dialog visibility. */
+    public boolean dialogGotItemActive() { return dialogGotItemSequence.item() != 0; }
+    public int dialogGotItem() { return dialogGotItemSequence.item(); }
+    public int dialogGotItemCountdown() { return dialogGotItemSequence.countdown(); }
+    public int presentedDialogGotItem() { return dialogGotItemSequence.presentedItem(); }
+
+    /** UseMagicPowder $00:1492-14A6. Ownership is unchanged by showing the item. */
+    public void presentToadstool() {
+        if (romEntityZ() != 0) return;
+        dialogGotItemSequence.start(2, 0x2A);
+    }
+
+    /** Witch's B-slot branch $05:4833-4837; already-submitted pose survives this frame. */
+    public void clearDialogGotItem() { dialogGotItemSequence.clear(); }
+
+    /** ApplyGotItem, followed by HandleGotItemB ($02:51C7-5243).
+     * Returns the DIALOG_GOT_* value requesting its dialog this frame, or zero.
+     */
+    public int tickDialogGotItem(boolean dialogActive) {
+        int openForItem = dialogGotItemSequence.advance(dialogActive);
+        if (dialogGotItemSequence.presentedItem() == 0) return openForItem;
+        // ApplyGotItem caches body Y before func_21E1 updates Z; the held OAM
+        // entry uses the updated Z. Preserve the fractional position at ground.
+        linkAnimator.bedJumpRenderZ = zPixels();
+        if (itemRegistry != null
+            && itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+                instanceof linksawakening.equipment.Sword sword) {
+            sword.resetSpinAttack();
+        }
+        romAttackStepAnimationCountdown = 0;
+        linkDamage.collisionIgnoreFramesRemaining = 0;
+        int z = (linkAirborne.zSubPixels + (byte) linkAirborne.zVelocity) & 0xFFF;
+        linkAirborne.zVelocity = (byte) (linkAirborne.zVelocity - 2);
+        if (((z >>> SUB_PIXEL_SHIFT) & 0x80) != 0) {
+            z = 0;
+            linkAirborne.zVelocity = 0;
+        }
+        linkAirborne.zSubPixels = z;
+        linkAnimator.romAnimationStateOverride = 0x6B;
+        movingThisFrame = false;
+        linkMotion.lastRomSpeedX = linkMotion.lastRomSpeedY = 0;
+        return openForItem;
+    }
+
     public void showHeldItemPose() { linkAnimator.showHeldItemPose(); }
     public void showPowerUpPickupPose() { linkAnimator.showPowerUpPickupPose(); }
     public void showTarinShieldPresentation(int[] palette) { linkAnimator.showTarinShieldPresentation(palette); }

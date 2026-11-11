@@ -69,6 +69,9 @@ final class RoomStoryState {
         session.context.richardSpokenFlag = 0;
         session.context.tarinFlag = 0;
         session.context.playerShieldLevel = 0;
+        session.context.playerSwordLevel = 0;
+        session.context.playerBraceletLevel = 0;
+        session.context.houseNpcTradeItem = 0;
         session.context.entityInputs.entityGoldenLeavesCount = 0;
         session.context.enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
         session.context.boomerangSoundCounter = 0;
@@ -169,11 +172,29 @@ final class RoomStoryState {
             throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
         }
         session.context.playerShieldLevel = shieldLevel;
+        session.context.playerSwordLevel = swordLevel;
+        session.context.playerBraceletLevel = powerBraceletLevel;
+        configureHouseNpcStoryState();
         if (session.context.entityBridge.entityRuntime != null) {
             session.context.entityBridge.entityRuntime.configuration().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
             if (session.context.activeRoom != null) {
                 session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
             }
+        }
+    }
+
+    void setHouseNpcTradeItem(int tradeItem) {
+        if ((tradeItem & ~0xFF) != 0) throw new IllegalArgumentException("Trade item must be a byte");
+        session.context.houseNpcTradeItem = tradeItem;
+        configureHouseNpcStoryState();
+    }
+
+    private void configureHouseNpcStoryState() {
+        if (session.context.entityBridge.entityRuntime != null) {
+            session.context.entityBridge.entityRuntime.configuration().setHouseNpcStoryState(
+                session.context.tarinFlag, session.context.houseNpcTradeItem,
+                Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[2]),
+                Byte.toUnsignedInt(session.context.roomState.overworldRoomStatus[0xFD]));
         }
     }
 
@@ -248,6 +269,13 @@ final class RoomStoryState {
         session.context.entityBridge.entityRuntime.configuration().setSecretSeashellPegasusCollisionState(
             session.context.entityInputs.secretSeashellScreenShakeActive, session.context.entityInputs.secretSeashellPegasusCollisionActive,
             session.context.entityInputs.secretSeashellPegasusCollisionX, session.context.entityInputs.secretSeashellPegasusCollisionY);
+        configureHouseNpcStoryState();
+        if (session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            && session.context.activeRoom.mapId() == 0x10 && session.context.activeRoom.roomId() == 0xA3) {
+            session.context.entityBridge.entityRuntime.configuration().setChestPlayerLevels(
+                session.context.playerShieldLevel, session.context.playerSwordLevel, session.context.playerBraceletLevel);
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        }
         session.configureEnemyDropRuntime();
     }
 

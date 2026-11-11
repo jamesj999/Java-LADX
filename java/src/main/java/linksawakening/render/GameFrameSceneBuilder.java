@@ -110,6 +110,11 @@ public final class GameFrameSceneBuilder {
                         state.room().entities().spriteSelection().objectPalettes(),
                         state.scrollController(), state.room().linkGrassPalette()));
                 }
+                if (state.link().presentedDialogGotItem() != 0
+                    && state.room().entities() != null && state.room().entities().spriteSelection() != null) {
+                    sprites.add(StorySprites.dialogGotItem(state.link(),
+                        state.room().entities().spriteSelection().objectPalettes(), state.scrollController()));
+                }
                 if (state.link().isTarinShieldPresentationVisible()
                     && state.room().entities() != null
                     && state.room().entities().spriteSelection() != null) {

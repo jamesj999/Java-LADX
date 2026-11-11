@@ -657,6 +657,11 @@ abstract class EntityRuntimeState extends EntityRomConstants {
 
     boolean playerHasTailKey;
 
+    int houseTarinFlag;
+    int houseTradeItem;
+    int houseInstrument3Flags;
+    int houseWalrusStatus;
+
     int instrument1Flags;
 
     int instrument2Flags;

@@ -46,6 +46,36 @@ final class MagicPowderTest {
     }
 
     @Test
+    void toadstoolUseBypassesEmptyPowderErrorAndSprinkling() {
+        for (int count : new int[] {0, 20}) {
+            PlayerState player = playerWithPowder(count);
+            player.setHasToadstool(true);
+            RecordingTarget target = new RecordingTarget();
+            RecordingSoundSink sounds = new RecordingSoundSink();
+            new MagicPowder(player, sounds, target).onPress();
+            assertEquals(List.of(), sounds.events);
+            assertEquals(0, target.sprinkleRequests);
+            assertEquals(0, target.attackStepRequests);
+            assertEquals(1, target.toadstoolPresentations);
+            assertEquals(count, player.magicPowderCount());
+            assertTrue(player.hasToadstool()); // the Witch handler owns the trade
+        }
+    }
+
+    @Test
+    void toadstoolUseAboveGroundReturnsBeforePresentationOrSound() {
+        PlayerState player = playerWithPowder(0);
+        player.setHasToadstool(true);
+        RecordingTarget target = new RecordingTarget();
+        target.z = 1;
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        new MagicPowder(player, sounds, target).onPress();
+        assertEquals(0, target.toadstoolPresentations);
+        assertEquals(List.of(), sounds.events);
+        assertEquals(0, target.sprinkleRequests);
+    }
+
+    @Test
     void failedEntityAllocationDoesNotSpendPowderOrStartTheAttackStep() {
         PlayerState player = playerWithPowder(1);
         RecordingTarget target = new RecordingTarget();
@@ -110,6 +140,10 @@ final class MagicPowderTest {
     }
 
     private static final class RecordingTarget implements MagicPowder.SprinkleTarget {
+        private int z;
+        private int toadstoolPresentations;
+        @Override public int linkPositionZ() { return z; }
+        @Override public void presentToadstool() { toadstoolPresentations++; }
         private int sprinkleRequests;
         private int attackStepRequests;
         private boolean sprinkleResult = true;

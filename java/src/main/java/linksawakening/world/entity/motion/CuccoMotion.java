@@ -32,6 +32,7 @@ public final class CuccoMotion {
     };
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -83,6 +84,20 @@ public final class CuccoMotion {
                    RoomEntityBackgroundCollision backgroundCollision,
                    boolean indoorRoom, boolean marinFollowing,
                    int transitionSequenceCounter) {
+        return advance(entity, frameCounter, transitionCountdown, flashCountdown,
+            linkEntityX, linkEntityY, linkZ, linkInteractive, powerBraceletHeld,
+            linkAttackStepActive, randomByteSupplier, backgroundCollision,
+            indoorRoom, marinFollowing, transitionSequenceCounter, true);
+    }
+
+    public Update advance(RoomEntity entity, int frameCounter, int transitionCountdown,
+                   int flashCountdown, int linkEntityX, int linkEntityY, int linkZ,
+                   boolean linkInteractive, boolean powerBraceletHeld,
+                   boolean linkAttackStepActive,
+                   IntSupplier randomByteSupplier,
+                   RoomEntityBackgroundCollision backgroundCollision,
+                   boolean indoorRoom, boolean marinFollowing,
+                   int transitionSequenceCounter, boolean angrySpawnSlotAvailable) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Cucco motion entity");
         }
@@ -101,7 +116,8 @@ public final class CuccoMotion {
         int x = entity.x() & 0xFF;
         int y = entity.y() & 0xFF;
         int z = entity.z() & 0xFF;
-        int variant = entity.spriteVariant();
+        int variant = spriteVariant[slot];
+        int renderedVariant = variant + (direction[slot] == 0 ? 2 : 0);
         boolean unloaded = false;
         boolean boomerangSound = false;
         int waveSoundId = -1;
@@ -109,12 +125,9 @@ public final class CuccoMotion {
         int dialogLowId = -1;
         SpawnRequest spawnRequest = null;
 
-        // CuccoEntityHandler mirrors direction-zero sprites before rendering.
-        // The state handler's later SetEntitySpriteVariant write is what the
-        // room snapshot carries forward for the next display pass.
-        if (direction[slot] == 0) {
-            variant = ((variant & 0x01) + 0x02) & 0x03;
-        }
+        // $05:452A-453B mirrors only hActiveEntitySpriteVariant for the
+        // current draw. SetEntitySpriteVariant later writes the next frame's
+        // unmirrored WRAM variant; keep the two values separate.
 
         boolean landed = false;
         if (state[slot] != 3) {
@@ -135,7 +148,7 @@ public final class CuccoMotion {
                         dialogTableId = 0x02;
                         dialogLowId = 0x76;
                     } else {
-                        dialogTableId = 0x01;
+                        dialogTableId = 0x00;
                         dialogLowId = 0x8F;
                     }
                 }
@@ -154,7 +167,7 @@ public final class CuccoMotion {
             && state[slot] != 3
             && RoomEntityCombatRules.overlapsLink(collisionEntity, linkEntityX, linkEntityY);
         if (linkCollision && !linkAttackStepActive && powerBraceletHeld) {
-            RoomEntity updated = withPosition(entity, x, y, z, variant);
+            RoomEntity updated = withPosition(entity, x, y, z, renderedVariant);
             return new Update(updated, countdown, nextFlashCountdown, true, false, false,
                 -1, dialogTableId, dialogLowId, null);
         }
@@ -178,7 +191,7 @@ public final class CuccoMotion {
                 if (landed) {
                     if (countdown == 0) {
                         countdown = 0x30;
-                        state[slot] = 2;
+                        state[slot] = 0;
                         variant = withUnsignedByte(variant);
                         break;
                     }
@@ -198,7 +211,8 @@ public final class CuccoMotion {
                 y = moved.y();
                 variant = (frame >>> 1) & 0x01;
                 direction[slot] = signedByte((linkEntityX - x) & 0xFF) < 0 ? 0 : 1;
-                if (privateState1[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0) {
+                if (privateState1[slot] == 0x23 && !indoorRoom && (frame & 0x0F) == 0
+                    && angrySpawnSlotAvailable) {
                     int spawnIndex = randomByteSupplier.getAsInt() & 0x0F;
                     int spawnX = SPAWN_X[spawnIndex];
                     int spawnY = SPAWN_Y[spawnIndex];
@@ -223,7 +237,8 @@ public final class CuccoMotion {
                 + state[slot]);
         }
 
-        RoomEntity updated = withPosition(entity, x, y, z, variant);
+        spriteVariant[slot] = variant & 1;
+        RoomEntity updated = withPosition(entity, x, y, z, renderedVariant);
         if (spawnRequest != null) {
             waveSoundId = CUCCO_HURT_WAVE_SFX;
         }
@@ -233,6 +248,7 @@ public final class CuccoMotion {
 
     public void clear(int slot) {
         state[slot] = 0;
+        spriteVariant[slot] = 0;
         direction[slot] = 0;
         privateState1[slot] = 0;
         speedX[slot] = 0;

@@ -33,8 +33,28 @@ final class MarinWakeUpEntityRuntimeTest {
             assertEquals(indoor ? 6 : -1,
                 runtime.inspection().snapshot().slots().get(0).spriteVariant());
             runtime.configuration().setChestPlayerLevels(0, 1, 0);
-            assertEquals(6, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+            assertEquals(indoor ? -1 : 6, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         }
+    }
+
+    @Test
+    void houseStoryGatesRunBeforeRenderingAndAllowTarinAfterTransformation() {
+        var slots = new ArrayList<RoomEntity>();
+        for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
+        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true);
+        runtime.configuration().setChestPlayerLevels(1, 1, 0);
+        org.junit.jupiter.api.Assertions.assertTrue(runtime.inspection().indoorMarinAbsent());
+        org.junit.jupiter.api.Assertions.assertTrue(runtime.inspection().indoorTarinAbsent());
+        runtime.configuration().setHouseNpcStoryState(1, 0, 0, 0);
+        org.junit.jupiter.api.Assertions.assertFalse(runtime.inspection().indoorTarinAbsent());
+        runtime.configuration().setHouseNpcStoryState(1, 4, 0, 0);
+        org.junit.jupiter.api.Assertions.assertTrue(runtime.inspection().indoorTarinAbsent());
+        runtime.configuration().setHouseNpcStoryState(1, 0, 2, 0);
+        org.junit.jupiter.api.Assertions.assertTrue(runtime.inspection().indoorTarinAbsent());
+        runtime.configuration().setHouseNpcStoryState(1, 7, 0, 0);
+        org.junit.jupiter.api.Assertions.assertFalse(runtime.inspection().indoorMarinAbsent()); // letter path
+        runtime.configuration().setHouseNpcStoryState(1, 7, 0, 0x10);
+        org.junit.jupiter.api.Assertions.assertTrue(runtime.inspection().indoorMarinAbsent());
     }
 
     @Test

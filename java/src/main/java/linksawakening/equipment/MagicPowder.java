@@ -19,6 +19,9 @@ public final class MagicPowder implements EquipmentItem {
 
         /** Mirrors the shared Link attack-step gate before UseMagicPowder. */
         boolean magicPowderAttackStepActive();
+
+        int linkPositionZ();
+        void presentToadstool();
     }
 
     private final PlayerState playerState;
@@ -42,6 +45,14 @@ public final class MagicPowder implements EquipmentItem {
     @Override
     public void onPress() {
         if (!itemUseAllowed.getAsBoolean() || target.magicPowderAttackStepActive()) {
+            return;
+        }
+        // UseMagicPowder $00:1492-14A6 checks the mushroom before the
+        // powder count. Grounded use starts DIALOG_GOT_TOADSTOOL/$2A;
+        // ApplyGotItem later shows the item and opens Dialog00E.
+        if (playerState.hasToadstool()) {
+            if (target.linkPositionZ() != 0) return;
+            target.presentToadstool();
             return;
         }
         if (playerState.magicPowderCount() == 0) {

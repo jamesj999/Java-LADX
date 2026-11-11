@@ -26,7 +26,8 @@ final class TarinHandler {
         ENTITY_TARIN,
         EntityTickStage.PHASE_1_TARIN,
         state -> {
-          if (!state.roomInspection().indoorRoom() && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
+          if ((state.roomInspection().indoorRoom() && state.roomInspection().indoorTarinAbsent())
+              || (!state.roomInspection().indoorRoom() && (state.roomInspection().entityRoomStatus() & 0x10) != 0)) {
             state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }

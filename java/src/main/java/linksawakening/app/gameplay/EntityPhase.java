@@ -95,6 +95,7 @@ final class EntityPhase {
                 roomSession.setLiftStrengthBoost(
                     playerState != null && playerState.tunicType() == PlayerState.TUNIC_RED,
                     playerState != null && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                roomSession.setHouseNpcTradeItem(playerState == null ? 0 : playerState.tradeSequenceItem());
                 roomSession.setChestPlayerLevels(
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 1 : playerState.swordLevel(),
@@ -342,6 +343,10 @@ final class EntityPhase {
                 for (var event : roomSession.consumeWitchExchangeEvents()) {
                     if (playerState != null) {
                         playerState.beginWitchToadstoolExchange(event.inventorySlot());
+                        // Only the B-slot branch clears wDialogGotItem/C1A8.
+                        // The witch tests ownership, equipped item and held input,
+                        // independently of the got-item presentation.
+                        if (event.inventorySlot() == 0 && link != null) link.clearDialogGotItem();
                     }
                 }
                 for (var reward : roomSession.consumeWitchRewardEvents()) {
