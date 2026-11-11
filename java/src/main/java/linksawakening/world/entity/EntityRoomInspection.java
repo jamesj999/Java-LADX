@@ -310,12 +310,15 @@ public final class EntityRoomInspection {
     }
 
     public RoomEntitySnapshot snapshot() {
-        // MarinEntityHandler ($05:4E78) returns before drawing outdoors until
-        // Link owns the sword. Apply that presentation gate to pre-tick snapshots
-        // as well, including snapshots displayed while room scrolling pauses ticks.
+        // These handlers test story state before drawing ($05:4E78,
+        // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
+        // including room transitions which pause entity advancement.
         var presentedSlots = Arrays.stream(runtime.slots).map(entity -> {
             boolean hidden = entity.type() == 0x3E && (runtime.indoorRoom
-                ? indoorMarinAbsent()
+                // The beach-letter branch has a separate sprite pair, not
+                // Marin's person sprites. That later presentation is not yet
+                // ported; retain its previous hidden presentation here.
+                ? indoorMarinAbsent() || runtime.houseTradeItem >= 7
                 : runtime.chestPlayerLevelsKnown && runtime.chestSwordLevel == 0);
             hidden |= entity.type() == 0x3F && runtime.indoorRoom
                 && indoorTarinAbsent();

@@ -77,6 +77,7 @@ public record SaveCoordinator(
         roomSession.setBowWowState(saved.bowWowState());
         roomSession.setTarinFlag(saved.tarinFlag());
         roomSession.setRichardSpokenFlag(saved.richardSpokenFlag());
+        roomSession.setHouseNpcTradeItem(playerState.tradeSequenceItem());
         roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
             playerState.powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {

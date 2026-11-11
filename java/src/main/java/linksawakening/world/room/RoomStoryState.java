@@ -270,9 +270,12 @@ final class RoomStoryState {
             session.context.entityInputs.secretSeashellScreenShakeActive, session.context.entityInputs.secretSeashellPegasusCollisionActive,
             session.context.entityInputs.secretSeashellPegasusCollisionX, session.context.entityInputs.secretSeashellPegasusCollisionY);
         configureHouseNpcStoryState();
-        session.context.entityBridge.entityRuntime.configuration().setChestPlayerLevels(
-            session.context.playerShieldLevel, session.context.playerSwordLevel, session.context.playerBraceletLevel);
-        session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        if (session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+            && session.context.activeRoom.mapId() == 0x10 && session.context.activeRoom.roomId() == 0xA3) {
+            session.context.entityBridge.entityRuntime.configuration().setChestPlayerLevels(
+                session.context.playerShieldLevel, session.context.playerSwordLevel, session.context.playerBraceletLevel);
+            session.context.activeRoom.replaceEntities(session.context.entityBridge.entityRuntime.inspection().snapshot());
+        }
         session.configureEnemyDropRuntime();
     }
 
