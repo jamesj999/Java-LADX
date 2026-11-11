@@ -69,11 +69,15 @@ public final class DogMotion {
         int nextPhysicsFlags = physicsFlags & 0xFF;
         int z = addSpeedToPosition(entity.z(), speedZ[slot], speedZAccumulator, slot);
         speedZ[slot] = (speedZ[slot] - 2) & 0xFF;
-        if ((z & 0x80) != 0) {
+        boolean landed = (z & 0x80) != 0;
+        if (landed) {
             z = 0;
             speedZ[slot] = 0;
         }
 
+        // $19:490A preserves Z underflow in hMultiPurposeG. Background
+        // collision flags are a different byte; states 1/3 test this landing
+        // result at $19:49E1 and $19:4A41.
         boolean appliesBackgroundInteraction = false;
         boolean dialogRequested = false;
         int dialogLowId = -1;
@@ -107,7 +111,7 @@ public final class DogMotion {
                     walkingVariant(slot, frameCounter));
                 movementCollisionFlags = moved.collisionFlags();
                 appliesBackgroundInteraction = true;
-                if ((moved.collisionFlags() & 0x0F) != 0) {
+                if (landed) {
                     if (countdown != 0) {
                         speedZ[slot] = 0x08;
                         z = (updated.z() + 1) & 0xFF;
@@ -143,7 +147,7 @@ public final class DogMotion {
                 // Link/entity collision callback, so only the restored value
                 // leaves this motion object.
                 nextPhysicsFlags = INITIAL_PHYSICS_FLAGS;
-                if ((moved.collisionFlags() & 0x0F) != 0) {
+                if (landed) {
                     state[slot] = 0;
                     countdown = 0x20;
                 }

@@ -102,7 +102,7 @@ final class DogRuntimeTest {
     }
 
     @Test
-    void stateOneMovesBeforeRetargetingAndHopsWhenBackgroundBlocksIt() throws IOException {
+    void stateOneHopsOnLandingWhileStillApplyingBackgroundCollision() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
@@ -129,10 +129,10 @@ final class DogRuntimeTest {
     }
 
     @Test
-    void stateOneCollisionWithExpiredTimerReturnsToStateZero() throws IOException {
+    void stateOneLandingWithExpiredTimerReturnsToStateZero() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
-        MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
+        MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0xFE);
 
         DogMotion.Update update = motion.advance(dog, 0, 0x00, 0x92,
             0x70, 0x40, 0, false, false, () -> 0,
@@ -142,12 +142,12 @@ final class DogRuntimeTest {
 
         assertEquals(0x00, update.state());
         assertEquals(0x30, update.transitionCountdown());
-        assertEquals(0xFE, update.speedZ());
+        assertEquals(0x00, update.speedZ());
         assertEquals(0x00, update.entity().z());
     }
 
     @Test
-    void stateTwoLaunchesWithRomVectorAndStateThreeResetsOnCollision() throws IOException {
+    void stateTwoLaunchesWithRomVectorAndStateThreeWaitsForLanding() throws IOException {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0x00, 0x00, 0x00);
@@ -168,9 +168,27 @@ final class DogRuntimeTest {
                 EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40,
                     nextX, nextY));
 
-        assertEquals(0x00, blocked.state());
+        assertEquals(0x03, blocked.state(), "Wall contact does not end the charge");
         assertEquals(0x20, blocked.transitionCountdown());
         assertEquals(0x92, blocked.physicsFlags());
+    }
+
+    @Test
+    void chargeEndsAtRomZUnderflowAndKeepsFractionalHorizontalMotion() throws IOException {
+        DogMotion motion = new DogMotion();
+        RoomEntity dog = dog(loadRom());
+        MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0, 0, 0);
+        DogMotion.Update update = motion.advance(dog, 0, 0, 0x92,
+            0x70, 0x40, 0, false, false, () -> 0, null);
+        for (int frame = 1; frame <= 26; frame++) {
+            update = motion.advance(update.entity(), frame, 0, 0x92,
+                0x70, 0x40, 0, false, false,
+                () -> { throw new AssertionError("Charge does not draw RNG"); }, null);
+            assertEquals(0x40 + (frame * 0x24) / 16, update.entity().x());
+            assertEquals(frame == 26 ? 0 : 3, update.state());
+        }
+        assertEquals(0, update.entity().z());
+        assertEquals(0x20, update.transitionCountdown());
     }
 
     @Test
