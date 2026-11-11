@@ -113,6 +113,16 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                     definition = override;
                 }
             }
+            int transitionVisualYOffset = entities.visualYOffset(entity.slot());
+            if (entity.type() == ENTITY_BOMB
+                && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
+                && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
+                // RenderBomb adds two before entering the single-sprite helper.
+                transitionVisualYOffset += 2;
+            }
+            if (skipDuringRoomTransition(entity, offset, transitionVisualYOffset)) {
+                continue;
+            }
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
             if (!renderingDeath && entity.type() == ENTITY_WINGED_OCTOROK) {
                 // The pair is allocated before func_007_5805's rectangle in
@@ -165,6 +175,21 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             }
         }
         renderHookshotChainOam(context, entities, palettes, offset.x(), offset.y());
+    }
+
+    private boolean skipDuringRoomTransition(RoomEntity entity, Offset offset, int visualYOffset) {
+        if (!scrollController.isActive()) return false;
+        // SkipDisabledEntityDuringRoomTransition ($00:3D57-$3D7E), called
+        // by the pair, single and rectangle helpers before generating OAM.
+        // Unbounded Java positions retain the ROM's high/sign bytes updated
+        // by UpdateEntityPositionForRoomTransition ($19:798E-$79B5).
+        // The guard runs before the OAM helper subtracts horizontal shake.
+        int rawX = entity.x() + offset.x() + scrollController.screenShakeHorizontal();
+        int rawY = entity.y() + offset.y();
+        int visualY = rawY - entity.z() + visualYOffset;
+        return ((rawX - 1) & 0xFF) >= 0xC0
+            || ((visualY - 1) & 0xFF) >= 0x88
+            || (rawX & ~0xFF) != 0 || (rawY & ~0xFF) != 0;
     }
 
     private static RoomEntity deathRenderInputs(RoomEntity entity) {
