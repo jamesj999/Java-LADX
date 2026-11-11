@@ -134,7 +134,8 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                         entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN, false);
                 }
             }
-            renderEntity(context, entity, definition, variant, palettes, tiles,
+            renderEntity(context, renderingDeath ? deathRenderInputs(entity) : entity,
+                definition, variant, palettes, tiles,
                 offset.x(), offset.y(), entities.sideScrolling(),
                 entities.visualYOffset(entity.slot()));
             if (entity.type() == ENTITY_PINCER) {
@@ -164,6 +165,17 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             }
         }
         renderHookshotChainOam(context, entities, palettes, offset.x(), offset.y());
+    }
+
+    private static RoomEntity deathRenderInputs(RoomEntity entity) {
+        // AnimateEntity calls UpdateEntityTimers before EntityDeathHandler:
+        // $14:4D73-$4D76 clears the handler tile offset, and $4DE4-$4DF0
+        // supplies only OAMF_PAL1. The body handler (e.g. Octorok's +$30
+        // at $03:57F3) is not called for the shared destruction rectangle.
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute() & OAM_PALETTE_FLIP,
+            0, entity.z(), entity.deathSpriteVariant(), entity.powerRecoilDeath());
     }
 
     private void renderPincerBodyOam(RenderContext context,

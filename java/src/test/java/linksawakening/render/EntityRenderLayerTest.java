@@ -1024,6 +1024,55 @@ final class EntityRenderLayerTest {
     }
 
     @Test
+    void sharedDeathCloudResetsBodyTileOffsetAndFacingForOctorokAndOtherEnemies() throws Exception {
+        var catalog = new EntitySpriteHandlerCatalog(loadRom());
+        GPU gpu = new GPU();
+        // Synthetic asymmetric tiles expose reversed flips; lists come from ROM.
+        int[][] pattern = new int[8][8];
+        for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) {
+            pattern[y][x] = x < 3 ? 1 : 2;
+        }
+        for (int tile : new int[] {0x10, 0x11, 0x12, 0x13, 0x30, 0x31,
+                                  0x3A, 0x3B, 0x3C, 0x3D}) {
+            writePatternTile(gpu, tile, pattern);
+        }
+        int[][] palettes = new int[8][4];
+        for (int i = 0; i < palettes.length; i++) {
+            palettes[i] = new int[] {0, 0x112233 + i, 0x445566 + i, 0};
+        }
+        var selection = new EntitySpriteSelection(EntityRoomLoader.RoomTable.OVERWORLD,
+            0, 0, new int[] {0xFF, 0xFF, 0xFF, 0xFF}, true, palettes)
+            .withDeathSpriteDefinitions(catalog.forDeathEntity(), catalog.forPowerRecoilDeathEntity());
+        for (int type : new int[] {0x09, 0x0B}) {
+            var body = catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD);
+            for (boolean power : new boolean[] {false, true}) {
+                for (int variant = 0; variant < 4; variant++) {
+                    for (int flash : new int[] {0, 0x10}) {
+                        var expected = new RoomEntity(0, 0, type, 64, 64, EntityStatus.DYING,
+                            body, 0, flash, 0, 0, variant, power);
+                        var inherited = new RoomEntity(0, 0, type, 64, 64, EntityStatus.DYING,
+                            body, 0, flash | 0x60, type == 0x09 ? 0x30 : 0, 0, variant, power);
+                        byte[] baseline = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+                        byte[] actual = baseline.clone();
+                        new EntityRenderLayer(snapshot(selection, expected), palettes, new ScrollController())
+                            .render(new RenderContext(baseline, gpu));
+                        new EntityRenderLayer(snapshot(selection, inherited), palettes, new ScrollController())
+                            .render(new RenderContext(actual, gpu));
+                        org.junit.jupiter.api.Assertions.assertArrayEquals(baseline, actual,
+                            "type=" + type + " variant=" + variant + " power=" + power + " flash=" + flash);
+                        if (variant == 0) {
+                            int[] palette = palettes[flash == 0 ? 1 : 4];
+                            assertEquals(palette[1], pixelColor(actual, 56, 48));
+                            assertEquals(palette[1], pixelColor(actual, 71, 48));
+                            assertEquals(palette[2], pixelColor(actual, 63, 48));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     void rendersPowerRecoilDeathRectangleInsteadOfBodyAndSkipsHiddenEntry() {
         GPU gpu = new GPU();
         int bodyColor = 0x112233;
