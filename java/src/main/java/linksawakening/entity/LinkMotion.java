@@ -16,6 +16,7 @@ final class LinkMotion {
     int forcedSpeedX;
     int forcedSpeedY;
     int romCollisionType;
+    boolean doorWarpPending;
     final int[] collisionProbePixelX = new int[4];
     final int[] collisionProbePixelY = new int[4];
 
@@ -106,7 +107,18 @@ final class LinkMotion {
                     instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 link.soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
-            if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
+            if (physicsFlag == PhysicsFlags.DOOR) {
+                // ApplyCollisionWithDoor ($02:71BB-723A): only the top six
+                // pixels initiate a warp. The rest is a narrow walkable lane.
+                if (link.isCarryingLiftedObject()) {
+                    blocked = true;
+                } else if ((pointY & 15) < 6) {
+                    blocked = link.linkDamage.collisionIgnoreFramesRemaining != 0;
+                    if (!blocked) doorWarpPending = true;
+                } else {
+                    blocked = (pointX & 15) < 6 || (pointX & 15) >= 11;
+                }
+            } else if (physicsFlag == PhysicsFlags.CAT_LEDGE_OVERWORLD) {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
                 if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
@@ -228,14 +240,19 @@ final class LinkMotion {
     boolean ledgeUnstuckingPositionBlocked() {
         int spriteX = link.pixelX();
         int spriteY = link.pixelY();
+        boolean blocked = false;
+        int lastObject = 0xFF;
         for (int index = 0; index < 2; index++) {
             int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Link.DIRECTION_UP][index];
             int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Link.DIRECTION_UP][index];
-            if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())) {
-                return true;
-            }
+            blocked |= link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers());
+            lastObject = link.collision.objectIdAtPoint(pointX, pointY);
         }
-        return false;
+        // LinkMotionUnstuckingHandler ($02:4990-499E) continues over $E1,
+        // but explicitly stops over OBJECT_WELL despite its solid physics.
+        if (lastObject == 0xE1) return true;
+        if (lastObject == 0x61) return false;
+        return blocked;
     }
 
     static boolean isDirectionalLedgePhysics(int physicsFlag) {
@@ -282,6 +299,7 @@ final class LinkMotion {
     }
 
     void markRoomEntryPosition() {
+        doorWarpPending = false;
         roomEntrySubX = subX;
         roomEntrySubY = subY;
         hasRoomEntryPosition = true;

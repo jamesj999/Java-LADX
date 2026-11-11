@@ -355,6 +355,12 @@ public final class EntitySpriteHandlerCatalog {
         if (entityType == ENTITY_MADAM_MEOWMEOW) {
             return decodePair(entityType, 0x06, 0x5B56, 8, 0);
         }
+        if (entityType == 0x75) {
+            // GrandmaUlriraEntityHandler $18:4D36/4D58 supplies this pair
+            // list before PushLinkOutOfEntity_18 ($18:4D69).
+            var variants = linksawakening.rom.RomSymbols.GrandmaUlrira1SpriteVariants;
+            return decodePair(entityType, variants.bank(), variants.address(), 3, 0);
+        }
         if (entityType == ENTITY_BUTTERFLY) {
             return decodeSingle(entityType, 0x06, 0x6BBD, 2, 0);
         }

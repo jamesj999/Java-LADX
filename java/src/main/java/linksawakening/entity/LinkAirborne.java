@@ -3,6 +3,7 @@ package linksawakening.entity;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.PlayerState;
 
 /** ROM-faithful airborne collaborator for Link. */
@@ -19,7 +20,7 @@ final class LinkAirborne {
     int fallingFrameCounter;
     int pitSlipTargetTopLeftX;
     int pitSlipTargetTopLeftY;
-    int pitSlipPhysicsFlag;
+    int pitSlipPhysicsFlag = PhysicsFlags.NORMAL_PIT;
     boolean hasPitSlipTarget;
     /** Mirrors LINK_MOTION_UNSTUCKING after an overworld $10 ledge collision. */
     boolean overworldLedgeFallActive;
@@ -79,12 +80,7 @@ final class LinkAirborne {
         zVelocity = 0;
         link.linkAnimator.jumpAnimationCounter = 0;
         link.linkAnimator.jumpAnimationFrame = 0;
-        if (linkOverPit()) {
-            enterPitGroundState();
-        } else {
-            groundStatus = Link.GROUND_STATUS_NORMAL;
-            fallingIntoPit = false;
-        }
+        refreshGroundStatus();
         playLandingSound();
     }
 
@@ -152,7 +148,15 @@ final class LinkAirborne {
         if (link.collision != null) {
             link.collision.refreshLinkGroundInteraction(link.linkMotion.pixelX(), link.linkMotion.pixelY());
         }
-        if (linkOverPit()) {
+        // ApplyLinkGroundPhysics ($02:75CA-75D4) bypasses the solid
+        // physics byte for OBJECT_WELL and enters the fall without slipping.
+        if (link.collision != null && !link.collision.usesIndoorPhysicsTable()
+            && link.collision.objectUnderLinkFeet(link.pixelX(), link.pixelY()) == 0x61) {
+            if (!fallingIntoPit) {
+                pitSlipPhysicsFlag = PhysicsFlags.SOLID;
+                startPitFall(false);
+            }
+        } else if (linkOverPit()) {
             enterPitGroundState();
         } else if (!fallingIntoPit) {
             groundStatus = Link.GROUND_STATUS_NORMAL;
@@ -205,6 +209,10 @@ final class LinkAirborne {
     }
 
     void startPitFall() {
+        startPitFall(true);
+    }
+
+    private void startPitFall(boolean slipping) {
         // $02:7644 routes $50 and $51 through the same slip/fall path.
         groundStatus = Link.GROUND_STATUS_PIT;
         fallingIntoPit = true;
@@ -215,7 +223,7 @@ final class LinkAirborne {
         link.walkTickCounter = 0;
         link.walkFrame = 0;
         link.movingThisFrame = false;
-        link.linkMotion.subY += 3 << Link.SUB_PIXEL_SHIFT;
+        if (slipping) link.linkMotion.subY += 3 << Link.SUB_PIXEL_SHIFT;
         link.soundSink.play(GameplaySoundEvent.PIT_FALL);
     }
 
@@ -230,7 +238,9 @@ final class LinkAirborne {
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
-        if (pitSlipPhysicsFlag == 0x51) {
+        // LinkMotionFallingDownHandler ($02:512B-5136): only $50
+        // takes pit damage; the well's solid byte follows the warp path.
+        if (pitSlipPhysicsFlag != PhysicsFlags.NORMAL_PIT) {
             link.pitWarpPending = true;
             return;
         }

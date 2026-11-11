@@ -487,7 +487,7 @@ public final class SessionBootstrap {
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
         roomSession.onMapBoundaryWarp(playerState::clearActivePowerUpForWarp);
         roomTransitionCoordinator = new RoomTransitionCoordinator(
-            roomSession, new RoomBoundaryController(), transitionController, scrollController);
+            roomSession, new RoomBoundaryController(), transitionController, scrollController, gameplaySoundSink);
     }
 
     private void initMusicSystem(boolean headless) {

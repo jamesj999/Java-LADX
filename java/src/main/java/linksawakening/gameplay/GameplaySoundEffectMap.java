@@ -22,6 +22,7 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
         put(effects, catalog, GameplaySoundEvent.LINK_FOOTSTEP, SoundEffectNamespace.NOISE, 0x07);
         put(effects, catalog, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
+        put(effects, catalog, GameplaySoundEvent.STAIRS, SoundEffectNamespace.NOISE, 0x06);
         put(effects, catalog, GameplaySoundEvent.PIT_FALL, SoundEffectNamespace.WAVE, 0x0C);
         put(effects, catalog, GameplaySoundEvent.WATER_SPLASH,
             SoundEffectNamespace.JINGLE, 0x0E);

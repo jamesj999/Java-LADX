@@ -18,6 +18,36 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiresRom
 final class SaveRoundTripTest {
     @Test
+    void restoredHouseDoorSpawnWaitsForLinkToWalkIntoDoor() throws Exception {
+        GameSession game = new GameSession((pcm, rate) -> {});
+        game.initializeHeadlessIntro();
+        try {
+            SaveRamStore store = SaveRamStore.inMemory();
+            store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
+            // Marin house's exit record in IndoorsA3: outside A2, ($58,$52).
+            store.writeSpawnLocation(0, 0, 0, 0xA2, 0x58, 0x52, 0);
+            store.writeTarinFlag(0, 1);
+            set(game, "saveRamStore", store);
+            call(game, "router", ScreenRouter.class).startFileSelection();
+            press(game, "a");
+            RoomSession room = get(game, "roomSession", RoomSession.class);
+            for (int frame = 0; frame < 40; frame++) game.headlessFrame();
+            assertEquals(0, room.mapCategory());
+            assertEquals(0xA2, room.currentRoomId());
+            game.headlessButton("down", true);
+            for (int frame = 0; frame < 8; frame++) game.headlessFrame();
+            game.headlessButton("down", false);
+            game.headlessButton("up", true);
+            for (int frame = 0; frame < 100; frame++) game.headlessFrame();
+            game.headlessButton("up", false);
+            assertEquals(1, room.mapCategory());
+            assertEquals(0xA3, room.currentRoomId());
+        } finally {
+            call(game, "cleanup", Void.class);
+        }
+    }
+
+    @Test
     void saveAndQuitFlushesGameplayAndRestoresItAfterRelaunch(@TempDir Path directory) throws Exception {
         roundTrip(directory.resolve("azle.sav"), -1);
     }

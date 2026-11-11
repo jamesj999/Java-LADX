@@ -7,19 +7,30 @@ import linksawakening.world.transition.Warp;
 import linksawakening.world.transition.TransitionController;
 
 import linksawakening.entity.Link;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 
 public final class RoomTransitionCoordinator {
     private final RoomSession roomSession;
     private final RoomBoundaryController boundaryController;
     private final TransitionController transitionController;
     private final ScrollController scrollController;
+    private final GameplaySoundSink soundSink;
 
-    private int suppressedWarpTile = -1;
 
     public RoomTransitionCoordinator(RoomSession roomSession,
                                      RoomBoundaryController boundaryController,
                                      TransitionController transitionController,
                                      ScrollController scrollController) {
+        this(roomSession, boundaryController, transitionController, scrollController, GameplaySoundSink.none());
+    }
+
+    public RoomTransitionCoordinator(RoomSession roomSession,
+                                     RoomBoundaryController boundaryController,
+                                     TransitionController transitionController,
+                                     ScrollController scrollController,
+                                     GameplaySoundSink soundSink) {
+        this.soundSink = java.util.Objects.requireNonNull(soundSink);
         this.roomSession = roomSession;
         this.boundaryController = boundaryController;
         this.transitionController = transitionController;
@@ -83,7 +94,7 @@ public final class RoomTransitionCoordinator {
                     + " map=" + String.format("%02X", target.destMap())
                     + " room=" + String.format("%02X", target.destRoom())
                     + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target, link));
+                startEntranceWarp(target, link);
                 return;
             }
             if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP
@@ -99,7 +110,6 @@ public final class RoomTransitionCoordinator {
                 roomSession.startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
                 scrollController.onCompletion(() -> link.finishRoomScroll(
                     boundary.direction() == ScrollController.DOWN));
-                suppressedWarpTile = Warp.packTileLocation(boundary.linkTargetX(), boundary.linkTargetY());
                 return;
             }
         }
@@ -112,17 +122,18 @@ public final class RoomTransitionCoordinator {
             link.romEntityX(), link.romEntityY(), link.romEntityZ(),
             link.isCarryingLiftedObject());
         if (staircaseWarp != null) {
-            transitionController.startFadeOut(() -> applyWarp(staircaseWarp, link));
+            startEntranceWarp(staircaseWarp, link);
             return;
         }
 
-        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
-        if (linkTile != suppressedWarpTile) {
-            suppressedWarpTile = -1;
-        }
-        if (linkTile == suppressedWarpTile) {
+        // LinkMotionMapFadeOutHandler selects a record only after
+        // ApplyCollisionWithDoor has requested the fade ($02:71BB).
+        if (!link.consumeDoorWarp()) return;
+        if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            startEntranceWarp(room.firstWarp(), link);
             return;
         }
+        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
         for (Warp warp : room.warps()) {
             if (warp.tileLocation() == linkTile) {
                 final Warp target = warp;
@@ -131,7 +142,7 @@ public final class RoomTransitionCoordinator {
                     + " map=" + String.format("%02X", target.destMap())
                     + " room=" + String.format("%02X", target.destRoom())
                     + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target, link));
+                startEntranceWarp(target, link);
                 return;
             }
         }
@@ -189,6 +200,13 @@ public final class RoomTransitionCoordinator {
         return true;
     }
 
+    private void startEntranceWarp(Warp target, Link link) {
+        // ApplyMapFadeOutTransitionWithNoise/WithSound both reach
+        // playNoiseStairs ($00:0C9A): hNoiseSfx = NOISE_SFX_STAIRS.
+        soundSink.play(GameplaySoundEvent.STAIRS);
+        transitionController.startFadeOut(() -> applyWarp(target, link));
+    }
+
     private void applyWarp(Warp warp, Link link) {
         roomSession.loadWarpDestination(warp);
         ActiveRoom destination = roomSession.activeRoom();
@@ -197,6 +215,5 @@ public final class RoomTransitionCoordinator {
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
         link.setRoomEntryPixelPosition(landingX, landingY);
-        suppressedWarpTile = Warp.packTileLocation(landingX, landingY);
     }
 }

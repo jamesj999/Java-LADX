@@ -823,7 +823,7 @@ final class RoomTransitionCoordinatorTest {
         link.setPixelPosition(
             (witchHut.tileLocation() & 0x0F) * 16,
             (witchHut.tileLocation() >>> 4) * 16);
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        walkIntoDoor(link, inputState, inputConfig, coordinator, transition);
         while (transition.isActive()) transition.tick();
         assertEquals(0x0E, session.activeRoom().mapId());
         assertEquals(0xA2, session.currentRoomId());
@@ -1018,7 +1018,7 @@ final class RoomTransitionCoordinatorTest {
         link.setPixelPosition(
             (tailCaveEntrance.tileLocation() & 0x0F) * 16,
             (tailCaveEntrance.tileLocation() >>> 4) * 16);
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        walkIntoDoor(link, inputState, inputConfig, coordinator, transition);
         while (transition.isActive()) transition.tick();
         assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
         assertEquals(0x00, session.activeRoom().mapId());
@@ -1732,7 +1732,7 @@ final class RoomTransitionCoordinatorTest {
         link.setPixelPosition(
             (moblinHideoutEntrance.tileLocation() & 0x0F) * 16,
             (moblinHideoutEntrance.tileLocation() >>> 4) * 16);
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        walkIntoDoor(link, inputState, inputConfig, coordinator, transition);
         while (transition.isActive()) transition.tick();
         assertEquals(0x15, session.activeRoom().mapId());
         assertEquals(0xF0, session.currentRoomId());
@@ -2012,7 +2012,8 @@ final class RoomTransitionCoordinatorTest {
             link.setPixelPosition(position[0], position[1]);
         }
         assertEquals(0x13, Warp.packTileLocation(link.pixelX(), link.pixelY()));
-        coordinator.handleWarpAndIndoorBoundaries(link);
+        link.setPixelPosition(0x30, 0x10); // align both probes with the entrance lane
+        walkIntoDoor(link, inputState, inputConfig, coordinator, transition);
         assertTrue(transition.isActive());
         while (transition.isActive()) {
             transition.tick();
@@ -4469,6 +4470,17 @@ final class RoomTransitionCoordinatorTest {
         assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
             event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
                 && event.soundId() == 0x1E));
+    }
+
+    private static void walkIntoDoor(Link link, InputState input, InputConfig config,
+                                     RoomTransitionCoordinator coordinator, TransitionController transition) {
+        input.onKeyEvent(config.upKey(), GLFW_PRESS);
+        for (int tick = 0; tick < 16 && !transition.isActive(); tick++) {
+            link.update();
+            coordinator.handleWarpAndIndoorBoundaries(link);
+        }
+        input.onKeyEvent(config.upKey(), GLFW_RELEASE);
+        assertTrue(transition.isActive(), "moving collision probe must enter the doorway");
     }
 
     private static RoomSession newSession(byte[] rom, RomTables romTables, OverworldCollision collision) {

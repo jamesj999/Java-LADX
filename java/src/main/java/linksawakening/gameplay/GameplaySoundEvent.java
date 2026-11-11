@@ -8,6 +8,7 @@ public enum GameplaySoundEvent {
     LINK_FOOTSTEP,
     LEDGE_FALL,
     PIT_FALL,
+    STAIRS,
     WATER_SPLASH,
     ITEM_FALLING,
     ENEMY_BOMB_THROW,
