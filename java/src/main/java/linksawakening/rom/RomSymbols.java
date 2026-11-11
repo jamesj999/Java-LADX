@@ -291,4 +291,5 @@ public final class RomSymbols {
     public static final RomAddress Data_004_4E9C = new RomAddress(0x04, 0x4E9C);
     public static final RomAddress Data_004_4FAE = new RomAddress(0x04, 0x4FAE);
     public static final RomAddress Data_004_4FEE = new RomAddress(0x04, 0x4FEE);
+    public static final RomAddress GrandmaUlrira1SpriteVariants = new RomAddress(0x18, 0x4CFB);
 }

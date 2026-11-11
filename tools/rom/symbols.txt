@@ -418,3 +418,5 @@ Data_004_4E94
 Data_004_4E9C
 Data_004_4FAE
 Data_004_4FEE
+
+GrandmaUlrira1SpriteVariants

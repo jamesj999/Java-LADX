@@ -71,7 +71,7 @@ final class WarpEntranceRegressionTest {
             transition, new ScrollController(), sounds::add);
         var link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             tables, collision, null, new PlayerState(), new ItemRegistry());
-        // Marin, kennel, telephone, witch, shop.
+        // Marin, Madam MeowMeow, kennel, witch, shop.
         for (int[] house : new int[][] {{0x10, 0xA3}, {0x10, 0xA7}, {0x12, 0xB2},
                 {0x0E, 0xA2}, {0x0E, 0xA1}}) {
             session.loadIndoor(house[0], house[1]);

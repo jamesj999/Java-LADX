@@ -375,7 +375,7 @@ public final class EntityTypeRules {
             case ENTITY_HARDHAT_BEETLE -> (frameCounter >>> 3) & 0x01;
             case ENTITY_SPARK_COUNTER_CLOCKWISE, ENTITY_SPARK_CLOCKWISE ->
                 (frameCounter >>> 1) & 0x01;
-            case 0x70, 0x73 -> (frameCounter >>> 4) & 0x01;
+            case 0x70, 0x73, 0x75 -> (frameCounter >>> 4) & 0x01;
             default -> entity.spriteVariant();
         };
     }
