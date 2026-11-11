@@ -212,6 +212,18 @@ public final class EntityRuntimeConfiguration {
         runtime.secretSeashellPegasusCollisionY = collisionY;
     }
 
+    public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags,
+                                      int walrusStatus) {
+        EntitySlotValidation.validateByte(tarinFlag, "Tarin flag");
+        EntitySlotValidation.validateByte(tradeItem, "Trade item");
+        EntitySlotValidation.validateByte(instrument3Flags, "Instrument 3 flags");
+        EntitySlotValidation.validateByte(walrusStatus, "Walrus status");
+        runtime.houseTarinFlag = tarinFlag;
+        runtime.houseTradeItem = tradeItem;
+        runtime.houseInstrument3Flags = instrument3Flags;
+        runtime.houseWalrusStatus = walrusStatus;
+    }
+
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         EntitySlotValidation.validateByte(shieldLevel, "Shield level");
         EntitySlotValidation.validateByte(swordLevel, "Sword level");

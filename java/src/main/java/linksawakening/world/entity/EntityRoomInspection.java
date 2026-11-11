@@ -294,14 +294,33 @@ public final class EntityRoomInspection {
         return state != null && state.wallCollisionPending();
     }
 
+    /** MarinEntityHandler $05:4E6A and MarinEntityHandler_Indoor $05:51CE. */
+    public boolean indoorMarinAbsent() {
+        if (runtime.followingNpcState.marinFollowing()) return true;
+        if (runtime.houseTradeItem >= 7) return (runtime.houseWalrusStatus & 0x30) != 0;
+        return runtime.chestPlayerLevelsKnown && runtime.chestSwordLevel != 0;
+    }
+
+    /** TarinIndoorsHandler $05:4BF1-4C11, before any sprite rendering. */
+    public boolean indoorTarinAbsent() {
+        if (!runtime.followingNpcState.marinFollowing()
+            && ((runtime.houseInstrument3Flags & 2) != 0 || runtime.houseTradeItem >= 4)) return true;
+        return runtime.houseTarinFlag == 0 && runtime.chestPlayerLevelsKnown
+            && runtime.chestSwordLevel != 0;
+    }
+
     public RoomEntitySnapshot snapshot() {
         // MarinEntityHandler ($05:4E78) returns before drawing outdoors until
         // Link owns the sword. Apply that presentation gate to pre-tick snapshots
         // as well, including snapshots displayed while room scrolling pauses ticks.
-        var presentedSlots = Arrays.stream(runtime.slots).map(entity ->
-            !runtime.indoorRoom && runtime.chestPlayerLevelsKnown
-                && runtime.chestSwordLevel == 0 && entity.type() == 0x3E
-                ? EntitySnapshots.withVariant(entity, -1) : entity).toList();
+        var presentedSlots = Arrays.stream(runtime.slots).map(entity -> {
+            boolean hidden = entity.type() == 0x3E && (runtime.indoorRoom
+                ? indoorMarinAbsent()
+                : runtime.chestPlayerLevelsKnown && runtime.chestSwordLevel == 0);
+            hidden |= entity.type() == 0x3F && runtime.indoorRoom
+                && indoorTarinAbsent();
+            return hidden ? EntitySnapshots.withVariant(entity, -1) : entity;
+        }).toList();
         return new RoomEntitySnapshot(presentedSlots, runtime.spriteSelection, runtime.spriteTiles,
             runtime.groundInteractionSideScrolling, runtime.hookshotChainOam, runtime.pincerBodyOam,
             runtime.wingedOctorokOam,

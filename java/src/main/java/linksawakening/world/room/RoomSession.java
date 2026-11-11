@@ -267,6 +267,8 @@ public final class RoomSession extends RoomSessionRules {
     /** Supplies the B/A inventory bytes consumed by Like Like's handler. */
     public void setEntityInventorySlots(int itemA, int itemB) { context.entityInputs.setEntityInventorySlots(itemA, itemB); }
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
+    public void setHouseNpcTradeItem(int tradeItem) { context.roomStoryState.setHouseNpcTradeItem(tradeItem); }
+
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) { context.roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel); }
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) { context.entityInputs.setToadstoolPlayerState(hasToadstool, magicPowderCount); }

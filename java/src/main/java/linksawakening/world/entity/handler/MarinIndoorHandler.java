@@ -14,9 +14,7 @@ final class MarinIndoorHandler {
         EntityTickStage.PHASE_1_MARIN_INDOOR,
         state -> {
           if (state.roomInspection().indoorRoom()
-
-              && state.roomInspection().chestPlayerLevelsKnown()
-              && state.roomInspection().chestSwordLevel() != 0) {
+              && state.roomInspection().indoorMarinAbsent()) {
             state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
             return false;
           }

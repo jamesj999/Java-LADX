@@ -95,6 +95,7 @@ final class EntityPhase {
                 roomSession.setLiftStrengthBoost(
                     playerState != null && playerState.tunicType() == PlayerState.TUNIC_RED,
                     playerState != null && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                roomSession.setHouseNpcTradeItem(playerState == null ? 0 : playerState.tradeSequenceItem());
                 roomSession.setChestPlayerLevels(
                     playerState == null ? 1 : playerState.shieldLevel(),
                     playerState == null ? 1 : playerState.swordLevel(),

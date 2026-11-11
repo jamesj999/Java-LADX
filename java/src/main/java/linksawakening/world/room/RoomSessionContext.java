@@ -150,6 +150,9 @@ final class RoomSessionContext {
     int tarinFlag;
     /** WRAM wShieldLevel retained for room-load-time palette selection. */
     int playerShieldLevel;
+    int playerSwordLevel;
+    int playerBraceletLevel;
+    int houseNpcTradeItem;
     int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
     /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
     int roomTriggerCount;
