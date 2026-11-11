@@ -28,6 +28,26 @@ final class RoomObjectMutations {
     private final RoomSession session;
     RoomObjectMutations(RoomSession session) { this.session = session; }
 
+    /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */
+    boolean breakIndoorSwordCrystal(int location) {
+        if (session.context.activeRoom == null
+            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || location < 0 || (location & 15) >= 10 || (location >> 4) >= 8
+            || session.objectAtRoomLocation(location) != 0xDD) return false;
+        session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
+        session.refreshActiveRoomTilemap();
+        if (session.context.entityBridge.entityRuntime != null) {
+            // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
+            // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
+            session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
+                ((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
+            // Link runs before the entity tick, which clears its frame outbox.
+            session.context.entityBridge.pendingRoomEntityEvents.addAll(
+                session.context.entityBridge.entityRuntime.consumePendingEntityEvents());
+        }
+        return true;
+    }
+
     void applyBombObjectInteractions(List<BombExplosionEvent> events) {
         if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
             || events == null || events.isEmpty()) {

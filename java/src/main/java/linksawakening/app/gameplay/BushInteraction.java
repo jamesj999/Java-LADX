@@ -29,7 +29,6 @@ public record BushInteraction(
     public void maybeCutBushWithSword() {
         if (roomSession == null
             || !roomSession.hasActiveRoom()
-            || roomSession.mapCategory() != Warp.CATEGORY_OVERWORLD
             || overworldBushInteraction == null
             || link == null) {
             return;
@@ -44,6 +43,13 @@ public record BushInteraction(
         int location = overworldBushInteraction.swordHitRoomObjectLocationForCollisionIndex(
             true, sword.staticCollisionMapIndex(link.direction()), link.pixelX(), link.pixelY());
         if (location < 0) {
+            return;
+        }
+
+        if (roomSession.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            if (roomSession.breakIndoorSwordCrystal(location)) {
+                link.clearRomAttackStepAnimationCountdown();
+            }
             return;
         }
 

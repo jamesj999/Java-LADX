@@ -4270,6 +4270,27 @@ final class RoomSessionTest {
             event.type() == 1 && event.soundId() == 0x2D));
     }
 
+    @Test
+    void staticSwordCollisionBreaksOnlyIndoorSwordCrystal() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x0A, 0xB0);
+        int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        for (int object : new int[] {0x4E, 0x4F, 0x88, 0xA7}) {
+            session.activeRoom().roomObjectsArea()[index] = object;
+            assertFalse(session.breakIndoorSwordCrystal(0x33));
+            assertEquals(object, session.activeRoom().roomObjectsArea()[index]);
+        }
+        session.activeRoom().roomObjectsArea()[index] = 0xDD;
+        assertTrue(session.breakIndoorSwordCrystal(0x33));
+        assertEquals(0x0D, session.activeRoom().roomObjectsArea()[index]);
+        assertFalse(session.breakIndoorSwordCrystal(0x33));
+        session.tickEntities(0, 8, 16);
+        assertTrue(session.consumeEntityEvents().stream().anyMatch(event ->
+            event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x09));
+        assertTrue(session.activeRoom().entities().slots().stream().anyMatch(entity ->
+            entity.loaded() && entity.type() == 0x05 && entity.x() == 0x38 && entity.y() == 0x40));
+    }
+
     private static RoomSession newSession() {
         return newSession(room -> {
         });

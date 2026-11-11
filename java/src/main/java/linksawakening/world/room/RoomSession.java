@@ -324,6 +324,8 @@ public final class RoomSession extends RoomSessionRules {
      * Mirrors {@code FireHookshot}: the item path supplies Link's current ROM
      * coordinates and the room owns the player-projectile entity slot.
      */
+    public boolean breakIndoorSwordCrystal(int location) { return context.roomObjectMutations.breakIndoorSwordCrystal(location); }
+
     public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean linkAirborne, boolean linkPushing) { return context.roomPlayerItemActions.fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing); }
     /** Mirrors UseBoomerang's player-projectile spawn bridge. */
     public boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) { return context.roomPlayerItemActions.fireBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask); }
