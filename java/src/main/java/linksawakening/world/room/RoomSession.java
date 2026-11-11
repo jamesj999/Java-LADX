@@ -320,10 +320,23 @@ public final class RoomSession extends RoomSessionRules {
     public LiftedEntityState liftedEntityState() { return context.roomSessionViews.liftedEntityState(); }
     /** Throws the currently held object using Link's Java direction order. */
     public boolean throwLiftedEntity(int linkDirection) { return context.roomPlayerItemActions.throwLiftedEntity(linkDirection); }
-    /**
-     * Mirrors {@code FireHookshot}: the item path supplies Link's current ROM
-     * coordinates and the room owns the player-projectile entity slot.
-     */
+    /** Register inputs used by ApplyLinkMotionState/ApplyLinkGroundPhysics ($00:1794/$02:75BD). */
+    public record LinkGroundFrame(int pixelX, int pixelY, boolean airborne,
+                                  boolean interactionBlocked, boolean dialogActive,
+                                  boolean roomTransitionActive, int motionState,
+                                  int slowWalkingSpeed, int itemUsageContext) {}
+
+    public boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
+        return context.roomObjectMutations.tickCrackedFloor(frame, dialogGotItemActive);
+    }
+
+    /** Grounded landing probe at $02:4588, before the ordinary $00:1794 pass. */
+    public boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
+        return context.roomObjectMutations.applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
+    }
+
+    public boolean breakIndoorSwordCrystal(int location) { return context.roomObjectMutations.breakIndoorSwordCrystal(location); }
+
     public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean linkAirborne, boolean linkPushing) { return context.roomPlayerItemActions.fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing); }
     /** Mirrors UseBoomerang's player-projectile spawn bridge. */
     public boolean fireBoomerang(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) { return context.roomPlayerItemActions.fireBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask); }

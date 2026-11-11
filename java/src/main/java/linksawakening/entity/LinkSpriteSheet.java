@@ -62,7 +62,7 @@ public final class LinkSpriteSheet {
             attrsTable[i] = new Rom(romData).u8(RomAddress.fromOffset(attrsOffset + i));
         }
 
-        int[] walkingStates = new int[5 * 8];
+        int[] walkingStates = new int[6 * 8];
         int walkingOffset = RomSymbols.LinkAnimationsLists.offset();
         for (int i = 0; i < walkingStates.length; i++) walkingStates[i] = new Rom(romData).u8(RomAddress.fromOffset(walkingOffset + i));
         return new LinkSpriteSheet(tiles, stateTable, attrsTable, walkingStates);
@@ -72,6 +72,11 @@ public final class LinkSpriteSheet {
     public int walkingAnimationState(int romDirection, int frame, int shieldLevel, boolean usingShield) {
         int list = shieldLevel <= 0 ? 0 : (shieldLevel >= 2 ? 3 : 1) + (usingShield ? 1 : 0);
         return walkingStates[list * 8 + romDirection * 2 + (frame & 1)];
+    }
+
+    /** UpdateLinkWalkingAnimation $00:1ABF reads the sixth ROM animation list. */
+    public int pushingAnimationState(int romDirection, int frame) {
+        return walkingStates[5 * 8 + romDirection * 2 + (frame & 1)];
     }
 
     /**

@@ -91,6 +91,10 @@ public final class GameplaySoundEffectMap {
             SoundEffectNamespace.NOISE, 0x2A);
         put(effects, catalog, GameplaySoundEvent.DUNGEON_OPENED,
             SoundEffectNamespace.JINGLE, 0x23);
+        // ApplyLinkGroundPhysics_Default $02:7865.
+        put(effects, catalog, GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE, SoundEffectNamespace.NOISE, 0x2B);
+        // EntityInitPushedBlock $03:5198: only after a successful movement probe.
+        put(effects, catalog, GameplaySoundEvent.BLOCK_PUSH, SoundEffectNamespace.NOISE, 0x11);
         put(effects, catalog, GameplaySoundEvent.FLOOR_SWITCH,
             SoundEffectNamespace.WAVE, 0x0E);
         put(effects, catalog, GameplaySoundEvent.SWITCH_BLOCK_TOGGLE,

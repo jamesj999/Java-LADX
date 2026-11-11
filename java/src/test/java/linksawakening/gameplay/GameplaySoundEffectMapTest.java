@@ -14,6 +14,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class GameplaySoundEffectMapTest {
 
     @Test
+    void mapsCrackedFloorToRumble2() throws IOException {
+        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
+        var effect = map.resolve(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE).orElseThrow();
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x2B, effect.id());
+    }
+
+    @Test
+    void mapsBlockPushToEntityInitPushedBlockRumble() throws IOException {
+        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
+        var effect = map.resolve(GameplaySoundEvent.BLOCK_PUSH).orElseThrow();
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x11, effect.id());
+    }
+
+    @Test
     void mapsWaterSplashToTheRomWaterSplashJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
             SoundEffectCatalog.fromRom(loadRom()));

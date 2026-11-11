@@ -224,6 +224,7 @@ final class LinkAnimator {
         if (link.linkAirborne.airborne && !link.linkAirborne.spinningPitWarpArrival && jumpAnimationFrame < 3 && !link.linkAirborne.swordSuppressesJumpAnimation()) {
             return LinkAnimator.JUMP_ANIMATION_STATE[link.direction][jumpAnimationFrame];
         }
+        if (pushingAnimationState >= 0) return pushingAnimationState;
         if (link.spriteSheet != null) {
             int carriedShield = !link.linkStateMachine.gelClinging && link.playerState != null
                 && (link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
@@ -238,6 +239,20 @@ final class LinkAnimator {
             return shieldTable[link.direction][normalFrame];
         }
         return baseState;
+    }
+
+    int pushingAnimationState = -1;
+
+    /** $02:42C7 selects walking poses before this frame's movement/collisions. */
+    void cachePushingAnimation() {
+        pushingAnimationState = -1;
+        if (link.isRomLinkPushing() && (link.collision == null
+            || !link.collision.linkOnSlowGround(link.pixelX(), link.pixelY()))) {
+            int frame = (link.romConsecutiveStepsCount >> 3) & 1;
+            pushingAnimationState = link.spriteSheet != null
+                ? link.spriteSheet.pushingAnimationState(Link.romDirectionForJavaDirection(link.direction), frame)
+                : new int[] {0x1A, 0x1C, 0x1E, 0x20}[link.direction] + frame;
+        }
     }
 
     int queryOverride(EquipmentItem item) {

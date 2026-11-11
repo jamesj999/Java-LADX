@@ -129,6 +129,16 @@ final class LinkMotion {
             } else if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())
                 && !link.collision.pointNormalPit(pointX, pointY)) {
                 blocked = true;
+                // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
+                // follows its poke path; a raised shield suppresses the write.
+                var sword = link.itemRegistry == null ? null
+                    : link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+                boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
+                    && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
+                boolean running = link.playerState != null && link.playerState.runningWithPegasusBoots();
+                if (!link.linkEquipment.isUsingShield() && (!swordHolding || running)) {
+                    link.markRomLinkPushing(3);
+                }
             } else {
                 // ApplyCollisionWithObject reaches label_002_7461 for an
                 // ordinary passable probe, which clears wC191.

@@ -42,6 +42,39 @@ final class LinkTest {
     private static final int OBJECT_INDOOR_PIT_WARP = 0x1C;
 
     @Test
+    void solidContactSelectsPushPosesOnNextAnimationPassAndCountdownExpires() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState input = new InputState();
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 0x33] = OBJECT_TREE_TOP_LEFT;
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setRoom(objects);
+        Link link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(0x25, 0x28);
+        for (int frame = 0; frame < 16; frame++) {
+            link.tickRomLinkPushing();
+            int previousSteps = link.romConsecutiveStepsCount;
+            link.update();
+            assertTrue(link.isRomLinkPushing());
+            if (frame == 0) assertEquals(-1, link.linkAnimator.pushingAnimationState);
+            else assertEquals(0x20 + ((previousSteps >> 3) & 1), link.linkAnimator.resolveAnimationState());
+        }
+        input.onKeyEvent(config.rightKey(), GLFW_RELEASE);
+        link.tickRomLinkPushing();
+        assertTrue(link.isRomLinkPushing());
+        link.tickRomLinkPushing();
+        assertTrue(link.isRomLinkPushing());
+        link.tickRomLinkPushing();
+        assertFalse(link.isRomLinkPushing());
+        link.markRomLinkPushing(3); // Entity collision writes the same byte.
+        int steps = link.romConsecutiveStepsCount;
+        link.update();
+        assertEquals(0x20 + ((steps >> 3) & 1), link.linkAnimator.resolveAnimationState());
+    }
+
+    @Test
     void revolvingDoorPinsLinkThenRequestsTransitionAfterSeventyTwoFrames() throws Exception {
         RomTables tables = RomTables.loadFromRom(loadRom());
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);

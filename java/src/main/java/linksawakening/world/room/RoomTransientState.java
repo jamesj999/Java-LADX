@@ -57,6 +57,8 @@ final class RoomTransientState {
         session.context.indoorKeyDoorDirection = -1;
         session.context.indoorKeyDoorLocation = -1;
         session.context.indoorBossDoorOpening = false;
+        // ResetRoomVariables ($20:4CA3-4CE3) does not clear wC1C9 or
+        // hLinkRoomPosition/hLinkFinalRoomPosition; transitions retain them.
         session.context.pushBlockContactTicks = 0;
         session.context.indoorPotPullFrames = 0;
         session.context.pushedBlockMotionFrames = 0;
