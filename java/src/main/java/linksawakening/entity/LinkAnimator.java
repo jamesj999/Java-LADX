@@ -224,6 +224,15 @@ final class LinkAnimator {
         if (link.linkAirborne.airborne && !link.linkAirborne.spinningPitWarpArrival && jumpAnimationFrame < 3 && !link.linkAirborne.swordSuppressesJumpAnimation()) {
             return LinkAnimator.JUMP_ANIMATION_STATE[link.direction][jumpAnimationFrame];
         }
+        // UpdateLinkWalkingAnimation $00:1A8F-1A98. The ROM step byte
+        // advances even when a wall prevents XY movement.
+        if (link.isRomLinkPushing() && (link.collision == null
+            || !link.collision.linkOnSlowGround(link.pixelX(), link.pixelY()))) {
+            int frame = (link.romConsecutiveStepsCount >> 3) & 1;
+            return link.spriteSheet != null
+                ? link.spriteSheet.pushingAnimationState(Link.romDirectionForJavaDirection(link.direction), frame)
+                : new int[] {0x1A, 0x1C, 0x1E, 0x20}[link.direction] + frame;
+        }
         if (link.spriteSheet != null) {
             int carriedShield = !link.linkStateMachine.gelClinging && link.playerState != null
                 && (link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
