@@ -410,8 +410,15 @@ public final class EntityEnemySpawns {
         runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
+    public boolean canSpawnCuccoAngry() {
+        for (int slot = 7; slot >= 0; slot--) {
+            if (!runtime.slots[slot].loaded()) return true;
+        }
+        return false;
+    }
+
     public boolean spawnCuccoAngry(CuccoMotion.SpawnRequest request) {
-        int freeSlot = runtime.findFreeEntitySlot();
+        int freeSlot = runtime.findFreeEntitySlotAtMost(7);
         if (freeSlot < 0) {
             return false;
         }

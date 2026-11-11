@@ -35,12 +35,12 @@ final class CuccoMotionTest {
         assertEquals(0x04, motion.speedY(0));
         assertEquals(0x00, motion.direction(0));
         assertEquals(0x31, update.transitionCountdown());
-        assertEquals(0, update.entity().spriteVariant());
+        assertEquals(2, update.entity().spriteVariant());
         assertFalse(update.liftRequested());
     }
 
     @Test
-    void landsFromZMotionThenEntersTheRomHomingState() {
+    void expiredWalkReturnsToIdleInsteadOfFleeing() {
         CuccoMotion motion = new CuccoMotion();
         motion.setStateForTest(0, 1, 0, 0, 0, 0, 0x80);
 
@@ -48,7 +48,7 @@ final class CuccoMotionTest {
             0x40, 0x50, 0, true, false, false, () -> 0, null,
             false, false, 0x04);
 
-        assertEquals(2, motion.state(0));
+        assertEquals(0, motion.state(0));
         assertEquals(0x30, update.transitionCountdown());
         assertEquals(0, update.entity().z());
         assertEquals(2, update.entity().spriteVariant());
@@ -66,7 +66,7 @@ final class CuccoMotionTest {
         assertEquals(0x0C, motion.speedX(0));
         assertEquals(0x00, motion.speedY(0));
         assertEquals(0x00, motion.direction(0));
-        assertEquals(0x00, update.entity().spriteVariant());
+        assertEquals(0x02, update.entity().spriteVariant());
     }
 
     @Test
@@ -95,7 +95,7 @@ final class CuccoMotionTest {
 
         assertTrue(update.unloaded());
         assertTrue(update.boomerangSound());
-        assertEquals(0x00, update.entity().spriteVariant());
+        assertEquals(0x02, update.entity().spriteVariant());
     }
 
     @Test
@@ -136,6 +136,34 @@ final class CuccoMotionTest {
 
         assertFalse(update.liftRequested());
         assertEquals(0, motion.state(0));
+    }
+
+    @Test
+    void walkingFacingFollowsVelocityWithoutStoringTheRenderFlip() {
+        for (int randomX : new int[] {2, 6}) {
+            CuccoMotion motion = new CuccoMotion();
+            RoomEntity chicken = entity(0x40, 0x50, 0);
+            motion.advance(chicken, 0, 0, 0, 0, 0, 0, true, false, false,
+                () -> randomX, null, false, false, 4);
+            for (int frame = 1; frame <= 16; frame++) {
+                chicken = motion.advance(chicken, frame, 20, 0, 0, 0, 0,
+                    true, false, false, () -> { throw new AssertionError("No RNG during walk"); },
+                    null, false, false, 4).entity();
+                assertEquals(randomX == 2 ? 2 : 0, chicken.spriteVariant() & 2);
+            }
+            assertTrue(randomX == 2 ? chicken.x() > 0x40 : chicken.x() < 0x40);
+        }
+    }
+
+    @Test
+    void fullAngrySpawnRangeConsumesNoRandomByte() {
+        CuccoMotion motion = new CuccoMotion();
+        motion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
+        var result = motion.advance(entity(0x40, 0x50, 0), 0, 1, 0,
+            0x60, 0x50, 0, true, false, false,
+            () -> { throw new AssertionError("Spawn failure precedes GetRandomByte at $05:472B"); },
+            null, false, false, 4, false);
+        org.junit.jupiter.api.Assertions.assertNull(result.spawnRequest());
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
