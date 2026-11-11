@@ -103,6 +103,10 @@ public record InputRouter(
             consumeDialogInput.run();
             return;
         }
+        // ApplyGotItem bypasses InitGotItemSequence ($00:1040-1077),
+        // including its inventory/map and normal interaction input.
+        if (link != null && link.dialogGotItemActive()) return;
+
         if (story.get().tryOpenTarinShieldDialog(key)) {
             return;
         }

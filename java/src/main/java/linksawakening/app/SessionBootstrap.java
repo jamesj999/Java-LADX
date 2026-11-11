@@ -344,7 +344,10 @@ public final class SessionBootstrap {
                 @Override
                 public boolean magicPowderAttackStepActive() {
                     return link != null && link.romAttackStepAnimationCountdown() != 0;
-            }
+                }
+
+                @Override public int linkPositionZ() { return link.romEntityZ(); }
+                @Override public void presentToadstool() { link.presentToadstool(); }
         }, link::canUseItems));
         itemRegistry.register(PlayerState.INVENTORY_SHIELD,
             new Shield(gameplaySoundSink, link::canUseItems));

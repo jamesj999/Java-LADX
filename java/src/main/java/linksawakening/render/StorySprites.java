@@ -57,6 +57,16 @@ final class StorySprites {
         };
     }
 
+    /** HandleGotItemB $02:51F1-5243: one OAM entry, tile $8E, attributes $14. */
+    static HardwareRenderLayer dialogGotItem(Link link, int[][] palettes, ScrollController scroll) {
+        return (frame, gpu) -> {
+            if (link.presentedDialogGotItem() != 2) return;
+            new SpriteListRenderLayer(java.util.List.of(new SpriteListRenderLayer.Sprite(
+                0x8E, link.pixelX() - scroll.screenShakeHorizontal(),
+                link.pixelY() - link.romEntityZ() - 0x0E, 4, false, false, 16)), palettes).submit(frame, gpu);
+        };
+    }
+
     static HardwareRenderLayer linkGrass(Link link, int[][] palettes,
             ScrollController scroll, int paletteIndex) {
         return (frame, gpu) -> {

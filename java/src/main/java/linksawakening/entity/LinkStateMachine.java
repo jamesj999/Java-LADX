@@ -427,6 +427,7 @@ final class LinkStateMachine {
 
     /** Clears scripted presentation/capture state before a debug game reset. */
     void resetTransientStateForDebug() {
+        link.dialogGotItemSequence.reset();
         debugNoClip = false;
         link.clearGroundEffects();
         link.romConsecutiveStepsCount = 7;

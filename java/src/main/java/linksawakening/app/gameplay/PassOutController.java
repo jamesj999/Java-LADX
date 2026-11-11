@@ -23,7 +23,7 @@ public final class PassOutController {
             return true;
         }
         boolean transition = context.scrollController().isActive() || context.transitionController().isInputBlocked();
-        boolean itemBlocked = link.romItemAnimationFrameBlocked()
+        boolean itemBlocked = link.dialogGotItemActive() || link.romItemAnimationFrameBlocked()
             || (context.roomSession() != null && (context.roomSession().gotItemPresentationActive()
                 || context.roomSession().swordPickupSequenceActive()));
         if (LinkPassOutAnimation.shouldStart(context.playerState().health(), itemBlocked ? 1 : 0,

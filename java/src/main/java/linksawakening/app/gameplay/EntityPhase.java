@@ -343,6 +343,10 @@ final class EntityPhase {
                 for (var event : roomSession.consumeWitchExchangeEvents()) {
                     if (playerState != null) {
                         playerState.beginWitchToadstoolExchange(event.inventorySlot());
+                        // Only the B-slot branch clears wDialogGotItem/C1A8.
+                        // The witch tests ownership, equipped item and held input,
+                        // independently of the got-item presentation.
+                        if (event.inventorySlot() == 0 && link != null) link.clearDialogGotItem();
                     }
                 }
                 for (var reward : roomSession.consumeWitchRewardEvents()) {

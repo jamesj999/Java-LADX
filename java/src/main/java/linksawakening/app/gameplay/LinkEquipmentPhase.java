@@ -48,6 +48,20 @@ final class LinkEquipmentPhase {
                 }
             }
 
+            // ApplyGotItem $00:0FC7 runs before normal Link/item work. A
+            // toadstool requested by that work starts decrementing next frame.
+            if (link != null) {
+                int itemDialog = link.tickDialogGotItem(dialogBlocksGameplay);
+                if (itemDialog == 2) {
+                    context.dialogController().openPreformattedForLinkY(
+                        context.dialogTextLoader().load(new linksawakening.gameplay.SignpostDialogRef(0, 0x0E)),
+                        linksawakening.gameplay.LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+                }
+                if (link.presentedDialogGotItem() == 2) {
+                    context.gpu().updatePowderInventoryTiles(context.romData(), true);
+                }
+            }
+
             if (context.passOutController().tick(context, dialogBlocksGameplay)) return;
 
             // LinkMotionMapFadeInHandler ($00:19DE-$00:1A21) restores normal
@@ -56,6 +70,7 @@ final class LinkEquipmentPhase {
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
+                && (link == null || !link.dialogGotItemActive())
                 && (roomSession == null || !roomSession.gotItemPresentationActive());
             boolean swordPickupSequenceActive = roomSession != null
                 && roomSession.swordPickupSequenceActive();
