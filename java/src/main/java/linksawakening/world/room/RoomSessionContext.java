@@ -52,6 +52,8 @@ final class RoomSessionContext {
     final RoomTransitionController roomTransitionController;
     final RoomLoadCoordinator roomLoadCoordinator;
 
+    int crackedFloorCounter;
+
     final byte[] romData;
     final GPU gpu;
     final RoomLoader roomLoader;

@@ -4271,6 +4271,30 @@ final class RoomSessionTest {
     }
 
     @Test
+    void crackedFloorCollapsesAfterFortyFramesAndResetsOnMovementOrBlockedInteraction() {
+        RoomSession session = newSession();
+        session.loadIndoor(0, 0x17);
+        int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        session.activeRoom().roomObjectsArea()[index] = 0xDF;
+        var sounds = new java.util.ArrayList<GameplaySoundEvent>();
+        session.setColorShellSoundSink(sounds::add);
+        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        assertFalse(session.tickCrackedFloor(24, 40, 40, 40, false, false)); // changed cell
+        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, true));
+        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, true, false)); // airborne bypass retains timer
+        assertTrue(sounds.isEmpty());
+        assertEquals(0xDF, session.activeRoom().roomObjectsArea()[index]);
+        assertTrue(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        assertEquals(0xAE, session.activeRoom().roomObjectsArea()[index]);
+        assertEquals(java.util.List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
+        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        session.activeRoom().roomObjectsArea()[index] = 0xDF;
+        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+    }
+
+    @Test
     void pushedBlockPlaysRumbleOnlyWhenMovementStarts() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x04);

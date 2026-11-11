@@ -57,6 +57,7 @@ final class RoomTransientState {
         session.context.indoorKeyDoorDirection = -1;
         session.context.indoorKeyDoorLocation = -1;
         session.context.indoorBossDoorOpening = false;
+        session.context.crackedFloorCounter = 0;
         session.context.pushBlockContactTicks = 0;
         session.context.indoorPotPullFrames = 0;
         session.context.pushedBlockMotionFrames = 0;

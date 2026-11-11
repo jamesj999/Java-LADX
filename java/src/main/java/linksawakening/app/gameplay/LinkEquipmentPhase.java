@@ -125,7 +125,14 @@ final class LinkEquipmentPhase {
                     link.tickAnimation();
                 } else {
                     link.tickRomLinkPushing();
+                    int groundPreviousX = link.pixelX();
+                    int groundPreviousY = link.pixelY();
+                    boolean groundInteractionBlocked = link.romInteractiveMotionBlockValue() != 0;
                     link.update();
+                    if (roomSession != null) {
+                        roomSession.tickCrackedFloor(groundPreviousX, groundPreviousY,
+                            link.pixelX(), link.pixelY(), link.isAirborne(), groundInteractionBlocked);
+                    }
                     var splash = link.consumeWaterSplash();
                     if (splash != null && transientVfxSystem != null) {
                         // VFX stores ROM/OAM coordinates, as entity VFX requests do.

@@ -28,6 +28,30 @@ final class RoomObjectMutations {
     private final RoomSession session;
     RoomObjectMutations(RoomSession session) { this.session = session; }
 
+    /** ApplyLinkGroundPhysics_Default $02:7840-786E (wC1C9).
+     * Airborne frames bypass ground physics, retaining the counter. */
+    boolean tickCrackedFloor(int previousPixelX, int previousPixelY, int pixelX, int pixelY,
+                             boolean airborne, boolean interactionBlocked) {
+        if (airborne) return false;
+        int location = (((pixelY + 12) & 0xF0) | (((pixelX + 8) & 0xF0) >> 4));
+        int previousLocation = (((previousPixelY + 12) & 0xF0)
+            | (((previousPixelX + 8) & 0xF0) >> 4));
+        if (session.context.activeRoom == null
+            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
+            || location != previousLocation || interactionBlocked
+            || session.objectAtRoomLocation(location) != 0xDF) {
+            session.context.crackedFloorCounter = 0;
+            return false;
+        }
+        if (++session.context.crackedFloorCounter < 0x28) return false;
+        // label_002_4D97 writes $AE and redraws its tiles and GBC attributes.
+        session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0xAE;
+        session.refreshActiveRoomTilemap();
+        session.context.colorShellSoundSink.play(linksawakening.gameplay.GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE);
+        return true;
+    }
+
     /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */
     boolean breakIndoorSwordCrystal(int location) {
         if (session.context.activeRoom == null

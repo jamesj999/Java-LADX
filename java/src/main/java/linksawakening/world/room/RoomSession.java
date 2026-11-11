@@ -324,6 +324,12 @@ public final class RoomSession extends RoomSessionRules {
      * Mirrors {@code FireHookshot}: the item path supplies Link's current ROM
      * coordinates and the room owns the player-projectile entity slot.
      */
+    public boolean tickCrackedFloor(int previousPixelX, int previousPixelY, int pixelX, int pixelY,
+                                    boolean airborne, boolean interactionBlocked) {
+        return context.roomObjectMutations.tickCrackedFloor(previousPixelX, previousPixelY,
+            pixelX, pixelY, airborne, interactionBlocked);
+    }
+
     public boolean breakIndoorSwordCrystal(int location) { return context.roomObjectMutations.breakIndoorSwordCrystal(location); }
 
     public boolean fireHookshot(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean linkAirborne, boolean linkPushing) { return context.roomPlayerItemActions.fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing); }
