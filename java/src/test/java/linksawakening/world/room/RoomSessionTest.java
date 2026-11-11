@@ -4275,23 +4275,30 @@ final class RoomSessionTest {
         RoomSession session = newSession();
         session.loadIndoor(0, 0x17);
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        var frame = new RoomSession.LinkGroundFrame(40, 40, false, false, false, false, 0, 0, 0);
+        session.tickCrackedFloor(frame, false); // seed the previous ground probe
         session.activeRoom().roomObjectsArea()[index] = 0xDF;
         var sounds = new java.util.ArrayList<GameplaySoundEvent>();
         session.setColorShellSoundSink(sounds::add);
-        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
-        assertFalse(session.tickCrackedFloor(24, 40, 40, 40, false, false)); // changed cell
-        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
-        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, true));
-        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
-        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, true, false)); // airborne bypass retains timer
+        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(frame, false));
+        assertFalse(session.tickCrackedFloor(
+            new RoomSession.LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
+        assertEquals(0, session.context.crackedFloorCounter);
+        for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(frame, false));
+        assertFalse(session.tickCrackedFloor(
+            new RoomSession.LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
+        assertEquals(39, session.context.crackedFloorCounter); // airborne bypass retains timer
         assertTrue(sounds.isEmpty());
         assertEquals(0xDF, session.activeRoom().roomObjectsArea()[index]);
-        assertTrue(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        assertTrue(session.tickCrackedFloor(frame, false));
         assertEquals(0xAE, session.activeRoom().roomObjectsArea()[index]);
         assertEquals(java.util.List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
-        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
-        session.activeRoom().roomObjectsArea()[index] = 0xDF;
-        assertFalse(session.tickCrackedFloor(40, 40, 40, 40, false, false));
+        // A pit does not reach Default, so its frame retains wC1C9.
+        assertFalse(session.tickCrackedFloor(frame, false));
+        assertEquals(40, session.context.crackedFloorCounter);
+        session.activeRoom().roomObjectsArea()[index] = 0x0D;
+        session.tickCrackedFloor(frame, false);
+        assertEquals(0, session.context.crackedFloorCounter); // non-$DF on Default resets
     }
 
     @Test

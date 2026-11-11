@@ -125,14 +125,20 @@ final class LinkEquipmentPhase {
                     link.tickAnimation();
                 } else {
                     link.tickRomLinkPushing();
-                    int groundPreviousX = link.pixelX();
-                    int groundPreviousY = link.pixelY();
                     boolean groundInteractionBlocked = link.romInteractiveMotionBlockValue() != 0;
+                    boolean wasAirborne = link.isAirborne();
+                    int beforeMotionX = link.pixelX(), beforeMotionY = link.pixelY();
                     link.update();
-                    if (roomSession != null) {
-                        roomSession.tickCrackedFloor(groundPreviousX, groundPreviousY,
-                            link.pixelX(), link.pixelY(), link.isAirborne(), groundInteractionBlocked);
+                    if (wasAirborne && !link.isAirborne() && !link.isFallingIntoPit()
+                        && roomSession != null && roomSession.mapCategory() != Warp.CATEGORY_SIDESCROLL) {
+                        // ApplyLinkGroundMotion $02:4588 probes the landing tile
+                        // before func_002_434A applies XY. $00:1794 probes again
+                        // after XY and copies that first sample at $02:7589.
+                        roomSession.tickCrackedFloorOnLanding(
+                            groundFrame(context, beforeMotionX, beforeMotionY, groundInteractionBlocked),
+                            roomSession.gotItemPresentationActive());
                     }
+                    tickCrackedFloor(context, groundInteractionBlocked);
                     var splash = link.consumeWaterSplash();
                     if (splash != null && transientVfxSystem != null) {
                         // VFX stores ROM/OAM coordinates, as entity VFX requests do.
@@ -207,9 +213,19 @@ final class LinkEquipmentPhase {
                 // own explicit check again after moving Link below.
                 roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
                 roomTransitionCoordinator.handleOverworldBoundary(link);
-            } else if (scrollController.isActive() && link != null) {
-                // Keep Link's walk animation cycling during a room transition.
-                link.tickAnimation();
+            } else if (link != null) {
+                if (scrollController.isActive()) {
+                    // Keep Link's walk animation cycling during a room transition.
+                    link.tickAnimation();
+                }
+                // $02:75C4 does not imply an unconditional pause: $76C0 can
+                // return to Default via $7757 and reset wC1C9 during dialogs.
+                if (!inventoryBlockedAtStart && !inventoryController.shouldBlockOverworldInput()
+                    && (dialogBlocksGameplay || scrollController.isActive()
+                        || transitionController.isInputBlocked()
+                        || (roomSession != null && roomSession.gotItemPresentationActive()))) {
+                    tickCrackedFloor(context, link.romInteractiveMotionBlockValue() != 0);
+                }
             }
 
             if (!dialogBlocksGameplay && roomSession != null) {
@@ -218,5 +234,26 @@ final class LinkEquipmentPhase {
                     roomSession.tailCaveKeyholeSequenceActive(), rumbleHorizontal);
             }
 
+    }
+
+    private static void tickCrackedFloor(GameplaySimulation context, boolean interactionBlocked) {
+        var room = context.roomSession();
+        var link = context.link();
+        if (room == null || link == null) return;
+        // Interim held-item presentation signal. The complete wDialogGotItem
+        // mechanism is ported separately; wire that signal here when merged.
+        boolean dialogGotItemActive = room.gotItemPresentationActive();
+        room.tickCrackedFloor(groundFrame(context, link.pixelX(), link.pixelY(), interactionBlocked),
+            dialogGotItemActive);
+    }
+
+    private static linksawakening.world.room.RoomSession.LinkGroundFrame groundFrame(
+            GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
+        var link = context.link();
+        return new linksawakening.world.room.RoomSession.LinkGroundFrame(
+            pixelX, pixelY, link.isAirborne(), interactionBlocked,
+            context.dialogController() != null && context.dialogController().isActive(),
+            context.scrollController().isActive() || context.transitionController().isInputBlocked(),
+            link.romMotionState(), link.romSlowWalkingSpeed(), link.romItemUsageContext());
     }
 }

@@ -28,28 +28,100 @@ final class RoomObjectMutations {
     private final RoomSession session;
     RoomObjectMutations(RoomSession session) { this.session = session; }
 
-    /** ApplyLinkGroundPhysics_Default $02:7840-786E (wC1C9).
-     * Airborne frames bypass ground physics, retaining the counter. */
-    boolean tickCrackedFloor(int previousPixelX, int previousPixelY, int pixelX, int pixelY,
-                             boolean airborne, boolean interactionBlocked) {
-        if (airborne) return false;
-        int location = (((pixelY + 12) & 0xF0) | (((pixelX + 8) & 0xF0) >> 4));
-        int previousLocation = (((previousPixelY + 12) & 0xF0)
-            | (((previousPixelX + 8) & 0xF0) >> 4));
-        if (session.context.activeRoom == null
-            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-            || session.context.activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
-            || location != previousLocation || interactionBlocked
-            || session.objectAtRoomLocation(location) != 0xDF) {
-            session.context.crackedFloorCounter = 0;
+    /**
+     * ApplyLinkMotionState ($00:1794) calls func_002_753A after XY movement.
+     * $02:7587-7589 copies the last GetObjectUnderLink result, not this
+     * frame's pre-movement coordinates. Entity pushes, airborne frames and
+     * skipped probes can make that older than one frame.
+     */
+    boolean tickCrackedFloor(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+        var context = session.context;
+        if (context.activeRoom == null) return false;
+        if (session.hookshotActive()) {
+            // $02:7549-754D takes func_002_755B: sample, but no $7589 copy
+            // and no ApplyLinkGroundPhysics call.
+            sampleLinkGround(frame.pixelX(), frame.pixelY());
             return false;
         }
-        if (++session.context.crackedFloorCounter < 0x28) return false;
+        context.linkGroundFinalRoomPosition = context.linkGroundRoomPosition;
+        // $02:7590-7593 and $75B6-75BB bypass ground physics.
+        if (frame.airborne() || frame.motionState() == 0x02) return false;
+        return applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
+    }
+
+    /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */
+    boolean applyCrackedFloorGroundPhysics(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+        var context = session.context;
+        if (context.activeRoom == null) return false;
+        boolean bypassEntry = frame.dialogActive() || frame.roomTransitionActive();
+        if (!bypassEntry) {
+            sampleLinkGround(frame.pixelX(), frame.pixelY()); // GetObjectUnderLink $02:75C7
+            context.linkGroundObjectPhysics = context.overworldCollision.objectPhysicsFlagAtPoint(
+                (frame.pixelX() + 8) & 0xFF, (frame.pixelY() + 12) & 0xFF);
+            // $02:75D2-75D4/$75DA-75E5 bypass Default for these hazards.
+            if ((!context.overworldCollision.usesIndoorPhysicsTable()
+                    && context.linkGroundObjectUnderEntity == 0x61)
+                || (context.overworldCollision.usesIndoorPhysicsTable()
+                    && context.linkGroundObjectUnderEntity == 0x4C
+                    && (((frame.pixelY() + 15) & 15) >= 12))) return false;
+        }
+        if (!reachesDefaultGroundPhysics(context.linkGroundObjectPhysics, bypassEntry,
+                frame.slowWalkingSpeed(), frame.itemUsageContext())) return false;
+        // Default can return at $02:77E8 while standing on a raised switch block.
+        if (linksawakening.world.object.SwitchBlockLinkInteraction.marksStanding(
+                context.linkGroundObjectUnderEntity, context.linkGroundObjectPhysics,
+                context.switchBlocksState)) return false;
+        // $02:77F7-77FB gates on wIsIndoor, NOT hIsSideScrolling. Overworld
+        // $DF has solid physics ($01), but still exits here without resetting.
+        if (!context.overworldCollision.usesIndoorPhysicsTable()) return false;
+        // $02:75C4 -> 76C0 -> 7757 can re-enter Default using cached physics.
+        // Transitions retain wC1C9 at $02:7802; dialogs reaching $7858 reset it.
+        if (frame.roomTransitionActive()) return false;
+        // $02:7804-783B returns while an unpressed floor button is sinking.
+        if (context.linkGroundObjectUnderEntity == 0xAA && context.switchButtonPressed == 0) return false;
+        if (context.linkGroundRoomPosition != context.linkGroundFinalRoomPosition
+            || context.linkGroundObjectUnderEntity != 0xDF || frame.interactionBlocked()
+            || dialogGotItemActive || frame.dialogActive()) {
+            context.crackedFloorCounter = 0; // $02:7851-785D/$786C
+            return false;
+        }
+        context.crackedFloorCounter = (context.crackedFloorCounter + 1) & 0xFF;
+        if (context.crackedFloorCounter < 0x28) return false;
         // label_002_4D97 writes $AE and redraws its tiles and GBC attributes.
-        session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0xAE;
+        context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + context.linkGroundRoomPosition] = 0xAE;
         session.refreshActiveRoomTilemap();
-        session.context.colorShellSoundSink.play(linksawakening.gameplay.GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE);
+        context.colorShellSoundSink.play(linksawakening.gameplay.GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE);
         return true;
+    }
+
+    /** GetObjectUnderLink $02:7512-7536, translated from ROM center/bottom to Java top-left. */
+    private void sampleLinkGround(int pixelX, int pixelY) {
+        int location = linkGroundLocation(pixelX, pixelY);
+        session.context.linkGroundRoomPosition = location;
+        session.context.linkGroundObjectUnderEntity = session.objectAtRoomLocation(location);
+    }
+
+    static int linkGroundLocation(int pixelX, int pixelY) {
+        // hLinkPositionX = Java X+8; hLinkPositionY = Java Y+16, then subtract 4.
+        // AND $F0 after byte arithmetic also preserves the ROM's wrap behavior.
+        return ((pixelY + 12) & 0xF0) | (((pixelX + 8) & 0xF0) >>> 4);
+    }
+
+    /** Only the control-flow decision; movement, damage and water effects stay with Link. */
+    static boolean reachesDefaultGroundPhysics(int physics, boolean bypassEntry,
+                                               int slowWalkingSpeed, int itemUsageContext) {
+        if (!bypassEntry) {
+            if (physics == 0 || physics == 0xFF) return true; // $75EE/$763A
+            if (physics == 0xE0 || physics >= 0xF0 || physics == 0x50 || physics == 0x51) return false;
+        }
+        // label_002_76C0 is also the entry used by dialogs/transitions ($75C4).
+        if (physics == 0x08 || physics == 0x09) return true; // $76D2/$76E1
+        if (physics == 0x07 || physics == 0x0B) {
+            if (slowWalkingSpeed != 0) return false; // $76F1 -> current handler $7C50
+            if (itemUsageContext == 0x80) return true; // raft: $76F9 -> $7757
+            return false; // swimming/recovery and entry into water return before Default
+        }
+        return physics != 0x06; // grass $7752 returns; shallow water falls through $779F
     }
 
     /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */

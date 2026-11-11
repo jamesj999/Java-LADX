@@ -635,6 +635,8 @@ public final class Link implements RocsFeather.JumpTarget {
     /** Raw source write, distinct from internal sword/presentation movement locks. */
     public void writeRomInteractiveMotionBlock(int value) { linkStateMachine.writeRomInteractiveMotionBlock(value); }
     public int romInteractiveMotionBlockValue() { return linkStateMachine.romInteractiveMotionBlockValue; }
+    public int romSlowWalkingSpeed() { return linkStateMachine.slowWalkingSpeed; }
+    public int romItemUsageContext() { return linkStateMachine.itemUsageContext; }
     /** Bank2:42B2 skips top-down item dispatch and animation only for the exact value 2. */
     public boolean romItemAnimationFrameBlocked() {
         return !linkSideView.sideScrolling && romInteractiveMotionBlockValue() == 2;

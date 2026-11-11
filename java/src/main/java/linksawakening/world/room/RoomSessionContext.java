@@ -53,6 +53,11 @@ final class RoomSessionContext {
     final RoomLoadCoordinator roomLoadCoordinator;
 
     int crackedFloorCounter;
+    // HRAM $FA/$FB and the cached ground sample, retained between probe calls.
+    int linkGroundRoomPosition;
+    int linkGroundFinalRoomPosition;
+    int linkGroundObjectUnderEntity;
+    int linkGroundObjectPhysics;
 
     final byte[] romData;
     final GPU gpu;
