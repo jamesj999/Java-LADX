@@ -139,6 +139,7 @@ final class LinkStateMachine {
             return;
         }
 
+        link.linkAnimator.cachePushingAnimation();
         int mask = link.buildJoypadMask();
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         // $02:4406 skips facing selection while link.linkAirborne.airborne; the Feather
@@ -474,6 +475,7 @@ final class LinkStateMachine {
         link.linkMotion.forcedSpeedXOnly = false;
         link.linkDamage.collisionIgnoreFramesRemaining = 0;
         link.romLinkPushing = 0;
+        link.linkAnimator.pushingAnimationState = -1;
         link.romAttackStepAnimationCountdown = 0;
         link.movingThisFrame = false;
         link.walkTickCounter = 0;
