@@ -113,6 +113,16 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                     definition = override;
                 }
             }
+            int transitionVisualYOffset = entities.visualYOffset(entity.slot());
+            if (entity.type() == ENTITY_BOMB
+                && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
+                && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
+                // RenderBomb adds two before entering the single-sprite helper.
+                transitionVisualYOffset += 2;
+            }
+            if (skipDuringRoomTransition(entity, offset, transitionVisualYOffset)) {
+                continue;
+            }
             int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
             if (!renderingDeath && entity.type() == ENTITY_WINGED_OCTOROK) {
                 // The pair is allocated before func_007_5805's rectangle in
@@ -134,7 +144,8 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
                         entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN, false);
                 }
             }
-            renderEntity(context, entity, definition, variant, palettes, tiles,
+            renderEntity(context, renderingDeath ? deathRenderInputs(entity) : entity,
+                definition, variant, palettes, tiles,
                 offset.x(), offset.y(), entities.sideScrolling(),
                 entities.visualYOffset(entity.slot()));
             if (entity.type() == ENTITY_PINCER) {
@@ -164,6 +175,32 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
             }
         }
         renderHookshotChainOam(context, entities, palettes, offset.x(), offset.y());
+    }
+
+    private boolean skipDuringRoomTransition(RoomEntity entity, Offset offset, int visualYOffset) {
+        if (!scrollController.isActive()) return false;
+        // SkipDisabledEntityDuringRoomTransition ($00:3D57-$3D7E), called
+        // by the pair, single and rectangle helpers before generating OAM.
+        // Unbounded Java positions retain the ROM's high/sign bytes updated
+        // by UpdateEntityPositionForRoomTransition ($19:798E-$79B5).
+        // The guard runs before the OAM helper subtracts horizontal shake.
+        int rawX = entity.x() + offset.x() + scrollController.screenShakeHorizontal();
+        int rawY = entity.y() + offset.y();
+        int visualY = rawY - entity.z() + visualYOffset;
+        return ((rawX - 1) & 0xFF) >= 0xC0
+            || ((visualY - 1) & 0xFF) >= 0x88
+            || (rawX & ~0xFF) != 0 || (rawY & ~0xFF) != 0;
+    }
+
+    private static RoomEntity deathRenderInputs(RoomEntity entity) {
+        // AnimateEntity calls UpdateEntityTimers before EntityDeathHandler:
+        // $14:4D73-$4D76 clears the handler tile offset, and $4DE4-$4DF0
+        // supplies only OAMF_PAL1. The body handler (e.g. Octorok's +$30
+        // at $03:57F3) is not called for the shared destruction rectangle.
+        return new RoomEntity(entity.slot(), entity.sourceLoadOrder(), entity.type(),
+            entity.x(), entity.y(), entity.status(), entity.spriteDefinition(),
+            entity.spriteVariant(), entity.entityFlipAttribute() & OAM_PALETTE_FLIP,
+            0, entity.z(), entity.deathSpriteVariant(), entity.powerRecoilDeath());
     }
 
     private void renderPincerBodyOam(RenderContext context,

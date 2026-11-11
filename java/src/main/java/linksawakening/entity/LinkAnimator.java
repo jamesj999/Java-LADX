@@ -384,8 +384,13 @@ final class LinkAnimator {
         Tile rightTop = composedTiles[rightFlipY ? 3 : 2];
         Tile rightBottom = composedTiles[rightFlipY ? 2 : 3];
 
-        sink.append8x16(leftTop, leftBottom, originX, originY, leftFlipX, leftFlipY, palette, false);
-        sink.append8x16(rightTop, rightBottom, originX + 8, originY, rightFlipX, rightFlipY, palette, false);
+        // DrawLinkSprite ($00:1D4F-$1D59) rejects both body columns when
+        // the byte-sized visual OAM Y is >= $88. Equipped items have their
+        // own OAM writers and do not inherit this body-only return.
+        if (((originY + 0x10) & 0xFF) < 0x88) {
+            sink.append8x16(leftTop, leftBottom, originX, originY, leftFlipX, leftFlipY, palette, false);
+            sink.append8x16(rightTop, rightBottom, originX + 8, originY, rightFlipX, rightFlipY, palette, false);
+        }
 
         // Let equipped items paint their own sprites on top (e.g. the sword
         // blade during a swing). Matches the disassembly's ordering where
