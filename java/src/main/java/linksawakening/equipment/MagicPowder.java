@@ -44,6 +44,12 @@ public final class MagicPowder implements EquipmentItem {
         if (!itemUseAllowed.getAsBoolean() || target.magicPowderAttackStepActive()) {
             return;
         }
+        // UseMagicPowder $00:1492-14A6 checks the mushroom before the
+        // powder count. It presents the toadstool silently; WitchEntityHandler
+        // consumes the held item independently, later in the entity pass.
+        if (playerState.hasToadstool()) {
+            return;
+        }
         if (playerState.magicPowderCount() == 0) {
             soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
             return;

@@ -46,6 +46,22 @@ final class MagicPowderTest {
     }
 
     @Test
+    void toadstoolUseBypassesEmptyPowderErrorAndSprinkling() {
+        for (int count : new int[] {0, 20}) {
+            PlayerState player = playerWithPowder(count);
+            player.setHasToadstool(true);
+            RecordingTarget target = new RecordingTarget();
+            RecordingSoundSink sounds = new RecordingSoundSink();
+            new MagicPowder(player, sounds, target).onPress();
+            assertEquals(List.of(), sounds.events);
+            assertEquals(0, target.sprinkleRequests);
+            assertEquals(0, target.attackStepRequests);
+            assertEquals(count, player.magicPowderCount());
+            assertTrue(player.hasToadstool()); // the Witch handler owns the trade
+        }
+    }
+
+    @Test
     void failedEntityAllocationDoesNotSpendPowderOrStartTheAttackStep() {
         PlayerState player = playerWithPowder(1);
         RecordingTarget target = new RecordingTarget();
