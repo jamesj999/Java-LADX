@@ -155,6 +155,7 @@ final class LinkStateMachine {
             link.linkAirborne.updateLastSafePositionIfPossible();
         }
 
+        if (link.linkAirborne.fallingIntoPit) return;
         if (link.linkAirborne.groundStatus == Link.GROUND_STATUS_PIT) {
             link.movingThisFrame = false;
             link.walkTickCounter = 0;

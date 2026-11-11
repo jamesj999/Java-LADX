@@ -240,14 +240,19 @@ final class LinkMotion {
     boolean ledgeUnstuckingPositionBlocked() {
         int spriteX = link.pixelX();
         int spriteY = link.pixelY();
+        boolean blocked = false;
+        int lastObject = 0xFF;
         for (int index = 0; index < 2; index++) {
             int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Link.DIRECTION_UP][index];
             int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Link.DIRECTION_UP][index];
-            if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())) {
-                return true;
-            }
+            blocked |= link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers());
+            lastObject = link.collision.objectIdAtPoint(pointX, pointY);
         }
-        return false;
+        // LinkMotionUnstuckingHandler ($02:4990-499E) continues over $E1,
+        // but explicitly stops over OBJECT_WELL despite its solid physics.
+        if (lastObject == 0xE1) return true;
+        if (lastObject == 0x61) return false;
+        return blocked;
     }
 
     static boolean isDirectionalLedgePhysics(int physicsFlag) {

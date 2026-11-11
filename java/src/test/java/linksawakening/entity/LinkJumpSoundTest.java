@@ -87,7 +87,8 @@ final class LinkJumpSoundTest {
         var well = new Fixture(false);
         Arrays.fill(well.room, 0x61);
         well.landAt(32, 32);
-        assertTrue(well.sounds.isEmpty(), "$02:458D excludes wells");
+        assertEquals(List.of("0:PIT_FALL"), well.sounds,
+            "$02:458D excludes landing noise; $02:75D4 starts the well fall sound");
         var bottom = new Fixture(false);
         bottom.landAt(32, 120);
         assertTrue(bottom.sounds.isEmpty(), "$02:4584 excludes ROM Y >= $88");
