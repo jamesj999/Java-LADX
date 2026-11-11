@@ -151,7 +151,7 @@ final class LinkEquipmentPhase {
                         // after XY and copies that first sample at $02:7589.
                         roomSession.tickCrackedFloorOnLanding(
                             groundFrame(context, beforeMotionX, beforeMotionY, groundInteractionBlocked),
-                            roomSession.gotItemPresentationActive());
+                            dialogGotItemActive(context));
                     }
                     tickCrackedFloor(context, groundInteractionBlocked);
                     var splash = link.consumeWaterSplash();
@@ -255,11 +255,18 @@ final class LinkEquipmentPhase {
         var room = context.roomSession();
         var link = context.link();
         if (room == null || link == null) return;
-        // Interim held-item presentation signal. The complete wDialogGotItem
-        // mechanism is ported separately; wire that signal here when merged.
-        boolean dialogGotItemActive = room.gotItemPresentationActive();
         room.tickCrackedFloor(groundFrame(context, link.pixelX(), link.pixelY(), interactionBlocked),
-            dialogGotItemActive);
+            dialogGotItemActive(context));
+    }
+
+    /** wDialogGotItem != 0 ($02:7854). Ported writers: Link's ApplyGotItem
+     * sequence (UseMagicPowder $00:149E) and the witch presentation
+     * ($05:4834, $05:48DB). */
+    private static boolean dialogGotItemActive(GameplaySimulation context) {
+        var link = context.link();
+        var room = context.roomSession();
+        return (link != null && link.dialogGotItemActive())
+            || (room != null && room.gotItemPresentationActive());
     }
 
     private static linksawakening.world.room.RoomSession.LinkGroundFrame groundFrame(

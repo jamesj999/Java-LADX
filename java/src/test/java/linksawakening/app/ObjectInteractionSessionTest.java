@@ -52,6 +52,28 @@ class ObjectInteractionSessionTest {
         assertEquals(0xDF, roomSession.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
     }
 
+    @Test void toadstoolGotItemPresentationResetsTheCrackedFloorCounter() throws Exception {
+        var game = session();
+        var roomSession = game.diagnostics().roomSession();
+        var player = game.diagnostics().playerState();
+        player.setHasToadstool(true);
+        player.setMagicPowderCount(0);
+        player.setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.setItemB(0);
+        game.headlessFrame();
+        roomSession.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
+        for (int i = 0; i < 17; i++) game.headlessFrame();
+        assertEquals(17, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+        // UseMagicPowder $00:149E sets wDialogGotItem; $02:7854 then resets wC1C9.
+        game.headlessButton("a", true);
+        game.headlessFrame();
+        game.headlessButton("a", false);
+        assertTrue(game.diagnostics().link().dialogGotItemActive());
+        game.headlessFrame();
+        assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+        assertEquals(0xDF, roomSession.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
+    }
+
     @Test void externalPositionChangeIsComparedAgainstTheLastGroundProbe() throws Exception {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
