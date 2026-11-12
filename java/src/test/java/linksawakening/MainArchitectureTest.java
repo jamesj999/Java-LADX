@@ -67,8 +67,8 @@ final class MainArchitectureTest {
     @Test
     void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
         check("CombatPhase", "tick", "enemyCollisionBox", "resolveEntityCombat");
-        check("EntityPhase", "buildUiInputs", "isActive", "isMusicPlaying");
-        check("EntityPhase", "tick", "buildInputs", "tickEntities");
+        check("EntityFrameInputsFactory", "buildUiInputs", "isActive", "isMusicPlaying");
+        check("EntityPhase", "tick", "EntityFrameInputsFactory.create", "tickEntities");
         check("EntityPhase", "applyCombat", "EnemyCombatEventConsumer.consume");
         check(
                 "EntityPhase",
@@ -83,7 +83,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "applyAttackWrites", "consumeAttackWrites", "LinkCommandAdapter.from", "Link.apply");
+        check("LinkWriteApplier", "applyAttackWrites", "consumeAttackWrites", "LinkCommandAdapter.from", "Link.apply");
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Facing")
                 .contains("faceRomDirectionPreservingWalkPhase"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Action")
@@ -103,7 +103,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
-        String code = CompiledCode.method(P + "EntityPhase", "applyFinalEffects");
+        String code = CompiledCode.method(P + "LinkWriteApplier", "applyFinalEffects");
         String hinox = code.substring(code.indexOf("consumeHinoxLinkEffectRequests"));
         assertTrue(hinox.contains("applyRomEnemyDamage"));
         assertFalse(hinox.contains("invincibilityCounter"));
@@ -123,16 +123,16 @@ final class MainArchitectureTest {
                 "consumeSideViewPotLinkRequests",
                 "consumeLinkFinalPositionRequests",
                 "RoomLinkWrites.positions");
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("LinkCommandAdapter.from"));
+        assertTrue(CompiledCode.code(P + "LinkWriteApplier").contains("LinkCommandAdapter.from"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$PotContact")
                 .contains("applySideViewPotContact"));
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("romFinalPositionX"));
+        assertTrue(CompiledCode.code(P + "EntityFrameInputsFactory").contains("romFinalPositionX"));
     }
 
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("HOOKSHOT_PULL"));
-        check("EntityPhase", "applyProjectileResponses", "HOOKSHOT_PULL", "LinkCommandAdapter.from", "Link.apply");
+        assertTrue(CompiledCode.code(P + "LinkWriteApplier").contains("HOOKSHOT_PULL"));
+        check("LinkWriteApplier", "applyProjectileResponses", "HOOKSHOT_PULL", "LinkCommandAdapter.from", "Link.apply");
         CompiledCode.calls(
                 "linksawakening.entity.LinkCommand$ProjectileResponse",
                 "applyTo",
