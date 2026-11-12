@@ -11,7 +11,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.room.EntityPickupInputs;
-import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.LinkGroundFrame;
 import linksawakening.world.room.SwordBox;
 import linksawakening.world.transition.Warp;
 
@@ -322,9 +322,9 @@ final class LinkEquipmentPhase {
                 || (context.roomSession().entityState().gotItemPresentationActive());
     }
 
-    private static RoomSession.LinkGroundFrame groundFrame(
+    private static LinkGroundFrame groundFrame(
             GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
-        return new RoomSession.LinkGroundFrame(
+        return new LinkGroundFrame(
                 pixelX,
                 pixelY,
                 context.link().isAirborne(),

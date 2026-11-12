@@ -6,7 +6,6 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.object.OverworldBushInteraction;
-import linksawakening.world.room.RoomSession.ShovelStartResult;
 import linksawakening.world.transition.Warp;
 
 final class RoomShovelActions {

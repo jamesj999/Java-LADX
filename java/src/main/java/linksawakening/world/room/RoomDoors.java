@@ -2,8 +2,6 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.world.room.RoomSession.ChestOpenResult;
-
 public interface RoomDoors {
     ChestOpenResult tryOpenChest(
             int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel);

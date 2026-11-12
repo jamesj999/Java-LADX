@@ -6,7 +6,6 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
-import linksawakening.world.room.RoomSession.ChestOpenResult;
 import linksawakening.world.transition.Warp;
 
 final class RoomChestInteractions {

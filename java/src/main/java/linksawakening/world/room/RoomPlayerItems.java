@@ -2,9 +2,6 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.world.room.RoomSession.ArrowShotResult;
-import linksawakening.world.room.RoomSession.ShovelStartResult;
-
 public interface RoomPlayerItems {
     boolean throwLiftedEntity(int linkDirection);
 

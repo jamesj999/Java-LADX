@@ -18,18 +18,18 @@ final class RoomSessionDoors3Test {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 0x17);
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
-        var frame = new RoomSession.LinkGroundFrame(40, 40, false, false, false, false, 0, 0, 0);
+        var frame = new LinkGroundFrame(40, 40, false, false, false, false, 0, 0, 0);
         session.terrain().tickCrackedFloor(frame, false); // seed the previous ground probe
         session.rooms().activeRoom().roomObjectsArea()[index] = 0xDF;
         var sounds = new java.util.ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
-                .tickCrackedFloor(new RoomSession.LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
+                .tickCrackedFloor(new LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
         assertEquals(0, session.components.terrain().crackedFloorCounter);
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
-                .tickCrackedFloor(new RoomSession.LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
+                .tickCrackedFloor(new LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
         assertEquals(39, session.components.terrain().crackedFloorCounter); // airborne bypass retains timer
         assertTrue(sounds.isEmpty());
         assertEquals(0xDF, session.rooms().activeRoom().roomObjectsArea()[index]);

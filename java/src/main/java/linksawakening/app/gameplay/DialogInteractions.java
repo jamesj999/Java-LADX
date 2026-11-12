@@ -16,6 +16,7 @@ import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.input.InputConfig;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.ChestOpenResult;
 import linksawakening.world.room.RoomSession;
 
 /** Focused frame interactions using the current session collaborators. */
@@ -84,7 +85,7 @@ public final class DialogInteractions {
                 || blockers().get().blocksOpening()) {
             return false;
         }
-        RoomSession.ChestOpenResult result = roomSession()
+        ChestOpenResult result = roomSession()
                 .doors()
                 .tryOpenChest(
                         link().pixelX(),

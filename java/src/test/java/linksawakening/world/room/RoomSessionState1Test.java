@@ -405,7 +405,7 @@ final class RoomSessionState1Test {
         session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x04;
         session.rooms().activeRoom().renderValues()[areaIndex] = 0x04;
 
-        RoomSession.ShovelStartResult start = session.playerItems().startShovel(0x44, 0x56, 0, false);
+        ShovelStartResult start = session.playerItems().startShovel(0x44, 0x56, 0, false);
 
         assertTrue(start.started());
         assertFalse(start.poking());

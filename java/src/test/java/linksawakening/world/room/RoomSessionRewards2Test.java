@@ -307,7 +307,7 @@ final class RoomSessionRewards2Test {
         PlayerState playerState = new PlayerState();
         session.rooms().loadInitialOverworld(0x41);
 
-        RoomSession.ChestOpenResult chest =
+        ChestOpenResult chest =
                 session.doors().tryOpenChest(0x38, 0x31, Link.DIRECTION_UP, true, playerState.swordLevel());
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, chest.itemType());

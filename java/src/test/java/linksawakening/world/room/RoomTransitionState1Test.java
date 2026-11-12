@@ -110,8 +110,7 @@ final class RoomTransitionState1Test {
                 collision, link.pixelX(), link.pixelY(), (x, y) -> (x + 8) / 16 == 8 && (y + 5) / 16 == 2);
         assertNotNull(chestPath, collisionGrid(collision));
         for (int[] position : chestPath) link.setPixelPosition(position[0], position[1]);
-        RoomSession.ChestOpenResult chest =
-                session.doors().tryOpenChest(link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors().tryOpenChest(link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
         session.entities().tickEntities(frame++, link.romEntityX(), link.romEntityY());

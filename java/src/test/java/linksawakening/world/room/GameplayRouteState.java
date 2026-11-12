@@ -65,7 +65,7 @@ final class GameplayRouteState {
     int[] routeToRaccoon;
     int[] raccoonRouteRooms;
     boolean transformedDialogOpened;
-    RoomSession.ChestOpenResult tailKeyChest;
+    ChestOpenResult tailKeyChest;
     boolean tailKeyOwlDialogOpened;
     int tailKeyOwlDeadline;
     int tailKeyOwlExitDeadline;
@@ -85,22 +85,22 @@ final class GameplayRouteState {
     int chestIndex;
     int buttonDeadline;
     int chestAppearanceDeadline;
-    RoomSession.ChestOpenResult firstSmallKeyChest;
+    ChestOpenResult firstSmallKeyChest;
     int upperKeyDoorIndex;
     int lowerKeyDoorIndex;
     int firstKeyDoorLinkX;
     int firstKeyDoorLinkY;
     int rightCollisionBit;
     List<RoomEntity> cards;
-    RoomSession.ChestOpenResult secondSmallKeyChest;
+    ChestOpenResult secondSmallKeyChest;
     int movableBlockIndex;
     int hiddenStairsIndex;
     List<RoomEntity> beetles;
     int beetleDeadline;
-    RoomSession.ChestOpenResult featherChest;
+    ChestOpenResult featherChest;
     boolean hasFeather;
     int featherSubscreenSlot;
-    RoomSession.ChestOpenResult nightmareKeyChest;
+    ChestOpenResult nightmareKeyChest;
     RoomEntity rollingBones;
     int rollingBonesDeadline;
     RoomEntity moldorm;
@@ -188,7 +188,7 @@ final class GameplayRouteState {
     int compassChestContactX;
     int compassChestContactY;
     int compassChestInteractionLocation;
-    RoomSession.ChestOpenResult compassChest;
+    ChestOpenResult compassChest;
     int compassChestSlot;
     boolean compassRewardObserved;
     boolean compassDialogObserved;
@@ -203,7 +203,7 @@ final class GameplayRouteState {
     int stoneBeakChestContactX;
     int stoneBeakChestContactY;
     int stoneBeakChestInteractionLocation;
-    RoomSession.ChestOpenResult stoneBeakChest;
+    ChestOpenResult stoneBeakChest;
     int stoneBeakChestSlot;
     int stoneBeakDialogId;
     boolean stoneBeakRewardObserved;
@@ -225,7 +225,7 @@ final class GameplayRouteState {
     List<EntityCombatEvent> postStoneLoweringHit;
     int postStoneLoweringSwitchSlot;
     List<int[]> room38ChestPath;
-    RoomSession.ChestOpenResult room38Chest;
+    ChestOpenResult room38Chest;
     int room38ChestSlot;
     int room38DialogId;
     boolean room38RewardObserved;
@@ -235,7 +235,7 @@ final class GameplayRouteState {
     int room39EventDeadline;
     int room39ChestDeadline;
     List<int[]> room39ChestPath;
-    RoomSession.ChestOpenResult room39Chest;
+    ChestOpenResult room39Chest;
     int room39ChestSlot;
     boolean room39RewardObserved;
     boolean room39ChestEnded;
@@ -284,7 +284,7 @@ final class GameplayRouteState {
     List<Integer> booSlots;
     int braceletRevealDeadline;
     List<int[]> braceletChestPath;
-    RoomSession.ChestOpenResult braceletChest;
+    ChestOpenResult braceletChest;
     int braceletChestSlot;
     boolean braceletRewardObserved;
     boolean braceletChestEnded;
@@ -298,7 +298,7 @@ final class GameplayRouteState {
     Sword.CollisionBox room22SwordBox;
     List<EntityCombatEvent> room22SwitchHit;
     List<int[]> room22ChestPath;
-    RoomSession.ChestOpenResult room22Chest;
+    ChestOpenResult room22Chest;
     int room22ChestSlot;
     int room22DialogId;
     boolean room22RewardObserved;
@@ -312,7 +312,7 @@ final class GameplayRouteState {
     int polsDeathDeadline;
     int room27ChestIndex;
     int room27ChestRevealDeadline;
-    RoomSession.ChestOpenResult room27Chest;
+    ChestOpenResult room27Chest;
     int room27ChestSlot;
     int room27DialogId;
     boolean nightmareKeyRewardObserved;

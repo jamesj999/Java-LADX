@@ -30,12 +30,12 @@ class CrackedFloorGroundPhysicsTest {
         return session;
     }
 
-    private static RoomSession.LinkGroundFrame frame(
+    private static LinkGroundFrame frame(
             int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
-        return new RoomSession.LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
+        return new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
     }
 
-    private static RoomSession.LinkGroundFrame standing() {
+    private static LinkGroundFrame standing() {
         return frame(40, 40, false, false, false, false);
     }
 

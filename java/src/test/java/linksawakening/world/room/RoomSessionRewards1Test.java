@@ -417,7 +417,7 @@ final class RoomSessionRewards1Test {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xA0;
 
-        RoomSession.ChestOpenResult result =
+        ChestOpenResult result =
                 session.doors().tryOpenChest(0x18, 0x21, linksawakening.entity.Link.DIRECTION_UP, true, 1);
 
         assertTrue(result.opened());
@@ -468,7 +468,7 @@ final class RoomSessionRewards1Test {
         }
 
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
-        RoomSession.ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
     }

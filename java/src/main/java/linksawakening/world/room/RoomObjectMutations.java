@@ -83,12 +83,12 @@ final class RoomObjectMutations {
      * frame's pre-movement coordinates. Entity pushes, airborne frames and
      * skipped probes can make that older than one frame.
      */
-    boolean tickCrackedFloor(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
         return roomGroundMutations.tickCrackedFloor(frame, dialogGotItemActive);
     }
 
     /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */
-    boolean applyCrackedFloorGroundPhysics(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean applyCrackedFloorGroundPhysics(LinkGroundFrame frame, boolean dialogGotItemActive) {
         return roomGroundMutations.applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
     }
 

@@ -69,11 +69,13 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.ArrowShotResult;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.room.ShovelStartResult;
 import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
@@ -625,7 +627,7 @@ public final class SessionBootstrap {
                                 romDirection = link.applyRomItemDirectionFromInput();
                                 linkEntityX = link.romEntityX();
                                 linkEntityY = link.romEntityY();
-                                RoomSession.ShovelStartResult result = roomSession
+                                ShovelStartResult result = roomSession
                                         .playerItems()
                                         .startShovel(linkEntityX, linkEntityY, romDirection, link.isAirborne());
                                 return new Shovel.StartResult(result.started(), result.poking());
@@ -704,7 +706,7 @@ public final class SessionBootstrap {
                                     playWhooshForLastShot = false;
                                     return false;
                                 }
-                                RoomSession.ArrowShotResult result = roomSession
+                                ArrowShotResult result = roomSession
                                         .playerItems()
                                         .shootArrowResult(
                                                 link.romEntityX(),

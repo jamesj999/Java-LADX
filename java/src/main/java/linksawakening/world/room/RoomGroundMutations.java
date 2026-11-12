@@ -17,7 +17,7 @@ final class RoomGroundMutations {
      * frame's pre-movement coordinates. Entity pushes, airborne frames and
      * skipped probes can make that older than one frame.
      */
-    boolean tickCrackedFloor(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
 
         if (dependencies.location().activeRoom == null) return false;
         if (dependencies.roomPlayerItemActions().get().hookshotActive()) {
@@ -32,7 +32,7 @@ final class RoomGroundMutations {
         return dependencies.owner().get().applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
     }
     /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */
-    boolean applyCrackedFloorGroundPhysics(RoomSession.LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean applyCrackedFloorGroundPhysics(LinkGroundFrame frame, boolean dialogGotItemActive) {
 
         if (dependencies.location().activeRoom == null) return false;
         boolean bypassEntry = frame.dialogActive() || frame.roomTransitionActive();

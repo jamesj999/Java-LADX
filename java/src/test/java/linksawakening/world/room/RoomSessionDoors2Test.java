@@ -216,7 +216,7 @@ final class RoomSessionDoors2Test {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x04;
 
-        RoomSession.ShovelStartResult start = session.playerItems().startShovel(0x14, 0x26, 0, false);
+        ShovelStartResult start = session.playerItems().startShovel(0x14, 0x26, 0, false);
 
         assertTrue(start.started());
         assertTrue(start.poking());

@@ -206,23 +206,8 @@ public final class RoomSession {
     }
 
     /** Register inputs used by ApplyLinkMotionState/ApplyLinkGroundPhysics ($00:1794/$02:75BD). */
-    /** Move to top-level after app merge. */
-    @Deprecated(forRemoval = true)
-    public record LinkGroundFrame(
-            int pixelX,
-            int pixelY,
-            boolean airborne,
-            boolean interactionBlocked,
-            boolean dialogActive,
-            boolean roomTransitionActive,
-            int motionState,
-            int slowWalkingSpeed,
-            int itemUsageContext) {}
 
     /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
-    /** Move to top-level after app merge. */
-    @Deprecated(forRemoval = true)
-    public record ArrowShotResult(boolean spawned, boolean playWhoosh) {}
 
     /**
      * Applies the ROM pickup collision cadence to the active room entities.
@@ -236,14 +221,8 @@ public final class RoomSession {
     }
 
     /** Result of the ROM shovel probe made when Link begins using the item. */
-    /** Move to top-level after app merge. */
-    @Deprecated(forRemoval = true)
-    public record ShovelStartResult(boolean started, boolean poking, int location) {}
 
     /** Result of the source closed-chest action bridge. */
-    /** Move to top-level after app merge. */
-    @Deprecated(forRemoval = true)
-    public record ChestOpenResult(boolean opened, int itemType, int entitySlot, int location) {}
 
     /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
     void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
