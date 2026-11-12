@@ -48,6 +48,21 @@ class AppPackageTest {
         }
     }
 
+    @Test
+    void rawRomAccessIsConfinedToLegacyWorldWiring() throws Exception {
+        for (var type : ClassFileReferences.classes()) {
+            if (!type.name().startsWith(APP) && !type.name().startsWith("linksawakening/gameplay/")) continue;
+            for (var call : type.methods()) {
+                if (!call.owner().equals("linksawakening/rom/Rom")
+                        || !call.name().equals("unsafeBytes")) continue;
+                assertTrue(
+                        List.of(APP + "wiring/SessionWiring", APP + "wiring/WorldWiring")
+                                .contains(type.name()),
+                        type.name() + " exposes raw ROM bytes");
+            }
+        }
+    }
+
     private static String domain(String name) {
         String relative = name.substring(APP.length());
         int end = relative.indexOf('/');

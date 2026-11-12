@@ -38,6 +38,7 @@ final class SessionWiring {
             Host host,
             boolean headless) {
         Rom rom = RomWiring.loadROM();
+        // Legacy world APIs still require the ROM backing array; keep this escape inside wiring.
         transition.setRomData(rom.unsafeBytes());
         AppConfig config = headless
                 ? AppConfig.parse("{\"itemProfile\":\"NEW_GAME\",\"debugEnabled\":false}")
