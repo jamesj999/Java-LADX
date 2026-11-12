@@ -41,7 +41,7 @@ final class WarpEntranceRegressionTest {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
-        session.loadInitialOverworld(0xA2);
+        session.rooms().loadInitialOverworld(0xA2);
         link.setRoomEntryRomPosition(0x58, 0x52);
         input.onKeyEvent(config.upKey(), 1);
         for (int tick = 0; tick < 16 && !transition.isActive(); tick++) {
@@ -53,7 +53,7 @@ final class WarpEntranceRegressionTest {
         while (transition.isActive()) transition.tick();
         input.onKeyEvent(config.upKey(), 0);
         sounds.clear();
-        session.loadIndoor(0, 1);
+        session.rooms().loadIndoor(0, 1);
         link.setRoomEntryPixelPosition(0x40, 0x50);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(sounds.isEmpty(), "arrival leaves staircase inactive");
@@ -95,8 +95,8 @@ final class WarpEntranceRegressionTest {
                 new ItemRegistry());
         // Marin, Madam MeowMeow, kennel, witch, shop.
         for (int[] house : new int[][] {{0x10, 0xA3}, {0x10, 0xA7}, {0x12, 0xB2}, {0x0E, 0xA2}, {0x0E, 0xA1}}) {
-            session.loadIndoor(house[0], house[1]);
-            Warp exit = session.activeRoom().firstWarp();
+            session.rooms().loadIndoor(house[0], house[1]);
+            Warp exit = session.rooms().activeRoom().firstWarp();
             assertEquals(Warp.CATEGORY_OVERWORLD, exit.category());
             link.setRoomEntryPixelPosition(72, 128);
             coordinator.handleWarpAndIndoorBoundaries(link);
@@ -104,7 +104,7 @@ final class WarpEntranceRegressionTest {
             assertEquals(java.util.List.of(linksawakening.gameplay.GameplaySoundEvent.STAIRS), sounds);
             sounds.clear();
             while (transition.isActive()) transition.tick();
-            assertEquals(exit.destRoom(), session.currentRoomId());
+            assertEquals(exit.destRoom(), session.rooms().currentRoomId());
             assertEquals(exit.destX(), link.romEntityX());
             assertEquals(exit.destY(), link.romEntityY());
             for (int frame = 0; frame < 32; frame++) {

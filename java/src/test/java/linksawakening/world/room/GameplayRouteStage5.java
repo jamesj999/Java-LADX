@@ -21,28 +21,28 @@ final class GameplayRouteStage5 {
 
         walkToAndCrossOverworldBoundary(
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x24, route.session.currentRoomId());
+        assertEquals(0x24, route.session.rooms().currentRoomId());
         assertEquals(
                 5,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x7E)
                         .count());
-        assertTrue(route.session.activeRoom().entities().loadedEntities().stream()
+        assertTrue(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x6D));
         route.frame = letBowWowEatAllGoponga(route.session, route.collision, route.link, route.frame);
 
         walkToAndCrossOverworldBoundary(
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.LEFT);
-        assertEquals(0x23, route.session.currentRoomId());
+        assertEquals(0x23, route.session.rooms().currentRoomId());
         walkToAndCrossOverworldBoundary(
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x24, route.session.currentRoomId());
-        assertFalse(route.session.activeRoom().entities().loadedEntities().stream()
+        assertEquals(0x24, route.session.rooms().currentRoomId());
+        assertFalse(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x7E));
-        assertTrue(route.session.activeRoom().entities().loadedEntities().stream()
+        assertTrue(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x6D));
 
-        route.bottleGrottoEntrance = route.session.activeRoom().warps().stream()
+        route.bottleGrottoEntrance = route.session.rooms().activeRoom().warps().stream()
                 .filter(warp -> warp.destMap() == 0x01 && warp.destRoom() == 0x36)
                 .findFirst()
                 .orElseThrow();
@@ -64,26 +64,26 @@ final class GameplayRouteStage5 {
             route.transition.tick();
         }
 
-        assertEquals(Warp.CATEGORY_INDOOR, route.session.mapCategory());
-        assertEquals(0x01, route.session.activeRoom().mapId());
-        assertEquals(0x36, route.session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, route.session.rooms().mapCategory());
+        assertEquals(0x01, route.session.rooms().activeRoom().mapId());
+        assertEquals(0x36, route.session.rooms().currentRoomId());
         assertEquals(0x48, route.link.pixelX());
         assertEquals(0x6C, route.link.pixelY());
-        assertEquals(0x3A, route.session.indoorRoomPositionForSave());
-        assertEquals(0x01, route.session.bowWowState());
-        assertFalse(route.session.activeRoom().entities().loadedEntities().stream()
+        assertEquals(0x3A, route.session.rooms().indoorRoomPositionForSave());
+        assertEquals(0x01, route.session.story().bowWowState());
+        assertFalse(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x6D));
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x61)
                         .count());
         assertEquals(
                 4,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x2D)
                         .count());
-        route.bottleGrottoExit = route.session.activeRoom().warps().stream()
+        route.bottleGrottoExit = route.session.rooms().activeRoom().warps().stream()
                 .filter(warp -> warp.destMap() == 0x00 && warp.destRoom() == 0x24)
                 .findFirst()
                 .orElseThrow();
@@ -92,19 +92,21 @@ final class GameplayRouteStage5 {
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x31, route.session.currentRoomId());
+        assertEquals(0x31, route.session.rooms().currentRoomId());
         assertEquals(0x25, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xAB, objectAt(route.session, 0x34));
         assertEquals(0xAB, objectAt(route.session, 0x35));
-        assertEquals(0x08, route.session.activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0x08, route.session.rooms().activeRoom().shutterDoorMask() & 0x08);
         route.firstTorchApproach =
                 reachablePowderApproach(route.collision, route.link.pixelX(), route.link.pixelY(), 0x34);
         assertNotNull(route.firstTorchApproach, collisionGrid(route.collision));
         for (int[] position : route.firstTorchApproach.path()) {
             route.link.setPixelPosition(position[0], position[1]);
         }
-        assertTrue(route.session.sprinkleMagicPowder(
-                route.link.romEntityX(), route.link.romEntityY(), 0, route.firstTorchApproach.romDirection()));
+        assertTrue(route.session
+                .playerItems()
+                .sprinkleMagicPowder(
+                        route.link.romEntityX(), route.link.romEntityY(), 0, route.firstTorchApproach.romDirection()));
         assertTrue(route.playerState.consumeMagicPowder());
         for (int tick = 0; tick < 16; tick++) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
@@ -115,31 +117,42 @@ final class GameplayRouteStage5 {
         for (int[] position : route.secondTorchApproach.path()) {
             route.link.setPixelPosition(position[0], position[1]);
         }
-        assertTrue(route.session.sprinkleMagicPowder(
-                route.link.romEntityX(), route.link.romEntityY(), 0, route.secondTorchApproach.romDirection()));
+        assertTrue(route.session
+                .playerItems()
+                .sprinkleMagicPowder(
+                        route.link.romEntityX(), route.link.romEntityY(), 0, route.secondTorchApproach.romDirection()));
         assertTrue(route.playerState.consumeMagicPowder());
         for (int tick = 0; tick < 16; tick++) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(2, route.session.components.roomSessionViews().roomTriggerCountForTest());
         assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
-        assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x08);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x32, route.session.currentRoomId());
+        assertEquals(0x32, route.session.rooms().currentRoomId());
         assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
-        route.bottleStalfosSlots = route.session.activeRoom().entities().loadedEntities().stream()
+        route.bottleStalfosSlots = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1A || entity.type() == 0x1E)
                 .map(RoomEntity::slot)
                 .toList();
         assertEquals(2, route.bottleStalfosSlots.size());
-        route.session.tickEntitiesWithProjectileEvents(
-                route.frame++, route.link.romEntityX(), route.link.romEntityY(), 0, 0, Link.DIRECTION_RIGHT, false);
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(
+                        route.frame++,
+                        route.link.romEntityX(),
+                        route.link.romEntityY(),
+                        0,
+                        0,
+                        Link.DIRECTION_RIGHT,
+                        false);
         for (int stalfosSlot : route.bottleStalfosSlots) {
             for (int hit = 0;
                     hit < 8
                             && route.session
+                                            .rooms()
                                             .activeRoom()
                                             .entities()
                                             .slots()
@@ -148,24 +161,44 @@ final class GameplayRouteStage5 {
                                     == EntityStatus.ACTIVE;
                     hit++) {
                 RoomEntity stalfos =
-                        route.session.activeRoom().entities().slots().get(stalfosSlot);
+                        route.session.rooms().activeRoom().entities().slots().get(stalfosSlot);
                 List<int[]> combatPath =
                         reachableEntityContactPath(route.collision, route.link.pixelX(), route.link.pixelY(), stalfos);
                 assertNotNull(combatPath, collisionGrid(route.collision));
                 for (int[] position : combatPath) {
                     route.link.setPixelPosition(position[0], position[1]);
                 }
-                route.session.resolveEntityCombat(new EntityCombatInputs(
-                        stalfosSlot ^ 1,
-                        route.link.romEntityX(),
-                        route.link.romEntityY(),
-                        false,
-                        0,
-                        true,
-                        new SwordBox(true, stalfos.x(), 0x08, stalfos.y(), 0x08),
-                        linksawakening.world.entity.EnemyAttackContext.standard()));
+                route.session
+                        .entities()
+                        .resolveEntityCombat(new EntityCombatInputs(
+                                stalfosSlot ^ 1,
+                                route.link.romEntityX(),
+                                route.link.romEntityY(),
+                                false,
+                                0,
+                                true,
+                                new SwordBox(true, stalfos.x(), 0x08, stalfos.y(), 0x08),
+                                linksawakening.world.entity.EnemyAttackContext.standard()));
                 for (int recovery = 0; recovery < 0x20; recovery++) {
-                    route.session.tickEntitiesWithProjectileEvents(
+                    route.session
+                            .entities()
+                            .tickEntitiesWithProjectileEvents(
+                                    route.frame++,
+                                    route.link.romEntityX(),
+                                    route.link.romEntityY(),
+                                    0,
+                                    0,
+                                    Link.DIRECTION_RIGHT,
+                                    false);
+                }
+            }
+        }
+        route.firstBottleKeyDeadline = route.frame + 0x300;
+        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+                && route.frame < route.firstBottleKeyDeadline) {
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(
                             route.frame++,
                             route.link.romEntityX(),
                             route.link.romEntityY(),
@@ -173,28 +206,29 @@ final class GameplayRouteStage5 {
                             0,
                             Link.DIRECTION_RIGHT,
                             false);
-                }
-            }
-        }
-        route.firstBottleKeyDeadline = route.frame + 0x300;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
-                && route.frame < route.firstBottleKeyDeadline) {
-            route.session.tickEntitiesWithProjectileEvents(
-                    route.frame++, route.link.romEntityX(), route.link.romEntityY(), 0, 0, Link.DIRECTION_RIGHT, false);
         }
         assertEquals(
                 0,
                 route.session.components.roomSessionViews().activeRoomEventForTest(),
-                route.session.activeRoom().entities().loadedEntities().toString());
-        route.firstBottleKey = route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().toString());
+        route.firstBottleKey = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x30)
                 .findFirst()
                 .orElseThrow();
         route.bottleKeyLandingDeadline = route.frame + 0x200;
         while (route.firstBottleKey.z() != 0 && route.frame < route.bottleKeyLandingDeadline) {
-            route.session.tickEntitiesWithProjectileEvents(
-                    route.frame++, route.link.romEntityX(), route.link.romEntityY(), 0, 0, Link.DIRECTION_DOWN, false);
-            route.firstBottleKey = route.session.activeRoom().entities().slots().get(route.firstBottleKey.slot());
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++,
+                            route.link.romEntityX(),
+                            route.link.romEntityY(),
+                            0,
+                            0,
+                            Link.DIRECTION_DOWN,
+                            false);
+            route.firstBottleKey =
+                    route.session.rooms().activeRoom().entities().slots().get(route.firstBottleKey.slot());
         }
         assertEquals(0, route.firstBottleKey.z());
         route.keyPath = reachableEntityContactPath(
@@ -204,15 +238,17 @@ final class GameplayRouteStage5 {
             route.link.setPixelPosition(position[0], position[1]);
         }
         route.bottleKeyPickupFrame = (route.firstBottleKey.slot() & 0x01) == 0 ? route.frame | 1 : route.frame & ~1;
-        assertNotNull(route.session.collectEntityIfNeeded(
-                route.bottleKeyPickupFrame,
-                route.link.romEntityX(),
-                route.link.romEntityY(),
-                false,
-                true,
-                Link.DIRECTION_DOWN,
-                0));
-        assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
+        assertNotNull(route.session
+                .entities()
+                .collectEntityIfNeeded(
+                        route.bottleKeyPickupFrame,
+                        route.link.romEntityX(),
+                        route.link.romEntityY(),
+                        false,
+                        true,
+                        Link.DIRECTION_DOWN,
+                        0));
+        assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(18, route.playerState.magicPowderCount());
 
         // Room $33 is the first post-key Bottle Grotto room.  Enter it through
@@ -220,7 +256,7 @@ final class GameplayRouteStage5 {
         // the same ordered-play trace.
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x33, route.session.currentRoomId());
+        assertEquals(0x33, route.session.rooms().currentRoomId());
         assertEquals(0x00, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         route.room33RaisedBlockLocation = 0x62;
         assertEquals(0xDC, objectAt(route.session, route.room33RaisedBlockLocation));
@@ -241,22 +277,22 @@ final class GameplayRouteStage5 {
         assertEquals(0xC0, objectAt(route.session, 0x26));
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x66)
                         .count());
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x42)
                         .count());
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x16)
                         .count());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
 
-        route.crystalSwitch = route.session.activeRoom().entities().loadedEntities().stream()
+        route.crystalSwitch = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x66)
                 .findFirst()
                 .orElseThrow();
@@ -288,16 +324,22 @@ final class GameplayRouteStage5 {
                         route.swordBox.y(),
                         route.swordBox.height()),
                 "sword=" + route.swordBox + " crystal=" + route.crystalSwitch);
-        route.switchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
-                route.frame++,
-                route.link.romEntityX(),
-                route.link.romEntityY(),
-                false,
-                0,
-                true,
-                new SwordBox(
-                        true, route.swordBox.x(), route.swordBox.width(), route.swordBox.y(), route.swordBox.height()),
-                linksawakening.world.entity.EnemyAttackContext.standard()));
+        route.switchHit = route.session
+                .entities()
+                .resolveEntityCombat(new EntityCombatInputs(
+                        route.frame++,
+                        route.link.romEntityX(),
+                        route.link.romEntityY(),
+                        false,
+                        0,
+                        true,
+                        new SwordBox(
+                                true,
+                                route.swordBox.x(),
+                                route.swordBox.width(),
+                                route.swordBox.y(),
+                                route.swordBox.height()),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
         assertEquals(EntityStatus.ACTIVE, route.crystalSwitch.status());
         assertTrue(
                 route.switchHit.stream()
@@ -313,7 +355,7 @@ final class GameplayRouteStage5 {
 
         assertTrue(route.session.components.roomSessionViews().linkCollisionPointBlockedForTest(0x20, 0x60));
         for (int stage = 0; stage < 9; stage++) {
-            route.session.tickGameplayVBlank();
+            route.session.entityState().tickGameplayVBlank();
         }
         assertEquals(0x02, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         assertEquals(0x00, route.session.components.roomSessionViews().switchableObjectAnimationStageForTest());
@@ -327,32 +369,32 @@ final class GameplayRouteStage5 {
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x34, route.session.currentRoomId());
+        assertEquals(0x34, route.session.rooms().currentRoomId());
         assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(
                 2,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x8F)
                         .count());
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x2E)
                         .count());
         assertEquals(0x02, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         assertEquals(
                 2,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x8F)
                         .count());
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x2E)
                         .count());
 
-        route.maskedMimicSlots = route.session.activeRoom().entities().loadedEntities().stream()
+        route.maskedMimicSlots = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x8F)
                 .map(RoomEntity::slot)
                 .toList();
@@ -360,7 +402,7 @@ final class GameplayRouteStage5 {
         for (int maskedMimicSlot : route.maskedMimicSlots) {
             for (int hit = 0; hit < 2; hit++) {
                 RoomEntity maskedMimic =
-                        route.session.activeRoom().entities().slots().get(maskedMimicSlot);
+                        route.session.rooms().activeRoom().entities().slots().get(maskedMimicSlot);
                 assertEquals(EntityStatus.ACTIVE, maskedMimic.status());
                 int linkEntityX = maskedMimic.x();
                 int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
@@ -369,16 +411,19 @@ final class GameplayRouteStage5 {
                 route.session.components.entityInputs().setEntityPressedButtonsMask(0x08);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
-                maskedMimic = route.session.activeRoom().entities().slots().get(maskedMimicSlot);
-                List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
-                        route.frame++,
-                        linkEntityX,
-                        linkEntityY,
-                        false,
-                        0,
-                        true,
-                        new SwordBox(true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08),
-                        linksawakening.world.entity.EnemyAttackContext.standard()));
+                maskedMimic =
+                        route.session.rooms().activeRoom().entities().slots().get(maskedMimicSlot);
+                List<EntityCombatEvent> hitEvents = route.session
+                        .entities()
+                        .resolveEntityCombat(new EntityCombatInputs(
+                                route.frame++,
+                                linkEntityX,
+                                linkEntityY,
+                                false,
+                                0,
+                                true,
+                                new SwordBox(true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08),
+                                linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(
                         hitEvents.stream()
                                 .anyMatch(event -> event.slot() == maskedMimicSlot
@@ -387,18 +432,21 @@ final class GameplayRouteStage5 {
                         hitEvents.toString());
                 route.session.components.entityInputs().setEntityPressedButtonsMask(0);
                 for (int recovery = 0; recovery < 0x30; recovery++) {
-                    route.session.tickEntitiesWithProjectileEvents(
-                            route.frame++,
-                            route.link.romEntityX(),
-                            route.link.romEntityY(),
-                            0,
-                            0,
-                            route.link.direction(),
-                            false);
+                    route.session
+                            .entities()
+                            .tickEntitiesWithProjectileEvents(
+                                    route.frame++,
+                                    route.link.romEntityX(),
+                                    route.link.romEntityY(),
+                                    0,
+                                    0,
+                                    route.link.direction(),
+                                    false);
                 }
             }
             int mimicDeathDeadline = route.frame + 0x200;
             while (route.session
+                                    .rooms()
                                     .activeRoom()
                                     .entities()
                                     .slots()
@@ -411,6 +459,7 @@ final class GameplayRouteStage5 {
             assertEquals(
                     EntityStatus.DISABLED,
                     route.session
+                            .rooms()
                             .activeRoom()
                             .entities()
                             .slots()
@@ -421,7 +470,7 @@ final class GameplayRouteStage5 {
                 assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
                 assertEquals(
                         0,
-                        route.session.activeRoom().entities().loadedEntities().stream()
+                        route.session.rooms().activeRoom().entities().loadedEntities().stream()
                                 .filter(entity -> entity.type() == 0x30)
                                 .count());
             }
@@ -433,9 +482,9 @@ final class GameplayRouteStage5 {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
-        assertTrue(route.session.activeRoom().entities().loadedEntities().stream()
+        assertTrue(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x2E));
-        route.secondBottleKey = route.session.activeRoom().entities().loadedEntities().stream()
+        route.secondBottleKey = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x30)
                 .findFirst()
                 .orElseThrow();

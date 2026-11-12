@@ -6,56 +6,74 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
-interface RoomNavigationCompatibility {
+public interface RoomNavigationCompatibility {
     RoomSession facade();
 
+    /** @deprecated Use {@code rooms().loadInitialOverworld()}. */
+    @Deprecated(forRemoval = true)
     default void loadInitialOverworld(int roomId) {
-        facade().components.roomLoadCoordinator().loadInitialOverworld(roomId);
+        facade().rooms().loadInitialOverworld(roomId);
     }
 
+    /** @deprecated Use {@code transitions().loadWarpDestination()}. */
+    @Deprecated(forRemoval = true)
     default void loadWarpDestination(Warp warp) {
         facade().transitions().loadWarpDestination(warp);
     }
-    /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
+    /** @deprecated Use {@code transitions().tickDungeonTitleMessage()}. */
+    @Deprecated(forRemoval = true)
     default int tickDungeonTitleMessage(
             boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
         return facade().transitions()
                 .tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement);
     }
 
+    /** @deprecated Use {@code transitions().startAdjacentOverworldScroll()}. */
+    @Deprecated(forRemoval = true)
     default void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
         facade().transitions().startAdjacentOverworldScroll(scrollController, direction, linkScreenX, linkScreenY);
     }
-    /** Whether the most recent load follows room_transition.asm rather than the warp loader. */
+    /** @deprecated Use {@code rooms().musicSelectionIsScroll()}. */
+    @Deprecated(forRemoval = true)
     default boolean musicSelectionIsScroll() {
-        return facade().components.roomLoadCoordinator().musicSelectionIsScroll;
+        return facade().rooms().musicSelectionIsScroll();
     }
 
+    /** @deprecated Use {@code rooms().loadOverworld()}. */
+    @Deprecated(forRemoval = true)
     default void loadOverworld(int roomId) {
-        facade().components.roomLoadCoordinator().loadOverworld(roomId);
+        facade().rooms().loadOverworld(roomId);
     }
 
+    /** @deprecated Use {@code rooms().loadIndoor()}. */
+    @Deprecated(forRemoval = true)
     default void loadIndoor(int mapId, int roomId) {
-        facade().components.roomLoadCoordinator().loadIndoor(mapId, roomId);
+        facade().rooms().loadIndoor(mapId, roomId);
     }
-    /** Restores hMapRoom and the independently saved source wIndoorRoom byte. */
+    /** @deprecated Use {@code rooms().loadIndoorFromSavedPosition()}. */
+    @Deprecated(forRemoval = true)
     default void loadIndoorFromSavedPosition(int mapId, int roomId, int savedIndoorMapPosition) {
-        facade().components.roomLoadCoordinator().loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
+        facade().rooms().loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
     }
 
+    /** @deprecated Use {@code rooms().loadIndoor()}. */
+    @Deprecated(forRemoval = true)
     default void loadIndoor(int mapId, int roomId, int mapCategory) {
-        facade().components.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory);
+        facade().rooms().loadIndoor(mapId, roomId, mapCategory);
     }
-    /** Starts the source UseOcarina countdown consumed by active entities. */
+    /** @deprecated Use {@code transitions().startOcarina()}. */
+    @Deprecated(forRemoval = true)
     default boolean startOcarina(int countdown, int songFlags, int selectedSong) {
         return facade().transitions().startOcarina(countdown, songFlags, selectedSong);
     }
-    /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
+    /** @deprecated Use {@code transitions().ocarinaPlaying()}. */
+    @Deprecated(forRemoval = true)
     default boolean ocarinaPlaying() {
         return facade().transitions().ocarinaPlaying();
     }
-    /** Mirrors hLinkAnimationState $75/$76 while LinkPlayingOcarinaHandler runs. */
+    /** @deprecated Use {@code transitions().ocarinaAnimationState()}. */
+    @Deprecated(forRemoval = true)
     default int ocarinaAnimationState() {
         return facade().transitions().ocarinaAnimationState();
     }

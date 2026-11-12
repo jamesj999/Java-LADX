@@ -6,110 +6,152 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.world.entity.event.LiftedEntityState;
 
-interface RoomInspectionCompatibility {
+public interface RoomInspectionCompatibility {
     RoomSession facade();
-    /** Current ROM health byte for diagnostic captures. */
+    /** @deprecated Use {@code entityState().entityHealth()}. */
+    @Deprecated(forRemoval = true)
     default int entityHealth(int slot) {
-        return facade().components.roomSessionViews().entityHealth(slot);
+        return facade().entityState().entityHealth(slot);
     }
 
+    /** @deprecated Use {@code rooms().activeRoom()}. */
+    @Deprecated(forRemoval = true)
     default ActiveRoom activeRoom() {
-        return facade().components.roomSessionViews().activeRoom();
+        return facade().rooms().activeRoom();
     }
 
+    /** @deprecated Use {@code rooms().hasActiveRoom()}. */
+    @Deprecated(forRemoval = true)
     default boolean hasActiveRoom() {
-        return facade().components.roomSessionViews().hasActiveRoom();
+        return facade().rooms().hasActiveRoom();
     }
 
+    /** @deprecated Use {@code rooms().currentRoomId()}. */
+    @Deprecated(forRemoval = true)
     default int currentRoomId() {
-        return facade().components.roomSessionViews().currentRoomId();
+        return facade().rooms().currentRoomId();
     }
 
+    /** @deprecated Use {@code rooms().mapCategory()}. */
+    @Deprecated(forRemoval = true)
     default int mapCategory() {
-        return facade().components.roomSessionViews().mapCategory();
+        return facade().rooms().mapCategory();
     }
 
+    /** @deprecated Use {@code rooms().mapId()}. */
+    @Deprecated(forRemoval = true)
     default int mapId() {
-        return facade().components.roomSessionViews().mapId();
+        return facade().rooms().mapId();
     }
-    /**
-     * Returns the source {@code wIndoorRoom} value for the active indoor map.
-     * A negative result means this map has no ROM layout table, so the caller
-     * should preserve the existing save byte rather than inventing one.
-     */
+    /** @deprecated Use {@code rooms().indoorRoomPositionForSave()}. */
+    @Deprecated(forRemoval = true)
     default int indoorRoomPositionForSave() {
-        return facade().components.roomSessionViews().indoorRoomPositionForSave();
+        return facade().rooms().indoorRoomPositionForSave();
     }
-    /** Room-status bytes in the active dungeon's 8x8 ROM map order. */
+    /** @deprecated Use {@code dungeon().dungeonMinimapRoomStatusSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] dungeonMinimapRoomStatusSnapshot() {
-        return facade().components.roomSessionViews().dungeonMinimapRoomStatusSnapshot();
+        return facade().dungeon().dungeonMinimapRoomStatusSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().overworldRoomStatusSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] overworldRoomStatusSnapshot() {
-        return facade().components.roomSessionViews().overworldRoomStatusSnapshot();
+        return facade().dungeon().overworldRoomStatusSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().indoorARoomStatusSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] indoorARoomStatusSnapshot() {
-        return facade().components.roomSessionViews().indoorARoomStatusSnapshot();
+        return facade().dungeon().indoorARoomStatusSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().indoorBRoomStatusSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] indoorBRoomStatusSnapshot() {
-        return facade().components.roomSessionViews().indoorBRoomStatusSnapshot();
+        return facade().dungeon().indoorBRoomStatusSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().colorDungeonRoomStatusSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] colorDungeonRoomStatusSnapshot() {
-        return facade().components.roomSessionViews().colorDungeonRoomStatusSnapshot();
+        return facade().dungeon().colorDungeonRoomStatusSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().dungeonItemFlagsSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] dungeonItemFlagsSnapshot() {
-        return facade().components.roomSessionViews().dungeonItemFlagsSnapshot();
+        return facade().dungeon().dungeonItemFlagsSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().colorDungeonItemFlagsSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] colorDungeonItemFlagsSnapshot() {
-        return facade().components.roomSessionViews().colorDungeonItemFlagsSnapshot();
+        return facade().dungeon().colorDungeonItemFlagsSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().currentDungeonItemFlagsSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] currentDungeonItemFlagsSnapshot() {
-        return facade().components.roomSessionViews().currentDungeonItemFlagsSnapshot();
+        return facade().dungeon().currentDungeonItemFlagsSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().restoreDungeonItemFlags()}. */
+    @Deprecated(forRemoval = true)
     default void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
-        facade().components.roomSessionViews().restoreDungeonItemFlags(dungeonFlags, colorFlags);
+        facade().dungeon().restoreDungeonItemFlags(dungeonFlags, colorFlags);
     }
-    /** Snapshots wHasInstrument1..wHasInstrument8 (DB65..DB6C). */
+    /** @deprecated Use {@code dungeon().dungeonProgressFlagsSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default byte[] dungeonProgressFlagsSnapshot() {
-        return facade().components.roomSessionViews().dungeonProgressFlagsSnapshot();
+        return facade().dungeon().dungeonProgressFlagsSnapshot();
     }
 
+    /** @deprecated Use {@code dungeon().restoreDungeonProgressFlags()}. */
+    @Deprecated(forRemoval = true)
     default void restoreDungeonProgressFlags(byte[] flags) {
-        facade().components.roomSessionViews().restoreDungeonProgressFlags(flags);
+        facade().dungeon().restoreDungeonProgressFlags(flags);
     }
 
+    /** @deprecated Use {@code rooms().palettes()}. */
+    @Deprecated(forRemoval = true)
     default int[][] palettes() {
-        return facade().components.roomSessionViews().palettes();
+        return facade().rooms().palettes();
     }
 
+    /** @deprecated Use {@code rooms().heartPiecePickupActive()}. */
+    @Deprecated(forRemoval = true)
     default boolean heartPiecePickupActive() {
-        return facade().components.roomSessionViews().heartPiecePickupActive();
+        return facade().rooms().heartPiecePickupActive();
     }
 
+    /** @deprecated Use {@code rooms().instrumentTrace()}. */
+    @Deprecated(forRemoval = true)
     default String instrumentTrace() {
-        return facade().components.roomSessionViews().instrumentTrace();
+        return facade().rooms().instrumentTrace();
     }
 
+    /** @deprecated Use {@code rooms().moblinKingTrace()}. */
+    @Deprecated(forRemoval = true)
     default String moblinKingTrace() {
-        return facade().components.roomSessionViews().moblinKingTrace();
+        return facade().rooms().moblinKingTrace();
     }
 
+    /** @deprecated Use {@code rooms().renderSnapshot()}. */
+    @Deprecated(forRemoval = true)
     default RoomRenderSnapshot renderSnapshot() {
-        return facade().components.roomSessionViews().renderSnapshot();
+        return facade().rooms().renderSnapshot();
     }
 
+    /** @deprecated Use {@code rooms().liftedEntityState()}. */
+    @Deprecated(forRemoval = true)
     default LiftedEntityState liftedEntityState() {
-        return facade().components.roomSessionViews().liftedEntityState();
+        return facade().rooms().liftedEntityState();
     }
 
+    /** @deprecated Use {@code entityState().setColorShellSoundSink()}. */
+    @Deprecated(forRemoval = true)
     default void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        facade().components.roomSessionViews().setColorShellSoundSink(soundSink);
+        facade().entityState().setColorShellSoundSink(soundSink);
     }
 }

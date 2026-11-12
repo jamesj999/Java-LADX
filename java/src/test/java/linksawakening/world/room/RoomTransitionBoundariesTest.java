@@ -31,7 +31,7 @@ final class RoomTransitionBoundariesTest {
         RomTables tables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(tables);
         RoomSession session = newSession(rom, tables, collision);
-        session.loadInitialOverworld(0x82);
+        session.rooms().loadInitialOverworld(0x82);
         ScrollController scroll = new ScrollController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
                 session, new RoomBoundaryController(), new TransitionController(), scroll);
@@ -56,7 +56,7 @@ final class RoomTransitionBoundariesTest {
             coordinator.handleOverworldBoundary(link);
         }
         assertTrue(scroll.isActive());
-        assertEquals(0x92, session.currentRoomId());
+        assertEquals(0x92, session.rooms().currentRoomId());
         // Model a continuous cliff at the destination's north edge using
         // the ROM's full-solid object physics, then open ground below it.
         int solidObject = 0x00;
@@ -100,23 +100,23 @@ final class RoomTransitionBoundariesTest {
                 new PlayerState(),
                 new ItemRegistry());
 
-        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
         link.setPixelPosition(0x50, 0x40);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertEquals(0x01, link.romPhysicsModifier());
 
         link.setRomPhysicsModifier(0x02);
-        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_INDOOR);
+        session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_INDOOR);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertEquals(0x00, link.romPhysicsModifier(), "top-down reload resets a prior side-view modifier");
 
-        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertEquals(0x01, link.romPhysicsModifier(), "same-room side-view reload restores the source entry default");
 
         link.setRomPhysicsModifier(0x02);
         RoomSession restoredSession = newSession(rom, romTables, collision);
-        restoredSession.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        restoredSession.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
         RoomTransitionCoordinator restoredCoordinator = new RoomTransitionCoordinator(
                 restoredSession, new RoomBoundaryController(), new TransitionController(), new ScrollController());
         restoredCoordinator.handleWarpAndIndoorBoundaries(link);
@@ -130,8 +130,8 @@ final class RoomTransitionBoundariesTest {
         for (boolean sideView : new boolean[] {false, true}) {
             OverworldCollision collision = new OverworldCollision(tables);
             RoomSession session = newSession(rom, tables, collision);
-            session.loadIndoor(sideView ? 0 : 0x10, sideView ? 6 : 0xA3);
-            Warp warp = session.activeRoom().firstWarp();
+            session.rooms().loadIndoor(sideView ? 0 : 0x10, sideView ? 6 : 0xA3);
+            Warp warp = session.rooms().activeRoom().firstWarp();
             assertEquals(sideView, warp.category() == Warp.CATEGORY_SIDESCROLL);
             if (!sideView) {
                 int[] objects = roomWithPitAt(1, 1);
@@ -167,8 +167,8 @@ final class RoomTransitionBoundariesTest {
             coordinator.handleWarpAndIndoorBoundaries(link);
             assertTrue(transition.isActive());
             while (transition.isActive()) transition.tick();
-            assertEquals(warp.destRoom(), session.currentRoomId());
-            assertEquals(warp.category(), session.mapCategory());
+            assertEquals(warp.destRoom(), session.rooms().currentRoomId());
+            assertEquals(warp.category(), session.rooms().mapCategory());
             assertEquals(sideView ? sourceY : (sourceX & 0xF0) + 8, link.romEntityX());
             assertEquals(sideView ? warp.destY() : sourceY & 0xF0, link.romEntityY());
             assertEquals(sideView ? 0 : 0x70, link.romEntityZ());
@@ -184,10 +184,10 @@ final class RoomTransitionBoundariesTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadInitialOverworld(0x51);
-        session.tickEntities(0, 0x78, 0x60, 0, 1);
-        session.tickEntities(1, 0x78, 0x1F, 0, 1);
-        assertTrue(session.shouldGetLostInMysteriousWoods());
+        session.rooms().loadInitialOverworld(0x51);
+        session.entities().tickEntities(0, 0x78, 0x60, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x1F, 0, 1);
+        assertTrue(session.story().shouldGetLostInMysteriousWoods());
 
         ScrollController scroll = new ScrollController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -204,7 +204,7 @@ final class RoomTransitionBoundariesTest {
 
         coordinator.handleOverworldBoundary(link);
 
-        assertEquals(0x63, session.currentRoomId());
+        assertEquals(0x63, session.rooms().currentRoomId());
         assertTrue(scroll.isActive());
         assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
@@ -217,9 +217,9 @@ final class RoomTransitionBoundariesTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadIndoor(0x00, 0x25);
-        assertTrue(session.startOcarina(0x01, 0x02, 0x01));
-        session.tickEntities(0);
+        session.rooms().loadIndoor(0x00, 0x25);
+        assertTrue(session.transitions().startOcarina(0x01, 0x02, 0x01));
+        session.entities().tickEntities(0);
 
         TransitionController transitionController = new TransitionController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -241,7 +241,7 @@ final class RoomTransitionBoundariesTest {
         }
 
         assertEquals(TransitionController.State.MANBO_OUT, transitionController.state());
-        assertEquals(0x17, session.currentRoomId());
+        assertEquals(0x17, session.rooms().currentRoomId());
         assertEquals(0x48, link.pixelX());
         assertEquals(0x6C, link.pixelY());
 

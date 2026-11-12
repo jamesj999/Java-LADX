@@ -3,76 +3,93 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSession.*;
 import static linksawakening.world.room.RoomSessionRules.*;
 
-interface RoomStoryCompatibility {
+public interface RoomStoryCompatibility {
     RoomSession facade();
 
+    /** @deprecated Use {@code story().applyMarinWakeUpPresentation()}. */
+    @Deprecated(forRemoval = true)
     default boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
         return facade().story().applyMarinWakeUpPresentation(x, y, spriteVariant);
     }
-    /** Tarin's indoor handler updates his facing every 32 frames, even during the bed scene. */
+    /** @deprecated Use {@code story().updateHouseTarinPresentation()}. */
+    @Deprecated(forRemoval = true)
     default void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
         facade().story().updateHouseTarinPresentation(frameCounter, linkX, linkY);
     }
-    /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
+    /** @deprecated Use {@code story().setBirdKeyOwned()}. */
+    @Deprecated(forRemoval = true)
     default void setBirdKeyOwned(boolean owned) {
         facade().story().setBirdKeyOwned(owned);
     }
-    /** Supplies wHasTailKey to the active owl-event handler. */
+    /** @deprecated Use {@code story().setTailKeyOwned()}. */
+    @Deprecated(forRemoval = true)
     default void setTailKeyOwned(boolean owned) {
         facade().story().setTailKeyOwned(owned);
     }
-    /**
-     * Clears the persistent WRAM-shaped world state created for a fresh save.
-     * The source new-file path starts with zeroed room-status, entity-clear,
-     * dungeon-item, and dungeon-progress regions; retaining any of these from
-     * a previously played file can incorrectly unload opening entities such
-     * as the beach sword and owl.
-     */
+    /** @deprecated Use {@code story().initializeNewGameWorldState()}. */
+    @Deprecated(forRemoval = true)
     default void initializeNewGameWorldState() {
         facade().story().initializeNewGameWorldState();
     }
-    /** Restores the room-status WRAM tables loaded by the source save path. */
+    /** @deprecated Use {@code story().restoreRoomStatuses()}. */
+    @Deprecated(forRemoval = true)
     default void restoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
         facade().story().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
     }
-    /** Mirrors wIsBowWowFollowingLink, including BOW_WOW_KIDNAPPED=$80. */
+    /** @deprecated Use {@code story().bowWowState()}. */
+    @Deprecated(forRemoval = true)
     default int bowWowState() {
         return facade().story().bowWowState();
     }
 
+    /** @deprecated Use {@code story().setBowWowState()}. */
+    @Deprecated(forRemoval = true)
     default void setBowWowState(int state) {
         facade().story().setBowWowState(state);
     }
 
+    /** @deprecated Use {@code story().richardSpokenFlag()}. */
+    @Deprecated(forRemoval = true)
     default int richardSpokenFlag() {
         return facade().story().richardSpokenFlag();
     }
 
+    /** @deprecated Use {@code story().setRichardSpokenFlag()}. */
+    @Deprecated(forRemoval = true)
     default void setRichardSpokenFlag(int flag) {
         facade().story().setRichardSpokenFlag(flag);
     }
-    /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
+    /** @deprecated Use {@code story().tarinFlag()}. */
+    @Deprecated(forRemoval = true)
     default int tarinFlag() {
         return facade().story().tarinFlag();
     }
 
+    /** @deprecated Use {@code story().setTarinFlag()}. */
+    @Deprecated(forRemoval = true)
     default void setTarinFlag(int flag) {
         facade().story().setTarinFlag(flag);
     }
-    /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
+    /** @deprecated Use {@code story().setHouseNpcTradeItem()}. */
+    @Deprecated(forRemoval = true)
     default void setHouseNpcTradeItem(int tradeItem) {
         facade().story().setHouseNpcTradeItem(tradeItem);
     }
 
+    /** @deprecated Use {@code story().setChestPlayerLevels()}. */
+    @Deprecated(forRemoval = true)
     default void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         facade().story().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
     }
 
+    /** @deprecated Use {@code story().setEntityDefaultMusicTrack()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityDefaultMusicTrack(int trackId) {
         facade().story().setEntityDefaultMusicTrack(trackId);
     }
-    /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
+    /** @deprecated Use {@code story().shouldGetLostInMysteriousWoods()}. */
+    @Deprecated(forRemoval = true)
     default boolean shouldGetLostInMysteriousWoods() {
         return facade().story().shouldGetLostInMysteriousWoods();
     }

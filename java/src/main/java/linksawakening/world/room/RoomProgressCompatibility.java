@@ -3,46 +3,53 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSession.*;
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.transition.Warp;
 
-interface RoomProgressCompatibility {
+public interface RoomProgressCompatibility {
     RoomSession facade();
-    /** Called only when a warp crosses the indoor/overworld boundary. */
+    /** @deprecated Use {@code progress().onMapBoundaryWarp()}. */
+    @Deprecated(forRemoval = true)
     default void onMapBoundaryWarp(Runnable callback) {
-        facade().components.location().mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
+        facade().progress().onMapBoundaryWarp(callback);
     }
-    /** Source wSpawnLocationData, retained across scrolling but updated by non-side-view warps. */
+    /** @deprecated Use {@code progress().respawnPoint()}. */
+    @Deprecated(forRemoval = true)
     default Warp respawnPoint() {
-        return facade().components.location().respawnPoint;
+        return facade().progress().respawnPoint();
     }
 
+    /** @deprecated Use {@code progress().respawnIndoorRoom()}. */
+    @Deprecated(forRemoval = true)
     default int respawnIndoorRoom() {
-        return facade().components.location().respawnIndoorRoom;
+        return facade().progress().respawnIndoorRoom();
     }
 
+    /** @deprecated Use {@code progress().setRespawnPoint()}. */
+    @Deprecated(forRemoval = true)
     default void setRespawnPoint(Warp point, int indoorRoom) {
-        facade().components.location().respawnPoint = point;
-        facade().components.location().respawnIndoorRoom = indoorRoom;
+        facade().progress().setRespawnPoint(point, indoorRoom);
     }
-    /** $01:4244 clears only the Piece of Power counter, preserving the acorn counter. */
+    /** @deprecated Use {@code progress().clearGameOverPowerCounter()}. */
+    @Deprecated(forRemoval = true)
     default void clearGameOverPowerCounter() {
-        facade().components.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(
-                facade().components.entityFrame().enemyDropCounters.guardianAcornCounter(), 0);
-        facade().components.roomLoadCoordinator().configureEnemyDropRuntime();
+        facade().progress().clearGameOverPowerCounter();
     }
 
+    /** @deprecated Use {@code progress().resetGameOverSwitchBlocks()}. */
+    @Deprecated(forRemoval = true)
     default void resetGameOverSwitchBlocks() {
-        facade().components.entityFrame().recentRoomEntityClears.reset();
-        facade().components.terrain().switchBlocksState = 0;
-        facade().components.terrain().switchableObjectAnimationStage = 0;
+        facade().progress().resetGameOverSwitchBlocks();
     }
 
+    /** @deprecated Use {@code dungeon().setDungeonItemForDebug()}. */
+    @Deprecated(forRemoval = true)
     default void setDungeonItemForDebug(int mapId, int index, int value) {
-        facade().components.roomState().dungeonItemState.setFlagForDebug(mapId, index, value);
+        facade().dungeon().setDungeonItemForDebug(mapId, index, value);
     }
 
+    /** @deprecated Use {@code entityState().entityDefaultMusicTrack()}. */
+    @Deprecated(forRemoval = true)
     default int entityDefaultMusicTrack() {
-        return facade().components.followers().entityDefaultMusicTrack;
+        return facade().entityState().entityDefaultMusicTrack();
     }
 }

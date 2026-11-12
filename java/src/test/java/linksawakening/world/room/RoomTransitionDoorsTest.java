@@ -31,21 +31,21 @@ final class RoomTransitionDoorsTest {
         RomTables tables = RomTables.loadFromRom(rom);
         RoomSession session = newSession(rom, tables, new OverworldCollision(tables));
         PlayerState player = new PlayerState();
-        session.onMapBoundaryWarp(player::clearActivePowerUpForWarp);
-        session.loadInitialOverworld(0x82);
+        session.progress().onMapBoundaryWarp(player::clearActivePowerUpForWarp);
+        session.rooms().loadInitialOverworld(0x82);
         player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
         player.applyRomEnemyDamage(1);
-        session.startAdjacentOverworldScroll(new ScrollController(), ScrollController.RIGHT, 144, 64);
+        session.transitions().startAdjacentOverworldScroll(new ScrollController(), ScrollController.RIGHT, 144, 64);
         assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER, player.activePowerUp());
-        session.loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
+        session.transitions().loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
         assertEquals(PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER, player.activePowerUp());
-        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
+        session.transitions().loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
         assertEquals(0, player.activePowerUp());
         assertEquals(1, player.powerUpHits());
         player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
-        session.loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
+        session.transitions().loadWarpDestination(new Warp(Warp.CATEGORY_INDOOR, 1, 0, 80, 80, 0));
         assertEquals(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN, player.activePowerUp());
-        session.loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
+        session.transitions().loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0x82, 80, 80, 0));
         assertEquals(0, player.activePowerUp());
     }
 
@@ -55,7 +55,7 @@ final class RoomTransitionDoorsTest {
         RomTables tables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(tables);
         RoomSession session = newSession(rom, tables, collision);
-        session.loadIndoor(0x02, 0x56);
+        session.rooms().loadIndoor(0x02, 0x56);
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[][] cases = {
             {0x40, 0x0A, Link.DIRECTION_UP, config.upKey(), 0x01, 0, -1},
@@ -92,12 +92,12 @@ final class RoomTransitionDoorsTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadIndoor(0x01, 0x31);
+        session.rooms().loadIndoor(0x01, 0x31);
 
         assertEquals(0x25, session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xAB, objectAt(session, 0x34));
         assertEquals(0xAB, objectAt(session, 0x35));
-        assertEquals(0x08, session.activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0x08, session.rooms().activeRoom().shutterDoorMask() & 0x08);
         for (int tick = 0; tick < 9; tick++) tickInteractiveEntities(session, tick, 0x40, 0x50);
         int closedEastDoorObject = objectAt(session, 0x39);
         int[] closedEastDoorTiles = roomObjectTiles(session, 0x39);
@@ -105,18 +105,18 @@ final class RoomTransitionDoorsTest {
         assertEquals(0x3C, objectAt(session, 0x49));
 
         int frame = 0;
-        assertTrue(session.sprinkleMagicPowder(0x33, 0x39, 0, 0));
+        assertTrue(session.playerItems().sprinkleMagicPowder(0x33, 0x39, 0, 0));
         for (int tick = 0; tick < 16; tick++) {
             tickInteractiveEntities(session, frame++, 0x40, 0x50);
         }
-        assertTrue(session.sprinkleMagicPowder(0x43, 0x39, 0, 0));
+        assertTrue(session.playerItems().sprinkleMagicPowder(0x43, 0x39, 0, 0));
         for (int tick = 0; tick < 16; tick++) {
             tickInteractiveEntities(session, frame++, 0x50, 0x50);
         }
 
         assertEquals(2, session.components.roomSessionViews().roomTriggerCountForTest());
         assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
-        assertEquals(0, session.activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0, session.rooms().activeRoom().shutterDoorMask() & 0x08);
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));
         assertFalse(java.util.Arrays.equals(closedEastDoorTiles, roomObjectTiles(session, 0x39)));
@@ -128,9 +128,9 @@ final class RoomTransitionDoorsTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadInitialOverworld(0x92);
-        session.loadIndoor(MAP_WITH_NO_WARP_ROOM, INDOOR_ROOM_WITH_NO_WARPS);
-        assertFalse(session.activeRoom().hasWarps());
+        session.rooms().loadInitialOverworld(0x92);
+        session.rooms().loadIndoor(MAP_WITH_NO_WARP_ROOM, INDOOR_ROOM_WITH_NO_WARPS);
+        assertFalse(session.rooms().activeRoom().hasWarps());
 
         ScrollController scrollController = new ScrollController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -151,7 +151,7 @@ final class RoomTransitionDoorsTest {
 
         assertTrue(scrollController.isActive());
         assertEquals(ScrollController.RIGHT, scrollController.direction());
-        assertEquals(0x01, session.currentRoomId());
+        assertEquals(0x01, session.rooms().currentRoomId());
         assertEquals(0x00, link.pixelX());
         assertEquals(0x28, link.pixelY());
 
@@ -171,9 +171,11 @@ final class RoomTransitionDoorsTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadIndoor(0x10, 0xA3);
-        assertTrue(session.activeRoom().indoorHasSouthEntrance());
-        assertEquals(Warp.CATEGORY_OVERWORLD, session.activeRoom().firstWarp().category());
+        session.rooms().loadIndoor(0x10, 0xA3);
+        assertTrue(session.rooms().activeRoom().indoorHasSouthEntrance());
+        assertEquals(
+                Warp.CATEGORY_OVERWORLD,
+                session.rooms().activeRoom().firstWarp().category());
 
         TransitionController transition = new TransitionController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -191,8 +193,8 @@ final class RoomTransitionDoorsTest {
         coordinator.handleWarpAndIndoorBoundaries(link);
         for (int frame = 0; frame < 16; frame++) transition.tick();
 
-        assertEquals(Warp.CATEGORY_OVERWORLD, session.mapCategory());
-        assertEquals(0xA2, session.currentRoomId());
+        assertEquals(Warp.CATEGORY_OVERWORLD, session.rooms().mapCategory());
+        assertEquals(0xA2, session.rooms().currentRoomId());
         assertEquals(0x50, link.pixelX());
         assertEquals(0x42, link.pixelY());
     }
@@ -203,10 +205,11 @@ final class RoomTransitionDoorsTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadInitialOverworld(0x92);
-        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
-        assertEquals(Warp.CATEGORY_INDOOR, session.activeRoom().firstWarp().category());
-        assertEquals(0x03, session.activeRoom().firstWarp().destRoom());
+        session.rooms().loadInitialOverworld(0x92);
+        session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        assertEquals(
+                Warp.CATEGORY_INDOOR, session.rooms().activeRoom().firstWarp().category());
+        assertEquals(0x03, session.rooms().activeRoom().firstWarp().destRoom());
 
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();
@@ -227,8 +230,8 @@ final class RoomTransitionDoorsTest {
         assertTrue(transition.isActive());
         assertFalse(scroll.isActive());
         while (transition.isActive()) transition.tick();
-        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
-        assertEquals(0x03, session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, session.rooms().mapCategory());
+        assertEquals(0x03, session.rooms().currentRoomId());
         assertEquals(0x80, link.pixelX());
         assertEquals(0x10, link.pixelY());
     }
@@ -239,8 +242,8 @@ final class RoomTransitionDoorsTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadInitialOverworld(0x92);
-        session.loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
+        session.rooms().loadInitialOverworld(0x92);
+        session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
 
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();
@@ -258,7 +261,7 @@ final class RoomTransitionDoorsTest {
 
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(scroll.isActive());
-        assertEquals(0x18, session.currentRoomId());
+        assertEquals(0x18, session.rooms().currentRoomId());
         while (scroll.isActive()) scroll.tick(8);
 
         link.setPixelPosition(0x20, -5);
@@ -266,8 +269,8 @@ final class RoomTransitionDoorsTest {
         assertTrue(transition.isActive());
         assertFalse(scroll.isActive());
         while (transition.isActive()) transition.tick();
-        assertEquals(Warp.CATEGORY_INDOOR, session.mapCategory());
-        assertEquals(0x01, session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, session.rooms().mapCategory());
+        assertEquals(0x01, session.rooms().currentRoomId());
         assertEquals(0x40, link.pixelX());
         assertEquals(0x50, link.pixelY());
     }

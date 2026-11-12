@@ -20,7 +20,8 @@ final class GameplayRouteStage7 {
     static void run(GameplayRouteState route) throws Exception {
 
         for (int keeseSlot : route.room30KeeseSlots) {
-            RoomEntity keese = route.session.activeRoom().entities().slots().get(keeseSlot);
+            RoomEntity keese =
+                    route.session.rooms().activeRoom().entities().slots().get(keeseSlot);
             List<int[]> keesePath =
                     reachableEntityContactPath(route.collision, route.link.pixelX(), route.link.pixelY(), keese);
             assertNotNull(keesePath, collisionGrid(route.collision));
@@ -28,7 +29,7 @@ final class GameplayRouteStage7 {
                 route.link.setPixelPosition(position[0], position[1]);
             }
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
-            keese = route.session.activeRoom().entities().slots().get(keeseSlot);
+            keese = route.session.rooms().activeRoom().entities().slots().get(keeseSlot);
             int keeseDeltaX = signedByteDelta(keese.x(), route.link.romEntityX());
             int keeseDeltaY = signedByteDelta(keese.y(), route.link.romEntityY());
             route.link.setDirection(
@@ -46,16 +47,22 @@ final class GameplayRouteStage7 {
                     linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                             keese, keeseSwordBox.x(), keeseSwordBox.width(), keeseSwordBox.y(), keeseSwordBox.height()),
                     "sword=" + keeseSwordBox + " keese=" + keese);
-            List<EntityCombatEvent> keeseHit = route.session.resolveEntityCombat(new EntityCombatInputs(
-                    route.frame++,
-                    route.link.romEntityX(),
-                    route.link.romEntityY(),
-                    false,
-                    0,
-                    true,
-                    new SwordBox(
-                            true, keeseSwordBox.x(), keeseSwordBox.width(), keeseSwordBox.y(), keeseSwordBox.height()),
-                    linksawakening.world.entity.EnemyAttackContext.standard()));
+            List<EntityCombatEvent> keeseHit = route.session
+                    .entities()
+                    .resolveEntityCombat(new EntityCombatInputs(
+                            route.frame++,
+                            route.link.romEntityX(),
+                            route.link.romEntityY(),
+                            false,
+                            0,
+                            true,
+                            new SwordBox(
+                                    true,
+                                    keeseSwordBox.x(),
+                                    keeseSwordBox.width(),
+                                    keeseSwordBox.y(),
+                                    keeseSwordBox.height()),
+                            linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     keeseHit.stream()
                             .anyMatch(
@@ -65,19 +72,32 @@ final class GameplayRouteStage7 {
                 tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
             }
             int keeseDeathDeadline = route.frame + 0x200;
-            while (route.session.activeRoom().entities().slots().get(keeseSlot).status() != EntityStatus.DISABLED
+            while (route.session
+                                    .rooms()
+                                    .activeRoom()
+                                    .entities()
+                                    .slots()
+                                    .get(keeseSlot)
+                                    .status()
+                            != EntityStatus.DISABLED
                     && route.frame < keeseDeathDeadline) {
                 tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
             }
             assertEquals(
                     EntityStatus.DISABLED,
-                    route.session.activeRoom().entities().slots().get(keeseSlot).status());
+                    route.session
+                            .rooms()
+                            .activeRoom()
+                            .entities()
+                            .slots()
+                            .get(keeseSlot)
+                            .status());
             assertEquals(
                     4,
-                    route.session.activeRoom().entities().loadedEntities().stream()
+                    route.session.rooms().activeRoom().entities().loadedEntities().stream()
                             .filter(entity -> entity.type() == 0x27)
                             .count());
-            if (route.session.activeRoom().entities().loadedEntities().stream()
+            if (route.session.rooms().activeRoom().entities().loadedEntities().stream()
                     .anyMatch(entity -> entity.type() == 0x19)) {
                 assertEquals(0x21, route.session.components.roomSessionViews().activeRoomEventForTest());
             }
@@ -89,14 +109,14 @@ final class GameplayRouteStage7 {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
-        assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x01);
+        assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x01);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x2E, route.session.currentRoomId());
+        assertEquals(0x2E, route.session.rooms().currentRoomId());
         assertEquals(0x21, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x20)
                         .count());
         assertEquals(0x0F, objectAt(route.session, 0x13));
@@ -104,12 +124,12 @@ final class GameplayRouteStage7 {
         assertEquals(0x0F, objectAt(route.session, 0x33));
         assertEquals(0xA0, objectAt(route.session, 0x24));
 
-        route.hardhat = route.session.activeRoom().entities().loadedEntities().stream()
+        route.hardhat = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x20)
                 .findFirst()
                 .orElseThrow();
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
-        route.hardhat = route.session.activeRoom().entities().slots().get(route.hardhat.slot());
+        route.hardhat = route.session.rooms().activeRoom().entities().slots().get(route.hardhat.slot());
         assertEquals(EntityStatus.ACTIVE, route.hardhat.status());
         assertEquals(0x21, route.session.components.roomSessionViews().activeRoomEventForTest());
 
@@ -142,8 +162,14 @@ final class GameplayRouteStage7 {
         route.stoneBeakChestInteractionLocation = (Math.floorDiv(route.link.pixelY() + 0x05, 0x10) << 4)
                 | Math.floorDiv(route.link.pixelX() + 0x08, 0x10);
         assertEquals(0x24, route.stoneBeakChestInteractionLocation);
-        route.stoneBeakChest = route.session.tryOpenChest(
-                route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.stoneBeakChest = route.session
+                .doors()
+                .tryOpenChest(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        Link.DIRECTION_UP,
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.stoneBeakChest.opened());
         assertEquals(ChestContentsTable.CHEST_STONE_BEAK, route.stoneBeakChest.itemType());
         assertEquals(0x24, route.stoneBeakChest.location());
@@ -161,16 +187,16 @@ final class GameplayRouteStage7 {
         route.stoneBeakDialogObserved = false;
         route.stoneBeakChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
-            route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
+            route.session.entities().tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
             for (ChestRewardEvent reward :
                     route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
                 route.stoneBeakRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_STONE_BEAK;
                 route.playerState.applyChestReward(reward.itemType());
             }
-            route.stoneBeakDialogObserved |= route.session.consumeEntityDialogRequests().stream()
+            route.stoneBeakDialogObserved |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == route.stoneBeakDialogId);
             RoomEntity chestEntity =
-                    route.session.activeRoom().entities().slots().get(route.stoneBeakChestSlot);
+                    route.session.rooms().activeRoom().entities().slots().get(route.stoneBeakChestSlot);
             if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
                 route.stoneBeakChestEnded = true;
                 break;
@@ -179,26 +205,29 @@ final class GameplayRouteStage7 {
         assertTrue(route.stoneBeakRewardObserved);
         assertTrue(route.stoneBeakDialogObserved);
         assertTrue(route.stoneBeakChestEnded);
-        assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.STONE_BEAK_INDEX]);
-        assertEquals(0, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.STONE_BEAK_INDEX]);
+        assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
 
         // The chest does not solve room $2E's kill-all trigger. Knock its
         // surviving Beetle into the trench before using the south shutter.
         for (int hit = 0;
                 hit < 64 && route.session.components.roomSessionViews().activeRoomEventForTest() != 0;
                 hit++) {
-            RoomEntity beetle = route.session.activeRoom().entities().slots().get(route.hardhat.slot());
+            RoomEntity beetle =
+                    route.session.rooms().activeRoom().entities().slots().get(route.hardhat.slot());
             int attackY = beetle.y() - 0x20;
             if (beetle.status() == EntityStatus.ACTIVE) {
-                var beetleHits = route.session.resolveEntityCombat(new EntityCombatInputs(
-                        beetle.slot() ^ 1,
-                        beetle.x(),
-                        attackY,
-                        false,
-                        0,
-                        true,
-                        new SwordBox(true, beetle.x(), 0x10, beetle.y(), 0x10),
-                        linksawakening.world.entity.EnemyAttackContext.standard()));
+                var beetleHits = route.session
+                        .entities()
+                        .resolveEntityCombat(new EntityCombatInputs(
+                                beetle.slot() ^ 1,
+                                beetle.x(),
+                                attackY,
+                                false,
+                                0,
+                                true,
+                                new SwordBox(true, beetle.x(), 0x10, beetle.y(), 0x10),
+                                linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(
                         beetleHits.stream().anyMatch(event -> event.swordHit()),
                         "Beetle hit " + hit + ": " + beetle + " " + beetleHits);
@@ -210,26 +239,26 @@ final class GameplayRouteStage7 {
         assertEquals(
                 0,
                 route.session.components.roomSessionViews().activeRoomEventForTest(),
-                route.session.activeRoom().entities().loadedEntities().toString());
+                route.session.rooms().activeRoom().entities().loadedEntities().toString());
 
         // The post-Stone-Beak route backtracks south through room $30, then
         // east across the cleared $31/$32 shutters to the live switch in $33.
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x30, route.session.currentRoomId());
+        assertEquals(0x30, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x31, route.session.currentRoomId());
+        assertEquals(0x31, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x32, route.session.currentRoomId());
+        assertEquals(0x32, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x33, route.session.currentRoomId());
+        assertEquals(0x33, route.session.rooms().currentRoomId());
         assertEquals(0x00, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
 
-        route.postStoneCrystalSwitch = route.session.activeRoom().entities().loadedEntities().stream()
+        route.postStoneCrystalSwitch = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x66)
                 .findFirst()
                 .orElseThrow();
@@ -259,20 +288,22 @@ final class GameplayRouteStage7 {
                 route.postStoneSwordBox.width(),
                 route.postStoneSwordBox.y(),
                 route.postStoneSwordBox.height()));
-        route.postStoneSwitchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
-                route.frame++,
-                route.link.romEntityX(),
-                route.link.romEntityY(),
-                false,
-                0,
-                true,
-                new SwordBox(
+        route.postStoneSwitchHit = route.session
+                .entities()
+                .resolveEntityCombat(new EntityCombatInputs(
+                        route.frame++,
+                        route.link.romEntityX(),
+                        route.link.romEntityY(),
+                        false,
+                        0,
                         true,
-                        route.postStoneSwordBox.x(),
-                        route.postStoneSwordBox.width(),
-                        route.postStoneSwordBox.y(),
-                        route.postStoneSwordBox.height()),
-                linksawakening.world.entity.EnemyAttackContext.standard()));
+                        new SwordBox(
+                                true,
+                                route.postStoneSwordBox.x(),
+                                route.postStoneSwordBox.width(),
+                                route.postStoneSwordBox.y(),
+                                route.postStoneSwordBox.height()),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
         route.postStoneCrystalSwitchSlot = route.postStoneCrystalSwitch.slot();
         assertTrue(
                 route.postStoneSwitchHit.stream()
@@ -284,27 +315,27 @@ final class GameplayRouteStage7 {
                         + " sword=" + route.postStoneSwordBox + " frame=" + route.frame);
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         for (int stage = 0; stage < 9; stage++) {
-            route.session.tickGameplayVBlank();
+            route.session.entityState().tickGameplayVBlank();
         }
         assertEquals(0x02, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x38, route.session.currentRoomId());
+        assertEquals(0x38, route.session.rooms().currentRoomId());
         assertEquals(0x00, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xA0, objectAt(route.session, 0x43));
         assertEquals(
                 1,
-                route.session.activeRoom().entities().loadedEntities().stream()
+                route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x14)
                         .count());
-        route.room38MoblinSword = route.session.activeRoom().entities().loadedEntities().stream()
+        route.room38MoblinSword = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x14)
                 .findFirst()
                 .orElseThrow();
         assertEquals(0x28, route.room38MoblinSword.x());
         assertEquals(0x70, route.room38MoblinSword.y());
-        route.room38CrystalSwitch = route.session.activeRoom().entities().loadedEntities().stream()
+        route.room38CrystalSwitch = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x66)
                 .findFirst()
                 .orElseThrow();
@@ -351,20 +382,22 @@ final class GameplayRouteStage7 {
                 route.postStoneLoweringBox.width(),
                 route.postStoneLoweringBox.y(),
                 route.postStoneLoweringBox.height()));
-        route.postStoneLoweringHit = route.session.resolveEntityCombat(new EntityCombatInputs(
-                route.frame++,
-                route.link.romEntityX(),
-                route.link.romEntityY(),
-                false,
-                0,
-                true,
-                new SwordBox(
+        route.postStoneLoweringHit = route.session
+                .entities()
+                .resolveEntityCombat(new EntityCombatInputs(
+                        route.frame++,
+                        route.link.romEntityX(),
+                        route.link.romEntityY(),
+                        false,
+                        0,
                         true,
-                        route.postStoneLoweringBox.x(),
-                        route.postStoneLoweringBox.width(),
-                        route.postStoneLoweringBox.y(),
-                        route.postStoneLoweringBox.height()),
-                linksawakening.world.entity.EnemyAttackContext.standard()));
+                        new SwordBox(
+                                true,
+                                route.postStoneLoweringBox.x(),
+                                route.postStoneLoweringBox.width(),
+                                route.postStoneLoweringBox.y(),
+                                route.postStoneLoweringBox.height()),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
         route.postStoneLoweringSwitchSlot = route.room38CrystalSwitch.slot();
         assertTrue(
                 route.postStoneLoweringHit.stream()
@@ -374,7 +407,7 @@ final class GameplayRouteStage7 {
                 route.postStoneLoweringHit.toString());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         for (int stage = 0; stage < 9; stage++) {
-            route.session.tickGameplayVBlank();
+            route.session.entityState().tickGameplayVBlank();
         }
         assertEquals(0x00, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         assertFalse(
@@ -397,8 +430,14 @@ final class GameplayRouteStage7 {
             route.link.setPixelPosition(position[0], position[1]);
         }
         route.link.setDirection(Link.DIRECTION_UP);
-        route.room38Chest = route.session.tryOpenChest(
-                route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.room38Chest = route.session
+                .doors()
+                .tryOpenChest(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        Link.DIRECTION_UP,
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.room38Chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, route.room38Chest.itemType());
         assertEquals(0x43, route.room38Chest.location());
@@ -416,16 +455,16 @@ final class GameplayRouteStage7 {
         route.room38DialogObserved = false;
         route.room38ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
-            route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
+            route.session.entities().tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
             for (ChestRewardEvent reward :
                     route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
                 route.room38RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.applyChestReward(reward.itemType());
             }
-            route.room38DialogObserved |= route.session.consumeEntityDialogRequests().stream()
+            route.room38DialogObserved |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == route.room38DialogId);
             RoomEntity chestEntity =
-                    route.session.activeRoom().entities().slots().get(route.room38ChestSlot);
+                    route.session.rooms().activeRoom().entities().slots().get(route.room38ChestSlot);
             if (!chestEntity.loaded() || chestEntity.status() == EntityStatus.DISABLED) {
                 route.room38ChestEnded = true;
                 break;

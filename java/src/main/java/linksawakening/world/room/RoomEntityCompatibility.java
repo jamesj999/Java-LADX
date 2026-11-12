@@ -4,115 +4,136 @@ import static linksawakening.world.room.RoomSession.*;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
-import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 
-interface RoomEntityCompatibility {
+public interface RoomEntityCompatibility {
     RoomSession facade();
-    /** Accepted contact hurt, including enemy projectiles ($03:6DB8). */
+    /** @deprecated Use {@code entityState().resetGuardianAcornCounterOnHurt()}. */
+    @Deprecated(forRemoval = true)
     default void resetGuardianAcornCounterOnHurt() {
-        var runtime = facade().components.entityBridge().entityRuntime;
-        var counters = runtime == null
-                ? facade().components.entityFrame().enemyDropCounters
-                : runtime.inspection().enemyDropCounters();
-        facade().components.entityFrame().enemyDropCounters = EnemyDropResolver.resetGuardianAcornCounter(counters);
-        if (runtime != null)
-            runtime.configuration().setEnemyDropCounters(facade().components.entityFrame().enemyDropCounters);
+        facade().entityState().resetGuardianAcornCounterOnHurt();
     }
-    /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
+    /** @deprecated Use {@code entityState().setEntityActionButtonsHeld()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
-        facade().components.entityInputs().setEntityActionButtonsHeld(actionButtonsHeld);
+        facade().entityState().setEntityActionButtonsHeld(actionButtonsHeld);
     }
-    /** The cling flag produced by the previous entity-handler pass. */
+    /** @deprecated Use {@code entityState().gelClingingToLink()}. */
+    @Deprecated(forRemoval = true)
     default boolean gelClingingToLink() {
-        return facade().components.entityBridge().entityRuntime != null
-                && facade().components.entityBridge().entityRuntime.gelClingingToLink();
+        return facade().entityState().gelClingingToLink();
     }
 
+    /** @deprecated Use {@code entityState().setEntityDialogActive()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityDialogActive(boolean active) {
-        facade().components.entityInputs().setEntityDialogActive(active);
+        facade().entityState().setEntityDialogActive(active);
     }
-    /** Supplies the remaining WRAM gates read by ShouldLinkTalkToEntity_05. */
+    /** @deprecated Use {@code entityState().setEntityTalkState()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        facade().components.entityInputs().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
+        facade().entityState().setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
-    /** Supplies the distinct held A/B states consumed by ROM input handlers. */
+    /** @deprecated Use {@code entityState().setEntityActionButtonsHeld()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        facade().components.entityInputs().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
+        facade().entityState().setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
-    /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
+    /** @deprecated Use {@code entityState().setToadstoolPlayerState()}. */
+    @Deprecated(forRemoval = true)
     default void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        facade().components.entityInputs().setToadstoolPlayerState(hasToadstool, magicPowderCount);
+        facade().entityState().setToadstoolPlayerState(hasToadstool, magicPowderCount);
     }
 
+    /** @deprecated Use {@code entities().inBossBattle()}. */
+    @Deprecated(forRemoval = true)
     default boolean inBossBattle() {
-        return facade().components.entityBridge().entityRuntime != null
-                && facade().components.entityBridge().entityRuntime.inspection().inBossBattle();
+        return facade().entities().inBossBattle();
     }
-    /** Supplies wScreenShakeCountdown to ceiling-triggered entity handlers. */
+    /** @deprecated Use {@code entityState().setEntityScreenShakeCountdown()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityScreenShakeCountdown(int countdown) {
-        if (facade().components.entityBridge().entityRuntime != null)
-            facade().components.entityBridge().entityRuntime.configuration().setScreenShakeCountdown(countdown);
+        facade().entityState().setEntityScreenShakeCountdown(countdown);
     }
-    /** Supplies the live shake/collision values used by tree shells. */
+    /** @deprecated Use {@code entityState().setSecretSeashellPegasusCollisionState()}. */
+    @Deprecated(forRemoval = true)
     default void setSecretSeashellPegasusCollisionState(
             boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
-        facade().components
-                .entityInputs()
+        facade().entityState()
                 .setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
     }
-    /** Supplies the held A/B state used by EntityGetLiftedUp. */
+    /** @deprecated Use {@code entityState().setEntityPowerBraceletButtonHeld()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        facade().components.entityInputs().setEntityPowerBraceletButtonHeld(buttonHeld);
+        facade().entityState().setEntityPowerBraceletButtonHeld(buttonHeld);
     }
-    /** Supplies the held A/B state for the equipped-bomb lift/throw path. */
+    /** @deprecated Use {@code entityState().setEntityBombButtonHeld()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityBombButtonHeld(boolean buttonHeld) {
-        facade().components.entityInputs().setEntityBombButtonHeld(buttonHeld);
+        facade().entityState().setEntityBombButtonHeld(buttonHeld);
     }
-    /** Supplies wLinkAttackStepAnimationCountdown to input-driven entity handlers. */
+    /** @deprecated Use {@code entityState().setEntityAttackStepAnimationCountdown()}. */
+    @Deprecated(forRemoval = true)
     default void setEntityAttackStepAnimationCountdown(int countdown) {
-        facade().components.entityInputs().setEntityAttackStepAnimationCountdown(countdown);
+        facade().entityState().setEntityAttackStepAnimationCountdown(countdown);
     }
-    /** WorldHandler's shared sound clock persists across entity and room loads. */
+    /** @deprecated Use {@code entityState().advanceBoomerangSoundClock()}. */
+    @Deprecated(forRemoval = true)
     default void advanceBoomerangSoundClock(boolean worldGameplay) {
-        facade().components.entityBridge().advanceBoomerangSoundClock(worldGameplay);
+        facade().entityState().advanceBoomerangSoundClock(worldGameplay);
     }
 
+    /** @deprecated Use {@code entityState().deferContactRecoil()}. */
+    @Deprecated(forRemoval = true)
     default boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return facade().components.entityBridge().combat.deferContactRecoil(slot, linkX, linkY);
+        return facade().entityState().deferContactRecoil(slot, linkX, linkY);
     }
 
+    /** @deprecated Use {@code entityState().consumeLinkAttackClearRequests()}. */
+    @Deprecated(forRemoval = true)
     default List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return facade().components.entityBridge().outbox.consumeLinkAttackClearRequests();
+        return facade().entityState().consumeLinkAttackClearRequests();
     }
 
+    /** @deprecated Use {@code entityState().gotItemPresentationActive()}. */
+    @Deprecated(forRemoval = true)
     default boolean gotItemPresentationActive() {
-        return facade().components.entityBridge().outbox.gotItemPresentationActive();
+        return facade().entityState().gotItemPresentationActive();
     }
 
+    /** @deprecated Use {@code entityState().powerUpPickupSequenceActive()}. */
+    @Deprecated(forRemoval = true)
     default boolean powerUpPickupSequenceActive() {
-        return facade().components.entityBridge().outbox.powerUpPickupSequenceActive();
+        return facade().entityState().powerUpPickupSequenceActive();
     }
 
+    /** @deprecated Use {@code entityState().swordPickupSequenceActive()}. */
+    @Deprecated(forRemoval = true)
     default boolean swordPickupSequenceActive() {
-        return facade().components.entityBridge().outbox.swordPickupSequenceActive();
+        return facade().entityState().swordPickupSequenceActive();
     }
 
+    /** @deprecated Use {@code entityState().consumeSwordPickupRewards()}. */
+    @Deprecated(forRemoval = true)
     default List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        return facade().components.entityBridge().outbox.consumeSwordPickupRewards();
+        return facade().entityState().consumeSwordPickupRewards();
     }
-    /** Returns and clears ROM dialog requests emitted by the last entity tick. */
+    /** @deprecated Use {@code entityState().consumeEntityDialogRequests()}. */
+    @Deprecated(forRemoval = true)
     default List<DialogRequest> consumeEntityDialogRequests() {
-        return facade().components.entityBridge().outbox.consumeEntityDialogRequests();
+        return facade().entityState().consumeEntityDialogRequests();
     }
-    /** Advances the ROM's VBlank tile path, including switch blocks. */
+    /** @deprecated Use {@code entityState().tickGameplayVBlank()}. */
+    @Deprecated(forRemoval = true)
     default void tickGameplayVBlank() {
-        facade().components.entityBridge().tickGameplayVBlank();
+        facade().entityState().tickGameplayVBlank();
     }
 
+    /** @deprecated Use {@code entityState().clearEntity()}. */
+    @Deprecated(forRemoval = true)
     default int clearEntity(int slot) {
-        return facade().components.entityBridge().combat.clearEntity(slot);
+        return facade().entityState().clearEntity(slot);
     }
 }

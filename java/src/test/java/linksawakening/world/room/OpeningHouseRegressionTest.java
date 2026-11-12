@@ -19,7 +19,7 @@ final class OpeningHouseRegressionTest {
         expected.loadIndoorTiles(rom, 0x10, 0xA3);
         GPU actual = new GPU();
         actual.loadBaseTiles(rom);
-        session(rom, actual).loadIndoor(0x10, 0xA3);
+        session(rom, actual).rooms().loadIndoor(0x10, 0xA3);
         for (int offset = 0x1040; offset < 0x10C0; offset++) {
             assertEquals(
                     expected.readVRAM(offset),
@@ -43,7 +43,7 @@ final class OpeningHouseRegressionTest {
         }
         assertTrue(blockRoom >= 0, "Shipped dungeon must contain mobile blocks");
         GPU gpu = new GPU();
-        session(rom, gpu).loadIndoor(0, blockRoom);
+        session(rom, gpu).rooms().loadIndoor(0, blockRoom);
         for (var copy : SwitchBlockAnimation.initialCopies(0)) {
             int source = RomBank.romOffset(0x2C, 0x6800 + copy.sourceOffset());
             for (int i = 0; i < 0x40; i++) {
@@ -56,12 +56,12 @@ final class OpeningHouseRegressionTest {
     void tarinFacesLinkOnTheThirtyTwoFrameCadenceDuringTheBedScene() throws Exception {
         byte[] rom = rom();
         RoomSession session = session(rom, new GPU());
-        session.loadIndoor(0x10, 0xA3);
-        var before = session.activeRoom().entities().slots().get(1);
-        session.updateHouseTarinPresentation(31, 0x38, 0x34);
-        assertEquals(before, session.activeRoom().entities().slots().get(1));
-        session.updateHouseTarinPresentation(32, 0x38, 0x34);
-        var after = session.activeRoom().entities().slots().get(1);
+        session.rooms().loadIndoor(0x10, 0xA3);
+        var before = session.rooms().activeRoom().entities().slots().get(1);
+        session.story().updateHouseTarinPresentation(31, 0x38, 0x34);
+        assertEquals(before, session.rooms().activeRoom().entities().slots().get(1));
+        session.story().updateHouseTarinPresentation(32, 0x38, 0x34);
+        var after = session.rooms().activeRoom().entities().slots().get(1);
         assertEquals(1, after.spriteVariant());
         assertEquals(before.x(), after.x());
         assertEquals(before.y(), after.y());

@@ -5,17 +5,18 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.world.entity.EntityPickupEvent;
 
-interface RoomEntitySimulationCompatibility2 {
+public interface RoomEntitySimulationCompatibility2 {
     RoomSession facade();
-    /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
+    /** @deprecated Use {@code entities().collectEntityIfNeeded()}. */
+    @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return facade().components
-                .entityBridge()
-                .combat
+        return facade().entities()
                 .collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
+    /** @deprecated Use {@code entities().collectEntityIfNeeded()}. */
+    @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -23,13 +24,13 @@ interface RoomEntitySimulationCompatibility2 {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return facade().components
-                .entityBridge()
-                .combat
+        return facade().entities()
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
 
+    /** @deprecated Use {@code entities().collectEntityIfNeeded()}. */
+    @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -38,14 +39,12 @@ interface RoomEntitySimulationCompatibility2 {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return facade().components
-                .entityBridge()
-                .combat
+        return facade().entities()
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
-    /** @deprecated Use the parameter-object overload; retained for java/src/main/java/linksawakening/app/gameplay/LinkEquipmentPhase.java. */
+    /** @deprecated Use {@code entities().collectEntityIfNeeded(EntityPickupInputs)}. Retained for java/src/main/java/linksawakening/app/gameplay/LinkEquipmentPhase.java. */
     @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
@@ -60,14 +59,17 @@ interface RoomEntitySimulationCompatibility2 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().collectEntityIfNeeded(new EntityPickupInputs(
-                frameCounter,
-                new EntityPickupInputs.Link(
-                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
-                new SwordBox(swordActive, swordX, swordWidth, swordY, swordHeight)));
+        return facade().entities()
+                .collectEntityIfNeeded(new EntityPickupInputs(
+                        frameCounter,
+                        new EntityPickupInputs.Link(
+                                linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                        new SwordBox(swordActive, swordX, swordWidth, swordY, swordHeight)));
     }
 
+    /** @deprecated Use {@code entities().collectEntityIfNeeded()}. */
+    @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
-        return facade().components.entityBridge().combat.collectEntityIfNeeded(inputs);
+        return facade().entities().collectEntityIfNeeded(inputs);
     }
 }

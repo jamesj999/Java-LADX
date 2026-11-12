@@ -25,11 +25,11 @@ final class RoomSessionFloatingItemTest {
                 new TransientVfxSystem(16),
                 null);
 
-        session.loadInitialOverworld(0x92);
-        session.loadIndoor(0x00, 0x00, Warp.CATEGORY_SIDESCROLL);
+        session.rooms().loadInitialOverworld(0x92);
+        session.rooms().loadIndoor(0x00, 0x00, Warp.CATEGORY_SIDESCROLL);
 
-        assertTrue(session.activeRoom().entities().sideScrolling());
-        assertTrue(session.renderSnapshot().entities().sideScrolling());
+        assertTrue(session.rooms().activeRoom().entities().sideScrolling());
+        assertTrue(session.rooms().renderSnapshot().entities().sideScrolling());
     }
 
     private static byte[] loadRom() {

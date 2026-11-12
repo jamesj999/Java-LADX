@@ -36,8 +36,8 @@ final class MabeWellRegressionTest {
                 collision,
                 new TransientVfxSystem(16),
                 null);
-        room.loadInitialOverworld(0xA0);
-        var warp = room.activeRoom().firstWarp();
+        room.rooms().loadInitialOverworld(0xA0);
+        var warp = room.rooms().activeRoom().firstWarp();
         assertEquals(0x61, collision.objectIdAtPoint(88, 88));
         assertTrue(collision.pointBlocked(88, 88), "well remains solid to ordinary walking");
         var input = new InputState();
@@ -66,9 +66,9 @@ final class MabeWellRegressionTest {
         }
         assertTrue(transition.isActive());
         while (transition.isActive()) transition.tick();
-        assertEquals(warp.category(), room.mapCategory());
-        assertEquals(warp.destMap(), room.activeRoom().mapId());
-        assertEquals(warp.destRoom(), room.currentRoomId());
+        assertEquals(warp.category(), room.rooms().mapCategory());
+        assertEquals(warp.destMap(), room.rooms().activeRoom().mapId());
+        assertEquals(warp.destRoom(), room.rooms().currentRoomId());
         assertEquals(0x70, link.romEntityZ());
         assertEquals(health, player.health());
         assertEquals(0, player.subtractHealthBuffer());

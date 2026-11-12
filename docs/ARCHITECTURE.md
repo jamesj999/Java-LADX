@@ -239,8 +239,12 @@ Scrolling, transitions and inventory state gate entity ticking.
 The runtime iterates slots from highest index to zero. Each slot passes
 `EntitySlotPhase1` through `EntitySlotPhase5`; a phase can end that slot's work.
 `EntityPhase` builds immutable `EntityFrameInputs` from Link, player,
-UI, buttons and sword-box snapshots. `RoomSession.tickEntities` applies those
+UI, buttons and sword-box snapshots through `EntityFrameInputsFactory`.
+`LinkWriteApplier` applies ordered Link effects while `EntityPhase` orchestrates
+rewards, combat and presentation. `RoomSession.tickEntities` applies those
 inputs in the original setter order before advancing entity slots.
+`EntityTickInputs` is the tick-only boundary for callers that retain cached
+inputs; combat and pickup boundaries use their own parameter objects.
 Entity effects are consumed at the entity boundary, including projectiles,
 combat, rewards, dialog and music requests. Link writes become `LinkCommand`
 values through `LinkCommandAdapter` and are applied through `Link.apply`.
@@ -339,14 +343,17 @@ To add an entity type:
 
 `world.room.RoomSession` is the public room API. It delegates to room-scoped
 collaborators instead of exposing entity handlers to application code.
-The `doors()`, `transitions()`, `playerItems()` and `story()` views expose
-focused role interfaces; existing public facade methods delegate to them for
-compatibility. Their implementations receive their specific collaborator.
+The `doors()`, `transitions()`, `playerItems()`, `story()`, `entities()`,
+`entityState()`, `rooms()`, `dungeon()`, `progress()` and `terrain()` views expose
+focused role interfaces. Deprecated compatibility interfaces retain the old
+facade entry points; the migration table is in
+[room-facade-migration.md](history/room-facade-migration.md). View implementations
+receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
 followers, entity-frame state, item use and puzzles. No runtime collaborator
-reads through the composition root. Typed service suppliers preserve cyclic
-room dependencies without resolving them during construction.
+reads through the composition root. Typed service suppliers defer cyclic
+room references until the room is wired.
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.

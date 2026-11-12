@@ -24,25 +24,28 @@ public final class RoomSession extends RoomSessionRules
 
     /** Applies the live frame inputs in the original setter order before ticking slots. */
     public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
-        setEntityDialogActive(inputs.ui().dialogActive());
-        setEntityTalkState(
-                inputs.ui().inventoryAppearing(),
-                inputs.ui().dialogCooldown(),
-                inputs.ui().windowY());
+        entityState().setEntityDialogActive(inputs.ui().dialogActive());
+        entityState()
+                .setEntityTalkState(
+                        inputs.ui().inventoryAppearing(),
+                        inputs.ui().dialogCooldown(),
+                        inputs.ui().windowY());
         components.entityInputs().setEntityDialogAskSelectionIndex(inputs.ui().selectionIndex());
         components
                 .roomSessionViews()
                 .setHeartPiecesCount(inputs.player().progress().heartPieces());
         components.entityInputs().setEntityMusicActive(inputs.ui().musicActive());
-        setEntityActionButtonsHeld(inputs.buttons().aHeld(), inputs.buttons().bHeld());
+        entityState()
+                .setEntityActionButtonsHeld(
+                        inputs.buttons().aHeld(), inputs.buttons().bHeld());
         components.entityInputs().setEntityJoypadHeld(inputs.buttons().joypadHeld());
         components.entityInputs().setEntityPressedButtonsMask(inputs.buttons().pressedMask());
-        setEntityPowerBraceletButtonHeld(inputs.buttons().braceletHeld());
-        setEntityBombButtonHeld(inputs.buttons().bombHeld());
-        setEntityAttackStepAnimationCountdown(inputs.link().attackCountdown());
+        entityState().setEntityPowerBraceletButtonHeld(inputs.buttons().braceletHeld());
+        entityState().setEntityBombButtonHeld(inputs.buttons().bombHeld());
+        entityState().setEntityAttackStepAnimationCountdown(inputs.link().attackCountdown());
         components.entityInputs().setEntityFinalPositionX(inputs.link().finalX());
-        setBirdKeyOwned(inputs.player().progress().birdKey());
-        setTailKeyOwned(inputs.player().progress().tailKey());
+        story().setBirdKeyOwned(inputs.player().progress().birdKey());
+        story().setTailKeyOwned(inputs.player().progress().tailKey());
         components
                 .entityInputs()
                 .setEntityInventorySlots(
@@ -51,14 +54,15 @@ public final class RoomSession extends RoomSessionRules
         setLiftStrengthBoost(
                 inputs.player().inventory().redTunic(),
                 inputs.player().inventory().pieceOfPower());
-        setHouseNpcTradeItem(inputs.player().progress().tradeItem());
-        setChestPlayerLevels(
-                inputs.player().levels().shield(),
-                inputs.player().levels().sword(),
-                inputs.player().levels().bracelet());
-        setToadstoolPlayerState(
-                inputs.player().progress().hasToadstool(),
-                inputs.player().progress().powder());
+        story().setHouseNpcTradeItem(inputs.player().progress().tradeItem());
+        story().setChestPlayerLevels(
+                        inputs.player().levels().shield(),
+                        inputs.player().levels().sword(),
+                        inputs.player().levels().bracelet());
+        entityState()
+                .setToadstoolPlayerState(
+                        inputs.player().progress().hasToadstool(),
+                        inputs.player().progress().powder());
         components
                 .entityInputs()
                 .setEntityGoldenLeavesCount(inputs.player().progress().leaves());
@@ -103,7 +107,7 @@ public final class RoomSession extends RoomSessionRules
 
     List<LinkWrite> consumeAttackWrites() {
         return RoomLinkWrites.attacks(
-                consumeLinkAttackClearRequests(),
+                entityState().consumeLinkAttackClearRequests(),
                 components.entityBridge().outbox.consumeLinkAttackStepRequests());
     }
 
@@ -131,6 +135,7 @@ public final class RoomSession extends RoomSessionRules
     }
 
     final RoomSessionComponents components;
+    private final RoomRoleViews roles;
     /** Compatibility for SlimeEyeControlsTest reflection until the entity test migration. */
     @Deprecated(forRemoval = true)
     private final RoomSessionComponents context;
@@ -221,11 +226,8 @@ public final class RoomSession extends RoomSessionRules
             int slowWalkingSpeed,
             int itemUsageContext) {}
 
-    /**
-     * Mirrors the ordinary player-bomb placement bridge. The item has already
-     * applied PlaceBomb's inventory ordering; this method owns the room/runtime
-     * allocation and immutable snapshot refresh.
-     */
+    /** @deprecated Use {@code playerItems().placeBomb()}. */
+    @Deprecated(forRemoval = true)
     public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         return playerItems().placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
@@ -235,18 +237,26 @@ public final class RoomSession extends RoomSessionRules
     @Deprecated(forRemoval = true)
     public record ArrowShotResult(boolean spawned, boolean playWhoosh) {}
 
+    /** @deprecated Use {@code entities().tickEntities()}. */
+    @Deprecated(forRemoval = true)
     public void tickEntities(int frameCounter) {
-        components.entityBridge().tickEntities(frameCounter);
+        entities().tickEntities(frameCounter);
     }
 
+    /** @deprecated Use {@code entities().tickEntities()}. */
+    @Deprecated(forRemoval = true)
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
-        components.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY);
+        entities().tickEntities(frameCounter, linkEntityX, linkEntityY);
     }
 
+    /** @deprecated Use {@code entities().tickEntities()}. */
+    @Deprecated(forRemoval = true)
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
-        components.entityBridge().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
+        entities().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
     }
 
+    /** @deprecated Use {@code entities().tickEntities()}. */
+    @Deprecated(forRemoval = true)
     public void tickEntities(
             int frameCounter,
             int linkEntityX,
@@ -254,9 +264,7 @@ public final class RoomSession extends RoomSessionRules
             int linkEntityZ,
             boolean linkAirborne,
             int linkDirection) {
-        components
-                .entityBridge()
-                .tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
+        entities().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
     }
 
     /**
@@ -290,9 +298,76 @@ public final class RoomSession extends RoomSessionRules
     public RoomSession(RoomSessionConfig config) {
         components = RoomSessionContext.create(config);
         context = components;
+        roles = RoomRoleViews.create(components);
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
         return components.entityBridge().tickEntities(inputs);
+    }
+
+    public RoomEntities entities() {
+        return roles.entities();
+    }
+
+    public RoomEntityState entityState() {
+        return roles.entityState();
+    }
+
+    public RoomRooms rooms() {
+        return roles.rooms();
+    }
+
+    public RoomDungeon dungeon() {
+        return roles.dungeon();
+    }
+
+    public RoomProgress progress() {
+        return roles.progress();
+    }
+
+    public RoomTerrain terrain() {
+        return roles.terrain();
+    }
+    // Declared bridges preserve DebugMenu method-reference owners until the app merge.
+    @Override
+    /** @deprecated Use {@code story().bowWowState()}. */
+    @Deprecated(forRemoval = true)
+    public int bowWowState() {
+        return story().bowWowState();
+    }
+
+    @Override
+    /** @deprecated Use {@code story().setBowWowState()}. */
+    @Deprecated(forRemoval = true)
+    public void setBowWowState(int state) {
+        story().setBowWowState(state);
+    }
+
+    @Override
+    /** @deprecated Use {@code story().richardSpokenFlag()}. */
+    @Deprecated(forRemoval = true)
+    public int richardSpokenFlag() {
+        return story().richardSpokenFlag();
+    }
+
+    @Override
+    /** @deprecated Use {@code story().setRichardSpokenFlag()}. */
+    @Deprecated(forRemoval = true)
+    public void setRichardSpokenFlag(int flag) {
+        story().setRichardSpokenFlag(flag);
+    }
+
+    @Override
+    /** @deprecated Use {@code story().tarinFlag()}. */
+    @Deprecated(forRemoval = true)
+    public int tarinFlag() {
+        return story().tarinFlag();
+    }
+
+    @Override
+    /** @deprecated Use {@code story().setTarinFlag()}. */
+    @Deprecated(forRemoval = true)
+    public void setTarinFlag(int flag) {
+        story().setTarinFlag(flag);
     }
 }

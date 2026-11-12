@@ -48,7 +48,7 @@ final class EntityPhase {
                 c.playerState(),
                 c.link(),
                 c.gameplaySoundSink(),
-                c.roomSession()::resetGuardianAcornCounterOnHurt,
+                c.roomSession().entityState()::resetGuardianAcornCounterOnHurt,
                 () -> c.musicDirector().restoreMusicAfterPowerUpEnds(c.roomSession()));
         var entityCombatEvents = results.presentation().consumeEntityEvents();
         EnemyCombatEventConsumer.consume(entityCombatEvents, c.gameplaySoundSink(), c.transientVfxSystem());
@@ -116,8 +116,8 @@ final class EntityPhase {
 
     private void routeDialogs(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        c.roomSession().setBirdKeyOwned(c.playerState().birdKeyCount() != 0);
-        c.roomSession().setTailKeyOwned(c.playerState().tailKeyCount() != 0);
+        c.roomSession().story().setBirdKeyOwned(c.playerState().birdKeyCount() != 0);
+        c.roomSession().story().setTailKeyOwned(c.playerState().tailKeyCount() != 0);
         int chestMusicTrack = results.presentation().consumePendingMusicTrack();
         if (chestMusicTrack >= 0) {
             c.musicDirector().playDirectMusic(chestMusicTrack);

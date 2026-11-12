@@ -18,15 +18,15 @@ final class RoomTransitionFollowersTest {
         RomTables romTables = RomTables.loadFromRom(rom);
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
-        session.loadIndoor(0x15, 0xF0);
+        session.rooms().loadIndoor(0x15, 0xF0);
 
         ScrollController scroll = new ScrollController();
         session.transitions().startAdjacentIndoorScroll(scroll, ScrollController.UP, 0x50, 0x00);
 
-        assertEquals(0xE0, session.currentRoomId());
+        assertEquals(0xE0, session.rooms().currentRoomId());
         assertEquals(
                 4,
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x0B)
                         .count());
     }
