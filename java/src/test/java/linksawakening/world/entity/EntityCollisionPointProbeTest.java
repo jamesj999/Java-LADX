@@ -40,20 +40,13 @@ final class EntityCollisionPointProbeTest {
         int nextX = 0x80;
         int nextY = 0x90;
         for (int boxType = 0; boxType < 4; boxType++) {
-            RoomEntity entity = new RoomEntity(
-                    0,
-                    0,
-                    0x20 + boxType,
-                    nextX,
-                    nextY,
-                    EntityStatus.ACTIVE,
-                    EntitySpriteDefinition.unsupported(0x20 + boxType),
-                    -1,
-                    0,
-                    0,
-                    0,
-                    -1,
-                    false);
+            RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                    .sourceLoadOrder(0)
+                    .type(0x20 + boxType)
+                    .at(nextX, nextY)
+                    .spriteDefinition(EntitySpriteDefinition.unsupported(0x20 + boxType))
+                    .spriteVariant(-1)
+                    .build();
             for (int direction = 0; direction < 4; direction++) {
                 EntityCollisionPointProbe.Sample sample = probe.sample(entity, direction, nextX, nextY);
                 int tableIndex = boxType * 4 + direction;

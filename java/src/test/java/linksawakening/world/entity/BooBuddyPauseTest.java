@@ -29,8 +29,8 @@ final class BooBuddyPauseTest {
     void recoilDisplaysTheSavedVariantWithoutAdvancingAnimation() throws IOException {
         RoomEntityRuntime runtime = runtime();
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x70, 0x50, () -> 0));
-        runtime.debug().configureEnemyRecoilForTest(0, 0x20, 0x50, 8);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 0x20, 0x50, 8);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 2);
         runtime.tick(EntityTestFrames.frame(runtime, 32, 0x20, 0x50, () -> 0));
         assertEquals(1, runtime.inspection().snapshot().slots().getFirst().spriteVariant());
         runtime.tick(EntityTestFrames.frame(runtime, 33, 0x20, 0x50, () -> 0));
@@ -46,7 +46,7 @@ final class BooBuddyPauseTest {
     void pausesMovementAndKeepsTheSeparateSharedTimerGate(String gate) throws IOException {
         RoomEntityRuntime runtime = runtime();
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
-        runtime.debug().setTransitionCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 8);
         setGate(runtime, gate, true);
         RoomEntity before = runtime.inspection().snapshot().slots().getFirst();
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x20, 0x50, () -> {
@@ -64,9 +64,9 @@ final class BooBuddyPauseTest {
     @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
     void recoilWaitsForTheHandlerEvenWhenSharedTimersCanTick(String gate) throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().configureEnemyRecoilForTest(0, 0x20, 0x50, 0x20);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 2);
-        runtime.debug().setBooBuddyTriggerCountForTest(1);
+        EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 0x20, 0x50, 0x20);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).setBooBuddyTriggerCountForTest(1);
         setGate(runtime, gate, true);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x50, () -> 0));
         assertEquals(0x40, runtime.inspection().snapshot().slots().getFirst().x());
@@ -91,16 +91,16 @@ final class BooBuddyPauseTest {
     @Test
     void reappearanceTimerTicksDuringGotItemPresentationWhileTheHandlerWaits() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().setTransitionCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 2);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         assertEquals(0x60, runtime.inspection().snapshot().slots().getFirst().x());
-        runtime.debug().setWitchGotItemPresentationActiveForTest(true);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(true);
         for (int frame = 1; frame <= 32; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x70, 0x50, () -> {
                 throw new AssertionError("Got-item handler must remain paused");
             }));
         }
-        runtime.debug().setWitchGotItemPresentationActiveForTest(false);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(false);
         runtime.tick(EntityTestFrames.frame(runtime, 33, 0x70, 0x50, () -> 0));
         assertEquals(4, runtime.flyingEnemies().booBuddySpeedX(0));
     }
@@ -108,7 +108,7 @@ final class BooBuddyPauseTest {
     @Test
     void reappearanceTimerRemainsFrozenThroughoutDialog() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().setTransitionCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 2);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
         runtime.configuration().setDialogActive(true);
         for (int frame = 1; frame <= 32; frame++) {
@@ -128,8 +128,8 @@ final class BooBuddyPauseTest {
     @Test
     void finalRecoilTickSkipsStateDispatchEvenWithoutAConfiguredVelocity() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 1);
-        runtime.debug().setBooBuddyTriggerCountForTest(1);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 1);
+        EntityRuntimeFixture.debug(runtime).setBooBuddyTriggerCountForTest(1);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x50, () -> 0));
         assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(0, runtime.flyingEnemies().booBuddyState(0));
@@ -140,10 +140,10 @@ final class BooBuddyPauseTest {
     @Test
     void ocarinaFreezesTheTransitionTimerButDoesNotPauseRecoil() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().configureEnemyRecoilForTest(0, 0x20, 0x50, 0x20);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 2);
-        runtime.debug().setTransitionCountdownForTest(0, 8);
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 0x20, 0x50, 0x20);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x50, () -> 0));
         assertEquals(0x42, runtime.inspection().snapshot().slots().getFirst().x());
         assertEquals(1, runtime.enemies().enemyIgnoreHitsCountdown(0));
@@ -153,8 +153,8 @@ final class BooBuddyPauseTest {
     @Test
     void creditsRunTheHandlerOutsideTheOrdinaryWorldSequence() throws IOException {
         RoomEntityRuntime runtime = runtime();
-        runtime.debug().setGameplayWorldForTest(false);
-        runtime.debug().setTransitionSequenceCounterForTest(3);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0, true));
         assertEquals(4, runtime.flyingEnemies().booBuddySpeedX(0));
     }
@@ -163,10 +163,10 @@ final class BooBuddyPauseTest {
         switch (gate) {
             case "dialog" -> runtime.configuration().setDialogActive(active);
             case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "gameplay" -> EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(!active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException(gate);
         }
     }
@@ -186,20 +186,17 @@ final class BooBuddyPauseTest {
         }
         slots.set(
                 0,
-                new RoomEntity(
-                        0,
-                        0,
-                        BooBuddyMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true, null, catalog);
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(BooBuddyMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(
+                                catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build());
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
     }
 }

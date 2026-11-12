@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +38,12 @@ final class ArmosKnightMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int z) {
-        return new RoomEntity(
-                0, 0, 0x88, x, y, EntityStatus.ACTIVE, EntitySpriteDefinition.unsupported(0x88), 0, 0, 0, z, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x88)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x88))
+                .z(z)
+                .build();
     }
 }

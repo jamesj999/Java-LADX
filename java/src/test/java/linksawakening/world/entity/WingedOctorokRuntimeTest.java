@@ -40,13 +40,18 @@ final class WingedOctorokRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(
-                        new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xAE)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x40, () -> 0x02));
 
@@ -64,13 +69,18 @@ final class WingedOctorokRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(
-                        new RoomEntity(0, 0, 0xAE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xAE)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         for (int frame = 0; frame <= 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x60, 0x40, () -> 0));

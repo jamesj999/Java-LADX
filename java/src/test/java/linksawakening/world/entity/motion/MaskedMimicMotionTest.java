@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -137,6 +136,11 @@ final class MaskedMimicMotionTest {
         }
         EntitySpriteDefinition definition =
                 new EntitySpriteDefinition(0x8F, 0x19, 0x4796, EntitySpriteDefinition.Shape.PAIR, 0, variants);
-        return new RoomEntity(0, 0, 0x8F, x, y, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x8F)
+                .at(x, y)
+                .spriteDefinition(definition)
+                .build();
     }
 }

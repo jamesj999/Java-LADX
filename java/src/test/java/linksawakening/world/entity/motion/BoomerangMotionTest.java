@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,20 +59,12 @@ final class BoomerangMotionTest {
     @Test
     void returningVectorUsesTheBoomerangHeight() {
         BoomerangMotion motion = new BoomerangMotion();
-        RoomEntity airborne = new RoomEntity(
-                0,
-                -1,
-                BoomerangMotion.ENTITY_TYPE,
-                0x40,
-                0x40,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
-                0,
-                0,
-                0,
-                8,
-                -1,
-                false);
+        RoomEntity airborne = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(BoomerangMotion.ENTITY_TYPE)
+                .at(0x40, 0x40)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE))
+                .z(8)
+                .build();
 
         motion.setVectorTowardsLink(0, airborne, 0x50, 0x40, 8);
 
@@ -131,19 +122,10 @@ final class BoomerangMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                -1,
-                BoomerangMotion.ENTITY_TYPE,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .type(BoomerangMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE))
+                .build();
     }
 }

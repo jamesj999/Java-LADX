@@ -327,10 +327,6 @@ public final class BowWowMotion {
         return speedY[slot] & 0xFF;
     }
 
-    public void setTransitionCountdownForTest(int slot, int value) {
-        setTransitionCountdown(slot, value);
-    }
-
     public void setTransitionCountdown(int slot, int value) {
         if (slot < 0 || slot >= transitionCountdown.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

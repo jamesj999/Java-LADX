@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -71,8 +70,13 @@ final class FishMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(
-                0, 0, FishMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(FishMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .spriteVariant(variant)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

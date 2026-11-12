@@ -827,20 +827,6 @@ public final class EntityEnemyInspection {
         return runtime.combatTables().readEnemyIgnoreHitsCountdown(slot);
     }
 
-    int enemyRecoilSpeedXForTest(int slot) {
-        EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motions()
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .recoilSpeedX(slot);
-    }
-
-    int enemyRecoilSpeedYForTest(int slot) {
-        EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motions()
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .recoilSpeedY(slot);
-    }
-
     public int ledgeTransitionTimer(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.liftThrow().readLedgeTransitionTimer(slot) & 0xFF;
@@ -865,16 +851,6 @@ public final class EntityEnemyInspection {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.physicsTables().readFallingVisualYOffset(slot);
-    }
-
-    int musicalNoteInertiaForTest(int slot) {
-        EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.projectiles().readMusicalNoteInertia(slot);
-    }
-
-    int hitboxFlagsForTest(int slot) {
-        EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.combatTables().readEnemyHitboxFlags(slot);
     }
 
     int enemyRecoilSpeedX(int slot) {

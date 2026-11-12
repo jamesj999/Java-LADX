@@ -174,45 +174,34 @@ final class BowWowMotionTest {
     }
 
     private static RoomEntity bowWowEntity(int slot, int x, int y, int z) {
-        return new RoomEntity(
-                slot,
-                -1,
-                ENTITY_BOW_WOW,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(ENTITY_BOW_WOW),
-                0,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .type(ENTITY_BOW_WOW)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(ENTITY_BOW_WOW))
+                .z(z)
+                .build();
     }
 
     private static RoomEntity targetEntity(int slot, int x, int y) {
-        return new RoomEntity(
-                slot,
-                0,
-                0x09,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x09),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x09))
+                .build();
     }
 
     @Test
     void setupUsesTheRomPrivateStateOffsetsAndSeedsBothTargets() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity entity = new RoomEntity(
-                0, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         BowWowMotion motion = new BowWowMotion();
 
         RoomEntity result = motion.advance(entity, 0, 0x60, 0x70, 0x00, () -> 0, null);
@@ -229,8 +218,11 @@ final class BowWowMotionTest {
     void followingBranchTargetsLinkVisualYAndLoadsTheBankFiveSpeedTables() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity entity = new RoomEntity(
-                0, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
@@ -249,8 +241,11 @@ final class BowWowMotionTest {
     void movementUsesTheRomSixteenFrameFixedPointSpeedAndTargetCorrection() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity entity = new RoomEntity(
-                0, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0x00, 0x00, 0x00);
 
@@ -273,17 +268,51 @@ final class BowWowMotionTest {
     void followingScanUsesTheRomCandidateFiltersAndLoadsTheTargetVector() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity bowWow = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x20, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x20, 0x20)
+                .spriteDefinition(definition)
+                .build();
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
-        slots.set(6, new RoomEntity(6, -1, 0x09, 0x50, 0x60, EntityStatus.ACTIVE, definition, 1, 0, 0, 0, -1, false));
-        slots.set(7, new RoomEntity(7, -1, 0x09, 0x50, 0x60, EntityStatus.DYING, definition, 0, 0, 0, 0, -1, false));
-        slots.set(8, new RoomEntity(8, -1, 0x0B, 0x54, 0x68, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
-        slots.set(10, new RoomEntity(10, -1, 0x09, 0x54, 0x68, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        slots.set(
+                6,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(6)
+                        .type(0x09)
+                        .at(0x50, 0x60)
+                        .spriteDefinition(definition)
+                        .spriteVariant(1)
+                        .build());
+        slots.set(
+                7,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(7)
+                        .type(0x09)
+                        .at(0x50, 0x60)
+                        .status(EntityStatus.DYING)
+                        .spriteDefinition(definition)
+                        .build());
+        slots.set(
+                8,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(8)
+                        .type(0x0B)
+                        .at(0x54, 0x68)
+                        .spriteDefinition(definition)
+                        .build());
+        slots.set(
+                10,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(10)
+                        .type(0x09)
+                        .at(0x54, 0x68)
+                        .spriteDefinition(definition)
+                        .build());
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x00, 0x00, 0x00, () -> 0, null);
@@ -304,21 +333,33 @@ final class BowWowMotionTest {
     void terminalFollowingPhaseReportsTheRomTargetContactWindow() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity bowWow = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
-        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        slots.set(
+                6,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(6)
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(0x44, 0x58)
+                        .spriteDefinition(definition)
+                        .build());
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0x00, () -> 0, null);
         slots.set(5, initialized);
         BowWowMotion.Update acquired = motion.advanceWithTargetScan(
                 initialized, 1, 0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09);
-        motion.setTransitionCountdownForTest(5, 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setTransitionCountdownForTest(motion, 5, 1);
 
         BowWowMotion.Update terminal = motion.advanceWithTargetScan(
                 acquired.entity(), 2, 0x44, 0x58, 0x00, () -> 0, null, slots, type -> type == 0x09);
@@ -332,14 +373,26 @@ final class BowWowMotionTest {
     void movingAttackChecksTheRomTargetContactWindowEveryFrame() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity bowWow = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
-        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        slots.set(
+                6,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(6)
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(0x44, 0x58)
+                        .spriteDefinition(definition)
+                        .build());
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> 0, null);
@@ -359,14 +412,26 @@ final class BowWowMotionTest {
     void bowWowMovementSkipsTheRomBackgroundWallCollisionPath() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity bowWow = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x20, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x20, 0x20)
+                .spriteDefinition(definition)
+                .build();
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
-        slots.set(6, new RoomEntity(6, 0, 0x09, 0x40, 0x44, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        slots.set(
+                6,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(6)
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(0x40, 0x44)
+                        .spriteDefinition(definition)
+                        .build());
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity initialized = motion.advance(bowWow, 0, 0x60, 0x70, 0, () -> 0, null);
@@ -394,21 +459,33 @@ final class BowWowMotionTest {
     void completedFollowingAttackReturnsToRomTargetSelectionState() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity bowWow = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         List<RoomEntity> slots = new ArrayList<>();
         while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
             slots.add(RoomEntity.disabled(slots.size()));
         }
         slots.set(5, bowWow);
-        slots.set(6, new RoomEntity(6, 0, 0x09, 0x44, 0x58, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
+        slots.set(
+                6,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(6)
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(0x44, 0x58)
+                        .spriteDefinition(definition)
+                        .build());
 
         BowWowMotion motion = new BowWowMotion();
         RoomEntity current = motion.advance(bowWow, 0, 0x44, 0x58, 0, () -> 0, null);
         slots.set(5, current);
         current = motion.advanceWithTargetScan(current, 1, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09)
                 .entity();
-        motion.setTransitionCountdownForTest(5, 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setTransitionCountdownForTest(motion, 5, 1);
         current = motion.advanceWithTargetScan(current, 2, 0x44, 0x58, 0, () -> 0, null, slots, type -> type == 0x09)
                 .entity();
         slots.set(6, RoomEntity.disabled(6));
@@ -427,8 +504,12 @@ final class BowWowMotionTest {
     void completedWanderReturnsToRomTargetSelectionState() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
-        RoomEntity current = new RoomEntity(
-                5, -1, ENTITY_BOW_WOW, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity current = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(5)
+                .type(ENTITY_BOW_WOW)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         BowWowMotion motion = new BowWowMotion();
         IntSupplier random = sequence(0, 0, 0);
 

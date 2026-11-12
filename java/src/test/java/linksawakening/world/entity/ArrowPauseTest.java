@@ -69,7 +69,7 @@ final class ArrowPauseTest {
         RoomEntityRuntime runtime = runtime(type);
         tick(runtime, 0, (entity, direction, x, y) -> true);
         RoomEntity before = runtime.inspection().snapshot().slots().get(slot(type));
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 1, null);
         assertEquals(0x18, countdown(runtime, type));
         assertEquals(
@@ -112,13 +112,13 @@ final class ArrowPauseTest {
             tick(runtime, frame, null);
         }
         assertEquals(2, countdown(runtime, type));
-        runtime.debug().setWitchGotItemPresentationActiveForTest(true);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(true);
         tick(runtime, 23, null);
         assertEquals(1, countdown(runtime, type));
         assertTrue(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
 
-        runtime.debug().setWitchGotItemPresentationActiveForTest(false);
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(false);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 24, null);
         assertFalse(runtime.inspection().snapshot().slots().get(slot(type)).loaded());
     }
@@ -144,8 +144,8 @@ final class ArrowPauseTest {
     void creditsAllowMovementOutsideOrdinaryWorldGameplay(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type);
         int startX = runtime.inspection().snapshot().slots().get(slot(type)).x();
-        runtime.debug().setGameplayWorldForTest(false);
-        runtime.debug().setTransitionSequenceCounterForTest(3);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
         assertEquals(
                 startX + (type == 0 ? 3 : 2),
@@ -168,22 +168,17 @@ final class ArrowPauseTest {
         if (type != 0) {
             slots.set(
                     0,
-                    new RoomEntity(
-                            0,
-                            -1,
-                            type,
-                            0x40,
-                            0x50,
-                            EntityStatus.ACTIVE,
-                            catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                            0,
-                            0,
-                            0,
-                            0,
-                            -1,
-                            false));
+                    new linksawakening.world.entity.RoomEntityBuilder()
+                            .type(type)
+                            .at(0x40, 0x50)
+                            .spriteDefinition(catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                            .build());
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots), false, () -> 0, catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .build();
         if (type == 0) {
             assertEquals(15, runtime.spawnArrow(0x40, 0x50, 0, 0));
         }
@@ -209,10 +204,10 @@ final class ArrowPauseTest {
         switch (gate) {
             case "dialog" -> runtime.configuration().setDialogActive(active);
             case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "gameplay" -> EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(!active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException("Unexpected gate");
         }
     }

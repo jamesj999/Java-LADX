@@ -64,25 +64,19 @@ final class PokeyRuntimeTest {
     @Test
     void mainPokeyAnimatesAndUsesItsRomHealthOverride() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_POKEY,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(loadRom()));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_POKEY)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .build();
 
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
@@ -101,29 +95,23 @@ final class PokeyRuntimeTest {
     void flashSeamSpawnsAHighSlotDetachedSegment() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_POKEY,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_POKEY)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         // The runtime performs the shared pre-handler decrement first, so $15
         // reaches PokeyEntityHandler as the source's $14 spawn trigger.
-        runtime.debug().setEnemyFlashCountdownForTest(0, 0x15);
+        EntityRuntimeFixture.debug(runtime).setEnemyFlashCountdownForTest(0, 0x15);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 
         RoomEntity segment = runtime.inspection().snapshot().slots().stream()
@@ -153,8 +141,11 @@ final class PokeyRuntimeTest {
     @Test
     void detachedSegmentsReverseOnWallsAndPoofAfterThreeHits() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntity segment = new RoomEntity(
-                0, -1, ENTITY_POKEY, 0x40, 0x40, EntityStatus.ACTIVE, catalog.forPokeySegment(), 0, 0, 0, 0, -1, false);
+        RoomEntity segment = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_POKEY)
+                .at(0x40, 0x40)
+                .spriteDefinition(catalog.forPokeySegment())
+                .build();
         PokeyMotion motion = new PokeyMotion();
         motion.initializeSegment(0, 0x10, 0x00);
 

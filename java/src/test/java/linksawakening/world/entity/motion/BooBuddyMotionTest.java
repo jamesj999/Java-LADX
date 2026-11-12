@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -86,7 +85,7 @@ final class BooBuddyMotionTest {
     @Test
     void recoilSharesTheOrdinarySubpixelAccumulatorsWithoutChangingDriftSpeeds() {
         BooBuddyMotion motion = new BooBuddyMotion();
-        motion.setSpeedForTest(0, 8, 8, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 8, 8, 0);
         RoomEntity drifting = motion.advance(entity(0x40, 0x50, 0), 0, 0x80, 0x50, 0, 0, true, () -> 0)
                 .entity();
         RoomEntity recoiling = motion.advanceRecoil(drifting, 8, 8);
@@ -141,7 +140,7 @@ final class BooBuddyMotionTest {
     @Test
     void transitionAnimationClearsAStalePrivateStateBeforeTheLastTick() {
         BooBuddyMotion motion = new BooBuddyMotion();
-        motion.setPrivateStateForTest(0, 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateStateForTest(motion, 0, 1);
         RoomEntity entity = entity(0x30, 0x40, 0);
 
         BooBuddyMotion.Update hidden = motion.advance(entity, 0, 0x60, 0x40, 2, 0, false, () -> 0);
@@ -161,7 +160,7 @@ final class BooBuddyMotionTest {
     })
     void boundaryCheckUsesTheCoordinatesCachedBeforeMovement(int x, int y, int speedX, int speedY, boolean unloaded) {
         BooBuddyMotion motion = new BooBuddyMotion();
-        motion.setSpeedForTest(0, speedX, speedY, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, speedX, speedY, 0);
         RoomEntity entity = entity(x, y, 0);
 
         BooBuddyMotion.Update update = motion.advance(entity, 0, 0x40, 0x50, 0, 0, false, () -> 0);
@@ -173,7 +172,7 @@ final class BooBuddyMotionTest {
     @CsvSource({"0x70, 0x50", "0x40, 0x10"})
     void distantSwordSwingKeepsExistingSpeedAndSkipsRandomSteering(int linkX, int linkY) {
         BooBuddyMotion motion = new BooBuddyMotion();
-        motion.setSpeedForTest(0, 0x10, 0xF0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 0x10, 0xF0, 0);
         BooBuddyMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, linkX, linkY, 0, 0, true, () -> {
             throw new AssertionError("Distant swing must skip GetRandomByte");
         });
@@ -187,7 +186,7 @@ final class BooBuddyMotionTest {
     @Test
     void nearbySwordSwingStartsDisappearanceAndStopsAfterTheCurrentMovement() {
         BooBuddyMotion motion = new BooBuddyMotion();
-        motion.setSpeedForTest(0, 0x10, 0xF0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 0x10, 0xF0, 0);
         BooBuddyMotion.Update update = motion.advance(entity(0x40, 0x50, 0), 0, 0x40, 0x50, 0, 0, true, () -> {
             throw new AssertionError("Nearby swing must skip GetRandomByte");
         });
@@ -204,7 +203,7 @@ final class BooBuddyMotionTest {
     void finalDisappearanceTickReflectsPositionAndStartsPrivateCountdown() {
         BooBuddyMotion motion = new BooBuddyMotion();
         // Movement precedes the reflection: ($30,$40) becomes ($31,$3F).
-        motion.setSpeedForTest(0, 0x10, 0xF0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 0x10, 0xF0, 0);
         BooBuddyMotion.Update teleported = motion.advance(entity(0x30, 0x40, 0), 4, 0x50, 0x40, 1, 0, false, () -> 0);
         assertEquals(0x6F, teleported.entity().x());
         assertEquals(0x51, teleported.entity().y());
@@ -230,8 +229,13 @@ final class BooBuddyMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(
-                0, 0, BooBuddyMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(BooBuddyMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .spriteVariant(variant)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

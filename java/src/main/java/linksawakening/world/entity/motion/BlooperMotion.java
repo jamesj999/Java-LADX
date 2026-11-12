@@ -15,15 +15,15 @@ public final class BlooperMotion {
     private static final int DIRECTION_UP = 2;
     private static final int DIRECTION_DOWN = 3;
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         reset(slot);
@@ -164,19 +164,6 @@ public final class BlooperMotion {
 
     public int privateCountdown3(int slot) {
         return privateCountdown3[slot];
-    }
-
-    void setStateForTest(int slot, int newState, int newCountdown, int newDirection, int newSpeedX, int newSpeedY) {
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        state[slot] = newState;
-        transitionCountdown[slot] = newCountdown & 0xFF;
-        direction[slot] = newDirection & 0xFF;
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
     }
 
     private void reset(int slot) {

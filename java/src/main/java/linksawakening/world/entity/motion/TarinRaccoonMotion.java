@@ -122,18 +122,18 @@ public final class TarinRaccoonMotion {
             int collisionFlags,
             boolean nearLinkLatch) {}
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] accumulatorX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] accumulatorY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] accumulatorZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] animationAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] animationInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] animationIndex = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] nearLinkLatch = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] accumulatorX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] accumulatorY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] accumulatorZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] animationAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] animationInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] animationIndex = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] nearLinkLatch = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, Input input) {
         return advance(source, input, null);
@@ -313,31 +313,6 @@ public final class TarinRaccoonMotion {
         if (state[slot] == 0) {
             state[slot] = 1;
         }
-    }
-
-    public void setStateForTest(
-            int slot,
-            int newState,
-            int newSpeedX,
-            int newSpeedY,
-            int newSpeedZ,
-            int privateState2,
-            int privateState3,
-            boolean nearLatch) {
-        if (newState < 0 || newState > 3) {
-            throw new IllegalArgumentException("Tarin state must be 0..3");
-        }
-        state[slot] = newState;
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        animationAccumulator[slot] = privateState2 & 0xFF;
-        animationInertia[slot] = privateState3 & 0xFF;
-        animationIndex[slot] = 0;
-        nearLinkLatch[slot] = nearLatch;
-        accumulatorX[slot] = 0;
-        accumulatorY[slot] = 0;
-        accumulatorZ[slot] = 0;
     }
 
     private Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {

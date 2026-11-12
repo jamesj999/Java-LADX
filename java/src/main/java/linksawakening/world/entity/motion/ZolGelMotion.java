@@ -24,7 +24,7 @@ public final class ZolGelMotion {
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] flashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -293,10 +293,6 @@ public final class ZolGelMotion {
 
     public int privateCountdown1(int slot) {
         return privateCountdown1[slot];
-    }
-
-    public void setPrivateCountdown1ForTest(int slot, int value) {
-        privateCountdown1[slot] = value & 0xFF;
     }
 
     private void decrementCountdowns(int slot) {

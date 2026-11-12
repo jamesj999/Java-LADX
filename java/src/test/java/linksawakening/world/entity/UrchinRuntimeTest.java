@@ -42,25 +42,19 @@ final class UrchinRuntimeTest {
     void exposesUrchinRomMetadataAndBigBlockCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_URCHIN,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_URCHIN)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
         assertTrue(RoomEntityCombatRules.supportsLinkCollision(ENTITY_URCHIN));
@@ -75,25 +69,19 @@ final class UrchinRuntimeTest {
     void normalContactUsesTheSharedEnemyDamagePath() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_URCHIN,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_URCHIN)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
 
@@ -108,24 +96,18 @@ final class UrchinRuntimeTest {
     void normalContactKeepsItsRomDamageWhenCombatTablesAreUnavailable() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_URCHIN,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_URCHIN)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .build();
 
         List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x4C, 0x40, false, true, false, 0, 0, 0, 0);
 
@@ -200,25 +182,19 @@ final class UrchinRuntimeTest {
     void runtimeEmitsPushJingleAndFinalPositionRequest() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_URCHIN,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_URCHIN)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -251,25 +227,19 @@ final class UrchinRuntimeTest {
     void runtimeRestoresLinkFinalPositionForNormalContactWithoutShieldPush() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_URCHIN,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_URCHIN)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -304,7 +274,12 @@ final class UrchinRuntimeTest {
     private static RoomEntity urchin(byte[] rom) {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
-        return new RoomEntity(0, 0, ENTITY_URCHIN, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_URCHIN)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

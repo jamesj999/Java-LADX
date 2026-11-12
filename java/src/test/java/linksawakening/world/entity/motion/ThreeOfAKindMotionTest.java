@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -28,42 +27,35 @@ final class ThreeOfAKindMotionTest {
         ThreeOfAKindMotion motion = new ThreeOfAKindMotion();
         List<RoomEntity> cards = List.of(card(0), card(1), card(2));
         int[] countdowns = new int[EntityRoomLoader.MAX_ENTITIES];
-        motion.setSettledForTest(0, 1);
-        motion.setSettledForTest(1, 1);
-        motion.setSettledForTest(2, 2);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 0, 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 1, 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 2, 2);
 
         assertEquals(ThreeOfAKindMotion.PuzzleResult.MISMATCH, motion.resolvePuzzle(cards, countdowns));
         assertEquals(0, motion.state(0));
         assertEquals(0, motion.state(1));
         assertEquals(0, motion.state(2));
 
-        motion.setSettledForTest(0, 0);
-        motion.setSettledForTest(1, 0);
-        motion.setSettledForTest(2, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 1, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 2, 0);
         assertEquals(ThreeOfAKindMotion.PuzzleResult.MATCH, motion.resolvePuzzle(cards, countdowns));
         assertEquals(0x2D, motion.matchedDrop(0));
         assertEquals(0x02, motion.matchedJingle(0));
 
-        motion.setSettledForTest(0, 2);
-        motion.setSettledForTest(1, 2);
-        motion.setSettledForTest(2, 2);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 0, 2);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 1, 2);
+        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(motion, 2, 2);
         assertEquals(0x1D, motion.matchedJingle(0));
     }
 
     private static RoomEntity card(int slot) {
-        return new RoomEntity(
-                slot,
-                slot,
-                ThreeOfAKindMotion.ENTITY_TYPE,
-                0x40 + slot * 8,
-                0x50,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(ThreeOfAKindMotion.ENTITY_TYPE)
+                .at(0x40 + slot * 8, 0x50)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(ThreeOfAKindMotion.ENTITY_TYPE))
+                .build();
     }
 }

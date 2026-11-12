@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +37,7 @@ final class HinoxMotionTest {
                 motion.advance(entity, 0x12, 0, 0x40, 0x40, 0, 0, () -> 0x00, null, 0x00, 0);
         assertEquals(HinoxMotion.STATE_INITIAL, noEntityCollision.state());
 
-        motion.setEntityCollisionForTest(entity.slot(), 0x01);
+        linksawakening.world.entity.motion.MotionTestFixture.setEntityCollisionForTest(motion, entity.slot(), 0x01);
         HinoxMotion.Update entityCollision =
                 motion.advance(noEntityCollision.entity(), 0x12, 1, 0x40, 0x40, 0, 0, () -> 0x00, null, 0x00, 0);
         assertEquals(HinoxMotion.STATE_WANDER, entityCollision.state());
@@ -49,8 +48,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x40, 0x40, 1);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
-        motion.setInertiaForTest(entity.slot(), 0x0F);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setInertiaForTest(motion, entity.slot(), 0x0F);
 
         HinoxMotion.Update update = motion.advance(entity, 0x12, 0, 0x40, 0x40, 0, 0, () -> 0, null, 0, 0);
 
@@ -63,8 +63,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x40, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
-        motion.setSpeedForTest(entity.slot(), 0x08, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0x08, 0);
 
         HinoxMotion.Update update = motion.advance(entity, 0x12, 0, 0x20, 0x40, 0, 0, () -> 0, null, 0, 0);
 
@@ -77,7 +78,7 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x40, 0x40, 0);
         motion.initialize(entity.slot());
-        motion.setInertiaForTest(entity.slot(), 0x0F);
+        linksawakening.world.entity.motion.MotionTestFixture.setInertiaForTest(motion, entity.slot(), 0x0F);
 
         HinoxMotion.Update update = motion.advance(entity, 0x12, 0, 0x40, 0x40, 0, 0, () -> 0, null, 0, 0);
 
@@ -90,8 +91,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x40, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
-        motion.setPrivateCountdown1ForTest(entity.slot(), 2);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdown1ForTest(motion, entity.slot(), 2);
 
         assertTrue(motion.advance(entity, 0x1F, 0, 0x40, 0x40, 0, 0, () -> 0, null, 0, 0)
                 .linkMotionBlocked());
@@ -105,8 +107,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
-        motion.setPrivateState3ForTest(entity.slot(), 1);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_WANDER, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateState3ForTest(motion, entity.slot(), 1);
 
         HinoxMotion.Update windup = motion.advance(entity, 0, 0, 0x40, 0x40, 0, 0, () -> 0x00, null, 0, 0);
         assertEquals(HinoxMotion.STATE_CHARGE_WINDUP, windup.state());
@@ -128,8 +131,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_CHARGE, 0x40, 0);
-        motion.setSpeedForTest(entity.slot(), 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_CHARGE, 0x40, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0, 0);
 
         HinoxMotion.Update grabbed = motion.advance(entity, 0x10, 0, 0x60, 0x40, 0, 0, () -> 0, null, 0, 0);
         assertEquals(HinoxMotion.STATE_GRAB, grabbed.state());
@@ -168,8 +172,9 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
-        motion.setSpeedForTest(entity.slot(), 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0, 0);
 
         HinoxMotion.Update update = motion.advance(entity, 0, 0, 0x30, 0x30, 0, 0, () -> 0, null, 0, 0);
 
@@ -182,7 +187,8 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
 
         HinoxMotion.Update update = motion.advance(entity, 0x1F, 0, 0x60, 0x40, 0, 0, () -> 0, null, 0, 0);
 
@@ -196,7 +202,8 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
 
         HinoxMotion.Update update = motion.advance(entity, 0, 0, 0x50, 0x40, 0, 0, () -> 0, null, 0, 0);
 
@@ -209,7 +216,8 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_WANDER, 0x10, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_WANDER, 0x10, 0);
 
         HinoxMotion.Update bombState = motion.advance(entity, 0, 2, 0x50, 0x40, 0, 0, () -> 0, null, 0, 0x03);
         assertEquals(HinoxMotion.STATE_BOMB, bombState.state());
@@ -225,7 +233,8 @@ final class HinoxMotionTest {
         assertEquals(0x0C, bomb.bombSpawn().speedY());
         assertEquals(0x18, bomb.bombSpawn().speedZ());
 
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_GRAB, 0, 0);
         HinoxMotion.Update grabbedFlash = motion.advance(entity, 0x20, 4, 0x30, 0x40, 0, 0, () -> 0, null, 0, 0x03);
         assertEquals(HinoxMotion.STATE_GRAB, grabbedFlash.state());
     }
@@ -235,13 +244,15 @@ final class HinoxMotionTest {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
-        motion.setSpeedForTest(entity.slot(), 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0, 0);
 
         HinoxMotion.Update dust = motion.advance(entity, 1, 0, 0x30, 0x30, 0, 0, () -> 0, null, 0, 0);
         assertTrue(dust.dustRequested());
 
-        motion.setStateForTest(entity.slot(), HinoxMotion.STATE_BOMB, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+                motion, entity.slot(), HinoxMotion.STATE_BOMB, 0, 0);
         HinoxMotion.Update bomb = motion.advance(dust.entity(), 0x10, 1, 0x30, 0x30, 0, 0, () -> 0, null, 0, 0);
 
         assertEquals(0x44, bomb.bombSpawn().x());
@@ -253,19 +264,12 @@ final class HinoxMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int spriteVariant) {
-        return new RoomEntity(
-                0,
-                0,
-                HINOX,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(HINOX),
-                spriteVariant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(HINOX)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(HINOX))
+                .spriteVariant(spriteVariant)
+                .build();
     }
 }

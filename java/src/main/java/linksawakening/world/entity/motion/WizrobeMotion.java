@@ -12,12 +12,12 @@ public final class WizrobeMotion {
     private static final int[] PROJECTILE_OFFSET_X = {0x08, 0xF8, 0x00, 0x00};
     private static final int[] PROJECTILE_OFFSET_Y = {0x00, 0x00, 0xF8, 0x08};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot, int spriteVariant) {
         reset(slot);
@@ -138,34 +138,6 @@ public final class WizrobeMotion {
         return new Update(updated, countdown, physicsFlags, projectileSpawn);
     }
 
-    public void setForTest(
-            int slot,
-            int newState,
-            int transitionCountdown,
-            int newPrivateState1,
-            int newPrivateCountdown1,
-            int newDirection,
-            int spriteVariant) {
-        if (newState < 0 || newState > 3) {
-            throw new IllegalArgumentException("Wizrobe state out of range: " + newState);
-        }
-        checkByte(transitionCountdown, "Wizrobe transition countdown");
-        checkByte(newPrivateState1, "Wizrobe private state");
-        checkByte(newPrivateCountdown1, "Wizrobe private countdown");
-        if (newDirection < 0 || newDirection > 3) {
-            throw new IllegalArgumentException("Wizrobe direction out of range: " + newDirection);
-        }
-        if (spriteVariant < -1 || spriteVariant > 4) {
-            throw new IllegalArgumentException("Wizrobe sprite variant out of range: " + spriteVariant);
-        }
-        state[slot] = newState;
-        privateState1[slot] = newPrivateState1;
-        privateCountdown1[slot] = newPrivateCountdown1;
-        direction[slot] = newDirection;
-        currentSpriteVariant[slot] = spriteVariant;
-        initialized[slot] = true;
-    }
-
     public void clear(int slot) {
         reset(slot);
         initialized[slot] = false;
@@ -225,7 +197,7 @@ public final class WizrobeMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static void checkByte(int value, String label) {
+    static void checkByte(int value, String label) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }

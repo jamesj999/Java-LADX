@@ -12,8 +12,6 @@ interface EntityBossInspectionServices {
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.GenieEntityController genie();
-
     static EntityBossInspectionServices bind(RoomEntityRuntime r) {
         return new EntityBossInspectionServices() {
             public linksawakening.world.entity.EntityBossRewards bossRewards() {
@@ -30,10 +28,6 @@ interface EntityBossInspectionServices {
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
-            }
-
-            public linksawakening.world.entity.GenieEntityController genie() {
-                return r.genie;
             }
         };
     }

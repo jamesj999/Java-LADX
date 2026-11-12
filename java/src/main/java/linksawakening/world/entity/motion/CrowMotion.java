@@ -9,11 +9,11 @@ public final class CrowMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10 | 0x40;
     static final int ACTIVE_PHYSICS_FLAGS = 0x02 | 0x10;
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -198,19 +198,7 @@ public final class CrowMotion {
         return state[slot] >= 1;
     }
 
-    void setStateForTest(int slot, int value) {
-        ensureInitialized(slot);
-        state[slot] = value & 0xFF;
-    }
-
-    void setSpeedForTest(int slot, int x, int y, int z) {
-        ensureInitialized(slot);
-        speedX[slot] = x & 0xFF;
-        speedY[slot] = y & 0xFF;
-        speedZ[slot] = z & 0xFF;
-    }
-
-    private void ensureInitialized(int slot) {
+    void ensureInitialized(int slot) {
         if (!initialized[slot]) {
             initialize(slot);
         }

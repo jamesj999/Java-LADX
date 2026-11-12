@@ -42,17 +42,17 @@ public final class EnemyProjectileMotion {
     private static final int[] OCTOROK_SPEED_Y = {0x00, 0x00, 0xE0, 0x20};
 
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] pendingLinkCollision = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public static SpawnData spawnData(int projectileType, int projectileDirection) {
         int direction = checkedDirection(projectileDirection);
@@ -242,23 +242,6 @@ public final class EnemyProjectileMotion {
 
     /* Package-private hooks keep physics tests deterministic without exposing
     WRAM-like state as part of the runtime API. */
-    void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
-        initialized[slot] = true;
-    }
-
-    void setTransitionForTest(int slot, int countdown, int z, int newSpeedZ) {
-        transitionCountdown[slot] = countdown & 0xFF;
-        zPosition[slot] = z & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        speedZAccumulator[slot] = 0;
-        initialized[slot] = true;
-    }
 
     private Update advanceWallTransition(RoomEntity entity, int frameCounter, int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();

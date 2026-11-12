@@ -10,12 +10,12 @@ public final class WizrobeProjectileMotion {
     private static final int[] SPEED_X_BY_DIRECTION = {0x20, 0xE0, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xE0, 0x20};
 
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot, IntSupplier randomByteSupplier) {
         if (randomByteSupplier == null) {
@@ -66,18 +66,6 @@ public final class WizrobeProjectileMotion {
         return ((frameCounter & 0xFF) & 0x04) << 2;
     }
 
-    public void setForTest(int slot, int newSpeedX, int newSpeedY, int newDirection) {
-        if ((newSpeedX & ~0xFF) != 0 || (newSpeedY & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Wizrobe projectile speeds must be bytes");
-        }
-        checkDirection(newDirection);
-        reset(slot);
-        speedX[slot] = newSpeedX;
-        speedY[slot] = newSpeedY;
-        direction[slot] = newDirection;
-        initialized[slot] = true;
-    }
-
     public void clear(int slot) {
         reset(slot);
         initialized[slot] = false;
@@ -95,7 +83,7 @@ public final class WizrobeProjectileMotion {
         return speedY[slot] & 0xFF;
     }
 
-    private void reset(int slot) {
+    void reset(int slot) {
         direction[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -122,7 +110,7 @@ public final class WizrobeProjectileMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static void checkDirection(int direction) {
+    static void checkDirection(int direction) {
         if (direction < 0 || direction > 3) {
             throw new IllegalArgumentException("Wizrobe projectile direction out of range: " + direction);
         }

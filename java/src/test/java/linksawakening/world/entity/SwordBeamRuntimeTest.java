@@ -144,8 +144,13 @@ final class SwordBeamRuntimeTest {
     private static RoomEntityRuntime runtime() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        return RoomEntityRuntime.from(
-                emptySnapshot(), false, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        return RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY, int linkDirection) {

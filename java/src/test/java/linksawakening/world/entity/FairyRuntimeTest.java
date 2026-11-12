@@ -35,12 +35,18 @@ final class FairyRuntimeTest {
     void runsTheFairyHandlerWithItsRomPhysicsAndOptions() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0, 0, 0x2F, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0x10, -1, false)),
-                false,
-                () -> 0,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0x2F)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(definition)
+                                .z(0x10)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x40, sequence(0x0F, 0x00)));
 
@@ -65,23 +71,23 @@ final class FairyRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity source = new RoomEntity(
-                15,
-                0,
-                0x09,
-                0x44,
-                0x58,
-                EntityStatus.DYING,
-                catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                0,
-                0,
-                0,
-                0x10,
-                -1,
-                false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(source), false, () -> 0, catalog, tables);
+        RoomEntity source = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(15)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(0x44, 0x58)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                .z(0x10)
+                .build();
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(source))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
         runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
-        runtime.debug().setDroppedItemForTest(15, 0x2F);
+        EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2F);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(0x2F, runtime.inspection().snapshot().slots().get(14).type());

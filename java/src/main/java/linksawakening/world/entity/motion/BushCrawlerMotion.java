@@ -18,16 +18,16 @@ public final class BushCrawlerMotion {
     private static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4, 0xF0, 0xF4};
     private static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -176,39 +176,6 @@ public final class BushCrawlerMotion {
         speedYAccumulator[slot] = 0;
         presentationVariant[slot] = 0;
         initialized[slot] = false;
-    }
-
-    void forceStateForTest(
-            int slot,
-            int newState,
-            int transitionCountdown,
-            int newPrivateState1,
-            int newPrivateState4,
-            int newSpeedX,
-            int newSpeedY) {
-        state[slot] = newState & 0xFF;
-        privateState1[slot] = newPrivateState1 & 0xFF;
-        privateState2[slot] = newState == 1 ? 4 : 0;
-        privateState4[slot] = newPrivateState4 & 0x01;
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        presentationVariant[slot] = 0;
-        initialized[slot] = true;
-    }
-
-    void forcePrivateStateForTest(int slot, int newPrivateState1, int transitionCountdown) {
-        state[slot] = 0;
-        privateState1[slot] = newPrivateState1 & 0xFF;
-        privateState2[slot] = 0;
-        privateState4[slot] = 0;
-        speedX[slot] = 0;
-        speedY[slot] = 0;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        presentationVariant[slot] = 0;
-        initialized[slot] = true;
     }
 
     public int state(int slot) {

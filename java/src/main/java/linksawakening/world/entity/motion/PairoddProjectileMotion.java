@@ -8,12 +8,12 @@ import linksawakening.world.entity.RoomEntity;
 public final class PairoddProjectileMotion {
     private static final int VECTOR_LENGTH = 0x18;
 
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         reset(slot);
@@ -75,21 +75,6 @@ public final class PairoddProjectileMotion {
 
     public int direction(int slot) {
         return direction[slot] & 0x03;
-    }
-
-    public void setForTest(int slot, int newSpeedX, int newSpeedY, int newDirection) {
-        if ((newSpeedX & ~0xFF) != 0 || (newSpeedY & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Pairodd projectile speeds must be bytes");
-        }
-        if (newDirection < 0 || newDirection > 3) {
-            throw new IllegalArgumentException("Pairodd projectile direction out of range");
-        }
-        speedX[slot] = (byte) newSpeedX;
-        speedY[slot] = (byte) newSpeedY;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        direction[slot] = newDirection;
-        initialized[slot] = true;
     }
 
     private void reset(int slot) {

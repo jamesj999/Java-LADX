@@ -216,8 +216,8 @@ public final class ColorShellMotion {
         return physicsFlags[slot];
     }
 
-    /** Test/fixture hook shaped like writes to the bank-$36 WRAM tables. */
-    public void setStateForTest(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
+    /** Restore bank-$36 WRAM state supplied by room debug configuration. */
+    public void restoreState(int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         if (state < 0 || state > 0x0D) {
             throw new IllegalArgumentException("Color Shell state out of range: " + state);
         }

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +14,8 @@ final class MoblinKingMotionTest {
     @Test
     void hopUsesCurrentLinkSideAndRomDominantAxisSpeed() {
         MoblinKingMotion motion = new MoblinKingMotion();
-        motion.setStateForTest(0, 2, 0, 0, 0, -3);
-        motion.setPrivateCountdownsForTest(0, 0, 0x20);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, -3);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0, 0x20);
         var hop = motion.advance(entity(88, 96), 24, 64, 0, 0x30, 0, () -> 0, null, false);
         assertEquals(0xFA, motion.speedX(0)); // target (72,64): dx=-16, dy=-32.
         var next = motion.advance(hop.entity(), 24, 64, 0, 0x30, 1, () -> 0, null, false);
@@ -36,8 +35,12 @@ final class MoblinKingMotionTest {
                 0,
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(2, 0))));
-        RoomEntity king =
-                new RoomEntity(0, 0, 0xE4, 0x58, 0x58, EntityStatus.ACTIVE, loadedDefinition, 0, 0, 0, 0, -1, false);
+        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xE4)
+                .at(0x58, 0x58)
+                .spriteDefinition(loadedDefinition)
+                .build();
 
         MoblinKingMotion.Update setup = motion.advance(king, 0x30, 0x58, 0, 0, 0, () -> 0, null, false);
         MoblinKingMotion.Update intro = motion.advance(setup.entity(), 0x30, 0x58, 0, 0, 1, () -> 0, null, false);
@@ -69,7 +72,7 @@ final class MoblinKingMotionTest {
     void sourceAttackWindupLaunchesHorizontalMoblinArrowAtCountdownTwelve() {
         MoblinKingMotion motion = new MoblinKingMotion();
         RoomEntity king = enterAttackState(motion);
-        motion.setPrivateCountdownsForTest(0, 0x0D, 0x20);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0x0D, 0x20);
 
         MoblinKingMotion.Update update = motion.advance(king, 0x20, 0x58, 0, 0x20, 0, () -> 0, null, false);
 
@@ -119,25 +122,18 @@ final class MoblinKingMotionTest {
 
     private static RoomEntity enterChargeState(MoblinKingMotion motion) {
         RoomEntity king = enterAttackState(motion);
-        motion.setStateForTest(0, 3, 1, 0x28, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 1, 0x28, 0, 0);
         MoblinKingMotion.Update prepare = motion.advance(king, 0x20, 0x58, 0, 0, 0, () -> 0, null, false);
         return prepare.entity();
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                0,
-                0xE4,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xE4),
-                -1,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xE4)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0xE4))
+                .spriteVariant(-1)
+                .build();
     }
 }

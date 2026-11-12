@@ -13,22 +13,22 @@ public final class WingedOctorokMotion {
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] BASE_VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] zInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] zInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record RockSpawn(int direction) {
         public RockSpawn {
@@ -255,26 +255,6 @@ public final class WingedOctorokMotion {
         presentationVariant[slot] = 0;
         initialized[slot] = false;
         zInitialized[slot] = false;
-    }
-
-    void forceStateForTest(
-            int slot, int newState, int transitionCountdown, int newPrivateCountdown2, int z, int newSpeedZ) {
-        state[slot] = newState & 0xFF;
-        direction[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
-        privateCountdown2[slot] = newPrivateCountdown2 & 0xFF;
-        speedX[slot] = 0;
-        speedY[slot] = 0;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        zPosition[slot] = z & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
-        inertia[slot] = 0;
-        presentationVariant[slot] = 0;
-        initialized[slot] = true;
-        zInitialized[slot] = true;
     }
 
     private void setVariantForDirection(int slot) {

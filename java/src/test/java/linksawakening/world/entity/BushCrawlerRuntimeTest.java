@@ -67,13 +67,18 @@ final class BushCrawlerRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xBB, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(
-                        new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xBB)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x47, () -> 0));
         assertEquals(1, runtime.inspection().bushCrawlerState(0));
@@ -99,13 +104,18 @@ final class BushCrawlerRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xBB, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(
-                        new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xBB)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setActionButtonsHeld(true, false);
         runtime.configuration().setLikeLikeLinkInventory(0x03, 0x00);
 

@@ -78,8 +78,16 @@ final class LeeverContactRecoilTest {
                         new EntitySpriteDefinition.Variant(
                                 new EntitySpriteDefinition.OamAttribute(0, 0),
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
-        slots.set(2, new RoomEntity(2, 0, 0x0E, x, y, EntityStatus.ACTIVE, sprite, 0, 0, 0, 0, -1, false));
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        slots.set(
+                2,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(2)
+                        .sourceLoadOrder(0)
+                        .type(0x0E)
+                        .at(x, y)
+                        .spriteDefinition(sprite)
+                        .build());
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         for (int frame = 0; frame <= 34; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, x - 10, y, () -> 0));
         assertEquals(2, runtime.enemies().leeverState(2));

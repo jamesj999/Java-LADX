@@ -8,30 +8,24 @@ import org.junit.jupiter.api.Test;
 
 class GhiniDeathCascadeTest {
     private static RoomEntity entity(int slot, int type, EntityStatus status) {
-        return new RoomEntity(
-                slot,
-                slot,
-                type,
-                64,
-                64,
-                status,
-                linksawakening.entity.EntitySpriteDefinition.unsupported(type),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(64, 64)
+                .status(status)
+                .spriteDefinition(linksawakening.entity.EntitySpriteDefinition.unsupported(type))
+                .build();
     }
 
     @Test
     void cascadeDrawsOnlyForVisibleNonzeroSlotsInDescendingOrder() {
-        var runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(java.util.stream.IntStream.range(0, 16)
                         .mapToObj(slot -> entity(slot, 0, EntityStatus.DISABLED))
-                        .toList()),
-                false,
-                () -> 0);
+                        .toList()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
         var killed = entity(8, 0x12, EntityStatus.DYING);
         runtime.slots[8] = killed;
         runtime.slots[15] = entity(15, 0x10, EntityStatus.ACTIVE);

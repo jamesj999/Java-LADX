@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +21,7 @@ final class WitchMotionTest {
         assertEquals(1, update.inertia());
         assertEquals(0, update.entity().spriteVariant());
 
-        motion.setInertiaForTest(SLOT, 0x1F);
+        linksawakening.world.entity.motion.MotionTestFixture.setInertiaForTest(motion, SLOT, 0x1F);
         update = motion.advance(witch, 0, inputs(false));
         assertEquals(0x20, update.inertia());
         assertEquals(1, update.entity().spriteVariant());
@@ -68,7 +67,7 @@ final class WitchMotionTest {
         assertTrue(accepted.exchangeStarted());
         assertEquals(WitchMotion.InventorySlot.B, accepted.clearedSlot());
         assertEquals(0x08, accepted.transitionCountdown());
-        assertEquals(1, motion.stateForTest(SLOT));
+        assertEquals(1, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
 
         WitchMotion aMotion = new WitchMotion();
         WitchMotion.Input aButton =
@@ -87,13 +86,13 @@ final class WitchMotionTest {
 
         update = motion.advance(update.entity(), 7, inputs(false));
         assertTrue(update.blockLink());
-        assertEquals(1, motion.stateForTest(SLOT));
+        assertEquals(1, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
         update = motion.advance(update.entity(), 0, inputs(false));
-        assertEquals(2, motion.stateForTest(SLOT));
+        assertEquals(2, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
         update = motion.advance(update.entity(), 0, inputs(false));
         assertEquals(0x009, update.dialogGlobalId());
         assertEquals(0xC0, update.transitionCountdown());
-        assertEquals(3, motion.stateForTest(SLOT));
+        assertEquals(3, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
 
         update = motion.advance(update.entity(), 0xBF, inputs(true));
         assertFalse(update.blockLink());
@@ -103,40 +102,40 @@ final class WitchMotionTest {
         update = motion.advance(update.entity(), 0, inputs(false));
         assertEquals(0x0FE, update.dialogGlobalId());
         assertEquals(0x07, update.musicTrack());
-        assertEquals(4, motion.stateForTest(SLOT));
+        assertEquals(4, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
 
         update = motion.advance(update.entity(), 0, inputs(true));
         assertFalse(update.grantMagicPowder());
         update = motion.advance(update.entity(), 0, inputs(false));
         assertTrue(update.grantMagicPowder());
         assertEquals(0x01, update.jingleId());
-        assertEquals(5, motion.stateForTest(SLOT));
+        assertEquals(5, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
 
         update = motion.advance(update.entity(), 0, inputs(false));
-        assertEquals(5, motion.stateForTest(SLOT));
+        assertEquals(5, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
         WitchMotion.Input torchLit =
                 new WitchMotion.Input(false, 0, 0, false, false, false, false, 0x48, 0x56, 2, 0x04, 1, 0, 0, 0x07);
         update = motion.advance(update.entity(), 0, torchLit);
-        assertEquals(6, motion.stateForTest(SLOT));
+        assertEquals(6, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
         update = motion.advance(update.entity(), 0, torchLit);
         assertEquals(0x17E, update.dialogGlobalId());
-        assertEquals(7, motion.stateForTest(SLOT));
+        assertEquals(7, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
     }
 
     @Test
     void waitsForPaletteWorkToSettleAfterTheTutorialTorchIsLit() {
         WitchMotion motion = new WitchMotion();
-        motion.setStateForTest(SLOT, 5);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, SLOT, 5);
 
         WitchMotion.Input changing =
                 new WitchMotion.Input(false, 0, 0, false, false, false, false, 0, 0, 0, 0x04, 1, 2, 0, 0x07);
         motion.advance(witch(), 0, changing);
-        assertEquals(5, motion.stateForTest(SLOT));
+        assertEquals(5, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
 
         WitchMotion.Input loading =
                 new WitchMotion.Input(false, 0, 0, false, false, false, false, 0, 0, 0, 0x04, 1, 0, 0x81, 0x07);
         motion.advance(witch(), 0, loading);
-        assertEquals(5, motion.stateForTest(SLOT));
+        assertEquals(5, linksawakening.world.entity.motion.MotionTestFixture.stateForTest(motion, SLOT));
     }
 
     private static WitchMotion.Input inputs(boolean dialogActive) {
@@ -144,19 +143,12 @@ final class WitchMotionTest {
     }
 
     private static RoomEntity witch() {
-        return new RoomEntity(
-                SLOT,
-                0,
-                0x40,
-                0x48,
-                0x40,
-                EntityStatus.ACTIVE,
-                linksawakening.entity.EntitySpriteDefinition.unsupported(0x40),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(SLOT)
+                .sourceLoadOrder(0)
+                .type(0x40)
+                .at(0x48, 0x40)
+                .spriteDefinition(linksawakening.entity.EntitySpriteDefinition.unsupported(0x40))
+                .build();
     }
 }

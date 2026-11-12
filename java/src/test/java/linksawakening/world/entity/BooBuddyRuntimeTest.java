@@ -19,25 +19,18 @@ final class BooBuddyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        BooBuddyMotion.ENTITY_TYPE,
-                        0x30,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                true,
-                null,
-                catalog);
-        runtime.debug().setTransitionCountdownForTest(0, 2);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(BooBuddyMotion.ENTITY_TYPE)
+                                .at(0x30, 0x40)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 2);
 
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x50, 0x40, () -> 0));
 
@@ -55,24 +48,18 @@ final class BooBuddyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        BooBuddyMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                true,
-                null,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(BooBuddyMotion.ENTITY_TYPE)
+                                .at(0x40, 0x50)
+                                .status(EntityStatus.INIT)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x60, 0x50, () -> 0));
         assertEquals(
@@ -100,7 +87,7 @@ final class BooBuddyRuntimeTest {
         assertTrue(runtime.resolveCombat(1, 0x40, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10)
                 .isEmpty());
 
-        runtime.debug().setBooBuddyTriggerCountForTest(1);
+        EntityRuntimeFixture.debug(runtime).setBooBuddyTriggerCountForTest(1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x60, 0x50, () -> 0));
         assertEquals(1, runtime.flyingEnemies().booBuddyState(0));
         assertEquals(

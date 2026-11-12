@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +49,7 @@ final class CuccoMotionTest {
     @Test
     void expiredWalkReturnsToIdleInsteadOfFleeing() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 1, 0, 0, 0, 0, 0x80);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0, 0x80);
 
         CuccoMotion.Update update = motion.advance(
                 entity(0x40, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
@@ -64,7 +63,7 @@ final class CuccoMotionTest {
     @Test
     void homingStateUsesTheRomVectorAndUpdatesDirection() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 2, 0, 0, 0, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, 0, 0);
 
         CuccoMotion.Update update = motion.advance(
                 entity(0x40, 0x50, 0), 0, 0, 0, 0x30, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
@@ -78,7 +77,7 @@ final class CuccoMotionTest {
     @Test
     void powerBraceletCollisionRequestsTheCuccoLiftBeforeItsStateHandler() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0x20, 0, 0, 0, 0);
 
         CuccoMotion.Update update = motion.advance(
                 entity(0x40, 0x50, 0),
@@ -120,7 +119,7 @@ final class CuccoMotionTest {
     @Test
     void marinFlashPathRaisesDialogAndCanRequestAnAngrySpawn() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setPrivateStateForTest(0, 0x22);
+        linksawakening.world.entity.motion.MotionTestFixture.setPrivateStateForTest(motion, 0, 0x22);
         CuccoMotion.Update dialog = motion.advance(
                 entity(0x40, 0x50, 0), 1, 0, 8, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, true, 0x04);
 
@@ -130,7 +129,7 @@ final class CuccoMotionTest {
         assertEquals(0x76, dialog.dialogLowId());
 
         CuccoMotion spawnMotion = new CuccoMotion();
-        spawnMotion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(spawnMotion, 0, 2, 0, 0x23, 0, 0, 0);
         CuccoMotion.Update spawn = spawnMotion.advance(
                 entity(0x40, 0x50, 0), 0, 1, 0, 0x60, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
 
@@ -144,7 +143,7 @@ final class CuccoMotionTest {
     @Test
     void attackStepWindowBlocksPowerBraceletLift() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0x20, 0, 0, 0, 0);
 
         CuccoMotion.Update update = motion.advance(
                 entity(0x40, 0x50, 0),
@@ -204,7 +203,7 @@ final class CuccoMotionTest {
     @Test
     void fullAngrySpawnRangeConsumesNoRandomByte() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0x23, 0, 0, 0);
         var result = motion.advance(
                 entity(0x40, 0x50, 0),
                 0,
@@ -228,8 +227,13 @@ final class CuccoMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(
-                0, 0, CuccoMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CuccoMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .spriteVariant(variant)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

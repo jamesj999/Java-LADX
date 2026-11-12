@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -83,19 +82,12 @@ final class SideViewPotMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                0,
-                0xD6,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xD6),
-                -1,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xD6)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0xD6))
+                .spriteVariant(-1)
+                .build();
     }
 }

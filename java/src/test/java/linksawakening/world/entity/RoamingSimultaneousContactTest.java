@@ -52,8 +52,16 @@ final class RoamingSimultaneousContactTest {
                         new EntitySpriteDefinition.Variant(
                                 new EntitySpriteDefinition.OamAttribute(0, 0),
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
-        slots.set(2, new RoomEntity(2, 0, type, 58, 82, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        slots.set(
+                2,
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(2)
+                        .sourceLoadOrder(0)
+                        .type(type)
+                        .at(58, 82)
+                        .spriteDefinition(definition)
+                        .build());
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         runtime.entityState.combatTables.writeEnemyHealth(
                 2, 8); // Synthetic nonlethal target, matching the CPU-hook probe.
         return runtime;

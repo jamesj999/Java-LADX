@@ -3,7 +3,6 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,7 @@ final class BlooperMotionTest {
     void stateZeroAcceleratesTowardSwimmingUpAndZeroHorizontalSpeed() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        motion.setStateForTest(0, 0, 0x05, 0, 0xF0, 0x02);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0x05, 0, 0xF0, 0x02);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
@@ -34,7 +33,7 @@ final class BlooperMotionTest {
     void stateZeroStartsTheRomChaseOnlyWhenLinkIsAbove() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        motion.setStateForTest(0, 0, 0, 0, 0x08, 0xF8);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0, 0, 0x08, 0xF8);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
@@ -56,7 +55,7 @@ final class BlooperMotionTest {
     void stateOneChangesSpeedOnlyOnEvenFramesAndUsesHorizontalDirection() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        motion.setStateForTest(0, 1, 0x03, 0, 0, 0x04);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0x03, 0, 0, 0x04);
 
         BlooperMotion.Movement evenMovement = motion.move(entity(64, 64), 2, null, 0);
         BlooperMotion.Update even = motion.finish(
@@ -85,7 +84,7 @@ final class BlooperMotionTest {
     void stateOneReturnsToStateZeroAtTheRomCountdownBoundary() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        motion.setStateForTest(0, 1, 0, 1, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0, 1, 0, 0);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
         BlooperMotion.Update update = motion.finish(
@@ -104,7 +103,7 @@ final class BlooperMotionTest {
     void zeroGroundStatusRestoresThePreMovePositionAndStartsTheRomCooldown() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        motion.setStateForTest(0, 0, 1, 0, 0x10, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 1, 0, 0x10, 0);
 
         RoomEntity initial = entity(64, 64);
         BlooperMotion.Movement movement = motion.move(initial, 0, null, 0);
@@ -123,19 +122,12 @@ final class BlooperMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                0,
-                0xA9,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xA9),
-                -1,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xA9)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0xA9))
+                .spriteVariant(-1)
+                .build();
     }
 }

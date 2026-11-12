@@ -36,25 +36,18 @@ final class CuccoRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                        0x40,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
+                                .at(0x40, 0x50)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
         assertEquals(0x02, runtime.options1(0));
@@ -75,25 +68,18 @@ final class CuccoRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        EntitySpriteHandlerCatalog.ENTITY_CUCCO,
-                        0x40,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
+                                .at(0x40, 0x50)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, () -> 0));
         List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);

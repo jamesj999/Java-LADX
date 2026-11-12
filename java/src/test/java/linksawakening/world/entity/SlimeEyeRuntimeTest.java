@@ -28,29 +28,22 @@ final class SlimeEyeRuntimeTest {
         for (int s = 0; s < 16; s++) list.add(RoomEntity.disabled(s));
         list.set(
                 0,
-                new RoomEntity(
-                        0,
-                        0,
-                        0x5B,
-                        0x50,
-                        0x48,
-                        EntityStatus.INIT,
-                        sprites.forEntityType(0x5B, EntityRoomLoader.RoomTable.INDOORS_A),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        var runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(list),
-                true,
-                () -> 0,
-                sprites,
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom),
-                RomTables.loadFromRom(rom),
-                rom);
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x5B)
+                        .at(0x50, 0x48)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(sprites.forEntityType(0x5B, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build());
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(list))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(sprites)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .romTables(RomTables.loadFromRom(rom))
+                .romData(rom)
+                .build();
         runtime.configuration().setEntityMapId(2);
         return runtime;
     }
@@ -316,20 +309,12 @@ final class SlimeEyeRuntimeTest {
         for (int i = 0; i < xs.length; i++)
             slots.set(
                     i,
-                    new RoomEntity(
-                            i,
-                            -1,
-                            0x5B,
-                            xs[i],
-                            64,
-                            EntityStatus.ACTIVE,
-                            catalog.forSlimeEyeState(half, 0, 0),
-                            0,
-                            0,
-                            0,
-                            0,
-                            -1,
-                            false));
+                    new linksawakening.world.entity.RoomEntityBuilder()
+                            .slot(i)
+                            .type(0x5B)
+                            .at(xs[i], 64)
+                            .spriteDefinition(catalog.forSlimeEyeState(half, 0, 0))
+                            .build());
         var entities = new RoomEntitySnapshot(
                 slots, room.entities().spriteSelection(), room.entities().spriteTiles());
         captureSnapshot(

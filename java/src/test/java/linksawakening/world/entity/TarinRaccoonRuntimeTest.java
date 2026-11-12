@@ -245,7 +245,7 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void realMagicPowderSprinkleStartsOnlyTheCollisionSliceOnItsRomCadence() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setEnemyHealthForTest(0, 3);
+        EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 3);
         int powderSlot = runtime.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
 
         for (int frame = 0; frame < 8; frame++) {
@@ -254,7 +254,7 @@ final class TarinRaccoonRuntimeTest {
 
         assertEquals(0x0F, powderSlot);
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
-        assertEquals(0, runtime.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
         assertEquals(0, runtime.enemies().enemyFlashCountdown(0));
 
         tick(runtime, 8, 0x50, 0x60);
@@ -262,7 +262,7 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(List.of(new LinkMotionBlockRequest(0)), runtime.consumePendingLinkMotionBlockRequests());
         // Powder writes $7F/$10 before Tarin's lower slot receives the
         // runtime's one shared countdown decrement on frame $08.
-        assertEquals(0x7E, runtime.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
         assertEquals(0x0F, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(3, runtime.enemies().enemyHealth(0));
 
@@ -284,18 +284,18 @@ final class TarinRaccoonRuntimeTest {
         }
 
         assertEquals(0x0E, powderSlot);
-        assertEquals(0, runtime.inspection().slowTransitionCountdownForTest(0x0F));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
         assertEquals(0, runtime.enemies().enemyFlashCountdown(0x0F));
 
         tick(runtime, 7, 0x50, 0x60);
 
-        assertEquals(0x7F, runtime.inspection().slowTransitionCountdownForTest(0x0F));
+        assertEquals(0x7F, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
         assertEquals(0x10, runtime.enemies().enemyFlashCountdown(0x0F));
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
 
         tick(runtime, 8, 0x50, 0x60);
 
-        assertEquals(0x7E, runtime.inspection().slowTransitionCountdownForTest(0x0F));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0x0F));
         assertEquals(0x0F, runtime.enemies().enemyFlashCountdown(0x0F));
         assertEquals(List.of(new LinkMotionBlockRequest(0x0F)), runtime.consumePendingLinkMotionBlockRequests());
     }
@@ -305,34 +305,34 @@ final class TarinRaccoonRuntimeTest {
         RoomEntityRuntime xInside = raccoonRuntime(false);
         xInside.spawnMagicPowderSprinkle(0x75, 0x40, 0, 0);
         tickThroughFirstPowderCollision(xInside);
-        assertEquals(0x7E, xInside.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(xInside).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime xBoundary = raccoonRuntime(false);
         xBoundary.spawnMagicPowderSprinkle(0x76, 0x40, 0, 0);
         tickThroughFirstPowderCollision(xBoundary);
-        assertEquals(0, xBoundary.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(xBoundary).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime xNegativeBoundary = raccoonRuntime(false);
         xNegativeBoundary.spawnMagicPowderSprinkle(0x5E, 0x40, 0, 0);
         tickThroughFirstPowderCollision(xNegativeBoundary);
-        assertEquals(0x7E, xNegativeBoundary.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(xNegativeBoundary).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime yInside = raccoonRuntime(false);
         yInside.spawnMagicPowderSprinkle(0x6A, 0x4B, 0, 0);
         tickThroughFirstPowderCollision(yInside);
-        assertEquals(0x7E, yInside.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(yInside).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime yBoundary = raccoonRuntime(false);
         yBoundary.spawnMagicPowderSprinkle(0x6A, 0x4C, 0, 0);
         tickThroughFirstPowderCollision(yBoundary);
         // Y uses targetVisualY - powderVisualY + $0C, reversing the
         // subtraction used for X. The positive twelve-pixel edge is inside.
-        assertEquals(0x7E, yBoundary.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(yBoundary).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime yOutside = raccoonRuntime(false);
         yOutside.spawnMagicPowderSprinkle(0x6A, 0x4D, 0, 0);
         tickThroughFirstPowderCollision(yOutside);
-        assertEquals(0, yOutside.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(yOutside).slowTransitionCountdownForTest(0));
     }
 
     @Test
@@ -345,44 +345,44 @@ final class TarinRaccoonRuntimeTest {
         }
 
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
-        assertEquals(0, runtime.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
         assertEquals(0, runtime.enemies().enemyFlashCountdown(0));
     }
 
     @Test
     void powderAppliesTheRomEligibilityGuardsBeforeTheTarinSpecialCase() {
         RoomEntityRuntime projectileNoclip = raccoonRuntime(false);
-        projectileNoclip.debug().setPhysicsFlagsForTest(0, 0x40);
+        EntityRuntimeFixture.debug(projectileNoclip).setPhysicsFlagsForTest(0, 0x40);
         projectileNoclip.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
         tickThroughFirstPowderCollision(projectileNoclip);
-        assertEquals(0, projectileNoclip.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(projectileNoclip).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime grabbable = raccoonRuntime(false);
-        grabbable.debug().setPhysicsFlagsForTest(0, 0x20);
+        EntityRuntimeFixture.debug(grabbable).setPhysicsFlagsForTest(0, 0x20);
         grabbable.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
         tickThroughFirstPowderCollision(grabbable);
-        assertEquals(0, grabbable.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(grabbable).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime hidden = raccoonRuntime(false);
         hidden.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
         for (int frame = 0; frame < 8; frame++) {
             tick(hidden, frame, 0x50, 0x60);
         }
-        hidden.debug().setSpriteVariantForTest(0, -1);
+        EntityRuntimeFixture.debug(hidden).setSpriteVariantForTest(0, -1);
         tick(hidden, 8, 0x50, 0x60);
-        assertEquals(0, hidden.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(hidden).slowTransitionCountdownForTest(0));
 
         RoomEntityRuntime aboveActive = raccoonRuntime(false, 0, EntityStatus.STUNNED, 0);
         aboveActive.spawnMagicPowderSprinkle(0x6A, 0x40, 0, 0);
         tickThroughFirstPowderCollision(aboveActive);
-        assertEquals(0x7E, aboveActive.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(0x7E, EntityRuntimeFixture.inspection(aboveActive).slowTransitionCountdownForTest(0));
     }
 
     @Test
     void stateOneExpirySpawnsTheExactTarinBombAndQueuesDeferredPersistence() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
-        runtime.debug().setSlowTransitionCountdownForTest(0, 1);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 1);
         runtime.configuration().setLinkAttackStepAnimationCountdown(7);
 
         tick(runtime, 4, 0x50, 0x40);
@@ -392,12 +392,12 @@ final class TarinRaccoonRuntimeTest {
                 .filter(entity -> entity.loaded() && entity.type() == 0x02)
                 .findFirst()
                 .orElseThrow();
-        assertEquals(2, runtime.inspection().tarinRaccoonStateForTest(0));
+        assertEquals(2, EntityRuntimeFixture.inspection(runtime).tarinRaccoonStateForTest(0));
         assertEquals(9, tarin.spriteVariant());
         assertEquals(tarin.x(), bomb.x());
         assertEquals(tarin.y(), bomb.y());
         assertEquals(tarin.z(), bomb.z());
-        assertEquals(0x4C, runtime.inspection().bombPrivateState4ForTest(bomb.slot()));
+        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombPrivateState4ForTest(bomb.slot()));
         assertEquals(0x20, runtime.enemies().transitionCountdown(bomb.slot()));
         assertEquals(List.of(new LinkAttackClearRequest(0)), runtime.consumePendingLinkAttackClearRequests());
         assertEquals(
@@ -405,7 +405,7 @@ final class TarinRaccoonRuntimeTest {
                 runtime.consumePendingRoomStatusPersistenceRequests());
         assertEquals(
                 0,
-                runtime.inspection().entityRoomStatusForTest() & 0x10,
+                EntityRuntimeFixture.inspection(runtime).entityRoomStatusForTest() & 0x10,
                 "persistence must not truncate live states two and three");
     }
 
@@ -414,8 +414,8 @@ final class TarinRaccoonRuntimeTest {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
-        runtime.debug().setSlowTransitionCountdownForTest(0, 1);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 1);
         linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
         session.tickEntities(4, 0x50, 0x40);
@@ -518,17 +518,17 @@ final class TarinRaccoonRuntimeTest {
     void stateTwoLandingAndStateThreeDialogUseRuntimeTimerOrdering() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
         runtime.configuration().setWitchEnvironment(0, 0, 0x0C);
-        runtime.debug().setTarinRaccoonStateForTest(0, 2, 0, 0, 0xF0, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 2, 0, 0, 0xF0, 0, 0, false);
 
         tick(runtime, 0, 0x79, 0x40);
 
-        assertEquals(3, runtime.inspection().tarinRaccoonStateForTest(0));
+        assertEquals(3, EntityRuntimeFixture.inspection(runtime).tarinRaccoonStateForTest(0));
         assertEquals(0x40, runtime.enemies().transitionCountdown(0));
         assertEquals(8, runtime.inspection().snapshot().slots().get(0).spriteVariant());
         assertEquals(0x23, runtime.consumePendingEntityEvents().get(0).soundId());
         assertEquals(0x0C, runtime.consumePendingMusicTrack());
 
-        runtime.debug().setTransitionCountdownForTest(0, 2);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 2);
         tick(runtime, 1, 0x70, 0x60);
 
         assertEquals(List.of(new DialogRequest(0, 0x0A)), runtime.consumePendingDialogRequests());
@@ -538,13 +538,13 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void ocarinaFreezesTransformationTimersButNotTheTarinHandler() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
-        runtime.debug().setSlowTransitionCountdownForTest(0, 4);
-        runtime.debug().setOcarinaPlaybackForTest(0x20, 1, 0);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 4);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(0x20, 1, 0);
 
         tick(runtime, 4, 0x50, 0x40);
 
-        assertEquals(4, runtime.inspection().slowTransitionCountdownForTest(0));
+        assertEquals(4, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
         assertEquals(List.of(new LinkMotionBlockRequest(0)), runtime.consumePendingLinkMotionBlockRequests());
         assertEquals(List.of(new LinkAttackClearRequest(0)), runtime.consumePendingLinkAttackClearRequests());
         assertEquals(List.of(new LinkFacingRequest(0, 0, true)), runtime.consumePendingLinkFacingRequests());
@@ -555,7 +555,7 @@ final class TarinRaccoonRuntimeTest {
         RoomSession session = newSession();
         session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
         linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
         session.tickEntities(0, 0x50, 0x60, 0, 0);
@@ -566,14 +566,14 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void tarinTransformationBombCannotEnterTheEquippedBombLiftPath() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
-        runtime.debug().setSlowTransitionCountdownForTest(0, 1);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 1);
         tick(runtime, 4, 0x50, 0x40);
         RoomEntity bomb = runtime.inspection().snapshot().slots().stream()
                 .filter(entity -> entity.loaded() && entity.type() == 0x02)
                 .findFirst()
                 .orElseThrow();
-        runtime.debug().setBombTransitionCountdownForTest(bomb.slot(), 0xA0);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bomb.slot(), 0xA0);
         runtime.configuration().setBombButtonHeld(true);
 
         tick(runtime, 5, bomb.x(), bomb.y());
@@ -581,28 +581,28 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(bomb.slot()).status());
-        assertEquals(0x4C, runtime.inspection().bombPrivateState4ForTest(bomb.slot()));
+        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombPrivateState4ForTest(bomb.slot()));
     }
 
     @Test
     void noninteractivePassFreezesTarinTimersAndTransformationHandler() {
         RoomEntityRuntime runtime = raccoonRuntime(false);
-        runtime.debug().setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
-        runtime.debug().setSlowTransitionCountdownForTest(0, 4);
+        EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
+        EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 4);
         runtime.configuration().setDialogActive(true);
 
         tick(runtime, 4, 0x50, 0x40);
 
-        assertEquals(4, runtime.inspection().slowTransitionCountdownForTest(0));
-        assertEquals(1, runtime.inspection().tarinRaccoonStateForTest(0));
+        assertEquals(4, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).tarinRaccoonStateForTest(0));
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
 
         runtime.configuration().setDialogActive(false);
-        runtime.debug().setTransitionSequenceCounterForTest(3);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         tick(runtime, 8, 0x50, 0x40);
 
-        assertEquals(4, runtime.inspection().slowTransitionCountdownForTest(0));
-        assertEquals(1, runtime.inspection().tarinRaccoonStateForTest(0));
+        assertEquals(4, EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).tarinRaccoonStateForTest(0));
     }
 
     private static RoomSession actionReadySession() {
@@ -657,15 +657,22 @@ final class TarinRaccoonRuntimeTest {
         }
         slots.set(
                 tarinSlot,
-                new RoomEntity(
-                        tarinSlot, 0, ENTITY_TARIN, 0x78, 0x40, status, definition, variant, 0, 0, 0, -1, false));
-        return RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots),
-                indoor,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .slot(tarinSlot)
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_TARIN)
+                        .at(0x78, 0x40)
+                        .status(status)
+                        .spriteDefinition(definition)
+                        .spriteVariant(variant)
+                        .build());
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(indoor)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static void tickThroughFirstPowderCollision(RoomEntityRuntime runtime) {

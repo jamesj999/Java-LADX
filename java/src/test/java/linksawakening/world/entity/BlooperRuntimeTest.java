@@ -45,12 +45,18 @@ final class BlooperRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xA9, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xA9)
+                                .at(64, 64)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
@@ -81,12 +87,18 @@ final class BlooperRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xA9, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xA9, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xA9)
+                                .at(64, 64)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();

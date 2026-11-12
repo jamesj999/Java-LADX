@@ -42,12 +42,18 @@ final class PincerRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xB0)
+                                .at(64, 64)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -75,12 +81,18 @@ final class PincerRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0xB0)
+                                .at(64, 64)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, () -> 0));

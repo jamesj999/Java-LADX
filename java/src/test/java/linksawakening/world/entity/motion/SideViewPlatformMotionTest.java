@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -138,19 +137,12 @@ final class SideViewPlatformMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int type) {
-        return new RoomEntity(
-                0,
-                0,
-                type,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                -1,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .build();
     }
 }

@@ -16,16 +16,16 @@ public final class WitchRatMotion {
     // Data_015_78D6.
     private static final int[] SPEEDS = {0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] storedSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -135,34 +135,6 @@ public final class WitchRatMotion {
                 appliesBackgroundInteraction);
     }
 
-    void setStateForTest(
-            int slot,
-            int newState,
-            int transitionCountdown,
-            int newDirection,
-            int newSpeedX,
-            int newSpeedY,
-            int newSpeedZ) {
-        validateSlot(slot);
-        if (newState < 0 || newState > 1) {
-            throw new IllegalArgumentException("Witch Rat state must be 0 or 1: " + newState);
-        }
-        validateByte(transitionCountdown, "Witch Rat transition countdown");
-        if (newDirection != 0 && newDirection != 0x04) {
-            throw new IllegalArgumentException("Witch Rat direction must be 0 or 4: " + newDirection);
-        }
-        validateByte(newSpeedX, "Witch Rat X speed");
-        validateByte(newSpeedY, "Witch Rat Y speed");
-        validateByte(newSpeedZ, "Witch Rat Z speed");
-        reset(slot);
-        state[slot] = newState;
-        direction[slot] = newDirection;
-        speedX[slot] = newSpeedX;
-        speedY[slot] = newSpeedY;
-        speedZ[slot] = newSpeedZ;
-        initialized[slot] = true;
-    }
-
     public int state(int slot) {
         validateSlot(slot);
         return state[slot];
@@ -222,7 +194,7 @@ public final class WitchRatMotion {
         return new PositionAndCollision(x, y, collisionFlags & 0x0F);
     }
 
-    private void reset(int slot) {
+    void reset(int slot) {
         state[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
@@ -257,13 +229,13 @@ public final class WitchRatMotion {
         }
     }
 
-    private static void validateSlot(int slot) {
+    static void validateSlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Witch Rat slot out of range: " + slot);
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }

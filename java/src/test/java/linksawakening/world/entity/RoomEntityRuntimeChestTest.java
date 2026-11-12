@@ -19,13 +19,13 @@ final class RoomEntityRuntimeChestTest {
     void chestInitializesWithTheRomOpenAnimationAndRewardEvent() {
         byte[] rom = loadRom();
         ChestContentsTable chestTable = new ChestContentsTable(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(),
-                false,
-                () -> 0,
-                new EntitySpriteHandlerCatalog(rom),
-                new RomEnemyCombatTables(rom),
-                chestTable);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(chestTable)
+                .build();
 
         int slot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_POWER_BRACELET);
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
@@ -51,13 +51,13 @@ final class RoomEntityRuntimeChestTest {
     void chestEmitsTheRomPresentationSoundAtInertiaEightAndDialogAtThirtyEight() {
         byte[] rom = loadRom();
         ChestContentsTable chestTable = new ChestContentsTable(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(),
-                false,
-                () -> 0,
-                new EntitySpriteHandlerCatalog(rom),
-                new RomEnemyCombatTables(rom),
-                chestTable);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(chestTable)
+                .build();
         int slot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_RUPEES_50);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -96,13 +96,13 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void zolChestUsesTheRomSpawnStateBeforeTheZolHandlerAdvancesIt() {
         byte[] rom = loadRom();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(),
-                false,
-                () -> 0,
-                new EntitySpriteHandlerCatalog(rom),
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
         int chestSlot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));

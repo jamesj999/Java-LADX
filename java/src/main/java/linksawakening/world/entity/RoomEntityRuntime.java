@@ -163,15 +163,16 @@ public final class RoomEntityRuntime {
         return entityRuntimeConfiguration;
     }
 
-    private RoomEntityRuntime(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier defaultRandomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables,
-            ChestContentsTable chestContentsTable,
-            RomTables romTables,
-            byte[] romData) {
+    RoomEntityRuntime(RoomEntityRuntimeBuilder builder) {
+        RoomEntitySnapshot initial = builder.initial();
+        boolean indoorRoom = builder.indoorRoom();
+        IntSupplier defaultRandomByteSupplier = builder.randomByteSupplier();
+        EntitySpriteHandlerCatalog spriteHandlers = builder.spriteHandlers();
+        RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
+        ChestContentsTable chestContentsTable = builder.chestContentsTable();
+        RomTables romTables = builder.romTables();
+        byte[] romData = builder.romData();
+
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
         this.entityState.presentationState.writeSpriteSelection(initial.spriteSelection());
@@ -191,103 +192,43 @@ public final class RoomEntityRuntime {
         roomInitialization.initializeRoomSlots(initial);
     }
 
+    public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
+        return new RoomEntityRuntimeBuilder(initial);
+    }
+
+    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
+    @Deprecated
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
-        return from(initial, false);
+        return builder(initial).build();
     }
 
+    /** Compatibility for world.room.RoomSessionTest and RoomTransitionCoordinatorTest; use builder for new callers. */
+    @Deprecated
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
-        if (initial == null) {
-            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
-        }
-        return new RoomEntityRuntime(initial, indoorRoom, null, null, null, null, null, null);
+        return builder(initial).indoorRoom(indoorRoom).build();
     }
 
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial, boolean indoorRoom, IntSupplier randomByteSupplier) {
-        if (initial == null) {
-            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
-        }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, null, null, null, null, null);
-    }
-
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers) {
-        if (initial == null) {
-            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
-        }
-        return new RoomEntityRuntime(initial, indoorRoom, randomByteSupplier, spriteHandlers, null, null, null, null);
-    }
-
+    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
+    @Deprecated
     public static RoomEntityRuntime from(
             RoomEntitySnapshot initial,
             boolean indoorRoom,
             IntSupplier randomByteSupplier,
             EntitySpriteHandlerCatalog spriteHandlers,
             RomEnemyCombatTables enemyCombatTables) {
-        if (initial == null) {
-            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
-        }
-        if (enemyCombatTables == null) {
-            throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
-        }
-        return new RoomEntityRuntime(
-                initial, indoorRoom, randomByteSupplier, spriteHandlers, enemyCombatTables, null, null, null);
-    }
-
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables,
-            ChestContentsTable chestContentsTable) {
-        if (initial == null) {
-            throw new IllegalArgumentException("Initial entity snapshot cannot be null");
-        }
-        if (enemyCombatTables == null) {
-            throw new IllegalArgumentException("ROM enemy combat tables cannot be null");
-        }
-        if (chestContentsTable == null) {
-            throw new IllegalArgumentException("ROM chest contents table cannot be null");
-        }
-        return new RoomEntityRuntime(
-                initial,
-                indoorRoom,
-                randomByteSupplier,
-                spriteHandlers,
-                enemyCombatTables,
-                chestContentsTable,
-                null,
-                null);
+        return builder(initial)
+                .indoorRoom(indoorRoom)
+                .randomByteSupplier(randomByteSupplier)
+                .spriteHandlers(spriteHandlers)
+                .enemyCombatTables(enemyCombatTables)
+                .build();
     }
 
     /** Full room runtime construction with the ROM entity hitbox table. */
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables,
-            ChestContentsTable chestContentsTable,
-            RomTables romTables) {
-        if (initial == null || enemyCombatTables == null || chestContentsTable == null || romTables == null) {
-            throw new IllegalArgumentException("ROM room runtime inputs cannot be null");
-        }
-        return new RoomEntityRuntime(
-                initial,
-                indoorRoom,
-                randomByteSupplier,
-                spriteHandlers,
-                enemyCombatTables,
-                chestContentsTable,
-                romTables,
-                null);
-    }
 
     /** Full room runtime construction with raw ROM data for ROM-owned handlers. */
+    /** Compatibility for world.room.RoomLoadCoordinator and RoomStoryState; use builder for new callers. */
+    @Deprecated
     public static RoomEntityRuntime from(
             RoomEntitySnapshot initial,
             boolean indoorRoom,
@@ -297,22 +238,15 @@ public final class RoomEntityRuntime {
             ChestContentsTable chestContentsTable,
             RomTables romTables,
             byte[] romData) {
-        if (initial == null
-                || enemyCombatTables == null
-                || chestContentsTable == null
-                || romTables == null
-                || romData == null) {
-            throw new IllegalArgumentException("ROM room runtime inputs cannot be null");
-        }
-        return new RoomEntityRuntime(
-                initial,
-                indoorRoom,
-                randomByteSupplier,
-                spriteHandlers,
-                enemyCombatTables,
-                chestContentsTable,
-                romTables,
-                romData);
+        return builder(initial)
+                .indoorRoom(indoorRoom)
+                .randomByteSupplier(randomByteSupplier)
+                .spriteHandlers(spriteHandlers)
+                .enemyCombatTables(enemyCombatTables)
+                .chestContentsTable(chestContentsTable)
+                .romTables(romTables)
+                .romData(romData)
+                .build();
     }
 
     /** Frame-only inputs using the runtime RNG, including its carried state. */

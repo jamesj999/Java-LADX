@@ -14,26 +14,26 @@ public final class RoamingEnemyMotion {
     private static final int ENTITY_IRON_MASK = 0x24;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
-    private static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
-    private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
+    static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
+    static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] IRON_MASK_SPEED_X_BY_DIRECTION = {0x0C, 0xF4, 0x00, 0x00};
     private static final int[] IRON_MASK_SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF4, 0x0C};
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -237,10 +237,6 @@ public final class RoamingEnemyMotion {
         return null;
     }
 
-    void setPrivateCountdown1ForTest(int slot, int value) {
-        privateCountdown1[slot] = value & 0xFF;
-    }
-
     public void clear(int slot) {
         initialize(slot);
         initialized[slot] = false;
@@ -299,28 +295,6 @@ public final class RoamingEnemyMotion {
             inertia[slot] = (inertia[slot] + 1) & 0xFF;
         }
         return VARIANT_BY_DIRECTION[direction[slot]] | ((inertia[slot] >>> 3) & 0x01);
-    }
-
-    void setStateForTest(
-            int slot,
-            int newState,
-            int newTransitionCountdown,
-            int newInertia,
-            int newPrivateState1,
-            int newDirection) {
-        state[slot] = newState & 0xFF;
-        transitionCountdown[slot] = newTransitionCountdown & 0xFF;
-        inertia[slot] = newInertia & 0xFF;
-        privateState1[slot] = newPrivateState1 & 0x03;
-        direction[slot] = newDirection & 0x03;
-        speedX[slot] = SPEED_X_BY_DIRECTION[direction[slot]];
-        speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        collisionsTable[slot] = 0;
-        horizontallyCollidedObject[slot] = 0;
-        verticallyCollidedObject[slot] = 0;
-        initialized[slot] = true;
     }
 
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {

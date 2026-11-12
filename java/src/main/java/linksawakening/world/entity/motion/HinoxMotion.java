@@ -26,20 +26,20 @@ public final class HinoxMotion {
     private static final int[] GRAB_LINK_Z = {0x15, 0x15, 0x15, 0x15, 0x15, 0x14, 0x14, 0x14, 0x10, 0x08, 0x04, 0x00};
     private static final int[] GRAB_BODY_VARIANT = {0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombOriginX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bombOriginY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] bombOriginWritten = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record BombSpawn(
             int type, int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
@@ -498,41 +498,6 @@ public final class HinoxMotion {
         return entityCollisionFlags[slot] & 0xFF;
     }
 
-    public void setStateForTest(int slot, int value, int privateState1Value, int privateState3Value) {
-        validateSlot(slot);
-        if (value < 0 || value > STATE_BOMB) throw new IllegalArgumentException("Invalid Hinox state");
-        state[slot] = value;
-        privateState1[slot] = privateState1Value & 0x03;
-        privateState3[slot] = privateState3Value & 0xFF;
-        initialized[slot] = true;
-    }
-
-    public void setSpeedForTest(int slot, int x, int y) {
-        validateSlot(slot);
-        speedX[slot] = x & 0xFF;
-        speedY[slot] = y & 0xFF;
-    }
-
-    void setInertiaForTest(int slot, int value) {
-        validateSlot(slot);
-        inertia[slot] = value & 0xFF;
-    }
-
-    void setEntityCollisionForTest(int slot, int value) {
-        validateSlot(slot);
-        entityCollisionFlags[slot] = value & 0xFF;
-    }
-
-    void setPrivateState3ForTest(int slot, int value) {
-        validateSlot(slot);
-        privateState3[slot] = value & 0xFF;
-    }
-
-    void setPrivateCountdown1ForTest(int slot, int value) {
-        validateSlot(slot);
-        privateCountdown1[slot] = value & 0xFF;
-    }
-
     private static Vector vectorTowardsLink(int x, int y, int entityZ, int linkX, int linkY, int length) {
         int dx = signedByte(linkX - x);
         int dy = signedByte(linkY - y + entityZ);
@@ -600,7 +565,7 @@ public final class HinoxMotion {
         return (speed & 0x80) != 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
     }
 
-    private static void validateSlot(int slot) {
+    static void validateSlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Hinox slot out of range: " + slot);
         }

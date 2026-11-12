@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -75,20 +74,12 @@ final class WarpMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                0,
-                WarpMotion.ENTITY_TYPE,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(WarpMotion.ENTITY_TYPE),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(WarpMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(WarpMotion.ENTITY_TYPE))
+                .build();
     }
 
     private static byte[] loadRom() throws IOException {

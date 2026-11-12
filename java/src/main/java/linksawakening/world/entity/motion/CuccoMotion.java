@@ -28,16 +28,16 @@ public final class CuccoMotion {
         0x20, 0x40, 0x60, 0x80, 0x20, 0x40, 0x60, 0x80
     };
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record SpawnRequest(int x, int y, int z, int speedX, int speedY) {
@@ -309,30 +309,6 @@ public final class CuccoMotion {
         initialized[slot] = false;
     }
 
-    void setStateForTest(
-            int slot,
-            int newState,
-            int transitionCountdown,
-            int newPrivateState1,
-            int newSpeedX,
-            int newSpeedY,
-            int newSpeedZ) {
-        ensureInitialized(slot);
-        state[slot] = newState & 0xFF;
-        privateState1[slot] = newPrivateState1 & 0xFF;
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
-    }
-
-    void setPrivateStateForTest(int slot, int value) {
-        ensureInitialized(slot);
-        privateState1[slot] = value & 0xFF;
-    }
-
     int state(int slot) {
         return state[slot];
     }
@@ -460,7 +436,7 @@ public final class CuccoMotion {
         return value & 0xFF;
     }
 
-    private void ensureInitialized(int slot) {
+    void ensureInitialized(int slot) {
         if (!initialized[slot]) {
             initialize(slot);
         }

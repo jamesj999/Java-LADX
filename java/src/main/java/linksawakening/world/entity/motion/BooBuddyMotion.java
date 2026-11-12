@@ -23,11 +23,11 @@ public final class BooBuddyMotion {
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -226,21 +226,7 @@ public final class BooBuddyMotion {
         return roomTriggerCount != 0 && state[slot] == 1;
     }
 
-    void setPrivateStateForTest(int slot, int value) {
-        ensureInitialized(slot);
-        privateState1[slot] = value & 0xFF;
-    }
-
-    void setSpeedForTest(int slot, int x, int y, int z) {
-        if ((z & 0xFF) != 0) {
-            throw new IllegalArgumentException("Boo Buddy has no test Z speed");
-        }
-        ensureInitialized(slot);
-        speedX[slot] = x & 0xFF;
-        speedY[slot] = y & 0xFF;
-    }
-
-    private void ensureInitialized(int slot) {
+    void ensureInitialized(int slot) {
         if (!initialized[slot]) {
             initialize(slot);
         }

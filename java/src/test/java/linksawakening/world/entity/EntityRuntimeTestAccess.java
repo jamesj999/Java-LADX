@@ -9,26 +9,26 @@ public final class EntityRuntimeTestAccess {
     }
 
     public static void setEnemyHealthForTest(RoomEntityRuntime runtime, int slot, int value) {
-        runtime.debug().setEnemyHealthForTest(slot, value);
+        EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(slot, value);
     }
 
     public static void setEntityRoomIdForTest(RoomEntityRuntime runtime, int roomId) {
-        runtime.debug().setEntityRoomIdForTest(roomId);
+        EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(roomId);
     }
 
     public static void setGeniePrivateState1ForTest(RoomEntityRuntime runtime, int slot, int value) {
-        runtime.debug().setGeniePrivateState1ForTest(slot, value);
+        EntityRuntimeFixture.debug(runtime).setGeniePrivateState1ForTest(slot, value);
     }
 
     public static void setHidingSlimeKeyTransitionCountdownForTest(RoomEntityRuntime runtime, int slot, int value) {
-        runtime.debug().setHidingSlimeKeyTransitionCountdownForTest(slot, value);
+        EntityRuntimeFixture.debug(runtime).setHidingSlimeKeyTransitionCountdownForTest(slot, value);
     }
 
     public static void setTransitionCountdownForTest(RoomEntityRuntime runtime, int slot, int countdown) {
-        runtime.debug().setTransitionCountdownForTest(slot, countdown);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(slot, countdown);
     }
 
     public static void setTransitionSequenceCounterForTest(RoomEntityRuntime runtime, int counter) {
-        runtime.debug().setTransitionSequenceCounterForTest(counter);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(counter);
     }
 }

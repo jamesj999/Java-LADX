@@ -46,7 +46,8 @@ final class GibdoLikeLikeMotionTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(slot == 0 ? entity(type) : RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
 
         for (int pass = 0; pass <= 33; pass++) {
             // The global frame is deliberately offset from the new entity's
@@ -109,6 +110,11 @@ final class GibdoLikeLikeMotionTest {
         EntitySpriteDefinition.Variant pair = new EntitySpriteDefinition.Variant(tile, tile);
         EntitySpriteDefinition definition = new EntitySpriteDefinition(
                 type, 6, type == 0x1F ? 0x7E6F : 0x7DD4, EntitySpriteDefinition.Shape.PAIR, 0, List.of(pair, pair));
-        return new RoomEntity(0, 0, type, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
     }
 }

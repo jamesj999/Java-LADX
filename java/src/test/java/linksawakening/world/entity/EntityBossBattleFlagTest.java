@@ -17,34 +17,28 @@ class EntityBossBattleFlagTest {
             rom = in.readAllBytes();
         }
         var slots = IntStream.range(0, 16).mapToObj(RoomEntity::disabled).toList();
-        var runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots),
-                true,
-                () -> 0,
-                null,
-                new RomEnemyCombatTables(rom),
-                new linksawakening.world.room.ChestContentsTable(rom),
-                linksawakening.rom.RomTables.loadFromRom(rom),
-                rom);
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(null)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(rom))
+                .romTables(linksawakening.rom.RomTables.loadFromRom(rom))
+                .romData(rom)
+                .build();
         runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
         return runtime;
     }
 
     private RoomEntity entity(int slot, int type) {
-        return new RoomEntity(
-                slot,
-                slot,
-                type,
-                64,
-                80,
-                EntityStatus.INIT,
-                EntitySpriteDefinition.unsupported(type),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(64, 80)
+                .status(EntityStatus.INIT)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .build();
     }
 
     @Test

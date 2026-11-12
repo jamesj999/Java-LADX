@@ -50,25 +50,20 @@ final class DogRuntimeTest {
     void usesDogsRomMetadataAndHandlerHealthSeed() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_DOG,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD),
-                        2,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_DOG)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .spriteVariant(2)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
@@ -238,25 +233,20 @@ final class DogRuntimeTest {
     void nonInteractiveLinkMotionSkipsDogTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_DOG,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD),
-                        2,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_DOG)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .spriteVariant(2)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         AtomicInteger terrainCalls = new AtomicInteger();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -278,7 +268,13 @@ final class DogRuntimeTest {
     private static RoomEntity dog(byte[] rom) {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
-        return new RoomEntity(0, 0, ENTITY_DOG, 0x40, 0x40, EntityStatus.ACTIVE, definition, 2, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_DOG)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .spriteVariant(2)
+                .build();
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

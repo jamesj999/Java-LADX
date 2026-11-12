@@ -18,24 +18,20 @@ class EntityHealthGroupTest {
         }
         var slots = IntStream.range(0, 16)
                 .mapToObj(slot -> slot == 0
-                        ? new RoomEntity(
-                                0,
-                                0,
-                                0x09,
-                                64,
-                                80,
-                                EntityStatus.ACTIVE,
-                                EntitySpriteDefinition.unsupported(0x09),
-                                0,
-                                0,
-                                0,
-                                0,
-                                -1,
-                                false)
+                        ? new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(0x09)
+                                .at(64, 80)
+                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x09))
+                                .build()
                         : RoomEntity.disabled(slot))
                 .toList();
-        var runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots), false, () -> 0, null, new RomEnemyCombatTables(rom));
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(null)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
         return runtime;
     }
@@ -47,20 +43,12 @@ class EntityHealthGroupTest {
         runtime.entityState.slotView.setHealthGroup(0, 12);
         runtime.lifecycle.disableEntityWithoutPersistence(0);
         assertEquals(0, runtime.entityState.slotView.healthGroup(0));
-        runtime.slots[0] = new RoomEntity(
-                0,
-                0,
-                0x18,
-                64,
-                80,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x18),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        runtime.slots[0] = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x18)
+                .at(64, 80)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x18))
+                .build();
         runtime.initializeHealthGroup(0);
         assertEquals(12, runtime.entityState.slotView.healthGroup(0));
     }
@@ -69,20 +57,13 @@ class EntityHealthGroupTest {
     void gibdoTransformationReinitializesGroupFromTheNewType() throws IOException {
         var runtime = runtime();
         var old = runtime.slots[0];
-        runtime.slots[0] = new RoomEntity(
-                0,
-                0,
-                0x1F,
-                old.x(),
-                old.y(),
-                EntityStatus.BURNING,
-                EntitySpriteDefinition.unsupported(0x1F),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        runtime.slots[0] = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x1F)
+                .at(old.x(), old.y())
+                .status(EntityStatus.BURNING)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x1F))
+                .build();
         runtime.entityState.slotView.setHealthGroup(0, 0);
         runtime.lifecycle.finishBurning(runtime.slots[0]);
         assertEquals(runtime.enemyCombatTables.healthGroup(0x1E), runtime.entityState.slotView.healthGroup(0));

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,11 @@ final class FollowingNpcMotionTest {
     void ghostUsesTheBank19FollowThresholdVectorPhaseAndBobTable() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity entity =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x10, 0x10, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x10, 0x10)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -52,8 +54,11 @@ final class FollowingNpcMotionTest {
     void ghostSteersUsingTheCurrentBobHeightBeforeMovement() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity current =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity current = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(0, ENTITY_GHOST);
 
@@ -70,8 +75,11 @@ final class FollowingNpcMotionTest {
     void ghostStaysPutInsideTheRomFollowWindow() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity entity =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -86,8 +94,11 @@ final class FollowingNpcMotionTest {
     void roosterUsesFourDirectionDisplayPairsAndEightFrameVectorRefresh() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_ROOSTER);
-        RoomEntity entity = new RoomEntity(
-                0, -1, ENTITY_ROOSTER, 0x10, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_ROOSTER)
+                .at(0x10, 0x40)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -117,8 +128,11 @@ final class FollowingNpcMotionTest {
     @Test
     void marinConsumesTheNextPositionAndZHistoryEntriesWhileRefreshingTheCurrentEntry() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
-        RoomEntity entity =
-                new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(0xC1)
+                .at(0x10, 0x20)
+                .spriteDefinition(definition)
+                .build();
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
@@ -140,8 +154,11 @@ final class FollowingNpcMotionTest {
     @Test
     void marinAdvancesItsHistoryIndicesAndUsesTheFollowingDirectionOnTheNextFrame() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
-        RoomEntity entity =
-                new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(0xC1)
+                .at(0x10, 0x20)
+                .spriteDefinition(definition)
+                .build();
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x00, 0x03);
         history.write(1, 0x30, 0x40, 0x01, 0x00);

@@ -88,11 +88,6 @@ public final class FairyMotion {
         return speedY[slot] & 0xFF;
     }
 
-    void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int ignoredSpeedZ) {
-        validateByte(ignoredSpeedZ, "Fairy Z speed");
-        setSpeed(slot, newSpeedX, newSpeedY);
-    }
-
     public void setSpeed(int slot, int newSpeedX, int newSpeedY) {
         validateSlot(slot);
         validateByte(newSpeedX, "Fairy X speed");
@@ -203,7 +198,7 @@ public final class FairyMotion {
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }

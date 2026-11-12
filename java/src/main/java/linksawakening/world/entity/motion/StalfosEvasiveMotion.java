@@ -9,17 +9,17 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 public final class StalfosEvasiveMotion {
     private static final int[] RANDOM_DIRECTION_SPEEDS = {0x00, 0x06, 0xFA, 0xFA, 0x06};
 
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -42,7 +42,7 @@ public final class StalfosEvasiveMotion {
         initialized[slot] = true;
     }
 
-    private void reset(int slot) {
+    void reset(int slot) {
         privateState1[slot] = 0;
         privateCountdown1[slot] = 0;
         state[slot] = 0;
@@ -234,19 +234,6 @@ public final class StalfosEvasiveMotion {
 
     public int speedZ(int slot) {
         return speedZ[slot];
-    }
-
-    public void setPrivateCountdown1ForTest(int slot, int value) {
-        initialized[slot] = true;
-        privateCountdown1[slot] = value & 0xFF;
-    }
-
-    public void setFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
-        reset(slot);
-        initialized[slot] = true;
-        privateState1[slot] = 1;
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
     }
 
     public void initializeClone(int slot, int newSpeedX, int newSpeedY) {

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +31,7 @@ final class BushCrawlerMotionTest {
     @Test
     void crawlingMovesWithTheBankSevenFixedPointPositionHelperAndStopsOnWall() {
         BushCrawlerMotion motion = new BushCrawlerMotion();
-        motion.forceStateForTest(0, 1, 2, 0, 0, 0, 0x10);
+        linksawakening.world.entity.motion.MotionTestFixture.forceStateForTest(motion, 0, 1, 2, 0, 0, 0, 0x10);
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
 
         BushCrawlerMotion.Update moved =
@@ -42,7 +41,7 @@ final class BushCrawlerMotionTest {
         assertEquals(-4, moved.visualYOffset());
         assertEquals(0, moved.entity().spriteVariant());
 
-        motion.forceStateForTest(0, 1, 2, 0, 0, 0, 0x10);
+        linksawakening.world.entity.motion.MotionTestFixture.forceStateForTest(motion, 0, 1, 2, 0, 0, 0, 0x10);
         BushCrawlerMotion.Update blocked = motion.advance(
                 entity,
                 8,
@@ -64,7 +63,7 @@ final class BushCrawlerMotionTest {
     @Test
     void hiddenCrawlerRequestsThePowerBraceletLiftWhenLinkIsAboveIt() {
         BushCrawlerMotion motion = new BushCrawlerMotion();
-        motion.forceStateForTest(0, 0, 0, 1, 1, 0, 0);
+        linksawakening.world.entity.motion.MotionTestFixture.forceStateForTest(motion, 0, 0, 0, 1, 1, 0, 0);
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
 
         BushCrawlerMotion.Update update =
@@ -78,7 +77,7 @@ final class BushCrawlerMotionTest {
     @Test
     void liftedReplacementUsesTheConcatenatedBankSevenSpeedTables() {
         BushCrawlerMotion motion = new BushCrawlerMotion();
-        motion.forcePrivateStateForTest(0, 2, 0x01);
+        linksawakening.world.entity.motion.MotionTestFixture.forcePrivateStateForTest(motion, 0, 2, 0x01);
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
 
         BushCrawlerMotion.Update update =
@@ -92,19 +91,13 @@ final class BushCrawlerMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int variant) {
-        return new RoomEntity(
-                slot,
-                0,
-                BushCrawlerMotion.ENTITY_BUSH_CRAWLER,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(BushCrawlerMotion.ENTITY_BUSH_CRAWLER),
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(BushCrawlerMotion.ENTITY_BUSH_CRAWLER)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(BushCrawlerMotion.ENTITY_BUSH_CRAWLER))
+                .spriteVariant(variant)
+                .build();
     }
 }

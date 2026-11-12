@@ -18,8 +18,6 @@ interface EntityEnemyInspectionServices {
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityProjectileController projectiles();
-
     linksawakening.world.entity.EntityRoomInspection inspection();
 
     linksawakening.world.entity.EntityRoomInspection roomInspection();
@@ -58,10 +56,6 @@ interface EntityEnemyInspectionServices {
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
-            }
-
-            public linksawakening.world.entity.EntityProjectileController projectiles() {
-                return r.projectiles;
             }
 
             public linksawakening.world.entity.EntityRoomInspection inspection() {

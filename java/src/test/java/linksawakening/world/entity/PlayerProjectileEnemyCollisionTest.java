@@ -21,8 +21,8 @@ final class PlayerProjectileEnemyCollisionTest {
     void blockingHitboxTakesPrecedenceOverTheIgnoreHitsTimer(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.debug().setHitboxFlagsForTest(0, 0x80);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(0, 0x80);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 8);
         int health = runtime.enemies().enemyHealth(0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
@@ -36,7 +36,7 @@ final class PlayerProjectileEnemyCollisionTest {
     void ignoreHitsTimerAloneLetsTheProjectilePass(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 8);
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
 
@@ -95,9 +95,9 @@ final class PlayerProjectileEnemyCollisionTest {
     void grabbableTargetsBypassDamageAndHitboxImmunity(int type) throws IOException {
         RoomEntityRuntime runtime = runtime(type, 9, 0, 0);
         int slot = spawn(runtime, type, 0);
-        runtime.debug().setPhysicsFlagsForTest(0, 0x20);
-        runtime.debug().setHitboxFlagsForTest(0, 0x80);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setPhysicsFlagsForTest(0, 0x20);
+        EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(0, 0x80);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 8);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertFalse(hitTarget(runtime));
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
@@ -113,7 +113,7 @@ final class PlayerProjectileEnemyCollisionTest {
     void arrowBlockIsRetainedAcrossPausedHandlersAndClearedOnSlotReuse(boolean paused) throws IOException {
         RoomEntityRuntime runtime = runtime(0, 9, 0, 0);
         int slot = spawn(runtime, 0, 0);
-        runtime.debug().setHitboxFlagsForTest(0, 0x80);
+        EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(0, 0x80);
         runtime.configuration().setDialogActive(paused);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         if (paused) {
@@ -157,13 +157,13 @@ final class PlayerProjectileEnemyCollisionTest {
     void returningHookshotSkipsEnemyAndBackgroundInteractions() throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, 0, 0);
         int physics = runtime.enemies().physicsFlags(0);
-        runtime.debug().setPhysicsFlagsForTest(0, 0x40);
+        EntityRuntimeFixture.debug(runtime).setPhysicsFlagsForTest(0, 0x40);
         int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(
                 runtime, 0, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> entity.type() == 3));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
         assertEquals(0, runtime.inspection().hookshotTransitionCountdown(slot));
-        runtime.debug().setPhysicsFlagsForTest(0, physics);
+        EntityRuntimeFixture.debug(runtime).setPhysicsFlagsForTest(0, physics);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             assertFalse(entity.type() == 3, "Returning hookshot probed the background");
             return false;
@@ -228,26 +228,17 @@ final class PlayerProjectileEnemyCollisionTest {
         }
         slots.set(
                 0,
-                new RoomEntity(
-                        0,
-                        -1,
-                        targetType,
-                        0x40 + dx,
-                        (projectileType == 0xDF ? 0x50 : 0x4F) + dy,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        return RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .type(targetType)
+                        .at(0x40 + dx, (projectileType == 0xDF ? 0x50 : 0x4F) + dy)
+                        .spriteDefinition(catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                        .build());
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 }

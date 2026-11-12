@@ -170,8 +170,8 @@ final class MagicRodRuntimeTest {
     void hitboxImmunityBlocksFireballEvenDuringTheIgnoreHitsCountdown() throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x09, 0x40, 0x3F);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
-        runtime.debug().setHitboxFlagsForTest(0, 0x80);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(0, 0x80);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 8);
         int health = runtime.enemies().enemyHealth(0);
         tick(runtime, 0, 0, 0);
 
@@ -184,7 +184,7 @@ final class MagicRodRuntimeTest {
     void ignoreHitsCountdownAloneLetsTheFireballPassThrough() throws IOException {
         RoomEntityRuntime runtime = runtimeWithTarget(0x09, 0x40, 0x3F);
         int slot = runtime.spawnMagicRodFireball(0x40, 0x40, 0, 0);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 8);
         tick(runtime, 0, 0, 0);
 
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
@@ -338,34 +338,30 @@ final class MagicRodRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(
                 0,
-                new RoomEntity(
-                        0,
-                        -1,
-                        type,
-                        x,
-                        y,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        return RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+                new linksawakening.world.entity.RoomEntityBuilder()
+                        .type(type)
+                        .at(x, y)
+                        .spriteDefinition(catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                        .build());
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        return RoomEntityRuntime.from(
-                emptySnapshot(), indoor, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        return RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(indoor)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY) {

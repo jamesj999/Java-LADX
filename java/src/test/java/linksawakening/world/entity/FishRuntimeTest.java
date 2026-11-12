@@ -22,24 +22,18 @@ final class FishRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        FishMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(FishMotion.ENTITY_TYPE)
+                                .at(0x40, 0x50)
+                                .status(EntityStatus.INIT)
+                                .spriteDefinition(definition)
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertEquals(

@@ -58,7 +58,7 @@ final class FollowingNpcEntitySpawnerTest {
     @Test
     void runtimeSnapshotPreservesSideScrollingThroughFollowerSynchronization() {
         RoomEntitySnapshot initial = new RoomEntitySnapshot(disabledSlots(), selection()).withSideScrolling(true);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
@@ -162,7 +162,14 @@ final class FollowingNpcEntitySpawnerTest {
     }
 
     private static RoomEntity active(int slot, int type, EntitySpriteDefinition definition) {
-        return new RoomEntity(slot, slot, type, 0x20, 0x30, EntityStatus.ACTIVE, definition, -1, 0, 0, 0, -1, false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(0x20, 0x30)
+                .spriteDefinition(definition)
+                .spriteVariant(-1)
+                .build();
     }
 
     private static void assertSameEntity(RoomEntity expected, RoomEntity actual) {

@@ -20,15 +20,15 @@ public final class PincerMotion {
         12, 12, 11, 11, 11, 10, 10, 10
     };
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] holeX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] holeY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] lungeVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] holeX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] holeY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] lungeVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(RoomEntity entity, int state, int transitionCountdown, int physicsFlags) {}
 
@@ -173,21 +173,6 @@ public final class PincerMotion {
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         initialized[slot] = false;
-    }
-
-    void forceStateForTest(int slot, int newState, int transitionCountdown, int physicsFlags) {
-        state[slot] = newState & 0xFF;
-        lungeVariant[slot] = 2;
-        speedX[slot] = 0;
-        speedY[slot] = 0;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        initialized[slot] = true;
-    }
-
-    void setHoleForTest(int slot, int x, int y) {
-        holeX[slot] = x & 0xFF;
-        holeY[slot] = y & 0xFF;
     }
 
     static int lungeVariantForVector(int vectorY, int vectorX) {

@@ -23,8 +23,13 @@ final class BoomerangRuntimeTest {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(), false, () -> 0, catalog, combatTables, new ChestContentsTable(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(combatTables)
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
 
         int slot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
 
@@ -109,8 +114,13 @@ final class BoomerangRuntimeTest {
     void bushIntersectionRestoresPositionAndUsesThePaddedLocation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(), false, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
         int slot = runtime.spawnBoomerang(0x20, 0x40, 0, 0, 0);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0x10, 0x30, 0x40));
@@ -136,8 +146,13 @@ final class BoomerangRuntimeTest {
     void playerProjectileGateMatchesTheRomCounter() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                emptySnapshot(), false, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
 
         int boomerangSlot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
 
@@ -291,12 +306,12 @@ final class BoomerangRuntimeTest {
             tickInteractive(runtime, frame, 0, 0);
         }
         runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
-        runtime.debug().setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
         for (int frame = 25; frame < 30; frame++) {
             tickInteractive(runtime, frame, 0, 0);
         }
         assertFalse(hasBoomerangSound(runtime.consumePendingEntityEvents()));
-        runtime.debug().setGameplayWorldForTest(true);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(true);
         tickInteractive(runtime, 30, 0, 0);
         assertTrue(hasBoomerangSound(runtime.consumePendingEntityEvents()));
     }
@@ -309,13 +324,13 @@ final class BoomerangRuntimeTest {
 
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
-        return RoomEntityRuntime.from(
-                emptySnapshot(),
-                indoor,
-                () -> 0,
-                new EntitySpriteHandlerCatalog(rom),
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+        return RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(indoor)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static RoomEntitySnapshot emptySnapshot() {

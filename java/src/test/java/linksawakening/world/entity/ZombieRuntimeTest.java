@@ -62,25 +62,19 @@ final class ZombieRuntimeTest {
     void usesTheRomZombieCombatAndPhysicsRows() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_ZOMBIE,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
+                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(ENTITY_ZOMBIE)
+                                .at(0x40, 0x40)
+                                .spriteDefinition(
+                                        catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
+                                .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZOMBIE));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_ZOMBIE));
@@ -95,8 +89,12 @@ final class ZombieRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
-        RoomEntity parent =
-                new RoomEntity(0, 0, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity parent = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
         AtomicInteger randomCalls = new AtomicInteger();
 
         ZombieMotion.Update update = motion.advance(
@@ -130,8 +128,12 @@ final class ZombieRuntimeTest {
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(1);
-        RoomEntity child = new RoomEntity(
-                1, -1, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity child = new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(1)
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
 
         ZombieMotion.Update emerging = motion.advance(child, 0, 0x00, 0x12, 0x70, 0x50, () -> 0, null, null, 0);
         assertEquals(1, emerging.state());
@@ -168,8 +170,11 @@ final class ZombieRuntimeTest {
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
-        RoomEntity child = new RoomEntity(
-                0, -1, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity child = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
 
         ZombieMotion.Update state0 = motion.advance(child, 0, 0, 0x12, 0x70, 0x50, () -> 0, null, null, 0);
         ZombieMotion.Update state1 = motion.advance(state0.entity(), 0, 0x00, 0x12, 0x70, 0x50, () -> 0, null, null, 0);
@@ -205,8 +210,11 @@ final class ZombieRuntimeTest {
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
-        RoomEntity child = new RoomEntity(
-                0, -1, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity child = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
         ZombieMotion.Update rising = motion.advance(child, 0, 0, 0x12, linkX, linkY, () -> 0, null, null, 0);
         ZombieMotion.Update walking = motion.advance(rising.entity(), 0, 0, 0x12, linkX, linkY, () -> 0, null, null, 0);
         List<Integer> probes = new ArrayList<>();
@@ -244,8 +252,11 @@ final class ZombieRuntimeTest {
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
-        RoomEntity child = new RoomEntity(
-                0, -1, ENTITY_ZOMBIE, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity child = new linksawakening.world.entity.RoomEntityBuilder()
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
         int[] countdowns = {0, 0x30, 0x18, 0x17, 0, 0x70, 0x6F, 0, 0x30, 0x18, 0x17, 1};
         int[] frames = {0, 1, 2, 3, 4, 0, 16, 17, 18, 19, 20, 21};
         int[] variants = {0, 0, 1, 1, 2, 2, 3, 4, 4, 2, 2, 1};
@@ -261,27 +272,19 @@ final class ZombieRuntimeTest {
     void roomRuntimeSpawnsTheZombieChildInTheRomRange() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity parent = new RoomEntity(
-                0,
-                0,
-                ENTITY_ZOMBIE,
-                0x40,
-                0x40,
-                EntityStatus.ACTIVE,
-                catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        RoomEntity parent = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
+                .build();
         AtomicInteger randomCalls = new AtomicInteger();
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(parent),
-                false,
-                () -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration()
                 .setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x00, entity.x(), entity.y()));
 
@@ -309,22 +312,18 @@ final class ZombieRuntimeTest {
     void hiddenParentDoesNotRunTheRomEnemyDamageCollisionHandler() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity parent = new RoomEntity(
-                0,
-                0,
-                ENTITY_ZOMBIE,
-                0x40,
-                0x40,
-                EntityStatus.ACTIVE,
-                catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.from(snapshot(parent), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity parent = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
+                .build();
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0)
                 .isEmpty());
@@ -334,22 +333,19 @@ final class ZombieRuntimeTest {
     void roomInitializationKeepsTheHiddenParentOutOfTheDisplayList() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity parent = new RoomEntity(
-                0,
-                0,
-                ENTITY_ZOMBIE,
-                0x40,
-                0x40,
-                EntityStatus.INIT,
-                catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.from(snapshot(parent), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+        RoomEntity parent = new linksawakening.world.entity.RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_ZOMBIE)
+                .at(0x40, 0x40)
+                .status(EntityStatus.INIT)
+                .spriteDefinition(catalog.forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD))
+                .build();
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(parent))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
 

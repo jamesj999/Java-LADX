@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import org.junit.jupiter.api.Test;
 
@@ -129,36 +128,27 @@ final class RollingBonesMotionTest {
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y) {
-        return new RoomEntity(
-                slot,
-                slot,
-                type,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .build();
     }
 
     private static RoomEntity withX(RoomEntity entity, int x) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return new linksawakening.world.entity.RoomEntityBuilder()
+                .slot(entity.slot())
+                .sourceLoadOrder(entity.sourceLoadOrder())
+                .type(entity.type())
+                .at(x, entity.y())
+                .status(entity.status())
+                .spriteDefinition(entity.spriteDefinition())
+                .spriteVariant(entity.spriteVariant())
+                .entityFlipAttribute(entity.entityFlipAttribute())
+                .spriteTileOffset(entity.spriteTileOffset())
+                .z(entity.z())
+                .build();
     }
 }

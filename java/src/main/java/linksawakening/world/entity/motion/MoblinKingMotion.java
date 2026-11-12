@@ -36,16 +36,16 @@ public final class MoblinKingMotion {
     private static final int[] ARROW_SPEED_X = {0x20, -0x20};
     private static final int[] CHARGE_SPEED_X = {0x28, -0x28};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] xAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] yAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -333,20 +333,6 @@ public final class MoblinKingMotion {
         return presentationVariant(slot, bodyVariant[slot]);
     }
 
-    void setPrivateCountdownsForTest(int slot, int countdown1, int countdown2) {
-        privateCountdown1[slot] = countdown1 & 0xFF;
-        privateCountdown2[slot] = countdown2 & 0xFF;
-    }
-
-    public void setStateForTest(
-            int slot, int nextState, int nextDirection, int nextSpeedX, int nextSpeedY, int nextSpeedZ) {
-        state[slot] = nextState;
-        direction[slot] = nextDirection & 1;
-        speedX[slot] = signedByte(nextSpeedX);
-        speedY[slot] = signedByte(nextSpeedY);
-        speedZ[slot] = signedByte(nextSpeedZ);
-    }
-
     private static int directionToLink(int x, int linkX) {
         return signedByte((linkX - x) & 0xFF) < 0 ? 1 : 0;
     }
@@ -390,7 +376,7 @@ public final class MoblinKingMotion {
                 false);
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }

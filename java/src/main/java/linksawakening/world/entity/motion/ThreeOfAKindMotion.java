@@ -19,8 +19,8 @@ public final class ThreeOfAKindMotion {
         MATCH
     }
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -141,11 +141,6 @@ public final class ThreeOfAKindMotion {
 
     int speedY(int slot) {
         return speedY[slot];
-    }
-
-    public void setSettledForTest(int slot, int face) {
-        state[slot] = 2;
-        direction[slot] = face & 3;
     }
 
     public void clear(int slot) {

@@ -19,15 +19,15 @@ public final class DogMotion {
     // Data_019_4990.
     private static final int[] SPEEDS = {0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -175,23 +175,6 @@ public final class DogMotion {
                 appliesBackgroundInteraction,
                 dialogRequested,
                 dialogLowId);
-    }
-
-    void setStateForTest(int slot, int newState, int newDirection, int newSpeedX, int newSpeedY, int newSpeedZ) {
-        if (newState < 0 || newState > 3) {
-            throw new IllegalArgumentException("Dog state must be 0..3: " + newState);
-        }
-        validateByte(newDirection, "Dog direction");
-        validateByte(newSpeedX, "Dog X speed");
-        validateByte(newSpeedY, "Dog Y speed");
-        validateByte(newSpeedZ, "Dog Z speed");
-        reset(slot);
-        state[slot] = newState;
-        direction[slot] = newDirection;
-        speedX[slot] = newSpeedX;
-        speedY[slot] = newSpeedY;
-        speedZ[slot] = newSpeedZ;
-        initialized[slot] = true;
     }
 
     public int state(int slot) {
@@ -343,7 +326,7 @@ public final class DogMotion {
         return (position + delta) & 0xFF;
     }
 
-    private void reset(int slot) {
+    void reset(int slot) {
         state[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
@@ -411,7 +394,7 @@ public final class DogMotion {
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }
