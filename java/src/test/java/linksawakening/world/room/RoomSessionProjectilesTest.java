@@ -57,15 +57,15 @@ final class RoomSessionProjectilesTest {
         runtime.configuration().setGroundInteractionSideScrolling(true);
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x3B);
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionSequenceCounterForTest(runtime, 0x04);
-        session.context.roomSessionViews.replaceEntityRuntimeForTest(runtime);
+        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
 
         session.tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0, Link.DIRECTION_DOWN, false);
 
         assertEquals(
                 List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
-                session.context.entityBridge.outbox.consumeSideViewPlatformLinkRequests());
-        assertTrue(session.context
-                .entityBridge
+                session.components.entityBridge().outbox.consumeSideViewPlatformLinkRequests());
+        assertTrue(session.components
+                .entityBridge()
                 .outbox
                 .consumeSideViewPlatformLinkRequests()
                 .isEmpty());
@@ -110,7 +110,7 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x40, bomb.x());
         assertEquals(0x54, bomb.y());
         assertEquals(0x08, bomb.z());
-        assertEquals(3, session.context.roomSessionViews.bombDirectionForTest(bomb.slot()));
+        assertEquals(3, session.components.roomSessionViews().bombDirectionForTest(bomb.slot()));
         assertEquals(session.activeRoom().entities(), session.renderSnapshot().entities());
 
         assertFalse(session.placeBomb(0x44, 0x54, 0, 1));
@@ -135,22 +135,27 @@ final class RoomSessionProjectilesTest {
         for (int frame = 0; frame < 136; frame++) {
             int currentFrame = frame;
             session.tickEntities(frame, 0, 0);
-            List<BombExplosionEvent> events = session.context.entityBridge.outbox.consumeBombExplosionEvents();
+            List<BombExplosionEvent> events =
+                    session.components.entityBridge().outbox.consumeBombExplosionEvents();
             assertTrue(
                     events.isEmpty(),
                     () -> "frame=" + currentFrame + " countdown="
-                            + session.context.roomSessionViews.entityTransitionCountdownForTest(bombSlot)
+                            + session.components.roomSessionViews().entityTransitionCountdownForTest(bombSlot)
                             + " events=" + events);
         }
         session.tickEntities(136, 0, 0);
 
-        List<BombExplosionEvent> events = session.context.entityBridge.outbox.consumeBombExplosionEvents();
+        List<BombExplosionEvent> events =
+                session.components.entityBridge().outbox.consumeBombExplosionEvents();
         assertEquals(1, events.size());
         assertTrue(events.getFirst().targetsRoomObjects());
         assertEquals(0x16, events.getFirst().countdown());
         assertEquals(BombExplosionEvent.DAMAGE_TYPE_BOMB, events.getFirst().damageType());
-        assertTrue(
-                session.context.entityBridge.outbox.consumeBombExplosionEvents().isEmpty());
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeBombExplosionEvents()
+                .isEmpty());
     }
 
     @Test
@@ -172,7 +177,7 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
         assertEquals(0, vfx.activeCount());
-        assertTrue(session.context.entityBridge.outbox.consumeBombExplosionEvents().stream()
+        assertTrue(session.components.entityBridge().outbox.consumeBombExplosionEvents().stream()
                 .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
     }
 
@@ -220,7 +225,7 @@ final class RoomSessionProjectilesTest {
             assertEquals(0x09, session.activeRoom().roomObjectsArea()[areaIndex]);
             assertEquals(0x09, session.activeRoom().renderValues()[areaIndex]);
         }
-        assertEquals(0x04, session.context.roomSessionViews.overworldRoomStatusForTest(0x97));
+        assertEquals(0x04, session.components.roomSessionViews().overworldRoomStatusForTest(0x97));
 
         session.loadOverworld(0x97);
         for (int location : skullLocations) {
@@ -238,7 +243,7 @@ final class RoomSessionProjectilesTest {
         boolean destroyed = false;
         for (int frame = 0; frame <= 140; frame++) {
             session.tickEntities(frame, 0, 0);
-            if (session.context.roomSessionViews.overworldRoomStatusForTest(0x97) == 0x04) {
+            if (session.components.roomSessionViews().overworldRoomStatusForTest(0x97) == 0x04) {
                 destroyed = true;
                 break;
             }
@@ -263,7 +268,8 @@ final class RoomSessionProjectilesTest {
             assertEquals(0x19, entity.spriteDefinition().bank());
             assertEquals(0x7B50, entity.spriteDefinition().address());
         }
-        List<EntityCombatEvent> events = session.context.entityBridge.outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events =
+                session.components.entityBridge().outbox.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x02, events.getFirst().soundId());
@@ -275,8 +281,9 @@ final class RoomSessionProjectilesTest {
         session.loadInitialOverworld(0x92);
         fillActiveObjects(session, 0x6E);
 
-        EntityBackgroundCollisionResult result =
-                session.context.roomCollisionQueries.entityBackgroundCollisionResultForTest(
+        EntityBackgroundCollisionResult result = session.components
+                .roomCollisionQueries()
+                .entityBackgroundCollisionResultForTest(
                         syntheticEntity(HookshotChainMotion.ENTITY_TYPE),
                         EntityBackgroundCollisionResult.RIGHT,
                         0x40,
@@ -334,7 +341,7 @@ final class RoomSessionProjectilesTest {
         byte[] indoorB = new byte[0x100];
         indoorB[0xC7] = 0x10;
         session.restoreRoomStatuses(new byte[0x100], new byte[0x100], indoorB, new byte[0x20]);
-        session.context.entityInputs.setEntityGoldenLeavesCount(5);
+        session.components.entityInputs().setEntityGoldenLeavesCount(5);
         session.loadIndoor(0x10, 0xC7);
         RoomEntity richard = session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
@@ -350,7 +357,7 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x13D, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(
                 List.of(new RichardProgressEvent(richard.slot(), RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF)),
-                session.context.entityBridge.outbox.consumeRichardProgressEvents());
+                session.components.entityBridge().outbox.consumeRichardProgressEvents());
 
         session.setEntityActionButtonsHeld(false, false);
         for (int frame = 3; frame <= 34; frame++) {
@@ -360,17 +367,17 @@ final class RoomSessionProjectilesTest {
         assertEquals(0x58, movedRichard.x());
 
         session.tickEntities(35, 0x78, 0x20, 0, Link.DIRECTION_DOWN);
-        Warp warp = session.context.roomTransitionController.consumeClearedDungeonWarp();
+        Warp warp = session.components.roomTransitionController().consumeClearedDungeonWarp();
         assertEquals(Warp.CATEGORY_INDOOR, warp.category());
         assertEquals(0x11, warp.destMap());
         assertEquals(0xD8, warp.destRoom());
         assertEquals(0x88, warp.destX());
         assertEquals(0x70, warp.destY());
-        assertEquals(0x30, session.context.entityBridge.outbox.consumePendingMusicFadeOutCountdown());
+        assertEquals(0x30, session.components.entityBridge().outbox.consumePendingMusicFadeOutCountdown());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         richard.slot(), 0x95, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x06)),
-                session.context.entityBridge.outbox.consumeEntityEvents());
+                session.components.entityBridge().outbox.consumeEntityEvents());
     }
 
     @Test
@@ -391,14 +398,14 @@ final class RoomSessionProjectilesTest {
             session.advanceBoomerangSoundClock(false);
         }
         assertTrue(session.fireBoomerang(0x40, 0x50, 0, 0, 0));
-        session.context.entityBridge.outbox.consumeEntityEvents();
+        session.components.entityBridge().outbox.consumeEntityEvents();
         session.advanceBoomerangSoundClock(true);
         session.tickEntities(0, 0, 0);
-        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
+        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
         session.advanceBoomerangSoundClock(true);
         session.tickEntities(1, 0, 0);
-        assertFalse(session.context.entityBridge.outbox.consumeEntityEvents().stream()
+        assertFalse(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 1 && event.soundId() == 0x2D));
     }
 }

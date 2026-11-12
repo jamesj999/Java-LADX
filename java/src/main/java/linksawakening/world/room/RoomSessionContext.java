@@ -2,13 +2,8 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSession.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
@@ -16,262 +11,128 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
-import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityBackgroundCollisionResolver;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityCollisionPointProbe;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
-import linksawakening.world.entity.FollowingNpcState;
-import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
-import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.object.OverworldBushInteraction;
-import linksawakening.world.transition.Warp;
 
-/** Shared lifetime and state for the room facade and its focused collaborators. */
+/** Private dependency wiring; runtime collaborators receive only their own dependencies. */
 final class RoomSessionContext {
-    final RoomSessionViews roomSessionViews;
+    private byte[] romData;
+    private GPU gpu;
+    private RoomLoader roomLoader;
+    private RoomPaletteLoader roomPaletteLoader;
+    private OverworldTilesetTable overworldTilesetTable;
+    private ManboWarpResolver manboWarpResolver;
+    private OwlEventDialogResolver owlEventDialogResolver;
+    private OwlStatueDialogResolver owlStatueDialogResolver;
+    private OverworldCollision overworldCollision;
+    private TransientVfxSystem transientVfxSystem;
+    private DroppableRupeeSystem droppableRupeeSystem;
+    private RoomLoadListener roomLoadListener;
+    private RoomTilemapBuilder roomTilemapBuilder;
+    private RomRandomByteSource entityRandomByteSource;
+    private EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
+    private FollowingNpcEntitySpawner followingNpcEntitySpawner;
+    private RomEnemyCombatTables enemyCombatTables;
+    private ChestContentsTable chestContentsTable;
+    private DungeonRoomEventTable dungeonRoomEventTable;
+    private RomTables romTables;
+    private EnemyDropResolver enemyDropResolver;
+    private EntityCollisionPointProbe entityCollisionPointProbe;
+    private EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
+    private OverworldBushInteraction overworldBushInteraction;
+    private IndoorTorchPaletteEffect indoorTorchPaletteEffect;
+    private RoomEntityBackgroundInteraction entityBackgroundInteraction;
+    private RoomWorldState roomState;
+    private RoomScrollNavigation scrollNavigation;
+    private ColorShellWorld colorShellWorld;
+    private RoomSessionViews roomSessionViews;
+    private RoomTransientState roomTransientState;
+    private RoomEntityRewards roomEntityRewards;
+    private RoomTileRedraw roomTileRedraw;
+    private RoomCollisionQueries roomCollisionQueries;
+    private RoomPlayerItemActions roomPlayerItemActions;
+    private RoomPuzzleController roomPuzzleController;
+    private RoomStoryState roomStoryState;
+    private RoomDoorInteractions roomDoorInteractions;
+    private RoomObjectMutations roomObjectMutations;
+    private RoomTransitionController roomTransitionController;
+    private RoomLoadCoordinator roomLoadCoordinator;
+    private RoomEntityBridge entityBridge;
+    private RoomEntityInputs entityInputs;
+    private RoomEntityAfterTick entityAfterTick;
+    private RoomEntityFrameSetup entityFrameSetup;
+    private RoomEntityCombatBridge entityCombatBridge;
+    private final RoomLocationState location = new RoomLocationState();
+    private final RoomTerrainState terrain = new RoomTerrainState();
+    private final RoomFollowerState followers = new RoomFollowerState();
+    private final RoomEntityFrameState entityFrame = new RoomEntityFrameState();
+    private final RoomItemUseState items = new RoomItemUseState();
+    private final RoomPuzzleState puzzles = new RoomPuzzleState();
 
-    final RoomTransientState roomTransientState;
-    final RoomEntityRewards roomEntityRewards;
-    final RoomTileRedraw roomTileRedraw;
-    final RoomCollisionQueries roomCollisionQueries;
-    final RoomPlayerItemActions roomPlayerItemActions;
-    final RoomPuzzleController roomPuzzleController;
-    final RoomStoryState roomStoryState;
-    final RoomDoorInteractions roomDoorInteractions;
-    final RoomObjectMutations roomObjectMutations;
-    final RoomTransitionController roomTransitionController;
-    final RoomLoadCoordinator roomLoadCoordinator;
+    static RoomSessionComponents create(RoomSessionConfig config) {
+        return new RoomSessionContext(config).components();
+    }
 
-    int crackedFloorCounter;
-    // HRAM $FA/$FB and the cached ground sample, retained between probe calls.
-    int linkGroundRoomPosition;
-    int linkGroundFinalRoomPosition;
-    int linkGroundObjectUnderEntity;
-    int linkGroundObjectPhysics;
-
-    final byte[] romData;
-    final GPU gpu;
-    final RoomLoader roomLoader;
-    final RoomPaletteLoader roomPaletteLoader;
-    final OverworldTilesetTable overworldTilesetTable;
-    final ManboWarpResolver manboWarpResolver;
-    final OwlEventDialogResolver owlEventDialogResolver;
-    final OwlStatueDialogResolver owlStatueDialogResolver;
-    final OverworldCollision overworldCollision;
-    final TransientVfxSystem transientVfxSystem;
-    final DroppableRupeeSystem droppableRupeeSystem;
-    final RoomLoadListener roomLoadListener;
-    final RoomTilemapBuilder roomTilemapBuilder;
-    final RomRandomByteSource entityRandomByteSource;
-    final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
-    final FollowingNpcEntitySpawner followingNpcEntitySpawner;
-    final RomEnemyCombatTables enemyCombatTables;
-    final ChestContentsTable chestContentsTable;
-    final DungeonRoomEventTable dungeonRoomEventTable;
-    final RomTables romTables;
-    final EnemyDropResolver enemyDropResolver;
-    final EntityCollisionPointProbe entityCollisionPointProbe;
-    final EntityBackgroundCollisionResolver entityBackgroundCollisionResolver;
-    final OverworldBushInteraction overworldBushInteraction;
-    final IndoorTorchPaletteEffect indoorTorchPaletteEffect;
-    final RoomEntityBackgroundInteraction entityBackgroundInteraction;
-    final LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
-
-    final long roomSessionId = ++nextRoomSessionId;
-    ActiveRoom activeRoom;
-    /** Increments on every ROM room load, including a reload of the same room. */
-    long roomLoadSerial;
-    /** ROM wIndoorRoom: the current position in the active map's 8x8 layout. */
-    int indoorMapPosition = -1;
-
-    final RoomWorldState roomState;
-    final RoomScrollNavigation scrollNavigation;
-    final RoomEntityBridge entityBridge;
-    final RoomEntityInputs entityInputs;
-
-    Warp pendingDungeonWarp;
-
-    PendingShovelDrop pendingShovelDrop;
-    int shovelUseState;
-
-    final Map<Integer, HookshotBridgeUpdate> hookshotBridgeTileOverrides = new HashMap<>();
-    /** Immediate bomb-wall draw commands use a different tile order than the room object table. */
-    final Map<Integer, Integer> bombedWallTileOverrides = new HashMap<>();
-    /** The basic A9 breakable path also draws floor tiles in source command order. */
-    final Set<Integer> bombedBlockTileOverrides = new HashSet<>();
-    /** Bombed overworld cave doors use the dedicated GBC redraw tile order. */
-    final Set<Integer> bombedCaveDoorTileOverrides = new HashSet<>();
-    // A torch handler may change WRAM but return before emitting its BG draw command.
-    final Map<Integer, int[]> retainedTorchTiles = new HashMap<>();
-    final RecentRoomEntityClears recentRoomEntityClears = new RecentRoomEntityClears();
-    int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
-    FollowingNpcState followingNpcState = FollowingNpcState.none();
-    EnemyDropResolver.CounterState enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
-    linksawakening.world.transition.Warp respawnPoint;
-    int respawnIndoorRoom;
-    int boomerangSoundCounter;
-    boolean boomerangSoundClockProvided;
-    int enemyDropMaxHearts = 3;
-    Runnable mapBoundaryWarp = () -> {};
-    int enemyDropHealth = 6;
-    Boolean enemyDropLowHealth;
-    boolean enemyDropActivePowerUp;
-    /** WRAM wSwitchBlocksState; the source reset value is zero. */
-    int switchBlocksState;
-    /** WRAM wSwitchableObjectAnimationStage; zero means no update is active. */
-    int switchableObjectAnimationStage;
-
-    int followingLinkX = 0x08;
-    int followingLinkY = 0x10;
-    int followingLinkZ;
-    int followingEntityYOffset;
-    int followingLinkDirection;
-    boolean followingNpcRoomNeedsSync;
-
-    boolean shouldGetLostInMysteriousWoods;
-
-    int ocarinaPlaybackCountdown;
-    int ocarinaSongFlags;
-    int selectedSongIndex;
-    int ocarinaAnimationCounter;
-    int ocarinaAnimationPhase;
-    boolean pendingManboTransition;
-    boolean pendingInstrumentTransition;
-    boolean hasBirdKey;
-    boolean hasTailKey;
-    int bowWowState;
-
-    int richardSpokenFlag;
-    /** WRAM wTarinFlag; persisted NPC/world progression, not player inventory state. */
-    int tarinFlag;
-    /** WRAM wShieldLevel retained for room-load-time palette selection. */
-    int playerShieldLevel;
-
-    int playerSwordLevel;
-    int playerBraceletLevel;
-    int houseNpcTradeItem;
-    int currentLinkMotionState = EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
-    /** WRAM wC1A2; ResetRoomVariables clears the room trigger counter. */
-    int roomTriggerCount;
-
-    int activeRoomEvent;
-    /** wHasInstrument1..: bit 0 records each dungeon miniboss defeat. */
-    boolean roomEventEffectExecuted;
-
-    boolean thrownAtDoorTriggerResolved;
-    int roomEventChestRevealCountdown;
-    int roomEventStairRevealCountdown;
-    int staircaseState;
-    int staircaseX;
-    int staircaseY;
-    int switchButtonPressCounter;
-    int switchButtonPressed;
-    int indoorKeyDoorAnimationCountdown;
-    int indoorKeyDoorDirection = -1;
-    int indoorKeyDoorLocation = -1;
-    boolean indoorBossDoorOpening;
-    /** wC191 for OBJECT_PUSHABLE_BLOCK's sustained collision branch. */
-    int pushBlockContactTicks;
-
-    int indoorPotPullFrames;
-    int pushedBlockMotionFrames;
-    int pushedBlockSourceLocation = -1;
-    int pushedBlockDestinationLocation = -1;
-    int pushedBlockDirection = -1;
-    int pushedBlockEntitySlot = -1;
-    /** Defers trigger-$07's common effect until the frame after settlement. */
-    boolean pushedBlocksTriggerEffectPending;
-
-    boolean worldLinkMotionBlockPending;
-    int pendingShutterCloseMask, closedShutterMask;
-    int shutterCloseDirection = -1, shutterCloseTicks, shutterCloseLocation = -1;
-    boolean shutterCloseStarted;
-    final java.util.Map<Integer, Integer> shutterTileOverrides = new java.util.HashMap<>();
-    int dungeonTitleMessageCountdown;
-    int tailCaveKeyholeCountdown;
-    boolean tailCaveFinalMotionBlockPending;
-    int nextWorldMusicTrackCountdown;
-    int tailCaveResumeMusicTrack = 0x05;
-
-    int entityDefaultMusicTrack = 0x05;
-
-    GameplaySoundSink colorShellSoundSink = GameplaySoundSink.none();
-    final ColorShellWorld colorShellWorld;
-
-    RoomSessionContext(
-            RoomSession session,
-            byte[] romData,
-            GPU gpu,
-            RoomLoader roomLoader,
-            OverworldTilesetTable overworldTilesetTable,
-            OverworldCollision overworldCollision,
-            TransientVfxSystem transientVfxSystem,
-            DroppableRupeeSystem droppableRupeeSystem,
-            RoomLoadListener roomLoadListener,
-            RomRandomByteSource randomByteSource) {
+    private RoomSessionContext(RoomSessionConfig config) {
+        var romData = config.romData();
+        var gpu = config.gpu();
+        var roomLoader = config.roomLoader();
+        var overworldTilesetTable = config.overworldTilesetTable();
+        var overworldCollision = config.overworldCollision();
+        var transientVfxSystem = config.presentation().transientVfxSystem();
+        var droppableRupeeSystem = config.presentation().droppableRupeeSystem();
+        var roomLoadListener = config.presentation().roomLoadListener();
+        var randomByteSource = config.randomByteSource();
         entityRandomByteSource = java.util.Objects.requireNonNull(randomByteSource);
-        roomSessionViews = new RoomSessionViews(session);
-        roomTransitionController = new RoomTransitionController(session);
-        roomPlayerItemActions = new RoomPlayerItemActions(session);
-        roomPuzzleController = new RoomPuzzleController(session);
-        roomObjectMutations = new RoomObjectMutations(session);
-        roomCollisionQueries = new RoomCollisionQueries(session);
-        roomLoadCoordinator = new RoomLoadCoordinator(session);
-        roomTileRedraw = new RoomTileRedraw(session);
-        roomTransientState = new RoomTransientState(session);
-        roomStoryState = new RoomStoryState(session);
-        entityBridge = new RoomEntityBridge(session);
-        entityInputs = new RoomEntityInputs(() -> entityBridge.entityRuntime);
-        roomDoorInteractions = new RoomDoorInteractions(session);
-        roomEntityRewards = new RoomEntityRewards(session);
         entityBackgroundInteraction = new RoomEntityBackgroundInteraction() {
             @Override
             public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
-                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
-                        entity, direction, nextX, nextY, 0);
+                return roomCollisionQueries.entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                return roomCollisionQueries.entityBackgroundCollisionResult(
                         entity, direction, nextX, nextY, ignoreHitsCountdown);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
-                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                return roomCollisionQueries.entityBackgroundCollisionResult(
                         entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
             }
         };
         colorShellWorld = new ColorShellWorld() {
             @Override
             public int objectAt(RoomEntity entity, int relativeOffset) {
-                return session.context.roomObjectMutations.colorShellObjectAt(entity, relativeOffset);
+                return roomObjectMutations.colorShellObjectAt(entity, relativeOffset);
             }
 
             @Override
             public void writeObject(RoomEntity entity, int objectId) {
-                session.context.roomObjectMutations.writeColorShellObject(entity, objectId);
+                roomObjectMutations.writeColorShellObject(entity, objectId);
             }
 
             @Override
             public void playJingle(int id) {
                 if ((id & 0xFF) == 0x1D) {
-                    colorShellSoundSink.play(GameplaySoundEvent.WRONG_ANSWER);
+                    entityFrame.colorShellSoundSink.play(GameplaySoundEvent.WRONG_ANSWER);
                 }
             }
 
             @Override
             public void playNoise(int id) {
                 if ((id & 0xFF) == 0x04) {
-                    colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+                    entityFrame.colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
                 }
             }
 
@@ -308,5 +169,304 @@ final class RoomSessionContext {
         this.enemyDropResolver = new EnemyDropResolver(romData);
         this.entityCollisionPointProbe = new EntityCollisionPointProbe(romTables);
         this.overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
+        entityAfterTick = new RoomEntityAfterTick(new RoomEntityAfterTick.Dependencies(
+                entityFrame,
+                followers,
+                items,
+                location,
+                terrain,
+                () -> entityBridge,
+                () -> roomEntityRewards,
+                () -> roomObjectMutations,
+                () -> roomPuzzleController,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomTileRedraw,
+                () -> roomTransitionController,
+                transientVfxSystem));
+        entityFrameSetup = new RoomEntityFrameSetup(new RoomEntityFrameSetup.Dependencies(
+                entityFrame,
+                followers,
+                items,
+                location,
+                puzzles,
+                terrain,
+                () -> entityBridge,
+                () -> entityInputs,
+                indoorTorchPaletteEffect,
+                owlStatueDialogResolver,
+                () -> roomObjectMutations,
+                roomState,
+                () -> roomStoryState,
+                () -> roomTransitionController));
+        entityCombatBridge = new RoomEntityCombatBridge(new RoomEntityCombatBridge.Dependencies(
+                entityFrame,
+                followers,
+                location,
+                () -> entityBridge,
+                () -> roomEntityRewards,
+                roomState,
+                () -> roomStoryState));
+        roomSessionViews = new RoomSessionViews(new RoomSessionViews.Dependencies(
+                entityFrame,
+                location,
+                puzzles,
+                terrain,
+                () -> entityBridge,
+                indoorTorchPaletteEffect,
+                overworldCollision,
+                () -> roomLoadCoordinator,
+                roomState,
+                () -> roomStoryState,
+                scrollNavigation));
+        roomTransientState = new RoomTransientState(new RoomTransientState.Dependencies(
+                entityFrame,
+                items,
+                location,
+                puzzles,
+                terrain,
+                droppableRupeeSystem,
+                () -> entityBridge,
+                transientVfxSystem));
+        roomEntityRewards = new RoomEntityRewards(new RoomEntityRewards.Dependencies(
+                followers,
+                items,
+                location,
+                () -> entityBridge,
+                () -> entityInputs,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomStoryState));
+        roomTileRedraw = new RoomTileRedraw(new RoomTileRedraw.Dependencies(
+                location,
+                puzzles,
+                terrain,
+                romData,
+                () -> roomObjectMutations,
+                () -> roomTileRedraw,
+                roomTilemapBuilder));
+        roomCollisionQueries = new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
+                entityFrame,
+                location,
+                puzzles,
+                terrain,
+                entityBackgroundCollisionResolver,
+                () -> entityBridge,
+                entityCollisionPointProbe,
+                overworldCollision,
+                romTables,
+                () -> roomCollisionQueries));
+        roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
+                followers,
+                items,
+                location,
+                () -> entityBridge,
+                overworldBushInteraction,
+                overworldCollision,
+                romTables,
+                () -> roomObjectMutations,
+                () -> roomPlayerItemActions,
+                () -> roomSessionViews,
+                () -> roomTileRedraw));
+        roomPuzzleController = new RoomPuzzleController(new RoomPuzzleController.Dependencies(
+                entityFrame,
+                location,
+                puzzles,
+                () -> entityBridge,
+                () -> entityInputs,
+                gpu,
+                overworldCollision,
+                romData,
+                romTables,
+                () -> roomObjectMutations,
+                () -> roomPuzzleController,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomStoryState,
+                () -> roomTileRedraw,
+                () -> roomTransitionController,
+                transientVfxSystem));
+        roomStoryState = new RoomStoryState(new RoomStoryState.Dependencies(
+                entityFrame,
+                followers,
+                location,
+                puzzles,
+                terrain,
+                chestContentsTable,
+                colorShellWorld,
+                enemyCombatTables,
+                entityBackgroundInteraction,
+                () -> entityBridge,
+                () -> entityInputs,
+                entityRandomByteSource,
+                entitySpriteHandlerCatalog,
+                followingNpcEntitySpawner,
+                indoorTorchPaletteEffect,
+                owlEventDialogResolver,
+                romData,
+                romTables,
+                () -> roomCollisionQueries,
+                () -> roomLoadCoordinator,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomStoryState,
+                () -> roomTransientState));
+        roomDoorInteractions = new RoomDoorInteractions(new RoomDoorInteractions.Dependencies(
+                entityFrame,
+                followers,
+                location,
+                puzzles,
+                chestContentsTable,
+                () -> entityBridge,
+                overworldBushInteraction,
+                overworldCollision,
+                romData,
+                () -> roomDoorInteractions,
+                () -> roomObjectMutations,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomTileRedraw));
+        roomObjectMutations = new RoomObjectMutations(new RoomObjectMutations.Dependencies(
+                entityFrame,
+                location,
+                puzzles,
+                terrain,
+                () -> entityBridge,
+                indoorTorchPaletteEffect,
+                overworldBushInteraction,
+                overworldCollision,
+                romTables,
+                () -> roomObjectMutations,
+                () -> roomPlayerItemActions,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomTileRedraw,
+                transientVfxSystem));
+        roomTransitionController = new RoomTransitionController(new RoomTransitionController.Dependencies(
+                entityFrame,
+                followers,
+                items,
+                location,
+                puzzles,
+                () -> entityBridge,
+                gpu,
+                manboWarpResolver,
+                romData,
+                () -> roomLoadCoordinator,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomTransitionController,
+                scrollNavigation));
+        roomLoadCoordinator = new RoomLoadCoordinator(new RoomLoadCoordinator.Dependencies(
+                entityFrame,
+                followers,
+                location,
+                puzzles,
+                terrain,
+                chestContentsTable,
+                colorShellWorld,
+                dungeonRoomEventTable,
+                enemyCombatTables,
+                enemyDropResolver,
+                entityBackgroundInteraction,
+                () -> entityBridge,
+                () -> entityInputs,
+                entityRandomByteSource,
+                entitySpriteHandlerCatalog,
+                gpu,
+                indoorTorchPaletteEffect,
+                overworldCollision,
+                overworldTilesetTable,
+                owlEventDialogResolver,
+                romData,
+                romTables,
+                () -> roomCollisionQueries,
+                () -> roomLoadCoordinator,
+                roomLoadListener,
+                roomLoader,
+                () -> roomObjectMutations,
+                roomPaletteLoader,
+                () -> roomPuzzleController,
+                () -> roomSessionViews,
+                roomState,
+                () -> roomStoryState,
+                () -> roomTransientState,
+                () -> roomTransitionController));
+        entityBridge = new RoomEntityBridge(new RoomEntityBridge.Dependencies(
+                entityFrame,
+                followers,
+                items,
+                location,
+                terrain,
+                () -> entityAfterTick,
+                () -> entityBridge,
+                () -> entityCombatBridge,
+                () -> entityFrameSetup,
+                () -> entityInputs,
+                entityRandomByteSource,
+                gpu,
+                romData,
+                () -> roomCollisionQueries,
+                () -> roomLoadCoordinator));
+        entityInputs = new RoomEntityInputs(() -> entityBridge.entityRuntime);
+    }
+
+    private RoomSessionComponents components() {
+        return new RoomSessionComponents(
+                location,
+                terrain,
+                followers,
+                entityFrame,
+                items,
+                puzzles,
+                romData,
+                gpu,
+                roomLoader,
+                roomPaletteLoader,
+                overworldTilesetTable,
+                manboWarpResolver,
+                owlEventDialogResolver,
+                owlStatueDialogResolver,
+                overworldCollision,
+                transientVfxSystem,
+                droppableRupeeSystem,
+                roomLoadListener,
+                roomTilemapBuilder,
+                entityRandomByteSource,
+                entitySpriteHandlerCatalog,
+                followingNpcEntitySpawner,
+                enemyCombatTables,
+                chestContentsTable,
+                dungeonRoomEventTable,
+                romTables,
+                enemyDropResolver,
+                entityCollisionPointProbe,
+                entityBackgroundCollisionResolver,
+                overworldBushInteraction,
+                indoorTorchPaletteEffect,
+                entityBackgroundInteraction,
+                roomState,
+                scrollNavigation,
+                colorShellWorld,
+                roomSessionViews,
+                roomTransientState,
+                roomEntityRewards,
+                roomTileRedraw,
+                roomCollisionQueries,
+                roomPlayerItemActions,
+                roomPuzzleController,
+                roomStoryState,
+                roomDoorInteractions,
+                roomObjectMutations,
+                roomTransitionController,
+                roomLoadCoordinator,
+                entityBridge,
+                entityInputs,
+                entityAfterTick,
+                entityFrameSetup,
+                entityCombatBridge,
+                new LinkOutputs.Dependencies(() -> entityBridge),
+                new RewardOutputs.Dependencies(() -> entityBridge, () -> roomSessionViews),
+                new PresentationOutputs.Dependencies(() -> entityBridge));
     }
 }

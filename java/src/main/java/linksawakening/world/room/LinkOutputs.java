@@ -14,57 +14,64 @@ import linksawakening.world.entity.event.RoosterLinkStateRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 
 public final class LinkOutputs {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    LinkOutputs(RoomSession session) {
-        this.session = session;
+    LinkOutputs(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     public List<LinkWrite> consumePositionWrites() {
-        return session.consumePositionWrites();
+        var platforms = dependencies.entityBridge().get().outbox.consumeSideViewPlatformLinkRequests();
+        var pots = dependencies.entityBridge().get().outbox.consumeSideViewPotLinkRequests();
+        var positions = dependencies.entityBridge().get().outbox.consumeLinkFinalPositionRequests();
+        return RoomLinkWrites.positions(platforms, pots, positions);
     }
 
     public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return session.context.entityBridge.outbox.consumeLinkMotionBlockRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkMotionBlockRequests();
     }
 
     public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
-        return session.context.entityBridge.consumeWarpLinkStateRequests();
+        return dependencies.entityBridge().get().consumeWarpLinkStateRequests();
     }
 
     public boolean consumeWorldLinkMotionBlockRequest() {
-        return session.context.entityBridge.consumeWorldLinkMotionBlockRequest();
+        return dependencies.entityBridge().get().consumeWorldLinkMotionBlockRequest();
     }
 
     public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return session.context.entityBridge.outbox.consumeLinkFallenPoseRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkFallenPoseRequests();
     }
 
     public List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return session.context.entityBridge.outbox.consumeLinkFacingRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkFacingRequests();
     }
 
     public List<LinkWrite> consumeAttackWrites() {
-        return session.consumeAttackWrites();
+        return RoomLinkWrites.attacks(
+                dependencies.entityBridge().get().outbox.consumeLinkAttackClearRequests(),
+                dependencies.entityBridge().get().outbox.consumeLinkAttackStepRequests());
     }
 
     public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return session.context.entityBridge.outbox.consumeLinkHeldItemPoseRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkHeldItemPoseRequests();
     }
 
     public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return session.context.entityBridge.outbox.consumeLinkSwordSpinPoseRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkSwordSpinPoseRequests();
     }
 
     public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return session.context.entityBridge.outbox.consumeLinkSwordFinalPoseRequests();
+        return dependencies.entityBridge().get().outbox.consumeLinkSwordFinalPoseRequests();
     }
 
     public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return session.context.entityBridge.outbox.consumeRoosterLinkStateRequests();
+        return dependencies.entityBridge().get().outbox.consumeRoosterLinkStateRequests();
     }
 
     public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return session.context.entityBridge.outbox.consumeHinoxLinkEffectRequests();
+        return dependencies.entityBridge().get().outbox.consumeHinoxLinkEffectRequests();
     }
+
+    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}
 }

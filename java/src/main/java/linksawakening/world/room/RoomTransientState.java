@@ -2,77 +2,94 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSession.*;
 
+import linksawakening.vfx.TransientVfxSystem;
+
 /** RoomTransientState operations for the live room session. */
 final class RoomTransientState {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomTransientState(RoomSession session) {
-        this.session = session;
+    RoomTransientState(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void clearTransientRoomState() {
-        session.context.pendingShutterCloseMask =
-                session.context.closedShutterMask = session.context.shutterCloseTicks = 0;
-        session.context.shutterCloseDirection = session.context.shutterCloseLocation = -1;
-        session.context.shutterCloseStarted = false;
-        session.context.shutterTileOverrides.clear();
-        if (session.context.transientVfxSystem != null) {
-            session.context.transientVfxSystem.clear();
+        dependencies.puzzles().pendingShutterCloseMask =
+                dependencies.puzzles().closedShutterMask = dependencies.puzzles().shutterCloseTicks = 0;
+        dependencies.puzzles().shutterCloseDirection = dependencies.puzzles().shutterCloseLocation = -1;
+        dependencies.puzzles().shutterCloseStarted = false;
+        dependencies.puzzles().shutterTileOverrides.clear();
+        if (dependencies.transientVfxSystem() != null) {
+            dependencies.transientVfxSystem().clear();
         }
-        if (session.context.droppableRupeeSystem != null) {
-            session.context.droppableRupeeSystem.clear();
+        if (dependencies.droppableRupeeSystem() != null) {
+            dependencies.droppableRupeeSystem().clear();
         }
-        session.context.hookshotBridgeTileOverrides.clear();
-        session.context.bombedWallTileOverrides.clear();
-        session.context.bombedBlockTileOverrides.clear();
-        session.context.bombedCaveDoorTileOverrides.clear();
-        session.context.retainedTorchTiles.clear();
-        session.context.entityBridge.outbox.pendingBombExplosionEvents.clear();
-        session.context.pendingDungeonWarp = null;
-        session.context.entityBridge.outbox.pendingRoomEntityEvents.clear();
-        session.context.entityBridge.outbox.pendingChestRewardEvents.clear();
-        session.context.entityBridge.outbox.pendingKeyRewardEvents.clear();
-        session.context.entityBridge.outbox.pendingSlimeKeyRewardEvents.clear();
-        session.context.entityBridge.outbox.pendingHeartContainerRewards.clear();
-        session.context.entityBridge.outbox.pendingMadamMeowMeowFullHealRequests.clear();
-        session.context.entityBridge.outbox.pendingRichardProgressEvents.clear();
-        session.context.entityBridge.outbox.pendingSwordPickupRewards.clear();
-        session.context.entityBridge.outbox.pendingToadstoolRewards.clear();
-        session.context.entityBridge.outbox.pendingWitchExchangeEvents.clear();
-        session.context.entityBridge.outbox.pendingWitchRewardEvents.clear();
-        session.context.entityBridge.outbox.pendingRoomDialogRequests.clear();
-        session.context.pendingManboTransition = false;
-        session.context.pendingInstrumentTransition = false;
-        session.context.pendingShovelDrop = null;
-        session.context.shovelUseState = 0;
-        session.context.roomTriggerCount = 0;
-        session.context.activeRoomEvent = 0;
-        session.context.roomEventEffectExecuted = false;
-        session.context.thrownAtDoorTriggerResolved = false;
-        session.context.roomEventChestRevealCountdown = 0;
-        session.context.roomEventStairRevealCountdown = 0;
-        session.context.staircaseState = session.STAIRCASE_NONE;
-        session.context.staircaseX = 0;
-        session.context.staircaseY = 0;
-        session.context.switchButtonPressCounter = 0;
-        session.context.indoorKeyDoorAnimationCountdown = 0;
-        session.context.indoorKeyDoorDirection = -1;
-        session.context.indoorKeyDoorLocation = -1;
-        session.context.indoorBossDoorOpening = false;
+        dependencies.terrain().hookshotBridgeTileOverrides.clear();
+        dependencies.terrain().bombedWallTileOverrides.clear();
+        dependencies.terrain().bombedBlockTileOverrides.clear();
+        dependencies.terrain().bombedCaveDoorTileOverrides.clear();
+        dependencies.terrain().retainedTorchTiles.clear();
+        dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.clear();
+        dependencies.location().pendingDungeonWarp = null;
+        dependencies.entityBridge().get().outbox.pendingRoomEntityEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingChestRewardEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingKeyRewardEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingHeartContainerRewards.clear();
+        dependencies
+                .entityBridge()
+                .get()
+                .outbox
+                .pendingMadamMeowMeowFullHealRequests
+                .clear();
+        dependencies.entityBridge().get().outbox.pendingRichardProgressEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingSwordPickupRewards.clear();
+        dependencies.entityBridge().get().outbox.pendingToadstoolRewards.clear();
+        dependencies.entityBridge().get().outbox.pendingWitchExchangeEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingWitchRewardEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingRoomDialogRequests.clear();
+        dependencies.items().pendingManboTransition = false;
+        dependencies.items().pendingInstrumentTransition = false;
+        dependencies.items().pendingShovelDrop = null;
+        dependencies.items().shovelUseState = 0;
+        dependencies.puzzles().roomTriggerCount = 0;
+        dependencies.puzzles().activeRoomEvent = 0;
+        dependencies.puzzles().roomEventEffectExecuted = false;
+        dependencies.puzzles().thrownAtDoorTriggerResolved = false;
+        dependencies.puzzles().roomEventChestRevealCountdown = 0;
+        dependencies.puzzles().roomEventStairRevealCountdown = 0;
+        dependencies.puzzles().staircaseState = STAIRCASE_NONE;
+        dependencies.puzzles().staircaseX = 0;
+        dependencies.puzzles().staircaseY = 0;
+        dependencies.puzzles().switchButtonPressCounter = 0;
+        dependencies.puzzles().indoorKeyDoorAnimationCountdown = 0;
+        dependencies.puzzles().indoorKeyDoorDirection = -1;
+        dependencies.puzzles().indoorKeyDoorLocation = -1;
+        dependencies.puzzles().indoorBossDoorOpening = false;
         // ResetRoomVariables ($20:4CA3-4CE3) does not clear wC1C9 or
         // hLinkRoomPosition/hLinkFinalRoomPosition; transitions retain them.
-        session.context.pushBlockContactTicks = 0;
-        session.context.indoorPotPullFrames = 0;
-        session.context.pushedBlockMotionFrames = 0;
-        session.context.pushedBlockSourceLocation = -1;
-        session.context.pushedBlockDestinationLocation = -1;
-        session.context.pushedBlockDirection = -1;
-        session.context.pushedBlockEntitySlot = -1;
-        session.context.pushedBlocksTriggerEffectPending = false;
-        session.context.worldLinkMotionBlockPending = false;
-        session.context.tailCaveKeyholeCountdown = 0;
-        session.context.tailCaveFinalMotionBlockPending = false;
-        session.context.nextWorldMusicTrackCountdown = 0;
-        session.context.entityBridge.outbox.pendingRoomMusicTrack = -1;
+        dependencies.puzzles().pushBlockContactTicks = 0;
+        dependencies.puzzles().indoorPotPullFrames = 0;
+        dependencies.puzzles().pushedBlockMotionFrames = 0;
+        dependencies.puzzles().pushedBlockSourceLocation = -1;
+        dependencies.puzzles().pushedBlockDestinationLocation = -1;
+        dependencies.puzzles().pushedBlockDirection = -1;
+        dependencies.puzzles().pushedBlockEntitySlot = -1;
+        dependencies.puzzles().pushedBlocksTriggerEffectPending = false;
+        dependencies.entityFrame().worldLinkMotionBlockPending = false;
+        dependencies.puzzles().tailCaveKeyholeCountdown = 0;
+        dependencies.puzzles().tailCaveFinalMotionBlockPending = false;
+        dependencies.puzzles().nextWorldMusicTrackCountdown = 0;
+        dependencies.entityBridge().get().outbox.pendingRoomMusicTrack = -1;
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomItemUseState items,
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain,
+            DroppableRupeeSystem droppableRupeeSystem,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            TransientVfxSystem transientVfxSystem) {}
 }

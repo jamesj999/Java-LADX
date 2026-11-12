@@ -8,29 +8,31 @@ import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 
 public final class PresentationOutputs {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    PresentationOutputs(RoomSession session) {
-        this.session = session;
+    PresentationOutputs(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return session.context.entityBridge.outbox.consumeScreenShakeRequests();
+        return dependencies.entityBridge().get().outbox.consumeScreenShakeRequests();
     }
 
     public List<EntityCombatEvent> consumeEntityEvents() {
-        return session.context.entityBridge.outbox.consumeEntityEvents();
+        return dependencies.entityBridge().get().outbox.consumeEntityEvents();
     }
 
     public int consumePendingMusicFadeOutCountdown() {
-        return session.context.entityBridge.outbox.consumePendingMusicFadeOutCountdown();
+        return dependencies.entityBridge().get().outbox.consumePendingMusicFadeOutCountdown();
     }
 
     public int consumePendingMusicTrack() {
-        return session.context.entityBridge.outbox.consumePendingMusicTrack();
+        return dependencies.entityBridge().get().outbox.consumePendingMusicTrack();
     }
 
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return session.context.entityBridge.outbox.consumeLikeLikeEvents();
+        return dependencies.entityBridge().get().outbox.consumeLikeLikeEvents();
     }
+
+    record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}
 }

@@ -26,11 +26,11 @@ final class RoomSessionDoors3Test {
         for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(frame, false));
         assertFalse(session.tickCrackedFloor(
                 new RoomSession.LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
-        assertEquals(0, session.context.crackedFloorCounter);
+        assertEquals(0, session.components.terrain().crackedFloorCounter);
         for (int i = 0; i < 39; i++) assertFalse(session.tickCrackedFloor(frame, false));
         assertFalse(session.tickCrackedFloor(
                 new RoomSession.LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
-        assertEquals(39, session.context.crackedFloorCounter); // airborne bypass retains timer
+        assertEquals(39, session.components.terrain().crackedFloorCounter); // airborne bypass retains timer
         assertTrue(sounds.isEmpty());
         assertEquals(0xDF, session.activeRoom().roomObjectsArea()[index]);
         assertTrue(session.tickCrackedFloor(frame, false));
@@ -38,10 +38,10 @@ final class RoomSessionDoors3Test {
         assertEquals(java.util.List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
         // A pit does not reach Default, so its frame retains wC1C9.
         assertFalse(session.tickCrackedFloor(frame, false));
-        assertEquals(40, session.context.crackedFloorCounter);
+        assertEquals(40, session.components.terrain().crackedFloorCounter);
         session.activeRoom().roomObjectsArea()[index] = 0x0D;
         session.tickCrackedFloor(frame, false);
-        assertEquals(0, session.context.crackedFloorCounter); // non-$DF on Default resets
+        assertEquals(0, session.components.terrain().crackedFloorCounter); // non-$DF on Default resets
     }
 
     @Test
@@ -84,7 +84,7 @@ final class RoomSessionDoors3Test {
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[index]);
         assertFalse(session.breakIndoorSwordCrystal(0x33));
         session.tickEntities(0, 8, 16);
-        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
+        assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x09));
         assertTrue(session.activeRoom().entities().slots().stream()

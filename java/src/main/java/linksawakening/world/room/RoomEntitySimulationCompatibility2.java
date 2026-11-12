@@ -10,8 +10,8 @@ interface RoomEntitySimulationCompatibility2 {
     /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
@@ -23,8 +23,8 @@ interface RoomEntitySimulationCompatibility2 {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
@@ -38,8 +38,8 @@ interface RoomEntitySimulationCompatibility2 {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .collectEntityIfNeeded(
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
@@ -58,8 +58,8 @@ interface RoomEntitySimulationCompatibility2 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .collectEntityIfNeeded(
                         frameCounter,

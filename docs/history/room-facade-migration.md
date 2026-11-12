@@ -20,3 +20,11 @@ engineer:
 
 The delegate replacement inventory will be added after the dependency and
 parameter-object migrations are complete.
+
+## Reflection compatibility
+
+`RoomSession.context` is a private, deprecated alias of `RoomSessionComponents`
+solely for `world/entity/SlimeEyeControlsTest` reflection. It does not retain
+a `RoomSessionContext`. Remove this alias after that test migrates to the
+entity test-access API. Runtime room collaborators receive typed dependency
+records and do not retain the facade, wiring result, or wiring class.

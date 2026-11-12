@@ -10,7 +10,7 @@ interface RoomNavigationCompatibility {
     RoomSession facade();
 
     default void loadInitialOverworld(int roomId) {
-        facade().context.roomLoadCoordinator.loadInitialOverworld(roomId);
+        facade().components.roomLoadCoordinator().loadInitialOverworld(roomId);
     }
 
     default void loadWarpDestination(Warp warp) {
@@ -29,23 +29,23 @@ interface RoomNavigationCompatibility {
     }
     /** Whether the most recent load follows room_transition.asm rather than the warp loader. */
     default boolean musicSelectionIsScroll() {
-        return facade().context.roomLoadCoordinator.musicSelectionIsScroll;
+        return facade().components.roomLoadCoordinator().musicSelectionIsScroll;
     }
 
     default void loadOverworld(int roomId) {
-        facade().context.roomLoadCoordinator.loadOverworld(roomId);
+        facade().components.roomLoadCoordinator().loadOverworld(roomId);
     }
 
     default void loadIndoor(int mapId, int roomId) {
-        facade().context.roomLoadCoordinator.loadIndoor(mapId, roomId);
+        facade().components.roomLoadCoordinator().loadIndoor(mapId, roomId);
     }
     /** Restores hMapRoom and the independently saved source wIndoorRoom byte. */
     default void loadIndoorFromSavedPosition(int mapId, int roomId, int savedIndoorMapPosition) {
-        facade().context.roomLoadCoordinator.loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
+        facade().components.roomLoadCoordinator().loadIndoorFromSavedPosition(mapId, roomId, savedIndoorMapPosition);
     }
 
     default void loadIndoor(int mapId, int roomId, int mapCategory) {
-        facade().context.roomLoadCoordinator.loadIndoor(mapId, roomId, mapCategory);
+        facade().components.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory);
     }
     /** Starts the source UseOcarina countdown consumed by active entities. */
     default boolean startOcarina(int countdown, int songFlags, int selectedSong) {

@@ -93,7 +93,7 @@ final class GameplayRouteStage5 {
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x31, route.session.currentRoomId());
-        assertEquals(0x25, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x25, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xAB, objectAt(route.session, 0x34));
         assertEquals(0xAB, objectAt(route.session, 0x35));
         assertEquals(0x08, route.session.activeRoom().shutterDoorMask() & 0x08);
@@ -121,14 +121,14 @@ final class GameplayRouteStage5 {
         for (int tick = 0; tick < 16; tick++) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(2, route.session.context.roomSessionViews.roomTriggerCountForTest());
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(2, route.session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x08);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x32, route.session.currentRoomId());
-        assertEquals(0x81, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.bottleStalfosSlots = route.session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x1A || entity.type() == 0x1E)
                 .map(RoomEntity::slot)
@@ -179,14 +179,14 @@ final class GameplayRouteStage5 {
             }
         }
         route.firstBottleKeyDeadline = route.frame + 0x300;
-        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
                 && route.frame < route.firstBottleKeyDeadline) {
             route.session.tickEntitiesWithProjectileEvents(
                     route.frame++, route.link.romEntityX(), route.link.romEntityY(), 0, 0, Link.DIRECTION_RIGHT, false);
         }
         assertEquals(
                 0,
-                route.session.context.roomSessionViews.activeRoomEventForTest(),
+                route.session.components.roomSessionViews().activeRoomEventForTest(),
                 route.session.activeRoom().entities().loadedEntities().toString());
         route.firstBottleKey = route.session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x30)
@@ -223,12 +223,15 @@ final class GameplayRouteStage5 {
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x33, route.session.currentRoomId());
-        assertEquals(0x00, route.session.context.roomSessionViews.entitySwitchBlocksStateForTest());
+        assertEquals(0x00, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         route.room33RaisedBlockLocation = 0x62;
         assertEquals(0xDC, objectAt(route.session, route.room33RaisedBlockLocation));
         assertTrue(
-                route.session.context.roomSessionViews.linkCollisionPointBlockedForTest(
-                        (route.room33RaisedBlockLocation & 0x0F) << 4, route.room33RaisedBlockLocation & 0xF0),
+                route.session
+                        .components
+                        .roomSessionViews()
+                        .linkCollisionPointBlockedForTest(
+                                (route.room33RaisedBlockLocation & 0x0F) << 4, route.room33RaisedBlockLocation & 0xF0),
                 "room $33 raised $DC must block before the switch animation at "
                         + String.format("%02X", route.room33RaisedBlockLocation));
         assertEquals(
@@ -305,27 +308,30 @@ final class GameplayRouteStage5 {
                                 event.slot() == route.crystalSwitch.slot() && event.type() == 0x66 && event.swordHit()),
                 route.switchHit.toString());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
-        assertEquals(0x01, route.session.context.roomSessionViews.switchableObjectAnimationStageForTest());
-        assertTrue(route.session.context.entityBridge.outbox.consumeEntityEvents().stream()
+        assertEquals(0x01, route.session.components.roomSessionViews().switchableObjectAnimationStageForTest());
+        assertTrue(route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x66
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.WAVE
                         && event.soundId() == 0x0E));
 
-        assertTrue(route.session.context.roomSessionViews.linkCollisionPointBlockedForTest(0x20, 0x60));
+        assertTrue(route.session.components.roomSessionViews().linkCollisionPointBlockedForTest(0x20, 0x60));
         for (int stage = 0; stage < 9; stage++) {
             route.session.tickGameplayVBlank();
         }
-        assertEquals(0x02, route.session.context.roomSessionViews.entitySwitchBlocksStateForTest());
-        assertEquals(0x00, route.session.context.roomSessionViews.switchableObjectAnimationStageForTest());
+        assertEquals(0x02, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
+        assertEquals(0x00, route.session.components.roomSessionViews().switchableObjectAnimationStageForTest());
         assertFalse(
-                route.session.context.roomSessionViews.linkCollisionPointBlockedForTest(
-                        (route.room33RaisedBlockLocation & 0x0F) << 4, route.room33RaisedBlockLocation & 0xF0),
+                route.session
+                        .components
+                        .roomSessionViews()
+                        .linkCollisionPointBlockedForTest(
+                                (route.room33RaisedBlockLocation & 0x0F) << 4, route.room33RaisedBlockLocation & 0xF0),
                 "room $33 raised $DC must pass after the switch animation");
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x34, route.session.currentRoomId());
-        assertEquals(0x81, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(
                 2,
                 route.session.activeRoom().entities().loadedEntities().stream()
@@ -336,7 +342,7 @@ final class GameplayRouteStage5 {
                 route.session.activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x2E)
                         .count());
-        assertEquals(0x02, route.session.context.roomSessionViews.entitySwitchBlocksStateForTest());
+        assertEquals(0x02, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         assertEquals(
                 2,
@@ -363,7 +369,7 @@ final class GameplayRouteStage5 {
                 int linkEntityY = (maskedMimic.y() + 0x20) & 0xFF;
                 // The first handler tick mirrors Link's down input. The next
                 // sees Link behind that facing and selects vulnerable options $08.
-                route.session.context.entityInputs.setEntityPressedButtonsMask(0x08);
+                route.session.components.entityInputs().setEntityPressedButtonsMask(0x08);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 maskedMimic = route.session.activeRoom().entities().slots().get(maskedMimicSlot);
@@ -384,7 +390,7 @@ final class GameplayRouteStage5 {
                                         && event.swordHit()
                                         && event.enemyDamage() == 1),
                         hitEvents.toString());
-                route.session.context.entityInputs.setEntityPressedButtonsMask(0);
+                route.session.components.entityInputs().setEntityPressedButtonsMask(0);
                 for (int recovery = 0; recovery < 0x30; recovery++) {
                     route.session.tickEntitiesWithProjectileEvents(
                             route.frame++,
@@ -417,7 +423,7 @@ final class GameplayRouteStage5 {
                             .status());
             route.defeatedMaskedMimics++;
             if (route.defeatedMaskedMimics == 1) {
-                assertEquals(0x81, route.session.context.roomSessionViews.activeRoomEventForTest());
+                assertEquals(0x81, route.session.components.roomSessionViews().activeRoomEventForTest());
                 assertEquals(
                         0,
                         route.session.activeRoom().entities().loadedEntities().stream()
@@ -425,13 +431,13 @@ final class GameplayRouteStage5 {
                                 .count());
             }
         }
-        route.session.context.entityInputs.setEntityPressedButtonsMask(0);
+        route.session.components.entityInputs().setEntityPressedButtonsMask(0);
         route.mimicEventDeadline = route.frame + 0x300;
-        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
                 && route.frame < route.mimicEventDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertTrue(route.session.activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x2E));
         route.secondBottleKey = route.session.activeRoom().entities().loadedEntities().stream()

@@ -238,7 +238,7 @@ Scrolling, transitions and inventory state gate entity ticking.
 
 The runtime iterates slots from highest index to zero. Each slot passes
 `EntitySlotPhase1` through `EntitySlotPhase5`; a phase can end that slot's work.
-`EntityPhase` builds immutable `RoomSession.EntityFrameInputs` from Link, player,
+`EntityPhase` builds immutable `EntityFrameInputs` from Link, player,
 UI, buttons and sword-box snapshots. `RoomSession.tickEntities` applies those
 inputs in the original setter order before advancing entity slots.
 Entity effects are consumed at the entity boundary, including projectiles,
@@ -342,8 +342,11 @@ collaborators instead of exposing entity handlers to application code.
 The `doors()`, `transitions()`, `playerItems()` and `story()` views expose
 focused role interfaces; existing public facade methods delegate to them for
 compatibility. Their implementations receive their specific collaborator.
-`RoomSessionContext` still collects room dependencies and shared state;
-converting remaining collaborators away from `session.context` remains open.
+`RoomSessionContext` is private construction-time wiring. Runtime collaborators
+receive their own dependency records and typed state: location, terrain,
+followers, entity-frame state, item use and puzzles. No runtime collaborator
+reads through the composition root. Typed service suppliers preserve cyclic
+room dependencies without resolving them during construction.
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.

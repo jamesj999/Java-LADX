@@ -34,7 +34,7 @@ final class WellHeartEmulatorTrajectoryTest {
                 .slot();
         // Replace only this bush, just as the emulator experiment does. Keep
         // the adjacent bushes/house walls in the actual ROM room buffer.
-        session.context.activeRoom.roomObjectsArea()[0x35] = 0x04;
+        session.components.location().activeRoom.roomObjectsArea()[0x35] = 0x04;
         session.tickEntities(0, 56, 32); // Entity init.
         session.tickEntities(1, 56, 32); // Reveal return; no movement yet.
         var reveal = session.activeRoom().entities().slots().get(slot);
@@ -52,7 +52,7 @@ final class WellHeartEmulatorTrajectoryTest {
             int planarSpeed = pass < 34 ? 12 : pass < 53 ? 6 : pass < 65 ? 3 : 0;
             assertEquals(
                     planarSpeed,
-                    session.context.roomSessionViews.entityDropSpeedXForTest(slot),
+                    session.components.roomSessionViews().entityDropSpeedXForTest(slot),
                     "speed X pass " + pass);
             int zQ4;
             if (pass <= 34) zQ4 = 32 * pass - pass * (pass - 1);

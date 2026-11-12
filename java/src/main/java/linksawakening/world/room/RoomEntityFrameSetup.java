@@ -6,10 +6,10 @@ import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
 final class RoomEntityFrameSetup {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomEntityFrameSetup(RoomSession session) {
-        this.session = session;
+    RoomEntityFrameSetup(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void configure() {
@@ -19,152 +19,203 @@ final class RoomEntityFrameSetup {
     }
 
     private void configurePresentation() {
-        if (!session.context.boomerangSoundClockProvided) {
-            session.advanceBoomerangSoundClock(true);
+        if (!dependencies.entityFrame().boomerangSoundClockProvided) {
+            dependencies.entityBridge().get().advanceBoomerangSoundClock(true);
         }
-        session.context
-                .entityBridge
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setBoomerangSoundCounterForFrame(session.context.boomerangSoundCounter);
-        session.context.boomerangSoundClockProvided = false;
-        session.context.indoorTorchPaletteEffect.tick(
-                session.context.entityInputs.entityDialogActive,
-                false,
-                session.context.currentLinkMotionState,
-                session.context.activeRoom.mapId());
-        session.context
-                .entityBridge
+                .setBoomerangSoundCounterForFrame(dependencies.entityFrame().boomerangSoundCounter);
+        dependencies.entityFrame().boomerangSoundClockProvided = false;
+        dependencies
+                .indoorTorchPaletteEffect()
+                .tick(
+                        dependencies.entityInputs().get().entityDialogActive,
+                        false,
+                        dependencies.entityFrame().currentLinkMotionState,
+                        dependencies.location().activeRoom.mapId());
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setTorchPaletteTransitionState(
-                        session.context.indoorTorchPaletteEffect.targetAddress(),
-                        session.context.indoorTorchPaletteEffect.transitionActive());
-        session.context.roomObjectMutations.copyIndoorTorchPalettesToActiveRoom();
-        session.context.roomTransitionController.tickOcarinaAnimationHandler();
-        session.context
-                .entityBridge
+                        dependencies.indoorTorchPaletteEffect().targetAddress(),
+                        dependencies.indoorTorchPaletteEffect().transitionActive());
+        dependencies.roomObjectMutations().get().copyIndoorTorchPalettesToActiveRoom();
+        dependencies.roomTransitionController().get().tickOcarinaAnimationHandler();
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setSwitchBlockAnimationActive(
-                        SwitchBlockAnimation.isAnimating(session.context.switchableObjectAnimationStage));
-        session.context
-                .entityBridge
+                        SwitchBlockAnimation.isAnimating(dependencies.terrain().switchableObjectAnimationStage));
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setDialogActive(session.context.entityInputs.entityDialogActive);
-        session.context
-                .entityBridge
+                .setDialogActive(dependencies.entityInputs().get().entityDialogActive);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setTalkState(
-                        session.context.entityInputs.entityInventoryAppearing,
-                        session.context.entityInputs.entityDialogCooldown,
-                        session.context.entityInputs.entityWindowY);
-        session.context
-                .entityBridge
+                        dependencies.entityInputs().get().entityInventoryAppearing,
+                        dependencies.entityInputs().get().entityDialogCooldown,
+                        dependencies.entityInputs().get().entityWindowY);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setDialogAskSelectionIndex(session.context.entityInputs.entityDialogAskSelectionIndex);
-        session.context
-                .entityBridge
+                .setDialogAskSelectionIndex(dependencies.entityInputs().get().entityDialogAskSelectionIndex);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setActiveMusic(session.context.entityInputs.entityMusicActive);
-        session.context.entityBridge.entityRuntime.configuration().setBowWowState(session.context.bowWowState);
-        session.context
-                .entityBridge
+                .setActiveMusic(dependencies.entityInputs().get().entityMusicActive);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setLinkVelocityZ(session.context.entityInputs.entityLinkVelocityZ);
+                .setBowWowState(dependencies.followers().bowWowState);
+        dependencies
+                .entityBridge()
+                .get()
+                .entityRuntime
+                .configuration()
+                .setLinkVelocityZ(dependencies.entityInputs().get().entityLinkVelocityZ);
     }
 
     private void configureInteraction() {
-        session.context
-                .entityBridge
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setOwlInstrumentFlags(
-                        Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[0]),
-                        Byte.toUnsignedInt(session.context.roomState.dungeonProgressFlags[1]));
-        session.context
-                .entityBridge
+                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[0]),
+                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[1]));
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setActionButtonsHeld(
-                        session.context.entityInputs.actionButtonAHeld, session.context.entityInputs.actionButtonBHeld);
-        int statueMapId = session.context.activeRoom.mapId();
-        session.context
-                .entityBridge
+                        dependencies.entityInputs().get().actionButtonAHeld,
+                        dependencies.entityInputs().get().actionButtonBHeld);
+        int statueMapId = dependencies.location().activeRoom.mapId();
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setOwlStatueDialogId(
-                        session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
+                        dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                                         && (statueMapId < 8 || statueMapId == 0xFF)
-                                ? session.context.owlStatueDialogResolver.globalDialogId(
-                                        statueMapId,
-                                        session.context.activeRoom.roomId(),
-                                        session.context.roomState.dungeonItemState.currentFlag(
-                                                        DungeonItemState.STONE_BEAK_INDEX)
-                                                != 0)
+                                ? dependencies
+                                        .owlStatueDialogResolver()
+                                        .globalDialogId(
+                                                statueMapId,
+                                                dependencies
+                                                        .location()
+                                                        .activeRoom
+                                                        .roomId(),
+                                                dependencies
+                                                                .roomState()
+                                                                .dungeonItemState
+                                                                .currentFlag(DungeonItemState.STONE_BEAK_INDEX)
+                                                        != 0)
                                 : -1);
-        session.context
-                .entityBridge
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setJoypadHeld(session.context.entityInputs.joypadHeld);
-        session.context
-                .entityBridge
+                .setJoypadHeld(dependencies.entityInputs().get().joypadHeld);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setPressedButtonsMask(session.context.entityInputs.entityPressedButtonsMask);
-        session.context
-                .entityBridge
+                .setPressedButtonsMask(dependencies.entityInputs().get().entityPressedButtonsMask);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setPowerBraceletButtonHeld(session.context.entityInputs.powerBraceletButtonHeld);
-        session.context
-                .entityBridge
+                .setPowerBraceletButtonHeld(dependencies.entityInputs().get().powerBraceletButtonHeld);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setBombButtonHeld(session.context.entityInputs.bombButtonHeld);
-        session.context
-                .entityBridge
+                .setBombButtonHeld(dependencies.entityInputs().get().bombButtonHeld);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setLiftedLinkC13B(session.context.followingEntityYOffset);
-        session.context
-                .entityBridge
+                .setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setBooBuddyTriggerCount(session.context.roomTriggerCount);
+                .setBooBuddyTriggerCount(dependencies.puzzles().roomTriggerCount);
     }
 
     private void configureItems() {
-        session.context.roomStoryState.updateWitchEnvironment();
-        session.context
-                .entityBridge
+        dependencies.roomStoryState().get().updateWitchEnvironment();
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setOcarinaPlayback(
-                        session.context.ocarinaPlaybackCountdown,
-                        session.context.ocarinaSongFlags,
-                        session.context.selectedSongIndex,
-                        session.context.ocarinaAnimationCounter,
-                        session.context.ocarinaAnimationPhase);
-        session.context
-                .entityBridge
+                        dependencies.items().ocarinaPlaybackCountdown,
+                        dependencies.items().ocarinaSongFlags,
+                        dependencies.items().selectedSongIndex,
+                        dependencies.items().ocarinaAnimationCounter,
+                        dependencies.items().ocarinaAnimationPhase);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
-                .setGoldenLeavesCount(session.context.entityInputs.entityGoldenLeavesCount);
-        session.context
-                .entityBridge
+                .setGoldenLeavesCount(dependencies.entityInputs().get().entityGoldenLeavesCount);
+        dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .configuration()
                 .setSecretSeashellPegasusCollisionState(
-                        session.context.entityInputs.secretSeashellScreenShakeActive,
-                                session.context.entityInputs.secretSeashellPegasusCollisionActive,
-                        session.context.entityInputs.secretSeashellPegasusCollisionX,
-                                session.context.entityInputs.secretSeashellPegasusCollisionY);
+                        dependencies.entityInputs().get().secretSeashellScreenShakeActive,
+                                dependencies.entityInputs().get().secretSeashellPegasusCollisionActive,
+                        dependencies.entityInputs().get().secretSeashellPegasusCollisionX,
+                                dependencies.entityInputs().get().secretSeashellPegasusCollisionY);
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomFollowerState followers,
+            RoomItemUseState items,
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            java.util.function.Supplier<RoomEntityInputs> entityInputs,
+            IndoorTorchPaletteEffect indoorTorchPaletteEffect,
+            OwlStatueDialogResolver owlStatueDialogResolver,
+            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomStoryState> roomStoryState,
+            java.util.function.Supplier<RoomTransitionController> roomTransitionController) {}
 }

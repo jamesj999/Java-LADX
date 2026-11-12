@@ -23,7 +23,7 @@ final class GameplayRouteStage8 {
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x39, route.session.currentRoomId());
-        assertEquals(0x63, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x63, route.session.components.roomSessionViews().activeRoomEventForTest());
 
         route.room39ButtonPath = reachablePositionPath(
                 route.collision,
@@ -39,11 +39,11 @@ final class GameplayRouteStage8 {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         route.room39EventDeadline = route.frame + 0x40;
-        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
                 && route.frame < route.room39EventDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.room39ChestDeadline = route.frame + 0x20;
         while (objectAt(route.session, 0x28) != 0xA0 && route.frame < route.room39ChestDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
@@ -68,7 +68,8 @@ final class GameplayRouteStage8 {
         route.room39ChestEnded = false;
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
-            for (ChestRewardEvent reward : route.session.context.entityBridge.outbox.consumeChestRewardEvents()) {
+            for (ChestRewardEvent reward :
+                    route.session.components.entityBridge().outbox.consumeChestRewardEvents()) {
                 route.room39RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.applyChestReward(reward.itemType());
             }
@@ -87,11 +88,11 @@ final class GameplayRouteStage8 {
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);
         assertEquals(0x38, route.session.currentRoomId());
         assertEquals(0xA1, objectAt(route.session, 0x43));
-        assertEquals(0x10, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x38) & 0x10);
+        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x38) & 0x10);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x39, route.session.currentRoomId());
-        assertEquals(0x63, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x63, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xA1, objectAt(route.session, 0x28));
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
@@ -103,7 +104,7 @@ final class GameplayRouteStage8 {
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x35, route.session.currentRoomId());
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(
                 2,
                 route.session.activeRoom().entities().loadedEntities().stream()
@@ -115,22 +116,22 @@ final class GameplayRouteStage8 {
         assertTrue(route.session.tryUnlockIndoorKeyDoor(
                 route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, 0x01));
         assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
-        assertEquals(0x40, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x35) & 0x40);
+        assertEquals(0x40, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x35) & 0x40);
         for (int tick = 0; tick < 8; tick++) {
             route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-            assertTrue(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
+            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         }
         route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-        assertFalse(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
+        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         assertEquals(0x43, objectAt(route.session, 0x07));
         assertEquals(0x44, objectAt(route.session, 0x08));
-        assertEquals(0x04, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x35) & 0x04);
-        assertEquals(0x08, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x2F) & 0x08);
+        assertEquals(0x04, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x35) & 0x04);
+        assertEquals(0x08, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2F) & 0x08);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x2F, route.session.currentRoomId());
-        assertEquals(0xA7, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xA7, objectAt(route.session, 0x33));
         assertEquals(0xA7, objectAt(route.session, 0x36));
         assertEquals(0x0D, objectAt(route.session, 0x18));
@@ -160,32 +161,32 @@ final class GameplayRouteStage8 {
             assertTrue(route.session.tryInteractWithIndoorBlock(
                     route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
         }
-        assertEquals(0xA7, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         for (int tick = 0; tick < 33; tick++) {
             route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0xA6, objectAt(route.session, 0x34));
-        assertEquals(0xA7, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
 
         route.link.setPixelPosition(0x5C, 0x28);
         for (int tick = 0; tick < 64; tick++) {
             assertTrue(route.session.tryInteractWithIndoorBlock(
                     route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_LEFT, 0x04));
         }
-        assertEquals(0xA7, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         for (int tick = 0; tick < 33; tick++) {
             route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0xA6, objectAt(route.session, 0x34));
         assertEquals(0xA6, objectAt(route.session, 0x35));
-        assertEquals(0xA7, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         for (int tick = 0; tick < 11; tick++) {
             route.session.tickEntities(route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0xBE, objectAt(route.session, 0x18));
-        assertEquals(0x10, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x2F) & 0x10);
+        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2F) & 0x10);
         assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
 
         assertTrue(route.session.activeRoom().hasWarps());
@@ -280,7 +281,7 @@ final class GameplayRouteStage8 {
         assertEquals(0x2C, route.session.currentRoomId());
         assertEquals(0x78, route.link.romEntityX());
         assertEquals(0x70, route.link.romEntityY());
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.room2CKeese = route.session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x19)
                 .findFirst()
@@ -328,7 +329,7 @@ final class GameplayRouteStage8 {
         }
         assertEquals(Warp.CATEGORY_INDOOR, route.session.mapCategory());
         assertEquals(0x28, route.session.currentRoomId());
-        assertEquals(0xC1, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0xC1, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.hinox = route.session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x89)
                 .findFirst()

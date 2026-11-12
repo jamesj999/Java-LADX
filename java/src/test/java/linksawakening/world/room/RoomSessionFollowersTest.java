@@ -125,7 +125,7 @@ final class RoomSessionFollowersTest {
         session.loadIndoor(0x10, 0xA3);
 
         session.tickEntitiesWithProjectileEvents(0, 0, 0, 0, 0, 0, false, 1, 0);
-        session.context.entityBridge.outbox.consumeLinkFinalPositionRequests();
+        session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
 
         int frame = 1;
         for (int type : new int[] {0x3E, 0x3F}) {
@@ -136,7 +136,7 @@ final class RoomSessionFollowersTest {
             session.tickEntitiesWithProjectileEvents(frame++, npc.x(), npc.y(), npc.z(), 0, 0, false, 1, 0);
 
             assertTrue(
-                    session.context.entityBridge.outbox.consumeLinkFinalPositionRequests().stream()
+                    session.components.entityBridge().outbox.consumeLinkFinalPositionRequests().stream()
                             .anyMatch(request -> request.sourceSlot() == npc.slot()),
                     "type=" + Integer.toHexString(type));
         }
@@ -187,7 +187,7 @@ final class RoomSessionFollowersTest {
 
         session.tickEntities(0, 0x10, 0x10);
         session.tickEntities(1, 0x10, 0x10);
-        assertEquals(0x0E, session.context.entityBridge.outbox.consumePendingMusicTrack());
+        assertEquals(0x0E, session.components.entityBridge().outbox.consumePendingMusicTrack());
         session.tickEntities(2, kid71.x(), kid71.y());
 
         assertEquals(0x220, session.consumeEntityDialogRequests().getFirst().globalDialogId());
@@ -271,9 +271,9 @@ final class RoomSessionFollowersTest {
         assertEquals(0x12F, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(0, session.bowWowState());
         assertFalse(session.story().followingNpcState().bowWowFollowing());
-        assertEquals(0x10, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
-        assertTrue(session.context
-                .entityBridge
+        assertEquals(0x10, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.components
+                .entityBridge()
                 .outbox
                 .consumeMadamMeowMeowFullHealRequests()
                 .isEmpty());
@@ -285,8 +285,8 @@ final class RoomSessionFollowersTest {
 
         assertEquals(
                 List.of(new MadamMeowMeowFullHealRequest(madam.slot())),
-                session.context.entityBridge.outbox.consumeMadamMeowMeowFullHealRequests());
-        assertEquals(0, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
+                session.components.entityBridge().outbox.consumeMadamMeowMeowFullHealRequests());
+        assertEquals(0, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
     }
 
     @Test
@@ -315,9 +315,9 @@ final class RoomSessionFollowersTest {
         assertEquals(0x132, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(1, session.bowWowState());
         assertTrue(session.story().followingNpcState().bowWowFollowing());
-        assertEquals(0, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
-        assertTrue(session.context
-                .entityBridge
+        assertEquals(0, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.components
+                .entityBridge()
                 .outbox
                 .consumeMadamMeowMeowFullHealRequests()
                 .isEmpty());
@@ -340,8 +340,8 @@ final class RoomSessionFollowersTest {
         session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
 
         assertEquals(0x12D, session.consumeEntityDialogRequests().getFirst().globalDialogId());
-        assertTrue(session.context
-                .entityBridge
+        assertTrue(session.components
+                .entityBridge()
                 .outbox
                 .consumeRichardProgressEvents()
                 .isEmpty());

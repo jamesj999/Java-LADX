@@ -206,13 +206,13 @@ final class GameplayRouteStage12 {
         assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.NIGHTMARE_KEY_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-            assertTrue(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
+            assertTrue(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         }
         route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-        assertFalse(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
+        assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         assertEquals(0x43, objectAt(route.session, 0x04));
         assertEquals(0x44, objectAt(route.session, 0x05));
-        assertEquals(0x04, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x2D) & 0x04);
+        assertEquals(0x04, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2D) & 0x04);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
@@ -234,10 +234,13 @@ final class GameplayRouteStage12 {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             route.clearedBossSlots.add(RoomEntity.disabled(slot));
         }
-        route.session.context.roomSessionViews.replaceEntityRuntimeForTest(
-                RoomEntityRuntime.from(new RoomEntitySnapshot(route.clearedBossSlots), true));
+        route.session
+                .components
+                .roomSessionViews()
+                .replaceEntityRuntimeForTest(
+                        RoomEntityRuntime.from(new RoomEntitySnapshot(route.clearedBossSlots), true));
         route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.link.setPixelPosition(0x50, 0x50);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);

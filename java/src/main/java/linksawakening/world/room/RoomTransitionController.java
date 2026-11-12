@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSession.*;
 
+import linksawakening.gpu.GPU;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
@@ -9,10 +10,10 @@ import linksawakening.world.transition.Warp;
 
 /** RoomTransitionController operations for the live room session. */
 final class RoomTransitionController {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomTransitionController(RoomSession session) {
-        this.session = session;
+    RoomTransitionController(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void loadWarpDestination(Warp warp) {
@@ -21,10 +22,10 @@ final class RoomTransitionController {
         // Scrolling between adjacent rooms does not take this path.
         if (warp.category() != Warp.CATEGORY_SIDESCROLL) {
             Warp spawn = warp;
-            int indoorRoom = session.indoorRoomPositionForSave();
-            if (indoorRoom < 0) indoorRoom = session.respawnIndoorRoom();
+            int indoorRoom = dependencies.roomSessionViews().get().indoorRoomPositionForSave();
+            if (indoorRoom < 0) indoorRoom = dependencies.location().respawnIndoorRoom;
             if (warp.category() == Warp.CATEGORY_INDOOR && (warp.destMap() < 0x0A || warp.destMap() == 0xFF)) {
-                var rom = new linksawakening.rom.Rom(session.context.romData);
+                var rom = new linksawakening.rom.Rom(dependencies.romData());
                 var address = new linksawakening.rom.RomAddress(
                         0x14, warp.destMap() == 0xFF ? 0x4E3C : 0x4DF1 + warp.destMap() * 5);
                 spawn = new Warp(
@@ -38,88 +39,101 @@ final class RoomTransitionController {
                         ? 0x3A
                         : rom.u8(new linksawakening.rom.RomAddress(0x14, 0x4E41 + warp.destMap()));
             }
-            session.setRespawnPoint(spawn, indoorRoom);
+            dependencies.location().setRespawnPoint(spawn, indoorRoom);
         }
-        session.context.recentRoomEntityClears.reset();
-        boolean wasIndoor = session.context.activeRoom != null
-                && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
+        dependencies.entityFrame().recentRoomEntityClears.reset();
+        boolean wasIndoor = dependencies.location().activeRoom != null
+                && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD;
         // hFreeWarpDataAddress is the source wIsIndoor ($00:18AD–18B0).
         // $00:1904/$00:1952 clear only when destination indoor status differs.
         if (wasIndoor != (warp.category() != Warp.CATEGORY_OVERWORLD)) {
-            session.context.mapBoundaryWarp.run();
+            dependencies.location().mapBoundaryWarp.run();
         }
-        session.context.dungeonTitleMessageCountdown = 0;
+        dependencies.puzzles().dungeonTitleMessageCountdown = 0;
         if (warp.category() == Warp.CATEGORY_OVERWORLD) {
             if (wasIndoor) {
-                session.context.gpu.loadBaseOverworldTiles(session.context.romData);
-                session.context.currentOverworldTilesetId = session.W_TILESET_NO_UPDATE;
+                dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
+                dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
             }
-            session.loadOverworld(warp.destRoom());
-            session.context.roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(warp.destRoom());
+            dependencies.roomLoadCoordinator().get().loadOverworld(warp.destRoom());
+            dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(warp.destRoom());
         } else {
-            session.loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
+            dependencies.roomLoadCoordinator().get().loadIndoor(warp.destMap(), warp.destRoom(), warp.category());
             // $00:194C-1965: old wIsIndoor is hFreeWarpDataAddress.
-            if (!wasIndoor && warp.destMap() < 0x0A) session.context.dungeonTitleMessageCountdown = 0x30;
+            if (!wasIndoor && warp.destMap() < 0x0A) dependencies.puzzles().dungeonTitleMessageCountdown = 0x30;
         }
     }
 
     int tickDungeonTitleMessage(
             boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
-        if (session.context.dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
-        if (--session.context.dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement) return -1;
-        return 0x56 + session.context.activeRoom.mapId();
+        if (dependencies.puzzles().dungeonTitleMessageCountdown == 0 || dialogActive || !inventoryClosed) return -1;
+        if (--dependencies.puzzles().dungeonTitleMessageCountdown != 0 || linkMotionState != 0 || freeMovement)
+            return -1;
+        return 0x56 + dependencies.location().activeRoom.mapId();
     }
 
     void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = session.renderSnapshot();
-        int nextRoomId = session.context.roomTransitionController.adjacentOverworldRoomId(direction);
-        boolean discoveredTailKeyRoom = nextRoomId == session.ROOM_OW_TAIL_KEY_CHEST
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
+        int nextRoomId = dependencies.roomTransitionController().get().adjacentOverworldRoomId(direction);
+        boolean discoveredTailKeyRoom = nextRoomId == ROOM_OW_TAIL_KEY_CHEST
                 && direction == ScrollController.UP
-                && (session.context.roomState.overworldRoomStatus[nextRoomId] & session.ROOM_STATUS_DISCOVERED) == 0;
+                && (dependencies.roomState().overworldRoomStatus[nextRoomId] & ROOM_STATUS_DISCOVERED) == 0;
         if (discoveredTailKeyRoom) {
-            session.context.roomState.overworldRoomStatus[nextRoomId] |= (byte) session.ROOM_STATUS_DISCOVERED;
+            dependencies.roomState().overworldRoomStatus[nextRoomId] |= (byte) ROOM_STATUS_DISCOVERED;
         }
-        session.context.roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(nextRoomId);
-        session.context.roomLoadCoordinator.loadOverworld(nextRoomId, true);
+        dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(nextRoomId);
+        dependencies.roomLoadCoordinator().get().loadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
-            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                    0, session.ENTITY_OWL_EVENT, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingRoomEntityEvents
+                    .add(new EntityCombatEvent(
+                            0, ENTITY_OWL_EVENT, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
         }
         scrollController.start(
                 direction, linkScreenX, linkScreenY, previousRoom, RoomInteractionGeometry.scrollTarget(direction));
     }
 
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = session.renderSnapshot();
-        session.context.roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(session.ROOM_OW_MYSTERIOUS_WOODS_LOST);
-        session.context.roomLoadCoordinator.loadOverworld(session.ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
+        dependencies.roomLoadCoordinator().get().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
+        dependencies.roomLoadCoordinator().get().loadOverworld(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(
                 ScrollController.UP,
                 linkScreenX,
                 linkScreenY,
                 previousRoom,
                 RoomInteractionGeometry.scrollTarget(ScrollController.UP));
-        session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
-                new EntityCombatEvent(0, session.ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
+        dependencies
+                .entityBridge()
+                .get()
+                .outbox
+                .pendingRoomEntityEvents
+                .add(new EntityCombatEvent(0, ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
     }
 
     void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        RoomRenderSnapshot previousRoom = session.renderSnapshot();
+        RoomRenderSnapshot previousRoom = dependencies.roomSessionViews().get().renderSnapshot();
         RoomScrollNavigation.IndoorRoomDestination destination =
-                session.context.roomTransitionController.adjacentIndoorRoom(direction);
-        session.loadIndoor(
-                session.context.activeRoom.mapId(),
-                destination.roomId(),
-                session.context.activeRoom.mapCategory(),
-                switch (direction) {
-                    case ScrollController.RIGHT -> 0;
-                    case ScrollController.LEFT -> 1;
-                    case ScrollController.UP -> 2;
-                    case ScrollController.DOWN -> 3;
-                    default -> throw new IllegalArgumentException("Indoor scroll direction " + direction);
-                });
-        session.context.indoorMapPosition = destination.mapPosition();
+                dependencies.roomTransitionController().get().adjacentIndoorRoom(direction);
+        dependencies
+                .roomLoadCoordinator()
+                .get()
+                .loadIndoor(
+                        dependencies.location().activeRoom.mapId(),
+                        destination.roomId(),
+                        dependencies.location().activeRoom.mapCategory(),
+                        switch (direction) {
+                            case ScrollController.RIGHT -> 0;
+                            case ScrollController.LEFT -> 1;
+                            case ScrollController.UP -> 2;
+                            case ScrollController.DOWN -> 3;
+                            default -> throw new IllegalArgumentException("Indoor scroll direction " + direction);
+                        });
+        dependencies.location().indoorMapPosition = destination.mapPosition();
         scrollController.start(
                 direction, linkScreenX, linkScreenY, previousRoom, RoomInteractionGeometry.scrollTarget(direction));
     }
@@ -134,127 +148,159 @@ final class RoomTransitionController {
         if (selectedSong < 0 || selectedSong > 0xFF) {
             throw new IllegalArgumentException("Selected Ocarina song must be an unsigned byte: " + selectedSong);
         }
-        if (session.context.activeRoom == null
-                || session.context.entityBridge.entityRuntime == null
-                || session.context.ocarinaPlaybackCountdown != 0) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.entityBridge().get().entityRuntime == null
+                || dependencies.items().ocarinaPlaybackCountdown != 0) {
             return false;
         }
-        session.context.ocarinaPlaybackCountdown = countdown;
-        session.context.ocarinaSongFlags = songFlags & 0xFF;
-        session.context.selectedSongIndex = selectedSong & 0xFF;
-        session.context.ocarinaAnimationCounter = 0;
-        session.context.ocarinaAnimationPhase = 0;
-        session.context.pendingManboTransition = false;
-        session.context.pendingInstrumentTransition = false;
+        dependencies.items().ocarinaPlaybackCountdown = countdown;
+        dependencies.items().ocarinaSongFlags = songFlags & 0xFF;
+        dependencies.items().selectedSongIndex = selectedSong & 0xFF;
+        dependencies.items().ocarinaAnimationCounter = 0;
+        dependencies.items().ocarinaAnimationPhase = 0;
+        dependencies.items().pendingManboTransition = false;
+        dependencies.items().pendingInstrumentTransition = false;
         return true;
     }
 
     boolean ocarinaPlaying() {
-        return session.context.ocarinaPlaybackCountdown != 0;
+        return dependencies.items().ocarinaPlaybackCountdown != 0;
     }
 
     int ocarinaAnimationState() {
-        if (!session.transitions().ocarinaPlaying()) {
+        if (!dependencies.roomTransitionController().get().ocarinaPlaying()) {
             return -1;
         }
-        return session.context.ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
+        return dependencies.items().ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
     }
 
     Warp consumeManboPondTransitionRequest() {
-        if (!session.context.pendingManboTransition || session.context.activeRoom == null) {
+        if (!dependencies.items().pendingManboTransition || dependencies.location().activeRoom == null) {
             return null;
         }
-        session.context.pendingManboTransition = false;
-        return session.context.manboWarpResolver.resolve(
-                session.context.activeRoom.mapCategory(), session.context.activeRoom.mapId());
+        dependencies.items().pendingManboTransition = false;
+        return dependencies
+                .manboWarpResolver()
+                .resolve(
+                        dependencies.location().activeRoom.mapCategory(),
+                        dependencies.location().activeRoom.mapId());
     }
 
     Warp consumeInstrumentTransitionRequest() {
-        if (!session.context.pendingInstrumentTransition
-                || session.context.activeRoom == null
-                || !session.context.activeRoom.hasWarps()) {
+        if (!dependencies.items().pendingInstrumentTransition
+                || dependencies.location().activeRoom == null
+                || !dependencies.location().activeRoom.hasWarps()) {
             return null;
         }
-        session.context.pendingInstrumentTransition = false;
-        return session.context.activeRoom.firstWarp();
+        dependencies.items().pendingInstrumentTransition = false;
+        return dependencies.location().activeRoom.firstWarp();
     }
 
     Warp consumeClearedDungeonWarp() {
-        Warp pending = session.context.pendingDungeonWarp;
-        session.context.pendingDungeonWarp = null;
+        Warp pending = dependencies.location().pendingDungeonWarp;
+        dependencies.location().pendingDungeonWarp = null;
         return pending;
     }
 
     void finishOcarinaPlayback() {
-        if (session.context.followingNpcState.marinFollowing()) {
-            if (session.context.selectedSongIndex == 0x01) {
-                session.context.pendingManboTransition = true;
-            } else if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
-                        new DialogRequest(session.OCARINA_MARIN_DIALOG_TABLE, session.OCARINA_MARIN_DIALOG_ID));
+        if (dependencies.followers().followingNpcState.marinFollowing()) {
+            if (dependencies.items().selectedSongIndex == 0x01) {
+                dependencies.items().pendingManboTransition = true;
+            } else if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                dependencies
+                        .entityBridge()
+                        .get()
+                        .outbox
+                        .pendingRoomDialogRequests
+                        .add(new DialogRequest(OCARINA_MARIN_DIALOG_TABLE, OCARINA_MARIN_DIALOG_ID));
             }
             return;
         }
-        if (session.context.ocarinaSongFlags == 0) {
-            session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
-                    new DialogRequest(session.OCARINA_NO_SONG_DIALOG_TABLE, session.OCARINA_NO_SONG_DIALOG_ID));
-        } else if (session.context.selectedSongIndex == 0x01) {
-            session.context.pendingManboTransition = true;
+        if (dependencies.items().ocarinaSongFlags == 0) {
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingRoomDialogRequests
+                    .add(new DialogRequest(OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
+        } else if (dependencies.items().selectedSongIndex == 0x01) {
+            dependencies.items().pendingManboTransition = true;
         }
     }
 
     void tickOcarinaAnimationHandler() {
-        if (!session.transitions().ocarinaPlaying()) {
+        if (!dependencies.roomTransitionController().get().ocarinaPlaying()) {
             return;
         }
-        session.context.ocarinaAnimationCounter++;
-        if (session.context.ocarinaAnimationCounter >= 0x38) {
-            session.context.ocarinaAnimationCounter = 0;
-            session.context.ocarinaAnimationPhase ^= 0x01;
+        dependencies.items().ocarinaAnimationCounter++;
+        if (dependencies.items().ocarinaAnimationCounter >= 0x38) {
+            dependencies.items().ocarinaAnimationCounter = 0;
+            dependencies.items().ocarinaAnimationPhase ^= 0x01;
         }
     }
 
     Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) {
-        if (session.context.staircaseState == session.STAIRCASE_NONE || session.context.activeRoom == null) {
+        if (dependencies.puzzles().staircaseState == STAIRCASE_NONE || dependencies.location().activeRoom == null) {
             return null;
         }
-        if (session.context.staircaseState == session.STAIRCASE_INACTIVE) {
-            if (!RoomInteractionGeometry.withinUnsignedByteRange(linkEntityX, session.context.staircaseX, 0x06, 0x0C)
+        if (dependencies.puzzles().staircaseState == STAIRCASE_INACTIVE) {
+            if (!RoomInteractionGeometry.withinUnsignedByteRange(
+                            linkEntityX, dependencies.puzzles().staircaseX, 0x06, 0x0C)
                     || !RoomInteractionGeometry.withinUnsignedByteRange(
-                            linkEntityY, session.context.staircaseY, 0x06, 0x0C)) {
-                session.context.staircaseState = session.STAIRCASE_ACTIVE;
+                            linkEntityY, dependencies.puzzles().staircaseY, 0x06, 0x0C)) {
+                dependencies.puzzles().staircaseState = STAIRCASE_ACTIVE;
             }
             return null;
         }
         if (linkZ != 0
                 || carryingObject
-                || !RoomInteractionGeometry.withinUnsignedByteRange(linkEntityX, session.context.staircaseX, 0x05, 0x0A)
-                || !RoomInteractionGeometry.withinUnsignedByteRange(linkEntityY, session.context.staircaseY, 0x05, 0x0A)
-                || !session.context.activeRoom.hasWarps()) {
+                || !RoomInteractionGeometry.withinUnsignedByteRange(
+                        linkEntityX, dependencies.puzzles().staircaseX, 0x05, 0x0A)
+                || !RoomInteractionGeometry.withinUnsignedByteRange(
+                        linkEntityY, dependencies.puzzles().staircaseY, 0x05, 0x0A)
+                || !dependencies.location().activeRoom.hasWarps()) {
             return null;
         }
-        session.context.staircaseState = session.STAIRCASE_NONE;
-        return session.context.activeRoom.firstWarp();
+        dependencies.puzzles().staircaseState = STAIRCASE_NONE;
+        return dependencies.location().activeRoom.firstWarp();
     }
 
     void configureStaircase(int location) {
         if (location < 0) {
-            session.context.staircaseState = session.STAIRCASE_NONE;
-            session.context.staircaseX = 0;
-            session.context.staircaseY = 0;
+            dependencies.puzzles().staircaseState = STAIRCASE_NONE;
+            dependencies.puzzles().staircaseX = 0;
+            dependencies.puzzles().staircaseY = 0;
             return;
         }
-        session.context.staircaseState = session.STAIRCASE_INACTIVE;
-        session.context.staircaseY = (location & 0xF0) + 0x10;
-        session.context.staircaseX = ((location & 0x0F) << 4) + 0x08;
+        dependencies.puzzles().staircaseState = STAIRCASE_INACTIVE;
+        dependencies.puzzles().staircaseY = (location & 0xF0) + 0x10;
+        dependencies.puzzles().staircaseX = ((location & 0x0F) << 4) + 0x08;
     }
 
     int adjacentOverworldRoomId(int direction) {
-        return session.context.scrollNavigation.adjacentOverworldRoomId(session.context.activeRoom, direction);
+        return dependencies.scrollNavigation().adjacentOverworldRoomId(dependencies.location().activeRoom, direction);
     }
 
     RoomScrollNavigation.IndoorRoomDestination adjacentIndoorRoom(int direction) {
-        return session.context.scrollNavigation.adjacentIndoorRoom(
-                session.context.activeRoom, session.context.indoorMapPosition, direction);
+        return dependencies
+                .scrollNavigation()
+                .adjacentIndoorRoom(
+                        dependencies.location().activeRoom, dependencies.location().indoorMapPosition, direction);
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomFollowerState followers,
+            RoomItemUseState items,
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            GPU gpu,
+            ManboWarpResolver manboWarpResolver,
+            byte[] romData,
+            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
+            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomTransitionController> roomTransitionController,
+            RoomScrollNavigation scrollNavigation) {}
 }

@@ -7,15 +7,15 @@ interface RoomInteractionCompatibility {
     RoomSession facade();
 
     default boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
-        return facade().context.roomObjectMutations.tickCrackedFloor(frame, dialogGotItemActive);
+        return facade().components.roomObjectMutations().tickCrackedFloor(frame, dialogGotItemActive);
     }
     /** Grounded landing probe at $02:4588, before the ordinary $00:1794 pass. */
     default boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
-        return facade().context.roomObjectMutations.applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
+        return facade().components.roomObjectMutations().applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
     }
 
     default boolean breakIndoorSwordCrystal(int location) {
-        return facade().context.roomObjectMutations.breakIndoorSwordCrystal(location);
+        return facade().components.roomObjectMutations().breakIndoorSwordCrystal(location);
     }
     /**
      * Mirrors the closed-$A0 branch in the source object interaction path.

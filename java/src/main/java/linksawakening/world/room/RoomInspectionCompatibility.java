@@ -10,27 +10,27 @@ interface RoomInspectionCompatibility {
     RoomSession facade();
     /** Current ROM health byte for diagnostic captures. */
     default int entityHealth(int slot) {
-        return facade().context.roomSessionViews.entityHealth(slot);
+        return facade().components.roomSessionViews().entityHealth(slot);
     }
 
     default ActiveRoom activeRoom() {
-        return facade().context.roomSessionViews.activeRoom();
+        return facade().components.roomSessionViews().activeRoom();
     }
 
     default boolean hasActiveRoom() {
-        return facade().context.roomSessionViews.hasActiveRoom();
+        return facade().components.roomSessionViews().hasActiveRoom();
     }
 
     default int currentRoomId() {
-        return facade().context.roomSessionViews.currentRoomId();
+        return facade().components.roomSessionViews().currentRoomId();
     }
 
     default int mapCategory() {
-        return facade().context.roomSessionViews.mapCategory();
+        return facade().components.roomSessionViews().mapCategory();
     }
 
     default int mapId() {
-        return facade().context.roomSessionViews.mapId();
+        return facade().components.roomSessionViews().mapId();
     }
     /**
      * Returns the source {@code wIndoorRoom} value for the active indoor map.
@@ -38,78 +38,78 @@ interface RoomInspectionCompatibility {
      * should preserve the existing save byte rather than inventing one.
      */
     default int indoorRoomPositionForSave() {
-        return facade().context.roomSessionViews.indoorRoomPositionForSave();
+        return facade().components.roomSessionViews().indoorRoomPositionForSave();
     }
     /** Room-status bytes in the active dungeon's 8x8 ROM map order. */
     default byte[] dungeonMinimapRoomStatusSnapshot() {
-        return facade().context.roomSessionViews.dungeonMinimapRoomStatusSnapshot();
+        return facade().components.roomSessionViews().dungeonMinimapRoomStatusSnapshot();
     }
 
     default byte[] overworldRoomStatusSnapshot() {
-        return facade().context.roomSessionViews.overworldRoomStatusSnapshot();
+        return facade().components.roomSessionViews().overworldRoomStatusSnapshot();
     }
 
     default byte[] indoorARoomStatusSnapshot() {
-        return facade().context.roomSessionViews.indoorARoomStatusSnapshot();
+        return facade().components.roomSessionViews().indoorARoomStatusSnapshot();
     }
 
     default byte[] indoorBRoomStatusSnapshot() {
-        return facade().context.roomSessionViews.indoorBRoomStatusSnapshot();
+        return facade().components.roomSessionViews().indoorBRoomStatusSnapshot();
     }
 
     default byte[] colorDungeonRoomStatusSnapshot() {
-        return facade().context.roomSessionViews.colorDungeonRoomStatusSnapshot();
+        return facade().components.roomSessionViews().colorDungeonRoomStatusSnapshot();
     }
 
     default byte[] dungeonItemFlagsSnapshot() {
-        return facade().context.roomSessionViews.dungeonItemFlagsSnapshot();
+        return facade().components.roomSessionViews().dungeonItemFlagsSnapshot();
     }
 
     default byte[] colorDungeonItemFlagsSnapshot() {
-        return facade().context.roomSessionViews.colorDungeonItemFlagsSnapshot();
+        return facade().components.roomSessionViews().colorDungeonItemFlagsSnapshot();
     }
 
     default byte[] currentDungeonItemFlagsSnapshot() {
-        return facade().context.roomSessionViews.currentDungeonItemFlagsSnapshot();
+        return facade().components.roomSessionViews().currentDungeonItemFlagsSnapshot();
     }
 
     default void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
-        facade().context.roomSessionViews.restoreDungeonItemFlags(dungeonFlags, colorFlags);
+        facade().components.roomSessionViews().restoreDungeonItemFlags(dungeonFlags, colorFlags);
     }
     /** Snapshots wHasInstrument1..wHasInstrument8 (DB65..DB6C). */
     default byte[] dungeonProgressFlagsSnapshot() {
-        return facade().context.roomSessionViews.dungeonProgressFlagsSnapshot();
+        return facade().components.roomSessionViews().dungeonProgressFlagsSnapshot();
     }
 
     default void restoreDungeonProgressFlags(byte[] flags) {
-        facade().context.roomSessionViews.restoreDungeonProgressFlags(flags);
+        facade().components.roomSessionViews().restoreDungeonProgressFlags(flags);
     }
 
     default int[][] palettes() {
-        return facade().context.roomSessionViews.palettes();
+        return facade().components.roomSessionViews().palettes();
     }
 
     default boolean heartPiecePickupActive() {
-        return facade().context.roomSessionViews.heartPiecePickupActive();
+        return facade().components.roomSessionViews().heartPiecePickupActive();
     }
 
     default String instrumentTrace() {
-        return facade().context.roomSessionViews.instrumentTrace();
+        return facade().components.roomSessionViews().instrumentTrace();
     }
 
     default String moblinKingTrace() {
-        return facade().context.roomSessionViews.moblinKingTrace();
+        return facade().components.roomSessionViews().moblinKingTrace();
     }
 
     default RoomRenderSnapshot renderSnapshot() {
-        return facade().context.roomSessionViews.renderSnapshot();
+        return facade().components.roomSessionViews().renderSnapshot();
     }
 
     default LiftedEntityState liftedEntityState() {
-        return facade().context.roomSessionViews.liftedEntityState();
+        return facade().components.roomSessionViews().liftedEntityState();
     }
 
     default void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        facade().context.roomSessionViews.setColorShellSoundSink(soundSink);
+        facade().components.roomSessionViews().setColorShellSoundSink(soundSink);
     }
 }

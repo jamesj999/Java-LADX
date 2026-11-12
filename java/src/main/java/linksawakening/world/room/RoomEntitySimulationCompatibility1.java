@@ -24,8 +24,8 @@ interface RoomEntitySimulationCompatibility1 {
             int linkMotionState,
             int linkDirection,
             boolean usingShield) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -45,8 +45,8 @@ interface RoomEntitySimulationCompatibility1 {
             int linkMotionState,
             int linkDirection,
             boolean usingShield) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -68,8 +68,8 @@ interface RoomEntitySimulationCompatibility1 {
             boolean usingShield,
             int shieldLevel,
             int invincibilityCounter) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -97,8 +97,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -132,8 +132,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -170,8 +170,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -211,8 +211,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordHeight,
             int linkSpeedX,
             int linkSpeedY) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .tickEntitiesWithProjectileEvents(
                         frameCounter,
                         linkEntityX,
@@ -245,8 +245,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .resolveEntityCombat(
                         frameCounter,
@@ -273,8 +273,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .resolveEntityCombat(
                         frameCounter,
@@ -303,8 +303,8 @@ interface RoomEntitySimulationCompatibility1 {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return facade().context
-                .entityBridge
+        return facade().components
+                .entityBridge()
                 .combat
                 .resolveEntityCombat(
                         frameCounter,

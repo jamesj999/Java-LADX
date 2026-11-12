@@ -94,7 +94,7 @@ final class RoomTransitionDoorsTest {
         RoomSession session = newSession(rom, romTables, collision);
         session.loadIndoor(0x01, 0x31);
 
-        assertEquals(0x25, session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x25, session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0xAB, objectAt(session, 0x34));
         assertEquals(0xAB, objectAt(session, 0x35));
         assertEquals(0x08, session.activeRoom().shutterDoorMask() & 0x08);
@@ -114,8 +114,8 @@ final class RoomTransitionDoorsTest {
             tickInteractiveEntities(session, frame++, 0x50, 0x50);
         }
 
-        assertEquals(2, session.context.roomSessionViews.roomTriggerCountForTest());
-        assertEquals(0, session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(2, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0, session.activeRoom().shutterDoorMask() & 0x08);
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));

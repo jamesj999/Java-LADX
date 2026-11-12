@@ -146,7 +146,7 @@ public final class RoomPaletteLoader {
     public int[][] loadIndoorObjectPalettes(
             int mapId, int roomId, boolean sideScrolling, int tarinFlag, int shieldLevel) {
         // palettes.asm also rewrites indoor room $AA according to wTunicType.
-        // Preserve the ROM base row until tunic state is part of this loader's context.
+        // Preserve the ROM base row until tunic state is part of this loader's inputs.
         int paletteOffset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
         return paletteOffset < 0 ? loadGlobalObjectPalettes() : composeObjectPalettes(paletteOffset);
     }

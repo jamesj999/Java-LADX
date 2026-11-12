@@ -65,7 +65,7 @@ final class RoomSessionState2Test {
 
         RoomEntity entity = session.activeRoom().entities().slots().get(initial.slot());
         assertEquals(EntityStatus.ACTIVE, entity.status());
-        assertEquals(0x02, session.context.roomSessionViews.entityGroundStatusForTest(initial.slot()));
+        assertEquals(0x02, session.components.roomSessionViews().entityGroundStatusForTest(initial.slot()));
     }
 
     @Test
@@ -73,15 +73,15 @@ final class RoomSessionState2Test {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0F);
         fillActiveObjects(session, 0xDC);
-        session.context.roomSessionViews.setEntitySwitchBlocksStateForTest(0x00);
+        session.components.roomSessionViews().setEntitySwitchBlocksStateForTest(0x00);
 
-        assertTrue(session.context.roomSessionViews.linkCollisionPointBlockedForTest(0x20, 0x20));
+        assertTrue(session.components.roomSessionViews().linkCollisionPointBlockedForTest(0x20, 0x20));
 
-        session.context.roomSessionViews.setSwitchableObjectAnimationStageForTest(0x02);
+        session.components.roomSessionViews().setSwitchableObjectAnimationStageForTest(0x02);
         session.tickGameplayVBlank();
 
-        assertEquals(0x02, session.context.roomSessionViews.entitySwitchBlocksStateForTest());
-        assertFalse(session.context.roomSessionViews.linkCollisionPointBlockedForTest(0x20, 0x20));
+        assertEquals(0x02, session.components.roomSessionViews().entitySwitchBlocksStateForTest());
+        assertFalse(session.components.roomSessionViews().linkCollisionPointBlockedForTest(0x20, 0x20));
     }
 
     @Test
@@ -106,10 +106,11 @@ final class RoomSessionState2Test {
         assertEquals(
                 EntityStatus.DISABLED,
                 session.activeRoom().entities().slots().get(initial.slot()).status());
-        assertEquals(0, session.context.roomSessionViews.entityGroundStatusForTest(initial.slot()));
+        assertEquals(0, session.components.roomSessionViews().entityGroundStatusForTest(initial.slot()));
         assertEquals(1, vfx.activeCount());
         assertEquals(TransientVfxType.WATER_SPLASH, vfx.activeSlots().getFirst().type());
-        List<EntityCombatEvent> events = session.context.entityBridge.outbox.consumeEntityEvents();
+        List<EntityCombatEvent> events =
+                session.components.entityBridge().outbox.consumeEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.getFirst().soundChannel());
         assertEquals(0x0E, events.getFirst().soundId());
@@ -162,7 +163,7 @@ final class RoomSessionState2Test {
                 RoomConstants.ROOM_OBJECTS_BASE + ((shell.y() - 0x07) & 0xF0) + (((shell.x() - 0x01) & 0xF0) >>> 4);
         session.activeRoom().roomObjectsArea()[objectIndex - 1] = 0x5E;
         int[] beforeTiles = session.activeRoom().tileIds().clone();
-        session.context.roomSessionViews.setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
+        session.components.roomSessionViews().setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
 
         session.tickEntities(1);
 
@@ -230,8 +231,8 @@ final class RoomSessionState2Test {
         session.restoreDungeonProgressFlags(flags);
 
         assertArrayEquals(flags, session.dungeonProgressFlagsSnapshot());
-        assertTrue(session.context.roomSessionViews.hasDungeonInstrumentForTest(1));
-        assertTrue(session.context.roomSessionViews.hasDungeonInstrumentForTest(2));
+        assertTrue(session.components.roomSessionViews().hasDungeonInstrumentForTest(1));
+        assertTrue(session.components.roomSessionViews().hasDungeonInstrumentForTest(2));
     }
 
     @Test

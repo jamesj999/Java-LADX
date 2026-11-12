@@ -13,58 +13,68 @@ import linksawakening.world.transition.Warp;
 
 /** RoomTileRedraw operations for the live room session. */
 final class RoomTileRedraw {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomTileRedraw(RoomSession session) {
-        this.session = session;
+    RoomTileRedraw(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void refreshActiveRoomTilemap() {
-        RoomTilemap tilemap = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
-                ? session.context.roomTilemapBuilder.buildOverworld(
-                        session.context.activeRoom.roomId(), session.context.activeRoom.roomObjectsArea())
-                : session.context.roomTilemapBuilder.buildIndoor(
-                        session.context.activeRoom.mapId(),
-                        session.context.activeRoom.roomId(),
-                        session.context.activeRoom.roomObjectsArea());
-        session.context.activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
-        session.context.roomTileRedraw.applyHookshotBridgeTileOverrides();
-        session.context.roomTileRedraw.applyBombedWallTileOverrides();
-        session.context.roomTileRedraw.applyBombedBlockTileOverrides();
-        session.context.roomTileRedraw.applyBombedCaveDoorTileOverrides();
-        session.context.roomObjectMutations.applyRetainedTorchTiles();
-        session.context.shutterTileOverrides.forEach(
-                (index, tile) -> session.context.activeRoom.tileIds()[index] = tile);
+        RoomTilemap tilemap = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                ? dependencies
+                        .roomTilemapBuilder()
+                        .buildOverworld(
+                                dependencies.location().activeRoom.roomId(),
+                                dependencies.location().activeRoom.roomObjectsArea())
+                : dependencies
+                        .roomTilemapBuilder()
+                        .buildIndoor(
+                                dependencies.location().activeRoom.mapId(),
+                                dependencies.location().activeRoom.roomId(),
+                                dependencies.location().activeRoom.roomObjectsArea());
+        dependencies.location().activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
+        dependencies.roomTileRedraw().get().applyHookshotBridgeTileOverrides();
+        dependencies.roomTileRedraw().get().applyBombedWallTileOverrides();
+        dependencies.roomTileRedraw().get().applyBombedBlockTileOverrides();
+        dependencies.roomTileRedraw().get().applyBombedCaveDoorTileOverrides();
+        dependencies.roomObjectMutations().get().applyRetainedTorchTiles();
+        dependencies
+                .puzzles()
+                .shutterTileOverrides
+                .forEach((index, tile) -> dependencies.location().activeRoom.tileIds()[index] = tile);
     }
 
     void applyHookshotBridgeUpdates(List<HookshotBridgeUpdate> updates) {
-        if (session.context.activeRoom == null || updates == null || updates.isEmpty()) {
+        if (dependencies.location().activeRoom == null || updates == null || updates.isEmpty()) {
             return;
         }
-        int[] objects = session.context.activeRoom.roomObjectsArea();
+        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
         boolean changed = false;
         for (HookshotBridgeUpdate update : updates) {
             int areaIndex = RoomInteractionGeometry.hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
             if (areaIndex < 0 || areaIndex >= objects.length) {
                 continue;
             }
-            HookshotBridgeUpdate previous = session.context.hookshotBridgeTileOverrides.put(areaIndex, update);
+            HookshotBridgeUpdate previous =
+                    dependencies.terrain().hookshotBridgeTileOverrides.put(areaIndex, update);
             if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
                 objects[areaIndex] = 0x9D;
                 changed = true;
             }
         }
         if (changed) {
-            session.context.roomTileRedraw.refreshActiveRoomTilemap();
+            dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();
         }
     }
 
     void applyHookshotBridgeTileOverrides() {
-        if (session.context.activeRoom == null || session.context.hookshotBridgeTileOverrides.isEmpty()) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().hookshotBridgeTileOverrides.isEmpty()) {
             return;
         }
-        int[] tileIds = session.context.activeRoom.tileIds();
-        for (HookshotBridgeUpdate update : session.context.hookshotBridgeTileOverrides.values()) {
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (HookshotBridgeUpdate update :
+                dependencies.terrain().hookshotBridgeTileOverrides.values()) {
             int tileX = (update.objectLeft() & 0xFF) >>> 3;
             int tileY = (update.objectTop() & 0xFF) >>> 3;
             if (tileX < 0
@@ -90,11 +100,13 @@ final class RoomTileRedraw {
     }
 
     void applyBombedWallTileOverrides() {
-        if (session.context.activeRoom == null || session.context.bombedWallTileOverrides.isEmpty()) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedWallTileOverrides.isEmpty()) {
             return;
         }
-        int[] tileIds = session.context.activeRoom.tileIds();
-        for (Map.Entry<Integer, Integer> entry : session.context.bombedWallTileOverrides.entrySet()) {
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (Map.Entry<Integer, Integer> entry :
+                dependencies.terrain().bombedWallTileOverrides.entrySet()) {
             int areaOffset = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -118,11 +130,12 @@ final class RoomTileRedraw {
     }
 
     void applyBombedBlockTileOverrides() {
-        if (session.context.activeRoom == null || session.context.bombedBlockTileOverrides.isEmpty()) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedBlockTileOverrides.isEmpty()) {
             return;
         }
-        int[] tileIds = session.context.activeRoom.tileIds();
-        for (int areaIndex : session.context.bombedBlockTileOverrides) {
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (int areaIndex : dependencies.terrain().bombedBlockTileOverrides) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -144,11 +157,12 @@ final class RoomTileRedraw {
     }
 
     void applyBombedCaveDoorTileOverrides() {
-        if (session.context.activeRoom == null || session.context.bombedCaveDoorTileOverrides.isEmpty()) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.terrain().bombedCaveDoorTileOverrides.isEmpty()) {
             return;
         }
-        int[] tileIds = session.context.activeRoom.tileIds();
-        for (int areaIndex : session.context.bombedCaveDoorTileOverrides) {
+        int[] tileIds = dependencies.location().activeRoom.tileIds();
+        for (int areaIndex : dependencies.terrain().bombedCaveDoorTileOverrides) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -163,11 +177,20 @@ final class RoomTileRedraw {
 
             RomAddress tileTable = RomSymbols.BombedCaveDoorTilesIndexesGBC;
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = new Rom(session.context.romData).u8(tileTable);
-            tileIds[topLeft + 1] = new Rom(session.context.romData).u8(tileTable.plus(1));
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = new Rom(session.context.romData).u8(tileTable.plus(2));
+            tileIds[topLeft] = new Rom(dependencies.romData()).u8(tileTable);
+            tileIds[topLeft + 1] = new Rom(dependencies.romData()).u8(tileTable.plus(1));
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = new Rom(dependencies.romData()).u8(tileTable.plus(2));
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
-                    new Rom(session.context.romData).u8(tileTable.plus(3));
+                    new Rom(dependencies.romData()).u8(tileTable.plus(3));
         }
     }
+
+    record Dependencies(
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain,
+            byte[] romData,
+            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
+            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
+            RoomTilemapBuilder roomTilemapBuilder) {}
 }
