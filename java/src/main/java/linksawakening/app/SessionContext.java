@@ -46,6 +46,7 @@ import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.recording.RecordingHost;
 import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
@@ -85,6 +86,7 @@ public final class SessionContext {
         host = headless
                 ? (session.headlessPcm == null ? new HeadlessHost() : new HeadlessHost(session.headlessPcm))
                 : new DesktopHost();
+        host = new RecordingHost(host, () -> session.recorder);
         gpu = new GPU();
         var built = new SessionBootstrap(
                         session.random,
@@ -745,6 +747,13 @@ public final class SessionContext {
     }
 
     void onKeyEvent(int key, int action) {
+        if (key >= 0 && key == inputConfig().recordingKey()) {
+            if (action == linksawakening.input.KeyCodes.PRESS
+                    && (session.recorder != null || screens.currentScreen == gameplayScreen)) {
+                session.toggleRecording();
+            }
+            return;
+        }
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
             debug.debugMenu.key(key, action);
             services().inputState().clear();

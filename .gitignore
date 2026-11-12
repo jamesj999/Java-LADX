@@ -34,3 +34,8 @@ LADX-Disassembly/*.2bpp
 *.state
 __pycache__/
 *.pyc
+
+# Local gameplay recordings (may contain ROM-derived graphics/audio)
+*.mp4
+*.m4a
+.recording-*/

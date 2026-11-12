@@ -11,13 +11,62 @@ import linksawakening.app.story.OpeningStory;
 import linksawakening.config.AppConfig;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.PcmSoundOutput;
+import linksawakening.recording.GameplayRecorder;
+import linksawakening.recording.RecordingOptions;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.startup.TarinShieldMotion;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.transition.Warp;
 
-public class GameSession {
+public class GameSession implements AutoCloseable {
+    GameplayRecorder recorder;
+    private boolean closed;
+    private RecordingOptions recordingSettings =
+            RecordingOptions.defaults(java.nio.file.Path.of("recordings/gameplay.mp4"));
+
+    /** Toggle from the input callback, between complete simulation frames. */
+    void toggleRecording() {
+        if (closed) return;
+        try {
+            if (recorder != null) {
+                GameplayRecorder finished = recorder;
+                recorder = null; // Detach audio before finalizing, including on encoder failure.
+                finished.close();
+                DebugLog.log("Recording stopped");
+            } else {
+                var directory = recordingSettings.output().toAbsolutePath().getParent();
+                var output = directory.resolve("gameplay-"
+                        + java.time.LocalDateTime.now()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+                        + "-" + java.util.UUID.randomUUID() + ".mp4");
+                recorder = new GameplayRecorder(new RecordingOptions(
+                        output, recordingSettings.scale(), recordingSettings.crf(), recordingSettings.ffmpeg()));
+                DebugLog.log("Recording started: " + output);
+            }
+        } catch (java.io.UncheckedIOException failure) {
+            System.err.println("Recording failed: " + failure.getMessage() + ": "
+                    + failure.getCause().getMessage());
+        } finally {
+            context.host.recordingStatus(recorder != null);
+        }
+    }
+
+    /** Configure before initializing either a desktop or headless session. */
+    public void configureRecording(RecordingOptions options) {
+        if (context != null || recorder != null || closed)
+            throw new IllegalStateException("Session already initialized or closed");
+        recorder = new GameplayRecorder(options);
+        recordingSettings = options;
+    }
+
+    private void renderFrame() {
+        if (recorder != null) recorder.beginFrame();
+        update();
+        context.composeFrameBuffer();
+        if (recorder != null) recorder.captureFrame(context.services.indexedDisplayBuffer());
+    }
+
     GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
 
     MarinWakeUpMotion newGameWakeUpMotion;
@@ -35,8 +84,7 @@ public class GameSession {
     SessionContext context;
 
     public byte[] headlessFrame() {
-        update();
-        context.composeFrameBuffer();
+        renderFrame();
         return context.services.indexedDisplayBuffer().clone();
     }
 
@@ -45,41 +93,52 @@ public class GameSession {
     }
 
     public void run(String[] args) {
-        initialize(false);
-        if (StartupCoordinator.shouldStartIntroCutscene(context.currentAppConfig())) {
-            context.router().startIntroCutscene();
-        } else if (context.currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
-                || !context.currentAppConfig().showTitleScreen()) {
-            context.router().startConfiguredGameplay();
-        } else {
-            context.router().startTitleScreenWithoutIntro();
+        LaunchOptions options = LaunchOptions.parse(args);
+        if (options.help()) {
+            System.out.print(LaunchOptions.usage());
+            return;
         }
-
-        context.host.open(context::onKeyEvent);
-
-        long nextFrameNs = System.nanoTime();
-
-        while (!context.host.shouldClose() && context.running) {
-            context.host.pollEvents();
-            update();
-            context.composeFrameBuffer();
-            context.host.present(context.services.indexedDisplayBuffer());
-
-            nextFrameNs += frameDurationNs;
-            long sleepNs = nextFrameNs - System.nanoTime();
-            if (sleepNs > 0) {
-                try {
-                    Thread.sleep(sleepNs / 1_000_000L, (int) (sleepNs % 1_000_000L));
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                }
+        try (this) {
+            if (options.recording() != null) configureRecording(options.recording());
+            initialize(options.headless());
+            if (options.newGame()) {
+                context.services.dialogController().setPlayerName("A");
+                context.saves().startNewGame();
+            } else if (StartupCoordinator.shouldStartIntroCutscene(context.currentAppConfig())) {
+                context.router().startIntroCutscene();
+            } else if (context.currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
+                    || !context.currentAppConfig().showTitleScreen()) {
+                context.router().startConfiguredGameplay();
             } else {
-                // We're behind — drop the backlog so we don't spiral.
-                nextFrameNs = System.nanoTime();
+                context.router().startTitleScreenWithoutIntro();
+            }
+            context.host.open(context::onKeyEvent);
+            context.host.recordingStatus(recorder != null);
+            long nextFrameNs = System.nanoTime();
+            long rendered = 0;
+            while (!context.host.shouldClose()
+                    && context.running
+                    && (options.frames() == 0 || rendered < options.frames())) {
+                context.host.pollEvents();
+                renderFrame();
+                context.host.present(context.services.indexedDisplayBuffer());
+                rendered++;
+                if (options.headless()) continue;
+                nextFrameNs += frameDurationNs;
+                long sleepNs = nextFrameNs - System.nanoTime();
+                if (sleepNs > 0) {
+                    try {
+                        Thread.sleep(sleepNs / 1_000_000L, (int) (sleepNs % 1_000_000L));
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                } else {
+                    // We're behind — drop the backlog so we don't spiral.
+                    nextFrameNs = System.nanoTime();
+                }
             }
         }
-
-        cleanup();
     }
 
     public HeadlessGameDriver.Diagnostics diagnostics() {
@@ -121,15 +180,27 @@ public class GameSession {
     }
 
     void cleanup() {
-        context.host.releasePresentation();
-        if (context.services.dialogSoundOutput() != null) {
-            context.services.dialogSoundOutput().close();
-        }
-        if (context.services.musicPlayer() != null) {
-            context.services.musicPlayer().close();
-        }
+        close();
+    }
 
-        context.host.close();
+    @Override
+    public void close() {
+        if (closed) return;
+        closed = true;
+        try {
+            if (context == null) return;
+            context.host.releasePresentation();
+            if (context.services.dialogSoundOutput() != null) {
+                context.services.dialogSoundOutput().close();
+            }
+            if (context.services.musicPlayer() != null) {
+                context.services.musicPlayer().close();
+            }
+
+            context.host.close();
+        } finally {
+            if (recorder != null) recorder.close();
+        }
     }
 
     public void initializeHeadlessNewGame() {
@@ -140,6 +211,7 @@ public class GameSession {
     }
 
     private void initialize(boolean headless) {
+        if (closed || context != null) throw new IllegalStateException("Session already initialized or closed");
         context = new SessionContext(this, headless);
     }
 

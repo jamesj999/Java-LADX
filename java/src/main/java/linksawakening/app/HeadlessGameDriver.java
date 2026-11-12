@@ -9,6 +9,7 @@ import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
 import linksawakening.gpu.GPU;
+import linksawakening.recording.RecordingOptions;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.world.entity.EntityStatus;
@@ -20,8 +21,19 @@ import linksawakening.world.transition.TransitionController;
  * Owns an isolated, window-free game session for input replay and capture.
  * Frames use the same input, simulation and composition paths as the desktop.
  */
-public final class HeadlessGameDriver {
+public final class HeadlessGameDriver implements AutoCloseable {
     private final GameSession session = new GameSession();
+
+    public HeadlessGameDriver() {}
+
+    public HeadlessGameDriver(RecordingOptions recording) {
+        session.configureRecording(recording);
+    }
+
+    @Override
+    public void close() {
+        session.close();
+    }
 
     public void initializeHeadlessNewGame() {
         session.initializeHeadlessNewGame();

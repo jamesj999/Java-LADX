@@ -110,6 +110,11 @@ public final class DesktopHost implements Host {
     }
 
     @Override
+    public void recordingStatus(boolean active) {
+        if (window != 0) glfwSetWindowTitle(window, "Link's Awakening DX" + (active ? " [REC]" : ""));
+    }
+
+    @Override
     public void releasePresentation() {
         if (framePresenter != null) {
             framePresenter.cleanup();

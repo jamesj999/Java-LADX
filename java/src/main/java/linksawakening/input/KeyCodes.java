@@ -3,6 +3,8 @@ package linksawakening.input;
 public final class KeyCodes {
     private KeyCodes() {}
 
+    public static final int KEY_F9 = 298;
+
     public static final int PRESS = 1;
     public static final int RELEASE = 0;
     public static final int REPEAT = 2;
