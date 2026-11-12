@@ -2,6 +2,7 @@ package linksawakening.app.wiring;
 
 import linksawakening.app.audio.RoomMusicSelection;
 import linksawakening.app.debug.DebugTeleporter;
+import linksawakening.app.debug.DebugTools;
 import linksawakening.app.flow.SessionContext;
 import linksawakening.app.flow.SessionFlows;
 import linksawakening.app.flow.SessionNavigator;
@@ -126,11 +127,12 @@ public final class SessionAssembly {
                 wired.interactions(),
                 teleporter,
                 wired.music());
+        var debugTools = new DebugTools(
+                state.debug(), s.player().playerState(), s.world().roomSession(), teleporter);
         var runtime = new SessionRuntime(
                 screens,
-                new FramePresentation(
-                        wired.renderer(), state.debug(), s.visual().indexedDisplayBuffer()),
-                new SessionInput(state, s.input(), s.world(), s.player(), screens, wired.input(), teleporter),
+                new FramePresentation(wired.renderer(), debugTools, s.visual().indexedDisplayBuffer()),
+                new SessionInput(state, s.input(), s.world(), s.player(), screens, wired.input(), debugTools),
                 new SessionShutdown(host, s.audio()),
                 flows,
                 saveState);

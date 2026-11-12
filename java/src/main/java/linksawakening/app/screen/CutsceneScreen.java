@@ -1,6 +1,6 @@
 package linksawakening.app.screen;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import java.util.Objects;
 import linksawakening.app.audio.MusicDirector;
@@ -59,17 +59,17 @@ public final class CutsceneScreen implements Screen {
 
     @Override
     public void onKey(int key, int action) {
-        if (key == GLFW_KEY_ENTER
-                && action == GLFW_PRESS
+        if (key == KEY_ENTER
+                && action == PRESS
                 && dependencies.cutsceneManager().skipIntroToTitle()) {
             dependencies.navigator().show(ScreenKind.TITLE);
             dependencies.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             return;
         }
-        if (action == GLFW_PRESS
+        if (action == PRESS
                 && (key == dependencies.inputConfig().aKey()
                         || key == dependencies.inputConfig().bKey()
-                        || key == GLFW_KEY_ENTER)) {
+                        || key == KEY_ENTER)) {
             dependencies.dialogController().advance();
         }
     }

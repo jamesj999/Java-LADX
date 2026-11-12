@@ -2,7 +2,7 @@ package linksawakening.app.input;
 
 import java.util.Objects;
 import linksawakening.app.debug.DebugMenu;
-import linksawakening.app.debug.DebugTeleporter;
+import linksawakening.app.debug.DebugTools;
 import linksawakening.app.screen.ScreenSet;
 import linksawakening.app.services.InputServices;
 import linksawakening.app.services.PlayerServices;
@@ -17,7 +17,7 @@ public final class SessionInput {
     private final PlayerServices player;
     private final ScreenSet screenSet;
     private final InputRouter router;
-    private final DebugTeleporter teleporter;
+    private final DebugTools debugTools;
 
     public SessionInput(
             SessionState state,
@@ -26,14 +26,14 @@ public final class SessionInput {
             PlayerServices player,
             ScreenSet screenSet,
             InputRouter router,
-            DebugTeleporter teleporter) {
+            DebugTools debugTools) {
         this.state = Objects.requireNonNull(state);
         this.input = Objects.requireNonNull(input);
         this.world = Objects.requireNonNull(world);
         this.player = Objects.requireNonNull(player);
         this.screenSet = Objects.requireNonNull(screenSet);
         this.router = Objects.requireNonNull(router);
-        this.teleporter = Objects.requireNonNull(teleporter);
+        this.debugTools = Objects.requireNonNull(debugTools);
     }
 
     public void onKeyEvent(int key, int action) {
@@ -47,10 +47,8 @@ public final class SessionInput {
             if (state.screens().currentScreen == screenSet.gameplay()
                     && router.canPresentFileSave()
                     && !world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
-                if (state.debug().debugMenu == null)
-                    state.debug().debugMenu = new DebugMenu(player.playerState(), world.roomSession(), teleporter);
-                state.debug()
-                        .debugMenu
+                debugTools
+                        .menu()
                         .open(
                                 world.roomSession().rooms().mapCategory(),
                                 world.roomSession().rooms().mapId(),

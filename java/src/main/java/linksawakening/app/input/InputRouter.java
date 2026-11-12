@@ -1,7 +1,8 @@
 package linksawakening.app.input;
 
+import static linksawakening.app.input.ApplicationKeys.*;
+import static linksawakening.input.KeyCodes.*;
 import static linksawakening.world.room.RoomConstants.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.Objects;
 import linksawakening.app.debug.DebugLog;
@@ -59,8 +60,8 @@ public final class InputRouter implements DebugScroll {
 
     public void onKeyEvent(int key, int action) {
         // Desktop shortcut only: Escape never enters the Game Boy button state.
-        if (key == GLFW_KEY_ESCAPE) {
-            if (action == GLFW_PRESS) {
+        if (key == KEY_ESCAPE) {
+            if (action == PRESS) {
                 Screen current = actions.navigator().current();
                 if (current instanceof GameplayScreen gameplay) {
                     gameplay.requestFileSave();
@@ -74,12 +75,12 @@ public final class InputRouter implements DebugScroll {
             input.inputState().onKeyEvent(key, action);
         }
 
-        if (action == GLFW_PRESS && state.options().config().debugEnabled()) {
-            if (key == GLFW_KEY_F2) {
+        if (action == PRESS && state.options().config().debugEnabled()) {
+            if (key == KEY_F2) {
                 actions.navigator().startDebugGameplay();
                 return;
             }
-            if (key == GLFW_KEY_F3) {
+            if (key == KEY_F3) {
                 actions.debug().toggleNoClip();
                 return;
             }
@@ -90,7 +91,7 @@ public final class InputRouter implements DebugScroll {
 
     public void gameplayKey(int key, int action) {
         if (player.link().status().isPassingOut()) return;
-        if (action != GLFW_PRESS) return;
+        if (action != PRESS) return;
 
         if (world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
             return;
@@ -135,11 +136,11 @@ public final class InputRouter implements DebugScroll {
     }
 
     public static boolean skipIntroCutsceneIfRequested(int key, int action, CutsceneManager manager) {
-        return key == GLFW_KEY_ENTER && action == GLFW_PRESS && manager != null && manager.skipIntroToTitle();
+        return key == KEY_ENTER && action == PRESS && manager != null && manager.skipIntroToTitle();
     }
 
     public static boolean shouldRunDebugDump(AppConfig config, int key, int action) {
-        return config.debugEnabled() && key == GLFW_KEY_F1 && action == GLFW_PRESS;
+        return config.debugEnabled() && key == KEY_F1 && action == PRESS;
     }
 
     public void dumpLinkSurroundings() {
@@ -180,8 +181,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public boolean tryDebugScreenScroll() {
-        if (!input.inputState().isDown(GLFW_KEY_LEFT_SHIFT)
-                && !input.inputState().isDown(GLFW_KEY_RIGHT_SHIFT)) {
+        if (!input.inputState().isDown(KEY_LEFT_SHIFT) && !input.inputState().isDown(KEY_RIGHT_SHIFT)) {
             return false;
         }
         int direction = input.inputState().isDown(input.inputConfig().leftKey())
@@ -226,7 +226,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public static boolean shouldEnterFileSelection(Screen screen, int key, int action) {
-        return screen instanceof TitleScreen && key == GLFW_KEY_ENTER && action == GLFW_PRESS;
+        return screen instanceof TitleScreen && key == KEY_ENTER && action == PRESS;
     }
     /** presentSaveScreenIfNeeded ($00:0E46), before ordinary frame input. */
     public boolean tryPresentFileSave() {
@@ -241,7 +241,7 @@ public final class InputRouter implements DebugScroll {
                                 input.inputConfig(),
                                 input.inputState(),
                                 input.inputConfig().selectKey(),
-                                GLFW_PRESS))
+                                PRESS))
                 && canPresentFileSave()) {
             actions.saves().startFileSave();
             return true;
@@ -250,7 +250,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public static boolean shouldEnterFileSave(InputConfig inputConfig, InputState inputState, int key, int action) {
-        if (inputConfig == null || inputState == null || action != GLFW_PRESS) {
+        if (inputConfig == null || inputState == null || action != PRESS) {
             return false;
         }
         return inputState.isDown(inputConfig.aKey())
@@ -288,9 +288,9 @@ public final class InputRouter implements DebugScroll {
                     case "b" -> input.inputConfig().bKey();
                     case "start" -> input.inputConfig().menuOpenKey();
                     case "select" -> input.inputConfig().selectKey();
-                    case "escape" -> GLFW_KEY_ESCAPE;
+                    case "escape" -> KEY_ESCAPE;
                     default -> throw new IllegalArgumentException("Unknown button: " + button);
                 };
-        onKeyEvent(key, pressed ? GLFW_PRESS : GLFW_RELEASE);
+        onKeyEvent(key, pressed ? PRESS : RELEASE);
     }
 }

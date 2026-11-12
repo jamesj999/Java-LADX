@@ -54,7 +54,8 @@ class AppBoundaryTest {
 
     @Test
     void domainCollaboratorsCannotCallBackIntoSessionComposition() throws Exception {
-        var direct = List.of("InputRouter", "ScreenRouter", "SaveCoordinator", "RenderStateAssembler");
+        var direct = List.of(
+                "input/InputRouter", "flow/ScreenRouter", "flow/SaveCoordinator", "presentation/RenderStateAssembler");
         for (var type : ClassFileReferences.classes()) {
             boolean domain = type.name().startsWith("linksawakening/app/gameplay/")
                     || type.name().startsWith("linksawakening/app/story/")

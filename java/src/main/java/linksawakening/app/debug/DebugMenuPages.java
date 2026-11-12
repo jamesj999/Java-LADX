@@ -1,6 +1,6 @@
 package linksawakening.app.debug;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
