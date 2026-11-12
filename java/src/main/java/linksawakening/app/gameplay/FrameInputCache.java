@@ -53,7 +53,7 @@ final class FrameInputCache {
                 || pickup.y() != y
                 || pickup.airborne() != airborne
                 || pickup.interactive() != interactive
-                || pickup.direction() != direction
+                || pickup.rawDirection() != direction
                 || pickup.z() != z) pickup = new EntityPickupInputs.Link(x, y, airborne, interactive, direction, z);
         return pickup;
     }
@@ -73,7 +73,7 @@ final class FrameInputCache {
                 || ground.interactionBlocked() != blocked
                 || ground.dialogActive() != dialog
                 || ground.roomTransitionActive() != transition
-                || ground.motionState() != motion
+                || ground.rawMotionState() != motion
                 || ground.slowWalkingSpeed() != slow
                 || ground.itemUsageContext() != usage) {
             ground = new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, motion, slow, usage);
