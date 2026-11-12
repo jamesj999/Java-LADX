@@ -7,9 +7,11 @@ import linksawakening.app.gameplay.BushInteraction;
 import linksawakening.app.gameplay.DialogInteractions;
 import linksawakening.app.gameplay.LiftInteraction;
 import linksawakening.app.gameplay.PassOutController;
+import linksawakening.app.screen.Screen;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
+import linksawakening.config.AppConfig;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
@@ -20,6 +22,7 @@ import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
@@ -192,5 +195,121 @@ public final class SessionContext {
     public Runnable simulation_dialogSounds() {
         if (simulation_dialogSounds == null) simulation_dialogSounds = session::routeDialogSounds;
         return simulation_dialogSounds;
+    }
+
+    public RoomSession inputRouter_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public TransitionController inputRouter_transitionController() {
+        return session.transitionController;
+    }
+
+    public RoomTransitionCoordinator inputRouter_roomTransitionCoordinator() {
+        return session.services.roomTransitionCoordinator();
+    }
+
+    public int inputRouter_ROOM_PIXEL_WIDTH() {
+        return session.ROOM_PIXEL_WIDTH;
+    }
+
+    public int inputRouter_ROOM_PIXEL_HEIGHT() {
+        return session.ROOM_PIXEL_HEIGHT;
+    }
+
+    public ScrollController inputRouter_scrollController() {
+        return session.scrollController;
+    }
+
+    public InputConfig inputRouter_inputConfig() {
+        return session.services.inputConfig();
+    }
+
+    public InputState inputRouter_inputState() {
+        return session.services.inputState();
+    }
+
+    public InventoryController inputRouter_inventoryController() {
+        return session.services.inventoryController();
+    }
+
+    public DialogController inputRouter_dialogController() {
+        return session.services.dialogController();
+    }
+
+    public RomTables inputRouter_romTables() {
+        return session.services.romTables();
+    }
+
+    public Link inputRouter_link() {
+        return session.services.link();
+    }
+
+    public AppConfig inputRouter_config() {
+        return session.currentAppConfig();
+    }
+
+    private Runnable inputRouter_stop;
+
+    public Runnable inputRouter_stop() {
+        if (inputRouter_stop == null) inputRouter_stop = () -> session.running = false;
+        return inputRouter_stop;
+    }
+
+    private Runnable inputRouter_toggleDebug;
+
+    public Runnable inputRouter_toggleDebug() {
+        if (inputRouter_toggleDebug == null)
+            inputRouter_toggleDebug = () -> {
+                session.debug.debugNoClip = !session.debug.debugNoClip;
+                session.services.link().setDebugNoClip(session.debug.debugNoClip);
+                System.out.println("Debug no-clip: " + (session.debug.debugNoClip ? "ON" : "OFF"));
+            };
+        return inputRouter_toggleDebug;
+    }
+
+    private Supplier<Screen> inputRouter_screen;
+
+    public Supplier<Screen> inputRouter_screen() {
+        if (inputRouter_screen == null) inputRouter_screen = () -> session.currentScreen;
+        return inputRouter_screen;
+    }
+
+    private Runnable inputRouter_consumeDialogInput;
+
+    public Runnable inputRouter_consumeDialogInput() {
+        if (inputRouter_consumeDialogInput == null)
+            inputRouter_consumeDialogInput = () -> session.overworldDialogInputConsumedThisFrame = true;
+        return inputRouter_consumeDialogInput;
+    }
+
+    private Runnable inputRouter_startDebug;
+
+    public Runnable inputRouter_startDebug() {
+        if (inputRouter_startDebug == null)
+            inputRouter_startDebug = () -> session.router().startDebugGameplay();
+        return inputRouter_startDebug;
+    }
+
+    private Supplier<OpeningStory> inputRouter_story;
+
+    public Supplier<OpeningStory> inputRouter_story() {
+        if (inputRouter_story == null) inputRouter_story = session::openingStory;
+        return inputRouter_story;
+    }
+
+    private Runnable inputRouter_fileSave;
+
+    public Runnable inputRouter_fileSave() {
+        if (inputRouter_fileSave == null)
+            inputRouter_fileSave = () -> session.saves().startFileSave();
+        return inputRouter_fileSave;
+    }
+
+    private Supplier<DialogInteractions> inputRouter_dialogs;
+
+    public Supplier<DialogInteractions> inputRouter_dialogs() {
+        if (inputRouter_dialogs == null) inputRouter_dialogs = session::dialogs;
+        return inputRouter_dialogs;
     }
 }

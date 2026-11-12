@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    InputRouter inputRouterInstance;
     SessionContext context;
     GameplaySimulation simulationInstance;
     final ScreenState screens = new ScreenState();
@@ -366,6 +367,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        inputRouterInstance = new InputRouter(context);
         simulationInstance = new GameplaySimulation(context);
     }
 
@@ -498,32 +500,7 @@ public class GameSession {
     }
 
     InputRouter inputRouter() {
-        return new InputRouter(
-                services.roomSession(),
-                transitionController,
-                services.roomTransitionCoordinator(),
-                ROOM_PIXEL_WIDTH,
-                ROOM_PIXEL_HEIGHT,
-                scrollController,
-                services.inputConfig(),
-                services.inputState(),
-                services.inventoryController(),
-                services.dialogController(),
-                services.romTables(),
-                services.link(),
-                currentAppConfig(),
-                () -> running = false,
-                () -> {
-                    debug.debugNoClip = !debug.debugNoClip;
-                    services.link().setDebugNoClip(debug.debugNoClip);
-                    System.out.println("Debug no-clip: " + (debug.debugNoClip ? "ON" : "OFF"));
-                },
-                () -> currentScreen,
-                () -> overworldDialogInputConsumedThisFrame = true,
-                () -> router().startDebugGameplay(),
-                this::openingStory,
-                () -> saves().startFileSave(),
-                this::dialogs);
+        return inputRouterInstance;
     }
 
     ScreenRouter router() {
