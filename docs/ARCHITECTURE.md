@@ -426,13 +426,16 @@ room through `get(MotionClass.class, MotionClass::new)`. Adding a motion does
 not add a field to central runtime state. Controllers receive narrowly scoped
 service interfaces; bindings connect those capabilities to the room facade.
 Stateless behavior helpers operate on their owner's state. Longer operations
-use private, per-invocation scratch and named state handlers; persistent slot
-state never lives in those invocation objects.
+use private, reusable scratch and named state handlers. Each scratch holder
+resets invocation values before use and releases input references afterward;
+a nested call uses a separate holder so callbacks cannot overwrite the outer
+invocation. Persistent slot state remains in the motion/controller owner.
 
 `EntitySlotOrchestrator` runs the five slot phases in descending slot order.
-`RoomEntity` is an immutable snapshot whose slot and load order are ROM
-identity. Lifecycle and spawn helpers preserve allocation, reset and early
-return sites. Do not compact slots, sort by type, add resets on slot reuse or
+`RoomEntity` remains an immutable record whose slot and load order are ROM
+identity. Snapshot helpers combine related field writes into one replacement
+and reuse unchanged values where fresh identity is not required. Lifecycle and
+spawn helpers preserve slot allocation, reset and early-return sites. Do not compact slots, sort by type, add resets on slot reuse or
 move RNG reads and byte writes across their original execution points.
 
 `EntityHandlerRegistry` has 256 type bindings for initialization, generic
@@ -453,14 +456,47 @@ establish the schedule.
 when changing Link state, collision services, RNG or interaction gates; service
 references retain their identity. `EntityFrameExecution` exposes operations,
 not public mutable fields. Its private scratch is grouped into frame inputs,
-timer gates, slot execution and presentation flags. Frame setup and commit
-remain separate from individual handler behavior.
+timer gates, slot execution and presentation flags. The runtime owns one
+reusable execution object; acquisition resets the frame inputs and gates,
+and each descending slot visit resets slot scratch and presentation flags.
+The orchestrator releases the frame in a finally block. Reentrant frame calls
+use separate execution state. Frame setup and commit remain separate from
+individual handler behavior.
+
+`EntityRoomInspection.snapshot()` captures an owned immutable copy for tests,
+retained state and consumers that require ownership. `view()` returns a cached
+read-only live `RoomEntitySnapshot` for immediate same-thread consumption.
+Its slot lists and presentation metadata follow the runtime; it must not be
+used as a historical frame or shared across threads. A `withX` operation on a
+live view materializes owned data before transforming it. Moldorm tail
+presentation similarly reuses immutable segment lists only while their
+coordinates are unchanged.
+
+`EntityTickAllocationTest` measures a ROM-free six-entity mix: roaming enemies,
+a projectile, active Moldorm, a droppable and an NPC, with three inspection
+reads per tick. It retains frame inputs and repositions the same slots without
+allocation, while motion state and timers continue advancing. Its 1,100-byte
+limit provides roughly 25% headroom over the optimized steady-state result.
+Measure with escape analysis both enabled and disabled using temporary local
+JVM arguments; do not commit test-runner configuration changes. Immutable
+changed entities, motion results and emitted events still allocate.
 
 Typed events and requests accumulate in the entity outbox rather than calling
 app orchestration from handlers. Room/app consumers apply Link, progression,
 dialog, music and transient effects. Source slots preserve the order of
-multiple Link writes in a frame. `EntityCombatEvent.builder` names optional
-combat effects without positional argument lists.
+multiple Link writes in a frame. Outbox channels are cached, index-based views;
+size, clear and append operations do not create iterators, predicates or channel
+wrappers per tick. Draining events still returns an owned result.
+`EntityCombatEvent.builder` and `EntityProjectileEvent.builder` name optional
+effects without positional argument lists.
+
+Entity ROM readers accept `linksawakening.rom.Rom` and use typed addresses and
+reads. Collision and property queries use `CollisionTables` and
+`EntityPropertyTables`, not deprecated aggregate accessors. Five deprecated
+byte-array boundary delegates remain for external compatibility; their legacy
+partial-buffer validation is intentional. The sprite-handler catalog outside
+this package still requires one documented raw-byte handoff. Room-status
+arrays are mutable RAM state, not ROM buffers.
 
 Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
@@ -470,7 +506,8 @@ for `world.room.RoomSessionViews`; the externally used `from` overloads, frame
 constructor and combat/follower adapters also remain deprecated. Immutable
 record schemas retain their canonical constructor signatures and validation
 for source compatibility; these value schemas are the exception to the
-normal eight-parameter method limit.
+normal eight-parameter method limit. Exact replacements and current external
+callers are listed in [Entity API migration](archive/history/entity-api-migration.md).
 
 To add an entity type:
 
