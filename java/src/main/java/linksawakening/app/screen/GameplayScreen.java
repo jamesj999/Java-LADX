@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
+import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** Gameplay screen lifecycle. Callbacks belong to its owning session. */
 public final class GameplayScreen implements Screen {
-    private final java.util.function.Supplier<linksawakening.ui.FileMenuFrameSnapshot> gameOver;
+    private final Supplier<FileMenuFrameSnapshot> gameOver;
     private final Runnable tick;
     private final BiConsumer<Integer, Integer> keys;
     private final BooleanSupplier interceptFrameInput;
@@ -22,17 +25,14 @@ public final class GameplayScreen implements Screen {
         this(tick, keys, () -> null);
     }
 
-    public GameplayScreen(
-            Runnable tick,
-            BiConsumer<Integer, Integer> keys,
-            java.util.function.Supplier<linksawakening.ui.FileMenuFrameSnapshot> gameOver) {
+    public GameplayScreen(Runnable tick, BiConsumer<Integer, Integer> keys, Supplier<FileMenuFrameSnapshot> gameOver) {
         this(tick, keys, gameOver, () -> false);
     }
 
     public GameplayScreen(
             Runnable tick,
             BiConsumer<Integer, Integer> keys,
-            java.util.function.Supplier<linksawakening.ui.FileMenuFrameSnapshot> gameOver,
+            Supplier<FileMenuFrameSnapshot> gameOver,
             BooleanSupplier interceptFrameInput) {
         this.interceptFrameInput = interceptFrameInput;
         this.gameOver = gameOver;
@@ -75,13 +75,11 @@ public final class GameplayScreen implements Screen {
     }
 
     @Override
-    public linksawakening.render.GameFrameState renderState(linksawakening.render.GameFrameState state) {
+    public GameFrameState renderState(GameFrameState state) {
         var snapshot = gameOver.get();
         return snapshot == null
                 ? state
-                : linksawakening.render.GameFrameState.empty()
-                        .withScreen(RenderScreen.FILE_SAVE)
-                        .withFileMenuFrame(snapshot);
+                : GameFrameState.empty().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
     }
 
     @Override

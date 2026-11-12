@@ -25,13 +25,13 @@ class GameOverOutcomeSessionTest {
         game.headlessButton("right", true);
         for (int i = 0; i < 32; i++) game.headlessFrame();
         game.headlessButton("right", false);
-        var storeField = GameSession.class.getDeclaredField("saveRamStore");
+        var storeField = linksawakening.app.SessionTestAccess.field(game, "saveRamStore");
         storeField.setAccessible(true);
-        var store = (SaveRamStore) storeField.get(game);
+        var store = (SaveRamStore) storeField.get(linksawakening.app.SessionTestAccess.owner(game, "saveRamStore"));
         store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
-        var slot = GameSession.class.getDeclaredField("currentSaveSlot");
+        var slot = linksawakening.app.SessionTestAccess.field(game, "currentSaveSlot");
         slot.setAccessible(true);
-        slot.setInt(game, 0);
+        slot.setInt(linksawakening.app.SessionTestAccess.owner(game, "currentSaveSlot"), 0);
         var room = game.diagnostics().roomSession();
         room.loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
         room.loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
@@ -68,9 +68,11 @@ class GameOverOutcomeSessionTest {
         assertEquals(0, player.activePowerUp());
         assertEquals(0, player.powerUpHits());
         if (option == 1) {
-            var screen = GameSession.class.getDeclaredField("currentScreen");
+            var screen = linksawakening.app.SessionTestAccess.field(game, "currentScreen");
             screen.setAccessible(true);
-            assertInstanceOf(linksawakening.app.screen.FileMenuScreen.class, screen.get(game));
+            assertInstanceOf(
+                    linksawakening.app.screen.FileMenuScreen.class,
+                    screen.get(linksawakening.app.SessionTestAccess.owner(game, "currentScreen")));
         } else {
             assertEquals(0x92, room.currentRoomId());
             assertEquals(0, room.mapCategory());

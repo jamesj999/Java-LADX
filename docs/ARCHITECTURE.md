@@ -29,7 +29,34 @@ package placement does not imply that every pair is independent.
 ### `app`
 
 Session composition, input routing, screen selection, saves and render-state assembly.
-Key types: GameSession, SessionBootstrap, InputRouter, RenderStateAssembler.
+Key types: GameSession, SessionContext, SessionBootstrap, InputRouter, RenderStateAssembler.
+
+`GameSession` owns the frame clock, run loop and headless entry points.
+`SessionContext` is constructed once during initialization and wires the session.
+It retains one final `SessionBootstrap.Collaborators` object containing the
+ROM-backed services. The bootstrap snapshot validates its references at
+construction; services are not copied into dozens of session fields.
+
+`SceneState` owns the selected background maps and palettes. `ScreenState`
+owns the current screen, file-menu/save controllers and selected save slot.
+`DebugState` owns the no-clip flag and optional debug menu/overlay.
+Configuration and save-store replacement remain live for integration tests.
+The frame counter, opening motions and gameplay sound-sink bridge remain on
+`GameSession` because external integration tests access those fields directly.
+They are read at use time, not captured in a per-frame context record.
+
+Input/screen routing, saves, render-state assembly, opening story and
+bush/dialog/lift interactions are retained classes. Their accessors resolve
+live session state; functional callbacks are initialized once. Nullable state
+such as an inactive opening motion, closed menu or absent active sword remains
+explicitly nullable. Construction-validated service references need no
+per-frame null guards.
+
+`HeadlessGameDriver.State` and `Diagnostics` are immutable snapshots with
+record-style accessors and value operations, constructed from their owner
+rather than long positional argument lists. The nine-argument
+`FileMenuScreen.Dependencies` constructor remains a compatibility exception:
+`MainFileMenuFlowTest` constructs it directly.
 
 ### `app.host`
 
@@ -45,6 +72,14 @@ Key types: Screen, GameplayScreen, TitleScreen.
 
 Ordered gameplay orchestration and adaptation of world requests to Link commands.
 Key types: GameplayFrame, GameplaySimulation, EntityPhase, LinkCommandAdapter.
+
+`GameplaySimulation` and its phase instances are retained for the session
+lifetime. `GameplayFrame` and `TransitionPhase` are also built once.
+The owned phases read the simulation's live accessors directly, while
+`EntityPhase` retains its existing accessor contract. `GameplayFrame.tick()`
+makes three direct ordered calls; `Phase` and `phaseOrder()` remain the
+architecture-test contract and are not used to allocate a dispatch list each
+frame.
 
 ### `app.story`
 
@@ -255,6 +290,15 @@ After simulation, `RenderStateAssembler` supplies frame state to scene
 construction. Indexed layers and OAM entries feed hardware composition.
 `FrameScene` composes RGBA, and the host presents the resulting pixels.
 Headless stepping composes the framebuffer without a native window.
+Package-private `GameSession.stepWithoutRender()` runs the same update,
+including audio and input completion, without assembling/composing pixels.
+`SessionAllocationTest` uses that path with 600 warm-up and 600 measured frames
+and `ThreadMXBean` allocation counters. Its fixed total-step limits are 8 KiB
+for the opening-dialog idle sample and 24 KiB for active gameplay after leaving
+the bed. Both include audio and world work; neither claims isolated app-only
+allocation. The active sample checks the normal-button bed-exit checkpoint.
+JFR sampling identified world snapshot/outbox/puzzle streams and audio PCM
+buffers as substantial remaining sources outside application composition.
 
 ```mermaid
 sequenceDiagram

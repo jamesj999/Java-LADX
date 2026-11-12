@@ -4,12 +4,19 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
+import linksawakening.app.host.Host;
+import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
+import linksawakening.audio.music.FrameAudioPlayer;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicCatalog;
+import linksawakening.audio.sfx.SoundEffectCatalog;
+import linksawakening.audio.sfx.SoundEffectNamespace;
+import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -31,9 +38,11 @@ import linksawakening.equipment.Shovel;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
+import linksawakening.gameplay.DialogSoundEffectMap;
 import linksawakening.gameplay.DialogSoundSink;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplayDialogInput;
+import linksawakening.gameplay.GameplaySoundEffectMap;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
@@ -73,52 +82,247 @@ public final class SessionBootstrap {
     public record Callbacks(
             Consumer<String> cutsceneScene, Consumer<ActiveRoom> roomMusic, IntUnaryOperator romDirection) {}
 
-    public record Collaborators(
-            int[][] bgPalettes,
-            int[][] objPalettes,
-            AppConfig appConfig,
-            GPU gpu,
-            byte[] romData,
-            int[] currentTilemap,
-            int[] currentAttrmap,
-            byte[] indexedDisplayBuffer,
-            RoomSession roomSession,
-            RoomTransitionCoordinator roomTransitionCoordinator,
-            InputConfig inputConfig,
-            InputState inputState,
-            PlayerState playerState,
-            BackgroundSceneLoader backgroundSceneLoader,
-            InventoryMenu inventoryMenu,
-            InventoryController inventoryController,
-            DialogController dialogController,
-            DialogTextLoader dialogTextLoader,
-            OverworldDialogInteraction overworldDialogInteraction,
-            DialogSoundSink dialogSoundSink,
-            PcmSoundOutput dialogSoundOutput,
-            GameplaySoundSink gameplaySoundSink,
-            FrameMusicPlayer musicPlayer,
-            GameplayMusicController gameplayMusicController,
-            CutsceneManager cutsceneManager,
-            SaveRamStore saveRamStore,
-            RomTables romTables,
-            OverworldCollision overworldCollision,
-            OverworldBushInteraction overworldBushInteraction,
-            LinkSpriteSheet linkSpriteSheet,
-            TransientVfxSystem transientVfxSystem,
-            DroppableRupeeSystem droppableRupeeSystem,
-            CutLeavesEffectRenderer cutLeavesEffectRenderer,
-            ItemRegistry itemRegistry,
-            EquipmentController equipmentController,
-            Link link,
-            int[] newGameTarinShieldPalette) {}
+    public static final class Collaborators {
+        private final int[][] bgPalettes;
+        private final int[][] objPalettes;
+        private final AppConfig appConfig;
+        private final GPU gpu;
+        private final byte[] romData;
+        private final int[] currentTilemap;
+        private final int[] currentAttrmap;
+        private final byte[] indexedDisplayBuffer;
+        private final RoomSession roomSession;
+        private final RoomTransitionCoordinator roomTransitionCoordinator;
+        private final InputConfig inputConfig;
+        private final InputState inputState;
+        private final PlayerState playerState;
+        private final BackgroundSceneLoader backgroundSceneLoader;
+        private final InventoryMenu inventoryMenu;
+        private final InventoryController inventoryController;
+        private final DialogController dialogController;
+        private final DialogTextLoader dialogTextLoader;
+        private final OverworldDialogInteraction overworldDialogInteraction;
+        private final DialogSoundSink dialogSoundSink;
+        private final PcmSoundOutput dialogSoundOutput;
+        private final GameplaySoundSink gameplaySoundSink;
+        private final FrameMusicPlayer musicPlayer;
+        private final GameplayMusicController gameplayMusicController;
+        private final CutsceneManager cutsceneManager;
+        private final SaveRamStore saveRamStore;
+        private final RomTables romTables;
+        private final OverworldCollision overworldCollision;
+        private final OverworldBushInteraction overworldBushInteraction;
+        private final LinkSpriteSheet linkSpriteSheet;
+        private final TransientVfxSystem transientVfxSystem;
+        private final DroppableRupeeSystem droppableRupeeSystem;
+        private final CutLeavesEffectRenderer cutLeavesEffectRenderer;
+        private final ItemRegistry itemRegistry;
+        private final EquipmentController equipmentController;
+        private final Link link;
+        private final int[] newGameTarinShieldPalette;
 
-    private final linksawakening.app.host.Host host;
+        private Collaborators(SessionBootstrap builder) {
+            this.bgPalettes = Objects.requireNonNull(builder.bgPalettes, "bgPalettes");
+            this.objPalettes = Objects.requireNonNull(builder.objPalettes, "objPalettes");
+            this.appConfig = Objects.requireNonNull(builder.config, "appConfig");
+            this.gpu = Objects.requireNonNull(builder.gpu, "gpu");
+            this.romData = Objects.requireNonNull(builder.romData, "romData");
+            this.currentTilemap = Objects.requireNonNull(builder.currentTilemap, "currentTilemap");
+            this.currentAttrmap = Objects.requireNonNull(builder.currentAttrmap, "currentAttrmap");
+            this.indexedDisplayBuffer = Objects.requireNonNull(builder.indexedDisplayBuffer, "indexedDisplayBuffer");
+            this.roomSession = Objects.requireNonNull(builder.roomSession, "roomSession");
+            this.roomTransitionCoordinator =
+                    Objects.requireNonNull(builder.roomTransitionCoordinator, "roomTransitionCoordinator");
+            this.inputConfig = Objects.requireNonNull(builder.inputConfig, "inputConfig");
+            this.inputState = Objects.requireNonNull(builder.inputState, "inputState");
+            this.playerState = Objects.requireNonNull(builder.playerState, "playerState");
+            this.backgroundSceneLoader = Objects.requireNonNull(builder.backgroundSceneLoader, "backgroundSceneLoader");
+            this.inventoryMenu = Objects.requireNonNull(builder.inventoryMenu, "inventoryMenu");
+            this.inventoryController = Objects.requireNonNull(builder.inventoryController, "inventoryController");
+            this.dialogController = Objects.requireNonNull(builder.dialogController, "dialogController");
+            this.dialogTextLoader = Objects.requireNonNull(builder.dialogTextLoader, "dialogTextLoader");
+            this.overworldDialogInteraction =
+                    Objects.requireNonNull(builder.overworldDialogInteraction, "overworldDialogInteraction");
+            this.dialogSoundSink = Objects.requireNonNull(builder.dialogSoundSink, "dialogSoundSink");
+            this.dialogSoundOutput = Objects.requireNonNull(builder.dialogSoundOutput, "dialogSoundOutput");
+            this.gameplaySoundSink = Objects.requireNonNull(builder.gameplaySoundSink, "gameplaySoundSink");
+            this.musicPlayer = Objects.requireNonNull(builder.musicPlayer, "musicPlayer");
+            this.gameplayMusicController =
+                    Objects.requireNonNull(builder.gameplayMusicController, "gameplayMusicController");
+            this.cutsceneManager = Objects.requireNonNull(builder.cutsceneManager, "cutsceneManager");
+            this.saveRamStore = Objects.requireNonNull(builder.saveRamStore, "saveRamStore");
+            this.romTables = Objects.requireNonNull(builder.romTables, "romTables");
+            this.overworldCollision = Objects.requireNonNull(builder.overworldCollision, "overworldCollision");
+            this.overworldBushInteraction =
+                    Objects.requireNonNull(builder.overworldBushInteraction, "overworldBushInteraction");
+            this.linkSpriteSheet = Objects.requireNonNull(builder.linkSpriteSheet, "linkSpriteSheet");
+            this.transientVfxSystem = Objects.requireNonNull(builder.transientVfxSystem, "transientVfxSystem");
+            this.droppableRupeeSystem = Objects.requireNonNull(builder.droppableRupeeSystem, "droppableRupeeSystem");
+            this.cutLeavesEffectRenderer =
+                    Objects.requireNonNull(builder.cutLeavesEffectRenderer, "cutLeavesEffectRenderer");
+            this.itemRegistry = Objects.requireNonNull(builder.itemRegistry, "itemRegistry");
+            this.equipmentController = Objects.requireNonNull(builder.equipmentController, "equipmentController");
+            this.link = Objects.requireNonNull(builder.link, "link");
+            this.newGameTarinShieldPalette =
+                    Objects.requireNonNull(builder.newGameTarinShieldPalette, "newGameTarinShieldPalette");
+        }
+
+        public int[][] bgPalettes() {
+            return bgPalettes;
+        }
+
+        public int[][] objPalettes() {
+            return objPalettes;
+        }
+
+        public AppConfig appConfig() {
+            return appConfig;
+        }
+
+        public GPU gpu() {
+            return gpu;
+        }
+
+        public byte[] romData() {
+            return romData;
+        }
+
+        public int[] currentTilemap() {
+            return currentTilemap;
+        }
+
+        public int[] currentAttrmap() {
+            return currentAttrmap;
+        }
+
+        public byte[] indexedDisplayBuffer() {
+            return indexedDisplayBuffer;
+        }
+
+        public RoomSession roomSession() {
+            return roomSession;
+        }
+
+        public RoomTransitionCoordinator roomTransitionCoordinator() {
+            return roomTransitionCoordinator;
+        }
+
+        public InputConfig inputConfig() {
+            return inputConfig;
+        }
+
+        public InputState inputState() {
+            return inputState;
+        }
+
+        public PlayerState playerState() {
+            return playerState;
+        }
+
+        public BackgroundSceneLoader backgroundSceneLoader() {
+            return backgroundSceneLoader;
+        }
+
+        public InventoryMenu inventoryMenu() {
+            return inventoryMenu;
+        }
+
+        public InventoryController inventoryController() {
+            return inventoryController;
+        }
+
+        public DialogController dialogController() {
+            return dialogController;
+        }
+
+        public DialogTextLoader dialogTextLoader() {
+            return dialogTextLoader;
+        }
+
+        public OverworldDialogInteraction overworldDialogInteraction() {
+            return overworldDialogInteraction;
+        }
+
+        public DialogSoundSink dialogSoundSink() {
+            return dialogSoundSink;
+        }
+
+        public PcmSoundOutput dialogSoundOutput() {
+            return dialogSoundOutput;
+        }
+
+        public GameplaySoundSink gameplaySoundSink() {
+            return gameplaySoundSink;
+        }
+
+        public FrameMusicPlayer musicPlayer() {
+            return musicPlayer;
+        }
+
+        public GameplayMusicController gameplayMusicController() {
+            return gameplayMusicController;
+        }
+
+        public CutsceneManager cutsceneManager() {
+            return cutsceneManager;
+        }
+
+        public SaveRamStore saveRamStore() {
+            return saveRamStore;
+        }
+
+        public RomTables romTables() {
+            return romTables;
+        }
+
+        public OverworldCollision overworldCollision() {
+            return overworldCollision;
+        }
+
+        public OverworldBushInteraction overworldBushInteraction() {
+            return overworldBushInteraction;
+        }
+
+        public LinkSpriteSheet linkSpriteSheet() {
+            return linkSpriteSheet;
+        }
+
+        public TransientVfxSystem transientVfxSystem() {
+            return transientVfxSystem;
+        }
+
+        public DroppableRupeeSystem droppableRupeeSystem() {
+            return droppableRupeeSystem;
+        }
+
+        public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
+            return cutLeavesEffectRenderer;
+        }
+
+        public ItemRegistry itemRegistry() {
+            return itemRegistry;
+        }
+
+        public EquipmentController equipmentController() {
+            return equipmentController;
+        }
+
+        public Link link() {
+            return link;
+        }
+
+        public int[] newGameTarinShieldPalette() {
+            return newGameTarinShieldPalette;
+        }
+    }
+
+    private final Host host;
     private final Callbacks callbacks;
     private final RomRandomByteSource random;
     private final GPU gpu;
     private final TransitionController transitionController;
     private final ScrollController scrollController;
-    private final int GAME_BOY_BG_MAP_TILES = 32 * 32;
+    private static final int GAME_BOY_BG_MAP_TILES = 32 * 32;
     private int[][] bgPalettes;
     private int[][] objPalettes;
     private AppConfig config;
@@ -162,7 +366,7 @@ public final class SessionBootstrap {
             TransitionController transition,
             ScrollController scroll,
             Callbacks callbacks,
-            linksawakening.app.host.Host host) {
+            Host host) {
         this.host = host;
         this.random = random;
         this.gpu = gpu;
@@ -179,44 +383,7 @@ public final class SessionBootstrap {
                 : AppConfig.loadFromResources();
         loadGraphicsData();
         initMenuSystem(headless);
-        return new Collaborators(
-                bgPalettes,
-                objPalettes,
-                config,
-                gpu,
-                romData,
-                currentTilemap,
-                currentAttrmap,
-                indexedDisplayBuffer,
-                roomSession,
-                roomTransitionCoordinator,
-                inputConfig,
-                inputState,
-                playerState,
-                backgroundSceneLoader,
-                inventoryMenu,
-                inventoryController,
-                dialogController,
-                dialogTextLoader,
-                overworldDialogInteraction,
-                dialogSoundSink,
-                dialogSoundOutput,
-                gameplaySoundSink,
-                musicPlayer,
-                gameplayMusicController,
-                cutsceneManager,
-                saveRamStore,
-                romTables,
-                overworldCollision,
-                overworldBushInteraction,
-                linkSpriteSheet,
-                transientVfxSystem,
-                droppableRupeeSystem,
-                cutLeavesEffectRenderer,
-                itemRegistry,
-                equipmentController,
-                link,
-                newGameTarinShieldPalette);
+        return new Collaborators(this);
     }
 
     private void loadROM() {
@@ -226,7 +393,7 @@ public final class SessionBootstrap {
             }
 
             romData = is.readAllBytes();
-            System.out.println("ROM loaded: " + romData.length + " bytes");
+            DebugLog.log("ROM loaded: " + romData.length + " bytes");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load ROM", e);
         }
@@ -247,12 +414,10 @@ public final class SessionBootstrap {
         playerState = new PlayerState();
         dialogSoundOutput = host.createPcmOutput();
         initMusicSystem(headless);
-        var audio = (linksawakening.audio.music.FrameAudioPlayer) musicPlayer;
-        var catalog = new linksawakening.audio.sfx.SoundEffectPlayer(
-                        new linksawakening.audio.apu.GameBoyApu(48_000), romData)
-                .catalog();
-        var dialogEffects = linksawakening.gameplay.DialogSoundEffectMap.fromCatalog(catalog);
-        var gameplayEffects = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(catalog);
+        var audio = (FrameAudioPlayer) musicPlayer;
+        var catalog = new SoundEffectPlayer(new GameBoyApu(48_000), romData).catalog();
+        var dialogEffects = DialogSoundEffectMap.fromCatalog(catalog);
+        var gameplayEffects = GameplaySoundEffectMap.fromCatalog(catalog);
         dialogSoundSink = event -> dialogEffects.resolve(event).ifPresent(audio::playSoundEffect);
         gameplaySoundSink = event -> gameplayEffects.resolve(event).ifPresent(audio::playSoundEffect);
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
@@ -263,10 +428,10 @@ public final class SessionBootstrap {
         overworldDialogInteraction =
                 new OverworldDialogInteraction(SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
         cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene());
-        var introCatalog = linksawakening.audio.sfx.SoundEffectCatalog.fromRom(romData);
+        var introCatalog = SoundEffectCatalog.fromRom(romData);
         cutsceneManager.setIntroNoiseSound(id -> introCatalog
-                .find(linksawakening.audio.sfx.SoundEffectNamespace.NOISE, id)
-                .ifPresent(((linksawakening.audio.music.FrameAudioPlayer) musicPlayer)::playSoundEffect));
+                .find(SoundEffectNamespace.NOISE, id)
+                .ifPresent(((FrameAudioPlayer) musicPlayer)::playSoundEffect));
         romTables = RomTables.loadFromRom(romData);
         newGameTarinShieldPalette = RomBank.loadPalettes(romData, 0x05, 0x4C94, 1)[0];
         overworldCollision = new OverworldCollision(romTables);
@@ -597,7 +762,7 @@ public final class SessionBootstrap {
 
     private void initMusicSystem(boolean headless) {
         MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        musicPlayer = new linksawakening.audio.music.FrameAudioPlayer(romData, 48_000, dialogSoundOutput);
+        musicPlayer = new FrameAudioPlayer(romData, 48_000, dialogSoundOutput);
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.

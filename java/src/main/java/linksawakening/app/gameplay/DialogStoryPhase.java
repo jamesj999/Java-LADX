@@ -8,46 +8,43 @@ import linksawakening.gameplay.SignpostDialogRef;
 
 final class DialogStoryPhase {
     boolean tick(GameplaySimulation context) {
-        var roomSession = context.roomSession();
-        var transitionController = context.transitionController();
-        var debugNoClip = context.debugNoClip();
-        var scrollController = context.scrollController();
-        var inventoryMenu = context.inventoryMenu();
-        var dialogController = context.dialogController();
-        var dialogTextLoader = context.dialogTextLoader();
-        var link = context.link();
-        var story = context.story();
-        var dialogSounds = context.dialogSounds();
-        if (context.playerState() != null && (inventoryMenu == null || inventoryMenu.isFullyClosed())) {
+        if ((context.inventoryMenu().isFullyClosed())) {
             context.playerState().latchFullHearts();
         }
-        if (roomSession != null) {
+        {
             // $00:0F22 runs before world transitions and dialog gates.
             // The separate inventory gameplay handler does not run it.
-            roomSession.advanceBoomerangSoundClock(
-                    inventoryMenu == null || inventoryMenu.transition().worldHandlerActive());
+            context.roomSession()
+                    .advanceBoomerangSoundClock(
+                            context.inventoryMenu().transition().worldHandlerActive());
         }
-        scrollController.tickScreenShake();
-        if (roomSession != null && link != null && dialogController != null && !transitionController.isInputBlocked()) {
-            int dungeonTitle = roomSession.tickDungeonTitleMessage(
-                    dialogController.isActive(), inventoryMenu.isFullyClosed(), link.romMotionState(), debugNoClip);
+        context.scrollController().tickScreenShake();
+        if (!context.transitionController().isInputBlocked()) {
+            int dungeonTitle = context.roomSession()
+                    .tickDungeonTitleMessage(
+                            context.dialogController().isActive(),
+                            context.inventoryMenu().isFullyClosed(),
+                            context.link().romMotionState(),
+                            context.debugNoClip());
             if (dungeonTitle >= 0) {
-                dialogController.openPreformattedForLinkY(
-                        dialogTextLoader.load(new SignpostDialogRef(0, dungeonTitle)),
-                        LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+                context.dialogController()
+                        .openPreformattedForLinkY(
+                                context.dialogTextLoader().load(new SignpostDialogRef(0, dungeonTitle)),
+                                LinkDialogPosition.dialogYFromTopLeft(
+                                        context.link().pixelY()));
             }
         }
-        if (dialogController != null) {
-            dialogController.tick();
-            dialogSounds.run();
+        {
+            context.dialogController().tick();
+            context.dialogSounds().run();
         }
-        story.updateNewGameMarinPresentation();
-        if (story.tickNewGameWakeUp()) {
-            completeGameplayFrame(dialogController);
+        context.story().updateNewGameMarinPresentation();
+        if (context.story().tickNewGameWakeUp()) {
+            completeGameplayFrame(context.dialogController());
             return false;
         }
-        if (story.tickNewGameTarinShield()) {
-            completeGameplayFrame(dialogController);
+        if (context.story().tickNewGameTarinShield()) {
+            completeGameplayFrame(context.dialogController());
             return false;
         }
 

@@ -1,10 +1,11 @@
 package linksawakening.app.host;
 
 import java.util.function.BiConsumer;
+import linksawakening.gameplay.PcmSoundOutput;
 
 /** Native lifecycle boundary; game frames do not depend on a window. */
 public interface Host extends AutoCloseable {
-    linksawakening.gameplay.PcmSoundOutput createPcmOutput();
+    PcmSoundOutput createPcmOutput();
 
     void open(BiConsumer<Integer, Integer> keys);
 

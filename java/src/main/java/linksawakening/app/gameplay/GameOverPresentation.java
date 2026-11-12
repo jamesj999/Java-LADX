@@ -2,12 +2,15 @@ package linksawakening.app.gameplay;
 
 import java.util.Arrays;
 import java.util.List;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.ui.GameOverMenu;
 
 /** $01:420F-42D8. Cursor and interactive choices are deliberately a separate stage. */
 final class GameOverPresentation {
-    private final linksawakening.ui.GameOverMenu menu;
+    private final GameOverMenu menu;
     private boolean cursorVisible;
     private int stage = 1;
     private int countdown = 16;
@@ -18,7 +21,7 @@ final class GameOverPresentation {
     private final int[][] objects;
 
     GameOverPresentation(GameplaySimulation context) {
-        menu = new linksawakening.ui.GameOverMenu(new linksawakening.rom.Rom(context.romData()));
+        menu = new GameOverMenu(new Rom(context.romData()));
         var room = context.roomSession().renderSnapshot();
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
@@ -30,7 +33,7 @@ final class GameOverPresentation {
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
         context.playerState().incrementDeathCount();
         context.roomSession().clearGameOverPowerCounter();
-        context.playerState().setActivePowerUp(linksawakening.state.PlayerState.ACTIVE_POWER_UP_NONE);
+        context.playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
         context.link().presentGameOverStage(stage, countdown);
         refresh(true);
     }

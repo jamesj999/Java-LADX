@@ -3,6 +3,7 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.function.IntUnaryOperator;
+import linksawakening.app.SessionContext;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -10,13 +11,63 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 
 /** Focused frame interactions using the current session collaborators. */
-public record LiftInteraction(
-        InputState inputState,
-        InputConfig inputConfig,
-        PlayerState playerState,
-        Link link,
-        RoomSession roomSession,
-        IntUnaryOperator direction) {
+public final class LiftInteraction {
+    private final InputState inputState;
+    private final InputConfig inputConfig;
+    private final PlayerState playerState;
+    private final Link link;
+    private final RoomSession roomSession;
+    private final IntUnaryOperator direction;
+
+    public LiftInteraction(
+            InputState inputState,
+            InputConfig inputConfig,
+            PlayerState playerState,
+            Link link,
+            RoomSession roomSession,
+            IntUnaryOperator direction) {
+        this.inputState = inputState;
+        this.inputConfig = inputConfig;
+        this.playerState = playerState;
+        this.link = link;
+        this.roomSession = roomSession;
+        this.direction = direction;
+    }
+
+    public LiftInteraction(SessionContext context) {
+        this(
+                context.inputState(),
+                context.inputConfig(),
+                context.playerState(),
+                context.link(),
+                context.roomSession(),
+                context.liftingDirection());
+    }
+
+    public InputState inputState() {
+        return inputState;
+    }
+
+    public InputConfig inputConfig() {
+        return inputConfig;
+    }
+
+    public PlayerState playerState() {
+        return playerState;
+    }
+
+    public Link link() {
+        return link;
+    }
+
+    public RoomSession roomSession() {
+        return roomSession;
+    }
+
+    public IntUnaryOperator direction() {
+        return direction;
+    }
+
     public boolean isPowerBraceletButtonHeld() {
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;

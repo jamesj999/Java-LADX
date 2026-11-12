@@ -28,12 +28,8 @@ public final class GameplayFrame {
     }
 
     public void tick() {
-        for (Phase phase : phaseOrder()) {
-            switch (phase) {
-                case TRANSITIONS -> transitions.run();
-                case SIMULATION -> simulation.run();
-                case INPUT_COMPLETION -> inputCompletion.run();
-            }
-        }
+        transitions.run();
+        simulation.run();
+        inputCompletion.run();
     }
 }

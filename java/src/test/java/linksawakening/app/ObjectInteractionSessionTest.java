@@ -14,9 +14,9 @@ class ObjectInteractionSessionTest {
     private GameSession session() throws Exception {
         var game = new GameSession((pcm, rate) -> {});
         game.initializeHeadlessNewGame();
-        var config = GameSession.class.getDeclaredField("appConfig");
+        var config = SessionTestAccess.field(game, "appConfig");
         config.setAccessible(true);
-        config.set(game, AppConfig.parse("{\"debugEnabled\":true}"));
+        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.diagnostics().roomSession().loadIndoor(0, 0x17);
         game.diagnostics().link().setPixelPosition(40, 40);
