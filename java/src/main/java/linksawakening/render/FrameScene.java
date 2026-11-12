@@ -58,7 +58,9 @@ public final class FrameScene {
             frame.reset();
         }
         for (RenderLayer layer : layers) {
-            frame.submittingLayer(layer.getClass().getSimpleName());
+            if (frame.diagnostics() != null)
+                frame.submittingLayer(layer.getClass().getSimpleName());
+            else frame.objectVisibilitySource(layer);
             ((HardwareRenderLayer) layer).submit(frame, gpu);
         }
         return frame;

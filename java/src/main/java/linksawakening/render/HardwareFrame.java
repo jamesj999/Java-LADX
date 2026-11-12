@@ -76,6 +76,13 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         submittingLayer = name;
     }
 
+    /** Retains only the reserved OBJ identity required by the ROM dialog hide rule. */
+    void objectVisibilitySource(RenderLayer layer) {
+        submittingLayer = layer instanceof LinkRenderLayer
+                ? "LinkRenderLayer"
+                : layer instanceof DialogRenderLayer ? "DialogRenderLayer" : "unknown";
+    }
+
     /** Call BG first, then window tiles in screen coordinates. */
     public void backgroundTile(Tile tile, int x, int y, boolean flipX, boolean flipY, int[] palette, boolean priority) {
         if (tile == null) return;
