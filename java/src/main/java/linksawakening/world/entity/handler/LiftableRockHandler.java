@@ -18,9 +18,13 @@ final class LiftableRockHandler {
     }
 
     private static boolean phase1LiftableRock(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && state.liftThrow().liftableRockSmashActive(state.entity.slot())) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
 
-            state.liftThrow().advanceLiftableRockSmash(state.index, state.entity, state.frame);
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.liftThrow().liftableRockSmashActive(slotState.entity().slot())) {
+
+            state.liftThrow().advanceLiftableRockSmash(slotState.index(), slotState.entity(), frameInput.frame());
             return false;
         }
         return true;

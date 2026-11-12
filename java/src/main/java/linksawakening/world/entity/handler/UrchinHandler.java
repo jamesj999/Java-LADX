@@ -11,6 +11,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.UrchinMotion;
 
 /** ROM handler stages for Urchin. */
@@ -20,51 +21,62 @@ final class UrchinHandler {
     }
 
     private static boolean phase4Urchin(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.handlerLinkCollisionEnabled) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
 
-            int slot = state.entity.slot();
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.handlerLinkCollisionEnabled()) {
+
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
                     state.background().interaction();
-            if (urchinBackgroundInteraction == null && state.backgroundCollision != null) {
-                urchinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (urchinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                urchinBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            UrchinMotion.Update urchinUpdate = state.urchinMotion()
+            UrchinMotion.Update urchinUpdate = state.motion(UrchinMotion.class, UrchinMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().physicsFlags(slot),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.romLinkDirection,
-                            state.projectileLinkState.usingShield(),
-                            state.swordCollisionActive,
-                            state.handlerLinkCollisionEnabled,
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romLinkDirection(),
+                            frameInput.projectileLinkState().usingShield(),
+                            frameInput.swordCollisionActive(),
+                            timerGates.handlerLinkCollisionEnabled(),
                             urchinBackgroundInteraction);
-            state.updated = urchinUpdate.entity();
+            slotState.updated(urchinUpdate.entity());
             state.slot().setPhysicsFlags(slot, urchinUpdate.physicsFlags());
             if (urchinUpdate.pushed()) {
                 // UrchinEntityHandler writes $03 for its background probe,
                 // then clears wEntitiesIgnoreHitsCountdown immediately.
                 state.slot().setIgnoreHits(slot, 0);
             }
-            state.applyGenericGroundInteraction = urchinUpdate.appliesBackgroundInteraction();
+            slotState.applyGenericGroundInteraction(urchinUpdate.appliesBackgroundInteraction());
             if (urchinUpdate.linkCollision()) {
-                state.background().requestLinkPush(state.updated, EntityLinkCollisionRules.URCHIN);
+                state.background().requestLinkPush(slotState.updated(), EntityLinkCollisionRules.URCHIN);
             }
             if (urchinUpdate.jingleId() >= 0) {
                 state.emit(new EntityCombatEvent(
                         slot,
-                        state.entity.type(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         urchinUpdate.jingleId()));
             }
             if (state.sprites() != null) {
-                EntitySpriteDefinition urchinDefinition = state.sprites().forUrchinState(state.creditsGameplay);
-                state.updated = withDefinition(state.updated, urchinDefinition, state.updated.spriteVariant());
+                EntitySpriteDefinition urchinDefinition = state.sprites().forUrchinState(frameInput.creditsGameplay());
+                slotState.updated(withDefinition(
+                        slotState.updated(),
+                        urchinDefinition,
+                        slotState.updated().spriteVariant()));
             }
-            state.preserveUrchinPresentation = true;
+            presentationFlags.preserveUrchinPresentation(true);
         }
         return true;
     }

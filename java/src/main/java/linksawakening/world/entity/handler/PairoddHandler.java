@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.PairoddMotion;
 
 /** ROM handler stages for Pairodd. */
@@ -16,23 +17,27 @@ final class PairoddHandler {
     }
 
     private static boolean phase3Pairodd(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            PairoddMotion.Update pairoddUpdate = state.pairoddMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            PairoddMotion.Update pairoddUpdate = state.motion(PairoddMotion.class, PairoddMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.slot().flashCountdown(state.entity.slot()) > 0);
-            state.updated = pairoddUpdate.entity();
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            state.slot().flashCountdown(slotState.entity().slot()) > 0);
+            slotState.updated(pairoddUpdate.entity());
             if (pairoddUpdate.spawnProjectile()) {
-                state.enemySpawns().spawnPairoddProjectile(state.entity, state.linkEntityX, state.linkEntityY);
+                state.enemySpawns()
+                        .spawnPairoddProjectile(slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY());
             }
             if (pairoddUpdate.teleportJingle()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

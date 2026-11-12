@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** ROM handler stages for ColorShellType. */
@@ -32,10 +33,12 @@ final class ColorShellTypeHandler {
     }
 
     private static boolean phase2ColorShellType(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if (state.roomInspection().entityMapId() == MAP_COLOR_DUNGEON) {
-            state.colorShellMotion().enterState6(state.entity);
+            state.motion(ColorShellMotion.class, ColorShellMotion::new).enterState6(slotState.entity());
             RoomEntity activeShell = state.slotProperties()
-                    .refreshColorShellDisplay(withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
+                    .refreshColorShellDisplay(withStatus(slotState.entity(), EntityStatus.ACTIVE), EntityStatus.ACTIVE);
             state.replaceEntity(activeShell);
             return false;
         }
@@ -43,29 +46,36 @@ final class ColorShellTypeHandler {
     }
 
     private static boolean phase2ColorShellType2(EntityFrameExecution state) {
-        state.colorShellMotion().initialize(state.entity.slot());
+        var slotState = state.slotFrame();
+
+        state.motion(ColorShellMotion.class, ColorShellMotion::new)
+                .initialize(slotState.entity().slot());
 
         return true;
     }
 
     private static boolean phase5ColorShellType(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            ColorShellMotion.Update shellUpdate = state.colorShellMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            ColorShellMotion.Update shellUpdate = state.motion(ColorShellMotion.class, ColorShellMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.backgroundCollision,
-                            state.slot().ignoreHits(state.entity.slot()),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision(),
+                            state.slot().ignoreHits(slotState.entity().slot()),
                             state.roomInspection().colorShellWorld(),
                             state.entities());
-            state.updated = shellUpdate.entity();
-            state.slot().setIgnoreHits(state.entity.slot(), shellUpdate.nextIgnoreHitsCountdown());
+            slotState.updated(shellUpdate.entity());
+            state.slot().setIgnoreHits(slotState.entity().slot(), shellUpdate.nextIgnoreHitsCountdown());
             if (shellUpdate.unloadRequested()) {
-                state.lifecycle().requestPersistentClearMask(persistentClearMask(state.entity));
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle().requestPersistentClearMask(persistentClearMask(slotState.entity()));
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

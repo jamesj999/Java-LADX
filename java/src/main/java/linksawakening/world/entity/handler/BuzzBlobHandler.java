@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 
 /** ROM handler stages for BuzzBlob. */
@@ -17,27 +18,33 @@ final class BuzzBlobHandler {
     }
 
     private static boolean phase4BuzzBlob(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction =
                     state.background().interaction();
-            if (buzzBlobBackgroundInteraction == null && state.backgroundCollision != null) {
-                buzzBlobBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (buzzBlobBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                buzzBlobBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            BuzzBlobMotion.Update buzzBlobUpdate = state.buzzBlobMotion()
+            BuzzBlobMotion.Update buzzBlobUpdate = state.motion(BuzzBlobMotion.class, BuzzBlobMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().transitionCountdown(slot),
-                            state.randomByteSupplier,
+                            frameInput.randomByteSupplier(),
                             buzzBlobBackgroundInteraction);
-            state.updated = buzzBlobUpdate.entity();
+            slotState.updated(buzzBlobUpdate.entity());
             state.slot().setTransitionCountdown(slot, buzzBlobUpdate.transitionCountdown());
-            state.applyGenericGroundInteraction = buzzBlobUpdate.appliesBackgroundInteraction();
-            state.preserveBuzzBlobPresentation = true;
+            slotState.applyGenericGroundInteraction(buzzBlobUpdate.appliesBackgroundInteraction());
+            presentationFlags.preserveBuzzBlobPresentation(true);
         }
         return true;
     }

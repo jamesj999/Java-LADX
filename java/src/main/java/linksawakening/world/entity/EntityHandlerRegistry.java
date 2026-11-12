@@ -95,7 +95,7 @@ final class EntityHandlerRegistry implements linksawakening.world.entity.EntityH
     boolean tick(EntityTickStage stage, EntityFrameExecution frame) {
         for (int visit = 0; visit < stage.visits(); visit++) {
             // Re-read the entity type after each visit, as the original phase calls did.
-            int type = frame.entity.type();
+            int type = frame.slotFrame().entity().type();
             if (supports(type) && !handlers[type].tickVisit(stage, visit, frame)) return false;
         }
         return true;

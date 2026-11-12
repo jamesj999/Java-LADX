@@ -11,6 +11,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ZoraMotion;
 
 /** ROM handler stages for Zora. */
@@ -20,28 +21,34 @@ final class ZoraHandler {
     }
 
     private static boolean phase4Zora(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
-            if (RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
+            if (RoomEntityCombatRules.overlapsLink(
+                    slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
                 // Zora writes ENTITY_PHYSICS_HARMLESS immediately before
                 // this collision check, then copies hLinkFinalPosition
                 // and calls ResetPegasusBoots. It does not use the common
                 // hookshot-chain reset helper.
-                state.background().requestLinkPush(state.entity, EntityLinkCollisionRules.ZORA);
+                state.background().requestLinkPush(slotState.entity(), EntityLinkCollisionRules.ZORA);
             }
-            ZoraMotion.Update zoraUpdate = state.zoraMotion()
+            ZoraMotion.Update zoraUpdate = state.motion(ZoraMotion.class, ZoraMotion::new)
                     .advance(
-                            state.updated,
+                            slotState.updated(),
                             state.slot().transitionCountdown(slot),
                             state.slot().physicsFlags(slot),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
                             state.background().objectQuery());
-            state.updated = zoraUpdate.entity();
+            slotState.updated(zoraUpdate.entity());
             state.slot().setTransitionCountdown(slot, zoraUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, zoraUpdate.physicsFlags());
             if (zoraUpdate.projectileSpawn() != null) {
@@ -50,12 +57,12 @@ final class ZoraHandler {
             if (zoraUpdate.splash()) {
                 state.emit(new TransientVfxRequest(
                         TransientVfxType.WATER_SPLASH,
-                        state.updated.x(),
-                        (state.updated.y() - state.updated.z()) & 0xFF));
+                        slotState.updated().x(),
+                        (slotState.updated().y() - slotState.updated().z()) & 0xFF));
                 state.emit(new EntityCombatEvent(
-                        slot, state.entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
+                        slot, slotState.entity().type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0E));
             }
-            state.preserveZoraPresentation = true;
+            presentationFlags.preserveZoraPresentation(true);
         }
         return true;
     }

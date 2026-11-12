@@ -22,24 +22,31 @@ final class InstrumentOfTheSirensHandler {
     }
 
     private static boolean phase1InstrumentOfTheSirens(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && state.rewards().instrumentParticleKind(state.entity.slot()) == 1) {
-            state.rewards().advanceInstrumentParticle(state.entity);
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.rewards().instrumentParticleKind(slotState.entity().slot()) == 1) {
+            state.rewards().advanceInstrumentParticle(slotState.entity());
             return false;
         }
         return true;
     }
 
     private static boolean phase1InstrumentOfTheSirens2(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && state.rewards().instrumentPickupSequenceActive(state.entity.slot())) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.rewards()
+                        .instrumentPickupSequenceActive(slotState.entity().slot())) {
             state.rewards()
                     .advanceInstrumentPickup(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.randomByteSupplier);
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            frameInput.randomByteSupplier());
             return false;
         }
         return true;

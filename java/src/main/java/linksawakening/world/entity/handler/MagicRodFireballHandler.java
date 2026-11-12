@@ -18,14 +18,18 @@ final class MagicRodFireballHandler {
     }
 
     private static boolean phase1MagicRodFireball(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             state.projectiles()
                     .advanceMagicRodFireballEntity(
-                            state.index,
-                            state.entity,
-                            state.frame,
-                            state.handlerInteractive,
-                            state.projectileTimersInteractive);
+                            slotState.index(),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            timerGates.handlerInteractive(),
+                            timerGates.projectileTimersInteractive());
             return false;
         }
         return true;

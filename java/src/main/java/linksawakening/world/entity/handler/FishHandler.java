@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.FishMotion;
 
 /** ROM handler stages for Fish. */
@@ -18,22 +19,27 @@ final class FishHandler {
     }
 
     private static boolean phase3Fish(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            FishMotion.Update fishUpdate = state.fishMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            FishMotion.Update fishUpdate = state.motion(FishMotion.class, FishMotion::new)
                     .advance(
-                            state.entity,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.randomByteSupplier,
-                            state.backgroundCollision);
-            state.updated = fishUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), fishUpdate.transitionCountdown());
-            state.slot().setPhysicsFlags(state.entity.slot(), fishUpdate.physicsFlags());
+                            slotState.entity(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision());
+            slotState.updated(fishUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), fishUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slotState.entity().slot(), fishUpdate.physicsFlags());
             if (fishUpdate.waterSplash()) {
-                state.emit(
-                        new TransientVfxRequest(TransientVfxType.WATER_SPLASH, state.updated.x(), state.updated.y()));
+                state.emit(new TransientVfxRequest(
+                        TransientVfxType.WATER_SPLASH,
+                        slotState.updated().x(),
+                        slotState.updated().y()));
                 state.emit(new EntityCombatEvent(
-                        state.updated.slot(),
-                        state.updated.type(),
+                        slotState.updated().slot(),
+                        slotState.updated().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

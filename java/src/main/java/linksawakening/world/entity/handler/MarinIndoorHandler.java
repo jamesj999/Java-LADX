@@ -17,8 +17,10 @@ final class MarinIndoorHandler {
     }
 
     private static boolean phase1MarinIndoor(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if (state.roomInspection().indoorRoom() && state.roomInspection().indoorMarinAbsent()) {
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;

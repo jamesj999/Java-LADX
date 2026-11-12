@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for PairoddProjectile. */
 final class PairoddProjectileHandler {
@@ -22,18 +23,24 @@ final class PairoddProjectileHandler {
     }
 
     private static boolean phase3PairoddProjectile(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.updated = state.pairoddProjectileMotion().advance(state.entity, state.frame);
-            boolean objectCollisionHit = state.objectCollision != null && state.objectCollision.collides(state.updated);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            slotState.updated(state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                    .advance(slotState.entity(), frameInput.frame()));
+            boolean objectCollisionHit = frameInput.objectCollision() != null
+                    && frameInput.objectCollision().collides(slotState.updated());
             boolean removePairoddProjectile = false;
             boolean swordPokeVfxQueued = false;
             var collisionEvent = EnemyProjectileCollision.check(
-                    state.updated,
-                    state.pairoddProjectileMotion().direction(state.entity.slot()),
-                    state.projectileLinkState);
+                    slotState.updated(),
+                    state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                            .direction(slotState.entity().slot()),
+                    frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
                 EntityProjectileEvent event = collisionEvent.orElseThrow();
-                state.projectileEvents.add(event);
+                frameInput.projectileEvents().add(event);
                 if (event.swordPokeVfx()) {
                     state.emit(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
@@ -44,15 +51,15 @@ final class PairoddProjectileHandler {
                 }
             }
             var swordCollisionEvent = EnemyProjectileCollision.checkSwordCollision(
-                    state.updated,
-                    state.swordCollisionActive,
-                    state.swordX,
-                    state.swordWidth,
-                    state.swordY,
-                    state.swordHeight);
+                    slotState.updated(),
+                    frameInput.swordCollisionActive(),
+                    frameInput.swordX(),
+                    frameInput.swordWidth(),
+                    frameInput.swordY(),
+                    frameInput.swordHeight());
             if (swordCollisionEvent.isPresent()) {
                 EntityProjectileEvent event = swordCollisionEvent.orElseThrow();
-                state.projectileEvents.add(event);
+                frameInput.projectileEvents().add(event);
                 if (event.swordPokeVfx() && !swordPokeVfxQueued) {
                     state.emit(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE, event.swordPokeX(), event.swordPokeY()));
@@ -64,13 +71,14 @@ final class PairoddProjectileHandler {
                 if (!swordPokeVfxQueued) {
                     state.emit(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE,
-                            state.updated.x(),
-                            (state.updated.y() - state.updated.z()) & 0xFF));
+                            slotState.updated().x(),
+                            (slotState.updated().y() - slotState.updated().z()) & 0xFF));
                 }
                 removePairoddProjectile = true;
             }
             if (removePairoddProjectile) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

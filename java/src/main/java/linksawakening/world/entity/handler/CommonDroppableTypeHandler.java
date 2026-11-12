@@ -86,32 +86,39 @@ final class CommonDroppableTypeHandler {
     }
 
     private static boolean phase2CommonDroppableType(EntityFrameExecution state) {
-        if (state.wasInitializing && state.lifecycle().droppablePrivateState3(state.entity.slot()) != 0) {
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
+
+        if (slotState.wasInitializing()
+                && state.lifecycle().droppablePrivateState3(slotState.entity().slot()) != 0) {
             // The init handler has already set the hidden options. The
             // corresponding active handler will be entered on the next
             // entity tick, so suppress this first display-list pass too.
-            state.updated = withVariant(state.entity, -1);
-            state.preserveDroppablePresentation = true;
+            slotState.updated(withVariant(slotState.entity(), -1));
+            presentationFlags.preserveDroppablePresentation(true);
         }
         return true;
     }
 
     private static boolean phase2CommonDroppableType2(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             CommonDroppableUpdate droppableUpdate = state.pickups()
                     .advanceCommonDroppable(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
                             state.background().objectQuery() == null
                                     ? null
-                                    : state.background().objectQuery().sample(state.entity));
-            state.updated = droppableUpdate.entity();
+                                    : state.background().objectQuery().sample(slotState.entity()));
+            slotState.updated(droppableUpdate.entity());
             if (droppableUpdate.hidden()) {
                 // DroppableRevealOrReturnIfNeeded returns past the caller's
                 // remaining handler. In particular, no rendering, pickup,
                 // movement, or background interaction may run while hidden.
-                state.replaceEntity(withStatus(withVariant(state.updated, -1), state.status));
+                state.replaceEntity(withStatus(withVariant(slotState.updated(), -1), slotState.status()));
                 return false;
             }
         }

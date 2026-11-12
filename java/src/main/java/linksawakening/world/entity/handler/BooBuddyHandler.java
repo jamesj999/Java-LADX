@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 
 /** ROM handler stages for BooBuddy. */
@@ -19,15 +20,20 @@ final class BooBuddyHandler {
     }
 
     private static boolean phase1BooBuddy(EntityFrameExecution state) {
-        if (state.initialStatus == EntityStatus.ACTIVE) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var timerGates = state.gates();
+
+        if (slotState.initialStatus() == EntityStatus.ACTIVE) {
+            int slot = slotState.entity().slot();
             // Rendering precedes ReturnIfNonInteractive_06 and recoil.
-            state.entity = withVariant(state.entity, state.booBuddyMotion().selectedVariant(slot));
-            state.replaceEntity(state.entity);
-            if (state.projectileTimersInteractive) {
-                state.booBuddyMotion().tickTimers(slot);
+            slotState.entity(withVariant(
+                    slotState.entity(),
+                    state.motion(BooBuddyMotion.class, BooBuddyMotion::new).selectedVariant(slot)));
+            state.replaceEntity(slotState.entity());
+            if (timerGates.projectileTimersInteractive()) {
+                state.motion(BooBuddyMotion.class, BooBuddyMotion::new).tickTimers(slot);
             }
-            if (!state.handlerInteractive) {
+            if (!timerGates.handlerInteractive()) {
                 return false;
             }
             if (state.slot().ignoreHits(slot) != 0) {
@@ -35,11 +41,13 @@ final class BooBuddyHandler {
                 // speeds, and pops the handler return address. OPTIONS1
                 // bit $20 skips background collision for Boo Buddy.
                 state.slot().decrementIgnoreHits(slot);
-                state.replaceEntity(state.booBuddyMotion()
+                state.replaceEntity(state.motion(BooBuddyMotion.class, BooBuddyMotion::new)
                         .advanceRecoil(
-                                state.entity,
-                                state.enemyRecoilMotion().recoilSpeedX(slot),
-                                state.enemyRecoilMotion().recoilSpeedY(slot)));
+                                slotState.entity(),
+                                state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                                        .recoilSpeedX(slot),
+                                state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                                        .recoilSpeedY(slot)));
                 return false;
             }
         }
@@ -47,24 +55,28 @@ final class BooBuddyHandler {
     }
 
     private static boolean phase3BooBuddy(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            BooBuddyMotion.Update booBuddyUpdate = state.booBuddyMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            BooBuddyMotion.Update booBuddyUpdate = state.motion(BooBuddyMotion.class, BooBuddyMotion::new)
                     .advanceAfterTimers(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.slot().transitionCountdown(state.entity.slot()),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
                             state.story().booBuddyTriggerCount(),
-                            state.swordCollisionActive,
-                            state.randomByteSupplier);
-            state.updated = booBuddyUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), booBuddyUpdate.transitionCountdown());
+                            frameInput.swordCollisionActive(),
+                            frameInput.randomByteSupplier());
+            slotState.updated(booBuddyUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), booBuddyUpdate.transitionCountdown());
             if (booBuddyUpdate.healthOverride() >= 0) {
-                state.slot().setHealth(state.entity.slot(), booBuddyUpdate.healthOverride());
+                state.slot().setHealth(slotState.entity().slot(), booBuddyUpdate.healthOverride());
             }
             if (booBuddyUpdate.unloaded()) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

@@ -18,8 +18,13 @@ final class KidHandler {
     }
 
     private static boolean phase1Kid72(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
-            state.story().advanceVillageKid(state.entity, state.frame, state.linkEntityX, state.linkEntityY);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
+            state.story()
+                    .advanceVillageKid(
+                            slotState.entity(), frameInput.frame(), frameInput.linkEntityX(), frameInput.linkEntityY());
             return false;
         }
         return true;

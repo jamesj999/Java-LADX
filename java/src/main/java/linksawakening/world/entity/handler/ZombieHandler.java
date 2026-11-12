@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ZombieMotion;
 
 /** ROM handler stages for Zombie. */
@@ -19,42 +20,51 @@ final class ZombieHandler {
     }
 
     private static boolean phase2Zombie(EntityFrameExecution state) {
-        if (state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
+
+        if (slotState.wasInitializing()) {
             // The room-loaded Zombie is only a hidden spawn marker; its
             // bank-$18 handler never renders the parent entity.
-            state.updated = withVariant(state.entity, -1);
-            state.preserveZombiePresentation = true;
+            slotState.updated(withVariant(slotState.entity(), -1));
+            presentationFlags.preserveZombiePresentation(true);
         }
         return true;
     }
 
     private static boolean phase4Zombie(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction zombieBackgroundInteraction =
                     state.background().interaction();
-            if (zombieBackgroundInteraction == null && state.backgroundCollision != null) {
-                zombieBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (zombieBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                zombieBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            ZombieMotion.Update zombieUpdate = state.zombieMotion()
+            ZombieMotion.Update zombieUpdate = state.motion(ZombieMotion.class, ZombieMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().transitionCountdown(slot),
                             state.slot().physicsFlags(slot),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
                             state.background().objectQuery(),
                             zombieBackgroundInteraction,
                             state.slot().ignoreHits(slot));
-            state.updated = zombieUpdate.entity();
+            slotState.updated(zombieUpdate.entity());
             state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, zombieUpdate.physicsFlags());
-            state.applyGenericGroundInteraction = zombieUpdate.appliesBackgroundInteraction();
+            slotState.applyGenericGroundInteraction(zombieUpdate.appliesBackgroundInteraction());
             if (zombieUpdate.spawnRequest() != null) {
                 state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());
             }
@@ -62,7 +72,7 @@ final class ZombieHandler {
                 state.lifecycle().clearEntity(slot);
                 return false;
             }
-            state.preserveZombiePresentation = true;
+            presentationFlags.preserveZombiePresentation(true);
         }
         return true;
     }

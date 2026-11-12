@@ -16,13 +16,20 @@ final class IronMaskHandler {
     }
 
     private static boolean phase3IronMask(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            int privateState2 = state.slot().ironMaskPrivateState2(state.entity.slot());
-            int variant = privateState2 == 0 ? state.updated.spriteVariant() : ((state.frame >>> 4) & 0x01);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            int privateState2 =
+                    state.slot().ironMaskPrivateState2(slotState.entity().slot());
+            int variant =
+                    privateState2 == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
             if (state.sprites() != null) {
-                state.updated = withDefinition(state.updated, state.sprites().forIronMaskState(privateState2), variant);
+                slotState.updated(
+                        withDefinition(slotState.updated(), state.sprites().forIronMaskState(privateState2), variant));
             }
-            state.preserveIronMaskPresentation = true;
+            presentationFlags.preserveIronMaskPresentation(true);
         }
         return true;
     }

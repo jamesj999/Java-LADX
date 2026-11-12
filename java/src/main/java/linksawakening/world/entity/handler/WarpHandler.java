@@ -20,24 +20,29 @@ final class WarpHandler {
     }
 
     private static boolean phase1Type(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && state.roomInspection().indoorRoom() && state.warpMotion() != null) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.roomInspection().indoorRoom()
+                && state.warpMotion() != null) {
+            int slot = slotState.entity().slot();
             state.replaceEntity(withPositionAndVariant(
-                    state.entity,
-                    state.entity.x(),
-                    state.entity.y(),
-                    state.roomInspection().dungeonMinibossReady() ? (state.frame >> 3) & 7 : -1));
+                    slotState.entity(),
+                    slotState.entity().x(),
+                    slotState.entity().y(),
+                    state.roomInspection().dungeonMinibossReady() ? (frameInput.frame() >> 3) & 7 : -1));
             WarpMotion.Update warpUpdate = state.warpMotion()
                     .advance(
-                            state.entity,
+                            slotState.entity(),
                             state.lifecycle().warpState(slot),
                             state.lifecycle().warpTransitionCountdown(slot),
                             state.roomInspection().entityMapId(),
                             state.roomInspection().entityRoomId(),
                             state.roomInspection().dungeonMinibossReady(),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ);
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ());
             state.lifecycle().setWarpState(slot, warpUpdate.state());
             state.lifecycle().setWarpTransitionCountdown(slot, warpUpdate.countdown());
             if (warpUpdate.musicTrack() >= 0) {
@@ -46,7 +51,7 @@ final class WarpHandler {
             if (warpUpdate.jingleId() >= 0) {
                 state.emit(new EntityCombatEvent(
                         slot,
-                        state.entity.type(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
@@ -57,7 +62,7 @@ final class WarpHandler {
             }
             if (warpUpdate.state() == WarpMotion.STATE_TRANSITION) {
                 state.emit(new WarpLinkStateRequest(
-                        slot, state.entity.x(), state.entity.y(), warpUpdate.immunityCountdown()));
+                        slot, slotState.entity().x(), slotState.entity().y(), warpUpdate.immunityCountdown()));
             }
             if (warpUpdate.destinationReady()) {
                 state.emit(new DungeonWarpRequest(slot, warpUpdate.destination()));

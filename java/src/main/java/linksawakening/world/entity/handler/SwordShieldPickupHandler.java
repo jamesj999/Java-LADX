@@ -19,16 +19,25 @@ final class SwordShieldPickupHandler {
     }
 
     private static boolean phase1SwordShieldPickup(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             if (state.roomInspection().chestSwordLevel() == 0 && state.sprites() != null) {
-                state.entity = withDefinition(
-                        state.entity, state.sprites().forSwordShieldPickup(true), state.entity.spriteVariant());
-                state.replaceEntity(state.entity);
+                slotState.entity(withDefinition(
+                        slotState.entity(),
+                        state.sprites().forSwordShieldPickup(true),
+                        slotState.entity().spriteVariant()));
+                state.replaceEntity(slotState.entity());
             }
-            if (state.rewards().swordPickupSequenceActive(state.entity.slot())) {
+            if (state.rewards().swordPickupSequenceActive(slotState.entity().slot())) {
                 state.rewards()
                         .advanceSwordPickup(
-                                state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
+                                slotState.entity(),
+                                frameInput.frame(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                frameInput.linkZ());
                 return false;
             }
         }

@@ -15,18 +15,22 @@ final class BoomerangHandler {
     }
 
     private static boolean phase1Boomerang(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             state.projectiles()
                     .advanceBoomerangEntity(
-                            state.index,
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.projectileLinkState.motionState(),
-                            state.handlerInteractive,
-                            state.projectileTimersInteractive);
+                            slotState.index(),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            frameInput.projectileLinkState().motionState(),
+                            timerGates.handlerInteractive(),
+                            timerGates.projectileTimersInteractive());
             return false;
         }
         return true;

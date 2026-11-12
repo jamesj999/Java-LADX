@@ -15,6 +15,7 @@ import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.TarinRaccoonMotion;
 
 /** ROM handler stages for Tarin. */
@@ -25,71 +26,85 @@ final class TarinHandler {
     }
 
     private static boolean phase1Tarin(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if ((state.roomInspection().indoorRoom() && state.roomInspection().indoorTarinAbsent())
                 || (!state.roomInspection().indoorRoom()
                         && (state.roomInspection().entityRoomStatus() & 0x10) != 0)) {
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;
     }
 
     private static boolean phase4Tarin(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
                 && !state.roomInspection().indoorRoom()
-                && (state.tarinRaccoonMotion().state(state.entity.slot()) == 0
+                && (state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
+                                        .state(slotState.entity().slot())
+                                == 0
                         || state.roomInspection().tarinTransformationHandlerInteractive())) {
             RoomEntityBackgroundInteraction tarinBackgroundInteraction =
                     state.background().interaction();
-            if (tarinBackgroundInteraction == null && state.backgroundCollision != null) {
-                tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (tarinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                tarinBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            TarinRaccoonMotion.Update tarinUpdate = state.tarinRaccoonMotion()
+            TarinRaccoonMotion.Update tarinUpdate = state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                     .advance(
-                            state.updated,
+                            slotState.updated(),
                             new TarinRaccoonMotion.Input(
-                                    state.frame,
-                                    state.linkEntityX,
-                                    state.linkEntityY,
-                                    state.romLinkDirection,
+                                    frameInput.frame(),
+                                    frameInput.linkEntityX(),
+                                    frameInput.linkEntityY(),
+                                    frameInput.romLinkDirection(),
                                     state.link().actionButtonAHeld(),
                                     state.link().dialogActive(),
                                     false,
                                     state.link().linkAttackStepAnimationCountdown(),
-                                    state.linkAirborne,
+                                    frameInput.linkAirborne(),
                                     state.link().inventoryAppearing(),
                                     state.link().dialogCooldown(),
                                     state.link().windowY(),
-                                    state.slot().slowTransitionCountdown(state.entity.slot()),
-                                    state.slot().transitionCountdown(state.entity.slot())),
+                                    state.slot()
+                                            .slowTransitionCountdown(
+                                                    slotState.entity().slot()),
+                                    state.slot()
+                                            .transitionCountdown(
+                                                    slotState.entity().slot())),
                             tarinBackgroundInteraction);
-            state.updated = tarinUpdate.entity();
-            state.slot().setSlowTransitionCountdown(state.entity.slot(), tarinUpdate.slowTransitionCountdown());
-            state.slot().setTransitionCountdown(state.entity.slot(), tarinUpdate.transitionCountdown());
-            state.preserveTarinPresentation = true;
+            slotState.updated(tarinUpdate.entity());
+            state.slot().setSlowTransitionCountdown(slotState.entity().slot(), tarinUpdate.slowTransitionCountdown());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), tarinUpdate.transitionCountdown());
+            presentationFlags.preserveTarinPresentation(true);
             state.story().setShouldGetLostInMysteriousWoods(tarinUpdate.shouldGetLost());
             if (tarinUpdate.linkMotionBlocked()) {
-                state.emit(new LinkMotionBlockRequest(state.entity.slot()));
+                state.emit(new LinkMotionBlockRequest(slotState.entity().slot()));
             }
             if (tarinUpdate.dialogGlobalId() >= 0) {
                 state.emit(new DialogRequest(tarinUpdate.dialogGlobalId() >>> 8, tarinUpdate.dialogGlobalId() & 0xFF));
             }
             if (tarinUpdate.clearLinkAttack()) {
-                state.emit(new LinkAttackClearRequest(state.entity.slot()));
+                state.emit(new LinkAttackClearRequest(slotState.entity().slot()));
             }
             if (tarinUpdate.linkFacingDirection() >= 0) {
-                state.emit(new LinkFacingRequest(state.entity.slot(), tarinUpdate.linkFacingDirection(), true));
+                state.emit(new LinkFacingRequest(slotState.entity().slot(), tarinUpdate.linkFacingDirection(), true));
             }
             if (tarinUpdate.pushLink()) {
-                if (RoomEntityCombatRules.overlapsLink(state.updated, state.linkEntityX, state.linkEntityY)) {
-                    state.background().requestLinkPush(state.updated, EntityLinkCollisionRules.STANDARD_PUSH);
+                if (RoomEntityCombatRules.overlapsLink(
+                        slotState.updated(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
+                    state.background().requestLinkPush(slotState.updated(), EntityLinkCollisionRules.STANDARD_PUSH);
                 }
             }
             if (tarinUpdate.soundId() >= 0) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
@@ -99,10 +114,10 @@ final class TarinHandler {
                 }
             }
             if (tarinUpdate.spawnBomb()) {
-                state.enemySpawns().spawnTarinTransformationBomb(state.updated);
+                state.enemySpawns().spawnTarinTransformationBomb(slotState.updated());
             }
             if (tarinUpdate.roomChanged() || tarinUpdate.tarinFlag()) {
-                state.emit(new RoomStatusPersistenceRequest(state.entity.slot(), 0x10, 1));
+                state.emit(new RoomStatusPersistenceRequest(slotState.entity().slot(), 0x10, 1));
             }
         }
         return true;

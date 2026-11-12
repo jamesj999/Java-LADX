@@ -15,10 +15,12 @@ final class LeeverHandler {
     }
 
     private static boolean phase2Leever(EntityFrameExecution state) {
-        if (state.wasInitializing) {
+        var slotState = state.slotFrame();
+
+        if (slotState.wasInitializing()) {
             // EntityInitLeever calls SetEntitySpriteVariant($FF) before
             // the first active handler dispatch.
-            state.updated = withVariant(state.entity, -1);
+            slotState.updated(withVariant(slotState.entity(), -1));
         }
         return true;
     }

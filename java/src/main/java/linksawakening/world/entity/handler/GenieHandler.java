@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 
@@ -22,35 +23,48 @@ final class GenieHandler {
     }
 
     private static boolean phase1Genie(EntityFrameExecution state) {
-        if (state.genie().geniePrivateCountdown1(state.entity.slot()) > 0) {
-            state.genie().decrementGeniePrivateCountdown1(state.entity.slot());
+        var slotState = state.slotFrame();
+
+        if (state.genie().geniePrivateCountdown1(slotState.entity().slot()) > 0) {
+            state.genie().decrementGeniePrivateCountdown1(slotState.entity().slot());
         }
         return true;
     }
 
     private static boolean phase1Genie2(EntityFrameExecution state) {
-        if (state.genie().geniePrivateCountdown2(state.entity.slot()) > 0) {
-            state.genie().decrementGeniePrivateCountdown2(state.entity.slot());
+        var slotState = state.slotFrame();
+
+        if (state.genie().geniePrivateCountdown2(slotState.entity().slot()) > 0) {
+            state.genie().decrementGeniePrivateCountdown2(slotState.entity().slot());
         }
         return true;
     }
 
     private static boolean phase2Genie(EntityFrameExecution state) {
-        if (state.genie().geniePrivateState1(state.entity.slot()) == 1) {
-            state.genie().advanceGenieDestruction(state.entity, state.frame, state.randomByteSupplier);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (state.genie().geniePrivateState1(slotState.entity().slot()) == 1) {
+            state.genie()
+                    .advanceGenieDestruction(slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
             return false;
         }
         return true;
     }
 
     private static boolean phase4Genie(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             BossIntroMotion.Update bossIntro = !state.link().inventoryAppearing()
                             && !state.roomInspection().roomTransitionActive()
-                    ? state.bossIntroMotion()
+                    ? state.motion(BossIntroMotion.class, BossIntroMotion::new)
                             .advance(
-                                    state.slotProperties().options1(state.entity.slot()),
-                                    state.entity.type(),
+                                    state.slotProperties()
+                                            .options1(slotState.entity().slot()),
+                                    slotState.entity().type(),
                                     state.roomInspection().entityMapId(),
                                     state.lifecycle().transitionSequenceCounter())
                     : BossIntroMotion.Update.none();
@@ -61,67 +75,73 @@ final class GenieHandler {
                 state.emit(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             boolean genieThresholdReached =
-                    state.genie().geniePrivateState4(state.entity.slot()) >= GenieMotion.JAR_HEALTH_THRESHOLD;
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 0 && !genieThresholdReached) {
-                state.genie().setGenieControllerSlot(state.entity.slot());
+                    state.genie().geniePrivateState4(slotState.entity().slot()) >= GenieMotion.JAR_HEALTH_THRESHOLD;
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 0 && !genieThresholdReached) {
+                state.genie().setGenieControllerSlot(slotState.entity().slot());
             }
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 0
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 0
                     && (genieThresholdReached
-                            || state.roomInspection().genieState0Interactive(state.creditsGameplay))) {
-                state.genie().advanceGenieJar(state.entity, state.linkEntityY);
-                if (!state.entityAt(state.entity.slot()).loaded()) {
+                            || state.roomInspection().genieState0Interactive(frameInput.creditsGameplay()))) {
+                state.genie().advanceGenieJar(slotState.entity(), frameInput.linkEntityY());
+                if (!state.entityAt(slotState.entity().slot()).loaded()) {
                     return false;
                 }
-                state.updated = state.entityAt(state.entity.slot());
+                slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 2
-                    && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
-                state.genie().advanceGenieAppearance(state.entity);
-                if (!state.entityAt(state.entity.slot()).loaded()) {
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 2
+                    && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
+                state.genie().advanceGenieAppearance(slotState.entity());
+                if (!state.entityAt(slotState.entity().slot()).loaded()) {
                     return false;
                 }
-                state.updated = state.entityAt(state.entity.slot());
+                slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 3
-                    && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
-                state.genie().advanceGenieSideProjectile(state.entity, state.frameCounter);
-                if (!state.entityAt(state.entity.slot()).loaded()) {
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 3
+                    && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
+                state.genie().advanceGenieSideProjectile(slotState.entity(), frameInput.frameCounter());
+                if (!state.entityAt(slotState.entity().slot()).loaded()) {
                     return false;
                 }
-                state.updated = state.entityAt(state.entity.slot());
+                slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 4
-                    && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
-                if (state.handlerLinkCollisionEnabled
-                        && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
-                    state.background().requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 4
+                    && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
+                if (timerGates.handlerLinkCollisionEnabled()
+                        && RoomEntityCombatRules.overlapsLink(
+                                slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
+                    state.background().requestLinkPush(slotState.entity(), EntityLinkCollisionRules.STANDARD_PUSH);
                 }
-                state.genie().advanceGenieFireball(state.entity, state.frameCounter);
-                if (!state.entityAt(state.entity.slot()).loaded()) {
+                state.genie().advanceGenieFireball(slotState.entity(), frameInput.frameCounter());
+                if (!state.entityAt(slotState.entity().slot()).loaded()) {
                     return false;
                 }
-                state.updated = state.entityAt(state.entity.slot());
+                slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(state.entity.slot()) == 1
-                    && state.roomInspection().genieState0Interactive(state.creditsGameplay)) {
-                state.genie().setGenieSharedBodySpeedX(state.genie().genieSpeedX(state.entity.slot()) & 0xFF);
-                state.genie().setGenieSharedBodySpeedY(state.genie().genieSpeedY(state.entity.slot()) & 0xFF);
-                if (state.genie().genieActiveState(state.entity.slot()) != 5
-                        && state.handlerLinkCollisionEnabled
-                        && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
-                    state.background().requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 1
+                    && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
+                state.genie()
+                        .setGenieSharedBodySpeedX(
+                                state.genie().genieSpeedX(slotState.entity().slot()) & 0xFF);
+                state.genie()
+                        .setGenieSharedBodySpeedY(
+                                state.genie().genieSpeedY(slotState.entity().slot()) & 0xFF);
+                if (state.genie().genieActiveState(slotState.entity().slot()) != 5
+                        && timerGates.handlerLinkCollisionEnabled()
+                        && RoomEntityCombatRules.overlapsLink(
+                                slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
+                    state.background().requestLinkPush(slotState.entity(), EntityLinkCollisionRules.STANDARD_PUSH);
                 }
                 state.genie()
                         .advanceGenieBody(
-                                state.entity,
-                                state.frameCounter,
-                                state.linkEntityX,
-                                state.linkEntityY,
-                                state.randomByteSupplier);
-                if (!state.entityAt(state.entity.slot()).loaded()) {
+                                slotState.entity(),
+                                frameInput.frameCounter(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                frameInput.randomByteSupplier());
+                if (!state.entityAt(slotState.entity().slot()).loaded()) {
                     return false;
                 }
-                state.updated = state.entityAt(state.entity.slot());
+                slotState.updated(state.entityAt(slotState.entity().slot()));
             }
         }
         return true;

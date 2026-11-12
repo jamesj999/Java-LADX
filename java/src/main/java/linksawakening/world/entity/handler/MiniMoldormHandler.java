@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.MiniMoldormMotion;
 
@@ -28,19 +29,25 @@ final class MiniMoldormHandler {
     }
 
     private static boolean phase2MiniMoldorm(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            int slot = slotState.entity().slot();
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
-            state.miniMoldormMotion().beginFrame(state.entity, state.slot().ignoreHits(slot) != 0);
+            state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new)
+                    .beginFrame(slotState.entity(), state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
-                    state.background().applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision);
-            state.entity = recoil.entity();
-            state.updated = state.entity;
+                    state.background().applyEnemyRecoilIfNeeded(slotState.entity(), frameInput.backgroundCollision());
+            slotState.entity(recoil.entity());
+            slotState.updated(slotState.entity());
             RoomEntityBackgroundInteraction miniBackgroundInteraction =
                     state.background().interaction();
-            if (miniBackgroundInteraction == null && state.backgroundCollision != null) {
-                miniBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (miniBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                miniBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
@@ -49,42 +56,46 @@ final class MiniMoldormHandler {
                 // decrement for its direct source-derived API as well.
                 transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
-            MiniMoldormMotion.Update miniUpdate = state.miniMoldormMotion()
+            MiniMoldormMotion.Update miniUpdate = state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new)
                     .advanceAfterHistory(
-                            state.entity,
+                            slotState.entity(),
                             transitionForMotion,
                             state.slot().ignoreHits(slot),
                             state.slot().flashCountdown(slot),
                             miniBackgroundInteraction,
-                            state.randomByteSupplier,
-                            state.frame);
-            state.updated = miniUpdate.entity();
+                            frameInput.randomByteSupplier(),
+                            frameInput.frame());
+            slotState.updated(miniUpdate.entity());
             state.slot().setTransitionCountdown(slot, miniUpdate.transitionCountdown());
             if (state.sprites() != null) {
-                state.updated = withDefinition(
-                        state.updated,
+                slotState.updated(withDefinition(
+                        slotState.updated(),
                         state.sprites()
                                 .forMiniMoldormState(
                                         miniUpdate.headSpriteVariant(),
-                                        state.updated.x(),
-                                        (state.updated.y() - state.updated.z()) & 0xFF,
+                                        slotState.updated().x(),
+                                        (slotState.updated().y()
+                                                        - slotState.updated().z())
+                                                & 0xFF,
                                         miniUpdate.segment1X(),
                                         miniUpdate.segment1Y(),
                                         miniUpdate.segment2X(),
                                         miniUpdate.segment2Y()),
-                        0);
-            } else if (state.updated.spriteDefinition().supported()
+                        0));
+            } else if (slotState.updated().spriteDefinition().supported()
                     && miniUpdate.headSpriteVariant()
-                            < state.updated.spriteDefinition().variantCount()) {
-                state.updated = withVariant(state.updated, miniUpdate.headSpriteVariant());
+                            < slotState.updated().spriteDefinition().variantCount()) {
+                slotState.updated(withVariant(slotState.updated(), miniUpdate.headSpriteVariant()));
             }
-            state.preserveMiniMoldormPresentation = true;
+            presentationFlags.preserveMiniMoldormPresentation(true);
         }
         return true;
     }
 
     private static boolean phase2MiniMoldorm2(EntityFrameExecution state) {
-        state.miniMoldormMotion().initialize(state.entity);
+        var slotState = state.slotFrame();
+
+        state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new).initialize(slotState.entity());
 
         return true;
     }

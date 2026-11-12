@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.MoblinSwordMotion;
 
 /** ROM handler stages for MoblinSword. */
@@ -24,14 +25,20 @@ final class MoblinSwordHandler {
     }
 
     private static boolean phase2MoblinSword(EntityFrameExecution state) {
-        state.moblinSwordMotion().initialize(state.entity.slot(), state.entity.x());
+        var slotState = state.slotFrame();
+
+        state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                .initialize(slotState.entity().slot(), slotState.entity().x());
 
         return true;
     }
 
     private static boolean phase3MoblinSword(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
                 && !state.link().dialogActive()
                 && !state.link().inventoryAppearing()
                 && !state.roomInspection().roomTransitionActive()
@@ -40,21 +47,22 @@ final class MoblinSwordHandler {
                 && !state.roomInspection().witchGotItemPresentationActive()) {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
                     state.background().interaction();
-            if (swordBackgroundInteraction == null && state.backgroundCollision != null) {
-                swordBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (swordBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                swordBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            MoblinSwordMotion.Update moblinSwordUpdate = state.moblinSwordMotion()
+            MoblinSwordMotion.Update moblinSwordUpdate = state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new)
                     .advance(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
                             swordBackgroundInteraction,
-                            state.slot().ignoreHits(state.entity.slot()),
+                            state.slot().ignoreHits(slotState.entity().slot()),
                             state.projectiles().swordMoblinAlertingSoundCounter(),
                             state.roomInspection().entityMapId(),
                             state.lifecycle().transitionSequenceCounter(),
-                            state.frame);
-            state.updated = moblinSwordUpdate.entity();
+                            frameInput.frame());
+            slotState.updated(moblinSwordUpdate.entity());
             if (moblinSwordUpdate.dialogRequested()) {
                 state.emit(new DialogRequest(1, DIALOG_MOBLIN));
             }

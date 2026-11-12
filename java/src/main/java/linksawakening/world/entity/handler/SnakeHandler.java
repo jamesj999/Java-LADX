@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SnakeMotion;
 
 /** ROM handler stages for Snake. */
@@ -15,19 +16,23 @@ final class SnakeHandler {
     }
 
     private static boolean phase3Snake(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            SnakeMotion.Update snakeUpdate = state.snakeMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            SnakeMotion.Update snakeUpdate = state.motion(SnakeMotion.class, SnakeMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.backgroundCollision,
-                            state.slot().transitionCountdown(state.entity.slot()));
-            state.updated = snakeUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), snakeUpdate.transitionCountdown());
-            state.preserveSnakePresentation = true;
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision(),
+                            state.slot().transitionCountdown(slotState.entity().slot()));
+            slotState.updated(snakeUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), snakeUpdate.transitionCountdown());
+            presentationFlags.preserveSnakePresentation(true);
         }
         return true;
     }

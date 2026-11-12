@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for Peahat. */
 final class PeahatHandler {
@@ -14,9 +15,16 @@ final class PeahatHandler {
     }
 
     private static boolean phase3Peahat(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.updated = state.peaHatMotion()
-                    .advance(state.entity, state.frame, state.randomByteSupplier, state.backgroundCollision);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            slotState.updated(state.motion(PeaHatMotion.class, PeaHatMotion::new)
+                    .advance(
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision()));
         }
         return true;
     }

@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ThreeOfAKindMotion;
 
 /** ROM handler stages for ThreeOfAKind. */
@@ -19,20 +20,27 @@ final class ThreeOfAKindHandler {
     }
 
     private static boolean phase3ThreeOfAKind(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.threeOfAKindInteractive) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
 
-            state.slot().setHealth(state.entity.slot(), 0x20);
-            ThreeOfAKindMotion.Update cardUpdate = state.threeOfAKindMotion()
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.threeOfAKindInteractive()) {
+
+            state.slot().setHealth(slotState.entity().slot(), 0x20);
+            ThreeOfAKindMotion.Update cardUpdate = state.motion(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().ignoreHits(state.entity.slot()),
-                            state.randomByteSupplier,
-                            state.backgroundCollision);
-            state.updated = cardUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), cardUpdate.transitionCountdown());
-            state.preserveThreeOfAKindPresentation = true;
+                            slotState.entity(),
+                            frameInput.frame(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().ignoreHits(slotState.entity().slot()),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision());
+            slotState.updated(cardUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), cardUpdate.transitionCountdown());
+            presentationFlags.preserveThreeOfAKindPresentation(true);
         }
         return true;
     }

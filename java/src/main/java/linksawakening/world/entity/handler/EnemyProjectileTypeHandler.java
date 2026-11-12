@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 
 /** ROM handler stages for EnemyProjectileType. */
@@ -27,36 +28,49 @@ final class EnemyProjectileTypeHandler {
     }
 
     private static boolean phase3EnemyProjectileType(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            boolean preexistingCollision = state.enemyProjectileMotion().pendingLinkCollision(state.entity.slot());
-            boolean hasLinkCollision = state.enemyProjectileMotion().transitionCountdown(state.entity.slot()) == 0;
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            boolean preexistingCollision = state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                    .pendingLinkCollision(slotState.entity().slot());
+            boolean hasLinkCollision = state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                            .transitionCountdown(slotState.entity().slot())
+                    == 0;
             if (hasLinkCollision) {
                 var collisionEvent = EnemyProjectileCollision.check(
-                        state.entity,
-                        state.enemyProjectileMotion().direction(state.entity.slot()),
-                        state.projectileLinkState);
+                        slotState.entity(),
+                        state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                                .direction(slotState.entity().slot()),
+                        frameInput.projectileLinkState());
                 if (collisionEvent.isPresent()) {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
-                    state.projectileEvents.add(event);
+                    frameInput.projectileEvents().add(event);
                     if (event.remove()) {
-                        state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                        state.lifecycle()
+                                .disableEntityWithoutPersistence(
+                                        slotState.entity().slot());
                         return false;
                     }
                     preexistingCollision |= event.startsWallTransition();
                 }
             }
-            EnemyProjectileMotion.Update projectileUpdate = state.enemyProjectileMotion()
+            EnemyProjectileMotion.Update projectileUpdate = state.motion(
+                            EnemyProjectileMotion.class, EnemyProjectileMotion::new)
                     .advance(
-                            state.entity,
-                            state.backgroundCollision,
+                            slotState.entity(),
+                            frameInput.backgroundCollision(),
                             preexistingCollision,
-                            state.frame,
-                            state.background().entityGroundStatus(state.entity.slot()),
+                            frameInput.frame(),
+                            state.background()
+                                    .entityGroundStatus(slotState.entity().slot()),
                             state.background().groundInteractionSideScrolling(),
-                            state.handlerInteractive,
-                            state.projectileTimersInteractive);
+                            timerGates.handlerInteractive(),
+                            timerGates.projectileTimersInteractive());
             if (projectileUpdate.unloaded()) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
             if (projectileUpdate.collidedWithWall()) {
@@ -64,8 +78,8 @@ final class EnemyProjectileTypeHandler {
                 // $FF (including shield blocks, which already play a ting).
                 if (!preexistingCollision) {
                     state.emit(new EntityCombatEvent(
-                            state.entity.slot(),
-                            state.entity.type(),
+                            slotState.entity().slot(),
+                            slotState.entity().type(),
                             0,
                             false,
                             EntityCombatEvent.SoundChannel.JINGLE,
@@ -73,7 +87,7 @@ final class EnemyProjectileTypeHandler {
                 }
                 state.projectiles().setSwordMoblinAlertingSoundCounter(0x04);
             }
-            state.updated = projectileUpdate.entity();
+            slotState.updated(projectileUpdate.entity());
         }
         return true;
     }

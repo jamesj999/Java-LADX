@@ -24,20 +24,27 @@ final class ChestWithItemHandler {
     }
 
     private static boolean phase2ChestWithItem(EntityFrameExecution state) {
-        if (state.wasInitializing) {
-            state.pickups().initializeChestEntity(state.entity);
-            state.updated = withPositionAndVariant(
-                    state.entity, state.entity.x(), (state.entity.y() - 0x08) & 0xFF, state.entity.spriteVariant());
+        var slotState = state.slotFrame();
+
+        if (slotState.wasInitializing()) {
+            state.pickups().initializeChestEntity(slotState.entity());
+            slotState.updated(withPositionAndVariant(
+                    slotState.entity(),
+                    slotState.entity().x(),
+                    (slotState.entity().y() - 0x08) & 0xFF,
+                    slotState.entity().spriteVariant()));
         }
         return true;
     }
 
     private static boolean phase2ChestWithItem2(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.pickups().advanceChestEntity(state.index, state.entity)) {
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            if (state.pickups().advanceChestEntity(slotState.index(), slotState.entity())) {
                 return false;
             }
-            state.updated = state.entityAt(state.index);
+            slotState.updated(state.entityAt(slotState.index()));
         }
         return true;
     }

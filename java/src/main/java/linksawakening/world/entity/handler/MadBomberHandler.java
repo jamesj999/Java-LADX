@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.MadBomberMotion;
 
 /** ROM handler stages for MadBomber. */
@@ -20,21 +21,25 @@ final class MadBomberHandler {
     }
 
     private static boolean phase2MadBomber(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             // MadBomberEntityHandler rewrites this handler-owned drop
             // byte on every interactive pass before its state dispatch.
-            state.lifecycle().setDroppedItemBySlot(state.entity.slot(), 0x3C);
-            MadBomberMotion.Update madBomberUpdate = state.madBomberMotion()
+            state.lifecycle().setDroppedItemBySlot(slotState.entity().slot(), 0x3C);
+            MadBomberMotion.Update madBomberUpdate = state.motion(MadBomberMotion.class, MadBomberMotion::new)
                     .advance(
-                            state.entity,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.slot().flashCountdown(state.entity.slot()),
-                            state.randomByteSupplier);
-            state.updated = withVariant(madBomberUpdate.entity(), madBomberUpdate.spriteVariant());
-            state.preserveMadBomberPresentation = true;
-            state.slot().setTransitionCountdown(state.entity.slot(), madBomberUpdate.transitionCountdown());
+                            slotState.entity(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            state.slot().flashCountdown(slotState.entity().slot()),
+                            frameInput.randomByteSupplier());
+            slotState.updated(withVariant(madBomberUpdate.entity(), madBomberUpdate.spriteVariant()));
+            presentationFlags.preserveMadBomberPresentation(true);
+            state.slot().setTransitionCountdown(slotState.entity().slot(), madBomberUpdate.transitionCountdown());
             if (madBomberUpdate.bombSpawn() != null) {
                 MadBomberMotion.BombSpawn spawn = madBomberUpdate.bombSpawn();
                 int bombSlot = state.enemySpawns()

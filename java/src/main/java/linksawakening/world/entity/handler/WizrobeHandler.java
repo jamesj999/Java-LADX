@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WizrobeMotion;
 
 /** ROM handler stages for Wizrobe. */
@@ -20,38 +21,49 @@ final class WizrobeHandler {
     }
 
     private static boolean phase2Wizrobe(EntityFrameExecution state) {
-        if (state.wasInitializing) {
+        var slotState = state.slotFrame();
+
+        if (slotState.wasInitializing()) {
             // EntityInitWizrobe decrements the initial display-list variant
             // before the first active handler dispatch.
-            state.updated = withVariant(state.entity, -1);
+            slotState.updated(withVariant(slotState.entity(), -1));
         }
         return true;
     }
 
     private static boolean phase2Wizrobe2(EntityFrameExecution state) {
-        state.wizrobeMotion().initializeFromRoom(state.entity.slot(), state.entity.spriteVariant());
-        state.slot().setTransitionCountdown(state.entity.slot(), 0x80);
-        state.preserveWizrobePresentation = true;
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
+
+        state.motion(WizrobeMotion.class, WizrobeMotion::new)
+                .initializeFromRoom(
+                        slotState.entity().slot(), slotState.entity().spriteVariant());
+        state.slot().setTransitionCountdown(slotState.entity().slot(), 0x80);
+        presentationFlags.preserveWizrobePresentation(true);
 
         return true;
     }
 
     private static boolean phase3Wizrobe(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            WizrobeMotion.Update wizrobeUpdate = state.wizrobeMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            WizrobeMotion.Update wizrobeUpdate = state.motion(WizrobeMotion.class, WizrobeMotion::new)
                     .advance(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().physicsFlags(state.entity.slot()));
-            state.updated = wizrobeUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), wizrobeUpdate.transitionCountdown());
-            state.slot().setPhysicsFlags(state.entity.slot(), wizrobeUpdate.physicsFlags());
-            state.preserveWizrobePresentation = true;
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().physicsFlags(slotState.entity().slot()));
+            slotState.updated(wizrobeUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), wizrobeUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slotState.entity().slot(), wizrobeUpdate.physicsFlags());
+            presentationFlags.preserveWizrobePresentation(true);
             if (wizrobeUpdate.projectileSpawn() != null) {
-                state.enemySpawns().spawnWizrobeProjectile(state.updated, wizrobeUpdate.projectileSpawn());
+                state.enemySpawns().spawnWizrobeProjectile(slotState.updated(), wizrobeUpdate.projectileSpawn());
             }
         }
         return true;

@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
 
 /** ROM handler stages for GiantGopongaFlower. */
@@ -20,24 +21,32 @@ final class GiantGopongaFlowerHandler {
     }
 
     private static boolean phase4GiantGopongaFlower(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             if (GiantGopongaMotion.overlapsInteractiveLink(
-                    state.entity, state.linkEntityX, state.linkEntityY, state.handlerLinkCollisionEnabled)) {
-                state.background().requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    slotState.entity(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    timerGates.handlerLinkCollisionEnabled())) {
+                state.background().requestLinkPush(slotState.entity(), EntityLinkCollisionRules.STANDARD_PUSH);
             }
-            GiantGopongaMotion.Update giantUpdate = state.giantGopongaMotion()
+            GiantGopongaMotion.Update giantUpdate = state.motion(GiantGopongaMotion.class, GiantGopongaMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.linkEntityX,
-                            state.linkEntityY);
-            state.updated = giantUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), giantUpdate.transitionCountdown());
+                            slotState.entity(),
+                            frameInput.frame(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY());
+            slotState.updated(giantUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), giantUpdate.transitionCountdown());
             if (giantUpdate.projectileSpawn() != null) {
-                state.enemySpawns().spawnGopongaProjectile(state.entity, giantUpdate.projectileSpawn());
+                state.enemySpawns().spawnGopongaProjectile(slotState.entity(), giantUpdate.projectileSpawn());
             }
-            state.preserveGiantGopongaPresentation = true;
+            presentationFlags.preserveGiantGopongaPresentation(true);
         }
         return true;
     }

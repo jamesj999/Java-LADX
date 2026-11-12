@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.HidingZolMotion;
 
 /** ROM handler stages for HidingZol. */
@@ -18,37 +19,41 @@ final class HidingZolHandler {
     }
 
     private static boolean phase3HidingZol(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
                     state.background().interaction();
-            if (hidingZolBackgroundInteraction == null && state.backgroundCollision != null) {
-                hidingZolBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (hidingZolBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                hidingZolBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            HidingZolMotion.Update hidingZolUpdate = state.hidingZolMotion()
+            HidingZolMotion.Update hidingZolUpdate = state.motion(HidingZolMotion.class, HidingZolMotion::new)
                     .advance(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
                             hidingZolBackgroundInteraction,
-                            state.frame);
-            state.updated = hidingZolUpdate.entity();
+                            frameInput.frame());
+            slotState.updated(hidingZolUpdate.entity());
             if (hidingZolUpdate.clearsIgnoreHitsCountdown()) {
                 // func_007_73F7 temporarily writes $03 around the
                 // background helper, then clears the shared byte.
-                state.slot().setIgnoreHits(state.entity.slot(), 0);
+                state.slot().setIgnoreHits(slotState.entity().slot(), 0);
             }
             if (hidingZolUpdate.jumpJingle()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x24));
             }
             if (hidingZolUpdate.physicsFlags() >= 0) {
-                state.slot().setPhysicsFlags(state.entity.slot(), hidingZolUpdate.physicsFlags());
+                state.slot().setPhysicsFlags(slotState.entity().slot(), hidingZolUpdate.physicsFlags());
             }
         }
         return true;

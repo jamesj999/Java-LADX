@@ -18,14 +18,24 @@ final class SleepyToadstoolHandler {
     }
 
     private static boolean phase1SleepyToadstool(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
-            if (!state.rewards().toadstoolPickupSequenceActive(state.entity.slot())
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
+            if (!state.rewards()
+                            .toadstoolPickupSequenceActive(slotState.entity().slot())
                     && (state.story().playerHasToadstool() || state.story().playerMagicPowderCount() != 0)) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            if (state.rewards().toadstoolPickupSequenceActive(state.entity.slot())) {
-                state.rewards().advanceToadstoolPickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+            if (state.rewards().toadstoolPickupSequenceActive(slotState.entity().slot())) {
+                state.rewards()
+                        .advanceToadstoolPickup(
+                                slotState.entity(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                frameInput.linkZ());
                 return false;
             }
         }

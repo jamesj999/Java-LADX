@@ -30,23 +30,33 @@ final class HidingSlimeKeyHandler {
     }
 
     private static boolean phase2HidingSlimeKey(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
                 && (state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             // HidingSlimeKeyEntityHandler checks ROOM_STATUS_EVENT_1 before
             // calling the shared reveal helper and unloads without touching
             // the source persistence mask.
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;
     }
 
     private static boolean phase2HidingSlimeKey2(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            int slot = slotState.entity().slot();
             SlimeKeyTransitionUpdate keyUpdate = state.pickups()
-                    .advanceHidingSlimeKey(state.updated, slot, state.linkEntityX, state.linkEntityY, state.linkZ);
+                    .advanceHidingSlimeKey(
+                            slotState.updated(),
+                            slot,
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ());
             state.slot().setTransitionCountdown(slot, keyUpdate.nextTransitionCountdown());
             if (keyUpdate.reward() != null) {
                 state.emit(keyUpdate.reward());
@@ -56,17 +66,19 @@ final class HidingSlimeKeyHandler {
                 state.lifecycle().disableEntityWithoutPersistence(slot);
                 return false;
             }
-            state.keyDropTransitionActive = keyUpdate.holdAboveLink();
-            state.updated = keyUpdate.entity();
+            slotState.keyDropTransitionActive(keyUpdate.holdAboveLink());
+            slotState.updated(keyUpdate.entity());
         }
         return true;
     }
 
     private static boolean phase2HidingSlimeKey3(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
             // The handler's first instruction is the completed-room
             // gate, including the INIT dispatch path.
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;

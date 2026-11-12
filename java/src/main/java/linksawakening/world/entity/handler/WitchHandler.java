@@ -11,6 +11,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WitchMotion;
 
 /** ROM handler stages for Witch. */
@@ -20,12 +21,16 @@ final class WitchHandler {
     }
 
     private static boolean phase4Witch(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.story().advanceWitchGotItemPresentation(state.entity.slot());
-            WitchMotion.Update witchUpdate = state.witchMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            state.story().advanceWitchGotItemPresentation(slotState.entity().slot());
+            WitchMotion.Update witchUpdate = state.motion(WitchMotion.class, WitchMotion::new)
                     .advance(
-                            state.updated,
-                            state.slot().transitionCountdown(state.entity.slot()),
+                            slotState.updated(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
                             new WitchMotion.Input(
                                     state.story().playerHasToadstool(),
                                     state.link().linkItemB(),
@@ -33,20 +38,20 @@ final class WitchHandler {
                                     state.link().actionButtonAHeld(),
                                     state.link().actionButtonBHeld(),
                                     state.link().dialogActive(),
-                                    state.linkZ != 0,
-                                    state.linkEntityX,
-                                    state.linkEntityY,
-                                    state.romLinkDirection,
+                                    frameInput.linkZ() != 0,
+                                    frameInput.linkEntityX(),
+                                    frameInput.linkEntityY(),
+                                    frameInput.romLinkDirection(),
                                     state.lifecycle().transitionSequenceCounter(),
                                     state.story().booBuddyTriggerCount(),
                                     state.story().bgPaletteEffectAddress(),
                                     state.story().paletteDataFlags(),
                                     state.roomInspection().defaultMusicTrack()));
-            state.updated = witchUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), witchUpdate.transitionCountdown());
-            state.preserveWitchPresentation = true;
+            slotState.updated(witchUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), witchUpdate.transitionCountdown());
+            presentationFlags.preserveWitchPresentation(true);
             if (witchUpdate.blockLink()) {
-                state.emit(new LinkMotionBlockRequest(state.entity.slot(), 0, 0, witchUpdate.motionBlockValue()));
+                state.emit(new LinkMotionBlockRequest(slotState.entity().slot(), 0, 0, witchUpdate.motionBlockValue()));
             }
             if (witchUpdate.dialogGlobalId() >= 0) {
                 state.emit(new DialogRequest(witchUpdate.dialogGlobalId() >>> 8, witchUpdate.dialogGlobalId() & 0xFF));
@@ -56,8 +61,8 @@ final class WitchHandler {
             }
             if (witchUpdate.jingleId() >= 0) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
@@ -65,13 +70,13 @@ final class WitchHandler {
             }
             if (witchUpdate.exchangeStarted()) {
                 int inventorySlot = witchUpdate.clearedSlot() == WitchMotion.InventorySlot.B ? 0 : 1;
-                state.emit(new WitchExchangeEvent(state.entity.slot(), inventorySlot));
+                state.emit(new WitchExchangeEvent(slotState.entity().slot(), inventorySlot));
                 state.story().consumeToadstool();
             }
             if (witchUpdate.grantMagicPowder()) {
-                state.emit(new WitchRewardEvent(state.entity.slot()));
-                state.story().startWitchGotItemCountdown(state.entity.slot());
-                state.story().presentWitchGotItem(state.entity.slot());
+                state.emit(new WitchRewardEvent(slotState.entity().slot()));
+                state.story().startWitchGotItemCountdown(slotState.entity().slot());
+                state.story().presentWitchGotItem(slotState.entity().slot());
             }
         }
         return true;

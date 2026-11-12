@@ -18,10 +18,15 @@ final class HeartContainerHandler {
     }
 
     private static boolean phase1HeartContainer(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && state.slot().transitionCountdown(state.entity.slot()) != 0) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.slot().transitionCountdown(slotState.entity().slot()) != 0) {
 
             state.bossRewards()
-                    .advanceCollectedHeartContainer(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+                    .advanceCollectedHeartContainer(
+                            slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY(), frameInput.linkZ());
             return false;
         }
         return true;

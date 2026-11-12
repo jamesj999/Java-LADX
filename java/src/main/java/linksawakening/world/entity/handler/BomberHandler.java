@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BomberMotion;
 
 /** ROM handler stages for Bomber. */
@@ -19,19 +20,22 @@ final class BomberHandler {
     }
 
     private static boolean phase2Bomber(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            BomberMotion.Update bomberUpdate = state.bomberMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            BomberMotion.Update bomberUpdate = state.motion(BomberMotion.class, BomberMotion::new)
                     .advance(
-                            state.entity,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.romLinkDirection,
-                            state.swordCollisionActive,
-                            state.randomByteSupplier,
-                            state.backgroundCollision);
-            state.updated = bomberUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), bomberUpdate.transitionCountdown());
+                            slotState.entity(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romLinkDirection(),
+                            frameInput.swordCollisionActive(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision());
+            slotState.updated(bomberUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), bomberUpdate.transitionCountdown());
             if (bomberUpdate.bombSpawn() != null) {
                 BomberMotion.BombSpawn spawn = bomberUpdate.bombSpawn();
                 int bombSlot = state.enemySpawns()

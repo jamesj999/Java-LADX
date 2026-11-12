@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SpikeTrapMotion;
 
 /** ROM handler stages for SpikeTrap. */
@@ -17,14 +18,21 @@ final class SpikeTrapHandler {
     }
 
     private static boolean phase3SpikeTrap(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            SpikeTrapMotion.Update spikeTrapUpdate = state.spikeTrapMotion()
-                    .advance(state.entity, state.linkEntityX, state.linkEntityY, state.backgroundCollision);
-            state.updated = spikeTrapUpdate.entity();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            SpikeTrapMotion.Update spikeTrapUpdate = state.motion(SpikeTrapMotion.class, SpikeTrapMotion::new)
+                    .advance(
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.backgroundCollision());
+            slotState.updated(spikeTrapUpdate.entity());
             if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         spikeTrapUpdate.soundChannel(),

@@ -18,15 +18,19 @@ final class MagicPowderSprinkleHandler {
     }
 
     private static boolean phase1MagicPowderSprinkle(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             state.projectiles()
                     .advanceMagicPowderSprinkleEntity(
-                            state.index,
-                            state.entity,
-                            state.frame,
-                            state.projectileLinkState.motionState(),
-                            state.handlerInteractive && !state.creditsGameplay,
-                            state.projectileTimersInteractive);
+                            slotState.index(),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.projectileLinkState().motionState(),
+                            timerGates.handlerInteractive() && !frameInput.creditsGameplay(),
+                            timerGates.projectileTimersInteractive());
             return false;
         }
         return true;

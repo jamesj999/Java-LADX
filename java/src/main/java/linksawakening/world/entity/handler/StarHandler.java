@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for Star. */
 final class StarHandler {
@@ -15,21 +16,29 @@ final class StarHandler {
     }
 
     private static boolean phase3Star(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.handlerLinkCollisionEnabled) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.handlerLinkCollisionEnabled()) {
 
             RoomEntityBackgroundInteraction starBackgroundInteraction =
                     state.background().interaction();
-            if (starBackgroundInteraction == null && state.backgroundCollision != null) {
-                starBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (starBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                starBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            state.updated = state.starMotion()
+            slotState.updated(state.motion(StarMotion.class, StarMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.randomByteSupplier,
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.randomByteSupplier(),
                             starBackgroundInteraction,
-                            state.slot().ignoreHits(state.entity.slot()));
-            state.preserveStarPresentation = true;
+                            state.slot().ignoreHits(slotState.entity().slot())));
+            presentationFlags.preserveStarPresentation(true);
         }
         return true;
     }

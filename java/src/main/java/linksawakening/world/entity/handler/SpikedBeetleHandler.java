@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SpikedBeetleMotion;
 
 /** ROM handler stages for SpikedBeetle. */
@@ -19,22 +20,27 @@ final class SpikedBeetleHandler {
     }
 
     private static boolean phase4SpikedBeetle(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            SpikedBeetleMotion.Update spikedBeetleUpdate = state.spikedBeetleMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            SpikedBeetleMotion.Update spikedBeetleUpdate = state.motion(
+                            SpikedBeetleMotion.class, SpikedBeetleMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.backgroundCollision,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().ignoreHits(state.entity.slot()));
-            state.updated = spikedBeetleUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), spikedBeetleUpdate.transitionCountdown());
-            state.slot().setOptions1Override(state.entity.slot(), spikedBeetleUpdate.options1());
-            state.slot().setHitboxFlags(state.entity.slot(), spikedBeetleUpdate.hitboxFlags());
-            state.preserveSpikedBeetlePresentation = true;
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().ignoreHits(slotState.entity().slot()));
+            slotState.updated(spikedBeetleUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), spikedBeetleUpdate.transitionCountdown());
+            state.slot().setOptions1Override(slotState.entity().slot(), spikedBeetleUpdate.options1());
+            state.slot().setHitboxFlags(slotState.entity().slot(), spikedBeetleUpdate.hitboxFlags());
+            presentationFlags.preserveSpikedBeetlePresentation(true);
         }
         return true;
     }

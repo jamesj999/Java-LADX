@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for HardhatBeetle. */
 final class HardhatBeetleHandler {
@@ -18,15 +19,18 @@ final class HardhatBeetleHandler {
     }
 
     private static boolean phase4HardhatBeetle(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.updated = state.hardHatMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            slotState.updated(state.motion(HardHatMotion.class, HardHatMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.backgroundCollision);
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision()));
         }
         return true;
     }

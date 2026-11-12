@@ -12,6 +12,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.MoldormMotion;
 
@@ -30,39 +31,44 @@ final class MoldormHandler {
     }
 
     private static boolean phase1Moldorm(EntityFrameExecution state) {
-        if (!state.wasInitializing
+        var slotState = state.slotFrame();
+
+        if (!slotState.wasInitializing()
                 && !state.roomInspection().roomTransitionActive()
                 && !state.link().inventoryAppearing()) {
-            BossIntroMotion.Update intro = state.bossIntroMotion()
+            BossIntroMotion.Update intro = state.motion(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
-                            state.slotProperties().options1(state.entity.slot()),
-                            state.entity.type(),
+                            state.slotProperties().options1(slotState.entity().slot()),
+                            slotState.entity().type(),
                             state.roomInspection().entityMapId(),
                             state.lifecycle().transitionSequenceCounter());
             if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
                 state.emit(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
-                state.moldormIntroOpenedThisFrame = true;
+                slotState.moldormIntroOpenedThisFrame(true);
             }
         }
         return true;
     }
 
     private static boolean phase1Moldorm2(EntityFrameExecution state) {
-        if (!state.wasInitializing
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (!slotState.wasInitializing()
                 && !state.roomInspection().roomTransitionActive()
                 && !state.roomInspection().freeMovementMode()) {
             int dx = 0;
             int dy = 0;
-            if (((state.linkEntityX - 0x11) & 0xFF) >= 0x7E) {
-                dx = state.linkEntityX < 0x50 ? 1 : -1;
-            } else if (((state.linkEntityY - 0x16) & 0xFF) >= 0x5E) {
+            if (((frameInput.linkEntityX() - 0x11) & 0xFF) >= 0x7E) {
+                dx = frameInput.linkEntityX() < 0x50 ? 1 : -1;
+            } else if (((frameInput.linkEntityY() - 0x16) & 0xFF) >= 0x5E) {
                 dy = -1;
             }
             if (dx != 0 || dy != 0) {
-                state.emit(new LinkMotionBlockRequest(state.entity.slot(), dx, dy, 1));
-                state.linkEntityX = (state.linkEntityX + dx) & 0xFF;
-                state.linkEntityY = (state.linkEntityY + dy) & 0xFF;
+                state.emit(new LinkMotionBlockRequest(slotState.entity().slot(), dx, dy, 1));
+                frameInput.linkEntityX((frameInput.linkEntityX() + dx) & 0xFF);
+                frameInput.linkEntityY((frameInput.linkEntityY() + dy) & 0xFF);
                 state.lifecycle().delayInteractions(2);
             }
         }
@@ -70,30 +76,42 @@ final class MoldormHandler {
     }
 
     private static boolean phase2Moldorm(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            int slot = state.entity.slot();
-            if (!state.handlerInteractive || state.countdownBlocksInteraction || state.moldormIntroOpenedThisFrame) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            int slot = slotState.entity().slot();
+            if (!timerGates.handlerInteractive()
+                    || timerGates.countdownBlocksInteraction()
+                    || slotState.moldormIntroOpenedThisFrame()) {
                 if (state.sprites() != null) {
                     state.replaceEntity(withDefinition(
-                            state.entity,
+                            slotState.entity(),
                             state.sprites()
                                     .forMoldormState(
-                                            state.moldormMotion().headSpriteVariant(slot),
-                                            state.entity.x(),
-                                            (state.entity.y() - state.entity.z()) & 0xFF,
-                                            state.moldormMotion().currentTailSegments(slot),
+                                            state.motion(MoldormMotion.class, MoldormMotion::new)
+                                                    .headSpriteVariant(slot),
+                                            slotState.entity().x(),
+                                            (slotState.entity().y()
+                                                            - slotState.entity().z())
+                                                    & 0xFF,
+                                            state.motion(MoldormMotion.class, MoldormMotion::new)
+                                                    .currentTailSegments(slot),
                                             0,
-                                            state.frame),
+                                            frameInput.frame()),
                             0));
                 }
                 if (state.roomInspection().roomTransitionActive())
-                    state.moldormMotion().resetHistory(slot);
+                    state.motion(MoldormMotion.class, MoldormMotion::new).resetHistory(slot);
                 return false;
             }
             RoomEntityBackgroundInteraction moldormBackgroundInteraction =
                     state.background().interaction();
-            if (moldormBackgroundInteraction == null && state.backgroundCollision != null) {
-                moldormBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (moldormBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                moldormBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {
@@ -101,51 +119,58 @@ final class MoldormHandler {
                 // the direct motion API performs the same decrement.
                 transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
-            MoldormMotion.Update moldormUpdate = state.moldormMotion()
+            MoldormMotion.Update moldormUpdate = state.motion(MoldormMotion.class, MoldormMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
+                            slotState.entity(),
+                            frameInput.frame(),
                             transitionForMotion,
                             state.slot().ignoreHits(slot),
                             state.slot().flashCountdown(slot),
                             state.slot().health(slot),
-                            state.randomByteSupplier,
+                            frameInput.randomByteSupplier(),
                             moldormBackgroundInteraction);
-            state.updated = moldormUpdate.entity();
+            slotState.updated(moldormUpdate.entity());
             state.slot().setTransitionCountdown(slot, moldormUpdate.transitionCountdown());
             if (moldormUpdate.noiseRequested()) {
                 state.emit(new EntityCombatEvent(
-                        slot, state.entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1B));
+                        slot, slotState.entity().type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1B));
             }
             if (state.sprites() != null) {
                 MoldormMotion.Presentation presentation = moldormUpdate.presentation();
-                state.updated = withDefinition(
-                        state.updated,
+                slotState.updated(withDefinition(
+                        slotState.updated(),
                         state.sprites()
                                 .forMoldormPresentation(
                                         presentation.headSpriteVariant(),
                                         presentation.headX(),
                                         presentation.headY(),
-                                        state.updated.x(),
-                                        (state.updated.y() - state.updated.z()) & 0xFF,
+                                        slotState.updated().x(),
+                                        (slotState.updated().y()
+                                                        - slotState.updated().z())
+                                                & 0xFF,
                                         presentation.segments(),
                                         0,
-                                        state.frame),
-                        0);
+                                        frameInput.frame()),
+                        0));
             }
             state.slot().setPhysicsFlags(slot, 0x02);
-            state.preserveMoldormPresentation = true;
+            presentationFlags.preserveMoldormPresentation(true);
         }
         return true;
     }
 
     private static boolean phase2Moldorm2(EntityFrameExecution state) {
-        state.bossRewards().advanceMoldormDestruction(state.entity, state.frame);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        state.bossRewards().advanceMoldormDestruction(slotState.entity(), frameInput.frame());
         return false;
     }
 
     private static boolean phase2Moldorm3(EntityFrameExecution state) {
-        state.moldormMotion().initialize(state.entity);
+        var slotState = state.slotFrame();
+
+        state.motion(MoldormMotion.class, MoldormMotion::new).initialize(slotState.entity());
 
         return true;
     }

@@ -21,13 +21,21 @@ final class GopongaFlowerHandler {
     }
 
     private static boolean phase4GopongaFlower(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             if (GopongaFlowerMotion.overlapsInteractiveLink(
-                    state.entity, state.linkEntityX, state.linkEntityY, state.handlerLinkCollisionEnabled)) {
-                state.background().requestLinkPush(state.entity, EntityLinkCollisionRules.STANDARD_PUSH);
+                    slotState.entity(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    timerGates.handlerLinkCollisionEnabled())) {
+                state.background().requestLinkPush(slotState.entity(), EntityLinkCollisionRules.STANDARD_PUSH);
             }
-            state.updated = withVariant(state.updated, GopongaFlowerMotion.frameVariant(state.frame));
-            state.preserveGopongaFlowerPresentation = true;
+            slotState.updated(withVariant(slotState.updated(), GopongaFlowerMotion.frameVariant(frameInput.frame())));
+            presentationFlags.preserveGopongaFlowerPresentation(true);
         }
         return true;
     }

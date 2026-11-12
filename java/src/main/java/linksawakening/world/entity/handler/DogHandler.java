@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.DogMotion;
 
 /** ROM handler stages for Dog. */
@@ -18,45 +19,53 @@ final class DogHandler {
     }
 
     private static boolean phase1Dog(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             // DogEntityHandler writes this before ReturnIfNonInteractive_19.
-            state.slot().setHealth(state.entity.slot(), DogMotion.HANDLER_HEALTH);
+            state.slot().setHealth(slotState.entity().slot(), DogMotion.HANDLER_HEALTH);
         }
         return true;
     }
 
     private static boolean phase4Dog(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction dogBackgroundInteraction =
                     state.background().interaction();
-            if (dogBackgroundInteraction == null && state.backgroundCollision != null) {
-                dogBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (dogBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                dogBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            DogMotion.Update dogUpdate = state.dogMotion()
+            DogMotion.Update dogUpdate = state.motion(DogMotion.class, DogMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().transitionCountdown(slot),
                             state.slot().physicsFlags(slot),
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.romLinkDirection,
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romLinkDirection(),
                             state.link().actionButtonAHeld(),
                             state.link().dialogActive(),
-                            state.randomByteSupplier,
+                            frameInput.randomByteSupplier(),
                             dogBackgroundInteraction);
-            state.updated = dogUpdate.entity();
+            slotState.updated(dogUpdate.entity());
             state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());
-            state.applyGenericGroundInteraction = dogUpdate.appliesBackgroundInteraction();
+            slotState.applyGenericGroundInteraction(dogUpdate.appliesBackgroundInteraction());
             if (dogUpdate.dialogRequested()) {
                 state.emit(new DialogRequest(0, dogUpdate.dialogLowId()));
             }
-            state.preserveDogPresentation = true;
+            presentationFlags.preserveDogPresentation(true);
         }
         return true;
     }

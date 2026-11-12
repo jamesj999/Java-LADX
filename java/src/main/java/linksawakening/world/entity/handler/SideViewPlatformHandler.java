@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SideViewPlatformMotion;
 
 /** ROM handler stages for SideViewPlatform. */
@@ -22,54 +23,66 @@ final class SideViewPlatformHandler {
     }
 
     private static boolean phase2Type(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && state.handlerLinkCollisionEnabled
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.handlerLinkCollisionEnabled()
                 && state.background().entityTimersInteractive()
-                && !state.creditsGameplay
+                && !frameInput.creditsGameplay()
                 && state.lifecycle().transitionSequenceCounter() == 0x04) {
-            SideViewPlatformMotion.Frame platformFrame =
-                    state.sideViewPlatformMotion().beginFrame(state.entity);
+            SideViewPlatformMotion.Frame platformFrame = state.motion(
+                            SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                    .beginFrame(slotState.entity());
             RoomEntity movedPlatform = platformFrame.entity();
             if (platformFrame.horizontalDelta() != 0
-                    && state.backgroundCollision != null
-                    && state.backgroundCollision.blocks(
-                            state.entity,
-                            platformFrame.horizontalDelta() < 0 ? 1 : 0,
-                            movedPlatform.x(),
-                            movedPlatform.y())) {
-                platformFrame = state.sideViewPlatformMotion().restoreHorizontalPosition(state.entity, platformFrame);
+                    && frameInput.backgroundCollision() != null
+                    && frameInput
+                            .backgroundCollision()
+                            .blocks(
+                                    slotState.entity(),
+                                    platformFrame.horizontalDelta() < 0 ? 1 : 0,
+                                    movedPlatform.x(),
+                                    movedPlatform.y())) {
+                platformFrame = state.motion(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                        .restoreHorizontalPosition(slotState.entity(), platformFrame);
                 movedPlatform = platformFrame.entity();
             }
-            if (platformFrame.verticalDelta() != 0 && state.backgroundCollision != null) {
+            if (platformFrame.verticalDelta() != 0 && frameInput.backgroundCollision() != null) {
                 int direction = platformFrame.verticalDelta() < 0 ? 2 : 3;
-                if (state.backgroundCollision.blocks(state.entity, direction, movedPlatform.x(), movedPlatform.y())) {
-                    platformFrame = state.sideViewPlatformMotion().restoreVerticalPosition(state.entity, platformFrame);
+                if (frameInput
+                        .backgroundCollision()
+                        .blocks(slotState.entity(), direction, movedPlatform.x(), movedPlatform.y())) {
+                    platformFrame = state.motion(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                            .restoreVerticalPosition(slotState.entity(), platformFrame);
                     movedPlatform = platformFrame.entity();
                 }
             }
             boolean standing = state.background().groundInteractionSideScrolling()
-                    && (state.linkZ & 0xFF) == 0
+                    && (frameInput.linkZ() & 0xFF) == 0
                     && (state.link().currentLinkSpeedY() & 0x80) == 0
-                    && sideViewPlatformOverlapsLink(movedPlatform, state.linkEntityX, state.linkEntityY)
-                    && (((state.linkEntityY - movedPlatform.y() + 0x08) & 0x80) != 0);
-            boolean activationAllowed = state.roomInspection().entityRoomId() == 0x3B || state.carryingEntity;
+                    && sideViewPlatformOverlapsLink(movedPlatform, frameInput.linkEntityX(), frameInput.linkEntityY())
+                    && (((frameInput.linkEntityY() - movedPlatform.y() + 0x08) & 0x80) != 0);
+            boolean activationAllowed = state.roomInspection().entityRoomId() == 0x3B || slotState.carryingEntity();
             if (standing) {
                 state.emit(new SideViewPlatformLinkRequest(
-                        state.entity.slot(),
+                        slotState.entity().slot(),
                         platformFrame.horizontalDelta(),
                         (movedPlatform.y() - 0x10) & 0xFF,
                         0x02,
                         true,
                         activationAllowed));
             }
-            SideViewPlatformMotion.Update platformUpdate = state.sideViewPlatformMotion()
-                    .finishFrame(movedPlatform, platformFrame, state.frame, standing, activationAllowed);
-            state.updated = platformUpdate.entity();
+            SideViewPlatformMotion.Update platformUpdate = state.motion(
+                            SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                    .finishFrame(movedPlatform, platformFrame, frameInput.frame(), standing, activationAllowed);
+            slotState.updated(platformUpdate.entity());
             if (platformUpdate.rumble()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.NOISE,

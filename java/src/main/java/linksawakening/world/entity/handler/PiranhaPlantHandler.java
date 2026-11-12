@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.PiranhaMotion;
 
 /** ROM handler stages for PiranhaPlant. */
@@ -19,21 +20,26 @@ final class PiranhaPlantHandler {
     }
 
     private static boolean phase4PiranhaPlant(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
                 && state.lifecycle().transitionSequenceCounter() == 0x04
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
-            PiranhaMotion.Update piranhaUpdate = state.piranhaMotion()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
+            PiranhaMotion.Update piranhaUpdate = state.motion(PiranhaMotion.class, PiranhaMotion::new)
                     .advance(
-                            state.updated,
+                            slotState.updated(),
                             state.slot().transitionCountdown(slot),
-                            state.linkEntityX,
-                            state.linkEntityY);
-            state.updated = piranhaUpdate.entity();
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY());
+            slotState.updated(piranhaUpdate.entity());
             state.slot().setTransitionCountdown(slot, piranhaUpdate.transitionCountdown());
-            state.preservePiranhaPresentation = true;
+            presentationFlags.preservePiranhaPresentation(true);
         }
         return true;
     }

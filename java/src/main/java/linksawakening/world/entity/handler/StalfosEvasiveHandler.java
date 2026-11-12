@@ -11,6 +11,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.StalfosEvasiveMotion;
 
 /** ROM handler stages for StalfosEvasive. */
@@ -24,45 +25,54 @@ final class StalfosEvasiveHandler {
     }
 
     private static boolean phase3StalfosEvasive(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            StalfosEvasiveMotion.Update evasiveUpdate = state.stalfosEvasiveMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            StalfosEvasiveMotion.Update evasiveUpdate = state.motion(
+                            StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
                             state.link().actionButtonsHeld(),
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().ignoreHits(state.entity.slot()),
-                            state.randomByteSupplier,
-                            state.backgroundCollision,
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().ignoreHits(slotState.entity().slot()),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision(),
                             state.roomInspection().entityMapId());
-            state.updated = evasiveUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), evasiveUpdate.transitionCountdown());
+            slotState.updated(evasiveUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {
-                state.enemySpawns().spawnEvasiveClone(state.entity, evasiveUpdate.cloneRequest());
+                state.enemySpawns().spawnEvasiveClone(slotState.entity(), evasiveUpdate.cloneRequest());
             }
             if (evasiveUpdate.swordPokeRequested()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x07));
                 state.emit(new TransientVfxRequest(
                         TransientVfxType.SWORD_POKE,
-                        state.updated.x(),
-                        (state.updated.y() - state.updated.z()) & 0xFF));
+                        slotState.updated().x(),
+                        (slotState.updated().y() - slotState.updated().z()) & 0xFF));
             }
             if (evasiveUpdate.unloadRequested()) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
             if (state.sprites() != null) {
                 EntitySpriteDefinition evasiveDefinition = state.sprites()
-                        .forStalfosEvasiveState(state.stalfosEvasiveMotion().privateState1(state.entity.slot()));
-                state.updated = withDefinition(state.updated, evasiveDefinition, state.updated.spriteVariant());
+                        .forStalfosEvasiveState(state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                                .privateState1(slotState.entity().slot()));
+                slotState.updated(withDefinition(
+                        slotState.updated(),
+                        evasiveDefinition,
+                        slotState.updated().spriteVariant()));
             }
         }
         return true;

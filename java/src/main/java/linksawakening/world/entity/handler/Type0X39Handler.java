@@ -12,7 +12,11 @@ final class Type0X39Handler {
     }
 
     private static boolean phase1Type0X39(EntityFrameExecution state) {
-        state.rewards().refreshInstrumentPalette(state.status, state.entity.slot(), state.frame);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        state.rewards()
+                .refreshInstrumentPalette(slotState.status(), slotState.entity().slot(), frameInput.frame());
         return true;
     }
 }

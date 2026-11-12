@@ -14,6 +14,7 @@ import linksawakening.world.entity.event.LinkFallenPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.BossIntroMotion;
 
@@ -25,11 +26,15 @@ final class ArmosKnightHandler {
     }
 
     private static boolean phase4ArmosKnight(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            BossIntroMotion.Update bossIntro = state.bossIntroMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            BossIntroMotion.Update bossIntro = state.motion(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
-                            state.slotProperties().options1(state.entity.slot()),
-                            state.entity.type(),
+                            state.slotProperties().options1(slotState.entity().slot()),
+                            slotState.entity().type(),
                             state.roomInspection().entityMapId(),
                             state.lifecycle().transitionSequenceCounter());
             if (bossIntro.musicTrack() >= 0) {
@@ -40,34 +45,34 @@ final class ArmosKnightHandler {
             }
             state.background()
                     .requestArmosLinkPush(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.projectileLinkState.motionState());
-            ArmosKnightMotion.Update armosKnightUpdate = state.armosKnightMotion()
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.projectileLinkState().motionState());
+            ArmosKnightMotion.Update armosKnightUpdate = state.motion(ArmosKnightMotion.class, ArmosKnightMotion::new)
                     .advance(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().physicsFlags(state.entity.slot()),
-                            state.slot().hitboxFlags(state.entity.slot()),
-                            state.slotProperties().options1(state.entity.slot()),
-                            state.slot().health(state.entity.slot()));
-            state.updated = armosKnightUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), armosKnightUpdate.transitionCountdown());
-            state.slot().setPhysicsFlags(state.entity.slot(), armosKnightUpdate.physicsFlags());
-            state.slot().setHitboxFlags(state.entity.slot(), armosKnightUpdate.hitboxFlags());
-            state.slot().setOptions1Override(state.entity.slot(), armosKnightUpdate.options1());
-            state.preserveArmosKnightPresentation = true;
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().physicsFlags(slotState.entity().slot()),
+                            state.slot().hitboxFlags(slotState.entity().slot()),
+                            state.slotProperties().options1(slotState.entity().slot()),
+                            state.slot().health(slotState.entity().slot()));
+            slotState.updated(armosKnightUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), armosKnightUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slotState.entity().slot(), armosKnightUpdate.physicsFlags());
+            state.slot().setHitboxFlags(slotState.entity().slot(), armosKnightUpdate.hitboxFlags());
+            state.slot().setOptions1Override(slotState.entity().slot(), armosKnightUpdate.options1());
+            presentationFlags.preserveArmosKnightPresentation(true);
             if (armosKnightUpdate.linkMotionBlocked()) {
-                state.emit(new LinkMotionBlockRequest(state.entity.slot()));
-                state.emit(new LinkFallenPoseRequest(state.entity.slot()));
+                state.emit(new LinkMotionBlockRequest(slotState.entity().slot()));
+                state.emit(new LinkFallenPoseRequest(slotState.entity().slot()));
             }
             if (armosKnightUpdate.screenShakeRequest() != null) {
                 ArmosKnightMotion.ScreenShakeRequest shake = armosKnightUpdate.screenShakeRequest();
-                state.emit(new ScreenShakeRequest(state.entity.slot(), shake.countdown(), shake.phase()));
+                state.emit(new ScreenShakeRequest(slotState.entity().slot(), shake.countdown(), shake.phase()));
             }
             if (armosKnightUpdate.rubbleRequest() != null) {
                 ArmosKnightMotion.RubbleRequest rubble = armosKnightUpdate.rubbleRequest();
@@ -80,8 +85,8 @@ final class ArmosKnightHandler {
             }
             if (armosKnightUpdate.jingleId() >= 0) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_OCTOROK;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for Moblin. */
 final class MoblinHandler {
@@ -15,7 +16,10 @@ final class MoblinHandler {
     }
 
     private static boolean phase2Moblin(EntityFrameExecution state) {
-        state.roamingEnemyMotion().initialize(state.entity.slot());
+        var slotState = state.slotFrame();
+
+        state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                .initialize(slotState.entity().slot());
 
         return true;
     }

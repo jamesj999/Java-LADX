@@ -19,8 +19,10 @@ final class MusicalNoteHandler {
     }
 
     private static boolean phase1MusicalNote(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
-            RoomEntity note = state.slotProperties().advanceMusicalNoteEntity(state.entity);
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
+            RoomEntity note = state.slotProperties().advanceMusicalNoteEntity(slotState.entity());
             if (note == null) {
                 return false;
             }

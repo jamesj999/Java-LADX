@@ -13,7 +13,7 @@ class EntityInfrastructureTest {
     void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = new EntityFrameExecution(null, null);
-        frame.entity = RoomEntity.disabled(15);
+        frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
         registry.registerTick(255, site, 2, actual -> {
@@ -40,7 +40,7 @@ class EntityInfrastructureTest {
     void dispatchSiteRereadsEntityTypeBetweenVisits() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = new EntityFrameExecution(null, null);
-        frame.entity = RoomEntity.disabled(15);
+        frame.slotFrame().entity(RoomEntity.disabled(15));
         var visited = new java.util.ArrayList<Integer>();
         var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(254, site, 0, actual -> {
@@ -48,7 +48,11 @@ class EntityInfrastructureTest {
             return true;
         });
         registry.registerTick(255, site, 0, actual -> {
-            actual.entity = EntitySnapshots.withType(actual.entity, 254, actual.entity.spriteDefinition());
+            actual.slotFrame()
+                    .entity(EntitySnapshots.withType(
+                            actual.slotFrame().entity(),
+                            254,
+                            actual.slotFrame().entity().spriteDefinition()));
             visited.add(0);
             return true;
         });
@@ -58,7 +62,7 @@ class EntityInfrastructureTest {
         });
         assertTrue(registry.tick(site, frame));
         assertEquals(List.of(0, 1), visited);
-        assertEquals(15, frame.entity.slot());
+        assertEquals(15, frame.slotFrame().entity().slot());
     }
 
     @Test
@@ -140,7 +144,7 @@ class EntityInfrastructureTest {
     void registryKeepsStageRoutingWhenAdvanceIsAddedLater() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = new EntityFrameExecution(null, null);
-        frame.entity = RoomEntity.disabled(15);
+        frame.slotFrame().entity(RoomEntity.disabled(15));
         var stage = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(255, stage, actual -> {
             assertSame(frame, actual);
@@ -149,7 +153,8 @@ class EntityInfrastructureTest {
         registry.registerAdvance(255, (entity, context) -> entity);
         assertFalse(registry.tick(stage, frame));
         assertTrue(registry.tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, frame));
-        assertSame(frame.entity, registry.advance(frame.entity, null));
+        assertSame(
+                frame.slotFrame().entity(), registry.advance(frame.slotFrame().entity(), null));
         assertThrows(IllegalArgumentException.class, () -> registry.registerTick(255, stage, actual -> true));
         assertThrows(IllegalArgumentException.class, () -> registry.registerAdvance(255, (entity, context) -> entity));
     }

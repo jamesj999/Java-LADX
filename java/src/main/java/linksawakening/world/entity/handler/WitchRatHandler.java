@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WitchRatMotion;
 
 /** ROM handler stages for WitchRat. */
@@ -17,25 +18,33 @@ final class WitchRatHandler {
     }
 
     private static boolean phase4WitchRat(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.handlerLinkCollisionEnabled) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
 
-            int slot = state.entity.slot();
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.handlerLinkCollisionEnabled()) {
+
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction witchRatBackgroundInteraction =
                     state.background().interaction();
-            if (witchRatBackgroundInteraction == null && state.backgroundCollision != null) {
-                witchRatBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (witchRatBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                witchRatBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            WitchRatMotion.Update witchRatUpdate = state.witchRatMotion()
+            WitchRatMotion.Update witchRatUpdate = state.motion(WitchRatMotion.class, WitchRatMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().transitionCountdown(slot),
-                            state.randomByteSupplier,
+                            frameInput.randomByteSupplier(),
                             witchRatBackgroundInteraction);
-            state.updated = witchRatUpdate.entity();
+            slotState.updated(witchRatUpdate.entity());
             state.slot().setTransitionCountdown(slot, witchRatUpdate.transitionCountdown());
-            state.applyGenericGroundInteraction = witchRatUpdate.appliesBackgroundInteraction();
-            state.preserveWitchRatPresentation = true;
+            slotState.applyGenericGroundInteraction(witchRatUpdate.appliesBackgroundInteraction());
+            presentationFlags.preserveWitchRatPresentation(true);
         }
         return true;
     }

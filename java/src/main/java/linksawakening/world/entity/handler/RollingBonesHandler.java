@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.RollingBonesMotion;
 
 /** ROM handler stages for RollingBones. */
@@ -24,28 +25,37 @@ final class RollingBonesHandler {
     }
 
     private static boolean phase2RollingBones(EntityFrameExecution state) {
-        state.bossRewards().advanceRollingBonesDestruction(state.entity, state.randomByteSupplier);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        state.bossRewards().advanceRollingBonesDestruction(slotState.entity(), frameInput.randomByteSupplier());
         return false;
     }
 
     private static boolean phase4RollingBones(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             RoomEntity bar = state.roomInspection().firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
             if (bar != null) {
-                RollingBonesMotion.BossUpdate bossUpdate = state.rollingBonesMotion()
+                RollingBonesMotion.BossUpdate bossUpdate = state.motion(
+                                RollingBonesMotion.class, RollingBonesMotion::new)
                         .advanceBoss(
-                                state.entity,
+                                slotState.entity(),
                                 bar,
-                                state.slot().transitionCountdown(state.entity.slot()),
-                                state.slot().health(state.entity.slot()),
-                                state.backgroundCollision);
-                state.updated = bossUpdate.entity();
-                state.slot().setTransitionCountdown(state.entity.slot(), bossUpdate.transitionCountdown());
-                state.preserveRollingBonesPresentation = true;
+                                state.slot()
+                                        .transitionCountdown(slotState.entity().slot()),
+                                state.slot().health(slotState.entity().slot()),
+                                frameInput.backgroundCollision());
+                slotState.updated(bossUpdate.entity());
+                state.slot().setTransitionCountdown(slotState.entity().slot(), bossUpdate.transitionCountdown());
+                presentationFlags.preserveRollingBonesPresentation(true);
                 if (bossUpdate.jingleId() >= 0) {
                     state.emit(new EntityCombatEvent(
-                            state.entity.slot(),
-                            state.entity.type(),
+                            slotState.entity().slot(),
+                            slotState.entity().type(),
                             0,
                             false,
                             EntityCombatEvent.SoundChannel.JINGLE,

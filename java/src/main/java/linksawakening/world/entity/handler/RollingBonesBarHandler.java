@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.RollingBonesMotion;
 
@@ -34,34 +35,40 @@ final class RollingBonesBarHandler {
     }
 
     private static boolean phase2RollingBonesBar(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             // BossIntro runs before ReturnIfNonInteractive_06.
-            if (state.entity.type() == ENTITY_ROLLING_BONES
+            if (slotState.entity().type() == ENTITY_ROLLING_BONES
                     && !state.roomInspection().roomTransitionActive()
                     && !state.link().inventoryAppearing()) {
-                BossIntroMotion.Update intro = state.bossIntroMotion()
+                BossIntroMotion.Update intro = state.motion(BossIntroMotion.class, BossIntroMotion::new)
                         .advance(
-                                state.slotProperties().options1(state.entity.slot()),
-                                state.entity.type(),
+                                state.slotProperties()
+                                        .options1(slotState.entity().slot()),
+                                slotState.entity().type(),
                                 state.roomInspection().entityMapId(),
                                 state.lifecycle().transitionSequenceCounter());
                 if (intro.musicTrack() >= 0) state.requestMusic(intro.musicTrack());
             }
             // The bar's room-clear check precedes its interaction guard.
-            if (state.entity.type() == ENTITY_ROLLING_BONES_BAR
+            if (slotState.entity().type() == ENTITY_ROLLING_BONES_BAR
                     && (state.roomInspection().entityRoomStatus() & 0x20) != 0) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
             // ReturnIfNonInteractive_06 reads the pre-decrement wC1A8.
-            if (!state.handlerInteractive || state.countdownBlocksInteraction) return false;
-            if (state.entity.type() == ENTITY_ROLLING_BONES
-                    && !state.rollingBonesHitThisFrame
-                    && state.slot().ignoreHits(state.entity.slot()) != 0) {
+            if (!timerGates.handlerInteractive() || timerGates.countdownBlocksInteraction()) return false;
+            if (slotState.entity().type() == ENTITY_ROLLING_BONES
+                    && !slotState.rollingBonesHitThisFrame()
+                    && state.slot().ignoreHits(slotState.entity().slot()) != 0) {
                 // ApplyRecoilIfNeeded_06 pops the handler return address:
                 // no jump physics or AI movement occurs during recoil.
                 state.replaceEntity(state.background()
-                        .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
+                        .applyEnemyRecoilIfNeeded(slotState.entity(), frameInput.backgroundCollision())
                         .entity());
                 return false;
             }
@@ -70,34 +77,45 @@ final class RollingBonesBarHandler {
     }
 
     private static boolean phase4RollingBonesBar(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             if ((state.roomInspection().entityRoomStatus() & 0x20) != 0) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            RollingBonesMotion.BarUpdate barUpdate =
-                    state.rollingBonesMotion().advanceBar(state.entity, state.frame, state.backgroundCollision);
-            state.updated = barUpdate.entity();
+            RollingBonesMotion.BarUpdate barUpdate = state.motion(RollingBonesMotion.class, RollingBonesMotion::new)
+                    .advanceBar(slotState.entity(), frameInput.frame(), frameInput.backgroundCollision());
+            slotState.updated(barUpdate.entity());
             if (state.sprites() != null) {
-                state.updated = withDefinition(
-                        state.updated,
-                        state.sprites().forRollingBonesBar(0, state.updated.y(), barUpdate.animationVariant()),
-                        0);
+                slotState.updated(withDefinition(
+                        slotState.updated(),
+                        state.sprites()
+                                .forRollingBonesBar(0, slotState.updated().y(), barUpdate.animationVariant()),
+                        0));
             }
-            state.preserveRollingBonesPresentation = true;
+            presentationFlags.preserveRollingBonesPresentation(true);
             if (barUpdate.rollingSound()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(), state.entity.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x1A));
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.WAVE,
+                        0x1A));
             }
             if (barUpdate.strongBump()) {
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x0B));
-                state.emit(new ScreenShakeRequest(state.entity.slot(), barUpdate.screenShakeCountdown(), 0));
+                state.emit(new ScreenShakeRequest(slotState.entity().slot(), barUpdate.screenShakeCountdown(), 0));
             }
         }
         return true;

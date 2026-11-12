@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOW_WOW;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for FollowingNpcType. */
 final class FollowingNpcTypeHandler {
@@ -33,10 +34,14 @@ final class FollowingNpcTypeHandler {
     }
 
     private static boolean phase2FollowingNpcType(EntityFrameExecution state) {
-        if (state.entity.type() == ENTITY_BOW_WOW) {
-            state.bowWowMotion().initialize(state.entity.slot());
+        var slotState = state.slotFrame();
+
+        if (slotState.entity().type() == ENTITY_BOW_WOW) {
+            state.motion(BowWowMotion.class, BowWowMotion::new)
+                    .initialize(slotState.entity().slot());
         } else {
-            state.followingNpcMotion().initialize(state.entity.slot(), state.entity.type());
+            state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                    .initialize(slotState.entity().slot(), slotState.entity().type());
         }
 
         return true;

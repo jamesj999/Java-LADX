@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.CrowMotion;
 
 /** ROM handler stages for Crow. */
@@ -16,31 +17,37 @@ final class CrowHandler {
     }
 
     private static boolean phase1Crow(EntityFrameExecution state) {
-        if (state.slot().ignoreHits(state.entity.slot()) >= 0x10) {
-            state.slot().shiftIgnoreHitsRight(state.entity.slot(), 2);
+        var slotState = state.slotFrame();
+
+        if (state.slot().ignoreHits(slotState.entity().slot()) >= 0x10) {
+            state.slot().shiftIgnoreHitsRight(slotState.entity().slot(), 2);
         }
         return true;
     }
 
     private static boolean phase3Crow(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            CrowMotion.Update crowUpdate = state.crowMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            CrowMotion.Update crowUpdate = state.motion(CrowMotion.class, CrowMotion::new)
                     .advance(
-                            state.entity,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
+                            slotState.entity(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
                             state.roomInspection().entityRoomId() != 0x58,
-                            state.slotProperties().kanaletCrowTakeoffTriggered(state.entity));
-            state.updated = crowUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), crowUpdate.transitionCountdown());
-            state.slot().setPhysicsFlags(state.entity.slot(), crowUpdate.physicsFlags());
+                            state.slotProperties().kanaletCrowTakeoffTriggered(slotState.entity()));
+            slotState.updated(crowUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), crowUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slotState.entity().slot(), crowUpdate.physicsFlags());
             if (crowUpdate.boomerangSound()) {
-                state.projectiles().playBoomerangSoundIfDue(state.updated);
+                state.projectiles().playBoomerangSoundIfDue(slotState.updated());
             }
             if (crowUpdate.unloaded()) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WingedOctorokMotion;
 
 /** ROM handler stages for WingedOctorok. */
@@ -20,36 +21,45 @@ final class WingedOctorokHandler {
     }
 
     private static boolean phase3WingedOctorok(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing && state.handlerLinkCollisionEnabled) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
 
-            WingedOctorokMotion.Update wingedUpdate = state.wingedOctorokMotion()
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && timerGates.handlerLinkCollisionEnabled()) {
+
+            WingedOctorokMotion.Update wingedUpdate = state.motion(WingedOctorokMotion.class, WingedOctorokMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.backgroundCollision,
-                            state.slot().transitionCountdown(state.entity.slot()),
-                            state.slot().ignoreHits(state.entity.slot()),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.slot().ignoreHits(slotState.entity().slot()),
                             state.link().actionButtonAHeld(),
                             state.link().actionButtonBHeld(),
                             state.link().linkItemA(),
                             state.link().linkItemB());
-            state.updated = wingedUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), wingedUpdate.transitionCountdown());
-            state.preserveWingedOctorokPresentation = true;
-            state.projectiles().setWingedStateTwoThisFrame(state.entity.slot(), wingedUpdate.skippedDefaultCollision());
+            slotState.updated(wingedUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), wingedUpdate.transitionCountdown());
+            presentationFlags.preserveWingedOctorokPresentation(true);
+            state.projectiles()
+                    .setWingedStateTwoThisFrame(slotState.entity().slot(), wingedUpdate.skippedDefaultCollision());
             if (wingedUpdate.rockSpawn() != null) {
                 state.enemySpawns()
                         .spawnWingedOctorokRock(
-                                state.updated, wingedUpdate.rockSpawn().direction());
+                                slotState.updated(), wingedUpdate.rockSpawn().direction());
             }
             if (wingedUpdate.jumped()) {
-                state.projectiles().setWingedSwordAttackThisFrame(state.entity.slot(), true);
+                state.projectiles()
+                        .setWingedSwordAttackThisFrame(slotState.entity().slot(), true);
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,

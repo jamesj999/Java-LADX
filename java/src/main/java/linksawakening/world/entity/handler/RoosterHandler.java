@@ -21,48 +21,56 @@ final class RoosterHandler {
     }
 
     private static boolean phase2Rooster(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
         RoosterMotion.Update roosterUpdate = RoosterMotion.advanceLifted(
-                state.frame,
-                state.linkZ & 0xFF,
+                frameInput.frame(),
+                frameInput.linkZ() & 0xFF,
                 state.link().linkPressedButtonsMask(),
-                state.romCollisionType,
+                frameInput.romCollisionType(),
                 state.link().currentLinkSpeedX(),
                 state.link().currentLinkSpeedY(),
-                state.romLinkDirection);
-        state.lifted = withVariant(state.lifted, roosterUpdate.spriteVariant());
-        state.liftThrow().setLiftedSourceDirection(state.entity.slot(), roosterUpdate.romDirection());
-        state.liftedRomDirection = roosterUpdate.romDirection();
+                frameInput.romLinkDirection());
+        slotState.lifted(withVariant(slotState.lifted(), roosterUpdate.spriteVariant()));
+        state.liftThrow().setLiftedSourceDirection(slotState.entity().slot(), roosterUpdate.romDirection());
+        slotState.liftedRomDirection(roosterUpdate.romDirection());
         state.emit(new RoosterLinkStateRequest(
-                state.entity.slot(),
+                slotState.entity().slot(),
                 roosterUpdate.positionZ(),
                 roosterUpdate.velocityZ(),
                 roosterUpdate.speedX(),
                 roosterUpdate.speedY(),
                 roosterUpdate.romDirection()));
-        state.projectiles().playBoomerangSoundIfDue(state.entity);
+        state.projectiles().playBoomerangSoundIfDue(slotState.entity());
 
         return true;
     }
 
     private static boolean phase5Rooster(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            state.preserveRoosterPresentation = true;
-            if (state.projectileLinkState.motionState() == 0
-                    && (state.linkZ & 0xFF) == 0
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            presentationFlags.preserveRoosterPresentation(true);
+            if (frameInput.projectileLinkState().motionState() == 0
+                    && (frameInput.linkZ() & 0xFF) == 0
                     && state.link().linkAttackStepAnimationCountdown() == 0
                     && state.liftThrow().cuccoPowerBraceletHeld()
-                    && RoomEntityCombatRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)
-                    && state.liftThrow().beginLift(state.entity.slot(), state.romLinkDirection)) {
+                    && RoomEntityCombatRules.overlapsLink(
+                            slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())
+                    && state.liftThrow().beginLift(slotState.entity().slot(), frameInput.romLinkDirection())) {
                 state.emit(new RoosterLinkStateRequest(
-                        state.entity.slot(),
+                        slotState.entity().slot(),
                         0x02,
                         0x00,
                         state.link().currentLinkSpeedX(),
                         state.link().currentLinkSpeedY(),
-                        state.romLinkDirection));
+                        frameInput.romLinkDirection()));
                 state.emit(new EntityCombatEvent(
-                        state.entity.slot(),
-                        state.entity.type(),
+                        slotState.entity().slot(),
+                        slotState.entity().type(),
                         0,
                         false,
                         EntityCombatEvent.SoundChannel.WAVE,

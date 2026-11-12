@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.FairyMotion;
 
 /** ROM handler stages for DroppableFairy. */
@@ -19,17 +20,20 @@ final class DroppableFairyHandler {
     }
 
     private static boolean phase3DroppableFairy(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            FairyMotion.Update fairyUpdate = state.fairyMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            FairyMotion.Update fairyUpdate = state.motion(FairyMotion.class, FairyMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.randomByteSupplier,
-                            state.slot().transitionCountdown(state.entity.slot()));
-            state.updated = fairyUpdate.entity();
-            state.slot().setTransitionCountdown(state.entity.slot(), fairyUpdate.transitionCountdown());
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            state.slot().transitionCountdown(slotState.entity().slot()));
+            slotState.updated(fairyUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), fairyUpdate.transitionCountdown());
         }
         return true;
     }

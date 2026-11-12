@@ -14,16 +14,24 @@ final class Type0X35Handler {
     }
 
     private static boolean phase1Type0X35(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
         return true;
     }
 
     private static boolean phase1Type0X352(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && state.pickups().hasHeartPiecePickup(state.entity.slot())) {
-            state.pickups().advanceHeartPiecePickup(state.entity, state.linkEntityX, state.linkEntityY, state.linkZ);
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && state.pickups().hasHeartPiecePickup(slotState.entity().slot())) {
+            state.pickups()
+                    .advanceHeartPiecePickup(
+                            slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY(), frameInput.linkZ());
             return false;
         }
         return true;

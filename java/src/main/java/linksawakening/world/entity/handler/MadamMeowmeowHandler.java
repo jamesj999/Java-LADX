@@ -18,10 +18,17 @@ final class MadamMeowmeowHandler {
     }
 
     private static boolean phase1MadamMeowmeow(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             state.story()
                     .advanceMadamMeowMeow(
-                            state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkAirborne());
             return false;
         }
         return true;

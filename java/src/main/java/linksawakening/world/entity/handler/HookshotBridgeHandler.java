@@ -18,8 +18,10 @@ final class HookshotBridgeHandler {
     }
 
     private static boolean phase1HookshotBridge(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
-            state.background().advanceHookshotBridgeEntity(state.index, state.entity);
+        var slotState = state.slotFrame();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
+            state.background().advanceHookshotBridgeEntity(slotState.index(), slotState.entity());
             return false;
         }
         return true;

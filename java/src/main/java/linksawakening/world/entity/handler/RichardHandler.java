@@ -15,10 +15,17 @@ final class RichardHandler {
     }
 
     private static boolean phase1Richard(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             state.story()
                     .advanceRichard(
-                            state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkAirborne);
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkAirborne());
             return false;
         }
         return true;

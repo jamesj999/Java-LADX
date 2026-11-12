@@ -18,47 +18,62 @@ final class BombHandler {
     }
 
     private static boolean advanceActiveBomb(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE) {
             BombMotion.Decision bombDecision = state.bombInteractions()
                     .advanceBombEntity(
-                            state.index,
-                            state.entity,
-                            state.projectileEvents,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.projectileLinkState);
-            state.entity = state.entityAt(state.index);
+                            slotState.index(),
+                            slotState.entity(),
+                            frameInput.projectileEvents(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.projectileLinkState());
+            slotState.entity(state.entityAt(slotState.index()));
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
                 state.replaceEntity(
-                        state.bombInteractions().bombPrivateState4(state.entity.slot()) != 0
+                        state.bombInteractions()
+                                                .bombPrivateState4(
+                                                        slotState.entity().slot())
+                                        != 0
                                 ? state.liftThrow()
-                                        .advanceEnemyBombEntity(state.entity, state.backgroundCollision, state.frame)
+                                        .advanceEnemyBombEntity(
+                                                slotState.entity(),
+                                                frameInput.backgroundCollision(),
+                                                frameInput.frame())
                                 : state.liftThrow()
-                                        .advancePlacedBombEntity(state.entity, state.backgroundCollision, state.frame));
+                                        .advancePlacedBombEntity(
+                                                slotState.entity(),
+                                                frameInput.backgroundCollision(),
+                                                frameInput.frame()));
             }
             state.liftThrow()
                     .tryLiftBombIfRequested(
-                            state.index,
+                            slotState.index(),
                             bombDecision,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.romLinkDirection);
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            frameInput.romLinkDirection());
             return false;
         }
         return true;
     }
 
     private static boolean advanceBombPresentation(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
         BombMotion.Decision bombDecision = state.bombInteractions()
                 .advanceBombEntity(
-                        state.index,
-                        state.entity,
-                        state.projectileEvents,
-                        state.linkEntityX,
-                        state.linkEntityY,
-                        state.projectileLinkState);
-        state.entity = state.entityAt(state.index);
+                        slotState.index(),
+                        slotState.entity(),
+                        frameInput.projectileEvents(),
+                        frameInput.linkEntityX(),
+                        frameInput.linkEntityY(),
+                        frameInput.projectileLinkState());
+        slotState.entity(state.entityAt(slotState.index()));
         if (bombDecision.unloadAfterPresentation()) {
             return false;
         }
@@ -67,10 +82,14 @@ final class BombHandler {
     }
 
     private static boolean advanceStunnedBomb(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
         if (!advanceBombPresentation(state)) return false;
-        state.entity = state.bombInteractions()
-                .applyBombStunnedPostActiveWork(state.entity, state.backgroundCollision, state.frame);
-        state.replaceEntity(state.entity);
+        slotState.entity(state.bombInteractions()
+                .applyBombStunnedPostActiveWork(
+                        slotState.entity(), frameInput.backgroundCollision(), frameInput.frame()));
+        state.replaceEntity(slotState.entity());
 
         return true;
     }

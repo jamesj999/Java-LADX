@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 
@@ -31,44 +32,49 @@ final class RoamingEnemyTypeHandler {
     }
 
     private static boolean phase3RoamingEnemyType(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            if (state.entity.type() == ENTITY_IRON_MASK
-                    && state.slot().ironMaskPrivateState2(state.entity.slot()) != 0) {
-                UnmaskedIronMaskMotion.Update unmaskedUpdate = state.unmaskedIronMaskMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            if (slotState.entity().type() == ENTITY_IRON_MASK
+                    && state.slot().ironMaskPrivateState2(slotState.entity().slot()) != 0) {
+                UnmaskedIronMaskMotion.Update unmaskedUpdate = state.motion(
+                                UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                         .advance(
-                                state.entity,
-                                state.frame,
-                                state.randomByteSupplier,
+                                slotState.entity(),
+                                frameInput.frame(),
+                                frameInput.randomByteSupplier(),
                                 state.background().interaction(),
-                                state.backgroundCollision,
-                                state.slot().ignoreHits(state.entity.slot()),
-                                state.frame);
-                state.updated = unmaskedUpdate.entity();
-                state.slot().setTransitionCountdown(state.entity.slot(), unmaskedUpdate.transitionCountdown());
+                                frameInput.backgroundCollision(),
+                                state.slot().ignoreHits(slotState.entity().slot()),
+                                frameInput.frame());
+                slotState.updated(unmaskedUpdate.entity());
+                state.slot().setTransitionCountdown(slotState.entity().slot(), unmaskedUpdate.transitionCountdown());
             } else {
                 RoamingEnemyMotion.Update roamingUpdate = state.background().interaction() == null
-                        ? state.roamingEnemyMotion()
+                        ? state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
                                 .advance(
-                                        state.entity,
-                                        state.linkEntityX,
-                                        state.linkEntityY,
-                                        state.randomByteSupplier,
-                                        state.backgroundCollision,
-                                        state.creditsGameplay)
-                        : state.roamingEnemyMotion()
+                                        slotState.entity(),
+                                        frameInput.linkEntityX(),
+                                        frameInput.linkEntityY(),
+                                        frameInput.randomByteSupplier(),
+                                        frameInput.backgroundCollision(),
+                                        frameInput.creditsGameplay())
+                        : state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
                                 .advanceWithInteraction(
-                                        state.entity,
-                                        state.linkEntityX,
-                                        state.linkEntityY,
-                                        state.randomByteSupplier,
+                                        slotState.entity(),
+                                        frameInput.linkEntityX(),
+                                        frameInput.linkEntityY(),
+                                        frameInput.randomByteSupplier(),
                                         state.background().interaction(),
-                                        state.slot().ignoreHits(state.entity.slot()),
-                                        state.frame,
-                                        state.creditsGameplay);
-                state.updated = roamingUpdate.entity();
+                                        state.slot()
+                                                .ignoreHits(slotState.entity().slot()),
+                                        frameInput.frame(),
+                                        frameInput.creditsGameplay());
+                slotState.updated(roamingUpdate.entity());
                 if (roamingUpdate.launchRequest() != null) {
                     state.emit(roamingUpdate.launchRequest());
-                    state.enemySpawns().spawnEnemyProjectile(state.entity, roamingUpdate.launchRequest());
+                    state.enemySpawns().spawnEnemyProjectile(slotState.entity(), roamingUpdate.launchRequest());
                 }
             }
         }

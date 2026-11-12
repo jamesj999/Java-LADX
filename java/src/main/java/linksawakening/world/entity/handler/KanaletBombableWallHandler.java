@@ -18,14 +18,17 @@ final class KanaletBombableWallHandler {
     }
 
     private static boolean phase1KanaletBombableWall(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
         if ((state.roomInspection().entityRoomStatus() & 0x10) != 0) {
-            state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
             return false;
         }
-        state.lifecycle().setDroppedItemBySlot(state.entity.slot(), ENTITY_HIDING_SLIME_KEY);
-        if (state.slot().ignoreHits(state.entity.slot()) != 0) {
-            if (state.enemySpawns().spawnKanaletWallMoblin(state.entity)) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+        state.lifecycle().setDroppedItemBySlot(slotState.entity().slot(), ENTITY_HIDING_SLIME_KEY);
+        if (state.slot().ignoreHits(slotState.entity().slot()) != 0) {
+            if (state.enemySpawns().spawnKanaletWallMoblin(slotState.entity())) {
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

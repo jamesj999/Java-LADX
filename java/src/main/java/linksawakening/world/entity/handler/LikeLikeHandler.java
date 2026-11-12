@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.LikeLikeMotion;
 
 /** ROM handler stages for LikeLike. */
@@ -18,32 +19,37 @@ final class LikeLikeHandler {
     }
 
     private static boolean phase3LikeLike(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-            LikeLikeMotion.Update likeLikeUpdate = state.likeLikeMotion()
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            LikeLikeMotion.Update likeLikeUpdate = state.motion(LikeLikeMotion.class, LikeLikeMotion::new)
                     .advance(
-                            state.entity,
-                            state.frame,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.projectileLinkState.motionState(),
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            frameInput.projectileLinkState().motionState(),
                             state.link().actionButtonsHeld(),
                             state.link().linkItemA(),
                             state.link().linkItemB(),
-                            state.projectileLinkState.shieldLevel(),
-                            state.slot().slowTransitionCountdown(state.entity.slot()),
-                            state.randomByteSupplier,
-                            state.backgroundCollision);
-            state.updated = likeLikeUpdate.entity();
-            state.slot().setSlowTransitionCountdown(state.entity.slot(), likeLikeUpdate.slowTransitionCountdown());
+                            frameInput.projectileLinkState().shieldLevel(),
+                            state.slot()
+                                    .slowTransitionCountdown(slotState.entity().slot()),
+                            frameInput.randomByteSupplier(),
+                            frameInput.backgroundCollision());
+            slotState.updated(likeLikeUpdate.entity());
+            state.slot()
+                    .setSlowTransitionCountdown(slotState.entity().slot(), likeLikeUpdate.slowTransitionCountdown());
             if (likeLikeUpdate.event() != null) {
                 state.emit(likeLikeUpdate.event());
                 if (likeLikeUpdate.event().kind() == LikeLikeEvent.Kind.RELEASE) {
-                    state.slot().setSlowTimerInitialized(state.entity.slot(), true);
+                    state.slot().setSlowTimerInitialized(slotState.entity().slot(), true);
                 }
             }
             if (likeLikeUpdate.spriteVariant() >= 0) {
-                state.updated = withVariant(state.updated, likeLikeUpdate.spriteVariant());
+                slotState.updated(withVariant(slotState.updated(), likeLikeUpdate.spriteVariant()));
             }
         }
         return true;

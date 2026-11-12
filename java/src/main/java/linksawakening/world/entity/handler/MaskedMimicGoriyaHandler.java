@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.MaskedMimicMotion;
 
 /** ROM handler stages for MaskedMimicGoriya. */
@@ -20,30 +21,34 @@ final class MaskedMimicGoriyaHandler {
     }
 
     private static boolean phase2MaskedMimicGoriya(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
                 && state.roomInspection().entityMapId() != 0x1F) {
-            int slot = state.entity.slot();
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
                     state.background().interaction();
-            if (maskedMimicBackgroundInteraction == null && state.backgroundCollision != null) {
+            if (maskedMimicBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
                 maskedMimicBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            MaskedMimicMotion.Update maskedMimicUpdate = state.maskedMimicMotion()
+            MaskedMimicMotion.Update maskedMimicUpdate = state.motion(MaskedMimicMotion.class, MaskedMimicMotion::new)
                     .advance(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.romLinkDirection,
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romLinkDirection(),
                             state.link().linkPressedButtonsMask(),
-                            state.romCollisionType,
+                            frameInput.romCollisionType(),
                             maskedMimicBackgroundInteraction,
                             state.slot().ignoreHits(slot),
-                            state.frame);
-            state.updated = maskedMimicUpdate.entity();
+                            frameInput.frame());
+            slotState.updated(maskedMimicUpdate.entity());
             state.slot().setOptions1Override(slot, maskedMimicUpdate.options1());
-            state.preserveMaskedMimicPresentation = true;
+            presentationFlags.preserveMaskedMimicPresentation(true);
         }
         return true;
     }

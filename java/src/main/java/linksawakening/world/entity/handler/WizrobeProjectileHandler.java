@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for WizrobeProjectile. */
 final class WizrobeProjectileHandler {
@@ -26,29 +27,44 @@ final class WizrobeProjectileHandler {
     }
 
     private static boolean phase2WizrobeProjectile(EntityFrameExecution state) {
-        state.wizrobeProjectileMotion().initialize(state.entity.slot(), state.randomByteSupplier);
-        state.preserveWizrobeProjectilePresentation = true;
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .initialize(slotState.entity().slot(), frameInput.randomByteSupplier());
+        presentationFlags.preserveWizrobeProjectilePresentation(true);
 
         return true;
     }
 
     private static boolean phase3WizrobeProjectile(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             var collisionEvent = EnemyProjectileCollision.check(
-                    state.entity,
-                    state.wizrobeProjectileMotion().direction(state.entity.slot()),
-                    state.projectileLinkState);
+                    slotState.entity(),
+                    state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                            .direction(slotState.entity().slot()),
+                    frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
-                state.projectileEvents.add(collisionEvent.orElseThrow());
+                frameInput.projectileEvents().add(collisionEvent.orElseThrow());
             }
-            state.updated = state.wizrobeProjectileMotion().advance(state.entity);
-            state.updated = withFlipAttribute(
-                    state.updated, state.wizrobeProjectileMotion().flipAttribute(state.frame));
-            state.preserveWizrobeProjectilePresentation = true;
-            boolean objectCollisionHit = state.objectCollision != null && state.objectCollision.collides(state.updated);
+            slotState.updated(state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                    .advance(slotState.entity()));
+            slotState.updated(withFlipAttribute(
+                    slotState.updated(),
+                    state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                            .flipAttribute(frameInput.frame())));
+            presentationFlags.preserveWizrobeProjectilePresentation(true);
+            boolean objectCollisionHit = frameInput.objectCollision() != null
+                    && frameInput.objectCollision().collides(slotState.updated());
             if (objectCollisionHit
                     || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
-                state.lifecycle().disableEntityWithoutPersistence(state.entity.slot());
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
         }

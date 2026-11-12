@@ -13,17 +13,20 @@ final class Type0X42Handler {
     }
 
     private static boolean phase1Type0X42(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE
                 && state.roomInspection().indoorRoom()
                 && state.roomInspection().entityMapId() != 0x16) {
             state.story()
                     .advanceOwlStatue(
-                            state.entity,
-                            state.linkEntityX,
-                            state.linkEntityY,
-                            state.linkZ,
-                            state.projectileLinkState.motionState(),
-                            state.linkAirborne);
+                            slotState.entity(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.linkZ(),
+                            frameInput.projectileLinkState().motionState(),
+                            frameInput.linkAirborne());
             return false;
         }
         return true;

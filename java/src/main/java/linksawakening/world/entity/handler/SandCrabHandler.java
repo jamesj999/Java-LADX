@@ -7,6 +7,7 @@ import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.SandCrabMotion;
 
 /** ROM handler stages for SandCrab. */
@@ -17,27 +18,33 @@ final class SandCrabHandler {
     }
 
     private static boolean phase4SandCrab(EntityFrameExecution state) {
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && !state.creditsGameplay
-                && state.handlerLinkCollisionEnabled) {
-            int slot = state.entity.slot();
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
             RoomEntityBackgroundInteraction sandCrabBackgroundInteraction =
                     state.background().interaction();
-            if (sandCrabBackgroundInteraction == null && state.backgroundCollision != null) {
-                sandCrabBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
+            if (sandCrabBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
+                sandCrabBackgroundInteraction =
+                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
-            SandCrabMotion.Update sandCrabUpdate = state.sandCrabMotion()
+            SandCrabMotion.Update sandCrabUpdate = state.motion(SandCrabMotion.class, SandCrabMotion::new)
                     .advance(
-                            state.updated,
-                            state.frame,
+                            slotState.updated(),
+                            frameInput.frame(),
                             state.slot().transitionCountdown(slot),
-                            state.randomByteSupplier,
+                            frameInput.randomByteSupplier(),
                             sandCrabBackgroundInteraction);
-            state.updated = sandCrabUpdate.entity();
+            slotState.updated(sandCrabUpdate.entity());
             state.slot().setTransitionCountdown(slot, sandCrabUpdate.transitionCountdown());
-            state.applyGenericGroundInteraction = sandCrabUpdate.appliesBackgroundInteraction();
-            state.preserveSandCrabPresentation = true;
+            slotState.applyGenericGroundInteraction(sandCrabUpdate.appliesBackgroundInteraction());
+            presentationFlags.preserveSandCrabPresentation(true);
         }
         return true;
     }
