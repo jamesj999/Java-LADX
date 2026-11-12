@@ -292,4 +292,10 @@ public final class RomSymbols {
     public static final RomAddress Data_004_4FAE = new RomAddress(0x04, 0x4FAE);
     public static final RomAddress Data_004_4FEE = new RomAddress(0x04, 0x4FEE);
     public static final RomAddress GrandmaUlrira1SpriteVariants = new RomAddress(0x18, 0x4CFB);
+    public static final RomAddress FrameCounterToLinkDirection = new RomAddress(0x02, 0x46C5);
+    public static final RomAddress Data_002_7C40 = new RomAddress(0x02, 0x7C40);
+    public static final RomAddress Data_002_7C48 = new RomAddress(0x02, 0x7C48);
+    public static final RomAddress Data_002_68B1 = new RomAddress(0x02, 0x68B1);
+    public static final RomAddress Data_002_44E7 = new RomAddress(0x02, 0x44E7);
+    public static final RomAddress LinkRevolvingDoorAnimation = new RomAddress(0x02, 0x4E66);
 }
