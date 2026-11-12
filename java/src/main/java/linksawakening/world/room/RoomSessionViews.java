@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSession.*;
 
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.physics.OverworldCollision;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityTypeRules;
 import linksawakening.world.entity.RoomEntity;
@@ -14,174 +15,181 @@ import linksawakening.world.transition.Warp;
 
 /** RoomSessionViews operations for the live room session. */
 final class RoomSessionViews {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomSessionViews(RoomSession session) {
-        this.session = session;
+    RoomSessionViews(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     int entityHealth(int slot) {
-        return session.context.entityBridge.entityRuntime.enemies().enemyHealth(slot);
+        return dependencies.entityBridge().get().entityRuntime.enemies().enemyHealth(slot);
     }
 
     ActiveRoom activeRoom() {
-        return session.context.activeRoom;
+        return dependencies.location().activeRoom;
     }
 
     long roomLoadSerial() {
-        return session.context.roomLoadSerial;
+        return dependencies.location().roomLoadSerial;
     }
 
     long roomLoadToken() {
-        return (session.context.roomSessionId << 32) ^ session.context.roomLoadSerial;
+        return (dependencies.location().roomSessionId << 32) ^ dependencies.location().roomLoadSerial;
     }
 
     boolean hasActiveRoom() {
-        return session.context.activeRoom != null;
+        return dependencies.location().activeRoom != null;
     }
 
     int currentRoomId() {
-        return session.context.activeRoom.roomId();
+        return dependencies.location().activeRoom.roomId();
     }
 
     int mapCategory() {
-        return session.context.activeRoom.mapCategory();
+        return dependencies.location().activeRoom.mapCategory();
     }
 
     int mapId() {
-        return session.context.activeRoom.mapId();
+        return dependencies.location().activeRoom.mapId();
     }
 
     int indoorRoomPositionForSave() {
-        if (session.context.activeRoom == null || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return -1;
         }
-        return session.context.indoorMapPosition;
+        return dependencies.location().indoorMapPosition;
     }
 
     byte[] dungeonMinimapRoomStatusSnapshot() {
-        return session.context.roomState.dungeonMinimapRoomStatusSnapshot(session.context.activeRoom);
+        return dependencies.roomState().dungeonMinimapRoomStatusSnapshot(dependencies.location().activeRoom);
     }
 
     byte[] overworldRoomStatusSnapshot() {
-        return session.context.roomState.overworldRoomStatusSnapshot();
+        return dependencies.roomState().overworldRoomStatusSnapshot();
     }
 
     byte[] indoorARoomStatusSnapshot() {
-        return session.context.roomState.indoorARoomStatusSnapshot();
+        return dependencies.roomState().indoorARoomStatusSnapshot();
     }
 
     byte[] indoorBRoomStatusSnapshot() {
-        return session.context.roomState.indoorBRoomStatusSnapshot();
+        return dependencies.roomState().indoorBRoomStatusSnapshot();
     }
 
     byte[] colorDungeonRoomStatusSnapshot() {
-        return session.context.roomState.colorDungeonRoomStatusSnapshot();
+        return dependencies.roomState().colorDungeonRoomStatusSnapshot();
     }
 
     byte[] dungeonItemFlagsSnapshot() {
-        return session.context.roomState.dungeonItemFlagsSnapshot();
+        return dependencies.roomState().dungeonItemFlagsSnapshot();
     }
 
     byte[] colorDungeonItemFlagsSnapshot() {
-        return session.context.roomState.colorDungeonItemFlagsSnapshot();
+        return dependencies.roomState().colorDungeonItemFlagsSnapshot();
     }
 
     byte[] currentDungeonItemFlagsSnapshot() {
-        return session.context.roomState.currentDungeonItemFlagsSnapshot();
+        return dependencies.roomState().currentDungeonItemFlagsSnapshot();
     }
 
     void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
-        session.context.roomState.restoreDungeonItemFlags(dungeonFlags, colorFlags);
+        dependencies.roomState().restoreDungeonItemFlags(dungeonFlags, colorFlags);
     }
 
     byte[] dungeonProgressFlagsSnapshot() {
-        return session.context.roomState.dungeonProgressFlagsSnapshot();
+        return dependencies.roomState().dungeonProgressFlagsSnapshot();
     }
 
     void restoreDungeonProgressFlags(byte[] flags) {
-        session.context.roomState.restoreDungeonProgressFlags(flags);
+        dependencies.roomState().restoreDungeonProgressFlags(flags);
     }
 
     int overworldRoomStatusForTest(int roomId) {
-        return session.context.roomState.overworldRoomStatusForTest(roomId);
+        return dependencies.roomState().overworldRoomStatusForTest(roomId);
     }
 
     int indoorRoomStatusForTest(int mapId, int roomId) {
-        return session.context.roomState.indoorRoomStatusForTest(mapId, roomId);
+        return dependencies.roomState().indoorRoomStatusForTest(mapId, roomId);
     }
 
     void setEnemyDropCountersForTest(int droppedItemCount, int droppedBombArrowCount) {
-        session.context.enemyDropCounters = new EnemyDropResolver.CounterState(droppedItemCount, droppedBombArrowCount);
+        dependencies.entityFrame().enemyDropCounters =
+                new EnemyDropResolver.CounterState(droppedItemCount, droppedBombArrowCount);
     }
 
     EnemyDropResolver.CounterState enemyDropCountersForTest() {
-        return session.context.enemyDropCounters;
+        return dependencies.entityFrame().enemyDropCounters;
     }
 
     void setSwitchButtonPressedForTest(int value) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Switch-button state must be an unsigned byte");
         }
-        session.context.switchButtonPressed = value;
+        dependencies.puzzles().switchButtonPressed = value;
     }
 
     int switchButtonPressedForTest() {
-        return session.context.switchButtonPressed;
+        return dependencies.puzzles().switchButtonPressed;
     }
 
     int[][] palettes() {
-        return session.context.activeRoom == null ? null : session.context.activeRoom.palettes();
+        return dependencies.location().activeRoom == null
+                ? null
+                : dependencies.location().activeRoom.palettes();
     }
 
     boolean heartPiecePickupActive() {
-        return session.context.entityBridge.entityRuntime != null
-                && session.context.entityBridge.entityRuntime.inspection().heartPiecePickupActive();
+        return dependencies.entityBridge().get().entityRuntime != null
+                && dependencies.entityBridge().get().entityRuntime.inspection().heartPiecePickupActive();
     }
 
     void setHeartPiecesCount(int count) {
-        if (session.context.entityBridge.entityRuntime != null)
-            session.context.entityBridge.entityRuntime.setHeartPiecesCount(count);
+        if (dependencies.entityBridge().get().entityRuntime != null)
+            dependencies.entityBridge().get().entityRuntime.setHeartPiecesCount(count);
     }
 
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
-        if (session.context.entityBridge.entityRuntime == null) return List.of();
-        var updates = session.context.entityBridge.entityRuntime.consumeHeartPieceUpdates();
-        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete)) session.markActiveRoomCompleted();
+        if (dependencies.entityBridge().get().entityRuntime == null) return List.of();
+        var updates = dependencies.entityBridge().get().entityRuntime.consumeHeartPieceUpdates();
+        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete))
+            dependencies.roomStoryState().get().markActiveRoomCompleted();
         return updates;
     }
 
     String instrumentTrace() {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? ""
-                : session.context.entityBridge.entityRuntime.inspection().instrumentTrace();
+                : dependencies.entityBridge().get().entityRuntime.inspection().instrumentTrace();
     }
 
     String moblinKingTrace() {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? "-1"
-                : session.context.entityBridge.entityRuntime.inspection().moblinKingTrace();
+                : dependencies.entityBridge().get().entityRuntime.inspection().moblinKingTrace();
     }
 
     RoomRenderSnapshot renderSnapshot() {
-        if (session.context.activeRoom == null) return null;
-        RoomRenderSnapshot snapshot = session.context.activeRoom.renderSnapshot();
+        if (dependencies.location().activeRoom == null) return null;
+        RoomRenderSnapshot snapshot = dependencies.location().activeRoom.renderSnapshot();
         return new RoomRenderSnapshot(
                 snapshot.tileIds(),
                 snapshot.tileAttrs(),
                 snapshot.palettes(),
                 snapshot.entities(),
-                session.context.entityBridge.entityRuntime == null
+                dependencies.entityBridge().get().entityRuntime == null
                         ? null
-                        : session.context
-                                .entityBridge
+                        : dependencies
+                                .entityBridge()
+                                .get()
                                 .entityRuntime
                                 .inspection()
                                 .instrumentWarpVisual(),
-                session.context.entityBridge.entityRuntime == null
+                dependencies.entityBridge().get().entityRuntime == null
                         ? null
-                        : session.context
-                                .entityBridge
+                        : dependencies
+                                .entityBridge()
+                                .get()
                                 .entityRuntime
                                 .inspection()
                                 .heartPieceVisual(),
@@ -189,26 +197,27 @@ final class RoomSessionViews {
     }
 
     LiftedEntityState liftedEntityState() {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? LiftedEntityState.none()
-                : session.context.entityBridge.entityRuntime.inspection().liftedEntityState();
+                : dependencies.entityBridge().get().entityRuntime.inspection().liftedEntityState();
     }
 
     int bombDirectionForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0xFF
-                : session.context.entityBridge.entityRuntime.inspection().bombDirection(slot);
+                : dependencies.entityBridge().get().entityRuntime.inspection().bombDirection(slot);
     }
 
     void setColorShellSoundSink(GameplaySoundSink soundSink) {
-        session.context.colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
+        dependencies.entityFrame().colorShellSoundSink = soundSink == null ? GameplaySoundSink.none() : soundSink;
     }
 
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context
-                    .entityBridge
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies
+                    .entityBridge()
+                    .get()
                     .entityRuntime
                     .debug()
                     .setColorShellStateForTest(slot, state, transitionCountdown, direction, speedX, speedY);
@@ -216,27 +225,27 @@ final class RoomSessionViews {
     }
 
     int entityGroundStatusForTest(int slot) {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return 0;
         }
-        return session.context.entityBridge.entityRuntime.inspection().groundStatus(slot);
+        return dependencies.entityBridge().get().entityRuntime.inspection().groundStatus(slot);
     }
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.debug().setEnemyIgnoreHitsCountdownForTest(slot, value);
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies.entityBridge().get().entityRuntime.debug().setEnemyIgnoreHitsCountdownForTest(slot, value);
         }
     }
 
     void setEntityThrownDirectionForTest(int slot, int value) {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.configuration().setThrownDirection(slot, value);
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies.entityBridge().get().entityRuntime.configuration().setThrownDirection(slot, value);
         }
     }
 
     void setEntityLedgeTimerForTest(int slot, int value) {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.entityRuntime.configuration().setLedgeTransitionTimer(slot, value);
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies.entityBridge().get().entityRuntime.configuration().setLedgeTransitionTimer(slot, value);
         }
     }
 
@@ -244,128 +253,143 @@ final class RoomSessionViews {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException("Switch-block state must be an unsigned byte: " + value);
         }
-        session.context.switchBlocksState = value;
-        session.synchronizeSwitchBlockCollisionState();
+        dependencies.terrain().switchBlocksState = value;
+        dependencies.roomLoadCoordinator().get().synchronizeSwitchBlockCollisionState();
     }
 
     void setSwitchableObjectAnimationStageForTest(int value) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException("Switch-block animation stage must be an unsigned byte: " + value);
         }
-        session.context.switchableObjectAnimationStage = value;
+        dependencies.terrain().switchableObjectAnimationStage = value;
     }
 
     int entitySwitchBlocksStateForTest() {
-        return session.context.switchBlocksState & 0xFF;
+        return dependencies.terrain().switchBlocksState & 0xFF;
     }
 
     int switchableObjectAnimationStageForTest() {
-        return session.context.switchableObjectAnimationStage & 0xFF;
+        return dependencies.terrain().switchableObjectAnimationStage & 0xFF;
     }
 
     boolean linkCollisionPointBlockedForTest(int pixelX, int pixelY) {
-        return session.context.overworldCollision.pointBlocked(pixelX, pixelY);
+        return dependencies.overworldCollision().pointBlocked(pixelX, pixelY);
     }
 
     int entityLedgeTimerForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(slot);
+                : dependencies.entityBridge().get().entityRuntime.enemies().ledgeTransitionTimer(slot);
     }
 
     int entityFallingTargetXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().fallingTargetX(slot);
+                : dependencies.entityBridge().get().entityRuntime.enemies().fallingTargetX(slot);
     }
 
     int entityTransitionCountdownForTest(int slot) {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return 0;
         }
-        RoomEntity entity = session.context.activeRoom == null
+        RoomEntity entity = dependencies.location().activeRoom == null
                 ? null
-                : session.context.activeRoom.entities().slots().get(slot);
+                : dependencies.location().activeRoom.entities().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-                ? session.context.entityBridge.entityRuntime.inspection().warpTransitionCountdownForTest(slot)
-                : session.context.entityBridge.entityRuntime.enemies().transitionCountdown(slot);
+                ? dependencies.entityBridge().get().entityRuntime.inspection().warpTransitionCountdownForTest(slot)
+                : dependencies.entityBridge().get().entityRuntime.enemies().transitionCountdown(slot);
     }
 
     int roomTriggerCountForTest() {
-        return session.context.roomTriggerCount & 0xFF;
+        return dependencies.puzzles().roomTriggerCount & 0xFF;
     }
 
     int activeRoomEventForTest() {
-        return session.context.activeRoomEvent & 0xFF;
+        return dependencies.puzzles().activeRoomEvent & 0xFF;
     }
 
     boolean hasDungeonInstrumentForTest(int mapId) {
         return mapId >= 0
-                && mapId < session.context.roomState.dungeonProgressFlags.length
-                && (session.context.roomState.dungeonProgressFlags[mapId] & 0x02) != 0;
+                && mapId < dependencies.roomState().dungeonProgressFlags.length
+                && (dependencies.roomState().dungeonProgressFlags[mapId] & 0x02) != 0;
     }
 
     int indoorTorchPaletteEffectAddressForTest() {
-        return session.context.indoorTorchPaletteEffect.effectAddress();
+        return dependencies.indoorTorchPaletteEffect().effectAddress();
     }
 
     void igniteIndoorTorchPaletteForTest() {
-        session.context.indoorTorchPaletteEffect.igniteTorch();
+        dependencies.indoorTorchPaletteEffect().igniteTorch();
     }
 
     void setRoomTriggerCountForTest(int value) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException("Room trigger count must be an unsigned byte");
         }
-        session.context.roomTriggerCount = value;
+        dependencies.puzzles().roomTriggerCount = value;
     }
 
     int entityDropSpeedXForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.inspection().dropSpeedX(slot);
+                : dependencies.entityBridge().get().entityRuntime.inspection().dropSpeedX(slot);
     }
 
     int entityDropSpeedZForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.inspection().dropSpeedZ(slot);
+                : dependencies.entityBridge().get().entityRuntime.inspection().dropSpeedZ(slot);
     }
 
     void replaceEntityRuntimeForTest(RoomEntityRuntime runtime) {
-        session.context.entityBridge.entityRuntime = runtime;
+        dependencies.entityBridge().get().entityRuntime = runtime;
     }
 
     int objectAtRoomLocation(int location) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = session.context.activeRoom.roomObjectsArea();
+        int[] objects = dependencies.location().activeRoom.roomObjectsArea();
         return areaIndex < 0 || areaIndex >= objects.length ? 0xFF : objects[areaIndex] & 0xFF;
     }
 
     int entityPhysicsFlagsForTest(int slot) {
-        return session.context.entityBridge.entityRuntime == null
+        return dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().physicsFlags(slot);
+                : dependencies.entityBridge().get().entityRuntime.enemies().physicsFlags(slot);
     }
 
     int adjacentIndoorRoomIdForBombWall(int wallIndex) {
-        return session.context.scrollNavigation.adjacentIndoorRoomIdForBombWall(
-                session.context.activeRoom, session.context.indoorMapPosition, wallIndex);
+        return dependencies
+                .scrollNavigation()
+                .adjacentIndoorRoomIdForBombWall(
+                        dependencies.location().activeRoom, dependencies.location().indoorMapPosition, wallIndex);
     }
 
     int findIndoorMapPosition(int mapId, int roomId) {
-        return session.context.roomState.findIndoorMapPosition(mapId, roomId);
+        return dependencies.roomState().findIndoorMapPosition(mapId, roomId);
     }
 
     int indoorMapLayoutOffset(int mapId) {
-        return session.context.roomState.indoorMapLayoutOffset(mapId);
+        return dependencies.roomState().indoorMapLayoutOffset(mapId);
     }
 
     byte[] indoorStatusTableForMap(int mapId) {
-        return session.context.roomState.indoorStatusTableForMap(mapId);
+        return dependencies.roomState().indoorStatusTableForMap(mapId);
     }
 
     int activeRoomStatusFlags() {
-        return session.context.roomState.activeRoomStatusFlags(session.context.activeRoom);
+        return dependencies.roomState().activeRoomStatusFlags(dependencies.location().activeRoom);
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            IndoorTorchPaletteEffect indoorTorchPaletteEffect,
+            OverworldCollision overworldCollision,
+            java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomStoryState> roomStoryState,
+            RoomScrollNavigation scrollNavigation) {}
 }

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import linksawakening.world.entity.event.*;
-import linksawakening.world.room.RoomSession.LinkWrite;
 import org.junit.jupiter.api.Test;
 
 class RoomLinkWritesTest {

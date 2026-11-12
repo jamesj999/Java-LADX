@@ -67,22 +67,13 @@ public final class RoomLoader {
                 false,
                 false);
 
-        return new LoadedRoom(
-                roomId,
-                Warp.CATEGORY_OVERWORLD,
-                MAP_OVERWORLD,
-                animatedTilesGroup,
-                objects,
-                tilemap.gbcOverlay(),
-                tilemap.renderValues(),
-                tilemap.tileIds(),
-                tilemap.tileAttrs(),
-                paletteLoader.loadOverworld(roomId),
-                parsed.warps(),
-                false,
-                0,
-                -1,
-                entities);
+        return new LoadedRoom(new LoadedRoomSpec(
+                new LoadedRoomSpec.Identity(roomId, Warp.CATEGORY_OVERWORLD, MAP_OVERWORLD, animatedTilesGroup),
+                new LoadedRoomSpec.Objects(objects, tilemap.gbcOverlay(), tilemap.renderValues()),
+                new LoadedRoomSpec.Graphics(
+                        tilemap.tileIds(), tilemap.tileAttrs(), paletteLoader.loadOverworld(roomId)),
+                new LoadedRoomSpec.Exits(parsed.warps(), false, 0, -1),
+                entities));
     }
 
     public LoadedRoom loadIndoor(int mapId, int roomId, int[][] fallbackPalettes) {
@@ -128,7 +119,7 @@ public final class RoomLoader {
             byte[] indoorRoomStatus,
             boolean hasBirdKey,
             int tarinFlag) {
-        return loadIndoor(
+        return loadIndoor(new IndoorRoomLoadInputs(
                 mapId,
                 roomId,
                 fallbackPalettes,
@@ -136,20 +127,20 @@ public final class RoomLoader {
                 clearedEntitiesMask,
                 indoorRoomStatus,
                 hasBirdKey,
-                tarinFlag,
-                0);
+                new RoomNpcPaletteInputs(tarinFlag, 0)));
     }
 
-    LoadedRoom loadIndoor(
-            int mapId,
-            int roomId,
-            int[][] fallbackPalettes,
-            int mapCategory,
-            int clearedEntitiesMask,
-            byte[] indoorRoomStatus,
-            boolean hasBirdKey,
-            int tarinFlag,
-            int shieldLevel) {
+    LoadedRoom loadIndoor(IndoorRoomLoadInputs inputs) {
+        int mapId = inputs.mapId();
+        int roomId = inputs.roomId();
+        int[][] fallbackPalettes = inputs.fallbackPalettes();
+        int mapCategory = inputs.mapCategory();
+        int clearedEntitiesMask = inputs.clearedEntitiesMask();
+        byte[] indoorRoomStatus = inputs.indoorRoomStatus();
+        boolean hasBirdKey = inputs.hasBirdKey();
+        int tarinFlag = inputs.palettes().tarinFlag();
+        int shieldLevel = inputs.palettes().shieldLevel();
+
         RoomPointerTable pointerTable = IndoorRoomPointerTables.forMap(mapId);
         int roomPointerOffset = RomBank.romOffset(pointerTable.bank(), pointerTable.address() + roomId * 2);
         int roomLo = new Rom(romData).u8(RomAddress.fromOffset(roomPointerOffset));
@@ -168,7 +159,7 @@ public final class RoomLoader {
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildIndoor(mapId, roomId, objects);
         EntityRoomLoader.RoomTable entityTable = entityTableForIndoorMap(mapId);
-        RoomEntitySnapshot entities = loadEntities(
+        RoomEntitySnapshot entities = loadEntities(new RoomEntityLoadInputs(
                 entityTable,
                 roomId,
                 clearedEntitiesMask,
@@ -176,31 +167,27 @@ public final class RoomLoader {
                 indoorRoomStatus,
                 hasBirdKey,
                 mapCategory == Warp.CATEGORY_SIDESCROLL,
-                tarinFlag,
-                shieldLevel);
+                new RoomNpcPaletteInputs(tarinFlag, shieldLevel)));
 
-        return new LoadedRoom(
-                roomId,
-                mapCategory,
-                mapId,
-                animatedTilesGroup,
-                objects,
-                null,
-                null,
-                tilemap.tileIds(),
-                tilemap.tileAttrs(),
-                paletteLoader.loadIndoor(
-                        mapId,
-                        roomId,
-                        fallbackPalettes,
-                        tarinFlag,
-                        shieldLevel,
-                        mapCategory == Warp.CATEGORY_SIDESCROLL),
-                parsed.warps(),
-                hasSouthEntrance(objects),
-                parsed.shutterDoorMask(),
-                parsed.staircaseLocation(),
-                entities);
+        return new LoadedRoom(new LoadedRoomSpec(
+                new LoadedRoomSpec.Identity(roomId, mapCategory, mapId, animatedTilesGroup),
+                new LoadedRoomSpec.Objects(objects, null, null),
+                new LoadedRoomSpec.Graphics(
+                        tilemap.tileIds(),
+                        tilemap.tileAttrs(),
+                        paletteLoader.loadIndoor(
+                                mapId,
+                                roomId,
+                                fallbackPalettes,
+                                tarinFlag,
+                                shieldLevel,
+                                mapCategory == Warp.CATEGORY_SIDESCROLL)),
+                new LoadedRoomSpec.Exits(
+                        parsed.warps(),
+                        hasSouthEntrance(objects),
+                        parsed.shutterDoorMask(),
+                        parsed.staircaseLocation()),
+                entities));
     }
 
     private RoomEntitySnapshot loadEntities(
@@ -223,20 +210,28 @@ public final class RoomLoader {
             boolean hasBirdKey,
             boolean sideScrolling,
             int tarinFlag) {
-        return loadEntities(
-                table, roomId, clearedEntitiesMask, mapId, roomStatus, hasBirdKey, sideScrolling, tarinFlag, 0);
+        return loadEntities(new RoomEntityLoadInputs(
+                table,
+                roomId,
+                clearedEntitiesMask,
+                mapId,
+                roomStatus,
+                hasBirdKey,
+                sideScrolling,
+                new RoomNpcPaletteInputs(tarinFlag, 0)));
     }
 
-    private RoomEntitySnapshot loadEntities(
-            EntityRoomLoader.RoomTable table,
-            int roomId,
-            int clearedEntitiesMask,
-            int mapId,
-            byte[] roomStatus,
-            boolean hasBirdKey,
-            boolean sideScrolling,
-            int tarinFlag,
-            int shieldLevel) {
+    private RoomEntitySnapshot loadEntities(RoomEntityLoadInputs inputs) {
+        EntityRoomLoader.RoomTable table = inputs.table();
+        int roomId = inputs.roomId();
+        int clearedEntitiesMask = inputs.clearedEntitiesMask();
+        int mapId = inputs.mapId();
+        byte[] roomStatus = inputs.roomStatus();
+        boolean hasBirdKey = inputs.hasBirdKey();
+        boolean sideScrolling = inputs.sideScrolling();
+        int tarinFlag = inputs.palettes().tarinFlag();
+        int shieldLevel = inputs.palettes().shieldLevel();
+
         return entityLoader
                 .load(table, roomId, clearedEntitiesMask, mapId, roomStatus, hasBirdKey)
                 .withSpriteSelection(entitySpriteCatalog.load(

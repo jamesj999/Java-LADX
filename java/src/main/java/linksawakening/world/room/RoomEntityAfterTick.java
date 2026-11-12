@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSession.*;
 
 import java.util.List;
+import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.ChestRewardEvent;
@@ -12,10 +13,10 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.transition.Warp;
 
 final class RoomEntityAfterTick {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomEntityAfterTick(RoomSession session) {
-        this.session = session;
+    RoomEntityAfterTick(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void complete(int linkEntityX, int linkEntityY) {
@@ -27,9 +28,9 @@ final class RoomEntityAfterTick {
 
     private void synchronizeQuestState() {
         for (DungeonWarpRequest request :
-                session.context.entityBridge.entityRuntime.consumePendingDungeonWarpRequests()) {
+                dependencies.entityBridge().get().entityRuntime.consumePendingDungeonWarpRequests()) {
             linksawakening.world.entity.event.WarpDestination destination = request.destination();
-            session.context.pendingDungeonWarp = new Warp(
+            dependencies.location().pendingDungeonWarp = new Warp(
                     Warp.CATEGORY_INDOOR,
                     destination.mapId(),
                     destination.roomId(),
@@ -37,117 +38,189 @@ final class RoomEntityAfterTick {
                     destination.y(),
                     0x34);
         }
-        session.context.shouldGetLostInMysteriousWoods =
-                session.context.entityBridge.entityRuntime.inspection().shouldGetLostInMysteriousWoods();
+        dependencies.location().shouldGetLostInMysteriousWoods =
+                dependencies.entityBridge().get().entityRuntime.inspection().shouldGetLostInMysteriousWoods();
         int runtimeBowWowState =
-                session.context.entityBridge.entityRuntime.inspection().bowWowState();
-        if (runtimeBowWowState != session.context.bowWowState) {
-            session.context.bowWowState = runtimeBowWowState;
-            session.context.followingNpcState = new FollowingNpcState(
-                    session.context.followingNpcState.roosterFollowing(),
-                    session.context.followingNpcState.ghostFollowingState(),
-                    session.context.followingNpcState.marinFollowing(),
+                dependencies.entityBridge().get().entityRuntime.inspection().bowWowState();
+        if (runtimeBowWowState != dependencies.followers().bowWowState) {
+            dependencies.followers().bowWowState = runtimeBowWowState;
+            dependencies.followers().followingNpcState = new FollowingNpcState(
+                    dependencies.followers().followingNpcState.roosterFollowing(),
+                    dependencies.followers().followingNpcState.ghostFollowingState(),
+                    dependencies.followers().followingNpcState.marinFollowing(),
                     runtimeBowWowState == 0x01,
-                    session.context.followingNpcState.instrument4Flags(),
-                    session.context.followingNpcState.powerBraceletLevel(),
-                    session.context.followingNpcState.db10());
+                    dependencies.followers().followingNpcState.instrument4Flags(),
+                    dependencies.followers().followingNpcState.powerBraceletLevel(),
+                    dependencies.followers().followingNpcState.db10());
             // The rescue/return handler changes the existing entity in place.
             // CreateFollowingNpcEntity runs on room entry, not on this quest
             // flag write: respawning here teleports BowWow onto Link and
             // reconstructs every other entity's runtime state.
         }
-        if (session.context.ocarinaPlaybackCountdown > 0) {
-            session.context.ocarinaPlaybackCountdown--;
-            if (session.context.ocarinaPlaybackCountdown == 0) {
-                session.finishOcarinaPlayback();
+        if (dependencies.items().ocarinaPlaybackCountdown > 0) {
+            dependencies.items().ocarinaPlaybackCountdown--;
+            if (dependencies.items().ocarinaPlaybackCountdown == 0) {
+                dependencies.roomTransitionController().get().finishOcarinaPlayback();
             }
         }
     }
 
     private List<BombExplosionEvent> harvestRewards() {
         List<BombExplosionEvent> bombExplosionEvents =
-                session.context.entityBridge.entityRuntime.consumeBombExplosionEvents();
-        session.context.entityBridge.outbox.pendingBombExplosionEvents.clear();
-        session.context.entityBridge.outbox.pendingBombExplosionEvents.addAll(bombExplosionEvents);
+                dependencies.entityBridge().get().entityRuntime.consumeBombExplosionEvents();
+        dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.clear();
+        dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.addAll(bombExplosionEvents);
         List<ChestRewardEvent> chestRewards =
-                session.context.entityBridge.entityRuntime.consumePendingChestRewardEvents();
+                dependencies.entityBridge().get().entityRuntime.consumePendingChestRewardEvents();
         for (ChestRewardEvent reward : chestRewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                session.context.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
+                dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
         }
-        session.context.entityBridge.outbox.pendingChestRewardEvents.addAll(chestRewards);
-        session.harvestKeyQuicksandEvents();
-        session.harvestKeyRewardEvents();
-        session.harvestSlimeKeyRewardEvents();
-        session.harvestThrownRoomEventCollisions();
-        session.harvestHeartContainerRewards();
-        session.context.entityBridge.outbox.pendingMadamMeowMeowFullHealRequests.addAll(
-                session.context.entityBridge.entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
-        session.harvestSwordPickupRewards();
-        session.harvestToadstoolRewards();
-        session.harvestInstrumentRewards();
-        session.harvestInstrumentCompletions();
-        session.harvestRichardProgressEvents();
-        session.harvestWitchEvents();
-        session.harvestOwlEventCompletions();
+        dependencies.entityBridge().get().outbox.pendingChestRewardEvents.addAll(chestRewards);
+        dependencies.roomEntityRewards().get().harvestKeyQuicksandEvents();
+        dependencies.roomEntityRewards().get().harvestKeyRewardEvents();
+        dependencies.roomEntityRewards().get().harvestSlimeKeyRewardEvents();
+        dependencies.roomPuzzleController().get().harvestThrownRoomEventCollisions();
+        dependencies.roomEntityRewards().get().harvestHeartContainerRewards();
+        dependencies
+                .entityBridge()
+                .get()
+                .outbox
+                .pendingMadamMeowMeowFullHealRequests
+                .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
+        dependencies.roomEntityRewards().get().harvestSwordPickupRewards();
+        dependencies.roomEntityRewards().get().harvestToadstoolRewards();
+        dependencies.roomEntityRewards().get().harvestInstrumentRewards();
+        dependencies.roomEntityRewards().get().harvestInstrumentCompletions();
+        dependencies.roomEntityRewards().get().harvestRichardProgressEvents();
+        dependencies.roomEntityRewards().get().harvestWitchEvents();
+        dependencies.roomEntityRewards().get().harvestOwlEventCompletions();
         return bombExplosionEvents;
     }
 
     private void persistEffects() {
         for (RoomStatusPersistenceRequest request :
-                session.context.entityBridge.entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
-            if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |=
-                        (byte) request.roomStatusMask();
+                dependencies.entityBridge().get().entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
+            if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                dependencies.roomState()
+                        .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte)
+                        request.roomStatusMask();
             }
-            session.context.tarinFlag = request.tarinFlag();
+            dependencies.followers().tarinFlag = request.tarinFlag();
         }
-        if (session.context.entityBridge.entityRuntime.consumePendingSwitchBlockAnimationRequest()
-                && session.context.switchableObjectAnimationStage == 0) {
-            session.context.switchableObjectAnimationStage = 0x01;
+        if (dependencies.entityBridge().get().entityRuntime.consumePendingSwitchBlockAnimationRequest()
+                && dependencies.terrain().switchableObjectAnimationStage == 0) {
+            dependencies.terrain().switchableObjectAnimationStage = 0x01;
         }
-        session.context.enemyDropCounters =
-                session.context.entityBridge.entityRuntime.inspection().enemyDropCounters();
-        if (session.context.transientVfxSystem != null) {
+        dependencies.entityFrame().enemyDropCounters =
+                dependencies.entityBridge().get().entityRuntime.inspection().enemyDropCounters();
+        if (dependencies.transientVfxSystem() != null) {
             for (TransientVfxRequest request :
-                    session.context.entityBridge.entityRuntime.enemies().transientVfxRequests()) {
-                session.context.transientVfxSystem.spawn(
-                        request.type(), request.worldX(), request.worldY(), request.variant());
+                    dependencies.entityBridge().get().entityRuntime.enemies().transientVfxRequests()) {
+                dependencies
+                        .transientVfxSystem()
+                        .spawn(request.type(), request.worldX(), request.worldY(), request.variant());
             }
         }
-        int clearedMask = session.context.entityBridge.entityRuntime.consumePendingClearedEntityMask();
+        int clearedMask = dependencies.entityBridge().get().entityRuntime.consumePendingClearedEntityMask();
         if (clearedMask != 0) {
-            session.context.recentRoomEntityClears.addMask(session.context.activeRoom.roomId(), clearedMask);
+            dependencies
+                    .entityFrame()
+                    .recentRoomEntityClears
+                    .addMask(dependencies.location().activeRoom.roomId(), clearedMask);
         }
-        int roomStatusMask = session.context.entityBridge.entityRuntime.consumePendingRoomStatusMask();
-        if (roomStatusMask != 0 && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
-            status[session.context.activeRoom.roomId()] |= (byte) roomStatusMask;
-            session.context
-                    .entityBridge
+        int roomStatusMask = dependencies.entityBridge().get().entityRuntime.consumePendingRoomStatusMask();
+        if (roomStatusMask != 0 && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            byte[] status = dependencies
+                    .roomSessionViews()
+                    .get()
+                    .indoorStatusTableForMap(dependencies.location().activeRoom.mapId());
+            status[dependencies.location().activeRoom.roomId()] |= (byte) roomStatusMask;
+            dependencies
+                    .entityBridge()
+                    .get()
                     .entityRuntime
                     .configuration()
-                    .setEntityRoomStatus(Byte.toUnsignedInt(status[session.context.activeRoom.roomId()]));
+                    .setEntityRoomStatus(Byte.toUnsignedInt(
+                            status[dependencies.location().activeRoom.roomId()]));
         }
     }
 
     private void applyObjects(List<BombExplosionEvent> bombExplosionEvents, int linkEntityX, int linkEntityY) {
-        session.applyHookshotBridgeUpdates(
-                session.context.entityBridge.entityRuntime.inspection().hookshotBridgeUpdates());
-        session.context.activeRoom.replaceEntities(
-                session.context.entityBridge.entityRuntime.inspection().snapshot());
-        session.applyBombObjectInteractions(bombExplosionEvents);
-        session.applyBoomerangObjectInteractions(
-                session.context.entityBridge.entityRuntime.enemies().boomerangObjectRequests());
-        session.applyMagicRodObjectInteractions(
-                session.context.entityBridge.entityRuntime.enemies().magicRodObjectRequests());
-        session.applyMagicPowderObjectInteractions(
-                session.context.entityBridge.entityRuntime.enemies().magicPowderObjectRequests());
-        session.context.activeRoom.replaceEntities(
-                session.context.entityBridge.entityRuntime.inspection().snapshot());
-        session.tickPushedBlockMotion(linkEntityX, linkEntityY);
-        session.tickRoomEvent(linkEntityX, linkEntityY);
+        dependencies
+                .roomTileRedraw()
+                .get()
+                .applyHookshotBridgeUpdates(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .hookshotBridgeUpdates());
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .snapshot());
+        dependencies.roomObjectMutations().get().applyBombObjectInteractions(bombExplosionEvents);
+        dependencies
+                .roomObjectMutations()
+                .get()
+                .applyBoomerangObjectInteractions(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .enemies()
+                        .boomerangObjectRequests());
+        dependencies
+                .roomObjectMutations()
+                .get()
+                .applyMagicRodObjectInteractions(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .enemies()
+                        .magicRodObjectRequests());
+        dependencies
+                .roomObjectMutations()
+                .get()
+                .applyMagicPowderObjectInteractions(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .enemies()
+                        .magicPowderObjectRequests());
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .snapshot());
+        dependencies.roomPuzzleController().get().tickPushedBlockMotion(linkEntityX, linkEntityY);
+        dependencies.roomPuzzleController().get().tickRoomEvent(linkEntityX, linkEntityY);
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomFollowerState followers,
+            RoomItemUseState items,
+            RoomLocationState location,
+            RoomTerrainState terrain,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            java.util.function.Supplier<RoomEntityRewards> roomEntityRewards,
+            java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
+            java.util.function.Supplier<RoomPuzzleController> roomPuzzleController,
+            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
+            java.util.function.Supplier<RoomTransitionController> roomTransitionController,
+            TransientVfxSystem transientVfxSystem) {}
 }

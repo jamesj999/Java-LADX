@@ -4,7 +4,9 @@ import static linksawakening.world.room.RoomSession.*;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.rom.RomTables;
 import linksawakening.world.entity.EntityBackgroundCollisionResolution;
+import linksawakening.world.entity.EntityBackgroundCollisionResolver;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityBackgroundCollisionState;
 import linksawakening.world.entity.EntityCollisionPointProbe;
@@ -18,101 +20,109 @@ import linksawakening.world.transition.Warp;
 
 /** RoomCollisionQueries operations for the live room session. */
 final class RoomCollisionQueries {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomCollisionQueries(RoomSession session) {
-        this.session = session;
+    RoomCollisionQueries(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY) {
-        return session.boundaryState(linkX, linkY, false);
+        return dependencies.roomCollisionQueries().get().boundaryState(linkX, linkY, false);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
-        return session.boundaryState(linkX, linkY, linkAirborne, 0);
+        return dependencies.roomCollisionQueries().get().boundaryState(linkX, linkY, linkAirborne, 0);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
-        boolean sideViewEntityActive = session.context.activeRoom.entities() != null
-                && !session.context.activeRoom.entities().slots().isEmpty()
-                && session.context.activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
-        return new RoomBoundaryState(
-                session.context.activeRoom.mapCategory(),
-                session.context.activeRoom.roomId(),
-                session.context.activeRoom.indoorHasSouthEntrance(),
-                session.context.activeRoom.hasWarps(),
-                session.context.closedShutterMask,
-                linkX,
-                linkY,
-                session.context.activeRoom.mapId(),
-                linkAirborne,
-                linkPhysicsModifier,
-                sideViewEntityActive);
+        boolean sideViewEntityActive = dependencies.location().activeRoom.entities() != null
+                && !dependencies.location().activeRoom.entities().slots().isEmpty()
+                && dependencies.location().activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
+        return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                        dependencies.location().activeRoom.mapCategory(),
+                        dependencies.location().activeRoom.roomId(),
+                        dependencies.location().activeRoom.indoorHasSouthEntrance(),
+                        dependencies.location().activeRoom.hasWarps(),
+                        dependencies.puzzles().closedShutterMask,
+                        dependencies.location().activeRoom.mapId()),
+                new linksawakening.world.transition.RoomBoundaryInputs.Link(
+                        linkX, linkY, linkAirborne, linkPhysicsModifier, sideViewEntityActive)));
     }
 
     RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
-                session.context.overworldCollision.groundInteractionSample(entity.x(), entity.y());
+                dependencies.overworldCollision().groundInteractionSample(entity.x(), entity.y());
         return new RoomEntityObjectSample(
                 sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
     }
 
     RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
-                session.context.overworldCollision.entityInteractionSample(entity.x(), entity.y());
+                dependencies.overworldCollision().entityInteractionSample(entity.x(), entity.y());
         return new RoomEntityObjectSample(
                 sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
     }
 
     boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY)
+        return dependencies
+                .roomCollisionQueries()
+                .get()
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY)
                 .blocked();
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY) {
-        int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
+        int ignoreHitsCountdown = dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+                : dependencies.entityBridge().get().entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
+        return dependencies
+                .roomCollisionQueries()
+                .get()
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+        return dependencies
+                .roomCollisionQueries()
+                .get()
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
         EntityCollisionPointProbe.Sample sample =
-                session.context.entityCollisionPointProbe.sample(entity, direction, nextX, nextY);
+                dependencies.entityCollisionPointProbe().sample(entity, direction, nextX, nextY);
         int pointX = sample.x();
         int pointY = sample.y();
-        int objectId = session.context.overworldCollision.objectIdAtPoint(pointX, pointY);
-        int physicsFlag = session.context.overworldCollision.objectPhysicsFlagAtPoint(pointX, pointY);
-        int ledgeTimer = session.context.entityBridge.entityRuntime == null
+        int objectId = dependencies.overworldCollision().objectIdAtPoint(pointX, pointY);
+        int physicsFlag = dependencies.overworldCollision().objectPhysicsFlagAtPoint(pointX, pointY);
+        int ledgeTimer = dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().ledgeTransitionTimer(entity.slot());
+                : dependencies.entityBridge().get().entityRuntime.enemies().ledgeTransitionTimer(entity.slot());
         if ((entity.z() & 0x80) != 0) {
             ledgeTimer = 0;
         }
-        int thrownDirection = session.context.entityBridge.entityRuntime == null
+        int thrownDirection = dependencies.entityBridge().get().entityRuntime == null
                 ? 0xFF
-                : session.context.entityBridge.entityRuntime.thrownDirection(entity.slot());
+                : dependencies.entityBridge().get().entityRuntime.thrownDirection(entity.slot());
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
                 frameCounter,
-                session.context.activeRoom != null
-                        && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
+                dependencies.location().activeRoom != null
+                        && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
                 thrownDirection,
                 ledgeTimer,
-                session.context.switchBlocksState,
-                session.context.overworldCollision.linkStandingOnSwitchBlock());
-        EntityBackgroundCollisionResolution resolution =
-                session.context.entityBackgroundCollisionResolver.resolveWithState(
-                        entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown, state);
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context
-                    .entityBridge
+                dependencies.terrain().switchBlocksState,
+                dependencies.overworldCollision().linkStandingOnSwitchBlock());
+        EntityBackgroundCollisionResolution resolution = dependencies
+                .entityBackgroundCollisionResolver()
+                .resolveWithState(entity, direction, sample, objectId, physicsFlag, ignoreHitsCountdown, state);
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies
+                    .entityBridge()
+                    .get()
                     .entityRuntime
                     .configuration()
                     .setLedgeTransitionTimer(entity.slot(), resolution.nextLedgeTimer());
@@ -122,22 +132,27 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY);
+        return dependencies
+                .roomCollisionQueries()
+                .get()
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY, int frameCounter) {
-        int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
+        int ignoreHitsCountdown = dependencies.entityBridge().get().entityRuntime == null
                 ? 0
-                : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return session.entityBackgroundCollisionResult(
-                entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
+                : dependencies.entityBridge().get().entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
+        return dependencies
+                .roomCollisionQueries()
+                .get()
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
     }
 
     RoomEntityGroundInteraction.Result entityGroundInteraction(
             RoomEntity entity, int frameCounter, int previousGroundStatus, int speedZ, boolean sideScrolling) {
-        int options = session.context.romTables.entityOptions1(entity.type());
-        if ((options & session.ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
+        int options = dependencies.romTables().entityOptions1(entity.type());
+        if ((options & ENTITY_OPT1_NO_GROUND_INTERACTION) != 0) {
             return RoomEntityGroundInteraction.Result.unchanged(entity, 0);
         }
 
@@ -150,15 +165,15 @@ final class RoomCollisionQueries {
         }
 
         OverworldCollision.GroundInteractionSample sample =
-                session.context.overworldCollision.groundInteractionSample(entity.x(), entity.y());
+                dependencies.overworldCollision().groundInteractionSample(entity.x(), entity.y());
         int physicsFlag = sample.physicsFlag();
-        int groundStatus = session.groundStatusFor(sample);
+        int groundStatus = RoomInteractionGeometry.groundStatusFor(sample);
         boolean deepWaterOrLava = physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA;
-        boolean retainsDeepWaterStatus = entity.type() == session.ENTITY_FISH
-                || entity.type() == session.ENTITY_PEAHAT
-                || entity.type() == session.ENTITY_ROOSTER
-                || entity.type() == session.ENTITY_BOW_WOW
-                || entity.type() == session.ENTITY_MARIN_AT_THE_SHORE;
+        boolean retainsDeepWaterStatus = entity.type() == ENTITY_FISH
+                || entity.type() == ENTITY_PEAHAT
+                || entity.type() == ENTITY_ROOSTER
+                || entity.type() == ENTITY_BOW_WOW
+                || entity.type() == ENTITY_MARIN_AT_THE_SHORE;
         if (deepWaterOrLava && !retainsDeepWaterStatus) {
             // The source unloads ordinary entities before jumping directly to
             // .createWaterSplash, so this splash is not gated by options or
@@ -166,25 +181,36 @@ final class RoomCollisionQueries {
             return RoomEntityGroundInteraction.Result.unloaded(entity, 0x00, true);
         }
 
-        boolean splash = session.splashAllowed(options, previousGroundStatus, groundStatus, speedZ, sideScrolling);
+        boolean splash = RoomInteractionGeometry.splashAllowed(
+                options, previousGroundStatus, groundStatus, speedZ, sideScrolling);
         int movementIndex = physicsFlag - PhysicsFlags.CAT_CONVEYOR;
         RoomEntity updated = entity;
-        if (movementIndex >= 0
-                && movementIndex < session.ENTITY_CONVEYOR_MOVEMENT_X.length
-                && (frameCounter & 0x03) == 0) {
-            updated = session.withEntityPosition(
+        if (movementIndex >= 0 && movementIndex < ENTITY_CONVEYOR_MOVEMENT_X.length && (frameCounter & 0x03) == 0) {
+            updated = RoomInteractionGeometry.withEntityPosition(
                     entity,
-                    entity.x() + session.ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
-                    entity.y() + session.ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
+                    entity.x() + ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
+                    entity.y() + ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
         }
 
-        RoomEntityGroundInteraction.PitTransition pit =
-                session.pitTransitionFor(entity, sample, session.context.currentLinkMotionState);
+        RoomEntityGroundInteraction.PitTransition pit = RoomInteractionGeometry.pitTransitionFor(
+                entity, sample, dependencies.entityFrame().currentLinkMotionState);
         return new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
     }
 
     boolean pairoddProjectileObjectCollision(RoomEntity entity) {
-        int physicsFlag = session.context.overworldCollision.objectPhysicsFlagAtEntityPosition(entity.x(), entity.y());
+        int physicsFlag = dependencies.overworldCollision().objectPhysicsFlagAtEntityPosition(entity.x(), entity.y());
         return PairoddProjectileObjectCollision.collidesWithPhysicsFlag(physicsFlag);
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomLocationState location,
+            RoomPuzzleState puzzles,
+            RoomTerrainState terrain,
+            EntityBackgroundCollisionResolver entityBackgroundCollisionResolver,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            EntityCollisionPointProbe entityCollisionPointProbe,
+            OverworldCollision overworldCollision,
+            RomTables romTables,
+            java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries) {}
 }

@@ -53,24 +53,11 @@ final class RoomEntityTickBuilder {
     }
 
     List<EntityProjectileEvent> tick(RoomSession session) {
-        return session.tickEntitiesWithProjectileEvents(
+        return session.tickEntities(new EntityTickInputs(
                 frame,
-                x,
-                y,
-                z,
-                airborne,
-                motion,
-                direction,
-                collision,
-                shield,
+                new LinkPosition(x, y, z, direction, collision),
+                new LinkMotion(airborne, motion, shield, invincibility, speedX, speedY),
                 shieldLevel,
-                invincibility,
-                swordActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                speedX,
-                speedY);
+                new SwordBox(swordActive, swordX, swordWidth, swordY, swordHeight)));
     }
 }

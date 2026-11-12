@@ -7,14 +7,14 @@ public final class RoomSessionTestAccess {
     private RoomSessionTestAccess() {}
 
     public static void replaceEntityRuntime(RoomSession session, RoomEntityRuntime runtime) {
-        session.replaceEntityRuntimeForTest(runtime);
+        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
     }
 
     public static int crackedFloorCounter(RoomSession session) {
-        return session.context.crackedFloorCounter;
+        return session.components.terrain().crackedFloorCounter;
     }
 
     public static int overworldStatus(RoomSession session, int roomId) {
-        return session.overworldRoomStatusForTest(roomId);
+        return session.components.roomSessionViews().overworldRoomStatusForTest(roomId);
     }
 }

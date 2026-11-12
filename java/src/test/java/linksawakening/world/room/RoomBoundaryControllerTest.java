@@ -106,32 +106,46 @@ final class RoomBoundaryControllerTest {
 
     @Test
     void airborneLinkDoesNotScrollBackUpAfterEnteringRoomDuringWallFlip() {
-        RoomBoundaryDecision decision = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 40, -1, 0x00, true));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                        new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                                Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 0x00),
+                        new linksawakening.world.transition.RoomBoundaryInputs.Link(40, -1, true, 0, false))));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
 
     @Test
     void airborneLinkDoesNotStartTheDownwardTransitionDuringTheFlip() {
-        RoomBoundaryDecision decision = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                        new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                                Warp.CATEGORY_INDOOR, 0xA0, false, true, 0, 0x00),
+                        new linksawakening.world.transition.RoomBoundaryInputs.Link(
+                                40, ROOM_PIXEL_HEIGHT, true, 0, false))));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
 
     @Test
     void airborneOverworldLinkDoesNotScrollBackUpAfterWallFlipEntry() {
-        RoomBoundaryDecision decision = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_OVERWORLD, 0x92, false, false, 0, 40, -1, 0x00, true));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                        new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                                Warp.CATEGORY_OVERWORLD, 0x92, false, false, 0, 0x00),
+                        new linksawakening.world.transition.RoomBoundaryInputs.Link(40, -1, true, 0, false))));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
 
     @Test
     void airborneOverworldLinkDoesNotStartDownwardBoundaryScrollDuringTheFlip() {
-        RoomBoundaryDecision decision = controller.decide(new RoomBoundaryState(
-                Warp.CATEGORY_OVERWORLD, 0x82, false, false, 0, 40, ROOM_PIXEL_HEIGHT, 0x00, true));
+        RoomBoundaryDecision decision =
+                controller.decide(new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                        new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                                Warp.CATEGORY_OVERWORLD, 0x82, false, false, 0, 0x00),
+                        new linksawakening.world.transition.RoomBoundaryInputs.Link(
+                                40, ROOM_PIXEL_HEIGHT, true, 0, false))));
 
         assertEquals(RoomBoundaryDecision.Type.NONE, decision.type());
     }
@@ -259,12 +273,17 @@ final class RoomBoundaryControllerTest {
 
     private static RoomBoundaryState sideViewState(
             int roomId, int mapId, int y, int physicsModifier, boolean entityActive) {
-        return new RoomBoundaryState(
-                Warp.CATEGORY_SIDESCROLL, roomId, false, true, 0, 0x70, y, mapId, false, physicsModifier, entityActive);
+        return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                        Warp.CATEGORY_SIDESCROLL, roomId, false, true, 0, mapId),
+                new linksawakening.world.transition.RoomBoundaryInputs.Link(
+                        0x70, y, false, physicsModifier, entityActive)));
     }
 
     private static RoomBoundaryState sideViewStateWithoutWarps(int roomId, int y, int physicsModifier) {
-        return new RoomBoundaryState(
-                Warp.CATEGORY_SIDESCROLL, roomId, false, false, 0, 0x70, y, 0x00, false, physicsModifier, false);
+        return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                        Warp.CATEGORY_SIDESCROLL, roomId, false, false, 0, 0x00),
+                new linksawakening.world.transition.RoomBoundaryInputs.Link(0x70, y, false, physicsModifier, false)));
     }
 }

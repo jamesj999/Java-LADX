@@ -13,159 +13,196 @@ import linksawakening.world.transition.Warp;
 
 /** RoomEntityRewards operations for the live room session. */
 final class RoomEntityRewards {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomEntityRewards(RoomSession session) {
-        this.session = session;
+    RoomEntityRewards(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
     void harvestKeyQuicksandEvents() {
-        if (session.context.entityBridge.entityRuntime == null
-                || session.context
-                        .entityBridge
+        if (dependencies.entityBridge().get().entityRuntime == null
+                || dependencies
+                        .entityBridge()
+                        .get()
                         .entityRuntime
                         .consumePendingKeyQuicksandEvents()
                         .isEmpty()) {
             return;
         }
-        session.context.roomState.overworldRoomStatus[0xCE] |= (byte) session.OW_ROOM_STATUS_FLAG_CHANGED;
-        session.context.roomState.indoorARoomStatus[0xF8] |= (byte) 0x20;
+        dependencies.roomState().overworldRoomStatus[0xCE] |= (byte) OW_ROOM_STATUS_FLAG_CHANGED;
+        dependencies.roomState().indoorARoomStatus[0xF8] |= (byte) 0x20;
     }
 
     void harvestKeyRewardEvents() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
-        List<KeyRewardEvent> rewards = session.context.entityBridge.entityRuntime.consumePendingKeyRewardEvents();
+        List<KeyRewardEvent> rewards =
+                dependencies.entityBridge().get().entityRuntime.consumePendingKeyRewardEvents();
         for (KeyRewardEvent reward : rewards) {
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                session.context.roomState.dungeonItemState.incrementCurrentFlag(reward.itemType());
+                dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
-            session.markActiveRoomCompleted();
+            dependencies.roomStoryState().get().markActiveRoomCompleted();
         }
-        session.context.entityBridge.outbox.pendingKeyRewardEvents.addAll(rewards);
+        dependencies.entityBridge().get().outbox.pendingKeyRewardEvents.addAll(rewards);
     }
 
     void harvestHeartContainerRewards() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
         List<HeartContainerRewardEvent> rewards =
-                session.context.entityBridge.entityRuntime.consumePendingHeartContainerRewards();
+                dependencies.entityBridge().get().entityRuntime.consumePendingHeartContainerRewards();
         if (rewards.isEmpty()) {
             return;
         }
-        session.markHeartContainerCollected();
-        session.context.entityBridge.outbox.pendingHeartContainerRewards.addAll(rewards);
+        dependencies.roomStoryState().get().markHeartContainerCollected();
+        dependencies.entityBridge().get().outbox.pendingHeartContainerRewards.addAll(rewards);
     }
 
     void harvestSwordPickupRewards() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
         List<SwordPickupRewardEvent> rewards =
-                session.context.entityBridge.entityRuntime.consumePendingSwordPickupRewards();
+                dependencies.entityBridge().get().entityRuntime.consumePendingSwordPickupRewards();
         if (rewards.isEmpty()) {
             return;
         }
-        session.markActiveRoomCompleted();
-        session.context.entityBridge.outbox.pendingSwordPickupRewards.addAll(rewards);
+        dependencies.roomStoryState().get().markActiveRoomCompleted();
+        dependencies.entityBridge().get().outbox.pendingSwordPickupRewards.addAll(rewards);
     }
 
     void harvestToadstoolRewards() {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.outbox.pendingToadstoolRewards.addAll(
-                    session.context.entityBridge.entityRuntime.consumePendingToadstoolRewards());
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingToadstoolRewards
+                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingToadstoolRewards());
         }
     }
 
     void harvestInstrumentRewards() {
-        if (session.context.entityBridge.entityRuntime == null
-                || session.context.activeRoom == null
-                || session.context
-                        .entityBridge
+        if (dependencies.entityBridge().get().entityRuntime == null
+                || dependencies.location().activeRoom == null
+                || dependencies
+                        .entityBridge()
+                        .get()
                         .entityRuntime
                         .consumePendingInstrumentRewards()
                         .isEmpty()
-                || session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+                || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
-        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |=
-                (byte) session.ROOM_STATUS_EVENT_1;
-        if (session.context.activeRoom.mapId() >= 0
-                && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length) {
-            session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x02;
+        dependencies
+                        .roomSessionViews()
+                        .get()
+                        .indoorStatusTableForMap(
+                                dependencies.location().activeRoom.mapId())[
+                        dependencies.location().activeRoom.roomId()] |=
+                (byte) ROOM_STATUS_EVENT_1;
+        if (dependencies.location().activeRoom.mapId() >= 0
+                && dependencies.location().activeRoom.mapId() < dependencies.roomState().dungeonProgressFlags.length) {
+            dependencies.roomState()
+                    .dungeonProgressFlags[dependencies.location().activeRoom.mapId()] |= 0x02;
         }
-        session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
+        dependencies
+                .entityBridge()
+                .get()
+                .entityRuntime
+                .configuration()
+                .setEntityRoomStatus(dependencies.roomSessionViews().get().activeRoomStatusFlags());
     }
 
     void harvestInstrumentCompletions() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
         for (InstrumentCompletionEvent completion :
-                session.context.entityBridge.entityRuntime.consumePendingInstrumentCompletions()) {
-            session.context.pendingInstrumentTransition = true;
+                dependencies.entityBridge().get().entityRuntime.consumePendingInstrumentCompletions()) {
+            dependencies.items().pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
-                session.context.bowWowState = 0x80;
+                dependencies.followers().bowWowState = 0x80;
             } else if (completion.mapId() == 0x01) {
-                session.context.tarinFlag = 0x02;
+                dependencies.followers().tarinFlag = 0x02;
             }
         }
     }
 
     void harvestRichardProgressEvents() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
         List<RichardProgressEvent> events =
-                session.context.entityBridge.entityRuntime.consumePendingRichardProgressEvents();
+                dependencies.entityBridge().get().entityRuntime.consumePendingRichardProgressEvents();
         for (RichardProgressEvent event : events) {
             if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
-                session.context.roomState.indoorBRoomStatus[0xC7] |= (byte) session.ROOM_STATUS_EVENT_1;
-                session.context.richardSpokenFlag = Math.max(session.context.richardSpokenFlag, 0x02);
+                dependencies.roomState().indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
+                dependencies.followers().richardSpokenFlag = Math.max(dependencies.followers().richardSpokenFlag, 0x02);
             } else {
-                session.context.entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
+                dependencies.entityInputs().get().entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
-        session.context.entityBridge.outbox.pendingRichardProgressEvents.addAll(events);
+        dependencies.entityBridge().get().outbox.pendingRichardProgressEvents.addAll(events);
     }
 
     void harvestWitchEvents() {
-        if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.outbox.pendingWitchExchangeEvents.addAll(
-                    session.context.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
-            session.context.entityBridge.outbox.pendingWitchRewardEvents.addAll(
-                    session.context.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
+        if (dependencies.entityBridge().get().entityRuntime != null) {
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingWitchExchangeEvents
+                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingWitchExchangeEvents());
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingWitchRewardEvents
+                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingWitchRewardEvents());
         }
     }
 
     void harvestOwlEventCompletions() {
-        if (session.context.entityBridge.entityRuntime == null || session.context.activeRoom == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null || dependencies.location().activeRoom == null) {
             return;
         }
-        if (session.context
-                .entityBridge
+        if (dependencies
+                .entityBridge()
+                .get()
                 .entityRuntime
                 .consumePendingOwlEventCompletions()
                 .isEmpty()) {
             return;
         }
-        session.context.roomState.overworldRoomStatus[session.context.activeRoom.roomId()] |=
-                (byte) session.ROOM_STATUS_EVENT_2;
+        dependencies.roomState()
+                .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
     }
 
     void harvestSlimeKeyRewardEvents() {
-        if (session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
         List<SlimeKeyRewardEvent> rewards =
-                session.context.entityBridge.entityRuntime.consumePendingSlimeKeyRewardEvents();
+                dependencies.entityBridge().get().entityRuntime.consumePendingSlimeKeyRewardEvents();
         for (SlimeKeyRewardEvent reward : rewards) {
-            session.context.entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
-            session.markActiveRoomCompleted();
+            dependencies.entityInputs().get().entityGoldenLeavesCount = reward.goldenLeavesCount();
+            dependencies.roomStoryState().get().markActiveRoomCompleted();
         }
-        session.context.entityBridge.outbox.pendingSlimeKeyRewardEvents.addAll(rewards);
+        dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents.addAll(rewards);
     }
+
+    record Dependencies(
+            RoomFollowerState followers,
+            RoomItemUseState items,
+            RoomLocationState location,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            java.util.function.Supplier<RoomEntityInputs> entityInputs,
+            java.util.function.Supplier<RoomSessionViews> roomSessionViews,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomStoryState> roomStoryState) {}
 }

@@ -65,7 +65,8 @@ final class RoomTransitionTestSupport {
     }
 
     static void tickInteractiveEntities(RoomSession session, int frame, int linkEntityX, int linkEntityY) {
-        session.tickEntitiesWithProjectileEvents(frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
+        session.entities()
+                .tickEntitiesWithProjectileEvents(frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
     }
 
     static List<EntityCombatEvent> tickLiveRoom3B(
@@ -77,8 +78,8 @@ final class RoomTransitionTestSupport {
             int frame) {
         link.captureRomFinalPosition();
         link.update();
-        session.setEntityAttackStepAnimationCountdown(link.romAttackStepAnimationCountdown());
-        session.setEntityFinalPositionX(link.romFinalPositionX());
+        session.entityState().setEntityAttackStepAnimationCountdown(link.romAttackStepAnimationCountdown());
+        session.components.entityInputs().setEntityFinalPositionX(link.romFinalPositionX());
         RoomEntityTickBuilder.frame(frame)
                 .position(link.romEntityX(), link.romEntityY(), link.romEntityZ())
                 .motion(link.isAirborne(), link.romMotionState(), link.direction(), link.romCollisionType())
@@ -90,9 +91,12 @@ final class RoomTransitionTestSupport {
         // applying the current descending-slot platform requests.
         link.clearStandingOnSideViewEntity();
 
-        List<SideViewPlatformLinkRequest> platforms = session.consumeSideViewPlatformLinkRequests();
-        List<SideViewPotLinkRequest> pots = session.consumeSideViewPotLinkRequests();
-        List<LinkFinalPositionRequest> finalPositions = session.consumeLinkFinalPositionRequests();
+        List<SideViewPlatformLinkRequest> platforms =
+                session.components.entityBridge().outbox.consumeSideViewPlatformLinkRequests();
+        List<SideViewPotLinkRequest> pots =
+                session.components.entityBridge().outbox.consumeSideViewPotLinkRequests();
+        List<LinkFinalPositionRequest> finalPositions =
+                session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
         int platformIndex = 0;
         int potIndex = 0;
         int finalPositionIndex = 0;
@@ -155,17 +159,28 @@ final class RoomTransitionTestSupport {
                 }
             }
         }
-        for (LinkMotionBlockRequest request : session.consumeLinkMotionBlockRequests()) {
+        for (LinkMotionBlockRequest request :
+                session.components.entityBridge().outbox.consumeLinkMotionBlockRequests()) {
             link.blockNextRomMotionFrame();
         }
         // These Main streams are not emitted by the authored A5/D6 route;
         // fail loudly rather than silently dropping a new request type.
-        assertTrue(session.consumeWarpLinkStateRequests().isEmpty());
-        assertFalse(session.consumeWorldLinkMotionBlockRequest());
-        assertTrue(session.consumeLinkFallenPoseRequests().isEmpty());
-        assertTrue(session.consumeLinkFacingRequests().isEmpty());
-        List<LinkAttackClearRequest> attackClears = session.consumeLinkAttackClearRequests();
-        List<LinkAttackStepRequest> attackSteps = session.consumeLinkAttackStepRequests();
+        assertTrue(
+                session.components.entityBridge().consumeWarpLinkStateRequests().isEmpty());
+        assertFalse(session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeLinkFallenPoseRequests()
+                .isEmpty());
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeLinkFacingRequests()
+                .isEmpty());
+        List<LinkAttackClearRequest> attackClears = session.entityState().consumeLinkAttackClearRequests();
+        List<LinkAttackStepRequest> attackSteps =
+                session.components.entityBridge().outbox.consumeLinkAttackStepRequests();
         int attackClearIndex = 0;
         int attackStepIndex = 0;
         while (attackClearIndex < attackClears.size() || attackStepIndex < attackSteps.size()) {
@@ -183,10 +198,22 @@ final class RoomTransitionTestSupport {
                 link.startRomItemAttackStep();
             }
         }
-        assertTrue(session.consumeLinkHeldItemPoseRequests().isEmpty());
-        assertTrue(session.consumeLinkSwordSpinPoseRequests().isEmpty());
-        assertTrue(session.consumeLinkSwordFinalPoseRequests().isEmpty());
-        LiftedEntityState lifted = session.liftedEntityState();
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeLinkHeldItemPoseRequests()
+                .isEmpty());
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeLinkSwordSpinPoseRequests()
+                .isEmpty());
+        assertTrue(session.components
+                .entityBridge()
+                .outbox
+                .consumeLinkSwordFinalPoseRequests()
+                .isEmpty());
+        LiftedEntityState lifted = session.rooms().liftedEntityState();
         if (lifted.active()) {
             link.setCarryingLiftedObjectState(lifted.carryState(), lifted.effectiveRomDirection());
         } else {
@@ -200,19 +227,19 @@ final class RoomTransitionTestSupport {
                         default -> throw new AssertionError(link.direction());
                     });
         }
-        return session.consumeEntityEvents();
+        return session.components.entityBridge().outbox.consumeEntityEvents();
     }
 
     static int letBowWowEatAllGoponga(RoomSession session, OverworldCollision collision, Link link, int frame) {
         int deadline = frame + 0x4000;
-        while (session.activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoom().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                 && frame < deadline) {
-            RoomEntity target = session.activeRoom().entities().loadedEntities().stream()
+            RoomEntity target = session.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                     .findFirst()
                     .orElseThrow();
-            RoomEntity bowWow = session.activeRoom().entities().loadedEntities().stream()
+            RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x6D)
                     .findFirst()
                     .orElseThrow();
@@ -222,8 +249,8 @@ final class RoomTransitionTestSupport {
             // an immediate path depends on earlier movement and RNG timing.
             while (leashPath == null && frame < deadline) {
                 tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-                session.consumeEntityEvents();
-                bowWow = session.activeRoom().entities().loadedEntities().stream()
+                session.components.entityBridge().outbox.consumeEntityEvents();
+                bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x6D)
                         .findFirst()
                         .orElseThrow();
@@ -235,7 +262,7 @@ final class RoomTransitionTestSupport {
                 link.setPixelPosition(position[0], position[1]);
             }
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-            session.consumeEntityEvents();
+            session.components.entityBridge().outbox.consumeEntityEvents();
             List<int[]> path = reachableEntityWindowPath(collision, link.pixelX(), link.pixelY(), target);
             assertNotNull(
                     path,
@@ -245,24 +272,24 @@ final class RoomTransitionTestSupport {
             for (int[] position : path) {
                 link.setPixelPosition(position[0], position[1]);
                 tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-                session.consumeEntityEvents();
+                session.components.entityBridge().outbox.consumeEntityEvents();
                 while (bowWowOutsideLeash(session, link) && frame < deadline) {
                     tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-                    session.consumeEntityEvents();
+                    session.components.entityBridge().outbox.consumeEntityEvents();
                 }
             }
-            while (session.activeRoom().entities().loadedEntities().stream()
+            while (session.rooms().activeRoom().entities().loadedEntities().stream()
                             .anyMatch(entity ->
                                     entity.slot() == target.slot() && (entity.type() == 0x7C || entity.type() == 0x7E))
                     && frame < deadline) {
                 tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
-                session.consumeEntityEvents();
+                session.components.entityBridge().outbox.consumeEntityEvents();
             }
         }
         assertFalse(
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E),
-                session.activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoom().entities().loadedEntities().stream()
                         .map(entity -> String.format(
                                 "slot%d:%02X@(%02X,%02X,z=%02X,v=%d,s=%s)",
                                 entity.slot(),
@@ -283,7 +310,9 @@ final class RoomTransitionTestSupport {
     }
 
     static int objectAt(RoomSession session, int location) {
-        return session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F)];
+        return session.rooms()
+                .activeRoom()
+                .roomObjectsArea()[ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F)];
     }
 
     static int firstObjectLocation(RoomSession session, int objectId) {
@@ -301,7 +330,7 @@ final class RoomTransitionTestSupport {
     static int[] roomObjectTiles(RoomSession session, int location) {
         int tileX = (location & 0x0F) * 2;
         int tileY = ((location & 0xF0) >>> 4) * 2;
-        int[] tiles = session.activeRoom().tileIds();
+        int[] tiles = session.rooms().activeRoom().tileIds();
         int rowStride = RoomConstants.ROOM_TILE_WIDTH;
         return new int[] {
             tiles[tileY * rowStride + tileX],
@@ -312,7 +341,7 @@ final class RoomTransitionTestSupport {
     }
 
     static boolean bowWowOutsideLeash(RoomSession session, Link link) {
-        RoomEntity bowWow = session.activeRoom().entities().loadedEntities().stream()
+        RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();
@@ -357,7 +386,7 @@ final class RoomTransitionTestSupport {
         // This is a collision-connectivity harness, not a keyboard-input
         // simulation: find a source-valid pixel path to the requested edge,
         // then exercise the real room-boundary transition from that edge.
-        int nextRoom = session.currentRoomId()
+        int nextRoom = session.rooms().currentRoomId()
                 + switch (direction) {
                     case ScrollController.UP -> -16;
                     case ScrollController.DOWN -> 16;
@@ -365,8 +394,8 @@ final class RoomTransitionTestSupport {
                     case ScrollController.RIGHT -> 1;
                     default -> throw new IllegalArgumentException();
                 };
-        var destination = session.context.roomLoader.loadOverworld(nextRoom);
-        var landingCollision = new OverworldCollision(session.context.romTables);
+        var destination = session.components.roomLoader().loadOverworld(nextRoom);
+        var landingCollision = new OverworldCollision(session.components.romTables());
         landingCollision.setRoom(destination.roomObjectsArea());
         landingCollision.setGbcOverlay(destination.gbcOverlay());
         int movementDirection =
@@ -398,7 +427,9 @@ final class RoomTransitionTestSupport {
         // CreateFollowingNpcEntity call. This low-level harness must do so too.
         int arrivalX = direction == ScrollController.LEFT ? 140 : direction == ScrollController.RIGHT ? 3 : exit[0];
         int arrivalY = direction == ScrollController.UP ? 111 : direction == ScrollController.DOWN ? 0 : exit[1];
-        session.setFollowingNpcState(session.followingNpcState(), arrivalX + 8, arrivalY + 16, 0, 0, link.direction());
+        session.story()
+                .setFollowingNpcState(
+                        session.story().followingNpcState(), arrivalX + 8, arrivalY + 16, 0, 0, link.direction());
         crossOverworldBoundary(coordinator, scroll, link, direction);
     }
 

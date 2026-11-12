@@ -10,127 +10,102 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.Warp;
 
 final class RoomEntityCombatBridge {
-    private final RoomSession session;
+    private final Dependencies dependencies;
 
-    RoomEntityCombatBridge(RoomSession session) {
-        this.session = session;
+    RoomEntityCombatBridge(Dependencies dependencies) {
+        this.dependencies = dependencies;
     }
 
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return session.resolveEntityCombat(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                0,
-                linkInteractive,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                EnemyAttackContext.standard());
-    }
+    List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+        EnemyAttackContext attackContext = inputs.attackContext();
 
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
-        return session.resolveEntityCombat(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                0,
-                linkInteractive,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                attackContext);
-    }
-
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
-        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.entityBridge().get().entityRuntime == null) {
             return List.of();
         }
-        List<EntityCombatEvent> events = session.context.entityBridge.entityRuntime.resolveCombat(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkVerticalVelocity,
-                linkInteractive,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                attackContext);
-        session.context.activeRoom.replaceEntities(
-                session.context.entityBridge.entityRuntime.inspection().snapshot());
+        List<EntityCombatEvent> events = dependencies
+                .entityBridge()
+                .get()
+                .entityRuntime
+                .resolveCombat(
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkVerticalVelocity,
+                        linkInteractive,
+                        swordCollisionActive,
+                        swordX,
+                        swordWidth,
+                        swordY,
+                        swordHeight,
+                        attackContext);
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .snapshot());
         return events;
     }
 
     boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return session.context.entityBridge.entityRuntime != null
-                && session.context.entityBridge.entityRuntime.deferContactRecoil(slot, linkX, linkY);
+        return dependencies.entityBridge().get().entityRuntime != null
+                && dependencies.entityBridge().get().entityRuntime.deferContactRecoil(slot, linkX, linkY);
     }
 
     int clearEntity(int slot) {
-        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
+        if (dependencies.location().activeRoom == null
+                || dependencies.entityBridge().get().entityRuntime == null) {
             return 0;
         }
-        int mask = session.context.entityBridge.entityRuntime.clearEntity(slot);
+        int mask = dependencies.entityBridge().get().entityRuntime.clearEntity(slot);
         if (mask != 0) {
-            session.context.recentRoomEntityClears.addMask(session.context.activeRoom.roomId(), mask);
+            dependencies
+                    .entityFrame()
+                    .recentRoomEntityClears
+                    .addMask(dependencies.location().activeRoom.roomId(), mask);
         }
-        session.context.activeRoom.replaceEntities(
-                session.context.entityBridge.entityRuntime.inspection().snapshot());
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .snapshot());
         return mask;
     }
 
     EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return session.collectEntityIfNeeded(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                session.context.followingLinkDirection,
-                session.context.followingLinkZ);
+        return dependencies
+                .entityBridge()
+                .get()
+                .combat
+                .collectEntityIfNeeded(
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkInteractive,
+                        dependencies.followers().followingLinkDirection,
+                        dependencies.followers().followingLinkZ);
     }
 
     EntityPickupEvent collectEntityIfNeeded(
@@ -140,14 +115,18 @@ final class RoomEntityCombatBridge {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return session.collectEntityIfNeeded(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                session.context.followingLinkZ);
+        return dependencies
+                .entityBridge()
+                .get()
+                .combat
+                .collectEntityIfNeeded(
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkInteractive,
+                        linkDirection,
+                        dependencies.followers().followingLinkZ);
     }
 
     EntityPickupEvent collectEntityIfNeeded(
@@ -158,77 +137,98 @@ final class RoomEntityCombatBridge {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return collectEntityIfNeeded(
+        return collectEntityIfNeeded(new EntityPickupInputs(
                 frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                linkZ,
-                false,
-                0,
-                0,
-                0,
-                0);
+                new EntityPickupInputs.Link(
+                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                new SwordBox(false, 0, 0, 0, 0)));
     }
 
-    EntityPickupEvent collectEntityIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection,
-            int linkZ,
-            boolean swordActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        if (session.context.activeRoom == null || session.context.entityBridge.entityRuntime == null) {
+    EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.link().x();
+        int linkEntityY = inputs.link().y();
+        boolean linkAirborne = inputs.link().airborne();
+        boolean linkInteractive = inputs.link().interactive();
+        int linkDirection = inputs.link().direction();
+        int linkZ = inputs.link().z();
+        boolean swordActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+
+        if (dependencies.location().activeRoom == null
+                || dependencies.entityBridge().get().entityRuntime == null) {
             return null;
         }
-        session.context.followingLinkZ = linkZ & 0xFF;
-        session.context.followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = session.context.entityBridge.entityRuntime.collectIfNeeded(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                linkZ,
-                swordActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight);
+        dependencies.followers().followingLinkZ = linkZ & 0xFF;
+        dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
+        EntityPickupEvent event = dependencies
+                .entityBridge()
+                .get()
+                .entityRuntime
+                .collectIfNeeded(
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkInteractive,
+                        linkDirection,
+                        linkZ,
+                        swordActive,
+                        swordX,
+                        swordWidth,
+                        swordY,
+                        swordHeight);
         if (event == null) {
             return null;
         }
         if (event.persistentClearMask() != 0) {
-            session.context.recentRoomEntityClears.addMask(
-                    session.context.activeRoom.roomId(), event.persistentClearMask());
+            dependencies
+                    .entityFrame()
+                    .recentRoomEntityClears
+                    .addMask(dependencies.location().activeRoom.roomId(), event.persistentClearMask());
         }
         if (event.type() == 0x30
-                && session.context.activeRoom.roomId() == 0x7C
-                && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
+                && dependencies.location().activeRoom.roomId() == 0x7C
+                && dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
-            session.context.roomState.indoorARoomStatus[0x69] |= 0x10;
+            dependencies.roomState().indoorARoomStatus[0x69] |= 0x10;
         }
-        if (event.type() == session.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+        if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
-            session.markActiveRoomCompleted();
-            session.context.entityBridge.outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
-            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                    event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
+            dependencies.roomStoryState().get().markActiveRoomCompleted();
+            dependencies.entityBridge().get().outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
+            dependencies
+                    .entityBridge()
+                    .get()
+                    .outbox
+                    .pendingRoomEntityEvents
+                    .add(new EntityCombatEvent(
+                            event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
-        session.harvestKeyRewardEvents();
-        session.context.activeRoom.replaceEntities(
-                session.context.entityBridge.entityRuntime.inspection().snapshot());
+        dependencies.roomEntityRewards().get().harvestKeyRewardEvents();
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .snapshot());
         return event;
     }
+
+    record Dependencies(
+            RoomEntityFrameState entityFrame,
+            RoomFollowerState followers,
+            RoomLocationState location,
+            java.util.function.Supplier<RoomEntityBridge> entityBridge,
+            java.util.function.Supplier<RoomEntityRewards> roomEntityRewards,
+            RoomWorldState roomState,
+            java.util.function.Supplier<RoomStoryState> roomStoryState) {}
 }

@@ -14,21 +14,12 @@ final class RoomLoaderTest {
 
     @Test
     void loadedRoomKeepsThePreStaircaseConstructorSignature() {
-        LoadedRoom room = new LoadedRoom(
-                0,
-                Warp.CATEGORY_INDOOR,
-                0,
-                0,
-                new int[0x100],
-                null,
-                null,
-                new int[0],
-                new int[0],
-                null,
-                List.of(),
-                false,
-                0x03,
-                null);
+        LoadedRoom room = new LoadedRoom(new LoadedRoomSpec(
+                new LoadedRoomSpec.Identity(0, Warp.CATEGORY_INDOOR, 0, 0),
+                new LoadedRoomSpec.Objects(new int[0x100], null, null),
+                new LoadedRoomSpec.Graphics(new int[0], new int[0], null),
+                new LoadedRoomSpec.Exits(List.of(), false, 0x03),
+                null));
 
         assertEquals(0x03, room.shutterDoorMask());
         assertEquals(-1, room.staircaseLocation());

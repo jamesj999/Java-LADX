@@ -4,7 +4,7 @@ import linksawakening.world.room.RoomSession.*;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
-final class RoomTransitionsView implements RoomSession.Transitions {
+final class RoomTransitionsView implements RoomTransitions {
     private final RoomTransitionController delegate;
 
     RoomTransitionsView(RoomTransitionController delegate) {

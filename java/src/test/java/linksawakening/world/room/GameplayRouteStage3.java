@@ -22,9 +22,9 @@ import linksawakening.world.transition.Warp;
 final class GameplayRouteStage3 {
     static void run(GameplayRouteState route) throws Exception {
 
-        assertEquals(0x10, route.session.indoorRoomStatusForTest(0x00, 0x03) & 0x10);
-        route.session.loadIndoor(0x00, 0x03);
-        assertEquals(0xBF, route.session.activeRoom().roomObjectsArea()[route.hiddenStairsIndex]);
+        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x03) & 0x10);
+        route.session.rooms().loadIndoor(0x00, 0x03);
+        assertEquals(0xBF, route.session.rooms().activeRoom().roomObjectsArea()[route.hiddenStairsIndex]);
 
         // .configureStairs leaves the staircase inactive when the room loads.
         // The source arms it only after Link leaves the 12x12 center box.
@@ -38,39 +38,44 @@ final class GameplayRouteStage3 {
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.transition.isActive());
         while (route.transition.isActive()) route.transition.tick();
-        assertEquals(Warp.CATEGORY_SIDESCROLL, route.session.mapCategory());
-        assertEquals(0x19, route.session.currentRoomId());
+        assertEquals(Warp.CATEGORY_SIDESCROLL, route.session.rooms().mapCategory());
+        assertEquals(0x19, route.session.rooms().currentRoomId());
         assertEquals(0x70, route.link.pixelX());
         assertEquals(0x00, route.link.pixelY());
 
         route.link.setPixelPosition(-5, 0x30);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
-        assertEquals(0x18, route.session.currentRoomId());
+        assertEquals(0x18, route.session.rooms().currentRoomId());
         while (route.scroll.isActive()) route.scroll.tick(8);
 
         route.link.setPixelPosition(0x20, -5);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.transition.isActive());
         while (route.transition.isActive()) route.transition.tick();
-        assertEquals(Warp.CATEGORY_INDOOR, route.session.mapCategory());
-        assertEquals(0x01, route.session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, route.session.rooms().mapCategory());
+        assertEquals(0x01, route.session.rooms().currentRoomId());
         assertEquals(0x40, route.link.pixelX());
         assertEquals(0x50, route.link.pixelY());
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x1C, route.session.currentRoomId());
+        assertEquals(0x1C, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x1D, route.session.currentRoomId());
+        assertEquals(0x1D, route.session.rooms().currentRoomId());
 
         route.featherChest =
-                route.session.tryOpenChest(0x38, 0x21, Link.DIRECTION_UP, true, route.playerState.swordLevel());
+                route.session.doors().tryOpenChest(0x38, 0x21, Link.DIRECTION_UP, true, route.playerState.swordLevel());
         assertTrue(route.featherChest.opened());
         assertEquals(ChestContentsTable.CHEST_FEATHER, route.featherChest.itemType());
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x21, 0, 0, Link.DIRECTION_UP, false);
         route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x21, 0, 0, Link.DIRECTION_UP, false);
+        route.session
+                .components
+                .entityBridge()
+                .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.applyChestReward(reward.itemType()));
         route.hasFeather = route.playerState.itemA() == PlayerState.INVENTORY_ROCS_FEATHER
@@ -93,10 +98,10 @@ final class GameplayRouteStage3 {
         // staircase is inactive at load and arms only after Link leaves it.
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x1C, route.session.currentRoomId());
+        assertEquals(0x1C, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x01, route.session.currentRoomId());
+        assertEquals(0x01, route.session.rooms().currentRoomId());
         route.link.setPixelPosition(0x40, 0x50);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertFalse(route.transition.isActive());
@@ -107,24 +112,24 @@ final class GameplayRouteStage3 {
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.transition.isActive());
         while (route.transition.isActive()) route.transition.tick();
-        assertEquals(Warp.CATEGORY_SIDESCROLL, route.session.mapCategory());
-        assertEquals(0x18, route.session.currentRoomId());
+        assertEquals(Warp.CATEGORY_SIDESCROLL, route.session.rooms().mapCategory());
+        assertEquals(0x18, route.session.rooms().currentRoomId());
 
         route.link.setPixelPosition(RoomConstants.ROOM_PIXEL_WIDTH, 0x30);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
-        assertEquals(0x19, route.session.currentRoomId());
+        assertEquals(0x19, route.session.rooms().currentRoomId());
         while (route.scroll.isActive()) route.scroll.tick(8);
         route.link.setPixelPosition(0x70, -5);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.transition.isActive());
         while (route.transition.isActive()) route.transition.tick();
-        assertEquals(Warp.CATEGORY_INDOOR, route.session.mapCategory());
-        assertEquals(0x03, route.session.currentRoomId());
+        assertEquals(Warp.CATEGORY_INDOOR, route.session.rooms().mapCategory());
+        assertEquals(0x03, route.session.rooms().currentRoomId());
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x04, route.session.currentRoomId());
+        assertEquals(0x04, route.session.rooms().currentRoomId());
         assertEquals(
                 null,
                 reachableBoundaryPath(
@@ -141,46 +146,58 @@ final class GameplayRouteStage3 {
                 0x08);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x07, route.session.currentRoomId());
+        assertEquals(0x07, route.session.rooms().currentRoomId());
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x0D, route.session.currentRoomId());
+        assertEquals(0x0D, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x0E, route.session.currentRoomId());
+        assertEquals(0x0E, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x0F, route.session.currentRoomId());
+        assertEquals(0x0F, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x09, route.session.currentRoomId());
+        assertEquals(0x09, route.session.rooms().currentRoomId());
 
         // Hold against bank 2's interactive keyhole block for its source
         // $20-frame threshold. This spends room $16's third key.
         for (int tick = 0; tick < 0x20; tick++) {
-            assertTrue(route.session.tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+            assertTrue(route.session.doors().tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
         }
-        assertEquals(0, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
-        assertEquals(0x0D, route.session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x52]);
+        assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
+        assertEquals(0x0D, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x52]);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);
-        assertEquals(0x08, route.session.currentRoomId());
+        assertEquals(0x08, route.session.rooms().currentRoomId());
 
         route.link.setPixelPosition(0x38, 0x1A);
-        route.nightmareKeyChest = route.session.tryOpenChest(
-                route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.nightmareKeyChest = route.session
+                .doors()
+                .tryOpenChest(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        Link.DIRECTION_UP,
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.nightmareKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_NIGHTMARE_KEY, route.nightmareKeyChest.itemType());
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x1B, 0, 0, Link.DIRECTION_UP, false);
         route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x1B, 0, 0, Link.DIRECTION_UP, false);
+        route.session
+                .components
+                .entityBridge()
+                .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.applyChestReward(reward.itemType()));
-        assertEquals(1, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.NIGHTMARE_KEY_INDEX]);
+        assertEquals(
+                1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.NIGHTMARE_KEY_INDEX]);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x09, route.session.currentRoomId());
+        assertEquals(0x09, route.session.rooms().currentRoomId());
         route.link.setPixelPosition(0x40, 0x60);
         jumpOverPitWithFeather(
                 route.collision,
@@ -192,24 +209,28 @@ final class GameplayRouteStage3 {
                 0x01);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
-        assertEquals(0x0F, route.session.currentRoomId());
+        assertEquals(0x0F, route.session.rooms().currentRoomId());
         route.link.setPixelPosition(0x50, 0x50);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x10, route.session.currentRoomId());
+        assertEquals(0x10, route.session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
-        assertEquals(0x11, route.session.currentRoomId());
+        assertEquals(0x11, route.session.rooms().currentRoomId());
 
-        route.rollingBones = route.session.activeRoom().entities().loadedEntities().stream()
+        route.rollingBones = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES)
                 .findFirst()
                 .orElseThrow();
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
-        route.rollingBones = route.session.activeRoom().entities().slots().get(route.rollingBones.slot());
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
+        route.rollingBones =
+                route.session.rooms().activeRoom().entities().slots().get(route.rollingBones.slot());
         for (int hit = 0;
                 hit < 16
                         && route.session
+                                        .rooms()
                                         .activeRoom()
                                         .entities()
                                         .slots()
@@ -217,57 +238,73 @@ final class GameplayRouteStage3 {
                                         .status()
                                 == EntityStatus.ACTIVE;
                 hit++) {
-            route.rollingBones = route.session.activeRoom().entities().slots().get(route.rollingBones.slot());
+            route.rollingBones =
+                    route.session.rooms().activeRoom().entities().slots().get(route.rollingBones.slot());
             int rollingBonesSlot = route.rollingBones.slot();
-            List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(
-                    rollingBonesSlot ^ 1,
-                    route.rollingBones.x(),
-                    route.rollingBones.y(),
-                    false,
-                    true,
-                    true,
-                    route.rollingBones.x(),
-                    0x08,
-                    route.rollingBones.y() - route.rollingBones.z(),
-                    0x08);
+            List<EntityCombatEvent> hitEvents = route.session
+                    .entities()
+                    .resolveEntityCombat(new EntityCombatInputs(
+                            rollingBonesSlot ^ 1,
+                            route.rollingBones.x(),
+                            route.rollingBones.y(),
+                            false,
+                            0,
+                            true,
+                            new SwordBox(
+                                    true,
+                                    route.rollingBones.x(),
+                                    0x08,
+                                    route.rollingBones.y() - route.rollingBones.z(),
+                                    0x08),
+                            linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     hitEvents.stream().anyMatch(event -> event.slot() == rollingBonesSlot && event.enemyDamage() > 0),
                     "hit " + hit + ": " + hitEvents);
             for (int recovery = 0; recovery < 0x80; recovery++) {
-                route.session.tickEntitiesWithProjectileEvents(route.frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
+                route.session
+                        .entities()
+                        .tickEntitiesWithProjectileEvents(route.frame++, 80, 72, 0, 0, Link.DIRECTION_DOWN, false);
             }
         }
         assertEquals(
                 EntityStatus.DYING,
                 route.session
+                        .rooms()
                         .activeRoom()
                         .entities()
                         .slots()
                         .get(route.rollingBones.slot())
                         .status());
         route.rollingBonesDeadline = route.frame + 0x200;
-        while (route.session.activeRoomEventForTest() != 0 && route.frame < route.rollingBonesDeadline) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+                && route.frame < route.rollingBonesDeadline) {
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
         }
-        assertEquals(0, route.session.activeRoomEventForTest());
-        assertEquals(0x20, route.session.indoorRoomStatusForTest(0x00, 0x11) & 0x20);
+        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x11) & 0x20);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x0B, route.session.currentRoomId());
-        assertTrue(route.session.tryUnlockIndoorKeyDoor(0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertEquals(0x0B, route.session.rooms().currentRoomId());
+        assertTrue(route.session.doors().tryUnlockIndoorKeyDoor(0x48, 0x00, Link.DIRECTION_UP, 0x01));
         for (int tick = 0; tick < 8; tick++) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x48, 0x00, 0, 0, Link.DIRECTION_UP, false);
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0x48, 0x00, 0, 0, Link.DIRECTION_UP, false);
         }
-        assertEquals(0x43, route.session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x04]);
-        assertEquals(0x44, route.session.activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x05]);
-        assertEquals(0x04, route.session.indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
+        assertEquals(0x43, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x04]);
+        assertEquals(0x44, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x05]);
+        assertEquals(0x04, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x06, route.session.currentRoomId());
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
-        route.moldorm = route.session.activeRoom().entities().loadedEntities().stream()
+        assertEquals(0x06, route.session.rooms().currentRoomId());
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+        route.moldorm = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_MOLDORM)
                 .findFirst()
                 .orElseThrow();
@@ -276,7 +313,8 @@ final class GameplayRouteStage3 {
             int tailY = 0;
             int extensionDeadline = route.frame + 0x100;
             do {
-                route.moldorm = route.session.activeRoom().entities().slots().get(route.moldorm.slot());
+                route.moldorm =
+                        route.session.rooms().activeRoom().entities().slots().get(route.moldorm.slot());
                 List<EntitySpriteDefinition.DynamicSprite> sprites =
                         route.moldorm.spriteDefinition().dynamicVariant(0);
                 assertEquals(16, sprites.size());
@@ -287,7 +325,9 @@ final class GameplayRouteStage3 {
                         route.moldorm, tailX, 0x08, tailY, 0x08)) {
                     break;
                 }
-                route.session.tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+                route.session
+                        .entities()
+                        .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
             } while (route.frame < extensionDeadline);
             assertFalse(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                     route.moldorm, tailX, 0x08, tailY, 0x08));
@@ -306,27 +346,31 @@ final class GameplayRouteStage3 {
             Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
                     route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
             assertTrue(swordBox.active());
-            List<EntityCombatEvent> tailHit = route.session.resolveEntityCombat(
-                    moldormSlot ^ 1,
-                    route.link.romEntityX(),
-                    route.link.romEntityY(),
-                    route.link.isAirborne(),
-                    true,
-                    swordBox.active(),
-                    swordBox.x(),
-                    swordBox.width(),
-                    swordBox.y(),
-                    swordBox.height());
+            List<EntityCombatEvent> tailHit = route.session
+                    .entities()
+                    .resolveEntityCombat(new EntityCombatInputs(
+                            moldormSlot ^ 1,
+                            route.link.romEntityX(),
+                            route.link.romEntityY(),
+                            route.link.isAirborne(),
+                            0,
+                            true,
+                            new SwordBox(
+                                    swordBox.active(), swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height()),
+                            linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     tailHit.stream().anyMatch(event -> event.slot() == moldormSlot && event.enemyDamage() == 1),
                     "Moldorm tail hit " + hit + " at (" + tailX + "," + tailY + "): " + tailHit);
             for (int recovery = 0; recovery < 0x30; recovery++) {
-                route.session.tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+                route.session
+                        .entities()
+                        .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
             }
         }
         assertEquals(
                 EntityStatus.DYING,
                 route.session
+                        .rooms()
                         .activeRoom()
                         .entities()
                         .slots()
@@ -336,69 +380,99 @@ final class GameplayRouteStage3 {
         route.moldormDeadline = route.frame + 0x400;
         route.heartContainer = null;
         while (route.heartContainer == null && route.frame < route.moldormDeadline) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
-            route.heartContainer = route.session.activeRoom().entities().loadedEntities().stream()
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
+            route.heartContainer = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x36)
                     .findFirst()
                     .orElse(null);
         }
         assertNotNull(route.heartContainer);
         route.heartPickupFrame = (route.heartContainer.slot() & 0x01) == 0 ? route.frame | 1 : route.frame & ~1;
-        assertNotNull(route.session.collectEntityIfNeeded(
-                route.heartPickupFrame,
-                route.heartContainer.x(),
-                route.heartContainer.y(),
-                false,
-                true,
-                Link.DIRECTION_DOWN,
-                route.heartContainer.z()));
+        assertNotNull(route.session
+                .entities()
+                .collectEntityIfNeeded(
+                        route.heartPickupFrame,
+                        route.heartContainer.x(),
+                        route.heartContainer.y(),
+                        false,
+                        true,
+                        Link.DIRECTION_DOWN,
+                        route.heartContainer.z()));
         route.previousMaxHearts = route.playerState.maxHearts();
         for (int held = 0; held < 0x70; held++) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
         }
-        route.session.consumeHeartContainerRewards().forEach(reward -> route.playerState.applyHeartContainerReward());
+        route.session
+                .components
+                .entityBridge()
+                .outbox
+                .consumeHeartContainerRewards()
+                .forEach(reward -> route.playerState.applyHeartContainerReward());
         assertEquals(route.previousMaxHearts + 1, route.playerState.maxHearts());
-        assertEquals(0x20, route.session.indoorRoomStatusForTest(0x00, 0x06) & 0x20);
-        assertEquals(0, route.session.activeRoom().shutterDoorMask());
+        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x06) & 0x20);
+        assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask());
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
-        assertEquals(0x02, route.session.currentRoomId());
-        route.instrument = route.session.activeRoom().entities().loadedEntities().stream()
+        assertEquals(0x02, route.session.rooms().currentRoomId());
+        route.instrument = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
                 .orElseThrow();
-        route.session.tickEntitiesWithProjectileEvents(
-                route.frame++, route.instrument.x(), route.instrument.y(), 0, 0, Link.DIRECTION_DOWN, false);
-        assertNotNull(route.session.collectEntityIfNeeded(
-                (route.instrument.slot() ^ 1) & 1,
-                route.instrument.x(),
-                route.instrument.y(),
-                false,
-                true,
-                Link.DIRECTION_DOWN,
-                0));
-        assertEquals(0x1B, route.session.consumePendingMusicTrack());
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(
+                        route.frame++, route.instrument.x(), route.instrument.y(), 0, 0, Link.DIRECTION_DOWN, false);
+        assertNotNull(route.session
+                .entities()
+                .collectEntityIfNeeded(
+                        (route.instrument.slot() ^ 1) & 1,
+                        route.instrument.x(),
+                        route.instrument.y(),
+                        false,
+                        true,
+                        Link.DIRECTION_DOWN,
+                        0));
+        assertEquals(0x1B, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
         for (int performance = 1; performance <= 88; performance++) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
         }
-        assertTrue(route.session.hasDungeonInstrumentForTest(0x00));
+        assertTrue(route.session.components.roomSessionViews().hasDungeonInstrumentForTest(0x00));
         assertEquals(
-                0x100, route.session.consumeEntityDialogRequests().getFirst().globalDialogId());
-        route.session.setEntityDialogActive(true);
-        route.session.setEntityMusicActive(true);
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
-        route.session.setEntityDialogActive(false);
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
-        route.session.setEntityMusicActive(false);
-        route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
-        assertEquals(0x20, route.session.consumePendingMusicTrack());
+                0x100,
+                route.session
+                        .entityState()
+                        .consumeEntityDialogRequests()
+                        .getFirst()
+                        .globalDialogId());
+        route.session.entityState().setEntityDialogActive(true);
+        route.session.components.entityInputs().setEntityMusicActive(true);
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        route.session.entityState().setEntityDialogActive(false);
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        route.session.components.entityInputs().setEntityMusicActive(false);
+        route.session
+                .entities()
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+        assertEquals(0x20, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
         route.ticksToWarpJingle = 0;
         route.heardWarpJingle = false;
         while (!route.heardWarpJingle && route.ticksToWarpJingle < 0x100) {
-            route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
             route.ticksToWarpJingle++;
-            route.heardWarpJingle = route.session.consumeEntityEvents().stream()
+            route.heardWarpJingle = route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
                     .anyMatch(event ->
                             event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x2B);
         }
