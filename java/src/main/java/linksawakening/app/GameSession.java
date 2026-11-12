@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    SaveCoordinator savesInstance;
     ScreenRouter routerInstance;
     InputRouter inputRouterInstance;
     SessionContext context;
@@ -368,49 +369,14 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        savesInstance = new SaveCoordinator(context);
         routerInstance = new ScreenRouter(context);
         inputRouterInstance = new InputRouter(context);
         simulationInstance = new GameplaySimulation(context);
     }
 
     SaveCoordinator saves() {
-        return new SaveCoordinator(
-                services.playerState(),
-                services.roomSession(),
-                services.link(),
-                gpu,
-                services.romData(),
-                saveRamStore,
-                screens.currentSaveSlot,
-                services.inputState(),
-                () -> {
-                    screens.fileMenuController = null;
-                    screens.fileSaveController = null;
-                    currentScreen = gameplayScreen;
-                },
-                () -> {
-                    newGameWakeUpMotion = null;
-                    newGameTarinShieldMotion = null;
-                },
-                () -> {
-                    newGameWakeUpMotion = new MarinWakeUpMotion();
-                    newGameTarinShieldMotion = new TarinShieldMotion();
-                },
-                () -> musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack()),
-                () -> openingStory().updateNewGameMarinPresentation(),
-                saved -> openingStory()
-                        .restoreNewGameHouseRuntimeIfNeeded(
-                                saved,
-                                motion -> newGameWakeUpMotion = motion,
-                                motion -> newGameTarinShieldMotion = motion,
-                                () -> openingStory().updateNewGameMarinPresentation()),
-                () -> router().startFileSelection(),
-                () -> {
-                    currentScreen = fileSaveScreen;
-                    screens.fileMenuController = null;
-                },
-                controller -> screens.fileSaveController = controller,
-                router()::loadFileMenuBackgroundScene);
+        return savesInstance;
     }
 
     BushInteraction bushes() {

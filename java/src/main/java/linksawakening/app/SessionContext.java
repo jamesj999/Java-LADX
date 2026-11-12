@@ -2,6 +2,7 @@ package linksawakening.app;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.gameplay.BushInteraction;
@@ -26,10 +27,14 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.RomTables;
 import linksawakening.save.SaveRamStore;
+import linksawakening.save.SaveSlotState;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.startup.MarinWakeUpMotion;
+import linksawakening.startup.TarinShieldMotion;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuController;
+import linksawakening.ui.FileSaveController;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.vfx.TransientVfxSystem;
@@ -473,5 +478,135 @@ public final class SessionContext {
         if (router_clearNewGameTarinShieldMotion == null)
             router_clearNewGameTarinShieldMotion = () -> session.newGameTarinShieldMotion = null;
         return router_clearNewGameTarinShieldMotion;
+    }
+
+    public PlayerState saves_playerState() {
+        return session.services.playerState();
+    }
+
+    public RoomSession saves_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public Link saves_link() {
+        return session.services.link();
+    }
+
+    public GPU saves_gpu() {
+        return session.gpu;
+    }
+
+    public byte[] saves_romData() {
+        return session.services.romData();
+    }
+
+    public SaveRamStore saves_saveRamStore() {
+        return session.saveRamStore;
+    }
+
+    public int saves_currentSaveSlot() {
+        return session.screens.currentSaveSlot;
+    }
+
+    public InputState saves_inputState() {
+        return session.services.inputState();
+    }
+
+    private Runnable saves_enterGameplay;
+
+    public Runnable saves_enterGameplay() {
+        if (saves_enterGameplay == null)
+            saves_enterGameplay = () -> {
+                session.screens.fileMenuController = null;
+                session.screens.fileSaveController = null;
+                session.currentScreen = session.gameplayScreen;
+            };
+        return saves_enterGameplay;
+    }
+
+    private Runnable saves_clearOpening;
+
+    public Runnable saves_clearOpening() {
+        if (saves_clearOpening == null)
+            saves_clearOpening = () -> {
+                session.newGameWakeUpMotion = null;
+                session.newGameTarinShieldMotion = null;
+            };
+        return saves_clearOpening;
+    }
+
+    private Runnable saves_initializeOpening;
+
+    public Runnable saves_initializeOpening() {
+        if (saves_initializeOpening == null)
+            saves_initializeOpening = () -> {
+                session.newGameWakeUpMotion = new MarinWakeUpMotion();
+                session.newGameTarinShieldMotion = new TarinShieldMotion();
+            };
+        return saves_initializeOpening;
+    }
+
+    private Runnable saves_playHouseMusic;
+
+    public Runnable saves_playHouseMusic() {
+        if (saves_playHouseMusic == null)
+            saves_playHouseMusic = () -> session.musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack());
+        return saves_playHouseMusic;
+    }
+
+    private Runnable saves_refreshOpening;
+
+    public Runnable saves_refreshOpening() {
+        if (saves_refreshOpening == null)
+            saves_refreshOpening = () -> session.openingStory().updateNewGameMarinPresentation();
+        return saves_refreshOpening;
+    }
+
+    private Consumer<SaveSlotState> saves_restoreOpening;
+
+    public Consumer<SaveSlotState> saves_restoreOpening() {
+        if (saves_restoreOpening == null)
+            saves_restoreOpening = saved -> session.openingStory()
+                    .restoreNewGameHouseRuntimeIfNeeded(
+                            saved,
+                            motion -> session.newGameWakeUpMotion = motion,
+                            motion -> session.newGameTarinShieldMotion = motion,
+                            () -> session.openingStory().updateNewGameMarinPresentation());
+        return saves_restoreOpening;
+    }
+
+    private Runnable saves_startFileSelection;
+
+    public Runnable saves_startFileSelection() {
+        if (saves_startFileSelection == null)
+            saves_startFileSelection = () -> session.router().startFileSelection();
+        return saves_startFileSelection;
+    }
+
+    private Runnable saves_enterFileSave;
+
+    public Runnable saves_enterFileSave() {
+        if (saves_enterFileSave == null)
+            saves_enterFileSave = () -> {
+                session.currentScreen = session.fileSaveScreen;
+                session.screens.fileMenuController = null;
+            };
+        return saves_enterFileSave;
+    }
+
+    private Consumer<FileSaveController> saves_showFileSave;
+
+    public Consumer<FileSaveController> saves_showFileSave() {
+        if (saves_showFileSave == null)
+            saves_showFileSave = controller -> session.screens.fileSaveController = controller;
+        return saves_showFileSave;
+    }
+
+    private Function<String, BackgroundScene> saves_fileMenuBackground;
+
+    public Function<String, BackgroundScene> saves_fileMenuBackground() {
+        if (saves_fileMenuBackground == null)
+            saves_fileMenuBackground = label -> session.router().loadFileMenuBackgroundScene(label);
+        return saves_fileMenuBackground;
     }
 }
