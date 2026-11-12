@@ -190,3 +190,10 @@ Validation: `./gradlew test romFreeTest --rerun-tasks` passed: 2,438 full tests
 and 936 ROM-free tests, zero failures/errors/skips. Generated symbols pass
 `--check`. Scene parity reports zero mismatches within its tested scope; no new
 emulator replay comparison was performed for this address-preserving refactor.
+
+## ROM access refactor baseline
+
+The starting API exposes four public Rom members (constructor and three reads).
+RomTables has 744 lines and 43 public methods. RomUtil/RomBank expose six
+byte-array helper overloads (two/four); external main sources contain 156
+`byte[] rom*` declarations. Counts are lexical declarations, not unique objects.
