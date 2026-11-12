@@ -16,6 +16,29 @@ final class OverworldCollisionTest {
     private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
 
     @Test
+    void retainedGroundSampleSurvivesRoomMutationAndPhysicsTableChanges() {
+        byte[] rom = new byte[0x100000];
+        int offset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[offset + 0x42] = 7;
+        rom[offset + 0x43] = 8;
+        rom[offset + 256 + 0x43] = 9;
+        var collision = new OverworldCollision(RomTables.load(linksawakening.rom.Rom.unchecked(rom)));
+        int[] room = new int[256];
+        room[0x44] = 0x42;
+        collision.setRoom(room);
+        var retained = collision.groundInteractionSample(0x40, 0x37);
+        room[0x44] = 0x43;
+        assertEquals(8, collision.groundInteractionSample(0x40, 0x37).physicsFlag());
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        assertEquals(9, collision.groundInteractionSample(0x40, 0x37).physicsFlag());
+        assertEquals(new OverworldCollision.GroundInteractionSample(0x42, 7, 0x30, 0x30), retained);
+        collision.setRoom(null);
+        assertEquals(
+                new OverworldCollision.GroundInteractionSample(255, 0, 0, 0),
+                collision.groundInteractionSample(0x40, 0x37));
+    }
+
+    @Test
     void objectIdsNeverOverrideTheSelectedRomPhysicsTable() {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);

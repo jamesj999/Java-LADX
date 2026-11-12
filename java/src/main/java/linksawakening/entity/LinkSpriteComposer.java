@@ -77,11 +77,11 @@ final class LinkSpriteComposer {
                         && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
-                ? linkServices.get().tunicPalette.forObjectPalette(4)
+                ? linkServices.get().tunicPalette.objectPaletteView(4)
                 : linkServices
                         .get()
                         .tunicPalette
-                        .forTunic(
+                        .tunicView(
                                 linkServices.get().playerState == null
                                         ? Tunic.GREEN.romValue()
                                         : linkServices
@@ -174,7 +174,6 @@ final class LinkSpriteComposer {
             int animationState,
             int bodyY,
             boolean acquisition) {
-        Tile[] composedTiles = new Tile[4];
 
         if (animationState == 0xFF) return;
         linkServices.get().spriteSheet.resolveTiles(animationState, composedTiles);
@@ -191,11 +190,11 @@ final class LinkSpriteComposer {
                         && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
-                ? linkServices.get().tunicPalette.forObjectPalette(4)
+                ? linkServices.get().tunicPalette.objectPaletteView(4)
                 : linkServices
                         .get()
                         .tunicPalette
-                        .forTunic(
+                        .tunicView(
                                 linkServices.get().playerState == null
                                         ? Tunic.GREEN.romValue()
                                         : linkServices

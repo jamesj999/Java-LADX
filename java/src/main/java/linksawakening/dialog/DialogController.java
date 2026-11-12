@@ -20,6 +20,12 @@ public final class DialogController {
     private String retainedLine = "";
     private boolean shiftedPage;
     private String text = "";
+    private final DialogTextLayout renderLayout = new DialogTextLayout();
+    private String cachedSource;
+    private String cachedRetainedLine;
+    private String cachedVisibleText;
+    private int cachedPageStart, cachedEnd, cachedScrollBase;
+    private boolean cachedShiftedPage;
     private int pageStart;
     private int visibleCharactersOnPage;
     private int visibleNonSpaceCharactersOnPage;
@@ -264,14 +270,31 @@ public final class DialogController {
     public String visibleText() {
         if (scrollAge >= 0) return scrollAge == 0 ? scrollPrevious : retainedLine;
         int end = visibleEnd();
+        if (cachedSource == text
+                && cachedPageStart == pageStart
+                && cachedEnd == end
+                && cachedShiftedPage == shiftedPage
+                && cachedRetainedLine == retainedLine
+                && cachedScrollBase == scrollBase) return cachedVisibleText;
+        cachedSource = text;
+        cachedPageStart = pageStart;
+        cachedEnd = end;
+        cachedShiftedPage = shiftedPage;
+        cachedRetainedLine = retainedLine;
+        cachedScrollBase = scrollBase;
         if (romTimed && shiftedPage) {
             String revealed = text.substring(pageStart, end).replace("\n", "");
-            return retainedLine + "\n" + revealed.substring(Math.min(scrollBase, revealed.length()));
+            cachedVisibleText = retainedLine + "\n" + revealed.substring(Math.min(scrollBase, revealed.length()));
+        } else {
+            cachedVisibleText = pageStart >= end ? "" : text.substring(pageStart, end);
         }
-        if (pageStart >= end) {
-            return "";
-        }
-        return text.substring(pageStart, end);
+        return cachedVisibleText;
+    }
+
+    /** Borrowed cell layout, refreshed only when the visible text changes. */
+    DialogTextLayout renderLayout() {
+        renderLayout.update(visibleText());
+        return renderLayout;
     }
 
     private void enterPageWaitIfNeeded() {

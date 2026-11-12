@@ -19,6 +19,7 @@ final class DialogFont {
     private static final int CODEPOINT_COUNT = 256;
     private static final String ROM_RESOURCE = "/rom/azle.gbc";
 
+    private final byte[][] glyphTiles = new byte[FONT_TILE_COUNT][];
     private final byte[] fontTiles;
     private final int[] codepointToTile;
 
@@ -60,6 +61,11 @@ final class DialogFont {
     }
 
     byte[] tileFor(char codepoint) {
+        return tileView(codepoint).clone();
+    }
+
+    /** Borrowed immutable glyph bytes; renderers must not modify them. */
+    byte[] tileView(char codepoint) {
         int tableIndex = codepoint & 0xFF;
         int tileIndex = codepointToTile[tableIndex];
         int offset = tileIndex * TILE_SIZE_BYTES;
@@ -67,8 +73,10 @@ final class DialogFont {
             throw new IllegalArgumentException("CodepointToTileMap entry 0x" + Integer.toHexString(tableIndex)
                     + " points outside FontTiles: tile 0x" + Integer.toHexString(tileIndex));
         }
+        if (glyphTiles[tileIndex] != null) return glyphTiles[tileIndex];
         byte[] tile = new byte[TILE_SIZE_BYTES];
         System.arraycopy(fontTiles, offset, tile, 0, tile.length);
+        glyphTiles[tileIndex] = tile;
         return tile;
     }
 

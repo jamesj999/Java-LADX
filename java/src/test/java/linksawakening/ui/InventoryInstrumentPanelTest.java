@@ -11,6 +11,23 @@ import org.junit.jupiter.api.Test;
 @linksawakening.testing.RequiresRom
 final class InventoryInstrumentPanelTest {
     @Test
+    void borrowedFramePaletteMatchesOwnedValuesWithoutChangingBase() throws Exception {
+        byte[] rom = rom();
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
+        var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
+        int[] retainedBase = base[7].clone();
+        int[][] owned = panel.palettes(base, 0);
+        int[] retainedOwned = owned[7].clone();
+        for (int frame = 0; frame < 256; frame++) {
+            var borrowed = panel.framePalettes(base, frame);
+            var expected = panel.palettes(base, frame);
+            for (int row = 0; row < base.length; row++) assertArrayEquals(expected[row], borrowed[row]);
+        }
+        assertArrayEquals(retainedBase, base[7]);
+        assertArrayEquals(retainedOwned, owned[7]);
+    }
+
+    @Test
     void romPositionsNumbersAndCollectionBitProduceTheTwoByTwoInstrumentLayout() throws Exception {
         byte[] rom = rom();
         var panel = new InventoryInstrumentPanel(Rom.of(rom));
@@ -62,6 +79,8 @@ final class InventoryInstrumentPanelTest {
         menu.render(empty, gpu);
         flags[0] = 2;
         byte[] owned = new byte[empty.length];
+        menu.render(owned, gpu);
+        assertArrayEquals(empty, owned, "Caller mutation is observed only when context is refreshed");
         menu.setWorldContext(true, 0x0E, flags);
         menu.render(owned, gpu);
         assertFalse(java.util.Arrays.equals(empty, owned));

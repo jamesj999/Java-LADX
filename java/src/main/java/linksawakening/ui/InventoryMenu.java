@@ -1,5 +1,6 @@
 package linksawakening.ui;
 
+import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
@@ -222,14 +223,14 @@ public final class InventoryMenu {
         if (dungeonProgress.length != 8) throw new IllegalArgumentException("Eight instrument flags required");
         // $02:6183-$619E: dungeons 0..7 and Color Dungeon use a minimap.
         showInstruments = !indoor || (mapId >= 8 && mapId != 0xFF);
-        instrumentFlags = dungeonProgress.clone();
+        if (!Arrays.equals(instrumentFlags, dungeonProgress)) instrumentFlags = dungeonProgress.clone();
         dungeonMapId = mapId;
         dungeonCollapsed = (dungeonProgress[6] & 4) != 0;
     }
 
     public void setDungeonContext(byte[] items, byte[] rooms, int position, int frame) {
-        dungeonItems = items.clone();
-        dungeonRooms = rooms.clone();
+        if (!Arrays.equals(dungeonItems, items)) dungeonItems = items.clone();
+        if (!Arrays.equals(dungeonRooms, rooms)) dungeonRooms = rooms.clone();
         dungeonPosition = position;
         dungeonFrame = frame;
     }
@@ -257,7 +258,7 @@ public final class InventoryMenu {
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
-            inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
+            inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.render(
                 displayBuffer,
@@ -333,7 +334,7 @@ public final class InventoryMenu {
 
         int[][] inventoryPalettes = tilemapLoader.palettes();
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
-            inventoryPalettes = instrumentPanel.palettes(inventoryPalettes, instrumentPaletteFrame);
+            inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
         }
         TilemapRenderer.submit(
                 frameModel,
