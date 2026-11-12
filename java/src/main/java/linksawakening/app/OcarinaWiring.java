@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Ocarina;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the ocarina and its room-facing adapter. */
 final class OcarinaWiring {
@@ -12,7 +12,7 @@ final class OcarinaWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_OCARINA,
+                InventoryItem.OCARINA.romValue(),
                 new Ocarina(c.playerState(), c.gameplaySoundSink(), new Ocarina.PlaybackTarget() {
                     @Override
                     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {

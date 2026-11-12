@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
-import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
 import linksawakening.ui.FileMenuFrameSnapshot;
 import linksawakening.ui.GameOverMenu;
 
@@ -33,7 +33,7 @@ final class GameOverPresentation {
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
         context.playerState().incrementDeathCount();
         context.roomSession().progress().clearGameOverPowerCounter();
-        context.playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+        context.playerState().setActivePowerUp(PowerUp.NONE.romValue());
         context.link().presentGameOverStage(stage, countdown);
         refresh(true);
     }

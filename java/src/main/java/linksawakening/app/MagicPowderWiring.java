@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.MagicPowder;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the magicpowder and its room-facing adapter. */
 final class MagicPowderWiring {
@@ -12,7 +12,7 @@ final class MagicPowderWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_MAGIC_POWDER,
+                InventoryItem.MAGIC_POWDER.romValue(),
                 new MagicPowder(
                         c.playerState(),
                         c.gameplaySoundSink(),

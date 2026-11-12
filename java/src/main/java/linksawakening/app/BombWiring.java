@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.Bomb;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the bomb and its room-facing adapter. */
 final class BombWiring {
@@ -12,7 +12,7 @@ final class BombWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_BOMBS,
+                InventoryItem.BOMBS.romValue(),
                 new Bomb(
                         c.playerState(),
                         c.gameplaySoundSink(),

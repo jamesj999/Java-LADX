@@ -6,7 +6,7 @@ import static linksawakening.world.room.RoomConstants.*;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.EnemyProjectileEventConsumer;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.room.*;
 
@@ -149,9 +149,9 @@ final class EntityPhase {
 
             if (event.kind() == linksawakening.world.entity.event.LikeLikeEvent.Kind.CAPTURE) {
                 if (event.stolenInventorySlot() == 0) {
-                    c.playerState().setItemB(PlayerState.INVENTORY_EMPTY);
+                    c.playerState().setItemB(InventoryItem.EMPTY.romValue());
                 } else if (event.stolenInventorySlot() == 1) {
-                    c.playerState().setItemA(PlayerState.INVENTORY_EMPTY);
+                    c.playerState().setItemA(InventoryItem.EMPTY.romValue());
                 }
                 c.link().apply(LinkCommandAdapter.from(event));
             } else c.link().apply(LinkCommandAdapter.from(event));

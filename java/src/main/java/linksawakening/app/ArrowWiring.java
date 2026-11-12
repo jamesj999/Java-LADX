@@ -4,7 +4,8 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.Arrow;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
+import linksawakening.state.PowerUp;
 import linksawakening.world.room.ArrowShotResult;
 
 /** Registers the arrow and its room-facing adapter. */
@@ -13,7 +14,7 @@ final class ArrowWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_BOW,
+                InventoryItem.BOW.romValue(),
                 new Arrow(
                         c.playerState(),
                         c.gameplaySoundSink(),
@@ -33,8 +34,7 @@ final class ArrowWiring {
                                                 c.link().romEntityY(),
                                                 c.link().romEntityZ(),
                                                 c.link().applyRomItemDirectionFromInput(),
-                                                c.playerState().activePowerUp()
-                                                        == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                                                c.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue());
                                 playWhooshForLastShot = result.playWhoosh();
                                 if (result.spawned()) {
                                     c.link().startRomItemAttackStep();

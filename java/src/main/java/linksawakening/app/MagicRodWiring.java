@@ -4,7 +4,8 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.MagicRod;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
+import linksawakening.state.PowerUp;
 
 /** Registers the magicrod and its room-facing adapter. */
 final class MagicRodWiring {
@@ -12,7 +13,7 @@ final class MagicRodWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_MAGIC_ROD,
+                InventoryItem.MAGIC_ROD.romValue(),
                 new MagicRod(
                         c.romTables(),
                         c.graphics().linkSpriteSheet(),
@@ -39,8 +40,7 @@ final class MagicRodWiring {
                                                 c.link().romEntityY(),
                                                 c.link().romEntityZ(),
                                                 romDirection,
-                                                c.playerState().activePowerUp()
-                                                        == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
+                                                c.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue());
                                 return spawned;
                             }
 

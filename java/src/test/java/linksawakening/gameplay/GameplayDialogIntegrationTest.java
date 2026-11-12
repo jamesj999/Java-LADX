@@ -150,9 +150,7 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_UP,
-                true,
-                OverworldDialogBlockers.none(),
-                dialog);
+                new OverworldDialogInteraction.Interaction(true, OverworldDialogBlockers.none(), dialog));
 
         assertTrue(opened);
         assertTrue(dialog.isActive());
@@ -176,9 +174,7 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_UP,
-                true,
-                OverworldDialogBlockers.none(),
-                dialog);
+                new OverworldDialogInteraction.Interaction(true, OverworldDialogBlockers.none(), dialog));
 
         assertTrue(opened);
         dialog.advance();
@@ -200,9 +196,7 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 0x37,
                 Link.DIRECTION_UP,
-                true,
-                OverworldDialogBlockers.none(),
-                upperLinkDialog));
+                new OverworldDialogInteraction.Interaction(true, OverworldDialogBlockers.none(), upperLinkDialog)));
         assertEquals(DialogController.BoxPosition.BOTTOM, upperLinkDialog.boxPosition());
 
         DialogController lowerLinkDialog = new DialogController(16);
@@ -213,9 +207,7 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 0x38,
                 Link.DIRECTION_UP,
-                true,
-                OverworldDialogBlockers.none(),
-                lowerLinkDialog));
+                new OverworldDialogInteraction.Interaction(true, OverworldDialogBlockers.none(), lowerLinkDialog)));
         assertEquals(DialogController.BoxPosition.TOP, lowerLinkDialog.boxPosition());
     }
 
@@ -265,9 +257,8 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_UP,
-                false,
-                OverworldDialogBlockers.none(),
-                new DialogController(16)));
+                new OverworldDialogInteraction.Interaction(
+                        false, OverworldDialogBlockers.none(), new DialogController(16))));
         assertFalse(interaction.tryOpenSignpostDialog(
                 0xA4,
                 Warp.CATEGORY_OVERWORLD,
@@ -275,9 +266,8 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_DOWN,
-                true,
-                OverworldDialogBlockers.none(),
-                new DialogController(16)));
+                new OverworldDialogInteraction.Interaction(
+                        true, OverworldDialogBlockers.none(), new DialogController(16))));
         assertFalse(interaction.tryOpenSignpostDialog(
                 0xA4,
                 Warp.CATEGORY_INDOOR,
@@ -285,9 +275,8 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_UP,
-                true,
-                OverworldDialogBlockers.none(),
-                new DialogController(16)));
+                new OverworldDialogInteraction.Interaction(
+                        true, OverworldDialogBlockers.none(), new DialogController(16))));
     }
 
     @Test
@@ -335,9 +324,7 @@ final class GameplayDialogIntegrationTest {
                 4 * 16,
                 3 * 16,
                 Link.DIRECTION_UP,
-                true,
-                blockers,
-                new DialogController(16)));
+                new OverworldDialogInteraction.Interaction(true, blockers, new DialogController(16))));
     }
 
     private static byte[] loadRom() throws Exception {

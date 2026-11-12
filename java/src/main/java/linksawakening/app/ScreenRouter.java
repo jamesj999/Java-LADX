@@ -23,6 +23,7 @@ import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.StartupCoordinator;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
@@ -227,7 +228,7 @@ public final class ScreenRouter {
         roomSession().story().setTailKeyOwned(true);
         actions.navigator().show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
         state.debug().debugNoClip = false;
-        link().setDirection(Link.DIRECTION_DOWN);
+        link().setDirection(Direction.DOWN.javaIndex());
         gpu().loadBaseTiles(romData());
         loadOverworldScreen();
         DebugLog.log("Debug gameplay started (F3 toggles no-clip)");

@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the sword and its room-facing adapter. */
 final class SwordWiring {
@@ -12,7 +12,7 @@ final class SwordWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_SWORD,
+                InventoryItem.SWORD.romValue(),
                 new Sword(
                         c.romTables(),
                         c.graphics().swordSpriteSheet(),

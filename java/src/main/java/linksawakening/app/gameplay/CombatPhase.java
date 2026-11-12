@@ -7,7 +7,8 @@ import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.state.Direction;
-import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
+import linksawakening.state.Tunic;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.EntityCombatInputs;
@@ -31,8 +32,8 @@ final class CombatPhase {
                             context.playerState().runningWithPegasusBoots());
             EnemyAttackContext attackContext = new EnemyAttackContext(
                     context.playerState().swordLevel(),
-                    context.playerState().tunicType() == PlayerState.TUNIC_RED,
-                    context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+                    context.playerState().tunicType() == Tunic.RED.romValue(),
+                    context.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
                     sword != null && sword.spinAttackActive(),
                     context.playerState().runningWithPegasusBoots(),
                     context.link().isUsingShield(),
@@ -65,8 +66,8 @@ final class CombatPhase {
                         && (!context.link().isCollisionDamageImmune())) {
                     int previousPowerUp = context.playerState().activePowerUp();
                     context.playerState().applyRomEnemyDamage(event.linkDamage());
-                    if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
-                            && context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+                    if (previousPowerUp != PowerUp.NONE.romValue()
+                            && context.playerState().activePowerUp() == PowerUp.NONE.romValue()) {
                         context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
                     }
                     context.roomSession().entityState().resetGuardianAcornCounterOnHurt();

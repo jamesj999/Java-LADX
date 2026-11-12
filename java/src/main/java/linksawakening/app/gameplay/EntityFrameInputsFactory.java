@@ -4,7 +4,8 @@ import static linksawakening.app.gameplay.GameplaySimulation.*;
 import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.Sword;
-import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
+import linksawakening.state.Tunic;
 import linksawakening.world.room.*;
 
 final class EntityFrameInputsFactory {
@@ -50,14 +51,11 @@ final class EntityFrameInputsFactory {
                 new InventoryInputs(
                         p.itemA(),
                         p.itemB(),
-                        p.tunicType() == PlayerState.TUNIC_RED,
-                        p.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER),
+                        p.tunicType() == Tunic.RED.romValue(),
+                        p.activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
                 new PlayerLevels(p.shieldLevel(), p.swordLevel(), p.powerBraceletLevel()),
                 new PlayerHealth(
-                        p.maxHearts(),
-                        p.health(),
-                        p.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE,
-                        p.isOnLowHealth()));
+                        p.maxHearts(), p.health(), p.activePowerUp() != PowerUp.NONE.romValue(), p.isOnLowHealth()));
     }
 
     private static UiInputs buildUiInputs(GameplaySimulation c) {

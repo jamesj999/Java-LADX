@@ -5,14 +5,14 @@ import static linksawakening.world.room.RoomConstants.*;
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.state.Direction;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the hookshot and its room-facing adapter. */
 final class HookshotWiring {
     private HookshotWiring() {}
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
-        registry.register(PlayerState.INVENTORY_HOOKSHOT, new Hookshot(new Hookshot.LaunchTarget() {
+        registry.register(InventoryItem.HOOKSHOT.romValue(), new Hookshot(new Hookshot.LaunchTarget() {
             @Override
             public boolean fireHookshot() {
                 if (c.link() == null || c.roomSession() == null) {

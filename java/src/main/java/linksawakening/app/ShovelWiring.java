@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Shovel;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 import linksawakening.world.room.ShovelStartResult;
 
 /** Registers the shovel and its room-facing adapter. */
@@ -13,7 +13,7 @@ final class ShovelWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_SHOVEL,
+                InventoryItem.SHOVEL.romValue(),
                 new Shovel(
                         c.gameplaySoundSink(),
                         new Shovel.DigTarget() {

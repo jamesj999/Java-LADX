@@ -7,7 +7,8 @@ import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.PowerUp;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.room.EntityPickupInputs;
@@ -126,17 +127,18 @@ final class LinkEquipmentPhase {
                             context.link().direction(),
                             powerBraceletButtonHeld && canGrab,
                             context.link().romPressedButtonsMask(),
-                            context.playerState().activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER,
+                            context.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
                             context.playerState().powerBraceletLevel(),
-                            context.playerState().activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE);
+                            context.playerState().activePowerUp() != PowerUp.NONE.romValue());
             context.link()
                     .setGrabbingObject(
                             grabbing,
                             (context.link().romPressedButtonsMask()
-                                            & switch (context.link().direction()) {
-                                                case Link.DIRECTION_RIGHT -> 2;
-                                                case Link.DIRECTION_LEFT -> 1;
-                                                case Link.DIRECTION_UP -> 8;
+                                            & switch (Direction.fromJavaOrUnknown(
+                                                    context.link().direction())) {
+                                                case RIGHT -> 2;
+                                                case LEFT -> 1;
+                                                case UP -> 8;
                                                 default -> 4;
                                             })
                                     != 0);
@@ -269,7 +271,7 @@ final class LinkEquipmentPhase {
                                 new SwordBox(box.active(), box.x(), box.width(), box.y(), box.height())));
                 if (pickup != null) {
                     if (pickup.type() == 0x36) {
-                        context.playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+                        context.playerState().setActivePowerUp(PowerUp.NONE.romValue());
                         context.musicDirector().playDirectMusic(0x25);
                     } else if (pickup.sourceVariant() >= 0) {
                         context.playerState().applyFloatingItemPickup(pickup.type(), pickup.sourceVariant());

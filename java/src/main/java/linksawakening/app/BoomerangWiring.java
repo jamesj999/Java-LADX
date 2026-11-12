@@ -4,7 +4,7 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.Boomerang;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** Registers the boomerang and its room-facing adapter. */
 final class BoomerangWiring {
@@ -12,7 +12,7 @@ final class BoomerangWiring {
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
         registry.register(
-                PlayerState.INVENTORY_BOOMERANG,
+                InventoryItem.BOOMERANG.romValue(),
                 new Boomerang(
                         new Boomerang.LaunchTarget() {
                             @Override

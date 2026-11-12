@@ -90,9 +90,8 @@ public final class DialogInteractions {
                         link().pixelX(),
                         link().pixelY(),
                         link().direction(),
-                        true,
-                        blockers().current(),
-                        dialogController());
+                        new OverworldDialogInteraction.Interaction(
+                                true, blockers().current(), dialogController()));
     }
 
     public boolean tryOpenChest(int key) {

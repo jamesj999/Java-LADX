@@ -4,6 +4,7 @@ import static linksawakening.app.gameplay.GameplaySimulation.*;
 import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.equipment.Sword;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.room.*;
@@ -105,7 +106,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
 
             int acquisitionBaseDirection = c.link().direction();
             c.link().apply(LinkCommandAdapter.from(request));
-            if (c.itemRegistry().lookup(PlayerState.INVENTORY_SWORD) instanceof Sword acquisitionSword) {
+            if (c.itemRegistry().lookup(InventoryItem.SWORD.romValue()) instanceof Sword acquisitionSword) {
                 if (request.countdown() == 0x20) {
                     acquisitionSword.startSwordAcquisitionSpin(acquisitionBaseDirection);
                 } else if (acquisitionSword.spinAttackActive()) {
@@ -119,7 +120,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
                     linkSwordFinalPoseRequests.get(requestIndex);
 
             c.link().apply(LinkCommandAdapter.from(request));
-            if (c.itemRegistry().lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword) {
+            if (c.itemRegistry().lookup(InventoryItem.SWORD.romValue()) instanceof Sword sword) {
                 sword.resetSpinAttack();
             }
         }

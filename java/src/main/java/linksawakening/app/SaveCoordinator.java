@@ -17,7 +17,9 @@ import linksawakening.rom.RomAddress;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
 import linksawakening.startup.NewGameStartProfile;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
 import linksawakening.ui.FileSaveController;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
@@ -110,7 +112,7 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
         roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
         roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
         roomSession().story().setBowWowState(0);
-        link().setDirection(Link.DIRECTION_DOWN);
+        link().setDirection(Direction.DOWN.javaIndex());
         gpu().loadBaseTiles(romData());
         roomSession().rooms().loadIndoor(profile.mapId(), profile.roomId());
         roomSession()
@@ -160,10 +162,10 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
             roomSession()
                     .rooms()
                     .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
-            link().setDirection(Link.DIRECTION_UP);
+            link().setDirection(Direction.UP.javaIndex());
         } else {
             roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
-            link().setDirection(Link.DIRECTION_DOWN);
+            link().setDirection(Direction.DOWN.javaIndex());
         }
         link().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
         roomSession()
@@ -191,7 +193,7 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
         state.opening().clear();
         link().finishGameOver();
         playerState().clearResourceBuffersForDebug();
-        playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+        playerState().setActivePowerUp(PowerUp.NONE.romValue());
         roomSession().progress().clearGameOverPowerCounter();
         roomSession().progress().resetGameOverSwitchBlocks();
         if (option == 1) {
@@ -206,7 +208,7 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
             gpu().loadBaseTiles(romData());
             if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
                 roomSession().rooms().loadInitialOverworld(spawn.destRoom());
-                link().setDirection(Link.DIRECTION_DOWN);
+                link().setDirection(Direction.DOWN.javaIndex());
             } else {
                 roomSession()
                         .rooms()
@@ -214,7 +216,7 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
                                 spawn.destMap(),
                                 spawn.destRoom(),
                                 roomSession().progress().respawnIndoorRoom());
-                link().setDirection(Link.DIRECTION_UP);
+                link().setDirection(Direction.UP.javaIndex());
             }
             link().setRoomEntryRomPosition(spawn.destX(), spawn.destY());
             enterGameplay();

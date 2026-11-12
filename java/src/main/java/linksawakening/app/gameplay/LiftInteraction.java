@@ -6,6 +6,7 @@ import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 
@@ -54,16 +55,16 @@ public final class LiftInteraction {
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;
         }
-        if (playerState.itemB() == PlayerState.INVENTORY_POWER_BRACELET) {
+        if (playerState.itemB() == InventoryItem.POWER_BRACELET.romValue()) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == PlayerState.INVENTORY_POWER_BRACELET && inputState.isDown(inputConfig.aKey());
+        return playerState.itemA() == InventoryItem.POWER_BRACELET.romValue() && inputState.isDown(inputConfig.aKey());
     }
 
     /** $14:537D uses newly pressed buttons for throws, with B-slot priority. */
     public boolean isThrowButtonPressed(boolean bomb) {
         if (inputState == null || inputConfig == null || playerState == null) return false;
-        int item = bomb ? PlayerState.INVENTORY_BOMBS : PlayerState.INVENTORY_POWER_BRACELET;
+        int item = bomb ? InventoryItem.BOMBS.romValue() : InventoryItem.POWER_BRACELET.romValue();
         if (playerState.itemB() == item) return inputState.wasPressed(inputConfig.bKey());
         if (playerState.itemA() == item) return inputState.wasPressed(inputConfig.aKey());
         return inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.bKey());
@@ -73,10 +74,10 @@ public final class LiftInteraction {
         if (inputState == null || inputConfig == null || playerState == null) {
             return false;
         }
-        if (playerState.itemB() == PlayerState.INVENTORY_BOMBS) {
+        if (playerState.itemB() == InventoryItem.BOMBS.romValue()) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == PlayerState.INVENTORY_BOMBS && inputState.isDown(inputConfig.aKey());
+        return playerState.itemA() == InventoryItem.BOMBS.romValue() && inputState.isDown(inputConfig.aKey());
     }
 
     public void synchronizeLinkLiftedPresentation() {
