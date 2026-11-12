@@ -31,7 +31,7 @@ final class SceneConstructionFixture {
         int linkTiles = RomSymbols.LinkCharacter2Tiles.withGbcBank().offset();
         for (int i = 0; i < 4096; i += 2) bytes[linkTiles + i] = (byte) 255;
         Rom rom = Rom.of(bytes);
-        for (int tile = 0; tile < Vram.TILE_COUNT; tile++)
+        for (int tile = 0; tile < GPU.TILE_COUNT; tile++)
             for (int y = 0; y < 8; y++)
                 for (int x = 0; x < 8; x++) gpu.getTile(tile).setPixel(x, y, (tile + x + y) % 3 + 1);
         int[][] palettes = new int[8][4];

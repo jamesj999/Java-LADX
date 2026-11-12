@@ -14,7 +14,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 /** Read-only frame inputs; implementations may be owned snapshots or same-thread reusable state. */
-public interface GameFrameInputs {
+interface GameFrameInputs {
     RenderScreen screen();
 
     int[] tilemap();

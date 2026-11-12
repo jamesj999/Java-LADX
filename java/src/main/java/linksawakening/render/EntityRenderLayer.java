@@ -11,7 +11,7 @@ import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.ScrollController;
 
 /** Renders the ROM-backed OAM display lists for the room's loaded entities. */
-public final class EntityRenderLayer implements HardwareRenderLayer {
+final class EntityRenderLayer implements HardwareRenderLayer {
     private static final int ENTITY_BOMB = 0x02;
     private static final int ENTITY_WINGED_OCTOROK = 0xAE;
     private static final int ENTITY_PINCER = 0xB0;

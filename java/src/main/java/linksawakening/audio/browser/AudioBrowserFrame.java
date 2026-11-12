@@ -38,7 +38,7 @@ import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 
 /** Standalone Swing audition view over headless transport and catalog models. */
-public final class AudioBrowserFrame extends JFrame {
+final class AudioBrowserFrame extends JFrame {
     private static final int TIMER_DELAY_MS = 30;
 
     final MusicBrowserModel browserModel;

@@ -3,7 +3,7 @@ package linksawakening.gpu;
 import linksawakening.rom.Rom;
 
 /** ROM-independent VRAM storage and decoded tile cache. */
-public final class Vram {
+final class Vram {
     public static final int VRAM_SIZE = 0x2000;
     public static final int TILE_COUNT = 384;
     public static final int TILE_DATA_SIZE = 16;

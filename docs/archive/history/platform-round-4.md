@@ -5,8 +5,8 @@
 The source/class-file audit found five project-class edges:
 `GPU -> RomTileLoader -> Vram`, `SfxCpu -> SfxCpuState`,
 `EntitySpritePainter -> EntityOamPainter`, and the nested `FrozenTile -> Tile`.
-All five were removed. Framework inheritance is limited to Swing's JFrame and
-DefaultListCellRenderer. Interface extension expresses actual public contracts.
+All five were removed. Framework inheritance is limited to JFrame, DefaultListCellRenderer,
+WindowAdapter and GLFWKeyCallback. Interface extension expresses actual public contracts.
 `PlatformInheritanceTest` loads class metadata without initialization and guards
 zero project-class inheritance across all eight owned package roots.
 
@@ -104,3 +104,45 @@ published snapshot reuses that extraction. The raw CutsceneManager compatibility
 path must still obtain its public live sprites/line-scroll values; snapshot-based
 presentation avoids that boundary's repeated production costs. No private fields
 of off-limits packages are accessed.
+
+## Honest package shape and visibility
+
+Scope is main sources in audio/save/config/input/gpu/render/rom/app/host,
+including nested and compiler-generated class files where stated. Buckets use
+physical source lines: 1–100, 101–200, 201–300, 301–400, 401–500 and >500.
+
+| Metric | Merged baseline | After structural review |
+| --- | ---: | ---: |
+| Main Java files / top-level types | 138 | 136 |
+| 1–100 lines | 85 | 84 |
+| 101–200 | 29 | 27 |
+| 201–300 | 18 | 17 |
+| 301–400 | 6 | 6 |
+| 401–500 | 0 | 1 |
+| >500 | 0 | 1 |
+| Public top-level types | 85 | 63 |
+| Project-class inheritance edges | 5 | 0 |
+
+Class-file audit after review: 172 types, comprising 157 classes (including 18
+records and six enums) and 15 interfaces. The two largest cohesive files are
+SfxCpu (506 lines) and AudioBrowserFrame (448); neither is split into slices to
+meet a numerical target. EntitySpritePainter is 390, GameFrameState 342.
+
+Twenty-two top-level types became package-private: MusicOpcode,
+RomSoundEffectTables, SoundEffectBrowserModel, AudioBrowserFrame, MiniJson, Vram,
+and sixteen render implementation/value/callback types (BackgroundRenderLayer,
+DialogRenderLayer, DialogWindowPainter, DroppableRupeeRenderLayer,
+EntityRenderLayer, FrameDrawObserver, GameFrameInputs, HardwareRenderLayer,
+InventoryRenderLayer, LinkRenderLayer, PaletteOverlayRenderLayer, RenderContext,
+RenderLayer, RoomRenderLayer, SpriteListRenderLayer, TransientVfxRenderLayer).
+The synthetic fixture uses GPU's public TILE_COUNT instead of naming Vram.
+A clean compile of every main/test caller verified these visibility changes.
+Package-local observation/glyph hooks and layer-list scene factories likewise
+no longer export signatures containing these internal types.
+
+Public boundary contracts remain accessible even when callers infer their types:
+RegisterObserver is a lambda parameter, MusicTrackPlayer a transport port,
+SaveSlotStateBuilder/SaveSlotComponents define the save value-construction API,
+and RomCursor/RomSlice are returned by the public ROM reader. AudioBrowserMain
+is the Gradle/Java launcher entry point; ReusableGameFrameState is the explicitly
+requested app integration API. These are public contracts, not internal slices.
