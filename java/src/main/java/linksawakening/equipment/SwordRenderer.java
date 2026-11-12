@@ -26,7 +26,7 @@ final class SwordRenderer {
             int[] palette,
             int offsetX,
             int offsetY) {
-        int romDir = toRomDirection(effectiveDirection);
+        int romDir = Direction.fromJavaOrDown(effectiveDirection).romIndex();
         int swordDir = swordTables.swordDirectionFor(romDir, lookupState);
         int bladeX = linkPixelX + swordTables.swordBladeXOffset(romDir, lookupState) + offsetX;
         int bladeY = linkPixelY + swordTables.swordBladeYOffset(romDir, lookupState) + offsetY;
@@ -55,7 +55,7 @@ final class SwordRenderer {
             int[] palette,
             int offsetX,
             int offsetY) {
-        int romDir = toRomDirection(effectiveDirection);
+        int romDir = Direction.fromJavaOrDown(effectiveDirection).romIndex();
         int swordDir = swordTables.swordDirectionFor(romDir, lookupState);
         int bladeX = linkPixelX + swordTables.swordBladeXOffset(romDir, lookupState) + offsetX;
         int bladeY = linkPixelY + swordTables.swordBladeYOffset(romDir, lookupState) + offsetY;
@@ -97,9 +97,5 @@ final class SwordRenderer {
         Tile bottom = spriteSheet.tile(flipY ? tileIndex : tileIndex + 1);
         ItemSpriteRenderer.drawTile(buffer, top, screenX, screenY, flipX, flipY, palette);
         ItemSpriteRenderer.drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
-    }
-
-    private static int toRomDirection(int direction) {
-        return Direction.fromJavaOrDown(direction).romIndex();
     }
 }

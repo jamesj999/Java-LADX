@@ -30,6 +30,7 @@ import linksawakening.world.transition.Warp;
  * Routes host keys and queued gameplay edges to their screen and interaction owners. One instance is
  * retained for the owning session.
  */
+// Menu direction is a signed selection step, not a cardinal facing.
 public final class InputRouter implements DebugScroll {
     private final InputServices input;
     private final WorldServices world;

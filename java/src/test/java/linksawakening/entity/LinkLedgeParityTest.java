@@ -109,14 +109,17 @@ final class LinkLedgeParityTest {
         var fixture = fixture(true);
         for (int direction = 0; direction < 4; direction++) {
             Link link = fixture.link;
-            link.linkAnimationState.direction = direction;
+            link.linkAnimationState.direction = linksawakening.state.Direction.fromJava(direction);
             link.linkAirborne.airborne = true;
             link.linkAnimator.jumpAnimationCounter = 0;
             for (int frame = 0; frame < 24; frame++) {
                 link.linkAirborne.tickJumpAnimation();
                 int state = TestRoms.partial(fixture.rom)
                         .u8(new linksawakening.rom.RomAddress(0x02, 0x46B5)
-                                .plus(Link.romDirectionForJavaDirection(direction) * 4 + frame / 8));
+                                .plus(linksawakening.state.Direction.fromJava(direction)
+                                                        .romIndex()
+                                                * 4
+                                        + frame / 8));
                 assertEquals(state, link.animation().romAnimationState());
                 assertOam(fixture, state, link.position().pixelY());
             }

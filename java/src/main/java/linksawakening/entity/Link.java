@@ -9,7 +9,6 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
-import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 
 /**
@@ -113,14 +112,6 @@ public final class Link implements linksawakening.equipment.RocsFeather.JumpTarg
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
-    }
-
-    static int romDirectionForJavaDirection(int javaDirection) {
-        return Direction.fromJava(javaDirection).romIndex();
-    }
-
-    static int javaDirectionForRomDirection(int romDirection) {
-        return Direction.fromRom(romDirection).javaIndex();
     }
 
     /** Arguments shared by Link operations. */

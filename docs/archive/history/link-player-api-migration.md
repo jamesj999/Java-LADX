@@ -709,3 +709,46 @@ Remaining unsafeBytes call sites (including tests and off-limits code):
 - `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:56`: `new OverworldTilesetTable(romData.unsafeBytes()),`
 - `java/src/test/java/linksawakening/rom/RomReadTest.java:16`: `assertSame(data, rom.unsafeBytes());`
 - `java/src/test/java/linksawakening/rom/RomReadTest.java:36`: `assertSame(data, rom.unsafeBytes());`
+
+## Round 5 enum plumbing
+
+Closed Link animation facing storage now uses Direction, including all direct writes; Java indices are produced only at existing array/API boundaries. Joypad-facing dispatch accepts Direction. Removed two Link and four sword conversion helpers in favor of explicit Direction conversion policies. Tunic and power-up storage was already enum-backed.
+
+Exact `int direction/itemId/tunic/motionState` source occurrences (including return declarations and local loop/menu counters): 37 → 34. Closed facing fields 1 → 0; closed joypad direction parameters 1 → 0. Remaining values are raw snapshot/ROM values, permissive equipment input contracts, collision table indices or signed menu deltas; source comments identify the preservation rules. Saved item bytes must not collapse unknown IDs to an enum fallback.
+
+Remaining audited occurrences:
+
+- `java/src/main/java/linksawakening/ui/HudOverlay.java:53`: `private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:27`: `static int[] forItem(int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:41`: `static int[] forItem(int itemId) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:45`: `static int palettePair(int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/OcarinaSongMenu.java:115`: `public boolean moveSelection(int direction) {`
+- `java/src/main/java/linksawakening/ui/InventorySubscreenOverlay.java:69`: `private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/entity/DefaultLinkAnimationRole.java:35`: `public int direction() {`
+- `java/src/main/java/linksawakening/entity/EntitySpriteRomDecoding.java:51`: `for (int direction = 0; direction < 4; direction++) {`
+- `java/src/main/java/linksawakening/entity/LinkAnimationRole.java:17`: `int direction();`
+- `java/src/main/java/linksawakening/vfx/CutLeavesEffectRenderer.java:196`: `int direction = variant & 0x03;`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:36`: `public int entityCollisionPointX(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:42`: `public int entityCollisionPointY(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:73`: `private static int collisionPointIndex(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:171`: `public abstract int overrideAnimationState(int direction, int walkFrame);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:173`: `public abstract void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:176`: `linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:201`: `protected abstract int effectiveDirection(int direction);`
+- `java/src/main/java/linksawakening/equipment/MagicRod.java:122`: `public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/MagicRod.java:154`: `int direction,`
+- `java/src/main/java/linksawakening/equipment/Ocarina.java:67`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/SwordAttackMotion.java:198`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/SwordAttackMotion.java:216`: `public void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:36`: `default CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int direction) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:80`: `default int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:92`: `byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {}`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:98`: `int direction,`
+- `java/src/main/java/linksawakening/equipment/SwordChargeMotion.java:43`: `public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/SwordChargeMotion.java:173`: `protected int effectiveDirection(int direction) {`
+- `java/src/main/java/linksawakening/equipment/Shovel.java:81`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/app/input/InputRouter.java:187`: `int direction = input.inputState().isDown(input.inputConfig().leftKey())`
+- `java/src/main/java/linksawakening/app/gameplay/FrameInputCache.java:51`: `EntityPickupInputs.Link pickup(int x, int y, boolean airborne, boolean interactive, int direction, int z) {`
+- `java/src/main/java/linksawakening/app/headless/HeadlessState.java:36`: `private final int direction;`
+- `java/src/main/java/linksawakening/app/headless/HeadlessState.java:193`: `public int direction() {`
+- `java/src/main/java/linksawakening/app/gameplay/entity/EntityInputCache.java:30`: `LinkPosition linkPosition(int x, int y, int z, int direction, int collisionType) {`

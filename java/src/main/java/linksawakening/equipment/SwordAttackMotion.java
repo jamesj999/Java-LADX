@@ -6,6 +6,7 @@ import java.util.function.IntSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 
 /** Sword attack, charge and presentation state used by ROM {@code CheckItemsToUse}. */
 abstract class SwordAttackMotion extends SwordState {
@@ -201,7 +202,8 @@ abstract class SwordAttackMotion extends SwordState {
         }
         int effectiveDirection = effectiveDirection(direction);
         int lookupState = effectiveLinkAnimationState();
-        int value = swordTables.swordDirectionAnimState(toRomDirection(effectiveDirection), lookupState);
+        int value = swordTables.swordDirectionAnimState(
+                Direction.fromJavaOrDown(effectiveDirection).romIndex(), lookupState);
         if (value == 0xFF) {
             return -1;
         }

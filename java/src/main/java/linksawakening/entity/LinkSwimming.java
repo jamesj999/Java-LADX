@@ -87,13 +87,11 @@ final class LinkSwimming {
         swimmingSpeedX = linkServices
                 .get()
                 .linkMotionTables
-                .swimmingEntrySpeedX(
-                        Direction.fromJava(linkAnimationState.get().direction).romIndex());
+                .swimmingEntrySpeedX(linkAnimationState.get().direction.romIndex());
         swimmingSpeedY = linkServices
                 .get()
                 .linkMotionTables
-                .swimmingEntrySpeedY(
-                        Direction.fromJava(linkAnimationState.get().direction).romIndex());
+                .swimmingEntrySpeedY(linkAnimationState.get().direction.romIndex());
         linkMotion.get().lastRomSpeedX = swimmingSpeedX & 0xFF;
         linkMotion.get().lastRomSpeedY = swimmingSpeedY & 0xFF;
         return true;
@@ -172,7 +170,7 @@ final class LinkSwimming {
         int mask = linkControls.get().accessBuildJoypadMask();
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1) {
-            linkAnimationState.get().direction = newDirection;
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
 
         if (swimmingFastCountdown > 0) {

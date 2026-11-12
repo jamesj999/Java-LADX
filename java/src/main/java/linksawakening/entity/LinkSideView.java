@@ -83,7 +83,7 @@ final class LinkSideView {
             linkAirborne.get().airborne = false;
             sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
             sideViewSpeedY = (mask & 12) == 4 ? -16 : (mask & 12) == 8 ? 16 : 0;
-            linkAnimationState.get().direction = Direction.UP.javaIndex();
+            linkAnimationState.get().direction = Direction.UP;
         } else {
             int targetX = (mask & 3) == 1 ? 16 : (mask & 3) == 2 ? -16 : 0;
             if (sideViewGrounded || standingOnSideViewEntity) {
@@ -99,10 +99,9 @@ final class LinkSideView {
                 if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
             }
             if ((mask & 3) != 0 && !linkEquipment.get().itemsLockFacing())
-                linkAnimationState.get().direction =
-                        (mask & 1) != 0 ? Direction.RIGHT.javaIndex() : Direction.LEFT.javaIndex();
-            if ((mask & 15) == 4) linkAnimationState.get().direction = Direction.UP.javaIndex();
-            if ((mask & 15) == 8) linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+                linkAnimationState.get().direction = ((mask & 1) != 0 ? Direction.RIGHT : Direction.LEFT);
+            if ((mask & 15) == 4) linkAnimationState.get().direction = Direction.UP;
+            if ((mask & 15) == 8) linkAnimationState.get().direction = Direction.DOWN;
         }
         finishSideViewMotion(platformSpeedY, mask, recoiling, ladderFrame);
     }

@@ -12,6 +12,7 @@ import linksawakening.state.Direction;
 import linksawakening.world.entity.RomRandomByteSource;
 
 /** Sword attack, charge and presentation state used by ROM {@code CheckItemsToUse}. */
+// Integer facing inputs preserve the original unknown-as-down lookup and unmodified non-spin return value.
 abstract class SwordState implements EquipmentItem {
 
     protected static final int DRAW_FRAMES = 4;
@@ -126,18 +127,6 @@ abstract class SwordState implements EquipmentItem {
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
         this.beamTarget = Objects.requireNonNull(beamTarget, "beamTarget");
-    }
-
-    protected static int toSpinDirectionIndex(int javaDirection) {
-        return Direction.fromJavaOrDown(javaDirection).romIndex();
-    }
-
-    protected static int toRomDirection(int javaDirection) {
-        return Direction.fromJavaOrDown(javaDirection).romIndex();
-    }
-
-    protected static int fromRomDirection(int romDirection) {
-        return Direction.fromRom(romDirection & 0x03).javaIndex();
     }
 
     protected static GameplaySoundEvent swordSwingSound(int randomByte) {

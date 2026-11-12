@@ -14,6 +14,7 @@ import linksawakening.state.PlayerState;
  * {@code $01}.  Horizontal movement therefore keeps wrapping until it lands
  * on a song whose bit is present in {@link PlayerState#ocarinaSongFlags()}.</p>
  */
+// Selection direction is a signed menu step, not a cardinal facing.
 public final class OcarinaSongMenu {
 
     public static final int SONG_COUNT = 3;

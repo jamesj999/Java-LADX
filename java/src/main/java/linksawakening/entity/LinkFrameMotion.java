@@ -104,9 +104,8 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
 
         if (linkAirborne.get().spinningPitWarpArrival) {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
-            linkAnimationState.get().direction = Direction.fromRom(
-                            linkServices.get().linkMotionTables.pitWarpArrivalDirection(frameCounter))
-                    .javaIndex();
+            linkAnimationState.get().direction =
+                    Direction.fromRom(linkServices.get().linkMotionTables.pitWarpArrivalDirection(frameCounter));
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
             linkAnimationState.get().movingThisFrame = false;
@@ -179,7 +178,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
                 && !linkAirborne.get().directionalLedgeJumpMotionLocked
                 && !linkEquipment.get().itemsLockFacing(true)
                 && !linkEntityEffects.get().accessIsLiftTransitionBlockingMotion()) {
-            linkAnimationState.get().direction = newDirection;
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
         updatePegasusBootsUse();
         if (!linkAirborne.get().airborne && linkAirborne.get().groundStatus != GroundStatus.PIT) {
@@ -267,7 +266,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
             // the feather/ledge flip. Walking animation precedes gravity:
             // first pose $0A, then $0B, including the landing frame.
             linkAnimator.get().romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[
-                    linkAnimationState.get().direction][linkAnimationState.get().movingThisFrame ? 1 : 0];
+                    linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().movingThisFrame ? 1 : 0];
             // ApplyGotItem caches wC145 before this frame changes Z.
             linkAnimator.get().bedJumpRenderZ = linkAirborne.get().accessZPixels();
             linkAirborne.get().tickJump();

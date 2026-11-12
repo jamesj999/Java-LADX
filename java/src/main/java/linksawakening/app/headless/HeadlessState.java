@@ -6,6 +6,7 @@ import linksawakening.world.entity.EntityStatus;
  * Immutable replay checkpoint values; the driver exposes the compatibility State name. Created on demand for
  * one diagnostic capture.
  */
+// Facing is retained as an integer checkpoint value to preserve raw snapshot/equality representation.
 public abstract class HeadlessState {
     private final int frame;
     private final int map;

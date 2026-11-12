@@ -91,9 +91,9 @@ final class LinkEquipment {
     int applyRomItemDirectionFromInput() {
         int newDirection = JOYPAD_TO_DIRECTION[linkControls.get().accessBuildJoypadMask()];
         if (newDirection != -1) {
-            linkAnimationState.get().direction = newDirection;
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
-        return Direction.fromJava(linkAnimationState.get().direction).romIndex();
+        return linkAnimationState.get().direction.romIndex();
     }
 
     boolean itemsBlockMotion() {
