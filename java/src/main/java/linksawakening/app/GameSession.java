@@ -83,6 +83,16 @@ public class GameSession implements AutoCloseable {
         return context.services().visual().indexedDisplayBuffer().clone();
     }
 
+    /** Full unpaced frame into caller-owned storage; retains no reference to the output. */
+    public byte[] headlessFrame(byte[] output) {
+        var pixels = context.services().visual().indexedDisplayBuffer();
+        if (output.length != pixels.length) throw new IllegalArgumentException("Framebuffer length");
+        update();
+        context.runtime().presentation().composeFrameBuffer();
+        System.arraycopy(pixels, 0, output, 0, pixels.length);
+        return output;
+    }
+
     void stepWithoutRender() {
         update();
     }
