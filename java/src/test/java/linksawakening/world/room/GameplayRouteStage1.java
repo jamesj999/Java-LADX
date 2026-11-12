@@ -89,7 +89,8 @@ final class GameplayRouteStage1 {
                 null,
                 route.playerState,
                 route.itemRegistry);
-        route.itemRegistry.register(InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(route.link));
+        route.itemRegistry.register(
+                InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(route.link.airborne()::useRocsFeather));
         route.link.position().setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         while (route.transition.isActive()) route.transition.tick();

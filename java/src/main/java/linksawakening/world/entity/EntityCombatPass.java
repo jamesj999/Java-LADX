@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.*;
 
 /** Focused behavior using the state owned by EntityCombatResolver. */
 final class EntityCombatPass {
-    static List<EntityCombatEvent> resolveCombat(EntityCombatResolver owner, EnemyCombatFrame inputs) {
+    static List<EntityCombatEvent> resolveCombat(EntityCombatResolver owner, EnemyCombatInputs inputs) {
         var runtime = owner.runtime;
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();

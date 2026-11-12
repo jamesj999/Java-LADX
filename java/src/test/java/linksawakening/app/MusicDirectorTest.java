@@ -48,10 +48,10 @@ final class MusicDirectorTest {
             var state = new linksawakening.state.PlayerState();
             var holder = new linksawakening.world.room.RoomSession[1];
             var rooms = new RoomSession(new RoomSessionConfig(
-                    rom,
+                    linksawakening.rom.Rom.unchecked(rom),
                     new linksawakening.gpu.GPU(),
-                    new linksawakening.world.room.RoomLoader(rom),
-                    new linksawakening.world.room.OverworldTilesetTable(rom),
+                    new linksawakening.world.room.RoomLoader(linksawakening.rom.Rom.unchecked(rom)),
+                    new linksawakening.world.room.OverworldTilesetTable(linksawakening.rom.Rom.unchecked(rom)),
                     new linksawakening.physics.OverworldCollision(
                             linksawakening.rom.RomTables.load(linksawakening.rom.Rom.unchecked(rom))),
                     new RoomSessionConfig.Presentation(

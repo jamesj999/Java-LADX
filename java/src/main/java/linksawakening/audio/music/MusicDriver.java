@@ -12,7 +12,7 @@ public final class MusicDriver {
     private static final int HEADER_SIZE = 11;
     // Rom's typed reads currently require an allocated RomAddress. These real-time reads
     // retain its caller-owned bytes without copying or mutation and check ranges below.
-    private final byte[] romBytes;
+    private final linksawakening.rom.RomSlice romBytes;
     private final GameBoyApu apu;
     private final MusicVoiceEmitter voice;
     private final MusicChannelState[] channels = {
@@ -44,7 +44,8 @@ public final class MusicDriver {
     private int musicTranspose;
 
     public MusicDriver(Rom romData, GameBoyApu apu) {
-        romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();
+        Objects.requireNonNull(romData, "romData");
+        romBytes = romData.view(linksawakening.rom.RomAddress.fromOffset(0), romData.size());
         this.apu = Objects.requireNonNull(apu, "apu");
         voice = new MusicVoiceEmitter(this, apu);
     }
@@ -61,7 +62,7 @@ public final class MusicDriver {
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
-        musicTranspose = romBytes[headerOffset];
+        musicTranspose = romBytes.s8(headerOffset);
         speedTablePointer = readWordAtOffset(headerOffset + 1);
         for (int channel = 1; channel <= CHANNEL_COUNT; channel++) {
             int streamPointer = readWordAtOffset(headerOffset + 1 + (channel * 2));
@@ -232,7 +233,7 @@ public final class MusicDriver {
         // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
         int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
         requireReadable(offset, 1, bank, address);
-        return Byte.toUnsignedInt(romBytes[offset]);
+        return romBytes.u8(offset);
     }
 
     private int readWord(int bank, int address) {
@@ -244,11 +245,11 @@ public final class MusicDriver {
     }
 
     private int readWordAtOffset(int offset) {
-        return Byte.toUnsignedInt(romBytes[offset]) | (Byte.toUnsignedInt(romBytes[offset + 1]) << 8);
+        return romBytes.u8(offset) | (romBytes.u8(offset + 1) << 8);
     }
 
     private void requireReadable(int offset, int length, int bank, int address) {
-        if (offset < 0 || offset + length > romBytes.length) {
+        if (offset < 0 || offset + length > romBytes.size()) {
             throw new IllegalStateException(
                     "Music ROM read out of range: bank " + hex(bank) + " address " + hex(address));
         }

@@ -161,7 +161,9 @@ entities, warp, heart, grassPalette)` borrows caller-owned planes/metadata;
 `withRoomControllers(scroll, transition)` binds the controllers. The compatibility
 `withRoom(snapshot, ...)`/`copyFrom(snapshot)` paths cache immutable room metadata
 by identity, but new immutable room snapshots still incur their defensive getters.
-They must not be used as a substitute for the world's pending borrowed room view.
+The running session uses `withRoom(RoomRenderView, ...)` with the live world
+projection. It refills retained renderer planes through indexed reads every
+frame; immutable snapshots still use identity-cached extraction for capture tools.
 
 Normal overworld scenes retain layers and indexed contexts. Entity metadata is
 packed into primitive integers, snapshot tiles are read through immutable views,
@@ -222,33 +224,32 @@ snapshot reuses that extraction. The raw CutsceneManager compatibility path
 still calls its public sprite/line-scroll producers; callers using snapshots
 avoid that repeated upstream production. No private upstream state is accessed.
 
-### App owner handoff
+### Integrated session boundary
 
-No app file is changed by this rendering refactor.
+`RenderStateAssembler.composeFrameBuffer()` now refills a retained
+`ReusableGameFrameState` and builds the borrowed scene. `Screen` has equivalent
+mutable-input overrides for gameplay game-over, file-menu and file-save state;
+no immutable screen override was bypassed. `currentGameFrameState()` and
+`build(GameFrameState)` remain explicit owned/capture APIs. A `GameFrameState`
+container can hold the common `RoomRenderView`; its room ownership depends on
+the value supplied. The capture factory supplies an owned `RoomRenderSnapshot`.
 
-- `app/presentation/RenderStateAssembler.java:composeFrameBuffer` can immediately
-  change `frameSceneBuilder.build(currentGameFrameState())` to
-  `frameSceneBuilder.buildReusable(currentGameFrameState())`. This preserves the
-  current `Screen.renderState` overrides (including gameplay's game-over menu).
-  It removes repeated layer/scene construction while retaining immutable room
-  extraction costs until the world owner exposes borrowed planes.
-- For the complete allocation-bounded path, retain one `ReusableGameFrameState`
-  on that assembler, refill it using the same current fields with `reset()` and
-  `withX`, feed borrowed room arrays/entities using `withRoomData`, then call
-  `frameSceneBuilder.build(reusableState).drawTo(...)`. Keep
-  `currentGameFrameState()` as the explicit snapshot/capture API.
-- If using mutable states through screen dispatch, add the corresponding
-  `Screen.renderState(ReusableGameFrameState)` overload. In
-  `GameplayScreen.renderState`, preserve the existing game-over override by
-  returning `state.reset().withScreen(FILE_SAVE).withFileMenuFrame(snapshot)`
-  when `driver.gameOver()` is non-null; other screen overrides use the matching
-  mutable setters. The one-line bridge above needs no screen changes.
+`rooms().renderView()` and `dungeon().view()` are read-only same-thread projections,
+valid until the next simulation tick, room change or world mutation. The app
+refills them immediately before building/drawing. Indexed tile/attribute/palette
+reads expose no writable world arrays. `ReusableRoomInputs` retains renderer-owned
+planes, preserving their values until that renderer's next refill. The borrowed
+scene and mutable inputs are valid only until the builder/assembler's next use.
+Use `ownedCopy()`, `renderSnapshot()` or reusable-state `snapshot()` for history.
+The previous room kept by scrolling remains owned throughout the transition.
 
-The world's immutable `RoomRenderSnapshot` getters currently copy their arrays.
-The world owner must supply borrowed planes/a live entity view to realize the
-full end-to-end bound; this renderer deliberately does not bypass that ownership
-boundary or access private world fields.
-
+Dungeon inventory values are copied into retained app buffers; the UI's setters
+still make their existing owned copies. Published changed event/composite values
+remain immutable. None of these fast paths changes slot/OAM order, fade/palette
+composition, clipping, wrapping or input timing. A session pixel test compares
+borrowed and owned scenes over 80 inventory-transition frames, in addition to
+all 986 scene-parity captures and the other render tests. Performance guards
+and off-limits sources are listed in [TESTING.md](TESTING.md#performance-budget).
 
 ## Structural review scope
 

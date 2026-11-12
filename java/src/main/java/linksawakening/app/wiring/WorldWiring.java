@@ -50,10 +50,10 @@ final class WorldWiring {
             GameplaySoundSink sounds) {
         Rom romData = rom.romData();
         var roomSession = new RoomSession(new RoomSessionConfig(
-                romData.unsafeBytes(),
+                romData,
                 rom.gpu(),
-                new RoomLoader(romData.unsafeBytes()),
-                new OverworldTilesetTable(romData.unsafeBytes()),
+                new RoomLoader(romData),
+                new OverworldTilesetTable(romData),
                 collision,
                 new RoomSessionConfig.Presentation(visuals.transientVfxSystem(), visuals.droppableRupeeSystem(), music),
                 random));

@@ -1,5 +1,11 @@
 # Room facade migration
 
+Round-5 status: the app/render integration and all owned deprecated caller
+migrations are complete. All former owned byte/enum/event delegates and
+`Rom.unsafeBytes()` are deleted. Historical tables below describe the earlier
+handoff; see [the integrated report](room-integration-round-5.md) for current
+lifetimes, budgets, warning counts and remaining immutable/off-limits costs.
+
 ## Done
 
 Rounds 3–4 migrated the former 104-delegate facade callers, including all

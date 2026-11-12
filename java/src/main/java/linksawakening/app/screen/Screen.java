@@ -2,10 +2,15 @@ package linksawakening.app.screen;
 
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
+import linksawakening.render.ReusableGameFrameState;
 
 /** A session-local screen owns frame and key dispatch. */
 public interface Screen {
     default GameFrameState renderState(GameFrameState state) {
+        return state;
+    }
+
+    default ReusableGameFrameState renderState(ReusableGameFrameState state) {
         return state;
     }
 

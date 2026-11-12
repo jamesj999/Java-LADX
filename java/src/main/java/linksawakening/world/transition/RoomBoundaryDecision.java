@@ -10,8 +10,10 @@ public record RoomBoundaryDecision(Type type, int direction, int linkTargetX, in
         SIDE_SCROLL_VERTICAL_WARP
     }
 
+    private static final RoomBoundaryDecision NONE = new RoomBoundaryDecision(Type.NONE, ScrollController.NONE, 0, 0);
+
     public static RoomBoundaryDecision none() {
-        return new RoomBoundaryDecision(Type.NONE, ScrollController.NONE, 0, 0);
+        return NONE;
     }
 
     public static RoomBoundaryDecision clamp(int x, int y) {

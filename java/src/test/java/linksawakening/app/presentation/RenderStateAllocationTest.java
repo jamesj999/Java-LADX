@@ -16,6 +16,26 @@ class RenderStateAllocationTest {
     private static volatile Object snapshot;
 
     @Test
+    void reusableAssemblyAndSceneAllocateNothingAfterWarmup() throws Exception {
+        try (var session = AllocationSessions.active()) {
+            var assembler = session.flows().renderer();
+            var builder = new GameFrameSceneBuilder();
+            double assembly = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                snapshot = assembler.currentReusableGameFrameState();
+            });
+            double scene = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                observed = builder.build(assembler.currentReusableGameFrameState());
+            });
+            System.out.println("Reusable assembly / assembly+scene bytes: " + assembly + " / " + scene);
+            assertEquals(0.0, assembly);
+            assertEquals(0.0, scene);
+            assertTrue(observed.layerCount() > 0);
+        }
+    }
+
+    @Test
     void assemblyAndSceneAllocation() throws Exception {
         try (var session = AllocationSessions.active()) {
             var assembler = session.flows().renderer();

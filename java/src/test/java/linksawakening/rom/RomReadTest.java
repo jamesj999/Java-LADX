@@ -13,7 +13,7 @@ class RomReadTest {
         byte[] data = {(byte) 0xFE, 0x12, 0x34};
         Rom rom = TestRoms.partial(data);
         assertEquals(3, rom.size());
-        assertSame(data, rom.unsafeBytes());
+        RomOwnershipAssertions.assertBackedBy(data, rom);
         assertEquals(0x12FE, rom.u16le(START));
         data[0] = 7;
         assertEquals(7, rom.u8(START));
@@ -33,7 +33,7 @@ class RomReadTest {
         data[1] = (byte) 0xAB;
         Rom rom = Rom.of(data);
         assertEquals(data.length, rom.size());
-        assertSame(data, rom.unsafeBytes());
+        RomOwnershipAssertions.assertBackedBy(data, rom);
         assertEquals(254, rom.u8(START));
         assertEquals(-2, rom.s8(START));
         assertEquals(0xABFE, rom.u16le(START));

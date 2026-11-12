@@ -11,8 +11,7 @@ public final class DialogSoundRouter {
         if (dialogController == null || soundSink == null) {
             return;
         }
-        for (DialogController.SoundEvent event : dialogController.consumeSoundEvents()) {
-            soundSink.play(event);
-        }
+        var events = dialogController.consumeSoundEvents();
+        for (int i = 0; i < events.size(); i++) soundSink.play(events.get(i));
     }
 }

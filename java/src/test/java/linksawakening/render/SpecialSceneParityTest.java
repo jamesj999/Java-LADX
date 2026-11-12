@@ -85,7 +85,8 @@ final class SpecialSceneParityTest {
                         new HeartPieceVisual(3, pairs),
                         room.grassPalette);
             }
-            case "SCROLL" -> state.scrollController().start(ScrollController.RIGHT, 40, 40, fixture.state.room(), 160);
+            case "SCROLL" -> state.scrollController()
+                    .start(ScrollController.RIGHT, 40, 40, fixture.state.room().ownedCopy(), 160);
             default -> throw new AssertionError(kind);
         }
         var live = new GameFrameSceneBuilder();

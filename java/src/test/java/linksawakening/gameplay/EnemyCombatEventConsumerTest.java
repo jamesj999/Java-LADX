@@ -75,17 +75,16 @@ final class EnemyCombatEventConsumerTest {
     @Test
     void mapsSecondaryBurningNoiseAfterTheEnemyHitJingle() {
         RecordingSoundSink sounds = new RecordingSoundSink();
-        List<EntityCombatEvent> events = List.of(new EntityCombatEvent(
-                0,
-                0x09,
-                0,
-                true,
-                0,
-                0xFE,
-                EntityCombatEvent.SoundChannel.JINGLE,
-                0x03,
-                EntityCombatEvent.SoundChannel.NOISE,
-                0x12));
+        List<EntityCombatEvent> events = List.of(EntityCombatEvent.builder(0, 0x09)
+                .linkDamage(0)
+                .swordHit(true)
+                .enemyDamage(0)
+                .enemySpecialAction(0xFE)
+                .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                .soundId(0x03)
+                .secondarySoundChannel(EntityCombatEvent.SoundChannel.NOISE)
+                .secondarySoundId(0x12)
+                .build());
 
         EnemyCombatEventConsumer.consume(events, sounds);
 
@@ -235,18 +234,17 @@ final class EnemyCombatEventConsumerTest {
     void routesRomSwordPokeSoundAndVfxRequest() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         linksawakening.vfx.TransientVfxSystem vfx = new linksawakening.vfx.TransientVfxSystem(1);
-        EntityCombatEvent event = new EntityCombatEvent(
-                0,
-                0x27,
-                0,
-                true,
-                0,
-                -1,
-                EntityCombatEvent.SoundChannel.JINGLE,
-                0x07,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                new EntityCombatEvent.SwordPokeVfx(0x40, 0x50));
+        EntityCombatEvent event = EntityCombatEvent.builder(0, 0x27)
+                .linkDamage(0)
+                .swordHit(true)
+                .enemyDamage(0)
+                .enemySpecialAction(-1)
+                .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                .soundId(0x07)
+                .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .secondarySoundId(-1)
+                .swordPokeVfx(new EntityCombatEvent.SwordPokeVfx(0x40, 0x50))
+                .build();
 
         EnemyCombatEventConsumer.consume(List.of(event), sounds, vfx);
 

@@ -23,36 +23,6 @@ public record EntityCombatEvent(
         return new EntityCombatEventBuilder(slot, type);
     }
 
-    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
-    @Deprecated
-    public EntityCombatEvent(
-            int slot,
-            int type,
-            int linkDamage,
-            boolean swordHit,
-            int enemyDamage,
-            int enemySpecialAction,
-            SoundChannel soundChannel,
-            int soundId,
-            SoundChannel secondarySoundChannel,
-            int secondarySoundId,
-            SwordPokeVfx swordPokeVfx) {
-        this(
-                slot,
-                type,
-                linkDamage,
-                swordHit,
-                enemyDamage,
-                enemySpecialAction,
-                soundChannel,
-                soundId,
-                secondarySoundChannel,
-                secondarySoundId,
-                swordPokeVfx,
-                LinkAction.NONE,
-                LinkCollisionResponse.NONE);
-    }
-
     public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit) {
         this(
                 slot,
@@ -110,35 +80,6 @@ public record EntityCombatEvent(
                 soundId,
                 SoundChannel.NONE,
                 -1,
-                null,
-                LinkAction.NONE,
-                LinkCollisionResponse.NONE);
-    }
-
-    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
-    @Deprecated
-    public EntityCombatEvent(
-            int slot,
-            int type,
-            int linkDamage,
-            boolean swordHit,
-            int enemyDamage,
-            int enemySpecialAction,
-            SoundChannel soundChannel,
-            int soundId,
-            SoundChannel secondarySoundChannel,
-            int secondarySoundId) {
-        this(
-                slot,
-                type,
-                linkDamage,
-                swordHit,
-                enemyDamage,
-                enemySpecialAction,
-                soundChannel,
-                soundId,
-                secondarySoundChannel,
-                secondarySoundId,
                 null,
                 LinkAction.NONE,
                 LinkCollisionResponse.NONE);

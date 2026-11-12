@@ -34,23 +34,8 @@ final class RoomEntityCombatBridge {
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return List.of();
         }
-        List<EntityCombatEvent> events = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .resolveCombat(new linksawakening.world.entity.EnemyCombatFrame(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkVerticalVelocity,
-                        linkInteractive,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        attackContext));
+        List<EntityCombatEvent> events =
+                dependencies.entityBridge().get().entityRuntime.resolveCombat(inputs);
         dependencies
                 .location()
                 .activeRoom
@@ -170,23 +155,8 @@ final class RoomEntityCombatBridge {
         }
         dependencies.followers().followingLinkZ = linkZ & 0xFF;
         dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        EntityPickupEvent event = dependencies
-                .entityBridge()
-                .get()
-                .entityRuntime
-                .collectIfNeeded(new linksawakening.world.entity.EntityPickupFrame(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkInteractive,
-                        linkDirection,
-                        linkZ,
-                        swordActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight));
+        EntityPickupEvent event =
+                dependencies.entityBridge().get().entityRuntime.collectIfNeeded(inputs);
         if (event == null) {
             return null;
         }

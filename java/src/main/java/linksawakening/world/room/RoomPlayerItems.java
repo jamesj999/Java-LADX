@@ -4,11 +4,6 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 public interface RoomPlayerItems {
     boolean throwLiftedEntity(linksawakening.state.Direction linkDirection);
-    /** @deprecated Pass Direction; retained for app gameplay/item consumers. */
-    @Deprecated(forRemoval = true)
-    default boolean throwLiftedEntity(int linkDirection) {
-        return throwLiftedEntity(linksawakening.state.Direction.fromJava(linkDirection));
-    }
 
     boolean fireHookshot(
             int linkEntityX,
@@ -34,11 +29,6 @@ public interface RoomPlayerItems {
     void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer);
 
     int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer);
-    /** @deprecated Pass Direction; retained for app gameplay/item consumers. */
-    @Deprecated(forRemoval = true)
-    default int shovelAnimationState(int javaDirection, int timer) {
-        return shovelAnimationState(linksawakening.state.Direction.fromJava(javaDirection), timer);
-    }
 
     boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
 

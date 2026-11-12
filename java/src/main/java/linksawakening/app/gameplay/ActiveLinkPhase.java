@@ -91,7 +91,8 @@ final class ActiveLinkPhase {
             if (throwPressed && liftedState.carryState() == 0x01) {
                 context.roomSession()
                         .playerItems()
-                        .throwLiftedEntity(context.link().animation().direction());
+                        .throwLiftedEntity(linksawakening.state.Direction.fromJava(
+                                context.link().animation().direction()));
             }
         }
         boolean canGrab = !keyholeSequenceActive
@@ -104,7 +105,8 @@ final class ActiveLinkPhase {
                 .tryLiftObject(
                         context.link().position().pixelX(),
                         context.link().position().pixelY(),
-                        context.link().animation().direction(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(
+                                context.link().animation().direction()),
                         powerBraceletButtonHeld && canGrab,
                         context.link().controls().romPressedButtonsMask(),
                         context.playerState().equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
@@ -185,7 +187,8 @@ final class ActiveLinkPhase {
                     .tryUnlockTailCaveKeyhole(
                             collisionProbeX,
                             collisionProbeY,
-                            context.link().animation().direction(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(
+                                    context.link().animation().direction()),
                             context.link().position().romCollisionType(),
                             context.playerState().progression().tailKeyCount() != 0);
             context.roomSession()
@@ -193,7 +196,8 @@ final class ActiveLinkPhase {
                     .tryUnlockKeyCavernKeyhole(
                             collisionProbeX,
                             collisionProbeY,
-                            context.link().animation().direction(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(
+                                    context.link().animation().direction()),
                             context.link().position().romCollisionType(),
                             context.playerState().progression().goldenLeavesCount());
             context.roomSession()
@@ -201,14 +205,16 @@ final class ActiveLinkPhase {
                     .tryUnlockIndoorKeyDoor(
                             collisionProbeX,
                             collisionProbeY,
-                            context.link().animation().direction(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(
+                                    context.link().animation().direction()),
                             context.link().position().romCollisionType());
             context.roomSession()
                     .doors()
                     .tryInteractWithIndoorBlock(
                             collisionProbeX,
                             collisionProbeY,
-                            context.link().animation().direction(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(
+                                    context.link().animation().direction()),
                             context.link().position().romCollisionType());
         }
     }

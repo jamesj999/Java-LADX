@@ -103,8 +103,6 @@ public class GameSession implements AutoCloseable {
 
     final RomRandomByteSource random;
 
-    final long frameDurationNs = 1_000_000_000L / 60L;
-
     SessionContext context;
 
     public SessionState state() {
@@ -130,6 +128,15 @@ public class GameSession implements AutoCloseable {
     public byte[] headlessFrame() {
         renderFrame();
         return context.services().visual().indexedDisplayBuffer().clone();
+    }
+
+    /** Full unpaced frame into caller-owned storage; retains no reference to the output. */
+    public byte[] headlessFrame(byte[] output) {
+        var pixels = context.services().visual().indexedDisplayBuffer();
+        if (output.length != pixels.length) throw new IllegalArgumentException("Framebuffer length");
+        renderFrame();
+        System.arraycopy(pixels, 0, output, 0, pixels.length);
+        return output;
     }
 
     void stepWithoutRender() {
@@ -159,7 +166,7 @@ public class GameSession implements AutoCloseable {
             }
             context.host().open(this::onKeyEvent);
             context.host().recordingStatus(recorder != null);
-            long nextFrameNs = System.nanoTime();
+            FramePacer pacer = options.headless() ? null : new FramePacer();
             long rendered = 0;
             while (!context.host().shouldClose()
                     && context.lifecycle().running()
@@ -169,19 +176,7 @@ public class GameSession implements AutoCloseable {
                 context.host().present(context.services().visual().indexedDisplayBuffer());
                 rendered++;
                 if (options.headless()) continue;
-                nextFrameNs += frameDurationNs;
-                long sleepNs = nextFrameNs - System.nanoTime();
-                if (sleepNs > 0) {
-                    try {
-                        Thread.sleep(sleepNs / 1_000_000L, (int) (sleepNs % 1_000_000L));
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                } else {
-                    // We're behind — drop the backlog so we don't spiral.
-                    nextFrameNs = System.nanoTime();
-                }
+                if (!pacer.awaitNextFrame()) break;
             }
         }
     }

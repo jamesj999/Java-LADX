@@ -18,7 +18,11 @@ class RoomRenderAllocationTest {
     private static volatile int checksum;
 
     static RoomSession room() {
-        var rom = TestRoms.partial(new byte[0x100000]);
+        return room(new byte[0x100000]);
+    }
+
+    static RoomSession room(byte[] bytes) {
+        var rom = TestRoms.partial(bytes);
         var initial = TestEntities.room(
                 TestEntities.active(9).slot(0).at(64, 64).build(),
                 TestEntities.active(0x3E).slot(1).at(72, 64).build());

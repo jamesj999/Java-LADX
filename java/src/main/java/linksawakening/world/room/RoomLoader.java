@@ -264,10 +264,4 @@ public final class RoomLoader {
         }
         return false;
     }
-
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/WorldWiring.java:rooms; test/java/linksawakening/app/MabeCollisionSweepTest.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
-    @Deprecated(forRemoval = true)
-    public RoomLoader(byte[] romData) {
-        this(romData == null ? null : Rom.unchecked(romData));
-    }
 }

@@ -11,42 +11,15 @@ public record RoomRenderSnapshot(
         RoomEntitySnapshot entities,
         InstrumentWarpVisual instrumentWarp,
         HeartPieceVisual heartPiece,
-        int linkGrassPalette) {
+        int linkGrassPalette)
+        implements RoomRenderView {
 
     /**
      * Read-only same-thread render data. A cached view is valid only until the next
      * simulation tick or room change; never retain it as a historical frame.
      * Indexed access exposes no writable backing arrays. Use renderSnapshot() for ownership.
      */
-    public interface View {
-        int tileCount();
-
-        int tileId(int index);
-
-        int attributeCount();
-
-        int tileAttribute(int index);
-
-        int paletteCount();
-
-        int colorCount(int palette);
-
-        int paletteColor(int palette, int color);
-
-        RoomEntitySnapshot entities();
-
-        int spritePaletteCount();
-
-        int spriteColorCount(int palette);
-
-        int spritePaletteColor(int palette, int color);
-
-        InstrumentWarpVisual instrumentWarp();
-
-        HeartPieceVisual heartPiece();
-
-        int linkGrassPalette();
-    }
+    public interface View extends RoomRenderView {}
 
     public RoomRenderSnapshot(
             int[] tiles,
@@ -76,6 +49,52 @@ public record RoomRenderSnapshot(
         tileAttrs = tileAttrs.clone();
         palettes = clonePalettes(palettes);
         entities = entities == null ? null : entities.ownedCopy();
+    }
+
+    public int tileCount() {
+        return tileIds.length;
+    }
+
+    public int tileId(int index) {
+        return tileIds[index];
+    }
+
+    public int attributeCount() {
+        return tileAttrs.length;
+    }
+
+    public int tileAttribute(int index) {
+        return tileAttrs[index];
+    }
+
+    public int paletteCount() {
+        return palettes.length;
+    }
+
+    public int colorCount(int palette) {
+        return palettes[palette].length;
+    }
+
+    public int paletteColor(int palette, int color) {
+        return palettes[palette][color];
+    }
+
+    public int spritePaletteCount() {
+        return entityPalettes().length;
+    }
+
+    public int spriteColorCount(int palette) {
+        return entityPalettes()[palette].length;
+    }
+
+    public int spritePaletteColor(int palette, int color) {
+        return entityPalettes()[palette][color];
+    }
+
+    private int[][] entityPalettes() {
+        return entities == null || entities.spriteSelection() == null
+                ? new int[0][]
+                : entities.spriteSelection().objectPalettes();
     }
 
     @Override

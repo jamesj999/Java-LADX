@@ -7,6 +7,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
+import linksawakening.render.ReusableGameFrameState;
 import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuAction;
 
@@ -82,6 +83,12 @@ public final class FileMenuScreen implements Screen {
     @Override
     public RenderScreen renderScreen() {
         return RenderScreen.FILE_MENU;
+    }
+
+    @Override
+    public ReusableGameFrameState renderState(ReusableGameFrameState state) {
+        var controller = dependencies.screens().fileMenuController;
+        return state.withFileMenuFrame(controller == null ? null : controller.snapshot());
     }
 
     @Override

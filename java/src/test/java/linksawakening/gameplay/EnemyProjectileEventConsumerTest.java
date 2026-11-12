@@ -26,16 +26,14 @@ final class EnemyProjectileEventConsumerTest {
         player.vitals().setHealth(16);
         var counters = new java.util.concurrent.atomic.AtomicReference<>(
                 new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
-        var event = new EntityProjectileEvent(
-                0,
-                0x0A,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0xFF,
-                8,
-                EntityProjectileEvent.SoundChannel.WAVE,
-                3,
-                false,
-                false);
+        var event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(8)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(3)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
         Runnable reset =
                 () -> counters.updateAndGet(linksawakening.world.entity.EnemyDropResolver::resetGuardianAcornCounter);
         EnemyProjectileEventConsumer.consume(List.of(event), player, null, new RecordingSoundSink(), reset);
@@ -52,16 +50,14 @@ final class EnemyProjectileEventConsumerTest {
         player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x0A,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0xFF,
-                0x08,
-                EntityProjectileEvent.SoundChannel.WAVE,
-                0x03,
-                false,
-                false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -163,16 +159,14 @@ final class EnemyProjectileEventConsumerTest {
         player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x0A,
-                EntityProjectileEvent.Kind.SHIELD_BLOCK,
-                0xFF,
-                0,
-                EntityProjectileEvent.SoundChannel.JINGLE,
-                0x16,
-                false,
-                false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.SHIELD_BLOCK)
+                .collisionValue(0xFF)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x16)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -186,18 +180,16 @@ final class EnemyProjectileEventConsumerTest {
         PlayerState player = new PlayerState();
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x2B,
-                EntityProjectileEvent.Kind.SHIELD_BLOCK,
-                0x02,
-                0,
-                EntityProjectileEvent.SoundChannel.JINGLE,
-                0x07,
-                false,
-                true,
-                0x40,
-                0x50);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x2B, EntityProjectileEvent.Kind.SHIELD_BLOCK)
+                .collisionValue(0x02)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x07)
+                .remove(false)
+                .swordPokeVfx(true)
+                .swordPokeX(0x40)
+                .swordPokeY(0x50)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -239,16 +231,14 @@ final class EnemyProjectileEventConsumerTest {
         player.vitals().setInvincibilityCounter(3);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x0C,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0,
-                0x08,
-                EntityProjectileEvent.SoundChannel.WAVE,
-                0x03,
-                true,
-                false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0C, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(true)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -264,16 +254,14 @@ final class EnemyProjectileEventConsumerTest {
         player.equipmentLevels().setRunningWithPegasusBoots(true);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-                0,
-                0x02,
-                EntityProjectileEvent.Kind.LINK_DAMAGE,
-                0,
-                0x08,
-                EntityProjectileEvent.SoundChannel.WAVE,
-                0x03,
-                false,
-                false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 

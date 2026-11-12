@@ -7,6 +7,8 @@ import linksawakening.world.transition.ScrollController;
 final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
     private DroppableRupeeSystem droppableRupeeSystem;
     private ScrollController scrollController;
+    private DroppableRupeeSystem paletteOwner;
+    private int[] palette;
 
     public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
         this.droppableRupeeSystem = droppableRupeeSystem;
@@ -22,13 +24,14 @@ final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (scrollController.isActive()) return;
         int tile = droppableRupeeSystem.spriteTileIndex();
-        int[] palette = droppableRupeeSystem.spritePalette();
-        var slots = droppableRupeeSystem.activeSlots();
-        for (int i = 0; i < slots.size(); i++) {
-            var slot = slots.get(i);
-            if (!slot.visible()) continue;
-            int x = slot.worldX() - 4 - scrollController.screenShakeHorizontal();
-            int y = slot.worldY() - (slot.posZSubpixels() >> 4) - 16;
+        if (paletteOwner != droppableRupeeSystem) {
+            palette = droppableRupeeSystem.spritePalette();
+            paletteOwner = droppableRupeeSystem;
+        }
+        for (int i = 0; i < droppableRupeeSystem.capacity(); i++) {
+            if (!droppableRupeeSystem.slotActive(i) || !droppableRupeeSystem.slotVisible(i)) continue;
+            int x = droppableRupeeSystem.slotX(i) - 4 - scrollController.screenShakeHorizontal();
+            int y = droppableRupeeSystem.slotY(i) - (droppableRupeeSystem.slotZSubpixels(i) >> 4) - 16;
             frame.append8x16(gpu.getTile(tile), gpu.getTile(tile + 1), x, y, false, false, palette, false);
         }
     }

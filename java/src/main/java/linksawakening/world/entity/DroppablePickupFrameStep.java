@@ -5,7 +5,6 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
-import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
 import linksawakening.world.entity.motion.*;
 
 /** Reused, reentrancy-safe scratch for DroppablePickupBehavior.advanceCommonDroppable; values are assigned in source order. */
@@ -73,13 +72,13 @@ final class DroppablePickupFrameStep {
                                 entity.type() == EntityRomConstants.ENTITY_HIDING_SLIME_KEY
                                         ? EntityRomConstants.HIDING_SLIME_KEY_HIDDEN_OPTIONS1
                                         : EntityRomConstants.DROPPABLE_HIDDEN_OPTIONS1);
-                return new CommonDroppableUpdate(withVariant(entity, -1), true);
+                return owner.commonUpdate(withVariant(entity, -1), true);
             }
             owner.revealCommonDroppable(entity, linkEntityX, linkEntityY);
             // $629A falls through to .remainInvisible ($629C): POP AF removes
             // the caller return address even on the reveal pass. Drawing,
             // collection and BouncingEntityPhysics start next frame.
-            return new CommonDroppableUpdate(withVariant(entity, -1), true);
+            return owner.commonUpdate(withVariant(entity, -1), true);
         }
 
         runtime.physicsTables()
@@ -95,8 +94,7 @@ final class DroppablePickupFrameStep {
                     .initialize(slot, runtime.physicsTables().readGroundInteractionSideScrolling());
             runtime.bossRewards().writeEnemyDropActive(slot, true);
         }
-        return new CommonDroppableUpdate(
-                withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
+        return owner.commonUpdate(withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
     }
 
     private boolean inUse;

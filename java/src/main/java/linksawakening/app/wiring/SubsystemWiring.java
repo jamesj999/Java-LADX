@@ -41,8 +41,7 @@ final class SubsystemWiring {
             Host host,
             boolean headless) {
         Rom rom = RomWiring.loadROM();
-        // Legacy world APIs still require the ROM backing array; keep this escape inside wiring.
-        transition.setRomData(rom.unsafeBytes());
+        transition.setRomData(rom);
         AppConfig config = headless
                 ? AppConfig.parse("{\"itemProfile\":\"NEW_GAME\",\"debugEnabled\":false}")
                 : AppConfig.loadFromResources();
@@ -55,7 +54,7 @@ final class SubsystemWiring {
         var tables = RomTables.load(rom);
         var romServices = new RomServices(rom, tables, config, gpu, graphics.backgrounds());
         var collision = new OverworldCollision(tables);
-        var bushes = new OverworldBushInteraction(rom.unsafeBytes(), tables);
+        var bushes = new OverworldBushInteraction(rom, tables);
         var playerGraphics = PlayerWiring.graphics(rom);
         var visual = WorldWiring.visuals(rom, random, graphics.framebuffer());
         var rooms = WorldWiring.rooms(romServices, visual, collision, random, navigator, audio.gameplaySoundSink());

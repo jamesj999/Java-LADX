@@ -8,8 +8,10 @@ public record LiftedEntityState(
         int carryState,
         int sourceRomDirection,
         int effectiveRomDirection) {
+    private static final LiftedEntityState NONE = new LiftedEntityState(-1, 0xFF, 0, 0, 0, 0, 0);
+
     public static LiftedEntityState none() {
-        return new LiftedEntityState(-1, 0xFF, 0, 0, 0, 0, 0);
+        return NONE;
     }
 
     public boolean active() {

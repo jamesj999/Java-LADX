@@ -57,6 +57,7 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
             return;
         }
         int shakeX = -scrollController.screenShakeHorizontal();
+        if (transientVfxSystem.activeCount() == 0) return;
         var slots = transientVfxSystem.activeSlots();
         for (int slotIndex = 0; slotIndex < slots.size(); slotIndex++) {
             var slot = slots.get(slotIndex);

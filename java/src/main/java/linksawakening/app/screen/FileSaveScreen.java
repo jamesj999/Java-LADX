@@ -6,6 +6,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
+import linksawakening.render.ReusableGameFrameState;
 import linksawakening.ui.FileSaveAction;
 
 /**
@@ -60,6 +61,12 @@ public final class FileSaveScreen implements Screen {
     @Override
     public RenderScreen renderScreen() {
         return RenderScreen.FILE_SAVE;
+    }
+
+    @Override
+    public ReusableGameFrameState renderState(ReusableGameFrameState state) {
+        var controller = dependencies.screens().fileSaveController;
+        return state.withFileMenuFrame(controller == null ? null : controller.snapshot());
     }
 
     @Override

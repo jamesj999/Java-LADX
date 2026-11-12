@@ -9,7 +9,7 @@ import linksawakening.ui.InventoryController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderView;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
@@ -21,7 +21,7 @@ public record GameFrameState(
         int[][] bgPalettes,
         int[][] objPalettes,
         CutsceneManager cutsceneManager,
-        RoomRenderSnapshot room,
+        RoomRenderView room,
         ScrollController scrollController,
         TransitionController transitionController,
         Link link,
@@ -130,7 +130,7 @@ public record GameFrameState(
     }
 
     public GameFrameState withRoom(
-            RoomRenderSnapshot room, ScrollController scrollController, TransitionController transitionController) {
+            RoomRenderView room, ScrollController scrollController, TransitionController transitionController) {
         return new GameFrameState(
                 screen(),
                 tilemap(),

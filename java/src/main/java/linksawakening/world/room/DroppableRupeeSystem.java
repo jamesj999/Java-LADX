@@ -185,7 +185,33 @@ public final class DroppableRupeeSystem {
         return count;
     }
 
+    /** Indexed same-thread presentation reads; the next tick may change any slot. */
+    public int capacity() {
+        return slots.length;
+    }
+
+    public boolean slotActive(int index) {
+        return slots[index] != null;
+    }
+
+    public boolean slotVisible(int index) {
+        return isVisible(slots[index].slowCountdown);
+    }
+
+    public int slotX(int index) {
+        return slots[index].worldX;
+    }
+
+    public int slotY(int index) {
+        return slots[index].worldY;
+    }
+
+    public int slotZSubpixels(int index) {
+        return slots[index].posZSubpixels;
+    }
+
     public List<Slot> activeSlots() {
+        if (activeCount() == 0) return List.of();
         List<Slot> active = new ArrayList<>(slots.length);
         for (MutableSlot slot : slots) {
             if (slot != null) {

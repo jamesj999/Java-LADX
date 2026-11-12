@@ -2,7 +2,7 @@ package linksawakening.world.entity;
 /** Scratch values for exactly one slot's ordered combat pass. */
 final class EntityCombatSlot {
     final EntityCombatResolverServices runtime;
-    EnemyCombatFrame inputs;
+    EnemyCombatInputs inputs;
     java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
     linksawakening.world.entity.RoomEntity entity;
     boolean booBuddyAllowsLinkCollision;
@@ -39,7 +39,7 @@ final class EntityCombatSlot {
     }
 
     void reset(
-            EnemyCombatFrame inputs,
+            EnemyCombatInputs inputs,
             java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events,
             RoomEntity entity) {
         this.inputs = inputs;
