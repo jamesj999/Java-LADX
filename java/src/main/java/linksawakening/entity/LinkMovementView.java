@@ -2,7 +2,8 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
-/** Temporary legacy Link API delegates. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkMovementView extends LinkStateView {
 
     /** @deprecated Use animation().direction instead. */

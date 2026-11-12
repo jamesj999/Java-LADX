@@ -4,7 +4,8 @@ import static linksawakening.entity.Link.*;
 
 import java.util.function.BooleanSupplier;
 
-/** Temporary legacy Link API delegates. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkActionView extends LinkMovementView {
 
     /** @deprecated Use position().romEntityY instead. */

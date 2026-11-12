@@ -1,3 +1,4 @@
 package linksawakening.state;
-/** Temporary legacy player API root. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class PlayerStateComponents implements LinkPlayerState {}

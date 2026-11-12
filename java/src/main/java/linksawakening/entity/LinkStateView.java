@@ -2,8 +2,11 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
-/** Temporary legacy Link API delegates. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkStateView {
+    /** @deprecated Implemented directly by the aggregate; use its composed API. */
+    @Deprecated(forRemoval = true)
     protected abstract LinkRoles legacyRoles();
 
     /** @deprecated Use sideView().setSideScrolling instead. */

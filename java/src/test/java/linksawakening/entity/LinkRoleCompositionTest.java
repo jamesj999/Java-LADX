@@ -28,4 +28,17 @@ class LinkRoleCompositionTest {
             assertSame(method.invoke(player), method.invoke(player));
         }
     }
+
+    @Test
+    void legacyHierarchyContainsOnlyDeprecatedMethodContracts() {
+        for (Class<?> aggregate : new Class<?>[] {Link.class, PlayerState.class}) {
+            for (Class<?> layer = aggregate.getSuperclass(); layer != Object.class; layer = layer.getSuperclass()) {
+                assertEquals(0, layer.getDeclaredFields().length, layer.getName());
+                for (var method : layer.getDeclaredMethods()) {
+                    if (!method.isSynthetic())
+                        assertTrue(method.isAnnotationPresent(Deprecated.class), method.toString());
+                }
+            }
+        }
+    }
 }

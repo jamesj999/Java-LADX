@@ -2,7 +2,8 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
-/** Temporary legacy Link API delegates. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkRoomView extends LinkActionView {
 
     /** @deprecated Use motion().setRomPhysicsModifier instead. */
