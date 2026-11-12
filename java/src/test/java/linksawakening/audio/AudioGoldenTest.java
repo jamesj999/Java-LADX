@@ -1,5 +1,6 @@
 package linksawakening.audio;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.security.MessageDigest;
@@ -37,7 +38,7 @@ final class AudioGoldenTest {
             var writes = MessageDigest.getInstance("SHA-256");
             var pcm = MessageDigest.getInstance("SHA-256");
             var apu = new GameBoyApu(48000);
-            apu.setRegisterObserver((register, value) -> {
+            apu.setPrimitiveRegisterObserver((register, value) -> {
                 writes.update((byte) (int) register);
                 writes.update((byte) (int) value);
             });
@@ -50,7 +51,7 @@ final class AudioGoldenTest {
                 writes.update((byte) frame);
                 music.tick60Hz();
                 sfx.tick60Hz();
-                for (short sample : apu.render(800)) {
+                for (short sample : renderPcm(apu, 800)) {
                     pcm.update((byte) sample);
                     pcm.update((byte) (sample >>> 8));
                 }

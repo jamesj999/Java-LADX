@@ -1,5 +1,6 @@
 package linksawakening.audio.apu;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,10 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(duty, 62);
         apu.writeRegister(envelope, 0xF0);
         apu.writeRegister(control, 0xC0);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertTrue(apu.isChannelActive(channel));
         apu.writeRegister(control, 0xC0);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertFalse(apu.isChannelActive(channel));
     }
 
@@ -43,10 +44,10 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR30, 0x80);
         apu.writeRegister(GameBoyApu.NR31, 254);
         apu.writeRegister(GameBoyApu.NR34, 0xC0);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertTrue(apu.isChannelActive(3));
         apu.writeRegister(GameBoyApu.NR31, 255);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertFalse(apu.isChannelActive(3));
     }
 
@@ -74,16 +75,16 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR42, 0xF0);
         apu.writeRegister(lengthRegister, channel == 3 ? 255 : 63);
         apu.writeRegister(control, 0x80);
-        apu.render(65_536);
+        renderPcm(apu, 65_536);
         assertTrue(apu.isChannelActive(channel));
         apu.writeRegister(control, 0x40);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertFalse(apu.isChannelActive(channel));
         apu.writeRegister(control, 0xC0);
         int fullLength = channel == 3 ? 256 : 64;
-        apu.render((fullLength - 1) * 256);
+        renderPcm(apu, (fullLength - 1) * 256);
         assertTrue(apu.isChannelActive(channel));
-        apu.render(256);
+        renderPcm(apu, 256);
         assertFalse(apu.isChannelActive(channel));
     }
 
@@ -94,7 +95,7 @@ final class ApuHardwareRegressionTest {
         // divider 1, shift 2: 65536 LFSR clocks/second, one per sample.
         apu.writeRegister(GameBoyApu.NR43, 0x21);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
-        short[] pcm = apu.render(40);
+        short[] pcm = renderPcm(apu, 40);
         int lfsr = 0x7FFF;
         double capacitor = 0;
         double charge = Math.pow(0.998943, 64);
@@ -115,7 +116,7 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR42, 0xF0);
         apu.writeRegister(GameBoyApu.NR43, shift << 4);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
-        short[] pcm = apu.render(65_536);
+        short[] pcm = renderPcm(apu, 65_536);
         assertEquals(4096, pcm[0]);
         assertEquals(0, pcm[pcm.length - 2], "a stopped LFSR is DC removed by the capacitor");
     }
@@ -126,11 +127,11 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR41, 60);
         apu.writeRegister(GameBoyApu.NR42, 0xF0);
         apu.writeRegister(GameBoyApu.NR44, 0xC0);
-        apu.render(256);
+        renderPcm(apu, 256);
         apu.writeRegister(GameBoyApu.NR41, 62);
-        apu.render(256);
+        renderPcm(apu, 256);
         apu.writeRegister(GameBoyApu.NR44, 0xC0);
-        apu.render(256);
+        renderPcm(apu, 256);
         assertFalse(apu.isChannelActive(4));
     }
 
@@ -173,7 +174,7 @@ final class ApuHardwareRegressionTest {
         apu.writeRegister(GameBoyApu.NR50, 0);
         apu.writeRegister(GameBoyApu.NR12, 0xF0);
         apu.writeRegister(GameBoyApu.NR14, 0x80);
-        short[] pcm = apu.render(1);
+        short[] pcm = renderPcm(apu, 1);
         assertEquals(512, Math.abs(pcm[0]));
         assertEquals(512, Math.abs(pcm[1]));
     }

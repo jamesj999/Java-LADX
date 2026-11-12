@@ -1,5 +1,6 @@
 package linksawakening.audio.apu;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -12,13 +13,13 @@ class ApuOutputContinuityTest {
     void twoSecondsOfFourChannelPcmIsIdenticalAcrossArbitraryBufferBoundaries(int rate) {
         GameBoyApu whole = mixed(rate);
         GameBoyApu split = mixed(rate);
-        short[] expected = whole.render(rate * 2);
+        short[] expected = renderPcm(whole, rate * 2);
         short[] actual = new short[expected.length];
         int[] sizes = {1, 799, 1024, 735, 87};
         int offset = 0;
         for (int i = 0; offset < actual.length; i++) {
             int frames = Math.min(sizes[i % sizes.length], (actual.length - offset) / 2);
-            short[] chunk = split.render(frames);
+            short[] chunk = renderPcm(split, frames);
             System.arraycopy(chunk, 0, actual, offset, chunk.length);
             offset += chunk.length;
         }
@@ -38,13 +39,13 @@ class ApuOutputContinuityTest {
         apu.writeRegister(GameBoyApu.NR30, 0x80);
         apu.writeRegister(GameBoyApu.NR32, 0); // Digital zero, DAC still enabled.
         apu.writeRegister(GameBoyApu.NR34, 0x80);
-        short[] pcm = apu.render(800);
+        short[] pcm = renderPcm(apu, 800);
         double charge = Math.pow(0.998943, 4194304.0 / 48000);
         for (int i = 0; i < 800; i++) {
             assertEquals((short) Math.round(4096 * Math.pow(charge, i)), pcm[i * 2]);
         }
         apu.writeRegister(GameBoyApu.NR30, 0);
-        assertArrayEquals(new short[1600], apu.render(800), "all DACs off disconnects output");
+        assertArrayEquals(new short[1600], renderPcm(apu, 800), "all DACs off disconnects output");
     }
 
     @Test

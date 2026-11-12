@@ -1,5 +1,7 @@
 package linksawakening.audio;
 
+import static linksawakening.audio.TestPcm.renderPcm;
+
 import java.io.*;
 import javax.sound.sampled.*;
 import linksawakening.audio.apu.GameBoyApu;
@@ -19,7 +21,7 @@ public final class IsolatedNoiseCapture {
             if (frame == 8) apu.writeRegister(GameBoyApu.NR42, 0x30);
             if (frame == 16) apu.writeRegister(GameBoyApu.NR44, 0x80);
             if (frame == 20) apu.writeRegister(GameBoyApu.NR42, 0);
-            for (short sample : apu.render(800)) {
+            for (short sample : renderPcm(apu, 800)) {
                 bytes.write(sample & 255);
                 bytes.write((sample >>> 8) & 255);
             }

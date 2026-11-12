@@ -34,9 +34,9 @@ import linksawakening.audio.sfx.SoundEffectCatalog;
 public final class AudioBrowserFrame extends JFrame {
     private static final int TIMER_DELAY_MS = 30;
 
-    final BrowserModel browserModel;
+    final MusicBrowserModel browserModel;
     final SoundEffectBrowserModel soundEffectBrowserModel;
-    final TransportState transportState = new TransportState();
+    final BrowserTransportState transportState = new BrowserTransportState();
     final OpenAlMusicPlayer player;
     final MusicDriver driver;
     final DefaultListModel<MusicTrack> trackListModel = new DefaultListModel<>();
@@ -65,7 +65,7 @@ public final class AudioBrowserFrame extends JFrame {
         Objects.requireNonNull(catalog, "catalog");
         this.player = Objects.requireNonNull(player, "player");
         this.driver = Objects.requireNonNull(driver, "driver");
-        browserModel = new BrowserModel(catalog.tracks());
+        browserModel = new MusicBrowserModel(catalog.tracks());
         soundEffectBrowserModel = new SoundEffectBrowserModel(
                 Objects.requireNonNull(soundEffectCatalog, "soundEffectCatalog").effects());
         updateTimer = new Timer(TIMER_DELAY_MS, event -> updatePlayerState());
@@ -323,26 +323,13 @@ public final class AudioBrowserFrame extends JFrame {
         }
     }
 
-    /** Compatibility name for the browser transport model. */
-    public static final class TransportState extends BrowserTransportState {}
-    /** Compatibility name for the track search model. */
-    public static final class BrowserModel extends MusicBrowserModel {
-        public BrowserModel(List<MusicTrack> tracks) {
-            super(tracks);
-        }
-    }
-
-    /** Availability and labels presented by the browser transport. */
-    public record TransportControls(
-            boolean playEnabled, boolean pauseResumeEnabled, boolean stopEnabled, String pauseResumeText) {}
-
     private static final class TrackCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
                 JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof MusicTrack track) {
-                setText(BrowserModel.hexByte(track.id()) + " " + track.name());
+                setText(MusicBrowserModel.hexByte(track.id()) + " " + track.name());
             }
             return this;
         }

@@ -34,7 +34,7 @@ public final class IntroAudioCapture {
             session.initializeHeadlessIntro();
             Object audio = field(session, "musicPlayer");
             ((GameBoyApu) field(audio, "apu"))
-                    .setRegisterObserver((register, value) ->
+                    .setPrimitiveRegisterObserver((register, value) ->
                             trace.printf("{\"frame\":%d,\"register\":%d,\"value\":%d}%n", frame[0], register, value));
             // Decorate the already installed production sink rather than replacing audio routing.
             CutsceneManager cutscene = (CutsceneManager) field(session, "cutsceneManager");

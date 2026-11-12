@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.audio.apu.GameBoyApu;
@@ -38,7 +39,7 @@ final class FrameAudioMixerTest {
             int rendered = 0;
             while (rendered < 1024) {
                 int chunk = Math.min(1024 - rendered, until);
-                short[] pcm = reference.render(chunk);
+                short[] pcm = renderPcm(reference, chunk);
                 System.arraycopy(pcm, 0, expected, rendered * 2, pcm.length);
                 rendered += chunk;
                 until -= chunk;

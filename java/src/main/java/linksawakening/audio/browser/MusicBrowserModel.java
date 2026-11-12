@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Objects;
 import linksawakening.audio.music.MusicTrack;
 
-class MusicBrowserModel {
+final class MusicBrowserModel {
     private final List<MusicTrack> tracks;
 
     public MusicBrowserModel(List<MusicTrack> tracks) {

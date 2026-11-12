@@ -58,7 +58,9 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
             apu.renderInto(pcm, 0, frames);
             output.playFrame(pcm, sampleRate);
         } else {
-            output.playFrame(apu.render(frames), sampleRate);
+            short[] pcm = new short[frames * 2];
+            apu.renderInto(pcm, 0, frames);
+            output.playFrame(pcm, sampleRate);
         }
     }
 

@@ -1,5 +1,7 @@
 package linksawakening.audio.sfx;
 
+import static linksawakening.audio.TestPcm.renderPcm;
+
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
@@ -21,7 +23,7 @@ public final class SfxRegisterTrace {
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
         apu.writeRegister(GameBoyApu.NR51, 0xFF);
-        apu.setRegisterObserver((register, value) -> writes.add(new Write(frame, register, value)));
+        apu.setPrimitiveRegisterObserver((register, value) -> writes.add(new Write(frame, register, value)));
     }
 
     void start(SoundEffectNamespace namespace, int id) {
@@ -29,7 +31,7 @@ public final class SfxRegisterTrace {
     }
 
     short[] advance() {
-        short[] pcm = apu.render(800);
+        short[] pcm = renderPcm(apu, 800);
         frame++;
         player.tick60Hz();
         return pcm;

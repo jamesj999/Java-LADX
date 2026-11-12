@@ -1,5 +1,6 @@
 package linksawakening.audio.sfx;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -230,13 +231,13 @@ final class SoundEffectPlayerTest {
         assertTrue(player.ownsChannel(1));
         assertTrue(player.ownsChannel(4));
         for (int i = 0; i < 600 && player.isPlaying(); i++) {
-            apu.render(800);
+            renderPcm(apu, 800);
             player.tick60Hz();
         }
         assertFalse(player.isPlaying());
         for (int channel = 1; channel <= 4; channel++) assertFalse(player.ownsChannel(channel));
         assertFalse(apu.isChannelActive(3));
-        short[] tail = apu.render(1600);
+        short[] tail = renderPcm(apu, 1600);
         for (short sample : tail) assertEquals(0, sample);
     }
 
@@ -247,7 +248,7 @@ final class SoundEffectPlayerTest {
         player.play(player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow());
         assertTrue(player.ownsChannel(3));
         for (int i = 0; i < 600 && player.isPlaying(); i++) {
-            apu.render(800);
+            renderPcm(apu, 800);
             player.tick60Hz();
         }
         assertFalse(player.isPlaying());
@@ -268,8 +269,8 @@ final class SoundEffectPlayerTest {
         assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
         assertEquals(0x08, apu.readRegister(GameBoyApu.NR22));
         assertTrue(player.takeWaveRestoreRequest());
-        apu.render(800); // Let the CGB output capacitors settle after the stop writes.
-        for (short sample : apu.render(800)) assertEquals(0, sample);
+        renderPcm(apu, 800); // Let the CGB output capacitors settle after the stop writes.
+        for (short sample : renderPcm(apu, 800)) assertEquals(0, sample);
     }
 
     private static void assertWavePattern63Cc(GameBoyApu apu) {

@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -266,7 +267,7 @@ final class MusicDriverTest {
         assertTrue(apu.readRegister(GameBoyApu.NR42) != 0);
         assertTrue(apu.readRegister(GameBoyApu.NR43) != 0);
         assertTrue((apu.readRegister(GameBoyApu.NR44) & 0x80) != 0);
-        assertTrue(hasNonZeroSample(apu.render(512)));
+        assertTrue(hasNonZeroSample(renderPcm(apu, 512)));
     }
 
     @Test
@@ -360,8 +361,8 @@ final class MusicDriverTest {
         for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
         org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
         assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
-        apu.render(800); // Hardware keeps the DAC enabled; capacitor transient settles.
-        org.junit.jupiter.api.Assertions.assertArrayEquals(new short[1600], apu.render(800));
+        renderPcm(apu, 800); // Hardware keeps the DAC enabled; capacitor transient settles.
+        org.junit.jupiter.api.Assertions.assertArrayEquals(new short[1600], renderPcm(apu, 800));
     }
 
     @Test
@@ -373,7 +374,7 @@ final class MusicDriverTest {
         driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
         driver.setSoundEffectState(channel -> channel == 1, () -> false);
         java.util.List<Integer> writes = new java.util.ArrayList<>();
-        apu.setRegisterObserver((register, value) -> writes.add(register));
+        apu.setPrimitiveRegisterObserver((register, value) -> writes.add(register));
         for (int i = 0; i < 32 && driver.isPlaying(); i++) driver.tick60Hz();
         org.junit.jupiter.api.Assertions.assertFalse(driver.isPlaying());
         assertTrue(writes.isEmpty(), writes.toString());

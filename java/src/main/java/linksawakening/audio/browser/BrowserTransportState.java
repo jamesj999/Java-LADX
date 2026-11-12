@@ -1,8 +1,6 @@
 package linksawakening.audio.browser;
 
-import linksawakening.audio.browser.AudioBrowserFrame.TransportControls;
-
-class BrowserTransportState {
+final class BrowserTransportState {
     private boolean playbackActive;
     private boolean paused;
 
