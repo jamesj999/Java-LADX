@@ -2,8 +2,7 @@ package linksawakening.app;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.sun.management.ThreadMXBean;
-import java.lang.management.ManagementFactory;
+import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
@@ -60,14 +59,8 @@ final class SessionAllocationTest {
     }
 
     private static long measure(GameSession session) {
-        var bean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
-        assertTrue(bean.isThreadAllocatedMemorySupported());
-        bean.setThreadAllocatedMemoryEnabled(true);
-        for (int i = 0; i < 600; i++) session.stepWithoutRender();
-        long thread = Thread.currentThread().threadId();
-        long before = bean.getThreadAllocatedBytes(thread);
-        for (int i = 0; i < 600; i++) session.stepWithoutRender();
-        long bytesPerFrame = (bean.getThreadAllocatedBytes(thread) - before) / 600;
+        // Five 120-frame windows cover the same 600 frames a single window would.
+        long bytesPerFrame = (long) AllocationProbe.bytesPerIteration(600, 120, session::stepWithoutRender);
         assertTrue(bytesPerFrame >= 0);
         return bytesPerFrame;
     }

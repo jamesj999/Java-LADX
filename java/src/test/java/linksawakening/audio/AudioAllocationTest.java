@@ -2,11 +2,10 @@ package linksawakening.audio;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sun.management.ThreadMXBean;
-import java.lang.management.ManagementFactory;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
+import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
 
 final class AudioAllocationTest {
@@ -26,19 +25,10 @@ final class AudioAllocationTest {
         var apu = new GameBoyApu(48000);
         var driver = new MusicDriver(rom, apu);
         driver.start(new MusicTrack(1, "allocation", 0x1b, 0x4077, 0x5000, base + 0x5000));
-        for (int i = 0; i < 5000; i++) {
+        double bytes = AllocationProbe.bytesPerIteration(5000, 1000, () -> {
             driver.tick60Hz();
             apu.renderInto(samples, 0, 800);
-        }
-        ThreadMXBean bean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
-        bean.setThreadAllocatedMemoryEnabled(true);
-        long thread = Thread.currentThread().threadId();
-        long before = bean.getThreadAllocatedBytes(thread);
-        for (int i = 0; i < 5000; i++) {
-            driver.tick60Hz();
-            apu.renderInto(samples, 0, 800);
-        }
-        double bytes = (bean.getThreadAllocatedBytes(thread) - before) / 5000.0;
+        });
         System.out.println("Audio allocation bytes/tick=" + bytes);
         assertTrue(bytes < 256);
     }

@@ -2,12 +2,11 @@ package linksawakening.render;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sun.management.ThreadMXBean;
-import java.lang.management.ManagementFactory;
 import java.util.List;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
+import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
 
 /** Measures steady-state indexed scene submission and composition without ROM data. */
@@ -26,16 +25,10 @@ final class ComposeAllocationTest {
         };
         FrameScene scene = FrameScene.of(List.of(layer));
         byte[] output = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        ThreadMXBean bean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
-        bean.setThreadAllocatedMemoryEnabled(true);
         var observer = TestDrawObservers.CURRENT.get();
         TestDrawObservers.CURRENT.remove();
         try {
-            for (int i = 0; i < 1000; i++) scene.drawTo(output, gpu);
-            long thread = Thread.currentThread().threadId();
-            long before = bean.getThreadAllocatedBytes(thread);
-            for (int i = 0; i < 200; i++) scene.drawTo(output, gpu);
-            long bytes = (bean.getThreadAllocatedBytes(thread) - before) / 200;
+            long bytes = (long) AllocationProbe.bytesPerIteration(1000, 200, () -> scene.drawTo(output, gpu));
             System.out.println("Compose allocation: " + bytes + " bytes/frame");
             assertTrue(bytes < 4096, "Expected <4096 bytes/frame, measured " + bytes);
         } finally {
