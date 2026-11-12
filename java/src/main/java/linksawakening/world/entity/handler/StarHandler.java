@@ -11,7 +11,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 /** ROM handler stages for Star. */
 final class StarHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_STAR, EntityTickStage.PHASE_3_STAR, StarHandler::phase3Star);
+        registry.registerTick(ENTITY_STAR, EntityTickStage.PHASE_3_BEFORE_LASER, 9, StarHandler::phase3Star);
     }
 
     private static boolean phase3Star(EntityFrameExecution state) {

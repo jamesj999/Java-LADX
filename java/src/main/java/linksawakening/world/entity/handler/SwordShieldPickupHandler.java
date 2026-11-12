@@ -13,7 +13,8 @@ final class SwordShieldPickupHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_SWORD_SHIELD_PICKUP,
-                EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                24,
                 SwordShieldPickupHandler::phase1SwordShieldPickup);
     }
 

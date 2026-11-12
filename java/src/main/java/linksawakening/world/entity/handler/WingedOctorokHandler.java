@@ -14,7 +14,8 @@ final class WingedOctorokHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_WINGED_OCTOROK,
-                EntityTickStage.PHASE_3_WINGED_OCTOROK,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                12,
                 WingedOctorokHandler::phase3WingedOctorok);
     }
 

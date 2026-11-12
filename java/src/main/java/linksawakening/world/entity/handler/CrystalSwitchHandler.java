@@ -13,7 +13,8 @@ final class CrystalSwitchHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_CRYSTAL_SWITCH,
-                EntityTickStage.PHASE_2_CRYSTAL_SWITCH,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                4,
                 CrystalSwitchHandler::phase2CrystalSwitch);
     }
 

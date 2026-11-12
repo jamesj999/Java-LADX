@@ -13,8 +13,8 @@ import linksawakening.world.entity.motion.DogMotion;
 /** ROM handler stages for Dog. */
 final class DogHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_1_DOG, DogHandler::phase1Dog);
-        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_4_DOG, DogHandler::phase4Dog);
+        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 2, DogHandler::phase1Dog);
+        registry.registerTick(ENTITY_DOG, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 14, DogHandler::phase4Dog);
     }
 
     private static boolean phase1Dog(EntityFrameExecution state) {

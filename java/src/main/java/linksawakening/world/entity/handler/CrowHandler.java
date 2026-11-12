@@ -11,8 +11,8 @@ import linksawakening.world.entity.motion.CrowMotion;
 /** ROM handler stages for Crow. */
 final class CrowHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_1_CROW, CrowHandler::phase1Crow);
-        registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_3_CROW, CrowHandler::phase3Crow);
+        registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_1_LEAF_PRODUCER, 0, CrowHandler::phase1Crow);
+        registry.registerTick(ENTITY_CROW, EntityTickStage.PHASE_3_AFTER_LASER, 4, CrowHandler::phase3Crow);
     }
 
     private static boolean phase1Crow(EntityFrameExecution state) {

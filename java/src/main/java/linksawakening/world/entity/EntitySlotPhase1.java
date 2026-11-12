@@ -29,12 +29,12 @@ final class EntitySlotPhase1 {
         if (!state.entity.loaded()) {
             return false;
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE_0X35, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_ENTRY, state)) return false;
         if (state.runtime.entityState.physicsTables.readEnemyProjectileSpawnedThisFrame(state.entity.slot())
                 || state.runtime.entityState.physicsTables.readDynamicEntitySpawnedThisFrame(state.entity.slot())) {
             return false;
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
         state.kanaletLeafProducer = state.entity.type() == EntityRomConstants.ENTITY_CROW
                         && !state.runtime.indoorRoom
                         && state.runtime.entityState.roomVariables.readEntityRoomId() == 0x58
@@ -42,7 +42,7 @@ final class EntitySlotPhase1 {
                 || state.entity.type() == EntityRomConstants.ENTITY_KNIGHT
                         && state.runtime.entityState.roomVariables.readEntityMapId() >= 0x14;
         if (state.kanaletLeafProducer) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_CROW, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_LEAF_PRODUCER, state)) return false;
             if ((state.runtime.entityState.roomVariables.readEntityRoomStatus() & 0x10) != 0) {
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
@@ -54,8 +54,7 @@ final class EntitySlotPhase1 {
                 state.runtime.slots[state.index] = state.entity;
             }
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TARIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MARIN_INDOOR, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, state)) return false;
         state.originalEntity = state.entity;
         state.initialStatus = state.entity.status();
         state.wasInitializing = state.initialStatus == EntityStatus.INIT;
@@ -115,11 +114,9 @@ final class EntitySlotPhase1 {
                 && !state.freezeWitchTimers
                 && !state.freezeMoblinKingTimers) {
             state.runtime.lifecycle.decrementEnemyStatusCountdowns(state.entity.slot());
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_GENIE, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_GENIE_2, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, state)) return false;
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOO_BUDDY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOW_WOW, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, state)) return false;
         if (state.entity.sourceLoadOrder() == -1
                 && state.runtime.enemyInspection.isDisabledFollower(state.entity.type())) {
             state.runtime.clearEntity(state.entity.slot());
@@ -129,10 +126,10 @@ final class EntitySlotPhase1 {
         // label_394D -> $14:54AC runs before these bosses' interaction
         // guards, including during their death handlers. It directly
         // nudges Link into the arena, then blocks his next input frame.
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MOLDORM_2, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOSS_DOORWAY, state)) return false;
 
         // Moldorm calls BossIntro before dispatching active/death states ($04:56C0).
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MOLDORM, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOSS_INTRO, state)) return false;
 
         state.status = state.entity.status();
         state.preserveGhiniPresentation = false;
@@ -186,39 +183,14 @@ final class EntitySlotPhase1 {
         if (state.status == EntityStatus.ACTIVE) {
             state.runtime.pickups.decrementEnemyDropCountdowns(state.entity);
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SIDE_VIEW_POT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SIDE_VIEW_POT_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_DOG, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_HOOKSHOT_BRIDGE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_HOOKSHOT_CHAIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOOMERANG, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SWORD_BEAM, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MAGIC_POWDER_SPRINKLE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MUSICAL_NOTE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOMB, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_ARROW, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_LIFTABLE_ROCK, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_HEART_CONTAINER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_MADAM_MEOWMEOW, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_RICHARD, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE_0X42, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BOW_WOW_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_KID_72, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE_0X35_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE_0X39, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && state.runtime.rewards.readPowerUpPickupCountdown(state.entity.slot()) != 0) {
             state.runtime.rewards.advancePowerUpPickup(
                     state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
             return false;
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SLEEPY_TOADSTOOL, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_OWL_EVENT, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP, state)) return false;
         return true;
     }
 }

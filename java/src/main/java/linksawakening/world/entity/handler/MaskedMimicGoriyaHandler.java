@@ -14,7 +14,8 @@ final class MaskedMimicGoriyaHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_MASKED_MIMIC_GORIYA,
-                EntityTickStage.PHASE_2_MASKED_MIMIC_GORIYA,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                3,
                 MaskedMimicGoriyaHandler::phase2MaskedMimicGoriya);
     }
 

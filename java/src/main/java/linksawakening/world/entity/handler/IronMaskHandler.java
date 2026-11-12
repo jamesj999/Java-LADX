@@ -11,7 +11,8 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for IronMask. */
 final class IronMaskHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_IRON_MASK, EntityTickStage.PHASE_3_IRON_MASK, IronMaskHandler::phase3IronMask);
+        registry.registerTick(
+                ENTITY_IRON_MASK, EntityTickStage.PHASE_3_BEFORE_LASER, 2, IronMaskHandler::phase3IronMask);
     }
 
     private static boolean phase3IronMask(EntityFrameExecution state) {

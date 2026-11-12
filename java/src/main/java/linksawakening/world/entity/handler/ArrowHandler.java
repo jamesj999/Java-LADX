@@ -13,7 +13,8 @@ import linksawakening.world.entity.motion.PlayerArrowMotion;
 /** ROM handler stages for Arrow. */
 final class ArrowHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_ARROW, EntityTickStage.PHASE_1_ARROW, ArrowHandler::phase1Arrow);
+        registry.registerTick(
+                ENTITY_ARROW, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 12, ArrowHandler::phase1Arrow);
     }
 
     private static boolean phase1Arrow(EntityFrameExecution state) {

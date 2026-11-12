@@ -12,7 +12,10 @@ import linksawakening.world.entity.RoomEntity;
 final class MusicalNoteHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_MUSICAL_NOTE, EntityTickStage.PHASE_1_MUSICAL_NOTE, MusicalNoteHandler::phase1MusicalNote);
+                ENTITY_MUSICAL_NOTE,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                10,
+                MusicalNoteHandler::phase1MusicalNote);
     }
 
     private static boolean phase1MusicalNote(EntityFrameExecution state) {

@@ -11,7 +11,10 @@ import linksawakening.world.entity.EntityTickStage;
 final class LiftableRockHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_LIFTABLE_ROCK, EntityTickStage.PHASE_1_LIFTABLE_ROCK, LiftableRockHandler::phase1LiftableRock);
+                ENTITY_LIFTABLE_ROCK,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                13,
+                LiftableRockHandler::phase1LiftableRock);
     }
 
     private static boolean phase1LiftableRock(EntityFrameExecution state) {

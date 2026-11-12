@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.ZoraMotion;
 /** ROM handler stages for Zora. */
 final class ZoraHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_ZORA, EntityTickStage.PHASE_4_ZORA, ZoraHandler::phase4Zora);
+        registry.registerTick(ENTITY_ZORA, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 10, ZoraHandler::phase4Zora);
     }
 
     private static boolean phase4Zora(EntityFrameExecution state) {

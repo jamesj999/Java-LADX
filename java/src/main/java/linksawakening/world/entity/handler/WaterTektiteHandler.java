@@ -11,7 +11,7 @@ import linksawakening.world.entity.EntityTickStage;
 final class WaterTektiteHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_WATER_TEKTITE, EntityTickStage.PHASE_3_WATER_TEKTITE, WaterTektiteHandler::phase3WaterTektite);
+                ENTITY_WATER_TEKTITE, EntityTickStage.PHASE_3_AFTER_LASER, 2, WaterTektiteHandler::phase3WaterTektite);
     }
 
     private static boolean phase3WaterTektite(EntityFrameExecution state) {

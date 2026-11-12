@@ -11,9 +11,10 @@ import linksawakening.world.entity.motion.BombMotion;
 /** ROM handler stages for Bomb. */
 final class BombHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_1_BOMB, BombHandler::advanceActiveBomb);
-        registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_2_BOMB, BombHandler::advanceBombPresentation);
-        registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_2_BOMB_2, BombHandler::advanceStunnedBomb);
+        registry.registerTick(
+                ENTITY_BOMB, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 11, BombHandler::advanceActiveBomb);
+        registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_2_THROWN, 0, BombHandler::advanceBombPresentation);
+        registry.registerTick(ENTITY_BOMB, EntityTickStage.PHASE_2_STUNNED, 0, BombHandler::advanceStunnedBomb);
     }
 
     private static boolean advanceActiveBomb(EntityFrameExecution state) {

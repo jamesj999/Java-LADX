@@ -19,7 +19,7 @@ import linksawakening.world.entity.motion.HinoxMotion;
 /** ROM handler stages for Hinox. */
 final class HinoxHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_HINOX, EntityTickStage.PHASE_4_HINOX, HinoxHandler::phase4Hinox);
+        registry.registerTick(ENTITY_HINOX, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 2, HinoxHandler::phase4Hinox);
     }
 
     private static boolean phase4Hinox(EntityFrameExecution state) {

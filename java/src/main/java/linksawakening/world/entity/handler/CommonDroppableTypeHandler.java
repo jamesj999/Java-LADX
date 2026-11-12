@@ -15,59 +15,73 @@ final class CommonDroppableTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_DROPPABLE_HEART,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_RUPEE,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_FAIRY,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_ARROWS,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_BOMBS,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_MAGIC_POWDER,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                2,
                 CommonDroppableTypeHandler::phase2CommonDroppableType);
         registry.registerTick(
                 ENTITY_DROPPABLE_HEART,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_DROPPABLE_RUPEE,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_DROPPABLE_FAIRY,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_DROPPABLE_ARROWS,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_DROPPABLE_BOMBS,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_DROPPABLE_MAGIC_POWDER,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
-                EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                4,
                 CommonDroppableTypeHandler::phase2CommonDroppableType2);
     }
 

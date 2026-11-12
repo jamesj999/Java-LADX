@@ -13,7 +13,8 @@ import linksawakening.world.entity.motion.HidingZolMotion;
 /** ROM handler stages for HidingZol. */
 final class HidingZolHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_HIDING_ZOL, EntityTickStage.PHASE_3_HIDING_ZOL, HidingZolHandler::phase3HidingZol);
+        registry.registerTick(
+                ENTITY_HIDING_ZOL, EntityTickStage.PHASE_3_BEFORE_LASER, 6, HidingZolHandler::phase3HidingZol);
     }
 
     private static boolean phase3HidingZol(EntityFrameExecution state) {

@@ -13,7 +13,7 @@ import linksawakening.world.entity.motion.CuccoMotion;
 /** ROM handler stages for Cucco. */
 final class CuccoHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_CUCCO, EntityTickStage.PHASE_3_CUCCO, CuccoHandler::phase3Cucco);
+        registry.registerTick(ENTITY_CUCCO, EntityTickStage.PHASE_3_AFTER_LASER, 5, CuccoHandler::phase3Cucco);
     }
 
     private static boolean phase3Cucco(EntityFrameExecution state) {

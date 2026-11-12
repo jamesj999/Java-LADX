@@ -20,8 +20,8 @@ import linksawakening.world.entity.motion.TarinRaccoonMotion;
 /** ROM handler stages for Tarin. */
 final class TarinHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_1_TARIN, TarinHandler::phase1Tarin);
-        registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_4_TARIN, TarinHandler::phase4Tarin);
+        registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, 0, TarinHandler::phase1Tarin);
+        registry.registerTick(ENTITY_TARIN, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 15, TarinHandler::phase4Tarin);
     }
 
     private static boolean phase1Tarin(EntityFrameExecution state) {

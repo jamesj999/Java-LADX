@@ -12,7 +12,8 @@ final class StalfosAggressiveHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_STALFOS_AGGRESSIVE,
-                EntityTickStage.PHASE_3_STALFOS_AGGRESSIVE,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                8,
                 StalfosAggressiveHandler::phase3StalfosAggressive);
     }
 

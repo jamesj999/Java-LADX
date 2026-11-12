@@ -14,24 +14,21 @@ import linksawakening.world.entity.motion.ColorShellMotion;
 /** ROM handler stages for ColorShellType. */
 final class ColorShellTypeHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerTick(0xE9, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);
+        registry.registerTick(0xEA, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);
+        registry.registerTick(0xEB, EntityTickStage.PHASE_2_FALLING, 0, ColorShellTypeHandler::phase2ColorShellType);
         registry.registerTick(
-                0xE9, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase2ColorShellType);
+                0xE9, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 11, ColorShellTypeHandler::phase2ColorShellType2);
         registry.registerTick(
-                0xEA, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase2ColorShellType);
+                0xEA, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 11, ColorShellTypeHandler::phase2ColorShellType2);
         registry.registerTick(
-                0xEB, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase2ColorShellType);
+                0xEB, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 11, ColorShellTypeHandler::phase2ColorShellType2);
         registry.registerTick(
-                0xE9, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE_2, ColorShellTypeHandler::phase2ColorShellType2);
+                0xE9, EntityTickStage.PHASE_5_BEFORE_COMMIT, 1, ColorShellTypeHandler::phase5ColorShellType);
         registry.registerTick(
-                0xEA, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE_2, ColorShellTypeHandler::phase2ColorShellType2);
+                0xEA, EntityTickStage.PHASE_5_BEFORE_COMMIT, 1, ColorShellTypeHandler::phase5ColorShellType);
         registry.registerTick(
-                0xEB, EntityTickStage.PHASE_2_COLOR_SHELL_TYPE_2, ColorShellTypeHandler::phase2ColorShellType2);
-        registry.registerTick(
-                0xE9, EntityTickStage.PHASE_5_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase5ColorShellType);
-        registry.registerTick(
-                0xEA, EntityTickStage.PHASE_5_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase5ColorShellType);
-        registry.registerTick(
-                0xEB, EntityTickStage.PHASE_5_COLOR_SHELL_TYPE, ColorShellTypeHandler::phase5ColorShellType);
+                0xEB, EntityTickStage.PHASE_5_BEFORE_COMMIT, 1, ColorShellTypeHandler::phase5ColorShellType);
     }
 
     private static boolean phase2ColorShellType(EntityFrameExecution state) {

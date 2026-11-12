@@ -13,7 +13,8 @@ final class GopongaFlowerProjectileHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_GOPONGA_FLOWER_PROJECTILE,
-                EntityTickStage.PHASE_3_GOPONGA_FLOWER_PROJECTILE,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                1,
                 GopongaFlowerProjectileHandler::phase3GopongaFlowerProjectile);
     }
 

@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.BlooperMotion;
 /** ROM handler stages for Blooper. */
 final class BlooperHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BLOOPER, EntityTickStage.PHASE_3_BLOOPER, BlooperHandler::phase3Blooper);
+        registry.registerTick(ENTITY_BLOOPER, EntityTickStage.PHASE_3_BEFORE_LASER, 10, BlooperHandler::phase3Blooper);
     }
 
     private static boolean phase3Blooper(EntityFrameExecution state) {

@@ -16,23 +16,7 @@ import linksawakening.world.entity.motion.LaserMotion;
 final class EntitySlotPhase3 {
     static boolean run(EntityFrameExecution state) {
 
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_BOMBITE_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_IRON_MASK, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_MOBLIN_SWORD, state)) return false;
-
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_SPARK_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_ZOL_GEL_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_HIDING_ZOL, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_SPIKE_TRAP, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_PAIRODD, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_STAR, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_BLOOPER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_PINCER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_WINGED_OCTOROK, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_BUSH_CRAWLER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_PAIRODD_PROJECTILE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_WIZROBE_PROJECTILE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_BEFORE_LASER, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && state.runtime
@@ -155,24 +139,7 @@ final class EntitySlotPhase3 {
                         TransientVfxType.LASER_BEAM, state.updated.x() + 0x04, state.updated.y()));
             }
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_ENEMY_PROJECTILE_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_GOPONGA_FLOWER_PROJECTILE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_WATER_TEKTITE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_FISH, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_CROW, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_CUCCO, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_BOO_BUDDY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_DROPPABLE_FAIRY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_STALFOS_AGGRESSIVE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_STALFOS_EVASIVE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_THREE_OF_A_KIND, state)) return false;
-
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_LIKE_LIKE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_GOOMBA, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_SNAKE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_WIZROBE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_PEAHAT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_ARMOS_STATUE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_3_AFTER_LASER, state)) return false;
         return true;
     }
 }

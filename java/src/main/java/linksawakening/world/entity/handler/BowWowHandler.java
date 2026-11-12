@@ -16,8 +16,10 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 /** ROM handler stages for BowWow. */
 final class BowWowHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BOW_WOW, EntityTickStage.PHASE_1_BOW_WOW, BowWowHandler::phase1BowWow);
-        registry.registerTick(ENTITY_BOW_WOW, EntityTickStage.PHASE_1_BOW_WOW_2, BowWowHandler::phase1BowWow2);
+        registry.registerTick(
+                ENTITY_BOW_WOW, EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, 1, BowWowHandler::phase1BowWow);
+        registry.registerTick(
+                ENTITY_BOW_WOW, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 18, BowWowHandler::phase1BowWow2);
     }
 
     private static boolean phase1BowWow(EntityFrameExecution state) {

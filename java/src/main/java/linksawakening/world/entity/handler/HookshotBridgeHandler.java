@@ -12,7 +12,8 @@ final class HookshotBridgeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_HOOKSHOT_BRIDGE,
-                EntityTickStage.PHASE_1_HOOKSHOT_BRIDGE,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                3,
                 HookshotBridgeHandler::phase1HookshotBridge);
     }
 

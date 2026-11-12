@@ -13,29 +13,7 @@ import linksawakening.world.entity.motion.BowWowMotion;
 final class EntitySlotPhase4 {
     static boolean run(EntityFrameExecution state) {
 
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GENIE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ARMOS_KNIGHT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_HINOX, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ROLLING_BONES, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ROLLING_BONES_BAR, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_MOBLIN_KING, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GOPONGA_FLOWER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GIANT_GOPONGA_FLOWER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_POKEY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_PIRANHA_PLANT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ZORA, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ZOMBIE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_BUZZ_BLOB, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_SAND_CRAB, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_DOG, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_TARIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_WITCH, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_URCHIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_WITCH_RAT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GHINI_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_HARDHAT_BEETLE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_POLS_VOICE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_SPIKED_BEETLE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_BEFORE_FOLLOWER, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && (isDynamicFollowingNpc(state.entity) || state.entity.type() == EntityRomConstants.ENTITY_BOW_WOW)) {

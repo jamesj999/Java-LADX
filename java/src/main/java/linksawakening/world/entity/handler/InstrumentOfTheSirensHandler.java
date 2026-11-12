@@ -11,11 +11,13 @@ final class InstrumentOfTheSirensHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
-                EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                22,
                 InstrumentOfTheSirensHandler::phase1InstrumentOfTheSirens);
         registry.registerTick(
                 EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
-                EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                23,
                 InstrumentOfTheSirensHandler::phase1InstrumentOfTheSirens2);
     }
 

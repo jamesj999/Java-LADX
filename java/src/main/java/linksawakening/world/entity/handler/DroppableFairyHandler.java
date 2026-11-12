@@ -13,7 +13,8 @@ final class DroppableFairyHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_DROPPABLE_FAIRY,
-                EntityTickStage.PHASE_3_DROPPABLE_FAIRY,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                7,
                 DroppableFairyHandler::phase3DroppableFairy);
     }
 

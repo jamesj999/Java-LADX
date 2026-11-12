@@ -14,15 +14,18 @@ final class HidingSlimeKeyHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
-                EntityTickStage.PHASE_2_HIDING_SLIME_KEY,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                3,
                 HidingSlimeKeyHandler::phase2HidingSlimeKey);
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
-                EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                5,
                 HidingSlimeKeyHandler::phase2HidingSlimeKey2);
         registry.registerTick(
                 ENTITY_HIDING_SLIME_KEY,
-                EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3,
+                EntityTickStage.PHASE_2_BEFORE_INITIALIZE,
+                0,
                 HidingSlimeKeyHandler::phase2HidingSlimeKey3);
     }
 

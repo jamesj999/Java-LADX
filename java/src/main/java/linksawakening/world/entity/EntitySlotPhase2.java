@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 /** Ordered slot dispatch phase 2; false preserves the ROM handler early return. */
 final class EntitySlotPhase2 {
     static boolean run(EntityFrameExecution state) {
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_SLIME_EYE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BEFORE_STATUS_BRANCHES, state)) return false;
 
         if (state.status == EntityStatus.LIFTED) {
             state.lifted = state.runtime.liftThrow.renderLiftedEntity(state.entity, state.frame);
@@ -22,14 +22,14 @@ final class EntitySlotPhase2 {
             // does not advance the pot until that countdown reaches zero.
             // Other state.lifted entities retain their established generic
             // presentation timing here.
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_SIDE_VIEW_POT, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_LIFTED, state)) return false;
             state.liftedRomDirection = state.romLinkDirection;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_ROOSTER, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_LIFTED_FOLLOWER, state)) return false;
             state.runtime.slots[state.index] = state.runtime.liftThrow.advanceLiftedEntity(
                     state.lifted, state.linkEntityX, state.linkEntityY, state.linkZ, state.liftedRomDirection);
             return false;
         } else if (state.status == EntityStatus.THROWN) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMB, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_THROWN, state)) return false;
             RoomEntity thrown = state.runtime.liftThrow.advanceThrownEntity(
                     state.entity,
                     state.backgroundCollision,
@@ -42,7 +42,7 @@ final class EntitySlotPhase2 {
             }
             return false;
         } else if (state.status == EntityStatus.FALLING) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_COLOR_SHELL_TYPE, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_FALLING, state)) return false;
             RoomEntity falling = state.runtime.backgroundMechanics.advanceFallingEntity(state.entity);
             if (falling == null) {
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
@@ -71,10 +71,7 @@ final class EntitySlotPhase2 {
                     false);
             return false;
         } else if (state.status == EntityStatus.DYING) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOBLIN_KING, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_GENIE, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_ROLLING_BONES, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOLDORM_2, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_DYING, state)) return false;
             if (isBossKeyDropProducer(state.entity.type())) {
                 state.runtime.bossRewards.advanceBossKeyDropProducer(state.entity, state.randomByteSupplier);
                 return false;
@@ -115,7 +112,7 @@ final class EntitySlotPhase2 {
             }
             return false;
         } else if (state.status == EntityStatus.STUNNED) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMB_2, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_STUNNED, state)) return false;
             if (state.runtime.entityState.linkState.powerBraceletButtonHeld
                     && isLiftableEntity(state.entity)
                     && (state.entity.type() == EntityRomConstants.ENTITY_BOMB
@@ -142,30 +139,13 @@ final class EntitySlotPhase2 {
             }
             return false;
         } else if (state.status == EntityStatus.INIT) {
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_HIDING_SLIME_KEY_3, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BEFORE_INITIALIZE, state)) return false;
             if (!state.runtime.initializeBossBattle(state.entity)) return false;
             state.status = EntityStatus.ACTIVE;
             state.runtime.pickups.initializeEntityTimers(state.entity);
             state.runtime.entityHandlers.initialize(state.entity, state.randomByteSupplier);
 
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOBLIN, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOBLIN_SWORD, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_SPARK_TYPE, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_ZOL_GEL_TYPE, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MINI_MOLDORM_2, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOLDORM_3, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_WIZROBE_2, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_WIZROBE_PROJECTILE, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_GHINI_TYPE, state)) return false;
-
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMBITE_TYPE, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE, state)) return false;
-            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_COLOR_SHELL_TYPE_2, state)) return false;
+            if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_AFTER_INITIALIZE, state)) return false;
         } else if (state.status == EntityStatus.ACTIVE) {
             if (!state.freezeTarinTimers && !state.freezeMoblinKingTimers) {
                 state.runtime.lifecycle.decrementSlowTransitionCountdown(state.entity.slot(), state.frame);
@@ -178,22 +158,11 @@ final class EntitySlotPhase2 {
             }
         }
         state.updated = state.entity;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_CHEST_WITH_ITEM, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BEFORE_RECOIL, state)) return false;
         if (state.preserveGhiniPresentation) {
             state.updated = withVariant(state.entity, -1);
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_ZOMBIE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_HIDING_SLIME_KEY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_COMMON_DROPPABLE_TYPE_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_HIDING_SLIME_KEY_2, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_KEY_DROP_POINT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_WIZROBE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_POLS_VOICE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_ROLLING_BONES_BAR, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && (usesSharedRecoil(state.entity.type())
@@ -223,13 +192,7 @@ final class EntitySlotPhase2 {
             state.entity = recoil.entity();
             state.updated = state.entity;
         }
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MINI_MOLDORM, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MOLDORM, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MIMIC, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MASKED_MIMIC_GORIYA, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_CRYSTAL_SWITCH, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_LEEVER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_SPARK_TYPE_2, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, state)) return false;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && state.runtime.entityHandlers.hasAdvance(state.entity.type())) {
@@ -244,8 +207,7 @@ final class EntitySlotPhase2 {
             }
         }
 
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMBER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_MAD_BOMBER, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, state)) return false;
         return true;
     }
 }

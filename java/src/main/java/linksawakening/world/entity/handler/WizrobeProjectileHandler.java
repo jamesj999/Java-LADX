@@ -15,11 +15,13 @@ final class WizrobeProjectileHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_WIZROBE_PROJECTILE,
-                EntityTickStage.PHASE_2_WIZROBE_PROJECTILE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                7,
                 WizrobeProjectileHandler::phase2WizrobeProjectile);
         registry.registerTick(
                 ENTITY_WIZROBE_PROJECTILE,
-                EntityTickStage.PHASE_3_WIZROBE_PROJECTILE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                15,
                 WizrobeProjectileHandler::phase3WizrobeProjectile);
     }
 

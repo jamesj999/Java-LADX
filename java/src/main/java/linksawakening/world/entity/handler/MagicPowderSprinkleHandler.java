@@ -12,7 +12,8 @@ final class MagicPowderSprinkleHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_MAGIC_POWDER_SPRINKLE,
-                EntityTickStage.PHASE_1_MAGIC_POWDER_SPRINKLE,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                9,
                 MagicPowderSprinkleHandler::phase1MagicPowderSprinkle);
     }
 

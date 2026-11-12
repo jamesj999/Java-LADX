@@ -10,7 +10,8 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for OwlEvent. */
 final class OwlEventHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_OWL_EVENT, EntityTickStage.PHASE_1_OWL_EVENT, OwlEventHandler::phase1OwlEvent);
+        registry.registerTick(
+                ENTITY_OWL_EVENT, EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP, 1, OwlEventHandler::phase1OwlEvent);
     }
 
     private static boolean phase1OwlEvent(EntityFrameExecution state) {

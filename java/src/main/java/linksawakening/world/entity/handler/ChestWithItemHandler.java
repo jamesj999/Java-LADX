@@ -13,11 +13,13 @@ final class ChestWithItemHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_CHEST_WITH_ITEM,
-                EntityTickStage.PHASE_2_CHEST_WITH_ITEM,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                1,
                 ChestWithItemHandler::phase2ChestWithItem);
         registry.registerTick(
                 ENTITY_CHEST_WITH_ITEM,
-                EntityTickStage.PHASE_2_CHEST_WITH_ITEM_2,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                1,
                 ChestWithItemHandler::phase2ChestWithItem2);
     }
 

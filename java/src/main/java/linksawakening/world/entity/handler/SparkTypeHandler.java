@@ -11,19 +11,29 @@ import linksawakening.world.entity.EntityTickStage;
 final class SparkTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_SPARK_COUNTER_CLOCKWISE, EntityTickStage.PHASE_2_SPARK_TYPE, SparkTypeHandler::phase2SparkType);
+                ENTITY_SPARK_COUNTER_CLOCKWISE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                2,
+                SparkTypeHandler::phase2SparkType);
         registry.registerTick(
-                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_2_SPARK_TYPE, SparkTypeHandler::phase2SparkType);
+                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 2, SparkTypeHandler::phase2SparkType);
         registry.registerTick(
                 ENTITY_SPARK_COUNTER_CLOCKWISE,
-                EntityTickStage.PHASE_2_SPARK_TYPE_2,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                6,
                 SparkTypeHandler::phase2SparkType2);
         registry.registerTick(
-                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_2_SPARK_TYPE_2, SparkTypeHandler::phase2SparkType2);
+                ENTITY_SPARK_CLOCKWISE,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                6,
+                SparkTypeHandler::phase2SparkType2);
         registry.registerTick(
-                ENTITY_SPARK_COUNTER_CLOCKWISE, EntityTickStage.PHASE_3_SPARK_TYPE, SparkTypeHandler::phase3SparkType);
+                ENTITY_SPARK_COUNTER_CLOCKWISE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                4,
+                SparkTypeHandler::phase3SparkType);
         registry.registerTick(
-                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_3_SPARK_TYPE, SparkTypeHandler::phase3SparkType);
+                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_3_BEFORE_LASER, 4, SparkTypeHandler::phase3SparkType);
     }
 
     private static boolean phase2SparkType(EntityFrameExecution state) {

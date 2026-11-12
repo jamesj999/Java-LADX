@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.GoombaMotion;
 /** ROM handler stages for Goomba. */
 final class GoombaHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_GOOMBA, EntityTickStage.PHASE_3_GOOMBA, GoombaHandler::phase3Goomba);
+        registry.registerTick(ENTITY_GOOMBA, EntityTickStage.PHASE_3_AFTER_LASER, 12, GoombaHandler::phase3Goomba);
     }
 
     private static boolean phase3Goomba(EntityFrameExecution state) {

@@ -10,6 +10,58 @@ import org.junit.jupiter.api.Test;
 
 class EntityInfrastructureTest {
     @Test
+    void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
+        EntityHandlerRegistry registry = new EntityHandlerRegistry();
+        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        frame.entity = RoomEntity.disabled(15);
+        var visited = new java.util.ArrayList<Integer>();
+        var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
+        registry.registerTick(255, site, 2, actual -> {
+            visited.add(2);
+            return false;
+        });
+        registry.registerTick(255, site, 0, actual -> {
+            visited.add(0);
+            return true;
+        });
+        registry.registerTick(255, site, 1, actual -> {
+            visited.add(1);
+            return true;
+        });
+        registry.registerTick(255, site, 3, actual -> {
+            fail("Visit after early return");
+            return true;
+        });
+        assertFalse(registry.tick(site, frame));
+        assertEquals(List.of(0, 1, 2), visited);
+    }
+
+    @Test
+    void dispatchSiteRereadsEntityTypeBetweenVisits() {
+        EntityHandlerRegistry registry = new EntityHandlerRegistry();
+        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        frame.entity = RoomEntity.disabled(15);
+        var visited = new java.util.ArrayList<Integer>();
+        var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
+        registry.registerTick(254, site, 0, actual -> {
+            fail("Earlier visits must not repeat");
+            return true;
+        });
+        registry.registerTick(255, site, 0, actual -> {
+            actual.entity = EntitySnapshots.withType(actual.entity, 254, actual.entity.spriteDefinition());
+            visited.add(0);
+            return true;
+        });
+        registry.registerTick(254, site, 1, actual -> {
+            visited.add(1);
+            return true;
+        });
+        assertTrue(registry.tick(site, frame));
+        assertEquals(List.of(0, 1), visited);
+        assertEquals(15, frame.entity.slot());
+    }
+
+    @Test
     void motionRegistryRetainsTheFirstInstanceForEachType() {
         EntityMotionRegistry registry = new EntityMotionRegistry();
         var motion = registry.get(
@@ -89,14 +141,14 @@ class EntityInfrastructureTest {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = new EntityFrameExecution(null, null);
         frame.entity = RoomEntity.disabled(15);
-        var stage = EntityTickStage.PHASE_1_TARIN;
+        var stage = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(255, stage, actual -> {
             assertSame(frame, actual);
             return false;
         });
         registry.registerAdvance(255, (entity, context) -> entity);
         assertFalse(registry.tick(stage, frame));
-        assertTrue(registry.tick(EntityTickStage.PHASE_1_BOW_WOW, frame));
+        assertTrue(registry.tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, frame));
         assertSame(frame.entity, registry.advance(frame.entity, null));
         assertThrows(IllegalArgumentException.class, () -> registry.registerTick(255, stage, actual -> true));
         assertThrows(IllegalArgumentException.class, () -> registry.registerAdvance(255, (entity, context) -> entity));

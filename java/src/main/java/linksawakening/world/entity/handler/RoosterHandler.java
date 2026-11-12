@@ -15,8 +15,9 @@ import linksawakening.world.entity.motion.RoosterMotion;
 /** ROM handler stages for Rooster. */
 final class RoosterHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_ROOSTER, EntityTickStage.PHASE_2_ROOSTER, RoosterHandler::phase2Rooster);
-        registry.registerTick(ENTITY_ROOSTER, EntityTickStage.PHASE_5_ROOSTER, RoosterHandler::phase5Rooster);
+        registry.registerTick(
+                ENTITY_ROOSTER, EntityTickStage.PHASE_2_LIFTED_FOLLOWER, 0, RoosterHandler::phase2Rooster);
+        registry.registerTick(ENTITY_ROOSTER, EntityTickStage.PHASE_5_BEFORE_COMMIT, 0, RoosterHandler::phase5Rooster);
     }
 
     private static boolean phase2Rooster(EntityFrameExecution state) {

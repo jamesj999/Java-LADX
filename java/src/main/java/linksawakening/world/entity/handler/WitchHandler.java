@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.WitchMotion;
 /** ROM handler stages for Witch. */
 final class WitchHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_WITCH, EntityTickStage.PHASE_4_WITCH, WitchHandler::phase4Witch);
+        registry.registerTick(ENTITY_WITCH, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 16, WitchHandler::phase4Witch);
     }
 
     private static boolean phase4Witch(EntityFrameExecution state) {

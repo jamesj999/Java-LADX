@@ -10,7 +10,8 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for Leever. */
 final class LeeverHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_LEEVER, EntityTickStage.PHASE_2_LEEVER, LeeverHandler::phase2Leever);
+        registry.registerTick(
+                ENTITY_LEEVER, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 5, LeeverHandler::phase2Leever);
     }
 
     private static boolean phase2Leever(EntityFrameExecution state) {

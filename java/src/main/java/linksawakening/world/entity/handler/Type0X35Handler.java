@@ -8,8 +8,9 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for Type0X35. */
 final class Type0X35Handler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(0x35, EntityTickStage.PHASE_1_TYPE_0X35, Type0X35Handler::phase1Type0X35);
-        registry.registerTick(0x35, EntityTickStage.PHASE_1_TYPE_0X35_2, Type0X35Handler::phase1Type0X352);
+        registry.registerTick(0x35, EntityTickStage.PHASE_1_ENTRY, 0, Type0X35Handler::phase1Type0X35);
+        registry.registerTick(
+                0x35, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 20, Type0X35Handler::phase1Type0X352);
     }
 
     private static boolean phase1Type0X35(EntityFrameExecution state) {

@@ -20,9 +20,9 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 final class MoblinKingHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_MOBLIN_KING, EntityTickStage.PHASE_2_MOBLIN_KING, MoblinKingHandler::phase2MoblinKing);
+                ENTITY_MOBLIN_KING, EntityTickStage.PHASE_2_DYING, 0, MoblinKingHandler::phase2MoblinKing);
         registry.registerTick(
-                ENTITY_MOBLIN_KING, EntityTickStage.PHASE_4_MOBLIN_KING, MoblinKingHandler::phase4MoblinKing);
+                ENTITY_MOBLIN_KING, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 5, MoblinKingHandler::phase4MoblinKing);
     }
 
     private static boolean phase2MoblinKing(EntityFrameExecution state) {

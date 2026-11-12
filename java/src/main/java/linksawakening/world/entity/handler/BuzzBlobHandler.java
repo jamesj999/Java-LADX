@@ -12,7 +12,8 @@ import linksawakening.world.entity.motion.BuzzBlobMotion;
 /** ROM handler stages for BuzzBlob. */
 final class BuzzBlobHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BUZZ_BLOB, EntityTickStage.PHASE_4_BUZZ_BLOB, BuzzBlobHandler::phase4BuzzBlob);
+        registry.registerTick(
+                ENTITY_BUZZ_BLOB, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 12, BuzzBlobHandler::phase4BuzzBlob);
     }
 
     private static boolean phase4BuzzBlob(EntityFrameExecution state) {

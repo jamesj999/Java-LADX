@@ -15,10 +15,10 @@ import linksawakening.world.entity.motion.GenieMotion;
 /** ROM handler stages for Genie. */
 final class GenieHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_GENIE, GenieHandler::phase1Genie);
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_GENIE_2, GenieHandler::phase1Genie2);
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_2_GENIE, GenieHandler::phase2Genie);
-        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_4_GENIE, GenieHandler::phase4Genie);
+        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, 0, GenieHandler::phase1Genie);
+        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, 1, GenieHandler::phase1Genie2);
+        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_2_DYING, 1, GenieHandler::phase2Genie);
+        registry.registerTick(ENTITY_GENIE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 0, GenieHandler::phase4Genie);
     }
 
     private static boolean phase1Genie(EntityFrameExecution state) {

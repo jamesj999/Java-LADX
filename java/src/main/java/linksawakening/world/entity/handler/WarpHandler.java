@@ -15,7 +15,8 @@ import linksawakening.world.entity.motion.WarpMotion;
 /** ROM handler stages for Warp. */
 final class WarpHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(WarpMotion.ENTITY_TYPE, EntityTickStage.PHASE_1_TYPE, WarpHandler::phase1Type);
+        registry.registerTick(
+                WarpMotion.ENTITY_TYPE, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 5, WarpHandler::phase1Type);
     }
 
     private static boolean phase1Type(EntityFrameExecution state) {

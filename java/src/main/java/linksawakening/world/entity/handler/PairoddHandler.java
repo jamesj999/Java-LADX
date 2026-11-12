@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.PairoddMotion;
 /** ROM handler stages for Pairodd. */
 final class PairoddHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_PAIRODD, EntityTickStage.PHASE_3_PAIRODD, PairoddHandler::phase3Pairodd);
+        registry.registerTick(ENTITY_PAIRODD, EntityTickStage.PHASE_3_BEFORE_LASER, 8, PairoddHandler::phase3Pairodd);
     }
 
     private static boolean phase3Pairodd(EntityFrameExecution state) {

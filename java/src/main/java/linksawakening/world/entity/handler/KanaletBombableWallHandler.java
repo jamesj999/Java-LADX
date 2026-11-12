@@ -12,7 +12,8 @@ final class KanaletBombableWallHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_KANALET_BOMBABLE_WALL,
-                EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL,
+                EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD,
+                0,
                 KanaletBombableWallHandler::phase1KanaletBombableWall);
     }
 

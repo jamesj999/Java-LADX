@@ -13,8 +13,13 @@ import linksawakening.world.entity.motion.PolsVoiceMotion;
 /** ROM handler stages for PolsVoice. */
 final class PolsVoiceHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_POLS_VOICE, EntityTickStage.PHASE_2_POLS_VOICE, PolsVoiceHandler::phase2PolsVoice);
-        registry.registerTick(ENTITY_POLS_VOICE, EntityTickStage.PHASE_4_POLS_VOICE, PolsVoiceHandler::phase4PolsVoice);
+        registry.registerTick(
+                ENTITY_POLS_VOICE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                8,
+                PolsVoiceHandler::phase2PolsVoice);
+        registry.registerTick(
+                ENTITY_POLS_VOICE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 21, PolsVoiceHandler::phase4PolsVoice);
     }
 
     private static boolean phase2PolsVoice(EntityFrameExecution state) {

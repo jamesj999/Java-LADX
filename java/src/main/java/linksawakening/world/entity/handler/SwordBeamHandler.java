@@ -10,7 +10,11 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for SwordBeam. */
 final class SwordBeamHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_SWORD_BEAM, EntityTickStage.PHASE_1_SWORD_BEAM, SwordBeamHandler::phase1SwordBeam);
+        registry.registerTick(
+                ENTITY_SWORD_BEAM,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                7,
+                SwordBeamHandler::phase1SwordBeam);
     }
 
     private static boolean phase1SwordBeam(EntityFrameExecution state) {

@@ -15,7 +15,8 @@ final class GopongaFlowerHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_GOPONGA_FLOWER,
-                EntityTickStage.PHASE_4_GOPONGA_FLOWER,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                6,
                 GopongaFlowerHandler::phase4GopongaFlower);
     }
 

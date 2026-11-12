@@ -12,7 +12,8 @@ final class MagicRodFireballHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_MAGIC_ROD_FIREBALL,
-                EntityTickStage.PHASE_1_MAGIC_ROD_FIREBALL,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                8,
                 MagicRodFireballHandler::phase1MagicRodFireball);
     }
 

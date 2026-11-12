@@ -12,19 +12,23 @@ final class FollowingNpcTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_BOW_WOW,
-                EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                10,
                 FollowingNpcTypeHandler::phase2FollowingNpcType);
         registry.registerTick(
                 ENTITY_MARIN_AT_THE_SHORE,
-                EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                10,
                 FollowingNpcTypeHandler::phase2FollowingNpcType);
         registry.registerTick(
                 ENTITY_GHOST,
-                EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                10,
                 FollowingNpcTypeHandler::phase2FollowingNpcType);
         registry.registerTick(
                 ENTITY_ROOSTER,
-                EntityTickStage.PHASE_2_FOLLOWING_NPC_TYPE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                10,
                 FollowingNpcTypeHandler::phase2FollowingNpcType);
     }
 

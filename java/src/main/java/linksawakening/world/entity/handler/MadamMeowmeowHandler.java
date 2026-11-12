@@ -12,7 +12,8 @@ final class MadamMeowmeowHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_MADAM_MEOWMEOW,
-                EntityTickStage.PHASE_1_MADAM_MEOWMEOW,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                15,
                 MadamMeowmeowHandler::phase1MadamMeowmeow);
     }
 

@@ -16,9 +16,15 @@ import linksawakening.world.entity.motion.MiniMoldormMotion;
 final class MiniMoldormHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_MINI_MOLDORM, EntityTickStage.PHASE_2_MINI_MOLDORM, MiniMoldormHandler::phase2MiniMoldorm);
+                ENTITY_MINI_MOLDORM,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                0,
+                MiniMoldormHandler::phase2MiniMoldorm);
         registry.registerTick(
-                ENTITY_MINI_MOLDORM, EntityTickStage.PHASE_2_MINI_MOLDORM_2, MiniMoldormHandler::phase2MiniMoldorm2);
+                ENTITY_MINI_MOLDORM,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                4,
+                MiniMoldormHandler::phase2MiniMoldorm2);
     }
 
     private static boolean phase2MiniMoldorm(EntityFrameExecution state) {

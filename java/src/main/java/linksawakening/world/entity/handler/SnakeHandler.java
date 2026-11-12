@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.SnakeMotion;
 /** ROM handler stages for Snake. */
 final class SnakeHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_SNAKE, EntityTickStage.PHASE_3_SNAKE, SnakeHandler::phase3Snake);
+        registry.registerTick(ENTITY_SNAKE, EntityTickStage.PHASE_3_AFTER_LASER, 13, SnakeHandler::phase3Snake);
     }
 
     private static boolean phase3Snake(EntityFrameExecution state) {

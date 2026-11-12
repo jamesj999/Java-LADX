@@ -12,15 +12,17 @@ import linksawakening.world.entity.EntityTickStage;
 final class GhiniTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_2_GHINI_TYPE, GhiniTypeHandler::phase2GhiniType);
+                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
         registry.registerTick(
-                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_2_GHINI_TYPE, GhiniTypeHandler::phase2GhiniType);
-        registry.registerTick(ENTITY_GHINI, EntityTickStage.PHASE_2_GHINI_TYPE, GhiniTypeHandler::phase2GhiniType);
+                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
         registry.registerTick(
-                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_4_GHINI_TYPE, GhiniTypeHandler::phase4GhiniType);
+                ENTITY_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
         registry.registerTick(
-                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_4_GHINI_TYPE, GhiniTypeHandler::phase4GhiniType);
-        registry.registerTick(ENTITY_GHINI, EntityTickStage.PHASE_4_GHINI_TYPE, GhiniTypeHandler::phase4GhiniType);
+                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
+        registry.registerTick(
+                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
+        registry.registerTick(
+                ENTITY_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
     }
 
     private static boolean phase2GhiniType(EntityFrameExecution state) {

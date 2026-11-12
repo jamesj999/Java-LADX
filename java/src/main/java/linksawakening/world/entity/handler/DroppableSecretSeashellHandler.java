@@ -16,7 +16,8 @@ final class DroppableSecretSeashellHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_DROPPABLE_SECRET_SEASHELL,
-                EntityTickStage.PHASE_2_DROPPABLE_SECRET_SEASHELL,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                2,
                 DroppableSecretSeashellHandler::phase2DroppableSecretSeashell);
     }
 

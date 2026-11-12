@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.UrchinMotion;
 /** ROM handler stages for Urchin. */
 final class UrchinHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_URCHIN, EntityTickStage.PHASE_4_URCHIN, UrchinHandler::phase4Urchin);
+        registry.registerTick(ENTITY_URCHIN, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 17, UrchinHandler::phase4Urchin);
     }
 
     private static boolean phase4Urchin(EntityFrameExecution state) {

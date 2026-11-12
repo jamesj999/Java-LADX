@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.BushCrawlerMotion;
 final class BushCrawlerHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_BUSH_CRAWLER, EntityTickStage.PHASE_3_BUSH_CRAWLER, BushCrawlerHandler::phase3BushCrawler);
+                ENTITY_BUSH_CRAWLER, EntityTickStage.PHASE_3_BEFORE_LASER, 13, BushCrawlerHandler::phase3BushCrawler);
     }
 
     private static boolean phase3BushCrawler(EntityFrameExecution state) {

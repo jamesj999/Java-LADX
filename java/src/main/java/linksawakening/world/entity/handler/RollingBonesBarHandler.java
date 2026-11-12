@@ -18,15 +18,18 @@ final class RollingBonesBarHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_ROLLING_BONES,
-                EntityTickStage.PHASE_2_ROLLING_BONES_BAR,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                9,
                 RollingBonesBarHandler::phase2RollingBonesBar);
         registry.registerTick(
                 ENTITY_ROLLING_BONES_BAR,
-                EntityTickStage.PHASE_2_ROLLING_BONES_BAR,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                9,
                 RollingBonesBarHandler::phase2RollingBonesBar);
         registry.registerTick(
                 ENTITY_ROLLING_BONES_BAR,
-                EntityTickStage.PHASE_4_ROLLING_BONES_BAR,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                4,
                 RollingBonesBarHandler::phase4RollingBonesBar);
     }
 

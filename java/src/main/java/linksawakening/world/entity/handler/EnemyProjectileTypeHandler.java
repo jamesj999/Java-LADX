@@ -16,11 +16,13 @@ final class EnemyProjectileTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_OCTOROK_ROCK,
-                EntityTickStage.PHASE_3_ENEMY_PROJECTILE_TYPE,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                0,
                 EnemyProjectileTypeHandler::phase3EnemyProjectileType);
         registry.registerTick(
                 ENTITY_MOBLIN_ARROW,
-                EntityTickStage.PHASE_3_ENEMY_PROJECTILE_TYPE,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                0,
                 EnemyProjectileTypeHandler::phase3EnemyProjectileType);
     }
 

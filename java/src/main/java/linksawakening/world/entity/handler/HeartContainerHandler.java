@@ -12,7 +12,8 @@ final class HeartContainerHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_HEART_CONTAINER,
-                EntityTickStage.PHASE_1_HEART_CONTAINER,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                14,
                 HeartContainerHandler::phase1HeartContainer);
     }
 

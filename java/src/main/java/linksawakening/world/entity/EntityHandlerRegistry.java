@@ -1,6 +1,9 @@
 package linksawakening.world.entity;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.IntSupplier;
@@ -11,7 +14,7 @@ final class EntityHandlerRegistry implements linksawakening.world.entity.EntityH
     private static final class Binding implements EntityHandler {
         private final EntityHandler initializer;
         private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;
-        private final EnumMap<EntityTickStage, Predicate<EntityFrameExecution>> stages =
+        private final EnumMap<EntityTickStage, List<Predicate<EntityFrameExecution>>> stages =
                 new EnumMap<>(EntityTickStage.class);
 
         private Binding(EntityHandler initializer) {
@@ -29,9 +32,9 @@ final class EntityHandlerRegistry implements linksawakening.world.entity.EntityH
             return initializer == null ? entity : initializer.advance(entity, context);
         }
 
-        @Override
-        public boolean tick(EntityTickStage stage, EntityFrameExecution frame) {
-            Predicate<EntityFrameExecution> handler = stages.get(stage);
+        boolean tickVisit(EntityTickStage stage, int visit, EntityFrameExecution frame) {
+            List<Predicate<EntityFrameExecution>> callbacks = stages.get(stage);
+            Predicate<EntityFrameExecution> handler = callbacks == null ? null : callbacks.get(visit);
             if (handler != null) return handler.test(frame);
             return initializer == null || initializer.tick(stage, frame);
         }
@@ -75,18 +78,26 @@ final class EntityHandlerRegistry implements linksawakening.world.entity.EntityH
         return supports(entity.type()) ? handlers[entity.type()].advance(entity, context) : entity;
     }
 
-    public void registerTick(int type, EntityTickStage stage, Predicate<EntityFrameExecution> tick) {
+    public void registerTick(int type, EntityTickStage stage, int visit, Predicate<EntityFrameExecution> tick) {
         Objects.checkIndex(type, handlers.length);
         Objects.requireNonNull(tick);
         Objects.requireNonNull(stage);
         Binding binding = binding(type);
-        if (binding.stages.putIfAbsent(stage, tick) != null) {
+        Objects.checkIndex(visit, stage.visits());
+        List<Predicate<EntityFrameExecution>> callbacks = binding.stages.computeIfAbsent(
+                stage, ignored -> new ArrayList<>(Collections.nCopies(stage.visits(), null)));
+        if (callbacks.get(visit) != null) {
             throw new IllegalArgumentException("Duplicate tick stage for type: " + type);
         }
+        callbacks.set(visit, tick);
     }
 
     boolean tick(EntityTickStage stage, EntityFrameExecution frame) {
-        int type = frame.entity.type();
-        return !supports(type) || handlers[type].tick(stage, frame);
+        for (int visit = 0; visit < stage.visits(); visit++) {
+            // Re-read the entity type after each visit, as the original phase calls did.
+            int type = frame.entity.type();
+            if (supports(type) && !handlers[type].tickVisit(stage, visit, frame)) return false;
+        }
+        return true;
     }
 }

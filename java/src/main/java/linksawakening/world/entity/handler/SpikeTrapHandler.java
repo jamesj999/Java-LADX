@@ -12,7 +12,8 @@ import linksawakening.world.entity.motion.SpikeTrapMotion;
 /** ROM handler stages for SpikeTrap. */
 final class SpikeTrapHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_SPIKE_TRAP, EntityTickStage.PHASE_3_SPIKE_TRAP, SpikeTrapHandler::phase3SpikeTrap);
+        registry.registerTick(
+                ENTITY_SPIKE_TRAP, EntityTickStage.PHASE_3_BEFORE_LASER, 7, SpikeTrapHandler::phase3SpikeTrap);
     }
 
     private static boolean phase3SpikeTrap(EntityFrameExecution state) {

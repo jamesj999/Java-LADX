@@ -12,7 +12,8 @@ final class SleepyToadstoolHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_SLEEPY_TOADSTOOL,
-                EntityTickStage.PHASE_1_SLEEPY_TOADSTOOL,
+                EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP,
+                0,
                 SleepyToadstoolHandler::phase1SleepyToadstool);
     }
 

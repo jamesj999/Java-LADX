@@ -12,10 +12,12 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** ROM handler stages for ZolGelType. */
 final class ZolGelTypeHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_ZOL, EntityTickStage.PHASE_2_ZOL_GEL_TYPE, ZolGelTypeHandler::phase2ZolGelType);
-        registry.registerTick(ENTITY_GEL, EntityTickStage.PHASE_2_ZOL_GEL_TYPE, ZolGelTypeHandler::phase2ZolGelType);
-        registry.registerTick(ENTITY_ZOL, EntityTickStage.PHASE_3_ZOL_GEL_TYPE, ZolGelTypeHandler::phase3ZolGelType);
-        registry.registerTick(ENTITY_GEL, EntityTickStage.PHASE_3_ZOL_GEL_TYPE, ZolGelTypeHandler::phase3ZolGelType);
+        registry.registerTick(
+                ENTITY_ZOL, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 3, ZolGelTypeHandler::phase2ZolGelType);
+        registry.registerTick(
+                ENTITY_GEL, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 3, ZolGelTypeHandler::phase2ZolGelType);
+        registry.registerTick(ENTITY_ZOL, EntityTickStage.PHASE_3_BEFORE_LASER, 5, ZolGelTypeHandler::phase3ZolGelType);
+        registry.registerTick(ENTITY_GEL, EntityTickStage.PHASE_3_BEFORE_LASER, 5, ZolGelTypeHandler::phase3ZolGelType);
     }
 
     private static boolean phase2ZolGelType(EntityFrameExecution state) {

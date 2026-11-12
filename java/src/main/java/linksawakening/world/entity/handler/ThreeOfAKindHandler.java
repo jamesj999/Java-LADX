@@ -13,7 +13,8 @@ final class ThreeOfAKindHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_THREE_OF_A_KIND,
-                EntityTickStage.PHASE_3_THREE_OF_A_KIND,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                10,
                 ThreeOfAKindHandler::phase3ThreeOfAKind);
     }
 

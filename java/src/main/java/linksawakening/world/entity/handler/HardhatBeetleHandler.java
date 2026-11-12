@@ -12,7 +12,8 @@ final class HardhatBeetleHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_HARDHAT_BEETLE,
-                EntityTickStage.PHASE_4_HARDHAT_BEETLE,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                20,
                 HardhatBeetleHandler::phase4HardhatBeetle);
     }
 

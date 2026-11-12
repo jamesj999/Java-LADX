@@ -24,7 +24,8 @@ final class HookshotChainHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_HOOKSHOT_CHAIN,
-                EntityTickStage.PHASE_1_HOOKSHOT_CHAIN,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                4,
                 HookshotChainHandler::phase1HookshotChain);
     }
 

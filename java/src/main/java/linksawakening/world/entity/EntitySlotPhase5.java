@@ -17,8 +17,7 @@ import linksawakening.world.entity.motion.FloatingItemMotion;
 final class EntitySlotPhase5 {
     static boolean run(EntityFrameExecution state) {
 
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_5_ROOSTER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_5_COLOR_SHELL_TYPE, state)) return false;
+        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_5_BEFORE_COMMIT, state)) return false;
         RoomEntity beforeDropPhysics = state.updated;
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing

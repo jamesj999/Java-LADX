@@ -15,7 +15,10 @@ import linksawakening.world.entity.motion.SideViewPlatformMotion;
 final class SideViewPlatformHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                SideViewPlatformMotion.ENTITY_TYPE, EntityTickStage.PHASE_2_TYPE, SideViewPlatformHandler::phase2Type);
+                SideViewPlatformMotion.ENTITY_TYPE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL,
+                0,
+                SideViewPlatformHandler::phase2Type);
     }
 
     private static boolean phase2Type(EntityFrameExecution state) {

@@ -16,7 +16,8 @@ final class PairoddProjectileHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_PAIRODD_PROJECTILE,
-                EntityTickStage.PHASE_3_PAIRODD_PROJECTILE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                14,
                 PairoddProjectileHandler::phase3PairoddProjectile);
     }
 

@@ -15,15 +15,18 @@ final class RoamingEnemyTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_OCTOROK,
-                EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                1,
                 RoamingEnemyTypeHandler::phase3RoamingEnemyType);
         registry.registerTick(
                 ENTITY_MOBLIN,
-                EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                1,
                 RoamingEnemyTypeHandler::phase3RoamingEnemyType);
         registry.registerTick(
                 ENTITY_IRON_MASK,
-                EntityTickStage.PHASE_3_ROAMING_ENEMY_TYPE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                1,
                 RoamingEnemyTypeHandler::phase3RoamingEnemyType);
     }
 

@@ -13,7 +13,8 @@ import linksawakening.world.entity.motion.LikeLikeMotion;
 /** ROM handler stages for LikeLike. */
 final class LikeLikeHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_LIKE_LIKE, EntityTickStage.PHASE_3_LIKE_LIKE, LikeLikeHandler::phase3LikeLike);
+        registry.registerTick(
+                ENTITY_LIKE_LIKE, EntityTickStage.PHASE_3_AFTER_LASER, 11, LikeLikeHandler::phase3LikeLike);
     }
 
     private static boolean phase3LikeLike(EntityFrameExecution state) {

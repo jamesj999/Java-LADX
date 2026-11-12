@@ -10,7 +10,8 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for Boomerang. */
 final class BoomerangHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BOOMERANG, EntityTickStage.PHASE_1_BOOMERANG, BoomerangHandler::phase1Boomerang);
+        registry.registerTick(
+                ENTITY_BOOMERANG, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 6, BoomerangHandler::phase1Boomerang);
     }
 
     private static boolean phase1Boomerang(EntityFrameExecution state) {

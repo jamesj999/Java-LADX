@@ -13,8 +13,9 @@ import linksawakening.world.entity.motion.ZombieMotion;
 /** ROM handler stages for Zombie. */
 final class ZombieHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_ZOMBIE, EntityTickStage.PHASE_2_ZOMBIE, ZombieHandler::phase2Zombie);
-        registry.registerTick(ENTITY_ZOMBIE, EntityTickStage.PHASE_4_ZOMBIE, ZombieHandler::phase4Zombie);
+        registry.registerTick(
+                ENTITY_ZOMBIE, EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, 0, ZombieHandler::phase2Zombie);
+        registry.registerTick(ENTITY_ZOMBIE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 11, ZombieHandler::phase4Zombie);
     }
 
     private static boolean phase2Zombie(EntityFrameExecution state) {

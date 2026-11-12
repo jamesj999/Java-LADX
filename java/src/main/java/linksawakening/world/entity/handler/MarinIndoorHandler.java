@@ -10,7 +10,10 @@ import linksawakening.world.entity.EntityTickStage;
 final class MarinIndoorHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_MARIN_INDOOR, EntityTickStage.PHASE_1_MARIN_INDOOR, MarinIndoorHandler::phase1MarinIndoor);
+                ENTITY_MARIN_INDOOR,
+                EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS,
+                1,
+                MarinIndoorHandler::phase1MarinIndoor);
     }
 
     private static boolean phase1MarinIndoor(EntityFrameExecution state) {

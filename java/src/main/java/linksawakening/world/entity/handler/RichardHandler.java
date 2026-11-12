@@ -10,7 +10,8 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for Richard. */
 final class RichardHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_RICHARD, EntityTickStage.PHASE_1_RICHARD, RichardHandler::phase1Richard);
+        registry.registerTick(
+                ENTITY_RICHARD, EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, 16, RichardHandler::phase1Richard);
     }
 
     private static boolean phase1Richard(EntityFrameExecution state) {

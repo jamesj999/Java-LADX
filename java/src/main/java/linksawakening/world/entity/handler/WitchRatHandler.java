@@ -12,7 +12,8 @@ import linksawakening.world.entity.motion.WitchRatMotion;
 /** ROM handler stages for WitchRat. */
 final class WitchRatHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_WITCH_RAT, EntityTickStage.PHASE_4_WITCH_RAT, WitchRatHandler::phase4WitchRat);
+        registry.registerTick(
+                ENTITY_WITCH_RAT, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 18, WitchRatHandler::phase4WitchRat);
     }
 
     private static boolean phase4WitchRat(EntityFrameExecution state) {

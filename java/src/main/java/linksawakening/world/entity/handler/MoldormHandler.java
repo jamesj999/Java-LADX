@@ -18,12 +18,15 @@ import linksawakening.world.entity.motion.MoldormMotion;
 /** ROM handler stages for Moldorm. */
 final class MoldormHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_MOLDORM, MoldormHandler::phase1Moldorm);
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_MOLDORM_2, MoldormHandler::phase1Moldorm2);
-        registry.registerTick(ENTITY_ROLLING_BONES, EntityTickStage.PHASE_1_MOLDORM_2, MoldormHandler::phase1Moldorm2);
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_2_MOLDORM, MoldormHandler::phase2Moldorm);
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_2_MOLDORM_2, MoldormHandler::phase2Moldorm2);
-        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_2_MOLDORM_3, MoldormHandler::phase2Moldorm3);
+        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_BOSS_INTRO, 0, MoldormHandler::phase1Moldorm);
+        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_BOSS_DOORWAY, 0, MoldormHandler::phase1Moldorm2);
+        registry.registerTick(
+                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_1_BOSS_DOORWAY, 0, MoldormHandler::phase1Moldorm2);
+        registry.registerTick(
+                ENTITY_MOLDORM, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 1, MoldormHandler::phase2Moldorm);
+        registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_2_DYING, 3, MoldormHandler::phase2Moldorm2);
+        registry.registerTick(
+                ENTITY_MOLDORM, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 5, MoldormHandler::phase2Moldorm3);
     }
 
     private static boolean phase1Moldorm(EntityFrameExecution state) {

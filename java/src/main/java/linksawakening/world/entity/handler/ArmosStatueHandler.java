@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.ArmosMotion;
 final class ArmosStatueHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_ARMOS_STATUE, EntityTickStage.PHASE_3_ARMOS_STATUE, ArmosStatueHandler::phase3ArmosStatue);
+                ENTITY_ARMOS_STATUE, EntityTickStage.PHASE_3_AFTER_LASER, 16, ArmosStatueHandler::phase3ArmosStatue);
     }
 
     private static boolean phase3ArmosStatue(EntityFrameExecution state) {

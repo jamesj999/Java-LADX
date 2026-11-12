@@ -12,7 +12,10 @@ import linksawakening.world.entity.motion.SpikedBeetleMotion;
 final class SpikedBeetleHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_SPIKED_BEETLE, EntityTickStage.PHASE_4_SPIKED_BEETLE, SpikedBeetleHandler::phase4SpikedBeetle);
+                ENTITY_SPIKED_BEETLE,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                22,
+                SpikedBeetleHandler::phase4SpikedBeetle);
     }
 
     private static boolean phase4SpikedBeetle(EntityFrameExecution state) {

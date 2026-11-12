@@ -14,7 +14,8 @@ import linksawakening.world.entity.motion.BomberMotion;
 /** ROM handler stages for Bomber. */
 final class BomberHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BOMBER, EntityTickStage.PHASE_2_BOMBER, BomberHandler::phase2Bomber);
+        registry.registerTick(
+                ENTITY_BOMBER, EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, 0, BomberHandler::phase2Bomber);
     }
 
     private static boolean phase2Bomber(EntityFrameExecution state) {

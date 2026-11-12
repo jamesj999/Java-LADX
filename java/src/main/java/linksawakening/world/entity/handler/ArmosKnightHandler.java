@@ -21,7 +21,7 @@ import linksawakening.world.entity.motion.BossIntroMotion;
 final class ArmosKnightHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_ARMOS_KNIGHT, EntityTickStage.PHASE_4_ARMOS_KNIGHT, ArmosKnightHandler::phase4ArmosKnight);
+                ENTITY_ARMOS_KNIGHT, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 1, ArmosKnightHandler::phase4ArmosKnight);
     }
 
     private static boolean phase4ArmosKnight(EntityFrameExecution state) {

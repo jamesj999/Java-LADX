@@ -15,9 +15,12 @@ import linksawakening.world.entity.motion.RollingBonesMotion;
 final class RollingBonesHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_2_ROLLING_BONES, RollingBonesHandler::phase2RollingBones);
+                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_2_DYING, 2, RollingBonesHandler::phase2RollingBones);
         registry.registerTick(
-                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_4_ROLLING_BONES, RollingBonesHandler::phase4RollingBones);
+                ENTITY_ROLLING_BONES,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                3,
+                RollingBonesHandler::phase4RollingBones);
     }
 
     private static boolean phase2RollingBones(EntityFrameExecution state) {

@@ -15,7 +15,7 @@ import linksawakening.world.entity.motion.PokeyMotion;
 /** ROM handler stages for Pokey. */
 final class PokeyHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_POKEY, EntityTickStage.PHASE_4_POKEY, PokeyHandler::phase4Pokey);
+        registry.registerTick(ENTITY_POKEY, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 8, PokeyHandler::phase4Pokey);
     }
 
     private static boolean phase4Pokey(EntityFrameExecution state) {

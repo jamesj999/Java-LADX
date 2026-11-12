@@ -15,7 +15,8 @@ import linksawakening.world.entity.motion.MadBomberMotion;
 /** ROM handler stages for MadBomber. */
 final class MadBomberHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_MAD_BOMBER, EntityTickStage.PHASE_2_MAD_BOMBER, MadBomberHandler::phase2MadBomber);
+        registry.registerTick(
+                ENTITY_MAD_BOMBER, EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, 1, MadBomberHandler::phase2MadBomber);
     }
 
     private static boolean phase2MadBomber(EntityFrameExecution state) {

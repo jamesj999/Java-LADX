@@ -10,7 +10,7 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for Peahat. */
 final class PeahatHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_PEAHAT, EntityTickStage.PHASE_3_PEAHAT, PeahatHandler::phase3Peahat);
+        registry.registerTick(ENTITY_PEAHAT, EntityTickStage.PHASE_3_AFTER_LASER, 15, PeahatHandler::phase3Peahat);
     }
 
     private static boolean phase3Peahat(EntityFrameExecution state) {

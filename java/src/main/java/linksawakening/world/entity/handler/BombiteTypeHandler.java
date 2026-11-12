@@ -18,13 +18,22 @@ import linksawakening.world.entity.motion.BombiteMotion;
 final class BombiteTypeHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_BOUNCING_BOMBITE, EntityTickStage.PHASE_2_BOMBITE_TYPE, BombiteTypeHandler::phase2BombiteType);
+                ENTITY_BOUNCING_BOMBITE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                9,
+                BombiteTypeHandler::phase2BombiteType);
         registry.registerTick(
-                ENTITY_TIMER_BOMBITE, EntityTickStage.PHASE_2_BOMBITE_TYPE, BombiteTypeHandler::phase2BombiteType);
+                ENTITY_TIMER_BOMBITE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                9,
+                BombiteTypeHandler::phase2BombiteType);
         registry.registerTick(
-                ENTITY_BOUNCING_BOMBITE, EntityTickStage.PHASE_3_BOMBITE_TYPE, BombiteTypeHandler::phase3BombiteType);
+                ENTITY_BOUNCING_BOMBITE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                0,
+                BombiteTypeHandler::phase3BombiteType);
         registry.registerTick(
-                ENTITY_TIMER_BOMBITE, EntityTickStage.PHASE_3_BOMBITE_TYPE, BombiteTypeHandler::phase3BombiteType);
+                ENTITY_TIMER_BOMBITE, EntityTickStage.PHASE_3_BEFORE_LASER, 0, BombiteTypeHandler::phase3BombiteType);
     }
 
     private static boolean phase2BombiteType(EntityFrameExecution state) {

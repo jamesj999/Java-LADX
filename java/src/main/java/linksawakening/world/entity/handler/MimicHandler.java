@@ -12,7 +12,8 @@ import linksawakening.world.entity.motion.MimicMotion;
 /** ROM handler stages for Mimic. */
 final class MimicHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_MIMIC, EntityTickStage.PHASE_2_MIMIC, MimicHandler::phase2Mimic);
+        registry.registerTick(
+                ENTITY_MIMIC, EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION, 2, MimicHandler::phase2Mimic);
     }
 
     private static boolean phase2Mimic(EntityFrameExecution state) {

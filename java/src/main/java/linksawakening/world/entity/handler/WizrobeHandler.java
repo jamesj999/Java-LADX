@@ -12,9 +12,11 @@ import linksawakening.world.entity.motion.WizrobeMotion;
 /** ROM handler stages for Wizrobe. */
 final class WizrobeHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_WIZROBE, EntityTickStage.PHASE_2_WIZROBE, WizrobeHandler::phase2Wizrobe);
-        registry.registerTick(ENTITY_WIZROBE, EntityTickStage.PHASE_2_WIZROBE_2, WizrobeHandler::phase2Wizrobe2);
-        registry.registerTick(ENTITY_WIZROBE, EntityTickStage.PHASE_3_WIZROBE, WizrobeHandler::phase3Wizrobe);
+        registry.registerTick(
+                ENTITY_WIZROBE, EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION, 7, WizrobeHandler::phase2Wizrobe);
+        registry.registerTick(
+                ENTITY_WIZROBE, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 6, WizrobeHandler::phase2Wizrobe2);
+        registry.registerTick(ENTITY_WIZROBE, EntityTickStage.PHASE_3_AFTER_LASER, 14, WizrobeHandler::phase3Wizrobe);
     }
 
     private static boolean phase2Wizrobe(EntityFrameExecution state) {

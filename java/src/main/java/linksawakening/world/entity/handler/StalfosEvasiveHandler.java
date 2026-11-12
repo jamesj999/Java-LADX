@@ -18,7 +18,8 @@ final class StalfosEvasiveHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
                 ENTITY_STALFOS_EVASIVE,
-                EntityTickStage.PHASE_3_STALFOS_EVASIVE,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                9,
                 StalfosEvasiveHandler::phase3StalfosEvasive);
     }
 

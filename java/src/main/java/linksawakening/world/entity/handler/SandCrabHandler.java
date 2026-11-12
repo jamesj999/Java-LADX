@@ -12,7 +12,8 @@ import linksawakening.world.entity.motion.SandCrabMotion;
 /** ROM handler stages for SandCrab. */
 final class SandCrabHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_SAND_CRAB, EntityTickStage.PHASE_4_SAND_CRAB, SandCrabHandler::phase4SandCrab);
+        registry.registerTick(
+                ENTITY_SAND_CRAB, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 13, SandCrabHandler::phase4SandCrab);
     }
 
     private static boolean phase4SandCrab(EntityFrameExecution state) {

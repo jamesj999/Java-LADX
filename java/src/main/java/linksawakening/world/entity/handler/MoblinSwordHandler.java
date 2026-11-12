@@ -15,9 +15,12 @@ import linksawakening.world.entity.motion.MoblinSwordMotion;
 final class MoblinSwordHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_MOBLIN_SWORD, EntityTickStage.PHASE_2_MOBLIN_SWORD, MoblinSwordHandler::phase2MoblinSword);
+                ENTITY_MOBLIN_SWORD,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                1,
+                MoblinSwordHandler::phase2MoblinSword);
         registry.registerTick(
-                ENTITY_MOBLIN_SWORD, EntityTickStage.PHASE_3_MOBLIN_SWORD, MoblinSwordHandler::phase3MoblinSword);
+                ENTITY_MOBLIN_SWORD, EntityTickStage.PHASE_3_BEFORE_LASER, 3, MoblinSwordHandler::phase3MoblinSword);
     }
 
     private static boolean phase2MoblinSword(EntityFrameExecution state) {

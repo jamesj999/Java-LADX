@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.PincerMotion;
 /** ROM handler stages for Pincer. */
 final class PincerHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_PINCER, EntityTickStage.PHASE_3_PINCER, PincerHandler::phase3Pincer);
+        registry.registerTick(ENTITY_PINCER, EntityTickStage.PHASE_3_BEFORE_LASER, 11, PincerHandler::phase3Pincer);
     }
 
     private static boolean phase3Pincer(EntityFrameExecution state) {

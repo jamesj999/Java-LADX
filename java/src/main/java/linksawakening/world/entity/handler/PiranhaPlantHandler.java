@@ -12,7 +12,10 @@ import linksawakening.world.entity.motion.PiranhaMotion;
 final class PiranhaPlantHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_PIRANHA_PLANT, EntityTickStage.PHASE_4_PIRANHA_PLANT, PiranhaPlantHandler::phase4PiranhaPlant);
+                ENTITY_PIRANHA_PLANT,
+                EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
+                9,
+                PiranhaPlantHandler::phase4PiranhaPlant);
     }
 
     private static boolean phase4PiranhaPlant(EntityFrameExecution state) {

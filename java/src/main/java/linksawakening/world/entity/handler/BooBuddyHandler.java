@@ -12,8 +12,10 @@ import linksawakening.world.entity.motion.BooBuddyMotion;
 /** ROM handler stages for BooBuddy. */
 final class BooBuddyHandler {
     static void install(EntityHandlerRegistration registry) {
-        registry.registerTick(ENTITY_BOO_BUDDY, EntityTickStage.PHASE_1_BOO_BUDDY, BooBuddyHandler::phase1BooBuddy);
-        registry.registerTick(ENTITY_BOO_BUDDY, EntityTickStage.PHASE_3_BOO_BUDDY, BooBuddyHandler::phase3BooBuddy);
+        registry.registerTick(
+                ENTITY_BOO_BUDDY, EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, 0, BooBuddyHandler::phase1BooBuddy);
+        registry.registerTick(
+                ENTITY_BOO_BUDDY, EntityTickStage.PHASE_3_AFTER_LASER, 6, BooBuddyHandler::phase3BooBuddy);
     }
 
     private static boolean phase1BooBuddy(EntityFrameExecution state) {

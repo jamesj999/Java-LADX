@@ -21,7 +21,10 @@ import linksawakening.world.entity.motion.KeyDropPointMotion;
 final class KeyDropPointHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_KEY_DROP_POINT, EntityTickStage.PHASE_2_KEY_DROP_POINT, KeyDropPointHandler::phase2KeyDropPoint);
+                ENTITY_KEY_DROP_POINT,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                6,
+                KeyDropPointHandler::phase2KeyDropPoint);
     }
 
     private static boolean phase2KeyDropPoint(EntityFrameExecution state) {

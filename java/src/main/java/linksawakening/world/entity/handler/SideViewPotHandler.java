@@ -16,11 +16,17 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 final class SideViewPotHandler {
     static void install(EntityHandlerRegistration registry) {
         registry.registerTick(
-                ENTITY_SIDE_VIEW_POT, EntityTickStage.PHASE_1_SIDE_VIEW_POT, SideViewPotHandler::phase1SideViewPot);
+                ENTITY_SIDE_VIEW_POT,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                0,
+                SideViewPotHandler::phase1SideViewPot);
         registry.registerTick(
-                ENTITY_SIDE_VIEW_POT, EntityTickStage.PHASE_1_SIDE_VIEW_POT_2, SideViewPotHandler::phase1SideViewPot2);
+                ENTITY_SIDE_VIEW_POT,
+                EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE,
+                1,
+                SideViewPotHandler::phase1SideViewPot2);
         registry.registerTick(
-                ENTITY_SIDE_VIEW_POT, EntityTickStage.PHASE_2_SIDE_VIEW_POT, SideViewPotHandler::phase2SideViewPot);
+                ENTITY_SIDE_VIEW_POT, EntityTickStage.PHASE_2_LIFTED, 0, SideViewPotHandler::phase2SideViewPot);
     }
 
     private static boolean phase1SideViewPot(EntityFrameExecution state) {
