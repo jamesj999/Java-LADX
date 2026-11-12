@@ -58,13 +58,13 @@ public final class HudOverlay {
         int[] itemTiles = INVENTORY_ITEM_TILES[itemId < INVENTORY_ITEM_TILES.length ? itemId : 0];
         writeTile(tilemap, col, ITEM_SLOT_ROW_TOP, itemTiles[0]);
         writeTile(tilemap, col, ITEM_SLOT_ROW_BOTTOM, itemTiles[3]);
-        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
-        writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes[0]);
-        writePalette(attrmap, col, ITEM_SLOT_ROW_BOTTOM, paletteIndexes[1]);
+        int paletteIndexes = InventoryItemPalettes.palettePair(itemId, player);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes >>> 8);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_BOTTOM, paletteIndexes & 255);
 
-        int[] numbers = InventoryItemNumbers.tiles(itemId, player);
-        writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, numbers[0]);
-        writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, numbers[1]);
+        long numbers = InventoryItemNumbers.tilePair(itemId, player);
+        writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, (int) (numbers >> 32));
+        writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, (int) numbers);
     }
 
     private static void patchRupees(int[] tilemap, int rupees) {

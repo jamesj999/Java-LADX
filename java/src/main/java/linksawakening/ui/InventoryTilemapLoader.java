@@ -1,5 +1,6 @@
 package linksawakening.ui;
 
+import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
@@ -109,5 +110,12 @@ public final class InventoryTilemapLoader {
     @Deprecated(forRemoval = true)
     public static InventoryTilemapLoader loadFromRom(byte[] romData) {
         return loadFromRom(romData == null ? null : new Rom(romData));
+    }
+    /** Replaces synchronous renderer scratch buffers, including zero padding. */
+    void copyInto(int[] tiles, int[] attributes) {
+        Arrays.fill(tiles, 0);
+        Arrays.fill(attributes, 0);
+        System.arraycopy(baseTilemap, 0, tiles, 0, Math.min(tiles.length, baseTilemap.length));
+        System.arraycopy(attrmap, 0, attributes, 0, Math.min(attributes.length, attrmap.length));
     }
 }

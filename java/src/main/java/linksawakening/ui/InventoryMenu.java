@@ -22,6 +22,8 @@ public final class InventoryMenu {
     private static final int SUBSCREEN_COLS = 2;
 
     private final InventoryTilemapLoader tilemapLoader;
+    private final int[] frameTiles = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
+    private final int[] frameAttributes = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final OcarinaSongMenu ocarinaSongMenu;
@@ -239,8 +241,9 @@ public final class InventoryMenu {
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
         if (romData != null)
             gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
-        int[] tilemap = tilemapLoader.copyBaseTilemap();
-        int[] attrmap = tilemapLoader.copyAttrmap();
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
         HudOverlay.apply(tilemap, attrmap, playerState);
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
@@ -314,8 +317,9 @@ public final class InventoryMenu {
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
         if (romData != null)
             gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
-        int[] tilemap = tilemapLoader.copyBaseTilemap();
-        int[] attrmap = tilemapLoader.copyAttrmap();
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
         HudOverlay.apply(tilemap, attrmap, playerState);
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);

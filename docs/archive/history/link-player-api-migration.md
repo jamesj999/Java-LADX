@@ -378,3 +378,30 @@ Internal ROM fields and parameters now use `Rom`. Byte overloads preserve partia
 - `public static TransientVfxSpriteSheet loadFromRom(byte[] romData)` in `java/src/main/java/linksawakening/vfx/TransientVfxSpriteSheet.java`: 1 external candidate file(s): `java/src/main/java/linksawakening/app/SessionBootstrap.java`
 
 Total: 14 byte-array compatibility delegates.
+
+## Allocation guards
+
+ROM-free synthetic-data measurements use `AllocationProbe.bytesPerIteration`,
+retained actions and five measured windows. Link includes actual walking and
+repeated sword swings; dialog stays on the printing path and consumes sounds;
+UI ticks and submits the fully open HUD/inventory into a retained HardwareFrame.
+No ROM integration annotation or original data is used by these guards.
+
+| Path | Baseline EA on/off, bytes/frame | Final EA on/off, bytes/frame | Guard |
+| --- | --- | --- | --- |
+| Link walking with sword swings | 0 / 0 | 0 / 0 | 8 |
+| Dialog printing and sound consumption | 12 / 12 | 0 / 0 | 8 |
+| HUD/inventory tick and submission | 3224 / 3224 | 0 / 0 | 8 |
+
+Zero measurements use an 8-byte noise allowance rather than a percentage of zero.
+Escape analysis was disabled only through `/tmp/r3-noea.gradle`, supplying
+`-XX:-DoEscapeAnalysis` to local test JVMs; build configuration is unchanged.
+UI submission consumes retained tile/attribute scratch arrays synchronously.
+Packed numeric/palette pairs remove short-lived arrays. Immutable singleton sound
+lists are reused; multiple-event lists still preserve order and ownership.
+The externally retained `closedWindow` snapshots keep independent arrays, with
+an aliasing assertion covering submission after snapshot publication.
+
+Correction to step 3 commit metrics: the measured raw-ROM declaration baseline
+was 43 (including locals), not the 42 stated in its message; final remains zero
+outside the 14 compatibility delegates.
