@@ -62,7 +62,7 @@ final class HookshotChainMotionTest {
 
     @Test
     void linkCollisionUsesTheEntityVisualYAndRomSmallHitbox() {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 0x01, 0, 0, 0, 0, 0, 0);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 0x01, 0, 0, 0, 0, 0, 0, 0, false);
 
         assertTrue(HookshotChainMotion.overlapsLink(state, 0x40, 0x50));
         assertFalse(HookshotChainMotion.overlapsLink(state, 0x40, 0x5A));
@@ -130,7 +130,7 @@ final class HookshotChainMotionTest {
     @ParameterizedTest
     @CsvSource({"-8, true", "9, false"})
     void returnCatchUsesTheCachedPositionBeforeMovement(int linkOffsetX, boolean caught) {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0x30, 0, 1, 0, 0);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0x30, 0, 1, 0, 0, 0, false);
         HookshotChainMotion.Step step = HookshotChainMotion.advance(state, 0x40 + linkOffsetX, 0x50, false);
         assertEquals(0x43, step.state().x());
         assertEquals(caught, step.reachedLink());
@@ -138,7 +138,7 @@ final class HookshotChainMotionTest {
 
     @Test
     void zeroVectorDistanceFollowsTheRomsDivisionLoop() {
-        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0, 0, 0, 0, 0);
+        HookshotChainMotion.State state = new HookshotChainMotion.State(0x40, 0x51, 1, 0, 0, 0, 0, 0, 0, 0, false);
         HookshotChainMotion.PullSpeed speed = HookshotChainMotion.pullLinkSpeed(state, 0x40, 0x50);
         assertEquals(0xD0, speed.speedX());
         assertEquals(0xD0, speed.speedY());

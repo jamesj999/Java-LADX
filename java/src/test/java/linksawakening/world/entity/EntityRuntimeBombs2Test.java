@@ -200,18 +200,17 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         assertEquals(0x30, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedXForTest(14));
         assertEquals(0x00, EntityRuntimeFixture.enemies(runtime).enemyRecoilSpeedYForTest(14));
         assertEquals(
-                List.of(new EntityCombatEvent(
-                        14,
-                        0x12,
-                        0,
-                        false,
-                        4,
-                        -1,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        0x03,
-                        EntityCombatEvent.SoundChannel.NONE,
-                        -1,
-                        null)),
+                List.of(linksawakening.world.entity.event.EntityCombatEvent.builder(14, 0x12)
+                        .linkDamage(0)
+                        .swordHit(false)
+                        .enemyDamage(4)
+                        .enemySpecialAction(-1)
+                        .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                        .soundId(0x03)
+                        .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                        .secondarySoundId(-1)
+                        .swordPokeVfx(null)
+                        .build()),
                 runtime.consumePendingEntityEvents());
     }
 

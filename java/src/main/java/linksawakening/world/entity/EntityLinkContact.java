@@ -87,19 +87,19 @@ final class EntityLinkContact {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
-        slot.events.add(new EntityCombatEvent(
-                slot.entity.slot(),
-                slot.entity.type(),
-                slot.linkDamage,
-                slot.swordHit,
-                slot.enemyDamage,
-                slot.enemySpecialAction,
-                slot.soundChannel,
-                slot.soundId,
-                slot.secondarySoundChannel,
-                slot.secondarySoundId,
-                slot.swordPokeVfx,
-                slot.linkCollisionResponse));
+        slot.events.add(
+                linksawakening.world.entity.event.EntityCombatEvent.builder(slot.entity.slot(), slot.entity.type())
+                        .linkDamage(slot.linkDamage)
+                        .swordHit(slot.swordHit)
+                        .enemyDamage(slot.enemyDamage)
+                        .enemySpecialAction(slot.enemySpecialAction)
+                        .soundChannel(slot.soundChannel)
+                        .soundId(slot.soundId)
+                        .secondarySoundChannel(slot.secondarySoundChannel)
+                        .secondarySoundId(slot.secondarySoundId)
+                        .swordPokeVfx(slot.swordPokeVfx)
+                        .linkCollisionResponse(slot.linkCollisionResponse)
+                        .build());
         return true;
     }
 }

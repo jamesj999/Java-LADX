@@ -194,18 +194,17 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(15));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(15));
         assertEquals(
-                List.of(new EntityCombatEvent(
-                        15,
-                        0x09,
-                        0,
-                        false,
-                        1,
-                        -1,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        0x03,
-                        EntityCombatEvent.SoundChannel.NONE,
-                        -1,
-                        null)),
+                List.of(linksawakening.world.entity.event.EntityCombatEvent.builder(15, 0x09)
+                        .linkDamage(0)
+                        .swordHit(false)
+                        .enemyDamage(1)
+                        .enemySpecialAction(-1)
+                        .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                        .soundId(0x03)
+                        .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                        .secondarySoundId(-1)
+                        .swordPokeVfx(null)
+                        .build()),
                 runtime.consumePendingEntityEvents());
         assertEquals(
                 EntityStatus.DISABLED,

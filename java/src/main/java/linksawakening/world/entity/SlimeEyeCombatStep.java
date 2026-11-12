@@ -89,19 +89,19 @@ final class SlimeEyeCombatStep {
                     : runtime.enemyCombatTables()
                             .contactDamageForGroup(runtime.combatTables().readEnemyHealthGroup(s));
             var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(e.x(), e.y(), e.z(), lx, ly, 0x14);
-            events.add(new EntityCombatEvent(
-                    s,
-                    0x5B,
-                    damage,
-                    false,
-                    0,
-                    -1,
-                    EntityCombatEvent.SoundChannel.NONE,
-                    -1,
-                    EntityCombatEvent.SoundChannel.NONE,
-                    -1,
-                    null,
-                    new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
+            events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(s, 0x5B)
+                    .linkDamage(damage)
+                    .swordHit(false)
+                    .enemyDamage(0)
+                    .enemySpecialAction(-1)
+                    .soundChannel(EntityCombatEvent.SoundChannel.NONE)
+                    .soundId(-1)
+                    .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                    .secondarySoundId(-1)
+                    .swordPokeVfx(null)
+                    .linkCollisionResponse(
+                            new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10))
+                    .build());
         }
         return true;
     }
@@ -156,19 +156,18 @@ final class SlimeEyeCombatStep {
             response = new EntityCombatEvent.LinkCollisionResponse(
                     vector.x() & 255, vector.y() & 255, attack.pegasusBoots() ? 0x10 : 4);
         }
-        events.add(new EntityCombatEvent(
-                s,
-                0x5B,
-                0,
-                true,
-                amount,
-                -1,
-                EntityCombatEvent.SoundChannel.JINGLE,
-                3,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                null,
-                response));
+        events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(s, 0x5B)
+                .linkDamage(0)
+                .swordHit(true)
+                .enemyDamage(amount)
+                .enemySpecialAction(-1)
+                .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                .soundId(3)
+                .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                .secondarySoundId(-1)
+                .swordPokeVfx(null)
+                .linkCollisionResponse(response)
+                .build());
 
         return true;
     }

@@ -23,19 +23,19 @@ final class EnemyContactRecoil {
                 moved.x(), moved.y(), moved.z(), owner.contactLinkX[slot], owner.contactLinkY[slot], 0x14);
         runtime.events()
                 .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        slot,
-                        moved.type(),
-                        0,
-                        false,
-                        0,
-                        -1,
-                        EntityCombatEvent.SoundChannel.NONE,
-                        -1,
-                        EntityCombatEvent.SoundChannel.NONE,
-                        -1,
-                        null,
-                        EntityCombatEvent.LinkAction.NONE,
-                        new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
+                .add(linksawakening.world.entity.event.EntityCombatEvent.builder(slot, moved.type())
+                        .linkDamage(0)
+                        .swordHit(false)
+                        .enemyDamage(0)
+                        .enemySpecialAction(-1)
+                        .soundChannel(EntityCombatEvent.SoundChannel.NONE)
+                        .soundId(-1)
+                        .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                        .secondarySoundId(-1)
+                        .swordPokeVfx(null)
+                        .linkAction(EntityCombatEvent.LinkAction.NONE)
+                        .linkCollisionResponse(
+                                new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10))
+                        .build());
     }
 }

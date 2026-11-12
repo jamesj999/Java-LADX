@@ -33,6 +33,8 @@ public record EntityProjectileEvent(
                 slot, 0x03, Kind.HOOKSHOT_PULL, 0, 0, SoundChannel.NONE, -1, false, false, 0, 0, speedX, speedY, 0);
     }
 
+    /** @deprecated External callers: audio.EnemyProjectileEventConsumerTest and GameplayMusicControllerTest. */
+    @Deprecated
     public EntityProjectileEvent(
             int slot,
             int type,
@@ -46,6 +48,8 @@ public record EntityProjectileEvent(
         this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId, remove, swordPokeVfx, 0, 0);
     }
 
+    /** @deprecated External callers: audio.EnemyProjectileEventConsumerTest and GameplayMusicControllerTest. */
+    @Deprecated
     public EntityProjectileEvent(
             int slot,
             int type,

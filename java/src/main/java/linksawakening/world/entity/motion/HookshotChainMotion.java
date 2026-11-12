@@ -54,30 +54,6 @@ public final class HookshotChainMotion {
             validateByte(speedYAccumulator, "speedYAccumulator");
             validateByte(entityState, "entityState");
         }
-
-        public State(
-                int x,
-                int y,
-                int z,
-                int direction,
-                int speedX,
-                int speedY,
-                int transitionCountdown,
-                int speedXAccumulator,
-                int speedYAccumulator) {
-            this(
-                    x,
-                    y,
-                    z,
-                    direction,
-                    speedX,
-                    speedY,
-                    transitionCountdown,
-                    speedXAccumulator,
-                    speedYAccumulator,
-                    0,
-                    false);
-        }
     }
 
     public record Step(State state, boolean collided, boolean reachedLink, boolean returning) {

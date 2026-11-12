@@ -126,18 +126,17 @@ final class PlayerProjectileDamageFrameStep {
 
         runtime.events()
                 .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        targetSlot,
-                        target.type(),
-                        0,
-                        false,
-                        enemyDamage,
-                        specialAction,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        0x03,
-                        secondaryChannel,
-                        secondarySoundId,
-                        null));
+                .add(linksawakening.world.entity.event.EntityCombatEvent.builder(targetSlot, target.type())
+                        .linkDamage(0)
+                        .swordHit(false)
+                        .enemyDamage(enemyDamage)
+                        .enemySpecialAction(specialAction)
+                        .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                        .soundId(0x03)
+                        .secondarySoundChannel(secondaryChannel)
+                        .secondarySoundId(secondarySoundId)
+                        .swordPokeVfx(null)
+                        .build());
         return true;
     }
 }

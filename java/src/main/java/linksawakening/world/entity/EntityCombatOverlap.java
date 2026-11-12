@@ -92,19 +92,20 @@ final class EntityCombatOverlap {
                         frame.linkEntityX(),
                         frame.linkEntityY(),
                         0x12);
-                slot.events.add(new EntityCombatEvent(
-                        slot.entity.slot(),
-                        slot.entity.type(),
-                        0,
-                        false,
-                        0,
-                        -1,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        0x09,
-                        EntityCombatEvent.SoundChannel.NONE,
-                        -1,
-                        null,
-                        new EntityCombatEvent.LinkCollisionResponse(vector.x() & 0xFF, vector.y() & 0xFF, 0x0C)));
+                slot.events.add(linksawakening.world.entity.event.EntityCombatEvent.builder(
+                                slot.entity.slot(), slot.entity.type())
+                        .linkDamage(0)
+                        .swordHit(false)
+                        .enemyDamage(0)
+                        .enemySpecialAction(-1)
+                        .soundChannel(EntityCombatEvent.SoundChannel.JINGLE)
+                        .soundId(0x09)
+                        .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                        .secondarySoundId(-1)
+                        .swordPokeVfx(null)
+                        .linkCollisionResponse(
+                                new EntityCombatEvent.LinkCollisionResponse(vector.x() & 0xFF, vector.y() & 0xFF, 0x0C))
+                        .build());
                 return false;
             }
         }
@@ -131,19 +132,19 @@ final class EntityCombatOverlap {
             EntityCombatEvent.LinkAction linkAction = runtime.physicsTables().readGroundInteractionSideScrolling()
                     ? EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING
                     : EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN;
-            slot.events.add(new EntityCombatEvent(
-                    slot.entity.slot(),
-                    slot.entity.type(),
-                    0,
-                    false,
-                    0,
-                    -1,
-                    EntityCombatEvent.SoundChannel.WAVE,
-                    0x0E,
-                    EntityCombatEvent.SoundChannel.NONE,
-                    -1,
-                    null,
-                    linkAction));
+            slot.events.add(
+                    linksawakening.world.entity.event.EntityCombatEvent.builder(slot.entity.slot(), slot.entity.type())
+                            .linkDamage(0)
+                            .swordHit(false)
+                            .enemyDamage(0)
+                            .enemySpecialAction(-1)
+                            .soundChannel(EntityCombatEvent.SoundChannel.WAVE)
+                            .soundId(0x0E)
+                            .secondarySoundChannel(EntityCombatEvent.SoundChannel.NONE)
+                            .secondarySoundId(-1)
+                            .swordPokeVfx(null)
+                            .linkAction(linkAction)
+                            .build());
             return false;
         }
         return true;
