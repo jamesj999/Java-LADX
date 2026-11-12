@@ -63,6 +63,13 @@ public final class Rom {
         return Byte.toUnsignedInt(data[offset]) | (Byte.toUnsignedInt(data[offset + 1]) << 8);
     }
 
+    /** Copies a validated flat ROM span directly into caller-owned storage without allocation. */
+    public void copyInto(int offset, byte[] destination, int destinationOffset, int length) {
+        Objects.checkFromIndexSize(offset, length, data.length);
+        Objects.checkFromIndexSize(destinationOffset, length, destination.length);
+        System.arraycopy(data, offset, destination, destinationOffset, length);
+    }
+
     public byte[] bytes(RomAddress address, int length) {
         int offset = checkedOffset(address, length);
         return Arrays.copyOfRange(data, offset, offset + length);

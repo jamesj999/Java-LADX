@@ -232,8 +232,8 @@ public final class IndexedRenderer {
             boolean flipY,
             int[] palette) {
         int baseTileIndex = tileIndex & 0xFE;
-        Tile top = tiles.tile(flipY ? baseTileIndex + 1 : baseTileIndex);
-        Tile bottom = tiles.tile(flipY ? baseTileIndex : baseTileIndex + 1);
+        Tile top = tiles.readOnlyTile(flipY ? baseTileIndex + 1 : baseTileIndex);
+        Tile bottom = tiles.readOnlyTile(flipY ? baseTileIndex : baseTileIndex + 1);
         drawSpriteTile8x16(buffer, top, bottom, screenX, screenY, flipX, flipY, palette);
     }
 
