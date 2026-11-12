@@ -1,9 +1,10 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.room.RoomSession.ChestOpenResult;
 
 /** RoomDoorInteractions operations for the live room session. */
 final class RoomDoorInteractions {

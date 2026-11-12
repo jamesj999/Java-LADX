@@ -81,7 +81,7 @@ final class RoomSessionFollowersTest {
 
         RoomEntity marin = syntheticEntity(0xC1);
         assertNull(
-                RoomInteractionGeometry.pitTransitionFor(marin, pit, RoomSession.LINK_MOTION_FALLING_DOWN),
+                RoomInteractionGeometry.pitTransitionFor(marin, pit, RoomSessionRules.LINK_MOTION_FALLING_DOWN),
                 "Marin only falls through a well");
 
         OverworldCollision.GroundInteractionSample well =
@@ -90,7 +90,7 @@ final class RoomSessionFollowersTest {
                 marin, well, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE));
         assertEquals(
                 new RoomEntityGroundInteraction.PitTransition(0x48, 0x60),
-                RoomInteractionGeometry.pitTransitionFor(marin, well, RoomSession.LINK_MOTION_FALLING_DOWN));
+                RoomInteractionGeometry.pitTransitionFor(marin, well, RoomSessionRules.LINK_MOTION_FALLING_DOWN));
     }
 
     @Test

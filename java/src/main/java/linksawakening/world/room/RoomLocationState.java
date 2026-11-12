@@ -1,11 +1,11 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.world.transition.Warp;
 
 final class RoomLocationState {
-    final long roomSessionId = ++nextRoomSessionId;
+    final long roomSessionId = ++RoomSession.nextRoomSessionId;
     ActiveRoom activeRoom;
     /** Increments on every ROM room load, including a reload of the same room. */
     long roomLoadSerial;

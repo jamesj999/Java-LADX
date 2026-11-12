@@ -1,11 +1,12 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.object.OverworldBushInteraction;
+import linksawakening.world.room.RoomSession.ShovelStartResult;
 import linksawakening.world.transition.Warp;
 
 final class RoomShovelActions {

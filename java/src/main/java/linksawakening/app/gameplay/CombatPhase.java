@@ -44,7 +44,7 @@ final class CombatPhase {
                             context.link().romEntityX(),
                             context.link().romEntityY(),
                             context.link().isAirborne(),
-                            context.roomSession().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                            context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
                                     ? context.link().romSpeedY()
                                     : context.link().zVelocity(),
                             !context.debugNoClip(),

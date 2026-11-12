@@ -1,6 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 final class RoomDungeonView implements RoomDungeon {

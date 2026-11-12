@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 /** Immutable snapshot of the app inputs used by one entity frame. */
 public record EntityFrameInputs(

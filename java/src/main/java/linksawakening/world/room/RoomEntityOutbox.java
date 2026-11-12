@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.ArrayList;
 import java.util.List;
