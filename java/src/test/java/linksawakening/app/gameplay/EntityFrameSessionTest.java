@@ -22,7 +22,7 @@ class EntityFrameSessionTest {
         }
         game.initializeHeadlessNewGame();
         try {
-            var c = new GameplaySimulation(SessionTestAccess.context(game));
+            var c = SessionTestAccess.context(game).runtime().flows().simulation();
             var order = new ArrayList<String>();
             var driver = new LinkMotionDriver() {
                 public void capture(Link l) {
@@ -53,7 +53,7 @@ class EntityFrameSessionTest {
         }
         game.initializeHeadlessNewGame();
         try {
-            var c = new GameplaySimulation(SessionTestAccess.context(game));
+            var c = SessionTestAccess.context(game).runtime().flows().simulation();
             c.link().setPixelPosition(50, 60);
             c.link().captureRomFinalPosition();
             c.link().setPixelPosition(70, 80);
@@ -79,7 +79,7 @@ class EntityFrameSessionTest {
         }
         game.initializeHeadlessNewGame();
         try {
-            var c = new GameplaySimulation(SessionTestAccess.context(game));
+            var c = SessionTestAccess.context(game).runtime().flows().simulation();
             linksawakening.world.room.RoomFrameTestAccess.music(c.roomSession(), 0x18);
             var calls = new ArrayList<String>();
             var routing = new EntityDialogRouting() {
@@ -117,7 +117,7 @@ class EntityFrameSessionTest {
         }
         game.initializeHeadlessNewGame();
         try {
-            var c = new GameplaySimulation(SessionTestAccess.context(game));
+            var c = SessionTestAccess.context(game).runtime().flows().simulation();
             int hearts = c.playerState().maxHearts();
             linksawakening.world.room.RoomFrameTestAccess.heart(c.roomSession());
             var phase = new EntityPhase();

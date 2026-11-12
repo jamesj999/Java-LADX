@@ -388,16 +388,16 @@ public final class HeadlessGameDriver {
         private final Link link;
 
         public Diagnostics(SessionContext context) {
-            this.gpu = context.gpu();
-            this.roomSession = context.roomSession();
-            this.transitionController = context.transitionController();
-            this.frameCounter = context.frameCounter();
-            this.scrollController = context.scrollController();
-            this.playerState = context.playerState();
-            this.inventoryMenu = context.inventoryMenu();
-            this.dialogController = context.dialogController();
-            this.equipmentController = context.equipmentController();
-            this.link = context.link();
+            this.gpu = context.services().rom().gpu();
+            this.roomSession = context.services().world().roomSession();
+            this.transitionController = context.services().world().transitionController();
+            this.frameCounter = context.state().clock().value();
+            this.scrollController = context.services().world().scrollController();
+            this.playerState = context.services().player().playerState();
+            this.inventoryMenu = context.services().ui().inventoryMenu();
+            this.dialogController = context.services().ui().dialogController();
+            this.equipmentController = context.services().player().equipmentController();
+            this.link = context.services().player().link();
         }
 
         public GPU gpu() {

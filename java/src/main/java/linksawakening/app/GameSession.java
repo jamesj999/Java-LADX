@@ -45,13 +45,13 @@ public class GameSession implements AutoCloseable {
     SessionContext context;
 
     public RunState lifecycle() {
-        return context.lifecycle;
+        return context.lifecycle();
     }
 
     public byte[] headlessFrame() {
         update();
-        context.composeFrameBuffer();
-        return context.services.visual().indexedDisplayBuffer().clone();
+        context.runtime().presentation().composeFrameBuffer();
+        return context.services().visual().indexedDisplayBuffer().clone();
     }
 
     void stepWithoutRender() {
@@ -60,24 +60,25 @@ public class GameSession implements AutoCloseable {
 
     public void run(String[] args) {
         initialize(false);
-        if (StartupCoordinator.shouldStartIntroCutscene(context.currentAppConfig())) {
-            context.router().startIntroCutscene();
-        } else if (context.currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
-                || !context.currentAppConfig().showTitleScreen()) {
-            context.router().startConfiguredGameplay();
+        if (StartupCoordinator.shouldStartIntroCutscene(
+                context.state().options().config())) {
+            context.runtime().flows().router().startIntroCutscene();
+        } else if (context.state().options().config().startMode() == AppConfig.StartMode.NORMAL
+                || !context.state().options().config().showTitleScreen()) {
+            context.runtime().flows().router().startConfiguredGameplay();
         } else {
-            context.router().startTitleScreenWithoutIntro();
+            context.runtime().flows().router().startTitleScreenWithoutIntro();
         }
 
-        context.host.open(context::onKeyEvent);
+        context.host().open(context.runtime().input()::onKeyEvent);
 
         long nextFrameNs = System.nanoTime();
 
-        while (!context.host.shouldClose() && context.lifecycle.running()) {
-            context.host.pollEvents();
+        while (!context.host().shouldClose() && context.lifecycle().running()) {
+            context.host().pollEvents();
             update();
-            context.composeFrameBuffer();
-            context.host.present(context.services.visual().indexedDisplayBuffer());
+            context.runtime().presentation().composeFrameBuffer();
+            context.host().present(context.services().visual().indexedDisplayBuffer());
 
             nextFrameNs += frameDurationNs;
             long sleepNs = nextFrameNs - System.nanoTime();
@@ -101,7 +102,7 @@ public class GameSession implements AutoCloseable {
     }
 
     public void headlessButton(String button, boolean pressed) {
-        context.inputRouter().headlessButton(button, pressed);
+        context.runtime().flows().inputRouter().headlessButton(button, pressed);
     }
 
     public GameSession() {
@@ -120,84 +121,77 @@ public class GameSession implements AutoCloseable {
     public void initializeHeadlessIntro() {
         if (context != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
-        context.router().startIntroCutscene();
+        context.runtime().flows().router().startIntroCutscene();
     }
 
     void update() {
-        if (context.debug.debugMenu != null && context.debug.debugMenu.isOpen()) return;
+        if (context.state().debug().debugMenu != null
+                && context.state().debug().debugMenu.isOpen()) return;
         clock.advance();
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(clock.value(), 0);
 
-        context.musicDirector.tick();
+        context.runtime().flows().music().tick();
 
-        context.screens.currentScreen.tick();
+        context.state().screens().currentScreen.tick();
     }
 
     void cleanup() {
-        context.host.releasePresentation();
-        if (context.services.audio().dialogSoundOutput() != null) {
-            context.services.audio().dialogSoundOutput().close();
-        }
-        if (context.services.audio().musicPlayer() != null) {
-            context.services.audio().musicPlayer().close();
-        }
-
-        context.host.close();
+        context.runtime().shutdown().close();
     }
 
     public void initializeHeadlessNewGame() {
         if (context != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
-        context.services.ui().dialogController().setPlayerName("A");
-        context.saves().startNewGame();
+        context.services().ui().dialogController().setPlayerName("A");
+        context.runtime().flows().saves().startNewGame();
     }
 
     private void initialize(boolean headless) {
-        context = new SessionContext(this, headless);
+        context = SessionAssembly.build(this, headless);
     }
 
     void onKeyEvent(int key, int action) {
-        context.onKeyEvent(key, action);
+        context.runtime().input().onKeyEvent(key, action);
     }
 
     private void debugTeleport(Warp destination) {
-        context.debugTeleport(destination);
+        context.runtime().flows().teleporter().teleport(destination);
     }
 
     SaveCoordinator saves() {
-        return context.saves();
+        return context.runtime().flows().saves();
     }
 
     ScreenRouter router() {
-        return context.router();
+        return context.runtime().flows().router();
     }
 
     RenderStateAssembler renderer() {
-        return context.renderer();
+        return context.runtime().flows().renderer();
     }
 
     InputRouter inputRouter() {
-        return context.inputRouter();
+        return context.runtime().flows().inputRouter();
     }
 
     OpeningStory openingStory() {
-        return context.openingStory();
+        return context.runtime().flows().interactions().story();
     }
 
     GameplaySimulation simulation() {
-        return context.simulation();
+        return context.runtime().flows().simulation();
     }
 
     BushInteraction bushes() {
-        return context.bushes();
+        return context.runtime().flows().interactions().bush();
     }
 
     DialogInteractions dialogs() {
-        return context.dialogs();
+        return context.runtime().flows().interactions().dialogs();
     }
 
     LiftInteraction lifting() {
-        return context.lifting();
+        return context.runtime().flows().interactions().lift();
     }
 }

@@ -13,8 +13,12 @@ public record WorldServices(
         RoomSession roomSession,
         RoomTransitionCoordinator roomTransitionCoordinator,
         OverworldCollision overworldCollision,
-        OverworldBushInteraction overworldBushInteraction) {
+        OverworldBushInteraction overworldBushInteraction,
+        linksawakening.world.transition.ScrollController scrollController,
+        linksawakening.world.transition.TransitionController transitionController) {
     public WorldServices {
+        Objects.requireNonNull(scrollController);
+        Objects.requireNonNull(transitionController);
         Objects.requireNonNull(roomSession);
         Objects.requireNonNull(roomTransitionCoordinator);
         Objects.requireNonNull(overworldCollision);

@@ -14,36 +14,31 @@ public final class SessionTestAccess {
     }
 
     public static Object owner(GameSession session, String name) throws Exception {
-        try {
-            GameSession.class.getDeclaredField(name);
-            return session;
-        } catch (NoSuchFieldException ignored) {
+        var c = session.context;
+        var s = c.services();
+        for (Object value : new Object[] {
+            session,
+            c.lifecycle(),
+            c.runtime().saves(),
+            c.state().options(),
+            c.state().scene(),
+            c.state().debug(),
+            c.state().screens(),
+            s.rom(),
+            s.audio(),
+            s.input(),
+            s.world(),
+            s.player(),
+            s.ui(),
+            s.visual()
+        }) {
             try {
-                session.context.getClass().getDeclaredField(name);
-                return session.context;
+                value.getClass().getDeclaredField(name);
+                return value;
             } catch (NoSuchFieldException absent) {
             }
-            for (String holder : new String[] {"lifecycle", "saveState", "services", "scene", "debug", "screens"}) {
-                Field field = SessionContext.class.getDeclaredField(holder);
-                field.setAccessible(true);
-                Object value = field.get(session.context);
-                try {
-                    value.getClass().getDeclaredField(name);
-                    return value;
-                } catch (NoSuchFieldException absent) {
-                }
-            }
-            SessionServices s = session.context.services;
-            for (Object value :
-                    new Object[] {s.rom(), s.audio(), s.input(), s.world(), s.player(), s.ui(), s.visual()}) {
-                try {
-                    value.getClass().getDeclaredField(name);
-                    return value;
-                } catch (NoSuchFieldException absent) {
-                }
-            }
-            throw new NoSuchFieldException(name);
         }
+        throw new NoSuchFieldException(name);
     }
 
     public static Field field(GameSession session, String name) throws Exception {

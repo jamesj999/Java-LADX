@@ -59,7 +59,7 @@ public final class SessionWiring {
                 playerGraphics,
                 random);
         var transitions = WorldWiring.transitions(rooms, playerState, transition, scroll, audio.gameplaySoundSink());
-        var world = new WorldServices(rooms, transitions, collision, bushes);
+        var world = new WorldServices(rooms, transitions, collision, bushes, scroll, transition);
         return new Built(
                 new SessionServices(romServices, audio, input, world, player, ui, visual), graphics.scene(), saves);
     }

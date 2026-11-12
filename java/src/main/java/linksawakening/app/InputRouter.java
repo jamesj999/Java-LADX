@@ -4,11 +4,16 @@ import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.Objects;
+import linksawakening.app.debug.*;
+import linksawakening.app.gameplay.*;
 import linksawakening.app.gameplay.DialogInteractions;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
 import linksawakening.app.screen.FileSaveScreen;
 import linksawakening.app.screen.GameplayScreen;
 import linksawakening.app.screen.Screen;
 import linksawakening.app.screen.TitleScreen;
+import linksawakening.app.story.*;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
@@ -22,87 +27,104 @@ import linksawakening.ui.InventoryController;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.transition.*;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
 public final class InputRouter implements linksawakening.app.gameplay.DebugScroll {
-    private final SessionContext context;
+    private final InputServices input;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final SessionState state;
+    private final InputActions actions;
 
-    public InputRouter(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public InputRouter(
+            InputServices input,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            SessionState state,
+            InputActions actions) {
+        this.input = Objects.requireNonNull(input);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.state = Objects.requireNonNull(state);
+        this.actions = Objects.requireNonNull(actions);
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public TransitionController transitionController() {
-        return context.transitionController();
+        return world.transitionController();
     }
 
     public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return context.roomTransitionCoordinator();
+        return world.roomTransitionCoordinator();
     }
 
     public int ROOM_PIXEL_WIDTH() {
-        return context.roomPixelWidth();
+        return 160;
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.roomPixelHeight();
+        return 128;
     }
 
     public ScrollController scrollController() {
-        return context.scrollController();
+        return world.scrollController();
     }
 
     public InputConfig inputConfig() {
-        return context.inputConfig();
+        return input.inputConfig();
     }
 
     public InputState inputState() {
-        return context.inputState();
+        return input.inputState();
     }
 
     public InventoryController inventoryController() {
-        return context.inventoryController();
+        return ui.inventoryController();
     }
 
     public DialogController dialogController() {
-        return context.dialogController();
+        return ui.dialogController();
     }
 
     public RomTables romTables() {
-        return context.romTables();
+        return actions.tables();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public AppConfig config() {
-        return context.config();
+        return state.options().config();
     }
 
     public linksawakening.app.screen.SessionLifecycle stop() {
-        return context.stop();
+        return actions.lifecycle();
     }
 
     public DebugActions toggleDebug() {
-        return context.inputRouterToggleDebug();
+        return actions.debug();
     }
 
     public Screen screen() {
-        return context.navigator.current();
+        return actions.navigator().current();
     }
 
     public OpeningStory story() {
-        return context.story();
+        return actions.story();
     }
 
     public DialogInteractions dialogs() {
-        return context.dialogInteractions();
+        return actions.dialogs();
     }
 
     public void onKeyEvent(int key, int action) {
@@ -124,7 +146,7 @@ public final class InputRouter implements linksawakening.app.gameplay.DebugScrol
 
         if (action == GLFW_PRESS && config().debugEnabled()) {
             if (key == GLFW_KEY_F2) {
-                context.navigator.startDebugGameplay();
+                actions.navigator().startDebugGameplay();
                 return;
             }
             if (key == GLFW_KEY_F3) {
@@ -146,13 +168,13 @@ public final class InputRouter implements linksawakening.app.gameplay.DebugScrol
 
         if (story().marinWakeUpBlocksKeyInput()) {
             if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig(), dialogController())) {
-                context.gameplayInput().consume();
+                state.input().consume();
             }
             return;
         }
 
         if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig(), dialogController())) {
-            context.gameplayInput().consume();
+            state.input().consume();
             return;
         }
         // ApplyGotItem bypasses InitGotItemSequence ($00:1040-1077),
@@ -276,7 +298,7 @@ public final class InputRouter implements linksawakening.app.gameplay.DebugScrol
                         || shouldEnterFileSave(
                                 inputConfig(), inputState(), inputConfig().selectKey(), GLFW_PRESS))
                 && canPresentFileSave()) {
-            context.saves().startFileSave();
+            actions.saves().startFileSave();
             return true;
         }
         return false;

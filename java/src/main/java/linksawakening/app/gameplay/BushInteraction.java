@@ -3,7 +3,11 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import linksawakening.app.SessionContext;
+import linksawakening.app.*;
+import linksawakening.app.debug.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
+import linksawakening.app.story.*;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
@@ -14,42 +18,49 @@ import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.*;
 import linksawakening.world.transition.Warp;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class BushInteraction {
-    private final SessionContext context;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final VisualServices visual;
+    private final GameplaySounds sounds;
 
-    public BushInteraction(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public BushInteraction(WorldServices world, PlayerServices player, VisualServices visual, GameplaySounds sounds) {
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.visual = Objects.requireNonNull(visual);
+        this.sounds = Objects.requireNonNull(sounds);
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public OverworldBushInteraction overworldBushInteraction() {
-        return context.overworldBushInteraction();
+        return world.overworldBushInteraction();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public EquipmentController equipmentController() {
-        return context.equipmentController();
+        return player.equipmentController();
     }
 
     public GameplaySoundSink gameplaySoundSink() {
-        return context.gameplaySoundSink();
+        return sounds.sink();
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return context.transientVfxSystem();
+        return visual.transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.droppableRupeeSystem();
+        return visual.droppableRupeeSystem();
     }
 
     private static final int OBJECT_GROUND_STAIRS = 0xC6;

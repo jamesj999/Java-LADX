@@ -3,7 +3,11 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import linksawakening.app.SessionContext;
+import linksawakening.app.*;
+import linksawakening.app.debug.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
+import linksawakening.app.story.*;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.DialogTextLoader;
@@ -16,45 +20,59 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestOpenResult;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.*;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class DialogInteractions {
-    private final SessionContext context;
+    private final InputServices input;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final DialogBlockers dialogBlockers;
 
-    public DialogInteractions(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public DialogInteractions(
+            InputServices input,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            DialogBlockers dialogBlockers) {
+        this.input = Objects.requireNonNull(input);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.dialogBlockers = Objects.requireNonNull(dialogBlockers);
     }
 
     public InputConfig inputConfig() {
-        return context.inputConfig();
+        return input.inputConfig();
     }
 
     public OverworldDialogInteraction overworldDialogInteraction() {
-        return context.overworldDialogInteraction();
+        return ui.overworldDialogInteraction();
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public PlayerState playerState() {
-        return context.playerState();
+        return player.playerState();
     }
 
     public DialogController dialogController() {
-        return context.dialogController();
+        return ui.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.dialogTextLoader();
+        return ui.dialogTextLoader();
     }
 
     public linksawakening.app.gameplay.DialogBlockers blockers() {
-        return context.dialogsBlockers();
+        return dialogBlockers;
     }
 
     public boolean tryOpenOverworldDialog(int key) {

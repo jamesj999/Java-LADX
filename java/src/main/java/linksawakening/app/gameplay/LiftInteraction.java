@@ -2,7 +2,6 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.world.room.RoomConstants.*;
 
-import linksawakening.app.SessionContext;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -29,10 +28,6 @@ public final class LiftInteraction {
         this.playerState = playerState;
         this.link = link;
         this.roomSession = roomSession;
-    }
-
-    public LiftInteraction(SessionContext context) {
-        this(context.inputState(), context.inputConfig(), context.playerState(), context.link(), context.roomSession());
     }
 
     public InputState inputState() {

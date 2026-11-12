@@ -3,7 +3,11 @@ package linksawakening.app.story;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import linksawakening.app.SessionContext;
+import linksawakening.app.*;
+import linksawakening.app.debug.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
@@ -21,64 +25,81 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.*;
 
 public final class OpeningStory implements OpeningRestoration {
-    private final SessionContext context;
+    private final PlayerServices player;
+    private final WorldServices world;
+    private final InputServices input;
+    private final UiServices ui;
+    private final SessionState state;
+    private final OpeningActions actions;
 
-    public OpeningStory(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public OpeningStory(
+            PlayerServices player,
+            WorldServices world,
+            InputServices input,
+            UiServices ui,
+            SessionState state,
+            OpeningActions actions) {
+        this.player = Objects.requireNonNull(player);
+        this.world = Objects.requireNonNull(world);
+        this.input = Objects.requireNonNull(input);
+        this.ui = Objects.requireNonNull(ui);
+        this.state = Objects.requireNonNull(state);
+        this.actions = Objects.requireNonNull(actions);
     }
 
     public int frameCounter() {
-        return context.frameCounter();
+        return state.clock().value();
     }
 
     public MarinWakeUpMotion newGameWakeUpMotion() {
-        return context.newGameWakeUpMotion();
+        return state.opening().wakeUp();
     }
 
     public TarinShieldMotion newGameTarinShieldMotion() {
-        return context.newGameTarinShieldMotion();
+        return state.opening().shield();
     }
 
     public int[] newGameTarinShieldPalette() {
-        return context.newGameTarinShieldPalette();
+        return actions.shieldPalette();
     }
 
     public InputState inputState() {
-        return context.inputState();
+        return input.inputState();
     }
 
     public InputConfig inputConfig() {
-        return context.inputConfig();
+        return input.inputConfig();
     }
 
     public DialogController dialogController() {
-        return context.dialogController();
+        return ui.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.dialogTextLoader();
+        return ui.dialogTextLoader();
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public PlayerState playerState() {
-        return context.playerState();
+        return player.playerState();
     }
 
     public linksawakening.app.gameplay.DialogBlockers blockers() {
-        return context.blockers();
+        return actions.blockers();
     }
 
     public MusicRequests music() {
-        return context.music();
+        return actions.music();
     }
 
     public boolean tickNewGameWakeUp() {
@@ -278,11 +299,11 @@ public final class OpeningStory implements OpeningRestoration {
     }
 
     public void restoreWake(MarinWakeUpMotion motion) {
-        context.openingState().wakeUp(motion);
+        state.opening().wakeUp(motion);
     }
 
     public void restoreShield(TarinShieldMotion motion) {
-        context.openingState().shield(motion);
+        state.opening().shield(motion);
     }
 
     public void refreshPresentation() {

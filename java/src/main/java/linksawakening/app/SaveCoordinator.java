@@ -4,6 +4,11 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.io.IOException;
 import java.util.Objects;
+import linksawakening.app.debug.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
+import linksawakening.app.story.*;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
@@ -16,61 +21,84 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.FileSaveController;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.*;
 import linksawakening.world.transition.Warp;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
 public final class SaveCoordinator implements linksawakening.app.screen.SaveActions {
-    private final SessionContext context;
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final InputServices input;
+    private final SessionState state;
+    private final SaveState saveState;
+    private final ScreenNavigator navigator;
+    private final StoryActions storyActions;
 
-    public SaveCoordinator(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public SaveCoordinator(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            InputServices input,
+            SessionState state,
+            SaveState saveState,
+            ScreenNavigator navigator,
+            StoryActions storyActions) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.input = Objects.requireNonNull(input);
+        this.state = Objects.requireNonNull(state);
+        this.saveState = Objects.requireNonNull(saveState);
+        this.navigator = Objects.requireNonNull(navigator);
+        this.storyActions = Objects.requireNonNull(storyActions);
     }
 
     public PlayerState playerState() {
-        return context.playerState();
+        return player.playerState();
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public GPU gpu() {
-        return context.gpu();
+        return rom.gpu();
     }
 
     public Rom romData() {
-        return context.romData();
+        return rom.romData();
     }
 
     public SaveRamStore saveRamStore() {
-        return context.saveRamStore();
+        return saveState.saveRamStore;
     }
 
     public int currentSaveSlot() {
-        return context.currentSaveSlot();
+        return state.screens().currentSaveSlot;
     }
 
     public InputState inputState() {
-        return context.inputState();
+        return input.inputState();
     }
 
     private void enterGameplay() {
-        context.screens.fileMenuController = null;
-        context.screens.fileSaveController = null;
-        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
     }
 
     private void enterFileSave() {
-        context.navigator.show(linksawakening.app.screen.ScreenKind.FILE_SAVE);
-        context.screens.fileMenuController = null;
+        navigator.show(linksawakening.app.screen.ScreenKind.FILE_SAVE);
+        state.screens().fileMenuController = null;
     }
 
     private void setFileSaveController(FileSaveController controller) {
-        context.screens.fileSaveController = controller;
+        state.screens().fileSaveController = controller;
     }
 
     public void startNewGame() {
@@ -97,14 +125,14 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
                                 -1),
                         0);
         link().setRoomEntryRomPosition(profile.entryX(), profile.entryY());
-        context.openingState().initialize();
-        context.music().playDirectMusic(MusicDirector.newGameHouseMusicTrack());
-        context.story().updateNewGameMarinPresentation();
+        state.opening().initialize();
+        storyActions.music().playDirectMusic(MusicDirector.newGameHouseMusicTrack());
+        storyActions.story().updateNewGameMarinPresentation();
     }
 
     public void startSavedGame(SaveSlotState saved) {
         enterGameplay();
-        context.openingState().clear();
+        state.opening().clear();
         playerState().applySavedGame(saved);
         roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
         roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
@@ -149,7 +177,7 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
                                 saved.spawnPositionY(),
                                 -1),
                         saved.spawnIndoorRoom());
-        context.story().restoreNewGameHouseRuntimeIfNeeded(saved);
+        storyActions.story().restoreNewGameHouseRuntimeIfNeeded(saved);
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
@@ -160,14 +188,14 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
                             .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
-        context.openingState().clear();
+        state.opening().clear();
         link().finishGameOver();
         playerState().clearResourceBuffersForDebug();
         playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
         roomSession().progress().clearGameOverPowerCounter();
         roomSession().progress().resetGameOverSwitchBlocks();
         if (option == 1) {
-            context.navigator.startFileSelection();
+            navigator.startFileSelection();
             return;
         }
         if (option == 0 && currentSaveSlot() >= 0) {
@@ -202,13 +230,13 @@ public final class SaveCoordinator implements linksawakening.app.screen.SaveActi
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist file-menu mutation", exception);
         }
-        context.navigator.startFileSelection();
+        navigator.startFileSelection();
     }
 
     public void startFileSave() {
         enterFileSave();
         gpu().loadSaveMenuTiles(romData());
-        setFileSaveController(new FileSaveController(context.navigator::loadFileMenuBackgroundScene));
+        setFileSaveController(new FileSaveController(navigator::loadFileMenuBackgroundScene));
         inputState().tickEdges();
     }
 

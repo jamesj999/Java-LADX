@@ -3,7 +3,12 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
+import linksawakening.app.debug.*;
+import linksawakening.app.gameplay.*;
+import linksawakening.app.host.*;
+import linksawakening.app.screen.*;
 import linksawakening.app.screen.Screen;
+import linksawakening.app.story.*;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroCutsceneScript;
@@ -22,90 +27,110 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.*;
 
 public final class ScreenRouter {
-    private final SessionContext context;
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final InputServices input;
+    private final SessionState state;
+    private final ScreenActions actions;
 
-    public ScreenRouter(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public ScreenRouter(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            InputServices input,
+            SessionState state,
+            ScreenActions actions) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.input = Objects.requireNonNull(input);
+        this.state = Objects.requireNonNull(state);
+        this.actions = Objects.requireNonNull(actions);
     }
 
     public GPU gpu() {
-        return context.gpu();
+        return rom.gpu();
     }
 
     public Rom romData() {
-        return context.romData();
+        return rom.romData();
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public int ROOM_PIXEL_WIDTH() {
-        return context.roomPixelWidth();
+        return 160;
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.roomPixelHeight();
+        return 128;
     }
 
     public InputState inputState() {
-        return context.inputState();
+        return input.inputState();
     }
 
     public PlayerState playerState() {
-        return context.playerState();
+        return player.playerState();
     }
 
     public BackgroundSceneLoader backgroundSceneLoader() {
-        return context.backgroundSceneLoader();
+        return rom.backgroundSceneLoader();
     }
 
     public MusicDirector musicDirector() {
-        return context.musicDirector();
+        return actions.music();
     }
 
     public CutsceneManager cutsceneManager() {
-        return context.cutsceneManager();
+        return ui.cutsceneManager();
     }
 
     public SaveRamStore saveRamStore() {
-        return context.saveRamStore();
+        return actions.saveState().saveRamStore;
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public Screen titleScreen() {
-        return context.titleScreen();
+        return actions.navigator().screen(ScreenKind.TITLE);
     }
 
     public Screen cutsceneScreen() {
-        return context.cutsceneScreen();
+        return actions.navigator().screen(ScreenKind.CUTSCENE);
     }
 
     public Screen fileMenuScreen() {
-        return context.fileMenuScreen();
+        return actions.navigator().screen(ScreenKind.FILE_MENU);
     }
 
     public Screen gameplayScreen() {
-        return context.gameplayScreen();
+        return actions.navigator().screen(ScreenKind.GAMEPLAY);
     }
 
     public AppConfig config() {
-        return context.config();
+        return state.options().config();
     }
 
     private void setFileMenuController(FileMenuController controller) {
-        context.screens.fileMenuController = controller;
+        state.screens().fileMenuController = controller;
     }
 
     public void startIntroCutscene() {
-        context.screens.fileMenuController = null;
-        context.screens.fileSaveController = null;
-        context.navigator.show(linksawakening.app.screen.ScreenKind.CUTSCENE);
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        actions.navigator().show(linksawakening.app.screen.ScreenKind.CUTSCENE);
         musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         gpu().loadIntroSequenceTiles(romData());
         cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
@@ -120,15 +145,15 @@ public final class ScreenRouter {
     }
 
     public void startTitleScreenWithoutIntro() {
-        context.screens.fileMenuController = null;
-        context.screens.fileSaveController = null;
-        context.navigator.show(linksawakening.app.screen.ScreenKind.TITLE);
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        actions.navigator().show(linksawakening.app.screen.ScreenKind.TITLE);
         musicDirector().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     public void startFileSelection() {
-        context.navigator.show(linksawakening.app.screen.ScreenKind.FILE_MENU);
-        context.screens.fileSaveController = null;
+        actions.navigator().show(linksawakening.app.screen.ScreenKind.FILE_MENU);
+        state.screens().fileSaveController = null;
         gpu().loadMenuTiles(romData());
         setFileMenuController(new FileMenuController(
                 new FileMenuRomData(romData().unsafeBytes()),
@@ -163,7 +188,8 @@ public final class ScreenRouter {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
             gpu().loadTitleScreenTiles(romData());
         }
-        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && context.navigator.current() == cutsceneScreen()) {
+        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId)
+                && actions.navigator().current() == cutsceneScreen()) {
             musicDirector().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
         }
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
@@ -173,34 +199,34 @@ public final class ScreenRouter {
     }
 
     public void applyBackgroundScene(BackgroundScene scene) {
-        context.scene.apply(scene);
+        state.scene().apply(scene);
     }
 
     public void startConfiguredGameplay() {
         dispatchConfiguredGameplay(
-                config(), () -> context.saves().startNewGame(), this::startConfiguredLocationGameplay);
+                config(), () -> actions.saves().startNewGame(), this::startConfiguredLocationGameplay);
     }
 
     public void startDebugGameplay() {
         if (link() == null) {
             return;
         }
-        if (context.navigator.current() == cutsceneScreen()) {
+        if (actions.navigator().current() == cutsceneScreen()) {
             cutsceneManager().skipIntroToTitle();
         }
-        context.screens.fileMenuController = null;
-        context.screens.fileSaveController = null;
-        context.openingState().wakeUp(null);
-        context.openingState().shield(null);
-        context.screens.currentSaveSlot = -1;
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        state.opening().wakeUp(null);
+        state.opening().shield(null);
+        state.screens().currentSaveSlot = -1;
         link().resetTransientStateForDebug();
         playerState().initializeDebugState();
         roomSession().story().initializeNewGameWorldState();
         roomSession().story().setBowWowState(0);
         roomSession().story().setBirdKeyOwned(true);
         roomSession().story().setTailKeyOwned(true);
-        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
-        context.debug.debugNoClip = false;
+        actions.navigator().show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
+        state.debug().debugNoClip = false;
         link().setDirection(Link.DIRECTION_DOWN);
         gpu().loadBaseTiles(romData());
         loadOverworldScreen();
@@ -208,12 +234,12 @@ public final class ScreenRouter {
     }
 
     public void startConfiguredLocationGameplay() {
-        context.screens.fileMenuController = null;
-        context.screens.fileSaveController = null;
-        context.screens.currentSaveSlot = -1;
-        context.openingState().wakeUp(null);
-        context.openingState().shield(null);
-        context.navigator.show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        state.screens().currentSaveSlot = -1;
+        state.opening().wakeUp(null);
+        state.opening().shield(null);
+        actions.navigator().show(linksawakening.app.screen.ScreenKind.GAMEPLAY);
         applyConfiguredItemProfile(config(), playerState());
         if (config().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
