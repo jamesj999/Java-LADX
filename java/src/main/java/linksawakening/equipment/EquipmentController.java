@@ -20,8 +20,8 @@ public final class EquipmentController {
     }
 
     public void dispatchButtonEdges() {
-        dispatchButtonEdges(inputConfig.aKey(), playerState.itemA());
-        dispatchButtonEdges(inputConfig.bKey(), playerState.itemB());
+        dispatchButtonEdges(inputConfig.aKey(), playerState.inventory().itemA());
+        dispatchButtonEdges(inputConfig.bKey(), playerState.inventory().itemB());
     }
 
     public void tickEquippedItems() {
@@ -41,9 +41,18 @@ public final class EquipmentController {
         boolean aHeld = inputState.isDown(inputConfig.aKey());
         boolean bHeld = inputState.isDown(inputConfig.bKey());
         if (frameCounter == null) {
-            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB());
+            itemRegistry.tickAll(
+                    aHeld,
+                    bHeld,
+                    playerState.inventory().itemA(),
+                    playerState.inventory().itemB());
         } else {
-            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB(), frameCounter);
+            itemRegistry.tickAll(
+                    aHeld,
+                    bHeld,
+                    playerState.inventory().itemA(),
+                    playerState.inventory().itemB(),
+                    frameCounter);
         }
     }
 

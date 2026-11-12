@@ -10,22 +10,24 @@ final class InventoryItemNumbers {
     static int[] tiles(int item, PlayerState player) {
         int level =
                 switch (InventoryItem.fromRom(item)) {
-                    case SWORD -> player.swordLevel();
-                    case SHIELD -> player.shieldLevel();
-                    case POWER_BRACELET -> player.powerBraceletLevel();
+                    case SWORD -> player.equipmentLevels().swordLevel();
+                    case SHIELD -> player.equipmentLevels().shieldLevel();
+                    case POWER_BRACELET -> player.equipmentLevels().powerBraceletLevel();
                     default -> -1;
                 };
         if (level >= 0) return new int[] {0xBA, 0xB0 + level};
         int quantity =
                 switch (InventoryItem.fromRom(item)) {
-                    case BOMBS -> player.bombCount();
-                    case BOW -> player.arrowCount();
-                    case MAGIC_POWDER -> player.hasToadstool() ? -1 : player.magicPowderCount();
+                    case BOMBS -> player.ammunition().bombCount();
+                    case BOW -> player.ammunition().arrowCount();
+                    case MAGIC_POWDER -> player.ammunition().hasToadstool()
+                            ? -1
+                            : player.ammunition().magicPowderCount();
                     default -> -1;
                 };
         if (quantity >= 0) return new int[] {0xB0 + quantity / 10, 0xB0 + quantity % 10};
-        if (item == InventoryItem.OCARINA.romValue() && player.ocarinaSongFlags() != 0) {
-            return new int[] {0xB1 + player.selectedSongIndex(), 0x7F};
+        if (item == InventoryItem.OCARINA.romValue() && player.progression().ocarinaSongFlags() != 0) {
+            return new int[] {0xB1 + player.progression().selectedSongIndex(), 0x7F};
         }
         return new int[] {0x7F, 0x7F};
     }

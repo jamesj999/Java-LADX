@@ -24,10 +24,12 @@ final class InventoryItemPalettes {
     };
 
     static int[] forItem(int itemId, PlayerState player) {
-        if (itemId == InventoryItem.MAGIC_POWDER.romValue() && player.hasToadstool()) {
+        if (itemId == InventoryItem.MAGIC_POWDER.romValue()
+                && player.ammunition().hasToadstool()) {
             return new int[] {2, 3}; // $20:5BFD: red cap, brown stem.
         }
-        if (itemId == InventoryItem.POWER_BRACELET.romValue() && player.powerBraceletLevel() == 2) {
+        if (itemId == InventoryItem.POWER_BRACELET.romValue()
+                && player.equipmentLevels().powerBraceletLevel() == 2) {
             return new int[] {2, 2};
         }
         return forItem(itemId);

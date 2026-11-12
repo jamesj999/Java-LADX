@@ -42,10 +42,10 @@ public final class HudOverlay {
     }
 
     public static void apply(int[] tilemap, int[] attrmap, PlayerState player) {
-        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.itemB(), player);
-        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.itemA(), player);
-        patchRupees(tilemap, player.rupees());
-        patchHearts(tilemap, player.health(), player.maxHearts());
+        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.inventory().itemB(), player);
+        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.inventory().itemA(), player);
+        patchRupees(tilemap, player.wallet().rupees());
+        patchHearts(tilemap, player.vitals().health(), player.vitals().maxHearts());
     }
 
     private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId, PlayerState player) {

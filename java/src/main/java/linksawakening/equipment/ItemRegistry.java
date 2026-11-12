@@ -25,11 +25,11 @@ public final class ItemRegistry {
 
     /** Resolve the equipped sword, including its pre-inventory pickup spin. */
     public Sword activeSword(PlayerState playerState) {
-        EquipmentItem a = lookup(playerState.itemA());
+        EquipmentItem a = lookup(playerState.inventory().itemA());
         if (a instanceof Sword sword) {
             return sword;
         }
-        EquipmentItem b = lookup(playerState.itemB());
+        EquipmentItem b = lookup(playerState.inventory().itemB());
         if (b instanceof Sword sword) {
             return sword;
         }
@@ -43,7 +43,12 @@ public final class ItemRegistry {
     public void tickWithoutInput(PlayerState playerState, int frameCounter) {
         Sword sword = activeSword(playerState);
         if (sword != null) sword.releaseHoldWithoutSpin();
-        tickAll(false, false, playerState.itemA(), playerState.itemB(), frameCounter);
+        tickAll(
+                false,
+                false,
+                playerState.inventory().itemA(),
+                playerState.inventory().itemB(),
+                frameCounter);
     }
 
     /** Advance every registered item's state machine once. Called once per frame. */

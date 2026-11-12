@@ -1,14 +1,9 @@
 package linksawakening.state;
 
-import java.util.Arrays;
-import java.util.Objects;
 import linksawakening.save.SaveSlotState;
-import linksawakening.world.entity.event.FloatingItemPickupEffect;
-import linksawakening.world.room.ChestContentsTable;
 
-/** Persistent player resources, progression and transient resource-update state. */
+/** Aggregate of inventory, resources, progression and equipment state. */
 public final class PlayerState implements LinkPlayerState {
-
     /** @deprecated Use {@link InventoryItem#EMPTY}. */
     @Deprecated(forRemoval = true)
     public static final int INVENTORY_EMPTY = 0x00;
@@ -94,932 +89,710 @@ public final class PlayerState implements LinkPlayerState {
     // A/B slot and the selected subscreen slot (see bank20.asm:5FDB).
     public static final int SUBSCREEN_SLOT_COUNT = 10;
 
-    private int rupees = 0;
-    private int maxHearts = 3;
-    private int health = 3 * HP_PER_HEART;
-    private int invincibilityCounter;
-    private int swordLevel = 1;
-    private int shieldLevel = 1;
-    private int powerBraceletLevel = 1;
-    private int itemA = InventoryItem.SWORD.romValue();
-    private int itemB = InventoryItem.EMPTY.romValue();
-    private int ocarinaSongFlags;
-    private int selectedSongIndex;
-    private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
-    private int arrowCount;
-    private int maxArrows;
-    private int bombCount;
-    private int maxBombs;
-    private int magicPowderCount;
-    private boolean hasToadstool;
-    private int maxMagicPowder;
-    private int heartPieces;
-    private int seashells;
-    private boolean hasFlippers;
-    private boolean hasMedicine;
-    private int tradeSequenceItem;
-    private int medicineCount;
-    private int tailKeyCount;
-    private int anglerKeyCount;
-    private int faceKeyCount;
-    private int birdKeyCount;
-    private int goldenLeavesCount;
-    private PowerUp activePowerUp = PowerUp.NONE;
-    private Tunic tunicType = Tunic.GREEN;
-    private boolean runningWithPegasusBoots;
-    private int addHealthBuffer;
-    private int subtractHealthBuffer;
-    private int addRupeeBuffer;
-    private int rupeeUpdateDelay;
-    private final java.util.List<linksawakening.gameplay.GameplaySoundEvent> resourceSounds =
-            new java.util.ArrayList<>();
-    // ThresholdLowHealthTable ($02:6308), including the overlapping code bytes at 0–2.
-    private static final int[] LOW_HEALTH_THRESHOLDS = {0x00, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25};
-    private boolean onLowHealth;
-    private boolean fullHearts;
+    private final Inventory inventory = new Inventory();
+    private final Progression progression = new Progression();
+    private final EquipmentLevels equipmentLevels = new EquipmentLevels();
+    private final PlayerSounds playerSounds = new PlayerSounds();
+    private final Ammunition ammunition = new Ammunition(inventory);
+    private final Vitals vitals = new Vitals(equipmentLevels, playerSounds, progression);
+    private final Wallet wallet = new Wallet(playerSounds);
+    private final PlayerResources playerResources = new PlayerResources(playerSounds, vitals, wallet);
+    private final PlayerRewards playerRewards =
+            new PlayerRewards(ammunition, equipmentLevels, inventory, progression, vitals, wallet);
+    private final ChestRewards chestRewards =
+            new ChestRewards(ammunition, equipmentLevels, inventory, progression, wallet);
+    private final PlayerInitialization playerInitialization =
+            new PlayerInitialization(ammunition, equipmentLevels, inventory, playerSounds, progression, vitals, wallet);
+    private final PlayerSaveLoader playerSaveLoader =
+            new PlayerSaveLoader(ammunition, equipmentLevels, inventory, playerSounds, progression, vitals, wallet);
 
-    /** PerformOverworldAudioTasks ($14:4B0C), before world simulation. */
+    public Inventory inventory() {
+        return inventory;
+    }
+
+    public Ammunition ammunition() {
+        return ammunition;
+    }
+
+    public Progression progression() {
+        return progression;
+    }
+
+    public EquipmentLevels equipmentLevels() {
+        return equipmentLevels;
+    }
+
+    public Vitals vitals() {
+        return vitals;
+    }
+
+    public Wallet wallet() {
+        return wallet;
+    }
+
+    public PlayerSounds playerSounds() {
+        return playerSounds;
+    }
+
+    public PlayerResources playerResources() {
+        return playerResources;
+    }
+
+    public PlayerRewards playerRewards() {
+        return playerRewards;
+    }
+
+    public ChestRewards chestRewards() {
+        return chestRewards;
+    }
+
+    public PlayerInitialization playerInitialization() {
+        return playerInitialization;
+    }
+
+    public PlayerSaveLoader playerSaveLoader() {
+        return playerSaveLoader;
+    }
+
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void latchFullHearts() {
-        fullHearts = health == maxHearts * HP_PER_HEART;
+        vitals.latchFullHearts();
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public boolean fullHearts() {
-        return fullHearts;
+        return vitals.fullHearts();
     }
 
-    private int timeToNextLowHealthSound;
-
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public boolean isOnLowHealth() {
-        return onLowHealth;
+        return vitals.isOnLowHealth();
     }
 
-    /** Resolves queued writes to hWaveSfx: the last ROM write wins. */
+    /** @deprecated Use {@link #playerSounds()}. */
+    @Deprecated(forRemoval = true)
     public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
-        var sound = resourceSounds.isEmpty() ? null : resourceSounds.get(resourceSounds.size() - 1);
-        resourceSounds.clear();
-        return sound;
+        return playerSounds.takeResourceSound();
     }
 
-    private int powerUpHits;
-    private final int[] chestItemCounts = new int[0x22];
-
-    public PlayerState() {
-        // Stub test data so the inventory menu has something to equip until
-        // the real pickup/chest flow exists. Fills slots with the inventory
-        // ids BOMBS..SHOVEL in order.
-        for (int i = 0; i < subscreen.length; i++) {
-            subscreen[i] = InventoryItem.BOMBS.romValue() + i;
-        }
-    }
-
-    /**
-     * Initializes the fields represented by a newly created ROM save file.
-     *
-     * <p>The normal constructor intentionally retains its debug inventory for
-     * existing development entry points.  The real file-menu New Game path
-     * calls this method after the ROM's zeroed save block has been selected.
-     * The capacity arguments are the values written by
-     * {@code LoadSavedFile.initNewGame}.</p>
-     */
+    /** @deprecated Use {@link #playerInitialization()}. */
+    @Deprecated(forRemoval = true)
     public void initializeNewGame(int maxArrows, int maxBombs, int maxMagicPowder) {
-        rupees = 0;
-        maxHearts = 3;
-        health = maxHearts * HP_PER_HEART;
-        invincibilityCounter = 0;
-        swordLevel = 0;
-        shieldLevel = 0;
-        powerBraceletLevel = 0;
-        itemA = InventoryItem.EMPTY.romValue();
-        itemB = InventoryItem.EMPTY.romValue();
-        ocarinaSongFlags = 0;
-        selectedSongIndex = 0;
-        Arrays.fill(subscreen, InventoryItem.EMPTY.romValue());
-        arrowCount = 0;
-        this.maxArrows = clamp(maxArrows, 0, 99);
-        bombCount = 0;
-        this.maxBombs = clamp(maxBombs, 0, 99);
-        magicPowderCount = 0;
-        hasToadstool = false;
-        this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
-        deathCount = 0;
-        heartPieces = 0;
-        seashells = 0;
-        hasFlippers = false;
-        hasMedicine = false;
-        tradeSequenceItem = 0;
-        medicineCount = 0;
-        tailKeyCount = 0;
-        anglerKeyCount = 0;
-        faceKeyCount = 0;
-        birdKeyCount = 0;
-        goldenLeavesCount = 0;
-        activePowerUp = PowerUp.NONE;
-        tunicType = Tunic.GREEN;
-        runningWithPegasusBoots = false;
-        addHealthBuffer = 0;
-        subtractHealthBuffer = 0;
-        addRupeeBuffer = 0;
-        rupeeUpdateDelay = 0;
-        resourceSounds.clear();
-        onLowHealth = false;
-        timeToNextLowHealthSound = 0;
-        powerUpHits = 0;
-        Arrays.fill(chestItemCounts, 0);
+        playerInitialization.initializeNewGame(maxArrows, maxBombs, maxMagicPowder);
     }
 
-    /** Loads a generous development loadout without changing ROM gameplay rules. */
+    /** @deprecated Use {@link #playerInitialization()}. */
+    @Deprecated(forRemoval = true)
     public void initializeDebugState() {
-        setMaxHearts(MAX_HEARTS);
-        setHealth(MAX_HEARTS * HP_PER_HEART);
-        setRupees(MAX_RUPEES);
-        setSwordLevel(2);
-        setShieldLevel(2);
-        setPowerBraceletLevel(2);
-        setMaxArrows(99);
-        setArrowCount(99);
-        setMaxBombs(99);
-        setBombCount(99);
-        setMaxMagicPowder(99);
-        setMagicPowderCount(99);
-        setSubscreenItems(new int[] {
-            InventoryItem.BOMBS.romValue(), InventoryItem.POWER_BRACELET.romValue(), InventoryItem.SHIELD.romValue(),
-            InventoryItem.BOW.romValue(), InventoryItem.HOOKSHOT.romValue(), InventoryItem.MAGIC_ROD.romValue(),
-            InventoryItem.PEGASUS_BOOTS.romValue(), InventoryItem.OCARINA.romValue(),
-                    InventoryItem.ROCS_FEATHER.romValue(),
-            InventoryItem.SHOVEL.romValue()
-        });
-        setItemA(InventoryItem.SWORD.romValue());
-        setItemB(InventoryItem.BOOMERANG.romValue());
-        setOcarinaSongFlags(OcarinaSong.FROGS_SONG_OF_THE_SOUL.romValue()
-                | OcarinaSong.MANBO_MAMBO.romValue()
-                | OcarinaSong.BALLAD_OF_THE_WIND_FISH.romValue());
-        setHasFlippers(true);
-        setHasMedicine(true);
-        setMedicineCount(1);
-        setTailKeyCount(1);
-        setAnglerKeyCount(1);
-        setFaceKeyCount(1);
-        setBirdKeyCount(1);
-        setGoldenLeavesCount(5);
-        setSeashells(99);
-        setHasToadstool(true);
+        playerInitialization.initializeDebugState();
     }
 
-    /** Prevent queued pickups/damage from undoing explicit debug resource edits. */
+    /** @deprecated Use {@link #playerResources()}. */
+    @Deprecated(forRemoval = true)
     public void clearResourceBuffersForDebug() {
-        addHealthBuffer = 0;
-        subtractHealthBuffer = 0;
-        addRupeeBuffer = 0;
-        rupeeUpdateDelay = 0;
-        resourceSounds.clear();
-        onLowHealth = false;
-        timeToNextLowHealthSound = 0;
+        playerResources.clearResourceBuffersForDebug();
     }
 
+    /** @deprecated Use {@link #wallet()}. */
+    @Deprecated(forRemoval = true)
     public int rupees() {
-        return rupees;
+        return wallet.rupees();
     }
 
+    /** @deprecated Use {@link #wallet()}. */
+    @Deprecated(forRemoval = true)
     public void setRupees(int value) {
-        rupees = clamp(value, 0, MAX_RUPEES);
+        wallet.setRupees(value);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int maxHearts() {
-        return maxHearts;
+        return vitals.maxHearts();
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void setMaxHearts(int value) {
-        maxHearts = clamp(value, 1, MAX_HEARTS);
-        health = Math.min(health, maxHearts * HP_PER_HEART);
+        vitals.setMaxHearts(value);
     }
 
-    private int deathCount;
-
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int deathCount() {
-        return deathCount;
+        return progression.deathCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setDeathCount(int value) {
-        deathCount = clamp(value, 0, 999);
+        progression.setDeathCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void incrementDeathCount() {
-        setDeathCount(deathCount + 1);
+        progression.incrementDeathCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int deathCountBcd() {
-        return (deathCount / 100 << 8) | (deathCount / 10 % 10 << 4) | deathCount % 10;
+        return progression.deathCountBcd();
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int health() {
-        return health;
+        return vitals.health();
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void setHealth(int value) {
-        health = clamp(value, 0, maxHearts * HP_PER_HEART);
+        vitals.setHealth(value);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void damage(int amount) {
-        setHealth(health - Math.max(0, amount));
+        vitals.damage(amount);
     }
 
-    /**
-     * Applies the generic enemy collision damage path from bank3.asm. The
-     * nominal damage is buffered; UpdateHealth consumes that buffer on odd
-     * frames instead of changing health immediately.
-     */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int applyRomEnemyDamage(int nominalDamage) {
-        int effectiveDamage = nominalDamage & 0xFF;
-        if (tunicType == Tunic.BLUE) {
-            effectiveDamage >>= 1;
-        } else if (activePowerUp == PowerUp.GUARDIAN_ACORN) {
-            effectiveDamage = effectiveDamage == 0x04 ? 0 : effectiveDamage >> 1;
-        }
-
-        subtractHealthBuffer = (subtractHealthBuffer + effectiveDamage) & 0xFF;
-        invincibilityCounter = 0x50;
-        if (activePowerUp != PowerUp.NONE) {
-            powerUpHits = (powerUpHits + 1) & 0xFF;
-            if (powerUpHits >= 3) {
-                activePowerUp = PowerUp.NONE;
-            }
-        }
-        return effectiveDamage;
+        return vitals.applyRomEnemyDamage(nominalDamage);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int invincibilityCounter() {
-        return invincibilityCounter;
+        return vitals.invincibilityCounter();
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void setInvincibilityCounter(int value) {
-        invincibilityCounter = clamp(value, 0, 0xFF);
+        vitals.setInvincibilityCounter(value);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void tickInvincibility() {
-        if (invincibilityCounter > 0) {
-            invincibilityCounter--;
-        }
+        vitals.tickInvincibility();
     }
 
-    /** Amount of health still waiting in the ROM's wAddHealthBuffer. */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int addHealthBuffer() {
-        return addHealthBuffer;
+        return vitals.addHealthBuffer();
     }
 
-    /** Amount of health still waiting in the ROM's wSubtractHealthBuffer. */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void addSubtractHealthBuffer(int amount) {
-        subtractHealthBuffer = (subtractHealthBuffer + amount) & 0xFF;
+        vitals.addSubtractHealthBuffer(amount);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public int subtractHealthBuffer() {
-        return subtractHealthBuffer;
+        return vitals.subtractHealthBuffer();
     }
 
-    /** Mirrors WarpState3Handler's direct clear of wSubtractHealthBuffer. */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void clearSubtractHealthBuffer() {
-        subtractHealthBuffer = 0;
+        vitals.clearSubtractHealthBuffer();
     }
 
-    /** Amount of rupees still waiting in the ROM's wAddRupeeBufferLow. */
+    /** @deprecated Use {@link #wallet()}. */
+    @Deprecated(forRemoval = true)
     public int addRupeeBuffer() {
-        return addRupeeBuffer;
+        return wallet.addRupeeBuffer();
     }
 
-    /**
-     * Advances the resource counters with the same frame parity as bank2's
-     * UpdateRupeesCount and UpdateHealth routines.
-     */
+    /** @deprecated Use {@link #playerResources()}. */
+    @Deprecated(forRemoval = true)
     public void tickResourceBuffers(int frameCounter) {
-        if ((frameCounter & 0x01) == 0) {
-            tickRupeeBuffer();
-        }
-        onLowHealth = health < LOW_HEALTH_THRESHOLDS[maxHearts];
-        if (onLowHealth) {
-            timeToNextLowHealthSound = (timeToNextLowHealthSound - 1) & 0xFF;
-            if (timeToNextLowHealthSound == 0xFF) {
-                resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS);
-                timeToNextLowHealthSound = 0x30;
-            }
-        }
-        if ((frameCounter & 1) != 0) tickHealthBuffer();
+        playerResources.tickResourceBuffers(frameCounter);
     }
 
-    /** Applies the immediate state portion of a bank3 pickable handler. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyEntityPickup(int entityType) {
-        switch (entityType & 0xFF) {
-            case 0x2D -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + HP_PER_HEART);
-                // PickDroppableFairy ($03:64C6) adds six hearts to the byte buffer.
-            case 0x2F -> addHealthBuffer = (addHealthBuffer + 0x30) & 0xFF;
-            case 0x2E -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 1);
-            case 0x33 -> setPowerUp(PowerUp.PIECE_OF_POWER);
-            case 0x34 -> setPowerUp(PowerUp.GUARDIAN_ACORN);
-            case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
-            case 0x38 -> {
-                giveInventoryItem(InventoryItem.BOMBS.romValue());
-                bombCount = incrementUpTo(bombCount, maxBombs);
-            }
-            case 0x3B -> {
-                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
-                magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
-            }
-            case 0x3D -> seashells = Math.min(99, seashells + 1);
-            default -> {
-                // Transition-driven pickups are advanced by their entity
-                // handlers; their room event still reaches this method when
-                // they need a future-specific state implementation.
-            }
-        }
+        playerRewards.applyEntityPickup(entityType);
     }
 
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void completeHeartPieceContainer() {
-        heartPieces = 0;
-        setMaxHearts(maxHearts + 1);
-        addHealthBuffer = 0x40;
+        vitals.completeHeartPieceContainer();
     }
 
-    /** Applies HeartContainerEntityHandler's delayed health reward. */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void applyHeartContainerReward() {
-        setMaxHearts(maxHearts + 1);
-        addHealthBuffer = 0xFF;
+        vitals.applyHeartContainerReward();
     }
 
-    /** Mirrors Madam MeowMeow's delayed wAddHealthBuffer=$FF kiss reward. */
+    /** @deprecated Use {@link #vitals()}. */
+    @Deprecated(forRemoval = true)
     public void requestFullHeal() {
-        addHealthBuffer = 0xFF;
+        vitals.requestFullHeal();
     }
 
-    /** Applies the delayed reward at the end of the beach-sword cutscene. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyBeachSwordReward() {
-        giveInventoryItem(InventoryItem.SWORD.romValue());
-        setSwordLevel(1);
+        playerRewards.applyBeachSwordReward();
     }
 
-    /** Applies SleepyToadstoolEntityHandler's final inventory and flag writes. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyToadstoolReward() {
-        giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
-        hasToadstool = true;
+        playerRewards.applyToadstoolReward();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public boolean hasToadstool() {
-        return hasToadstool;
+        return ammunition.hasToadstool();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setHasToadstool(boolean value) {
-        hasToadstool = value;
+        ammunition.setHasToadstool(value);
     }
 
-    /** Applies WitchEntityHandler's slot clear and wHasToadstool reset. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void beginWitchToadstoolExchange(int inventorySlot) {
-        if (inventorySlot == 0) {
-            itemB = InventoryItem.EMPTY.romValue();
-        } else if (inventorySlot == 1) {
-            itemA = InventoryItem.EMPTY.romValue();
-        } else {
-            throw new IllegalArgumentException("Inventory slot must be B (0) or A (1): " + inventorySlot);
-        }
-        hasToadstool = false;
+        playerRewards.beginWitchToadstoolExchange(inventorySlot);
     }
 
-    /** Applies the witch's AssignItemToSlot and BCD +$20 powder reward. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyWitchMagicPowderReward() {
-        giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
-        // The player model stores quantities as decimal values. WitchEntityHandler
-        // adds BCD $20 with DAA and does not clamp against wMaxMagicPowder.
-        magicPowderCount = Math.min(99, magicPowderCount + 20);
+        playerRewards.applyWitchMagicPowderReward();
     }
 
-    /** Applies the source-variant dispatch at FloatingItemEntityHandler. */
+    /** @deprecated Use {@link #playerRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
-        switch (FloatingItemPickupEffect.pickupEffect(entityType, sourceVariant)) {
-            case TEN_RUPEES -> addRupeeBuffer = 10;
-            case MAGIC_POWDER -> {
-                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
-                magicPowderCount = incrementByTenUpTo(magicPowderCount, maxMagicPowder);
-            }
-            case TEN_BOMBS -> bombCount = incrementByTenUpTo(bombCount, maxBombs);
-            case HEALTH_18 -> addHealthBuffer = Math.min(0xFF, addHealthBuffer + 0x18);
-                // FloatingArrowsHandler adds BCD $10 and performs no capacity
-                // check. PlayerState stores semantic decimal counts, so the
-                // equivalent is decimal modulo-100 addition.
-            case TEN_ARROWS -> arrowCount = (arrowCount + 10) % 100;
-        }
+        playerRewards.applyFloatingItemPickup(entityType, sourceVariant);
     }
 
-    /** Applies the immediate reward writes performed by EntityInitChestWithItem. */
+    /** @deprecated Use {@link #chestRewards()}. */
+    @Deprecated(forRemoval = true)
     public void applyChestReward(int chestItem) {
-        if (chestItem >= ChestContentsTable.CHEST_RUPEES_50 && chestItem <= ChestContentsTable.CHEST_RUPEES_500)
-            rupeeUpdateDelay = 0x18;
-        if (chestItem < 0 || chestItem > ChestContentsTable.CHEST_ZOL) {
-            throw new IllegalArgumentException("Chest item must be an unsigned chest variant: " + chestItem);
-        }
-        if (chestItem < chestItemCounts.length) {
-            chestItemCounts[chestItem] = Math.min(0xFF, chestItemCounts[chestItem] + 1);
-        }
-        switch (chestItem) {
-            case ChestContentsTable.CHEST_POWER_BRACELET -> {
-                powerBraceletLevel = Math.min(2, powerBraceletLevel + 1);
-                giveInventoryItem(InventoryItem.POWER_BRACELET.romValue());
-            }
-            case ChestContentsTable.CHEST_SHIELD -> {
-                setShieldLevel(shieldLevel + 1);
-                giveInventoryItem(InventoryItem.SHIELD.romValue());
-            }
-            case ChestContentsTable.CHEST_BOW -> giveInventoryItem(InventoryItem.BOW.romValue());
-            case ChestContentsTable.CHEST_HOOKSHOT -> giveInventoryItem(InventoryItem.HOOKSHOT.romValue());
-            case ChestContentsTable.CHEST_MAGIC_ROD -> giveInventoryItem(InventoryItem.MAGIC_ROD.romValue());
-            case ChestContentsTable.CHEST_PEGASUS_BOOTS -> giveInventoryItem(InventoryItem.PEGASUS_BOOTS.romValue());
-            case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(InventoryItem.OCARINA.romValue());
-            case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(InventoryItem.ROCS_FEATHER.romValue());
-            case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(InventoryItem.SHOVEL.romValue());
-            case ChestContentsTable.CHEST_FLIPPERS -> hasFlippers = true;
-            case ChestContentsTable.CHEST_MAGIC_POWDER_BAG -> {
-                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
-                magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
-            }
-            case ChestContentsTable.CHEST_BOMB -> {
-                giveInventoryItem(InventoryItem.BOMBS.romValue());
-                bombCount = incrementUpTo(bombCount, maxBombs);
-            }
-            case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(InventoryItem.SWORD.romValue());
-            case ChestContentsTable.CHEST_MEDICINE -> {
-                hasMedicine = true;
-                medicineCount = incrementByte(medicineCount);
-            }
-            case ChestContentsTable.CHEST_TAIL_KEY -> tailKeyCount = incrementByte(tailKeyCount);
-            case ChestContentsTable.CHEST_ANGLER_KEY -> anglerKeyCount = incrementByte(anglerKeyCount);
-            case ChestContentsTable.CHEST_FACE_KEY -> faceKeyCount = incrementByte(faceKeyCount);
-            case ChestContentsTable.CHEST_BIRD_KEY -> birdKeyCount = incrementByte(birdKeyCount);
-            case ChestContentsTable.CHEST_GOLD_LEAF -> goldenLeavesCount = incrementByte(goldenLeavesCount);
-            case ChestContentsTable.CHEST_RUPEES_50 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 50);
-            case ChestContentsTable.CHEST_RUPEES_20 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 20);
-            case ChestContentsTable.CHEST_RUPEES_100 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 100);
-            case ChestContentsTable.CHEST_RUPEES_200 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 200);
-            case ChestContentsTable.CHEST_RUPEES_500 -> addRupeeBuffer = Math.min(0xFFFF, addRupeeBuffer + 500);
-            case ChestContentsTable.CHEST_SEASHELL -> setSeashells(seashells + 1);
-            case ChestContentsTable.CHEST_MESSAGE, ChestContentsTable.CHEST_ZOL -> {
-                // The source marks these rooms complete without applying a
-                // normal inventory reward.
-            }
-            default -> {
-                // Flippers, lens, keys, leaves, and dungeon items have their
-                // source-specific WRAM counters in the room/dungeon bridges;
-                // chestItemCounts retains the immediate collection fact until
-                // those dedicated state fields are modeled.
-            }
-        }
+        chestRewards.applyChestReward(chestItem);
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public int swordLevel() {
-        return swordLevel;
+        return equipmentLevels.swordLevel();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setSwordLevel(int value) {
-        swordLevel = clamp(value, 0, 2);
+        equipmentLevels.setSwordLevel(value);
     }
 
-    /** Mirrors the ROM shield level used by projectile collision handlers. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public int shieldLevel() {
-        return shieldLevel;
+        return equipmentLevels.shieldLevel();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setShieldLevel(int value) {
-        shieldLevel = clamp(value, 0, 2);
+        equipmentLevels.setShieldLevel(value);
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public int powerBraceletLevel() {
-        return powerBraceletLevel;
+        return equipmentLevels.powerBraceletLevel();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setPowerBraceletLevel(int value) {
-        powerBraceletLevel = clamp(value, 0, 2);
+        equipmentLevels.setPowerBraceletLevel(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public boolean hasMedicine() {
-        return hasMedicine;
+        return progression.hasMedicine();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setHasMedicine(boolean value) {
-        hasMedicine = value;
+        progression.setHasMedicine(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public boolean hasFlippers() {
-        return hasFlippers;
+        return progression.hasFlippers();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setHasFlippers(boolean value) {
-        hasFlippers = value;
+        progression.setHasFlippers(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int tradeSequenceItem() {
-        return tradeSequenceItem;
+        return progression.tradeSequenceItem();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setTradeSequenceItem(int value) {
-        tradeSequenceItem = clamp(value, 0, 0xFF);
+        progression.setTradeSequenceItem(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int medicineCount() {
-        return medicineCount;
+        return progression.medicineCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setMedicineCount(int value) {
-        medicineCount = clamp(value, 0, 0xFF);
+        progression.setMedicineCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int tailKeyCount() {
-        return tailKeyCount;
+        return progression.tailKeyCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setTailKeyCount(int value) {
-        tailKeyCount = clamp(value, 0, 0xFF);
+        progression.setTailKeyCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int anglerKeyCount() {
-        return anglerKeyCount;
+        return progression.anglerKeyCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setAnglerKeyCount(int value) {
-        anglerKeyCount = clamp(value, 0, 0xFF);
+        progression.setAnglerKeyCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int faceKeyCount() {
-        return faceKeyCount;
+        return progression.faceKeyCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setFaceKeyCount(int value) {
-        faceKeyCount = clamp(value, 0, 0xFF);
+        progression.setFaceKeyCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int birdKeyCount() {
-        return birdKeyCount;
+        return progression.birdKeyCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setBirdKeyCount(int value) {
-        birdKeyCount = clamp(value, 0, 0xFF);
+        progression.setBirdKeyCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int goldenLeavesCount() {
-        return goldenLeavesCount;
+        return progression.goldenLeavesCount();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setGoldenLeavesCount(int value) {
-        goldenLeavesCount = clamp(value, 0, 0xFF);
+        progression.setGoldenLeavesCount(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int chestItemCount(int chestItem) {
-        if (chestItem < 0 || chestItem >= chestItemCounts.length) {
-            throw new IllegalArgumentException("Chest item count index out of range: " + chestItem);
-        }
-        return chestItemCounts[chestItem];
+        return progression.chestItemCount(chestItem);
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int arrowCount() {
-        return arrowCount;
+        return ammunition.arrowCount();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setArrowCount(int value) {
-        arrowCount = clamp(value, 0, maxArrows);
+        ammunition.setArrowCount(value);
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int maxArrows() {
-        return maxArrows;
+        return ammunition.maxArrows();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setMaxArrows(int value) {
-        maxArrows = clamp(value, 0, 99);
-        arrowCount = Math.min(arrowCount, maxArrows);
+        ammunition.setMaxArrows(value);
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int bombCount() {
-        return bombCount;
+        return ammunition.bombCount();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setBombCount(int value) {
-        bombCount = clamp(value, 0, maxBombs);
+        ammunition.setBombCount(value);
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int maxBombs() {
-        return maxBombs;
+        return ammunition.maxBombs();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setMaxBombs(int value) {
-        maxBombs = clamp(value, 0, 99);
-        bombCount = Math.min(bombCount, maxBombs);
+        ammunition.setMaxBombs(value);
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int magicPowderCount() {
-        return magicPowderCount;
+        return ammunition.magicPowderCount();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setMagicPowderCount(int value) {
-        magicPowderCount = clamp(value, 0, maxMagicPowder);
+        ammunition.setMagicPowderCount(value);
     }
 
-    /**
-     * Mirrors SprinkleMagicPowder's BCD decrement and empty-button cleanup.
-     * Returns false when the source count was already zero.
-     */
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public boolean consumeMagicPowder() {
-        if (magicPowderCount == 0) {
-            return false;
-        }
-        magicPowderCount--;
-        if (magicPowderCount == 0) {
-            if (itemA == InventoryItem.MAGIC_POWDER.romValue()) {
-                itemA = InventoryItem.EMPTY.romValue();
-            }
-            if (itemB == InventoryItem.MAGIC_POWDER.romValue()) {
-                itemB = InventoryItem.EMPTY.romValue();
-            }
-        }
-        return true;
+        return ammunition.consumeMagicPowder();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public int maxMagicPowder() {
-        return maxMagicPowder;
+        return ammunition.maxMagicPowder();
     }
 
+    /** @deprecated Use {@link #ammunition()}. */
+    @Deprecated(forRemoval = true)
     public void setMaxMagicPowder(int value) {
-        maxMagicPowder = clamp(value, 0, 99);
-        magicPowderCount = Math.min(magicPowderCount, maxMagicPowder);
+        ammunition.setMaxMagicPowder(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int heartPieces() {
-        return heartPieces;
+        return progression.heartPieces();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setHeartPieces(int value) {
-        heartPieces = clamp(value, 0, 4);
+        progression.setHeartPieces(value);
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int seashells() {
-        return seashells;
+        return progression.seashells();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setSeashells(int value) {
-        seashells = clamp(value, 0, 99);
+        progression.setSeashells(value);
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public PowerUp powerUp() {
-        return activePowerUp;
+        return equipmentLevels.powerUp();
     }
 
-    /** Starts a fresh power-up streak, including when selecting NONE. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setPowerUp(PowerUp value) {
-        activePowerUp = Objects.requireNonNull(value, "value");
-        powerUpHits = 0;
+        equipmentLevels.setPowerUp(value);
     }
 
-    /** @deprecated Use {@link #powerUp()}. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
     @Deprecated(forRemoval = true)
     public int activePowerUp() {
-        return powerUp().romValue();
+        return equipmentLevels.activePowerUp();
     }
 
-    /** @deprecated Use {@link #setPowerUp(PowerUp)}; this bridge retains legacy clamping. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
     @Deprecated(forRemoval = true)
     public void setActivePowerUp(int value) {
-        setPowerUp(PowerUp.fromRom(clamp(value, 0, 2)));
+        equipmentLevels.setActivePowerUp(value);
     }
 
-    /** Warp loads ($00:1904/$00:1952) clear only wActivePowerUp. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void clearActivePowerUpForWarp() {
-        activePowerUp = PowerUp.NONE;
+        equipmentLevels.clearActivePowerUpForWarp();
     }
 
-    /** Number of accepted enemy hits taken while the current power-up was active. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public int powerUpHits() {
-        return powerUpHits;
+        return equipmentLevels.powerUpHits();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public Tunic tunic() {
-        return tunicType;
+        return equipmentLevels.tunic();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setTunic(Tunic value) {
-        tunicType = Objects.requireNonNull(value, "value");
+        equipmentLevels.setTunic(value);
     }
 
-    /** @deprecated Use {@link #tunic()}. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
     @Deprecated(forRemoval = true)
     public int tunicType() {
-        return tunic().romValue();
+        return equipmentLevels.tunicType();
     }
 
-    /** @deprecated Use {@link #setTunic(Tunic)}; this bridge retains legacy clamping. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
     @Deprecated(forRemoval = true)
     public void setTunicType(int value) {
-        setTunic(Tunic.fromRom(clamp(value, 0, 2)));
+        equipmentLevels.setTunicType(value);
     }
 
-    /** Mirrors wIsRunningWithPegasusBoots; movement owns when this is set. */
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public boolean runningWithPegasusBoots() {
-        return runningWithPegasusBoots;
+        return equipmentLevels.runningWithPegasusBoots();
     }
 
+    /** @deprecated Use {@link #equipmentLevels()}. */
+    @Deprecated(forRemoval = true)
     public void setRunningWithPegasusBoots(boolean value) {
-        runningWithPegasusBoots = value;
+        equipmentLevels.setRunningWithPegasusBoots(value);
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public int itemA() {
-        return itemA;
+        return inventory.itemA();
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public void setItemA(int inventoryId) {
-        itemA = inventoryId & 0xFF;
+        inventory.setItemA(inventoryId);
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public int itemB() {
-        return itemB;
+        return inventory.itemB();
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public void setItemB(int inventoryId) {
-        itemB = inventoryId & 0xFF;
+        inventory.setItemB(inventoryId);
     }
 
-    /** Mirrors the persistent wOcarinaSongFlags byte (only bits 0..2 are used). */
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int ocarinaSongFlags() {
-        return ocarinaSongFlags;
+        return progression.ocarinaSongFlags();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setOcarinaSongFlags(int value) {
-        ocarinaSongFlags = value & 0x07;
+        progression.setOcarinaSongFlags(value);
     }
 
-    /** Mirrors wSelectedSongIndex, a zero-based Ballad/Mambo/Frog selector. */
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public int selectedSongIndex() {
-        return selectedSongIndex;
+        return progression.selectedSongIndex();
     }
 
+    /** @deprecated Use {@link #progression()}. */
+    @Deprecated(forRemoval = true)
     public void setSelectedSongIndex(int value) {
-        selectedSongIndex = clamp(value, 0, 2);
+        progression.setSelectedSongIndex(value);
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public void setSubscreenItems(int[] items) {
-        Objects.requireNonNull(items, "items");
-        if (items.length != SUBSCREEN_SLOT_COUNT) {
-            throw new IllegalArgumentException(
-                    "Expected " + SUBSCREEN_SLOT_COUNT + " subscreen items, got " + items.length);
-        }
-        for (int index = 0; index < items.length; index++) {
-            subscreen[index] = items[index] & 0xFF;
-        }
+        inventory.setSubscreenItems(items);
     }
 
-    /** Applies the persistent fields currently represented by the Java model. */
+    /** @deprecated Use {@link #playerSaveLoader()}. */
+    @Deprecated(forRemoval = true)
     public void applySavedGame(SaveSlotState saved) {
-        Objects.requireNonNull(saved, "saved");
-        setMaxHearts(saved.maxHearts());
-        int deaths = saved.deathCountBcd();
-        setDeathCount((deaths >>> 8 & 15) * 100 + (deaths >>> 4 & 15) * 10 + (deaths & 15));
-        setHealth(saved.health());
-        setRupees(saved.rupees());
-        setHeartPieces(saved.heartPieces());
-        setSeashells(saved.seashells());
-        setHasFlippers(saved.hasFlippers() != 0);
-        setHasMedicine(saved.hasMedicine() != 0);
-        setTradeSequenceItem(saved.tradeSequenceItem());
-        setMedicineCount(saved.medicineCount());
-        setTailKeyCount(saved.tailKeyCount());
-        setAnglerKeyCount(saved.anglerKeyCount());
-        setFaceKeyCount(saved.faceKeyCount());
-        setBirdKeyCount(saved.birdKeyCount());
-        setGoldenLeavesCount(saved.goldenLeavesCount());
-        setPowerBraceletLevel(saved.powerBraceletLevel());
-        setSwordLevel(saved.swordLevel());
-        setShieldLevel(saved.shieldLevel());
-        setItemA(saved.itemA());
-        setItemB(saved.itemB());
-        setSubscreenItems(saved.subscreen());
-        // Source pickups may exceed normal capacity (floating arrows / witch powder).
-        // A load copies those saved counts; it must not apply pickup-capacity clamps.
-        setMaxArrows(saved.maxArrows());
-        arrowCount = clamp(saved.arrowCount(), 0, 99);
-        setMaxBombs(saved.maxBombs());
-        bombCount = clamp(saved.bombCount(), 0, 99);
-        setMaxMagicPowder(saved.maxMagicPowder());
-        magicPowderCount = clamp(saved.magicPowderCount(), 0, 99);
-        setHasToadstool(saved.hasToadstool() != 0);
-        setOcarinaSongFlags(saved.ocarinaSongFlags());
-        setSelectedSongIndex(saved.selectedSongIndex());
-        setTunicType(saved.tunicType());
-
-        invincibilityCounter = 0;
-        activePowerUp = PowerUp.NONE;
-        runningWithPegasusBoots = false;
-        addHealthBuffer = 0;
-        subtractHealthBuffer = 0;
-        addRupeeBuffer = 0;
-        rupeeUpdateDelay = 0;
-        resourceSounds.clear();
-        onLowHealth = false;
-        timeToNextLowHealthSound = 0;
-        powerUpHits = 0;
-        Arrays.fill(chestItemCounts, 0);
+        playerSaveLoader.applySavedGame(saved);
     }
 
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public int subscreenItem(int slotIndex) {
-        return subscreen[slotIndex];
+        return inventory.subscreenItem(slotIndex);
     }
 
-    /** Swap slot A with the given subscreen slot, matching bank20.asm:5FDB. */
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public void swapItemAWithSubscreen(int slotIndex) {
-        int tmp = itemA;
-        itemA = subscreen[slotIndex];
-        subscreen[slotIndex] = tmp;
+        inventory.swapItemAWithSubscreen(slotIndex);
     }
 
-    /** Swap slot B with the given subscreen slot, matching bank20.asm:5FF3. */
+    /** @deprecated Use {@link #inventory()}. */
+    @Deprecated(forRemoval = true)
     public void swapItemBWithSubscreen(int slotIndex) {
-        int tmp = itemB;
-        itemB = subscreen[slotIndex];
-        subscreen[slotIndex] = tmp;
-    }
-
-    private void tickHealthBuffer() {
-        if (addHealthBuffer != 0) {
-            int maxHealth = maxHearts * HP_PER_HEART;
-            if (health >= maxHealth) {
-                addHealthBuffer = 0;
-            } else {
-                health++;
-                if ((health & 7) == 6) {
-                    resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP);
-                }
-                addHealthBuffer--;
-                return;
-            }
-        }
-        if (subtractHealthBuffer == 0) {
-            return;
-        }
-        subtractHealthBuffer--;
-        if (health > 0) {
-            health--;
-        }
-        // UpdateHealth.noHealth ($02:63A3): consume medicine on a lethal tick.
-        if (health == 0 && hasMedicine) {
-            medicineCount = Math.max(0, medicineCount - 1);
-            hasMedicine = medicineCount != 0;
-            health = HP_PER_HEART;
-            addHealthBuffer = (addHealthBuffer + 0x80) & 0xFF;
-            invincibilityCounter = 0xA0;
-        }
-    }
-
-    private void tickRupeeBuffer() {
-        if (rupeeUpdateDelay != 0) {
-            rupeeUpdateDelay--;
-            return;
-        }
-        if (addRupeeBuffer == 0) {
-            return;
-        }
-        resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.RUPEE);
-        int step = Math.min(9, (addRupeeBuffer >> 5) + 1);
-        addRupeeBuffer -= step;
-        rupees = Math.min(MAX_RUPEES, rupees + step);
-        if (rupees == MAX_RUPEES) addRupeeBuffer = 0;
-    }
-
-    private void giveInventoryItem(int inventoryId) {
-        if (itemB == inventoryId || itemA == inventoryId) {
-            return;
-        }
-        for (int item : subscreen) {
-            if (item == inventoryId) {
-                return;
-            }
-        }
-        if (itemB == InventoryItem.EMPTY.romValue()) {
-            itemB = inventoryId;
-            return;
-        }
-        if (itemA == InventoryItem.EMPTY.romValue()) {
-            itemA = inventoryId;
-            return;
-        }
-        for (int index = 0; index < subscreen.length; index++) {
-            if (subscreen[index] == InventoryItem.EMPTY.romValue()) {
-                subscreen[index] = inventoryId;
-                return;
-            }
-        }
-    }
-
-    private static int incrementUpTo(int value, int maximum) {
-        return value < maximum ? value + 1 : value;
-    }
-
-    private static int incrementByTenUpTo(int value, int maximum) {
-        return Math.min(maximum, value + 10);
-    }
-
-    private static int incrementByte(int value) {
-        return (value + 1) & 0xFF;
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+        inventory.swapItemBWithSubscreen(slotIndex);
     }
 }

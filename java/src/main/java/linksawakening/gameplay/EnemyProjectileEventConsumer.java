@@ -76,7 +76,7 @@ public final class EnemyProjectileEventConsumer {
                 applyLinkResponse(event, link);
                 continue;
             }
-            if (playerState.invincibilityCounter() != 0 || (link != null && link.isCollisionDamageImmune())) {
+            if (playerState.vitals().invincibilityCounter() != 0 || (link != null && link.isCollisionDamageImmune())) {
                 continue;
             }
 
@@ -84,10 +84,10 @@ public final class EnemyProjectileEventConsumer {
             // ApplyLinkCollisionWithEnemy begins by ResetPegasusBoots for
             // every generic damaging source, even when a guardian acorn
             // reduces the resulting damage to zero.
-            playerState.setRunningWithPegasusBoots(false);
-            PowerUp previousPowerUp = playerState.powerUp();
-            playerState.applyRomEnemyDamage(event.linkDamage());
-            if (previousPowerUp != PowerUp.NONE && playerState.powerUp() == PowerUp.NONE) {
+            playerState.equipmentLevels().setRunningWithPegasusBoots(false);
+            PowerUp previousPowerUp = playerState.equipmentLevels().powerUp();
+            playerState.vitals().applyRomEnemyDamage(event.linkDamage());
+            if (previousPowerUp != PowerUp.NONE && playerState.equipmentLevels().powerUp() == PowerUp.NONE) {
                 onPowerUpEnded.run();
             }
             onContactHurt.run();

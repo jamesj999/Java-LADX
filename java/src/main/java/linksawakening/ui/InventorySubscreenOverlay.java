@@ -48,7 +48,7 @@ public final class InventorySubscreenOverlay {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             int col = slotColumn(slot);
             int row = slotRow(slot);
-            drawItem(tilemap, attrmap, col, row, player.subscreenItem(slot), player);
+            drawItem(tilemap, attrmap, col, row, player.inventory().subscreenItem(slot), player);
         }
         if (cursorVisible) {
             int col = slotColumn(cursorSlot);

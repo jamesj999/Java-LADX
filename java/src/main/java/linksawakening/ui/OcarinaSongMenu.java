@@ -36,7 +36,7 @@ public final class OcarinaSongMenu {
 
     /** Requests the ROM's 16-frame opening animation. */
     public boolean requestOpen() {
-        if (playerState.ocarinaSongFlags() == 0 || isVisible()) {
+        if (playerState.progression().ocarinaSongFlags() == 0 || isVisible()) {
             return false;
         }
         open = true;
@@ -101,7 +101,7 @@ public final class OcarinaSongMenu {
     }
 
     public int selectedSongIndex() {
-        return playerState.selectedSongIndex();
+        return playerState.progression().selectedSongIndex();
     }
 
     public boolean consumeCloseInventoryRequest() {
@@ -116,11 +116,11 @@ public final class OcarinaSongMenu {
             return false;
         }
         int step = direction < 0 ? -1 : 1;
-        int candidate = playerState.selectedSongIndex();
+        int candidate = playerState.progression().selectedSongIndex();
         for (int attempts = 0; attempts < SONG_COUNT; attempts++) {
             candidate = Math.floorMod(candidate + step, SONG_COUNT);
             if (isSongAvailable(candidate)) {
-                playerState.setSelectedSongIndex(candidate);
+                playerState.progression().setSelectedSongIndex(candidate);
                 soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
                 return true;
             }
@@ -132,7 +132,8 @@ public final class OcarinaSongMenu {
         if (songIndex < 0 || songIndex >= SONG_COUNT) {
             return false;
         }
-        return OcarinaSong.fromSelectionIndex(songIndex).isSet(playerState.ocarinaSongFlags());
+        return OcarinaSong.fromSelectionIndex(songIndex)
+                .isSet(playerState.progression().ocarinaSongFlags());
     }
 
     /** @deprecated Use {@link OcarinaSong#fromSelectionIndex(int)}. */

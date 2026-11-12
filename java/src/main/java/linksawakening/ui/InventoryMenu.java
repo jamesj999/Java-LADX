@@ -173,8 +173,8 @@ public final class InventoryMenu {
         if (next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
-            if (playerState.subscreenItem(cursorSlot) == InventoryItem.OCARINA.romValue()
-                    && playerState.ocarinaSongFlags() != 0) {
+            if (playerState.inventory().subscreenItem(cursorSlot) == InventoryItem.OCARINA.romValue()
+                    && playerState.progression().ocarinaSongFlags() != 0) {
                 ocarinaSongMenu.requestOpen();
             }
         }
@@ -186,8 +186,8 @@ public final class InventoryMenu {
             return;
         }
         if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemAWithSubscreen(cursorSlot);
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemAWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
@@ -197,14 +197,15 @@ public final class InventoryMenu {
             return;
         }
         if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemBWithSubscreen(cursorSlot);
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemBWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
 
     private void openOcarinaIfSelected(int selectedItem) {
-        if (selectedItem == InventoryItem.OCARINA.romValue() && playerState.ocarinaSongFlags() != 0) {
+        if (selectedItem == InventoryItem.OCARINA.romValue()
+                && playerState.progression().ocarinaSongFlags() != 0) {
             ocarinaSongMenu.requestOpen();
         }
     }
@@ -234,7 +235,8 @@ public final class InventoryMenu {
     }
 
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
-        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
+        if (romData != null)
+            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);
@@ -313,7 +315,8 @@ public final class InventoryMenu {
     }
 
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
-        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
+        if (romData != null)
+            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);
