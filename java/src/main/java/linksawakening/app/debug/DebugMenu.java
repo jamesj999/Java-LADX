@@ -4,7 +4,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -50,7 +49,7 @@ public final class DebugMenu {
         "Magnifying lens"
     };
     private final List<List<Entry>> pages = new ArrayList<>();
-    private final Consumer<Warp> teleport;
+    private final TeleportTarget teleport;
     private boolean open, shift;
     private int page, selected, category, map, room, x, y, dungeon;
     private String message = "";
@@ -66,7 +65,7 @@ public final class DebugMenu {
         }
     }
 
-    public DebugMenu(PlayerState p, RoomSession world, Consumer<Warp> teleport) {
+    public DebugMenu(PlayerState p, RoomSession world, TeleportTarget teleport) {
         this.teleport = teleport;
         for (String ignored : PAGES) pages.add(new ArrayList<>());
         add(0, "Type", () -> category, v -> category = v, 0, 2, v -> new String[] {"Overworld", "Indoor", "Side view"}
@@ -273,7 +272,7 @@ public final class DebugMenu {
             entry.write().accept(key == GLFW_KEY_HOME ? entry.min() : entry.max());
         } else if (key == GLFW_KEY_ENTER && page == 0) {
             try {
-                teleport.accept(destination(category, map, room, x, y));
+                teleport.teleport(destination(category, map, room, x, y));
                 message = "Teleported. F4 resumes.";
             } catch (IllegalArgumentException e) {
                 message = "Invalid map/room selection";

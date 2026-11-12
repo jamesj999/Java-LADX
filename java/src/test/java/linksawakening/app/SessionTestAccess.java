@@ -23,7 +23,7 @@ public final class SessionTestAccess {
                 return session.context;
             } catch (NoSuchFieldException absent) {
             }
-            for (String holder : new String[] {"saveState", "services", "scene", "debug", "screens"}) {
+            for (String holder : new String[] {"lifecycle", "saveState", "services", "scene", "debug", "screens"}) {
                 Field field = SessionContext.class.getDeclaredField(holder);
                 field.setAccessible(true);
                 Object value = field.get(session.context);

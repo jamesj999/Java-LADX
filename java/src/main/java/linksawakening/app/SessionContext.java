@@ -3,7 +3,6 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.app.debug.DebugMenuOverlay;
 import linksawakening.app.gameplay.BushInteraction;
@@ -106,14 +105,6 @@ public final class SessionContext {
 
         saveState = new SaveState(built.saveRamStore());
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
-        inputRouterStop = () -> running = false;
-
-        simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
-        inputRouterToggleDebug = () -> {
-            debug.debugNoClip = !debug.debugNoClip;
-            services().link().setDebugNoClip(debug.debugNoClip);
-            DebugLog.log("Debug no-clip: " + (debug.debugNoClip ? "ON" : "OFF"));
-        };
 
         liftingInstance = new LiftInteraction(this);
         dialogsInstance = new DialogInteractions(this);
@@ -128,6 +119,7 @@ public final class SessionContext {
                 services().transientVfxSystem(),
                 services().droppableRupeeSystem());
         routerInstance = new ScreenRouter(this);
+        noClip = new NoClipControl(debug, services().link());
         inputRouterInstance = new InputRouter(this);
         simulationInstance = new GameplaySimulation(this);
         gameplayFrame = new GameplayFrame(
@@ -147,6 +139,15 @@ public final class SessionContext {
                 new RoomMusicSelection(
                         musicDirector, services().playerState(), services().roomSession()));
         screens.currentScreen = screenSet.title();
+        teleporter = new DebugTeleporter(
+                services().roomSession(),
+                services().link(),
+                session.openingState(),
+                debug,
+                services().transientVfxSystem(),
+                services().droppableRupeeSystem(),
+                services().inputState(),
+                screenSet.gameplay());
     }
 
     public PassOutController passOutController() {
@@ -279,10 +280,8 @@ public final class SessionContext {
         return dialogPolicy;
     }
 
-    private final BooleanSupplier simulationDebugScroll;
-
-    public BooleanSupplier simulationDebugScroll() {
-        return simulationDebugScroll;
+    public linksawakening.app.gameplay.DebugScroll simulationDebugScroll() {
+        return inputRouterInstance;
     }
 
     public linksawakening.app.gameplay.DialogSoundRouting dialogSounds() {
@@ -301,16 +300,12 @@ public final class SessionContext {
         return currentAppConfig();
     }
 
-    private final Runnable inputRouterStop;
-
-    public Runnable stop() {
-        return inputRouterStop;
+    public linksawakening.app.screen.SessionLifecycle stop() {
+        return lifecycle;
     }
 
-    private final Runnable inputRouterToggleDebug;
-
-    public Runnable inputRouterToggleDebug() {
-        return inputRouterToggleDebug;
+    public DebugActions inputRouterToggleDebug() {
+        return noClip;
     }
 
     public BackgroundSceneLoader backgroundSceneLoader() {
@@ -438,7 +433,9 @@ public final class SessionContext {
     final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     final TransitionController transitionController = new TransitionController();
 
-    boolean running = true;
+    final RunState lifecycle = new RunState();
+    private final NoClipControl noClip;
+    final DebugTeleporter teleporter;
 
     // Room pixel dimensions
     final int roomPixelWidth = ROOM_TILE_WIDTH * 8; // 160
@@ -481,7 +478,7 @@ public final class SessionContext {
                     && !services().roomSession().doors().tailCaveKeyholeSequenceActive()) {
                 if (debug.debugMenu == null)
                     debug.debugMenu =
-                            new DebugMenu(services().playerState(), services().roomSession(), this::debugTeleport);
+                            new DebugMenu(services().playerState(), services().roomSession(), teleporter);
                 debug.debugMenu.open(
                         services().roomSession().rooms().mapCategory(),
                         services().roomSession().rooms().mapId(),
@@ -497,17 +494,7 @@ public final class SessionContext {
     }
 
     void debugTeleport(Warp destination) {
-        services().roomSession().transitions().loadWarpDestination(destination);
-        session.openingState().wakeUp(null);
-        session.openingState().shield(null);
-        services().link().resetTransientStateForDebug();
-        services().link().setDebugNoClip(debug.debugNoClip);
-        services().link().setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);
-        services().link().setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
-        services().transientVfxSystem().clear();
-        services().droppableRupeeSystem().clear();
-        services().inputState().clear();
-        screenSet.gameplay().clearPendingInput();
+        teleporter.teleport(destination);
     }
 
     void tickGameplayScreen() {

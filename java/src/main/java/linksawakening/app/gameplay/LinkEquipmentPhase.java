@@ -155,7 +155,7 @@ final class LinkEquipmentPhase {
                     context.equipmentController().tickEquippedItems(context.frameCounter());
                 }
             }
-            if (context.debugNoClip() && context.debugScroll().getAsBoolean()) {
+            if (context.debugNoClip() && context.debugScroll().tryDebugScreenScroll()) {
                 context.link().tickAnimation();
             } else {
                 context.link().tickRomLinkPushing();

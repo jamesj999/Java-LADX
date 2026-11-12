@@ -3,7 +3,6 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.SessionContext;
 import linksawakening.app.story.OpeningStory;
@@ -204,7 +203,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
         return context.dialogBlockers();
     }
 
-    public BooleanSupplier debugScroll() {
+    public DebugScroll debugScroll() {
         return context.simulationDebugScroll();
     }
 

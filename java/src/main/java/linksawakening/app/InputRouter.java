@@ -26,7 +26,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
-public final class InputRouter {
+public final class InputRouter implements linksawakening.app.gameplay.DebugScroll {
     private final SessionContext context;
 
     public InputRouter(SessionContext context) {
@@ -85,11 +85,11 @@ public final class InputRouter {
         return context.config();
     }
 
-    public Runnable stop() {
+    public linksawakening.app.screen.SessionLifecycle stop() {
         return context.stop();
     }
 
-    public Runnable toggleDebug() {
+    public DebugActions toggleDebug() {
         return context.inputRouterToggleDebug();
     }
 
@@ -113,7 +113,7 @@ public final class InputRouter {
                 if (current instanceof GameplayScreen gameplay) {
                     gameplay.requestFileSave();
                 } else if (!(current instanceof FileSaveScreen)) {
-                    stop().run();
+                    stop().requestStop();
                 }
             }
             return;
@@ -128,7 +128,7 @@ public final class InputRouter {
                 return;
             }
             if (key == GLFW_KEY_F3) {
-                toggleDebug().run();
+                toggleDebug().toggleNoClip();
                 return;
             }
         }

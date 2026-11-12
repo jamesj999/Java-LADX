@@ -44,6 +44,10 @@ public class GameSession implements AutoCloseable {
 
     SessionContext context;
 
+    public RunState lifecycle() {
+        return context.lifecycle;
+    }
+
     public byte[] headlessFrame() {
         update();
         context.composeFrameBuffer();
@@ -69,7 +73,7 @@ public class GameSession implements AutoCloseable {
 
         long nextFrameNs = System.nanoTime();
 
-        while (!context.host.shouldClose() && context.running) {
+        while (!context.host.shouldClose() && context.lifecycle.running()) {
             context.host.pollEvents();
             update();
             context.composeFrameBuffer();
