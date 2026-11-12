@@ -122,8 +122,8 @@ final class EntitySwordStatus {
             runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(slot.entity.slot());
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers() != null) {
-            slot.entity =
-                    withDefinition(slot.entity, runtime.spriteHandlers().forZolSlimeEye(), slot.entity.spriteVariant());
+            slot.entity = withDefinition(
+                    slot.entity, runtime.slotProperties().spriteViews().forZolSlimeEye(), slot.entity.spriteVariant());
             runtime.slots()[slot.entity.slot()] = slot.entity;
         }
     }

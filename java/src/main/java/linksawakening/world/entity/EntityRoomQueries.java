@@ -221,7 +221,9 @@ final class EntityRoomQueries {
 
     static EntitySpriteDefinition spriteDefinitionFor(EntityRoomInspectionServices runtime, int entityType) {
         if (runtime.spriteHandlers() == null) {
-            return EntitySpriteDefinition.unsupported(entityType);
+            return runtime.slotProperties()
+                    .spriteViews()
+                    .forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         }
         EntityRoomLoader.RoomTable table = runtime.presentationState().readSpriteSelection() == null
                 ? (runtime.indoorRoom() ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
@@ -229,7 +231,7 @@ final class EntityRoomQueries {
         int mapId = runtime.presentationState().readSpriteSelection() == null
                 ? -1
                 : runtime.presentationState().readSpriteSelection().roomId();
-        return runtime.spriteHandlers().forEntityType(entityType, table, mapId);
+        return runtime.slotProperties().spriteViews().forEntityType(entityType, table, mapId);
     }
 
     static RoomEntity refreshColorShellDisplay(
@@ -237,7 +239,8 @@ final class EntityRoomQueries {
         if (!ColorShellMotion.isColorShellType(entity.type()) || runtime.spriteHandlers() == null) {
             return entity;
         }
-        EntitySpriteDefinition definition = runtime.spriteHandlers()
+        EntitySpriteDefinition definition = runtime.slotProperties()
+                .spriteViews()
                 .forColorShellState(
                         entity.type(),
                         runtime.motions()
@@ -253,6 +256,14 @@ final class EntityRoomQueries {
     }
 
     static RoomEntity presentedEntity(EntityRoomInspectionServices runtime, int slot) {
+        return presentedEntity(runtime, slot, null, null);
+    }
+
+    static RoomEntity presentedEntity(
+            EntityRoomInspectionServices runtime,
+            int slot,
+            RoomEntity previousSource,
+            RoomEntity previousPresentation) {
         RoomEntity entity = runtime.slots()[slot];
         boolean hidden = entity.type() == 0x3E
                 && (runtime.indoorRoom()
@@ -260,6 +271,9 @@ final class EntityRoomQueries {
                         : runtime.pickups().readChestPlayerLevelsKnown()
                                 && runtime.pickups().readChestSwordLevel() == 0);
         hidden |= entity.type() == 0x3F && runtime.indoorRoom() && indoorTarinAbsent(runtime);
-        return hidden && entity.spriteVariant() != -1 ? EntitySnapshots.withVariant(entity, -1) : entity;
+        if (!hidden || entity.spriteVariant() == -1) return entity;
+        if (entity == previousSource && previousPresentation != null && previousPresentation.spriteVariant() == -1)
+            return previousPresentation;
+        return EntitySnapshots.withVariant(entity, -1);
     }
 }

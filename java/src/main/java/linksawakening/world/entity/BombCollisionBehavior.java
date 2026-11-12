@@ -57,10 +57,10 @@ final class BombCollisionBehavior {
                     case NORMAL -> runtime.slotProperties().spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB);
                     case WARNING -> runtime.spriteHandlers() == null
                             ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : runtime.spriteHandlers().forBombRightBeforeExploding();
+                            : runtime.slotProperties().spriteViews().forBombRightBeforeExploding();
                     case EXPLOSION -> runtime.spriteHandlers() == null
                             ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BOMB)
-                            : runtime.spriteHandlers().forBombExplosion();
+                            : runtime.slotProperties().spriteViews().forBombExplosion();
                 };
         int variant = decision.explosionVariant().orElse(0);
         RoomEntity updated = withDefinition(entity, definition, variant);

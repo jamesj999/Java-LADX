@@ -130,6 +130,10 @@ final class RoomWorldState {
         }
     }
 
+    int minimapRoomAtOffset(int offset) {
+        return romData.u8(RomAddress.fromOffset(offset));
+    }
+
     byte[] dungeonMinimapRoomStatusSnapshot(ActiveRoom activeRoom) {
         byte[] result = new byte[64];
         if (activeRoom == null) return result;

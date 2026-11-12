@@ -33,8 +33,14 @@ final class EntityCombatPass {
         runtime.linkState().runningWithPegasusBoots = attackContext.pegasusBoots();
         List<EntityCombatEvent> events = runtime.events().outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
-        for (int index = runtime.slots().length - 1; index >= 0; index--) {
-            EntitySlotCombat.resolve(new EntityCombatSlot(runtime, inputs, events, runtime.slots()[index]));
+        EntityCombatSlot slot = owner.acquireSlot();
+        try {
+            for (int index = runtime.slots().length - 1; index >= 0; index--) {
+                slot.reset(inputs, events, runtime.slots()[index]);
+                EntitySlotCombat.resolve(slot);
+            }
+        } finally {
+            owner.releaseSlot(slot);
         }
         return runtime.events().outbox.drain(EntityCombatEvent.class, "resolvedCombat");
     }

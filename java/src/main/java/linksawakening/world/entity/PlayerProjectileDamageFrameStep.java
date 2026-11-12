@@ -101,8 +101,8 @@ final class PlayerProjectileDamageFrameStep {
             } else if (isZolGelType(target.type())) {
                 runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
                 if (target.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers() != null) {
-                    runtime.slots()[targetSlot] =
-                            withDefinition(target, runtime.spriteHandlers().forZolSlimeEye(), target.spriteVariant());
+                    runtime.slots()[targetSlot] = withDefinition(
+                            target, runtime.slotProperties().spriteViews().forZolSlimeEye(), target.spriteVariant());
                 }
             }
             runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0x18);

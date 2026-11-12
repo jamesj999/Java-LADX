@@ -262,7 +262,7 @@ public final class EntityRoomInspection {
             return entity;
         }
         boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, runtime.spriteHandlers().forOwlEvent(flying), 0);
+        return withDefinition(entity, runtime.slotProperties().spriteViews().forOwlEvent(flying), 0);
     }
 
     int enemyDropHealthGroup(int slot) {
@@ -279,19 +279,19 @@ public final class EntityRoomInspection {
     EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
         return runtime.spriteHandlers() == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : runtime.spriteHandlers().forBushCrawlerState(disguiseState, spriteRoomTable());
+                : runtime.slotProperties().spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
         return runtime.spriteHandlers() == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
-                : runtime.spriteHandlers().forPokeySegment();
+                : runtime.slotProperties().spriteViews().forPokeySegment();
     }
 
     EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
         return runtime.spriteHandlers() == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
-                : runtime.spriteHandlers().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
+                : runtime.slotProperties().spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
@@ -301,7 +301,7 @@ public final class EntityRoomInspection {
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
         return runtime.spriteHandlers() == null
                 ? fallback
-                : runtime.spriteHandlers().forStalfosEvasiveState(evadeState);
+                : runtime.slotProperties().spriteViews().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {

@@ -19,10 +19,16 @@ public final class EntitySlotProperties {
     private final boolean[] wingedStateTwoThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private List<BowWowChain.Entry> bowWowChainOam = List.of();
     final EntitySlotPropertiesServices runtime;
+    private EntitySpriteViews spriteViews;
 
     EntitySlotProperties(EntitySlotPropertiesServices runtime) {
         this.runtime = runtime;
         this.puzzleCountdown = runtime.physicsTables()::readEnemyTransitionCountdown;
+    }
+
+    public EntitySpriteViews spriteViews() {
+        if (spriteViews == null) spriteViews = new EntitySpriteViews(runtime.spriteHandlers());
+        return spriteViews;
     }
 
     void resolveThreeOfAKindPuzzle() {

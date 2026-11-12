@@ -75,6 +75,10 @@ final class RoomRoomsView implements RoomRooms {
         return dependencies.roomSessionViews().moblinKingTrace();
     }
 
+    public RoomRenderSnapshot.View renderView() {
+        return dependencies.roomSessionViews().renderView();
+    }
+
     public RoomRenderSnapshot renderSnapshot() {
         return dependencies.roomSessionViews().renderSnapshot();
     }

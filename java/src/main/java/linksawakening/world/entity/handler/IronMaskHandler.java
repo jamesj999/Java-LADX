@@ -31,8 +31,8 @@ final class IronMaskHandler {
             int variant =
                     privateState2 == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
             if (state.sprites() != null) {
-                slotState.updated(
-                        withDefinition(slotState.updated(), state.sprites().forIronMaskState(privateState2), variant));
+                slotState.updated(withDefinition(
+                        slotState.updated(), state.spriteViews().forIronMaskState(privateState2), variant));
             }
             presentationFlags.preserveIronMaskPresentation(true);
         }

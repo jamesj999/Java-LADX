@@ -54,7 +54,7 @@ final class VillageNpcFrameStep {
         if (runtime.spriteHandlers() != null)
             entity = withDefinition(
                     entity,
-                    runtime.spriteHandlers().forKidPlaying(),
+                    runtime.spriteViews().forKidPlaying(),
                     (entity.type() == 0x71 ? 2 : 0) | (owner.readKidPlayState(slot) == 1 ? 1 : 0));
         z = addFallingSpeedToPosition(
                 entity.z(), owner.postKidZSpeed(slot, -1) & 255, owner.storageKidSpeedYAccumulator(), slot);
@@ -77,7 +77,7 @@ final class VillageNpcFrameStep {
                 timer = 0x80;
                 int ball = runtime.findFreeEntitySlot();
                 if (ball >= 0 && runtime.spriteHandlers() != null) {
-                    var definition = runtime.spriteHandlers().forKidBall();
+                    var definition = runtime.spriteViews().forKidBall();
                     runtime.slots()[ball] = new RoomEntity(
                             ball,
                             -1,

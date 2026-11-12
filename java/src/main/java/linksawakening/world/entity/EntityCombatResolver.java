@@ -12,12 +12,26 @@ import linksawakening.world.entity.motion.*;
 /** ROM sword and contact combat resolution, sharing the owning room slot table. */
 final class EntityCombatResolver {
     final EntityCombatResolverServices runtime;
+    private final EntityCombatSlot slotScratch;
+    private boolean slotScratchInUse;
     final boolean[] deferredLeeverContact = new boolean[RoomEntity.SLOT_COUNT];
     final int[] contactLinkX = new int[RoomEntity.SLOT_COUNT];
     final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
     EntityCombatResolver(EntityCombatResolverServices runtime) {
         this.runtime = runtime;
+        slotScratch = new EntityCombatSlot(runtime);
+    }
+
+    EntityCombatSlot acquireSlot() {
+        if (slotScratchInUse) return new EntityCombatSlot(runtime);
+        slotScratchInUse = true;
+        return slotScratch;
+    }
+
+    void releaseSlot(EntityCombatSlot slot) {
+        slot.reset(null, null, null);
+        if (slot == slotScratch) slotScratchInUse = false;
     }
 
     boolean deferContactRecoil(int slot, int linkX, int linkY) {

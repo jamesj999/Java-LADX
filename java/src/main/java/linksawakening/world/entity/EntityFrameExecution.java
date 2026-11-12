@@ -74,6 +74,10 @@ public final class EntityFrameExecution {
         this.context = context;
     }
 
+    public EntitySpriteViews spriteViews() {
+        return runtime.slotProperties.spriteViews();
+    }
+
     public linksawakening.entity.EntitySpriteHandlerCatalog sprites() {
         return runtime.spriteHandlers;
     }

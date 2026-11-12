@@ -251,7 +251,7 @@ public final class EntityRuntimeConfiguration {
         runtime.pickups().writeChestPowerBraceletLevel(powerBraceletLevel);
         runtime.pickups().writeChestPlayerLevelsKnown(true);
         if (runtime.spriteHandlers() != null) {
-            EntitySpriteDefinition pickupDefinition = runtime.spriteHandlers().forSwordShieldPickup(swordLevel == 0);
+            EntitySpriteDefinition pickupDefinition = runtime.spriteViews().forSwordShieldPickup(swordLevel == 0);
             for (int index = 0; index < runtime.slots().length; index++) {
                 if (runtime.slots()[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
                     runtime.slots()[index] = withDefinition(

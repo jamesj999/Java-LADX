@@ -82,7 +82,9 @@ final class PlayerProjectileSpawns {
             runtime.bombInteractions().writePlayerArrowBombArrow(freeSlot, true);
             if (runtime.spriteHandlers() != null) {
                 runtime.slots()[freeSlot] = withDefinition(
-                        runtime.slots()[freeSlot], runtime.spriteHandlers().forBombArrow(), romDirection);
+                        runtime.slots()[freeSlot],
+                        runtime.slotProperties().spriteViews().forBombArrow(),
+                        romDirection);
             }
         } else {
             runtime.bombInteractions().writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);

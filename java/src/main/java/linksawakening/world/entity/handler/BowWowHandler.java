@@ -41,8 +41,9 @@ final class BowWowHandler {
                 slotState.entity(withDefinition(
                         slotState.entity(),
                         state.story().bowWowState() != 0
-                                ? state.sprites().forFollowerEntityType(ENTITY_BOW_WOW)
-                                : state.sprites().forEntityType(ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
+                                ? state.spriteViews().forFollowerEntityType(ENTITY_BOW_WOW)
+                                : state.spriteViews()
+                                        .forEntityType(ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
                         slotState.entity().spriteVariant()));
             }
             slotState.entity(withVariant(
@@ -77,7 +78,7 @@ final class BowWowHandler {
             if (state.sprites() != null) {
                 slotState.entity(withDefinition(
                         slotState.entity(),
-                        state.sprites().forFollowerEntityType(ENTITY_BOW_WOW),
+                        state.spriteViews().forFollowerEntityType(ENTITY_BOW_WOW),
                         slotState.entity().spriteVariant()));
                 state.replaceEntity(slotState.entity());
             }

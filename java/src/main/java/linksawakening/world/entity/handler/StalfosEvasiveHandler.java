@@ -71,7 +71,7 @@ final class StalfosEvasiveHandler {
                 return false;
             }
             if (state.sprites() != null) {
-                EntitySpriteDefinition evasiveDefinition = state.sprites()
+                EntitySpriteDefinition evasiveDefinition = state.spriteViews()
                         .forStalfosEvasiveState(state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
                                 .privateState1(slotState.entity().slot()));
                 slotState.updated(withDefinition(
