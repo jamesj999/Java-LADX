@@ -98,17 +98,20 @@ final class GameplayRouteStage9 {
                         route.hinoxSwordBox.height()),
                 "position=" + java.util.Arrays.toString(route.firstSwordPosition) + " sword=" + route.hinoxSwordBox
                         + " hinox=" + route.hinox);
-        route.hinoxHit = route.session.resolveEntityCombat(
+        route.hinoxHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                 route.frame++,
                 route.link.romEntityX(),
                 route.link.romEntityY(),
                 false,
+                0,
                 true,
-                true,
-                route.hinoxSwordBox.x(),
-                route.hinoxSwordBox.width(),
-                route.hinoxSwordBox.y(),
-                route.hinoxSwordBox.height());
+                new SwordBox(
+                        true,
+                        route.hinoxSwordBox.x(),
+                        route.hinoxSwordBox.width(),
+                        route.hinoxSwordBox.y(),
+                        route.hinoxSwordBox.height()),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
         assertTrue(
                 route.hinoxHit.stream()
                         .anyMatch(event -> event.slot() == route.hinoxSlot
@@ -153,17 +156,15 @@ final class GameplayRouteStage9 {
                     if (box.active()
                             && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                                     liveHinox, box.x(), box.width(), box.y(), box.height())) {
-                        List<EntityCombatEvent> hit = route.session.resolveEntityCombat(
+                        List<EntityCombatEvent> hit = route.session.resolveEntityCombat(new EntityCombatInputs(
                                 route.frame++,
                                 route.link.romEntityX(),
                                 route.link.romEntityY(),
                                 false,
+                                0,
                                 true,
-                                true,
-                                box.x(),
-                                box.width(),
-                                box.y(),
-                                box.height());
+                                new SwordBox(true, box.x(), box.width(), box.y(), box.height()),
+                                linksawakening.world.entity.EnemyAttackContext.standard()));
                         route.hinoxDeathStarted |= hit.stream()
                                 .anyMatch(event ->
                                         event.slot() == route.hinoxSlot && event.swordHit() && event.enemyDamage() > 0);

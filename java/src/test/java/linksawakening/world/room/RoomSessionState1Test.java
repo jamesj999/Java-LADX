@@ -160,13 +160,21 @@ final class RoomSessionState1Test {
         session.tickEntities(0, hiddenGhini.x(), hiddenGhini.y(), hiddenGhini.z(), 0);
         RoomEntity initialized = session.activeRoom().entities().slots().get(hiddenGhini.slot());
 
-        session.tickEntitiesWithProjectileEvents(
-                1, initialized.x(), initialized.y(), initialized.z(), 0, 0, 0x01, false, 1, 0, false, 0, 0, 0, 0);
+        session.tickEntities(new EntityTickInputs(
+                1,
+                new LinkPosition(initialized.x(), initialized.y(), initialized.z(), 0, 0x01),
+                new LinkMotion(false, 0, false, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
         RoomEntity revealTick = session.activeRoom().entities().slots().get(hiddenGhini.slot());
         assertEquals(-1, revealTick.spriteVariant());
 
-        session.tickEntitiesWithProjectileEvents(
-                2, revealTick.x(), revealTick.y(), revealTick.z(), 0, 0, false, 1, 0, false, 0, 0, 0, 0);
+        session.tickEntities(new EntityTickInputs(
+                2,
+                new LinkPosition(revealTick.x(), revealTick.y(), revealTick.z(), 0, 0),
+                new LinkMotion(false, 0, false, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
         RoomEntity visibleTick = session.activeRoom().entities().slots().get(hiddenGhini.slot());
         assertTrue(visibleTick.spriteVariant() >= 0);
 
@@ -177,21 +185,12 @@ final class RoomSessionState1Test {
                 .findFirst()
                 .orElseThrow();
         oldOverloadSession.tickEntities(0, oldOverloadGhini.x(), oldOverloadGhini.y(), oldOverloadGhini.z(), 0);
-        oldOverloadSession.tickEntitiesWithProjectileEvents(
+        oldOverloadSession.tickEntities(new EntityTickInputs(
                 1,
-                oldOverloadGhini.x(),
-                oldOverloadGhini.y(),
-                oldOverloadGhini.z(),
-                0,
-                0,
-                false,
+                new LinkPosition(oldOverloadGhini.x(), oldOverloadGhini.y(), oldOverloadGhini.z(), 0, 0),
+                new LinkMotion(false, 0, false, 0, 0, 0),
                 1,
-                0,
-                false,
-                0,
-                0,
-                0,
-                0);
+                new SwordBox(false, 0, 0, 0, 0)));
 
         assertEquals(
                 -1,

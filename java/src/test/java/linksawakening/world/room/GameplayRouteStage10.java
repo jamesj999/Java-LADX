@@ -49,17 +49,15 @@ final class GameplayRouteStage10 {
                     if (box.active()
                             && linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                                     boo, box.x(), box.width(), box.y(), box.height())) {
-                        List<EntityCombatEvent> hit = route.session.resolveEntityCombat(
+                        List<EntityCombatEvent> hit = route.session.resolveEntityCombat(new EntityCombatInputs(
                                 route.frame++,
                                 route.link.romEntityX(),
                                 route.link.romEntityY(),
                                 false,
+                                0,
                                 true,
-                                true,
-                                box.x(),
-                                box.width(),
-                                box.y(),
-                                box.height());
+                                new SwordBox(true, box.x(), box.width(), box.y(), box.height()),
+                                linksawakening.world.entity.EnemyAttackContext.standard()));
                         booHit |= hit.stream()
                                 .anyMatch(event ->
                                         event.slot() == booSlot && event.swordHit() && event.enemyDamage() > 0);
@@ -264,17 +262,20 @@ final class GameplayRouteStage10 {
                                 .noneMatch(
                                         event -> event.slot() == route.room22CrystalSwitch.slot() && event.swordHit());
                 contactFrame++) {
-            route.room22SwitchHit = route.session.resolveEntityCombat(
+            route.room22SwitchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     route.frame++,
                     route.link.romEntityX(),
                     route.link.romEntityY(),
                     false,
+                    0,
                     true,
-                    true,
-                    route.room22SwordBox.x(),
-                    route.room22SwordBox.width(),
-                    route.room22SwordBox.y(),
-                    route.room22SwordBox.height());
+                    new SwordBox(
+                            true,
+                            route.room22SwordBox.x(),
+                            route.room22SwordBox.width(),
+                            route.room22SwordBox.y(),
+                            route.room22SwordBox.height()),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
         }
         assertTrue(route.room22SwitchHit.stream()
                 .anyMatch(event -> event.slot() == route.room22CrystalSwitch.slot() && event.swordHit()));

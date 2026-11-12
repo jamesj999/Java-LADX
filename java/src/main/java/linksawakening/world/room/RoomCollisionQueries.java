@@ -38,18 +38,16 @@ final class RoomCollisionQueries {
         boolean sideViewEntityActive = dependencies.location().activeRoom.entities() != null
                 && !dependencies.location().activeRoom.entities().slots().isEmpty()
                 && dependencies.location().activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
-        return new RoomBoundaryState(
-                dependencies.location().activeRoom.mapCategory(),
-                dependencies.location().activeRoom.roomId(),
-                dependencies.location().activeRoom.indoorHasSouthEntrance(),
-                dependencies.location().activeRoom.hasWarps(),
-                dependencies.puzzles().closedShutterMask,
-                linkX,
-                linkY,
-                dependencies.location().activeRoom.mapId(),
-                linkAirborne,
-                linkPhysicsModifier,
-                sideViewEntityActive);
+        return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
+                new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                        dependencies.location().activeRoom.mapCategory(),
+                        dependencies.location().activeRoom.roomId(),
+                        dependencies.location().activeRoom.indoorHasSouthEntrance(),
+                        dependencies.location().activeRoom.hasWarps(),
+                        dependencies.puzzles().closedShutterMask,
+                        dependencies.location().activeRoom.mapId()),
+                new linksawakening.world.transition.RoomBoundaryInputs.Link(
+                        linkX, linkY, linkAirborne, linkPhysicsModifier, sideViewEntityActive)));
     }
 
     RoomEntityObjectSample entityObjectSample(RoomEntity entity) {

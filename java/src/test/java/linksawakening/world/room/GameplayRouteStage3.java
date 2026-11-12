@@ -225,17 +225,16 @@ final class GameplayRouteStage3 {
                 hit++) {
             route.rollingBones = route.session.activeRoom().entities().slots().get(route.rollingBones.slot());
             int rollingBonesSlot = route.rollingBones.slot();
-            List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
                     rollingBonesSlot ^ 1,
                     route.rollingBones.x(),
                     route.rollingBones.y(),
                     false,
+                    0,
                     true,
-                    true,
-                    route.rollingBones.x(),
-                    0x08,
-                    route.rollingBones.y() - route.rollingBones.z(),
-                    0x08);
+                    new SwordBox(
+                            true, route.rollingBones.x(), 0x08, route.rollingBones.y() - route.rollingBones.z(), 0x08),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     hitEvents.stream().anyMatch(event -> event.slot() == rollingBonesSlot && event.enemyDamage() > 0),
                     "hit " + hit + ": " + hitEvents);
@@ -313,17 +312,15 @@ final class GameplayRouteStage3 {
             Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
                     route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
             assertTrue(swordBox.active());
-            List<EntityCombatEvent> tailHit = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> tailHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     moldormSlot ^ 1,
                     route.link.romEntityX(),
                     route.link.romEntityY(),
                     route.link.isAirborne(),
+                    0,
                     true,
-                    swordBox.active(),
-                    swordBox.x(),
-                    swordBox.width(),
-                    swordBox.y(),
-                    swordBox.height());
+                    new SwordBox(swordBox.active(), swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height()),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     tailHit.stream().anyMatch(event -> event.slot() == moldormSlot && event.enemyDamage() == 1),
                     "Moldorm tail hit " + hit + " at (" + tailX + "," + tailY + "): " + tailHit);

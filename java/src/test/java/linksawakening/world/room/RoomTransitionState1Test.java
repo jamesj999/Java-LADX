@@ -85,8 +85,15 @@ final class RoomTransitionState1Test {
             for (int attempt = 0; attempt < 12; attempt++) {
                 RoomEntity enemy = session.activeRoom().entities().slots().get(slot);
                 if (!enemy.loaded()) break;
-                session.resolveEntityCombat(
-                        slot ^ 1, enemy.x(), enemy.y() + 0x20, false, true, true, enemy.x(), 0x10, enemy.y(), 0x10);
+                session.resolveEntityCombat(new EntityCombatInputs(
+                        slot ^ 1,
+                        enemy.x(),
+                        enemy.y() + 0x20,
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, enemy.x(), 0x10, enemy.y(), 0x10),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 for (int tick = 0; tick < 0x60; tick++) {
                     tickInteractiveEntities(session, frame++, 0x48, 0x70);
                 }
@@ -121,8 +128,15 @@ final class RoomTransitionState1Test {
                 RoomEntity enemy = session.activeRoom().entities().slots().get(slot);
                 if (!enemy.loaded()) break;
                 tickInteractiveEntities(session, frame++, enemy.x(), enemy.y() + 0x10);
-                session.resolveEntityCombat(
-                        slot ^ 1, enemy.x(), enemy.y() + 0x10, false, true, true, enemy.x(), 0x10, enemy.y(), 0x10);
+                session.resolveEntityCombat(new EntityCombatInputs(
+                        slot ^ 1,
+                        enemy.x(),
+                        enemy.y() + 0x10,
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, enemy.x(), 0x10, enemy.y(), 0x10),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
             }
         }
         for (int tick = 0; tick < 0x40; tick++) {

@@ -72,17 +72,20 @@ final class GameplayRouteStage6 {
         route.returnSwordBox = route.returnSwitchSword.enemyCollisionBox(
                 route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
         assertTrue(route.returnSwordBox.active());
-        route.returnSwitchHit = route.session.resolveEntityCombat(
+        route.returnSwitchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                 route.frame++,
                 route.link.romEntityX(),
                 route.link.romEntityY(),
                 false,
+                0,
                 true,
-                true,
-                route.returnSwordBox.x(),
-                route.returnSwordBox.width(),
-                route.returnSwordBox.y(),
-                route.returnSwordBox.height());
+                new SwordBox(
+                        true,
+                        route.returnSwordBox.x(),
+                        route.returnSwordBox.width(),
+                        route.returnSwordBox.y(),
+                        route.returnSwordBox.height()),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
         route.currentReturnCrystalSwitch =
                 route.session.activeRoom().entities().slots().get(route.returnCrystalSwitch.slot());
         assertEquals(EntityStatus.ACTIVE, route.currentReturnCrystalSwitch.status());
@@ -182,17 +185,15 @@ final class GameplayRouteStage6 {
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
             route.maskedMimic = route.session.activeRoom().entities().slots().get(route.maskedMimicSlot);
-            List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
                     route.frame++,
                     linkEntityX,
                     linkEntityY,
                     false,
+                    0,
                     true,
-                    true,
-                    route.maskedMimic.x() + 0x08,
-                    0x08,
-                    route.maskedMimic.y() + 0x08,
-                    0x08);
+                    new SwordBox(true, route.maskedMimic.x() + 0x08, 0x08, route.maskedMimic.y() + 0x08, 0x08),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     hitEvents.stream()
                             .anyMatch(event -> event.slot() == route.maskedMimicSlot

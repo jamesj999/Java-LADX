@@ -385,8 +385,15 @@ final class RoomSessionDoors1Test {
         // Resolve each sword collision on its source alternating-slot cadence
         // without advancing the shared card face between hits.
         for (RoomEntity card : cards) {
-            List<EntityCombatEvent> hit = session.resolveEntityCombat(
-                    card.slot() ^ 1, 0, 0, false, true, true, card.x() + 0x08, 1, card.y() + 0x08, 1);
+            List<EntityCombatEvent> hit = session.resolveEntityCombat(new EntityCombatInputs(
+                    card.slot() ^ 1,
+                    0,
+                    0,
+                    false,
+                    0,
+                    true,
+                    new SwordBox(true, card.x() + 0x08, 1, card.y() + 0x08, 1),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(hit.stream().anyMatch(event -> event.slot() == card.slot() && event.swordHit()));
         }
 

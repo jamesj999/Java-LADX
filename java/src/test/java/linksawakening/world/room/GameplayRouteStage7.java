@@ -46,17 +46,16 @@ final class GameplayRouteStage7 {
                     linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(
                             keese, keeseSwordBox.x(), keeseSwordBox.width(), keeseSwordBox.y(), keeseSwordBox.height()),
                     "sword=" + keeseSwordBox + " keese=" + keese);
-            List<EntityCombatEvent> keeseHit = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> keeseHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     route.frame++,
                     route.link.romEntityX(),
                     route.link.romEntityY(),
                     false,
+                    0,
                     true,
-                    true,
-                    keeseSwordBox.x(),
-                    keeseSwordBox.width(),
-                    keeseSwordBox.y(),
-                    keeseSwordBox.height());
+                    new SwordBox(
+                            true, keeseSwordBox.x(), keeseSwordBox.width(), keeseSwordBox.y(), keeseSwordBox.height()),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     keeseHit.stream()
                             .anyMatch(
@@ -191,8 +190,15 @@ final class GameplayRouteStage7 {
             RoomEntity beetle = route.session.activeRoom().entities().slots().get(route.hardhat.slot());
             int attackY = beetle.y() - 0x20;
             if (beetle.status() == EntityStatus.ACTIVE) {
-                var beetleHits = route.session.resolveEntityCombat(
-                        beetle.slot() ^ 1, beetle.x(), attackY, false, true, true, beetle.x(), 0x10, beetle.y(), 0x10);
+                var beetleHits = route.session.resolveEntityCombat(new EntityCombatInputs(
+                        beetle.slot() ^ 1,
+                        beetle.x(),
+                        attackY,
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, beetle.x(), 0x10, beetle.y(), 0x10),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(
                         beetleHits.stream().anyMatch(event -> event.swordHit()),
                         "Beetle hit " + hit + ": " + beetle + " " + beetleHits);
@@ -253,17 +259,20 @@ final class GameplayRouteStage7 {
                 route.postStoneSwordBox.width(),
                 route.postStoneSwordBox.y(),
                 route.postStoneSwordBox.height()));
-        route.postStoneSwitchHit = route.session.resolveEntityCombat(
+        route.postStoneSwitchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                 route.frame++,
                 route.link.romEntityX(),
                 route.link.romEntityY(),
                 false,
+                0,
                 true,
-                true,
-                route.postStoneSwordBox.x(),
-                route.postStoneSwordBox.width(),
-                route.postStoneSwordBox.y(),
-                route.postStoneSwordBox.height());
+                new SwordBox(
+                        true,
+                        route.postStoneSwordBox.x(),
+                        route.postStoneSwordBox.width(),
+                        route.postStoneSwordBox.y(),
+                        route.postStoneSwordBox.height()),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
         route.postStoneCrystalSwitchSlot = route.postStoneCrystalSwitch.slot();
         assertTrue(
                 route.postStoneSwitchHit.stream()
@@ -342,17 +351,20 @@ final class GameplayRouteStage7 {
                 route.postStoneLoweringBox.width(),
                 route.postStoneLoweringBox.y(),
                 route.postStoneLoweringBox.height()));
-        route.postStoneLoweringHit = route.session.resolveEntityCombat(
+        route.postStoneLoweringHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                 route.frame++,
                 route.link.romEntityX(),
                 route.link.romEntityY(),
                 false,
+                0,
                 true,
-                true,
-                route.postStoneLoweringBox.x(),
-                route.postStoneLoweringBox.width(),
-                route.postStoneLoweringBox.y(),
-                route.postStoneLoweringBox.height());
+                new SwordBox(
+                        true,
+                        route.postStoneLoweringBox.x(),
+                        route.postStoneLoweringBox.width(),
+                        route.postStoneLoweringBox.y(),
+                        route.postStoneLoweringBox.height()),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
         route.postStoneLoweringSwitchSlot = route.room38CrystalSwitch.slot();
         assertTrue(
                 route.postStoneLoweringHit.stream()

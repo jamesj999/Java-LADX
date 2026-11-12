@@ -137,18 +137,19 @@ public final class OverworldBushInteraction {
      * Apply the overworld bush reveal logic for the current sword-hit cell.
      * Returns {@code true} if a supported bush object was changed.
      */
-    public boolean cutBush(
-            boolean swordActive,
-            int javaDirection,
-            int linkPixelX,
-            int linkPixelY,
-            int roomId,
-            boolean isGbcOverworld,
-            int[] roomObjectsArea,
-            int[] mutableRenderValues,
-            int[] fallbackOverlay,
-            int[] roomTileIds,
-            int[] roomTileAttrs) {
+    public boolean cutBush(BushCutInputs inputs) {
+        boolean swordActive = inputs.sword().active();
+        int javaDirection = inputs.sword().direction();
+        int linkPixelX = inputs.sword().x();
+        int linkPixelY = inputs.sword().y();
+        int roomId = inputs.roomId();
+        boolean isGbcOverworld = inputs.isGbcOverworld();
+        int[] roomObjectsArea = inputs.roomObjectsArea();
+        int[] mutableRenderValues = inputs.mutableRenderValues();
+        int[] fallbackOverlay = inputs.fallbackOverlay();
+        int[] roomTileIds = inputs.roomTileIds();
+        int[] roomTileAttrs = inputs.roomTileAttrs();
+
         int location = swordHitRoomObjectLocation(swordActive, javaDirection, linkPixelX, linkPixelY);
         if (location < 0) {
             return false;

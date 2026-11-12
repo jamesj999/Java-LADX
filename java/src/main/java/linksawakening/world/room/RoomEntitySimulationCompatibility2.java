@@ -45,6 +45,8 @@ interface RoomEntitySimulationCompatibility2 {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
+    /** @deprecated Use the parameter-object overload; retained for java/src/main/java/linksawakening/app/gameplay/LinkEquipmentPhase.java. */
+    @Deprecated(forRemoval = true)
     default EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -58,21 +60,14 @@ interface RoomEntitySimulationCompatibility2 {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return facade().components
-                .entityBridge()
-                .combat
-                .collectEntityIfNeeded(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkInteractive,
-                        linkDirection,
-                        linkZ,
-                        swordActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight);
+        return facade().collectEntityIfNeeded(new EntityPickupInputs(
+                frameCounter,
+                new EntityPickupInputs.Link(
+                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                new SwordBox(swordActive, swordX, swordWidth, swordY, swordHeight)));
+    }
+
+    default EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+        return facade().components.entityBridge().combat.collectEntityIfNeeded(inputs);
     }
 }

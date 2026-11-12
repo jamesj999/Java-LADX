@@ -1,0 +1,13 @@
+package linksawakening.world.object;
+
+public record BushCutInputs(
+        SwordProbe sword,
+        int roomId,
+        boolean isGbcOverworld,
+        int[] roomObjectsArea,
+        int[] mutableRenderValues,
+        int[] fallbackOverlay,
+        int[] roomTileIds,
+        int[] roomTileAttrs) {
+    public record SwordProbe(boolean active, int direction, int x, int y) {}
+}

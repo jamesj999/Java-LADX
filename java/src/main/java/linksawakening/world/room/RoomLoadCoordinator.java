@@ -116,7 +116,7 @@ final class RoomLoadCoordinator {
                 .loadIndoorTiles(dependencies.romData(), mapId, roomId, mapCategory == Warp.CATEGORY_SIDESCROLL);
         LoadedRoom room = dependencies
                 .roomLoader()
-                .loadIndoor(
+                .loadIndoor(new IndoorRoomLoadInputs(
                         mapId,
                         roomId,
                         dependencies.location().activeRoom == null
@@ -126,8 +126,8 @@ final class RoomLoadCoordinator {
                         dependencies.entityFrame().recentRoomEntityClears.mask(roomId),
                         dependencies.roomSessionViews().get().indoorStatusTableForMap(mapId),
                         dependencies.followers().hasBirdKey,
-                        dependencies.followers().tarinFlag,
-                        dependencies.followers().playerShieldLevel);
+                        new RoomNpcPaletteInputs(
+                                dependencies.followers().tarinFlag, dependencies.followers().playerShieldLevel)));
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         var oldSelection = dependencies.location().activeRoom == null
                         || dependencies.location().activeRoom.entities() == null

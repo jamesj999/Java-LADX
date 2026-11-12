@@ -128,17 +128,15 @@ final class GameplayRouteStage2 {
                     hit++) {
                 RoomEntity hardhat =
                         route.session.activeRoom().entities().slots().get(hardhatSlot);
-                List<EntityCombatEvent> recoil = route.session.resolveEntityCombat(
+                List<EntityCombatEvent> recoil = route.session.resolveEntityCombat(new EntityCombatInputs(
                         hardhatSlot ^ 1,
                         hardhat.x(),
                         hardhat.y() + 0x20,
                         false,
+                        0,
                         true,
-                        true,
-                        hardhat.x(),
-                        0x10,
-                        hardhat.y(),
-                        0x10);
+                        new SwordBox(true, hardhat.x(), 0x10, hardhat.y(), 0x10),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(recoil.stream().anyMatch(event -> event.slot() == hardhatSlot && event.swordHit()));
                 for (int recoilFrame = 0; recoilFrame < 0x30; recoilFrame++) {
                     route.session.tickEntitiesWithProjectileEvents(
@@ -331,19 +329,15 @@ final class GameplayRouteStage2 {
                 .toList();
         // The raised shield flips beetles; the sword then damages the underside.
         for (RoomEntity beetle : route.beetles) {
-            List<EntityCombatEvent> flipEvents = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> flipEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
                     beetle.slot() ^ 1,
                     beetle.x() - 8,
                     beetle.y(),
                     false,
                     0,
                     true,
-                    false,
-                    0,
-                    0,
-                    0,
-                    0,
-                    new EnemyAttackContext(1, false, false, false, false, true, 0, 0));
+                    new SwordBox(false, 0, 0, 0, 0),
+                    new EnemyAttackContext(1, false, false, false, false, true, 0, 0)));
             assertTrue(
                     flipEvents.stream()
                             .anyMatch(event ->
@@ -355,17 +349,15 @@ final class GameplayRouteStage2 {
                 .filter(entity -> entity.type() == 0x2C)
                 .toList();
         for (RoomEntity beetle : route.beetles) {
-            List<EntityCombatEvent> damageEvents = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> damageEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
                     beetle.slot() ^ 1,
                     0,
                     0,
                     false,
+                    0,
                     true,
-                    true,
-                    beetle.x() + 0x08,
-                    1,
-                    beetle.y() - beetle.z() + 0x08,
-                    1);
+                    new SwordBox(true, beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     damageEvents.stream()
                             .anyMatch(event ->
@@ -380,17 +372,15 @@ final class GameplayRouteStage2 {
                     .filter(entity -> entity.type() == 0x2C)
                     .toList();
             for (RoomEntity beetle : route.beetles) {
-                route.session.resolveEntityCombat(
+                route.session.resolveEntityCombat(new EntityCombatInputs(
                         beetle.slot() ^ 1,
                         0,
                         0,
                         false,
+                        0,
                         true,
-                        true,
-                        beetle.x() + 0x08,
-                        1,
-                        beetle.y() - beetle.z() + 0x08,
-                        1);
+                        new SwordBox(true, beetle.x() + 0x08, 1, beetle.y() - beetle.z() + 0x08, 1),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
             }
         }
         route.beetleDeadline = route.frame + 0x200;

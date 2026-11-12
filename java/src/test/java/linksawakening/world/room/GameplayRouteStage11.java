@@ -42,8 +42,15 @@ final class GameplayRouteStage11 {
                     && route.frame < attackDeadline) {
                 RoomEntity target =
                         route.session.activeRoom().entities().slots().get(enemySlot);
-                route.session.resolveEntityCombat(
-                        route.frame++, 0, 0, false, true, true, target.x() - 0x08, 0x10, target.y() - 0x08, 0x10);
+                route.session.resolveEntityCombat(new EntityCombatInputs(
+                        route.frame++,
+                        0,
+                        0,
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, target.x() - 0x08, 0x10, target.y() - 0x08, 0x10),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 for (int cooldown = 0;
                         cooldown < 0x0B
                                 && route.session
@@ -177,17 +184,20 @@ final class GameplayRouteStage11 {
                                 .noneMatch(
                                         event -> event.slot() == route.room24CrystalSwitch.slot() && event.swordHit());
                 contactFrame++) {
-            route.room24SwitchHit = route.session.resolveEntityCombat(
+            route.room24SwitchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     route.frame++,
                     route.link.romEntityX(),
                     route.link.romEntityY(),
                     false,
+                    0,
                     true,
-                    true,
-                    route.room24SwordBox.x(),
-                    route.room24SwordBox.width(),
-                    route.room24SwordBox.y(),
-                    route.room24SwordBox.height());
+                    new SwordBox(
+                            true,
+                            route.room24SwordBox.x(),
+                            route.room24SwordBox.width(),
+                            route.room24SwordBox.y(),
+                            route.room24SwordBox.height()),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
         }
         assertTrue(route.room24SwitchHit.stream()
                 .anyMatch(event -> event.slot() == route.room24CrystalSwitch.slot() && event.swordHit()));
@@ -316,8 +326,15 @@ final class GameplayRouteStage11 {
                         == EntityStatus.ACTIVE
                 && route.frame < route.room25ZolDeadline) {
             RoomEntity target = route.session.activeRoom().entities().slots().get(route.room25Zol.slot());
-            route.session.resolveEntityCombat(
-                    route.frame++, 0, 0, false, true, true, target.x() - 0x08, 0x10, target.y() - 0x08, 0x10);
+            route.session.resolveEntityCombat(new EntityCombatInputs(
+                    route.frame++,
+                    0,
+                    0,
+                    false,
+                    0,
+                    true,
+                    new SwordBox(true, target.x() - 0x08, 0x10, target.y() - 0x08, 0x10),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             for (int cooldown = 0;
                     cooldown < 0x0B
                             && route.session
@@ -364,8 +381,15 @@ final class GameplayRouteStage11 {
             for (RoomEntity gel : route.session.activeRoom().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x1C && entity.status() == EntityStatus.ACTIVE)
                     .toList()) {
-                route.session.resolveEntityCombat(
-                        route.frame++, 0, 0, false, true, true, gel.x() - 8, 16, gel.y() - 8, 16);
+                route.session.resolveEntityCombat(new EntityCombatInputs(
+                        route.frame++,
+                        0,
+                        0,
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, gel.x() - 8, 16, gel.y() - 8, 16),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
             }
             tickInteractiveEntities(route.session, route.frame++, 0, 0);
         }

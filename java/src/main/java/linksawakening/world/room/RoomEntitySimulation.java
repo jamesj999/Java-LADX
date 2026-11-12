@@ -15,25 +15,26 @@ final class RoomEntitySimulation {
         this.dependencies = dependencies;
     }
 
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            boolean linkAirborne,
-            int linkMotionState,
-            int linkDirection,
-            int collisionType,
-            boolean usingShield,
-            int shieldLevel,
-            int invincibilityCounter,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            int linkSpeedX,
-            int linkSpeedY) {
+    List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.position().x();
+        int linkEntityY = inputs.position().y();
+        int linkEntityZ = inputs.position().z();
+        boolean linkAirborne = inputs.motion().airborne();
+        int linkMotionState = inputs.motion().state();
+        int linkDirection = inputs.position().direction();
+        int collisionType = inputs.position().collisionType();
+        boolean usingShield = inputs.motion().shield();
+        int shieldLevel = inputs.shieldLevel();
+        int invincibilityCounter = inputs.motion().invincibility();
+        boolean swordCollisionActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+        int linkSpeedX = inputs.motion().speedX();
+        int linkSpeedY = inputs.motion().speedY();
+
         dependencies.followers().followingLinkX = linkEntityX & 0xFF;
         dependencies.followers().followingLinkY = linkEntityY & 0xFF;
         dependencies.followers().followingLinkZ = linkEntityZ & 0xFF;

@@ -155,17 +155,15 @@ final class GameplayRouteStage5 {
                 for (int[] position : combatPath) {
                     route.link.setPixelPosition(position[0], position[1]);
                 }
-                route.session.resolveEntityCombat(
+                route.session.resolveEntityCombat(new EntityCombatInputs(
                         stalfosSlot ^ 1,
                         route.link.romEntityX(),
                         route.link.romEntityY(),
                         false,
+                        0,
                         true,
-                        true,
-                        stalfos.x(),
-                        0x08,
-                        stalfos.y(),
-                        0x08);
+                        new SwordBox(true, stalfos.x(), 0x08, stalfos.y(), 0x08),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 for (int recovery = 0; recovery < 0x20; recovery++) {
                     route.session.tickEntitiesWithProjectileEvents(
                             route.frame++,
@@ -290,17 +288,16 @@ final class GameplayRouteStage5 {
                         route.swordBox.y(),
                         route.swordBox.height()),
                 "sword=" + route.swordBox + " crystal=" + route.crystalSwitch);
-        route.switchHit = route.session.resolveEntityCombat(
+        route.switchHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                 route.frame++,
                 route.link.romEntityX(),
                 route.link.romEntityY(),
                 false,
+                0,
                 true,
-                true,
-                route.swordBox.x(),
-                route.swordBox.width(),
-                route.swordBox.y(),
-                route.swordBox.height());
+                new SwordBox(
+                        true, route.swordBox.x(), route.swordBox.width(), route.swordBox.y(), route.swordBox.height()),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
         assertEquals(EntityStatus.ACTIVE, route.crystalSwitch.status());
         assertTrue(
                 route.switchHit.stream()
@@ -373,17 +370,15 @@ final class GameplayRouteStage5 {
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 tickInteractiveEntities(route.session, route.frame++, linkEntityX, linkEntityY);
                 maskedMimic = route.session.activeRoom().entities().slots().get(maskedMimicSlot);
-                List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(
+                List<EntityCombatEvent> hitEvents = route.session.resolveEntityCombat(new EntityCombatInputs(
                         route.frame++,
                         linkEntityX,
                         linkEntityY,
                         false,
+                        0,
                         true,
-                        true,
-                        maskedMimic.x() + 0x08,
-                        0x08,
-                        maskedMimic.y() + 0x08,
-                        0x08);
+                        new SwordBox(true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(
                         hitEvents.stream()
                                 .anyMatch(event -> event.slot() == maskedMimicSlot

@@ -385,8 +385,15 @@ final class RoomSessionRewards2Test {
                 .orElseThrow();
         session.tickEntities(0, 0, 0);
 
-        List<EntityCombatEvent> hit =
-                session.resolveEntityCombat(1, 0, 0, false, false, true, crystal.x() + 0x08, 1, crystal.y() + 0x08, 1);
+        List<EntityCombatEvent> hit = session.resolveEntityCombat(new EntityCombatInputs(
+                1,
+                0,
+                0,
+                false,
+                0,
+                false,
+                new SwordBox(true, crystal.x() + 0x08, 1, crystal.y() + 0x08, 1),
+                linksawakening.world.entity.EnemyAttackContext.standard()));
 
         assertEquals(1, hit.size());
         assertEquals(0x66, hit.get(0).type());

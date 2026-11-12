@@ -124,7 +124,12 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.loadIndoor(0x10, 0xA3);
 
-        session.tickEntitiesWithProjectileEvents(0, 0, 0, 0, 0, 0, false, 1, 0);
+        session.tickEntities(new EntityTickInputs(
+                0,
+                new LinkPosition(0, 0, 0, 0, 0),
+                new LinkMotion(false, 0, false, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
         session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
 
         int frame = 1;
@@ -133,7 +138,12 @@ final class RoomSessionFollowersTest {
                     .filter(entity -> entity.type() == type)
                     .findFirst()
                     .orElseThrow();
-            session.tickEntitiesWithProjectileEvents(frame++, npc.x(), npc.y(), npc.z(), 0, 0, false, 1, 0);
+            session.tickEntities(new EntityTickInputs(
+                    frame++,
+                    new LinkPosition(npc.x(), npc.y(), npc.z(), 0, 0),
+                    new LinkMotion(false, 0, false, 0, 0, 0),
+                    1,
+                    new SwordBox(false, 0, 0, 0, 0)));
 
             assertTrue(
                     session.components.entityBridge().outbox.consumeLinkFinalPositionRequests().stream()
@@ -207,8 +217,12 @@ final class RoomSessionFollowersTest {
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();
-        session.tickEntitiesWithProjectileEvents(
-                1, 0x80, 0x40, 0, 0, Link.DIRECTION_RIGHT, 1, false, 1, 0, false, 0, 0, 0, 0, 0, 0);
+        session.tickEntities(new EntityTickInputs(
+                1,
+                new LinkPosition(0x80, 0x40, 0, Link.DIRECTION_RIGHT, 1),
+                new LinkMotion(false, 0, false, 0, 0, 0),
+                1,
+                new SwordBox(false, 0, 0, 0, 0)));
         assertEquals(1, session.bowWowState());
         RoomEntity rescued = session.activeRoom().entities().slots().get(before.slot());
         session.setEntityDialogActive(true);

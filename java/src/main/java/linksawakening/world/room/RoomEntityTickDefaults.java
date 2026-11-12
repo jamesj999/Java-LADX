@@ -75,16 +75,12 @@ final class RoomEntityTickDefaults {
         return dependencies
                 .entityBridge()
                 .get()
-                .tickEntitiesWithProjectileEvents(
+                .tickEntities(new EntityTickInputs(
                         frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        usingShield,
+                        new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
+                        new LinkMotion(false, linkMotionState, usingShield, 0, 0, 0),
                         1,
-                        0);
+                        new SwordBox(false, 0, 0, 0, 0)));
     }
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
@@ -99,173 +95,17 @@ final class RoomEntityTickDefaults {
         return dependencies
                 .entityBridge()
                 .get()
-                .tickEntitiesWithProjectileEvents(
+                .tickEntities(new EntityTickInputs(
                         frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkAirborne,
-                        linkMotionState,
-                        linkDirection,
-                        0,
-                        usingShield,
+                        new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
+                        new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
                         1,
-                        0,
-                        false,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield,
-            int shieldLevel,
-            int invincibilityCounter) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        false,
-                        0,
-                        0,
-                        0,
-                        0);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            boolean usingShield,
-            int shieldLevel,
-            int invincibilityCounter,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        0,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            int collisionType,
-            boolean usingShield,
-            int shieldLevel,
-            int invincibilityCounter,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        linkMotionState,
-                        linkDirection,
-                        collisionType,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        0,
-                        0);
-    }
-
-    List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            int linkDirection,
-            int collisionType,
-            boolean usingShield,
-            int shieldLevel,
-            int invincibilityCounter,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            int linkSpeedX,
-            int linkSpeedY) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .tickEntitiesWithProjectileEvents(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkEntityZ,
-                        false,
-                        linkMotionState,
-                        linkDirection,
-                        collisionType,
-                        usingShield,
-                        shieldLevel,
-                        invincibilityCounter,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        linkSpeedX,
-                        linkSpeedY);
+                        new SwordBox(false, 0, 0, 0, 0)));
     }
 
     record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge, RoomFollowerState followers) {}
+
+    List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+        return dependencies.entityBridge().get().tickEntities(inputs);
+    }
 }

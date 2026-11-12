@@ -150,17 +150,15 @@ final class GameplayRouteStage4 {
         for (int hit = 0; hit < 2; hit++) {
             route.hideoutGuard = route.session.activeRoom().entities().slots().get(route.hideoutGuard.slot());
             int hideoutGuardSlot = route.hideoutGuard.slot();
-            List<EntityCombatEvent> guardHit = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> guardHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     hideoutGuardSlot ^ 1,
                     route.hideoutGuard.x(),
                     route.hideoutGuard.y(),
                     false,
+                    0,
                     true,
-                    true,
-                    route.hideoutGuard.x(),
-                    0x08,
-                    route.hideoutGuard.y(),
-                    0x08);
+                    new SwordBox(true, route.hideoutGuard.x(), 0x08, route.hideoutGuard.y(), 0x08),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             assertTrue(
                     guardHit.stream().anyMatch(event -> event.slot() == hideoutGuardSlot && event.enemyDamage() > 0));
             for (int recovery = 0; recovery < 0x20; recovery++) {
@@ -199,8 +197,15 @@ final class GameplayRouteStage4 {
                     hit++) {
                 RoomEntity moblin =
                         route.session.activeRoom().entities().slots().get(moblinSlot);
-                List<EntityCombatEvent> moblinHit = route.session.resolveEntityCombat(
-                        moblinSlot ^ 1, moblin.x(), moblin.y(), false, true, true, moblin.x(), 0x08, moblin.y(), 0x08);
+                List<EntityCombatEvent> moblinHit = route.session.resolveEntityCombat(new EntityCombatInputs(
+                        moblinSlot ^ 1,
+                        moblin.x(),
+                        moblin.y(),
+                        false,
+                        0,
+                        true,
+                        new SwordBox(true, moblin.x(), 0x08, moblin.y(), 0x08),
+                        linksawakening.world.entity.EnemyAttackContext.standard()));
                 assertTrue(moblinHit.stream().anyMatch(event -> event.slot() == moblinSlot && event.enemyDamage() > 0));
                 for (int recovery = 0; recovery < 0x20; recovery++) {
                     route.session.tickEntitiesWithProjectileEvents(
@@ -257,17 +262,15 @@ final class GameplayRouteStage4 {
             Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
                     route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
             int moblinKingSlot = route.moblinKing.slot();
-            List<EntityCombatEvent> kingHit = route.session.resolveEntityCombat(
+            List<EntityCombatEvent> kingHit = route.session.resolveEntityCombat(new EntityCombatInputs(
                     moblinKingSlot ^ 1,
                     route.link.romEntityX(),
                     route.link.romEntityY(),
                     false,
+                    0,
                     true,
-                    swordBox.active(),
-                    swordBox.x(),
-                    swordBox.width(),
-                    swordBox.y(),
-                    swordBox.height());
+                    new SwordBox(swordBox.active(), swordBox.x(), swordBox.width(), swordBox.y(), swordBox.height()),
+                    linksawakening.world.entity.EnemyAttackContext.standard()));
             if (kingHit.stream().anyMatch(event -> event.slot() == moblinKingSlot && event.enemyDamage() > 0)) {
                 route.moblinKingHits++;
             }
@@ -291,22 +294,12 @@ final class GameplayRouteStage4 {
                 .orElseThrow();
         route.bowWowRescueDeadline = route.frame + 0x40;
         while (route.session.bowWowState() != 0x01 && route.frame < route.bowWowRescueDeadline) {
-            route.session.tickEntitiesWithProjectileEvents(
+            route.session.tickEntities(new EntityTickInputs(
                     route.frame++,
-                    route.kidnappedBowWow.x(),
-                    route.kidnappedBowWow.y(),
-                    0,
-                    0,
-                    Link.DIRECTION_RIGHT,
+                    new LinkPosition(route.kidnappedBowWow.x(), route.kidnappedBowWow.y(), 0, Link.DIRECTION_RIGHT, 1),
+                    new LinkMotion(false, 0, false, 0, 0, 0),
                     1,
-                    false,
-                    1,
-                    0,
-                    false,
-                    0,
-                    0,
-                    0,
-                    0);
+                    new SwordBox(false, 0, 0, 0, 0)));
         }
         assertEquals(0x01, route.session.bowWowState());
         assertEquals(0x10, route.session.components.entityBridge().outbox.consumePendingMusicTrack());

@@ -16,80 +16,20 @@ final class RoomEntityCombatBridge {
         this.dependencies = dependencies;
     }
 
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .combat
-                .resolveEntityCombat(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        0,
-                        linkInteractive,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        EnemyAttackContext.standard());
-    }
+    List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+        EnemyAttackContext attackContext = inputs.attackContext();
 
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
-        return dependencies
-                .entityBridge()
-                .get()
-                .combat
-                .resolveEntityCombat(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        0,
-                        linkInteractive,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        attackContext);
-    }
-
-    List<EntityCombatEvent> resolveEntityCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
         if (dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return List.of();
@@ -197,34 +137,27 @@ final class RoomEntityCombatBridge {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return collectEntityIfNeeded(
+        return collectEntityIfNeeded(new EntityPickupInputs(
                 frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                linkZ,
-                false,
-                0,
-                0,
-                0,
-                0);
+                new EntityPickupInputs.Link(
+                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                new SwordBox(false, 0, 0, 0, 0)));
     }
 
-    EntityPickupEvent collectEntityIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection,
-            int linkZ,
-            boolean swordActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
+    EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.link().x();
+        int linkEntityY = inputs.link().y();
+        boolean linkAirborne = inputs.link().airborne();
+        boolean linkInteractive = inputs.link().interactive();
+        int linkDirection = inputs.link().direction();
+        int linkZ = inputs.link().z();
+        boolean swordActive = inputs.sword().active();
+        int swordX = inputs.sword().x();
+        int swordWidth = inputs.sword().width();
+        int swordY = inputs.sword().y();
+        int swordHeight = inputs.sword().height();
+
         if (dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return null;

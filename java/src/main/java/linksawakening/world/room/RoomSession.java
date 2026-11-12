@@ -69,25 +69,28 @@ public final class RoomSession extends RoomSessionRules
                 inputs.player().health().lowHealth());
         components.entityBridge().outbox.setFreeMovementMode(inputs.link().freeMovement());
         components.entityInputs().setEntityLinkVelocityZ(inputs.link().velocityZ());
-        return tickEntitiesWithProjectileEvents(
+        return tickEntities(new EntityTickInputs(
                 inputs.frameCounter(),
-                inputs.link().position().x(),
-                inputs.link().position().y(),
-                inputs.link().position().z(),
-                inputs.link().motion().airborne(),
-                inputs.link().motion().state(),
-                inputs.link().position().direction(),
-                inputs.link().position().collisionType(),
-                inputs.link().motion().shield(),
+                new LinkPosition(
+                        inputs.link().position().x(),
+                        inputs.link().position().y(),
+                        inputs.link().position().z(),
+                        inputs.link().position().direction(),
+                        inputs.link().position().collisionType()),
+                new LinkMotion(
+                        inputs.link().motion().airborne(),
+                        inputs.link().motion().state(),
+                        inputs.link().motion().shield(),
+                        inputs.link().motion().invincibility(),
+                        inputs.link().motion().speedX(),
+                        inputs.link().motion().speedY()),
                 inputs.player().levels().shield(),
-                inputs.link().motion().invincibility(),
-                inputs.sword().active(),
-                inputs.sword().x(),
-                inputs.sword().width(),
-                inputs.sword().y(),
-                inputs.sword().height(),
-                inputs.link().motion().speedX(),
-                inputs.link().motion().speedY());
+                new SwordBox(
+                        inputs.sword().active(),
+                        inputs.sword().x(),
+                        inputs.sword().width(),
+                        inputs.sword().y(),
+                        inputs.sword().height())));
     }
 
     /** Drains only the position channels: applying these can load a different room. */
@@ -162,18 +165,18 @@ public final class RoomSession extends RoomSessionRules
             TransientVfxSystem transientVfxSystem,
             DroppableRupeeSystem droppableRupeeSystem,
             RoomLoadListener roomLoadListener) {
-        this(
+        this(new RoomSessionConfig(
                 romData,
                 gpu,
                 roomLoader,
                 overworldTilesetTable,
                 overworldCollision,
-                transientVfxSystem,
-                droppableRupeeSystem,
-                roomLoadListener,
-                new linksawakening.world.entity.RomRandomByteSource());
+                new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, roomLoadListener),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
+    /** @deprecated Use RoomSession(RoomSessionConfig); retained for app/SessionBootstrap.java. */
+    @Deprecated(forRemoval = true)
     /** Shares GetRandomByte's single wRandomSeed with equipment and world actions. */
     public RoomSession(
             byte[] romData,
@@ -185,7 +188,7 @@ public final class RoomSession extends RoomSessionRules
             DroppableRupeeSystem droppableRupeeSystem,
             RoomLoadListener roomLoadListener,
             linksawakening.world.entity.RomRandomByteSource randomByteSource) {
-        components = RoomSessionContext.create(new RoomSessionConfig(
+        this(new RoomSessionConfig(
                 romData,
                 gpu,
                 roomLoader,
@@ -193,7 +196,6 @@ public final class RoomSession extends RoomSessionRules
                 overworldCollision,
                 new RoomSessionConfig.Presentation(transientVfxSystem, droppableRupeeSystem, roomLoadListener),
                 randomByteSource));
-        context = components;
     }
 
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
@@ -283,5 +285,14 @@ public final class RoomSession extends RoomSessionRules
         if (components.entityBridge().entityRuntime != null) {
             components.entityBridge().entityRuntime.configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
         }
+    }
+
+    public RoomSession(RoomSessionConfig config) {
+        components = RoomSessionContext.create(config);
+        context = components;
+    }
+
+    public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+        return components.entityBridge().tickEntities(inputs);
     }
 }

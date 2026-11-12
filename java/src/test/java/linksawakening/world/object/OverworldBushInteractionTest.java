@@ -73,18 +73,15 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_TALL_GRASS;
         mutableBackupObjects[areaIndex] = OBJECT_TALL_GRASS;
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 mutableBackupObjects,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -150,18 +147,15 @@ final class OverworldBushInteractionTest {
         int areaIndex = ROOM_OBJECTS_BASE + location;
         roomObjectsArea[areaIndex] = OBJECT_SHORT_GRASS;
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 null,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertFalse(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -216,18 +210,15 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_BUSH;
         mutableBackupObjects[areaIndex] = OBJECT_BUSH;
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 mutableBackupObjects,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -248,18 +239,15 @@ final class OverworldBushInteractionTest {
         int[] beforeTiles = roomTileIds.clone();
         int[] beforeAttrs = roomTileAttrs.clone();
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 null,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertTrue(changed);
         assertEquals(OBJECT_SHORT_GRASS, roomObjectsArea[areaIndex]);
@@ -287,18 +275,15 @@ final class OverworldBushInteractionTest {
         int[] beforeTiles = roomTileIds.clone();
         int[] beforeAttrs = roomTileAttrs.clone();
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 mutableBackupObjects,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertTrue(changed);
         assertEquals(expectedReveal, roomObjectsArea[areaIndex]);
@@ -324,18 +309,15 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_BUSH_GROUND_STAIRS;
         mutableBackupObjects[areaIndex] = OBJECT_BUSH_GROUND_STAIRS;
 
-        boolean changed = INTERACTION.cutBush(
-                true,
-                Link.DIRECTION_RIGHT,
-                TARGET_LINK_X,
-                TARGET_LINK_Y,
+        boolean changed = INTERACTION.cutBush(new BushCutInputs(
+                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
                 mutableBackupObjects,
                 null,
                 roomTileIds,
-                roomTileAttrs);
+                roomTileAttrs));
 
         assertTrue(changed);
         assertEquals(expectedReveal, roomObjectsArea[areaIndex]);
