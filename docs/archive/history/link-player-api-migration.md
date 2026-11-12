@@ -520,3 +520,32 @@ caller files (plus construction inside its own factories):
 - `java/src/test/java/linksawakening/world/entity/EntityRomTestData.java`
 
 Default suite: 2,821 → 2,822 tests; zero failures/errors, one existing skip.
+
+## Round 4 GPU/audio/render/save delegates
+
+Migrated 54 owned calls to typed ROM APIs; no owned caller needs these
+deprecated delegates. Removed six now-unused GPU overloads: title-screen tiles,
+intro tiles, menu tiles, ocarina symbols, shared VFX and powder-inventory tiles.
+Deprecated member count: 22 → 16 (GPU 17 → 11, audio 5 → 5; render/save 0 → 0).
+All sixteen survivors have off-limits callers, resolved by compiler signature:
+
+| Member | Remaining caller files |
+| --- | --- |
+| `linksawakening.audio.music.AreaMusicResolver.fromRom(byte[])` | `java/src/test/java/linksawakening/app/MusicDirectorTest.java` |
+| `linksawakening.audio.music.FrameAudioPlayer.<init>(byte[],int,linksawakening.gameplay.PcmSoundOutput)` | `java/src/test/java/linksawakening/app/MusicDirectorTest.java` |
+| `linksawakening.audio.music.MusicCatalog.fromRom(byte[])` | `java/src/test/java/linksawakening/app/MusicDirectorTest.java` |
+| `linksawakening.audio.sfx.SoundEffectCatalog.fromRom(byte[])` | `java/src/test/java/linksawakening/gameplay/GameplaySoundEffectMapManboTest.java`<br>`java/src/test/java/linksawakening/gameplay/GameplaySoundEffectMapTest.java`<br>`java/src/test/java/linksawakening/gameplay/SfxDialogSoundSinkTest.java`<br>`java/src/test/java/linksawakening/gameplay/SfxGameplaySoundSinkTest.java` |
+| `linksawakening.audio.sfx.SoundEffectPlayer.<init>(linksawakening.audio.apu.GameBoyApu,byte[])` | `java/src/main/java/linksawakening/gameplay/SfxGameplaySoundSink.java` |
+| `linksawakening.gpu.RomTileLoader.copyPressedFloorSwitchTiles(byte[])` | `java/src/main/java/linksawakening/world/room/RoomPuzzleReveals.java` |
+| `linksawakening.gpu.RomTileLoader.copySwitchBlockTiles(byte[],int,int)` | `java/src/main/java/linksawakening/world/room/RoomEntityBridge.java`<br>`java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java` |
+| `linksawakening.gpu.RomTileLoader.loadAnimatedTilesGroup(byte[],int)` | `java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java` |
+| `linksawakening.gpu.RomTileLoader.loadBaseOverworldTiles(byte[])` | `java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java`<br>`java/src/main/java/linksawakening/world/room/RoomTransitionController.java`<br>`java/src/test/java/linksawakening/world/room/DroppableRupeeSystemTest.java` |
+| `linksawakening.gpu.RomTileLoader.loadBaseTiles(byte[])` | `java/src/test/java/linksawakening/world/room/OpeningHouseRegressionTest.java` |
+| `linksawakening.gpu.RomTileLoader.loadColorDungeonEntitySheets(byte[],int)` | `java/src/main/java/linksawakening/world/room/RoomActiveRoomInitializer.java` |
+| `linksawakening.gpu.RomTileLoader.loadEntitySpriteSheets(byte[],int[])` | `java/src/main/java/linksawakening/world/room/RoomActiveRoomInitializer.java` |
+| `linksawakening.gpu.RomTileLoader.loadIndoorTiles(byte[],int,int)` | `java/src/test/java/linksawakening/world/room/OpeningHouseRegressionTest.java` |
+| `linksawakening.gpu.RomTileLoader.loadIndoorTiles(byte[],int,int,boolean)` | `java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java` |
+| `linksawakening.gpu.RomTileLoader.loadRoomSpecificTiles(byte[],int,int)` | `java/src/main/java/linksawakening/world/room/RoomLoadCoordinator.java` |
+| `linksawakening.gpu.RomTileLoader.tickAnimatedTiles(byte[])` | `java/src/main/java/linksawakening/world/room/RoomEntityBridge.java` |
+
+Default suite: 2,822 tests before/after; zero failures/errors, one existing skip.

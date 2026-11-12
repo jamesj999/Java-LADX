@@ -17,7 +17,7 @@ final class HudOverlayTest {
     void equippedIconsUseTheSameColourPalettesAsMatchingInventoryIcons() throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
 
         PlayerState player = new PlayerState();
         player.inventory().setItemB(InventoryItem.BOW.romValue());

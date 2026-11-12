@@ -20,7 +20,7 @@ final class DumpIntroFramesHarness {
     void dumpFrames() throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadIntroSequenceTiles(rom);
+        gpu.loadIntroSequenceTiles(Rom.of(rom));
         BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(rom));
         IntroSequence sequence = new IntroSequence(
                 Rom.of(rom), sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
@@ -46,7 +46,7 @@ final class DumpIntroFramesHarness {
             sequence.tick();
             String scene = sequence.snapshot().sceneId();
             if (BackgroundSceneCatalog.requiresTitleTileset(scene)) {
-                gpu.loadTitleScreenTiles(rom);
+                gpu.loadTitleScreenTiles(Rom.of(rom));
             }
         }
     }

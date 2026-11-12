@@ -27,7 +27,7 @@ final class GPUEntityTilesTest {
         }
 
         GPU gpu = new GPU();
-        gpu.loadEntitySpriteSheets(rom, sheetValues);
+        gpu.loadEntitySpriteSheets(Rom.of(rom), sheetValues);
 
         for (int slot = 0; slot < 4; slot++) {
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
@@ -44,7 +44,7 @@ final class GPUEntityTilesTest {
         gpu.writeVRAM(destination, (byte) 0x5A);
         gpu.writeVRAM(destination + 0xFF, (byte) 0xA5);
 
-        gpu.loadEntitySpriteSheets(rom, new int[] {0x00, 0xFF, 0x00, 0x00});
+        gpu.loadEntitySpriteSheets(Rom.of(rom), new int[] {0x00, 0xFF, 0x00, 0x00});
 
         assertEquals(0x5A, Byte.toUnsignedInt(gpu.readVRAM(destination)));
         assertEquals(0xA5, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
@@ -69,7 +69,7 @@ final class GPUEntityTilesTest {
         EntitySpriteSelection selection =
                 new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         GPU gpu = new GPU();
-        gpu.loadEntitySpriteSheets(rom, selection.sheetValues());
+        gpu.loadEntitySpriteSheets(Rom.of(rom), selection.sheetValues());
 
         int[] npcBanks = {0x00, 0x31, 0x2E, 0x32};
         int[] sheetValues = selection.sheetValues();

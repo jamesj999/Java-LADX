@@ -19,7 +19,7 @@ final class MenuEmulatorCapture {
             int mask = Integer.parseInt(fields[1]);
             boolean saved = mask != 0;
             GPU gpu = new GPU();
-            gpu.loadMenuTiles(rom);
+            gpu.loadMenuTiles(TestRoms.partial(rom));
             var loader = new BackgroundSceneLoader(TestRoms.partial(rom));
             var menu = new FileMenuController(
                     new FileMenuRomData(TestRoms.partial(rom)),

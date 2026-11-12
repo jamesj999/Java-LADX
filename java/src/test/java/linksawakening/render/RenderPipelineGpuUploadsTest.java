@@ -8,6 +8,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.GbcBanks;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.state.PlayerState;
@@ -35,7 +36,7 @@ final class RenderPipelineGpuUploadsTest {
                 TestRoms.partial(bytes));
         var controller = new InventoryController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), menu);
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(bytes);
+        gpu.loadBaseTiles(Rom.of(bytes));
         FrameScene scene = FrameScene.of(List.of(new InventoryRenderLayer(controller)));
         var observer = TestDrawObservers.CURRENT.get();
         TestDrawObservers.CURRENT.remove();

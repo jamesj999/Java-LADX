@@ -2,6 +2,7 @@ package linksawakening.gpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ final class GPUHeartPieceTilesTest {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
         gpu.updateHeartPieceMeterTiles(TestRoms.partial(rom), 3);
         gpu.updateHeartPieceMeterTiles(TestRoms.partial(rom), 4);
         assertBytes(gpu, rom, 0x6900, 0x9A0, 96);

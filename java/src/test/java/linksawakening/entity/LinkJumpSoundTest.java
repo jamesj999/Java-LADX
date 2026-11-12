@@ -18,6 +18,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -104,7 +105,7 @@ final class LinkJumpSoundTest {
     @Test
     void jumpEventsResolveToTheExactRomRequestRegistersAndIds() throws Exception {
         var f = new Fixture(false);
-        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(f.rom));
+        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(TestRoms.partial(f.rom)));
         assertEffect(map, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
         assertEffect(map, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
         assertEffect(map, GameplaySoundEvent.LINK_FOOTSTEP, SoundEffectNamespace.NOISE, 0x07);

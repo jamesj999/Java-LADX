@@ -31,7 +31,7 @@ public final class HouseEmulatorCapture {
         Path out = Path.of(args[0]);
         byte[] rom = CaptureImageWriter.readRom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(TestRoms.partial(rom));
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(

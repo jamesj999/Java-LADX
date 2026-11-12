@@ -17,6 +17,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
@@ -87,7 +88,7 @@ public final class DialogEmulatorCapture {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(

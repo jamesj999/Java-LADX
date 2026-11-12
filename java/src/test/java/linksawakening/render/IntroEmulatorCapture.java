@@ -20,7 +20,7 @@ final class IntroEmulatorCapture {
     public static void main(String[] args) throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadIntroSequenceTiles(rom);
+        gpu.loadIntroSequenceTiles(Rom.of(rom));
         BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(rom));
         IntroSequence sequence = new IntroSequence(
                 Rom.of(rom), sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
@@ -32,7 +32,8 @@ final class IntroEmulatorCapture {
         try (java.io.PrintWriter metadata = new java.io.PrintWriter(new File(outDir, "frames.jsonl"))) {
             for (int frame = 0; frame < count; frame++) {
                 IntroFrameSnapshot snapshot = sequence.snapshot();
-                if (BackgroundSceneCatalog.requiresTitleTileset(snapshot.sceneId())) gpu.loadTitleScreenTiles(rom);
+                if (BackgroundSceneCatalog.requiresTitleTileset(snapshot.sceneId()))
+                    gpu.loadTitleScreenTiles(Rom.of(rom));
                 byte[] pixels = render(builder, gpu, snapshot);
                 writePng(pixels, new File(outDir, String.format("%04d.png", frame)));
                 List<String> rain = new ArrayList<>();

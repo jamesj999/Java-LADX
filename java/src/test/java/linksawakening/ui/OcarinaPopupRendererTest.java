@@ -31,7 +31,7 @@ final class OcarinaPopupRendererTest {
         byte[] rom = loadRom();
         InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(Rom.of(rom));
         GPU gpu = new GPU();
-        gpu.loadOcarinaSymbolsTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
         writeSolidTile(gpu, 0x22, 1);
 
         PlayerState player = new PlayerState();

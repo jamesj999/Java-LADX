@@ -250,16 +250,6 @@ class RomTileLoader extends Vram {
     }
 
     @Deprecated(forRemoval = true)
-    public void loadTitleScreenTiles(byte[] romData) {
-        loadTitleScreenTiles(romData == null ? null : Rom.unchecked(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    public void loadIntroSequenceTiles(byte[] romData) {
-        loadIntroSequenceTiles(romData == null ? null : Rom.unchecked(romData));
-    }
-
-    @Deprecated(forRemoval = true)
     public void loadBaseOverworldTiles(byte[] romData) {
         loadBaseOverworldTiles(romData == null ? null : Rom.unchecked(romData));
     }
@@ -267,16 +257,6 @@ class RomTileLoader extends Vram {
     @Deprecated(forRemoval = true)
     public void loadBaseTiles(byte[] romData) {
         loadBaseTiles(romData == null ? null : Rom.unchecked(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
-        updatePowderInventoryTiles(romData == null ? null : Rom.unchecked(romData), hasToadstool);
-    }
-
-    @Deprecated(forRemoval = true)
-    public void loadMenuTiles(byte[] romData) {
-        loadMenuTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
@@ -312,15 +292,5 @@ class RomTileLoader extends Vram {
     @Deprecated(forRemoval = true)
     public void copyPressedFloorSwitchTiles(byte[] romData) {
         copyPressedFloorSwitchTiles(romData == null ? null : Rom.unchecked(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    public void loadOcarinaSymbolsTiles(byte[] romData) {
-        loadOcarinaSymbolsTiles(romData == null ? null : Rom.unchecked(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    public void loadSharedVfxTiles(byte[] romData) {
-        loadSharedVfxTiles(romData == null ? null : Rom.unchecked(romData));
     }
 }

@@ -58,7 +58,7 @@ final class InventoryMenuSoundTest {
     @Test
     void menuEventsUseTheRomJingleNamespaceAndIds() throws Exception {
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(loadRom()));
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(Rom.of(loadRom())));
         var events = List.of(
                 GameplaySoundEvent.INVENTORY_OPEN,
                 GameplaySoundEvent.INVENTORY_CLOSE,
