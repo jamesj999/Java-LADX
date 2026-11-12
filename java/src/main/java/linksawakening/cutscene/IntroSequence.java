@@ -34,10 +34,4 @@ public final class IntroSequence extends IntroSceneRendering {
     public IntroSequence(DefaultResources resources) {
         super(resources);
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public IntroSequence(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
-        this(romData == null ? null : new Rom(romData), backgroundProvider);
-    }
 }

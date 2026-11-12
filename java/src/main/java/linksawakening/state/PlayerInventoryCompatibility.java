@@ -94,12 +94,6 @@ abstract class PlayerInventoryCompatibility extends PlayerProgressionCompatibili
         progression().setGoldenLeavesCount(value);
     }
 
-    /** @deprecated Use progression().chestItemCount(chestItem). */
-    @Deprecated(forRemoval = true)
-    public int chestItemCount(int chestItem) {
-        return progression().chestItemCount(chestItem);
-    }
-
     /** @deprecated Use ammunition().arrowCount(). */
     @Deprecated(forRemoval = true)
     public int arrowCount() {

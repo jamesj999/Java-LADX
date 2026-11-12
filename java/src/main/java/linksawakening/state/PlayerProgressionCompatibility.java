@@ -16,34 +16,10 @@ abstract class PlayerProgressionCompatibility extends PlayerResourceCompatibilit
         vitals().setInvincibilityCounter(value);
     }
 
-    /** @deprecated Use vitals().tickInvincibility(). */
-    @Deprecated(forRemoval = true)
-    public void tickInvincibility() {
-        vitals().tickInvincibility();
-    }
-
-    /** @deprecated Use vitals().addHealthBuffer(). */
-    @Deprecated(forRemoval = true)
-    public int addHealthBuffer() {
-        return vitals().addHealthBuffer();
-    }
-
-    /** @deprecated Use vitals().addSubtractHealthBuffer(amount). */
-    @Deprecated(forRemoval = true)
-    public void addSubtractHealthBuffer(int amount) {
-        vitals().addSubtractHealthBuffer(amount);
-    }
-
     /** @deprecated Use vitals().subtractHealthBuffer(). */
     @Deprecated(forRemoval = true)
     public int subtractHealthBuffer() {
         return vitals().subtractHealthBuffer();
-    }
-
-    /** @deprecated Use vitals().clearSubtractHealthBuffer(). */
-    @Deprecated(forRemoval = true)
-    public void clearSubtractHealthBuffer() {
-        vitals().clearSubtractHealthBuffer();
     }
 
     /** @deprecated Use wallet().addRupeeBuffer(). */
@@ -80,12 +56,6 @@ abstract class PlayerProgressionCompatibility extends PlayerResourceCompatibilit
     @Deprecated(forRemoval = true)
     public void requestFullHeal() {
         vitals().requestFullHeal();
-    }
-
-    /** @deprecated Use playerRewards().applyBeachSwordReward(). */
-    @Deprecated(forRemoval = true)
-    public void applyBeachSwordReward() {
-        playerRewards().applyBeachSwordReward();
     }
 
     /** @deprecated Use playerRewards().applyToadstoolReward(). */
@@ -164,12 +134,6 @@ abstract class PlayerProgressionCompatibility extends PlayerResourceCompatibilit
     @Deprecated(forRemoval = true)
     public void setPowerBraceletLevel(int value) {
         equipmentLevels().setPowerBraceletLevel(value);
-    }
-
-    /** @deprecated Use progression().hasMedicine(). */
-    @Deprecated(forRemoval = true)
-    public boolean hasMedicine() {
-        return progression().hasMedicine();
     }
 
     /** @deprecated Use progression().setHasMedicine(value). */

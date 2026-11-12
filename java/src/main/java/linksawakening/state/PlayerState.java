@@ -1,7 +1,7 @@
 package linksawakening.state;
 
 /** Aggregate of inventory, resources, progression and equipment state. */
-public final class PlayerState extends PlayerLifecycleCompatibility implements LinkPlayerState {
+public final class PlayerState extends PlayerLifecycleCompatibility {
 
     /** @deprecated Use {@link InventoryItem#EMPTY}. */
     @Deprecated(forRemoval = true)
@@ -27,9 +27,7 @@ public final class PlayerState extends PlayerLifecycleCompatibility implements L
     /** @deprecated Use {@link InventoryItem#MAGIC_ROD}. */
     @Deprecated(forRemoval = true)
     public static final int INVENTORY_MAGIC_ROD = 0x07;
-    /** @deprecated Use {@link InventoryItem#PEGASUS_BOOTS}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_PEGASUS_BOOTS = 0x08;
+
     /** @deprecated Use {@link InventoryItem#OCARINA}. */
     @Deprecated(forRemoval = true)
     public static final int INVENTORY_OCARINA = 0x09;
@@ -46,27 +44,9 @@ public final class PlayerState extends PlayerLifecycleCompatibility implements L
     @Deprecated(forRemoval = true)
     public static final int INVENTORY_BOOMERANG = 0x0D;
 
-    // Values stored in the ROM's wOcarinaSongFlags byte.
-    /** @deprecated Use {@link OcarinaSong#FROGS_SONG_OF_THE_SOUL}. */
-    @Deprecated(forRemoval = true)
-    public static final int FROGS_SONG_OF_THE_SOUL_FLAG = 0x01;
-    /** @deprecated Use {@link OcarinaSong#MANBO_MAMBO}. */
-    @Deprecated(forRemoval = true)
-    public static final int MANBO_MAMBO_FLAG = 0x02;
-    /** @deprecated Use {@link OcarinaSong#BALLAD_OF_THE_WIND_FISH}. */
-    @Deprecated(forRemoval = true)
-    public static final int BALLAD_OF_THE_WIND_FISH_FLAG = 0x04;
-
-    // Values written to the ROM's wTunicType ($DC0F).
-    /** @deprecated Use {@link Tunic#GREEN}. */
-    @Deprecated(forRemoval = true)
-    public static final int TUNIC_GREEN = 0x00;
     /** @deprecated Use {@link Tunic#RED}. */
     @Deprecated(forRemoval = true)
     public static final int TUNIC_RED = 0x01;
-    /** @deprecated Use {@link Tunic#BLUE}. */
-    @Deprecated(forRemoval = true)
-    public static final int TUNIC_BLUE = 0x02;
 
     /** @deprecated Use {@link PowerUp#NONE}. */
     @Deprecated(forRemoval = true)

@@ -303,10 +303,4 @@ public final class IntroRomData {
             return copy;
         }
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public IntroRomData(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
-    }
 }

@@ -30,12 +30,6 @@ abstract class LinkRoomView extends LinkActionView {
         legacyRoles().sideView().applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing);
     }
 
-    /** @deprecated Use sideView().applySideViewPlatformContact instead. */
-    @Deprecated(forRemoval = true)
-    public void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY) {
-        legacyRoles().sideView().applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY);
-    }
-
     /** @deprecated Use sideView().clearSideViewPlatformState instead. */
     @Deprecated(forRemoval = true)
     public void clearSideViewPlatformState() {
@@ -52,11 +46,5 @@ abstract class LinkRoomView extends LinkActionView {
     @Deprecated(forRemoval = true)
     public void applySideViewPotContact(int romPositionY, int romSpeedY) {
         legacyRoles().sideView().applySideViewPotContact(romPositionY, romSpeedY);
-    }
-
-    /** @deprecated Use animation().submitOam instead. */
-    @Deprecated(forRemoval = true)
-    public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        legacyRoles().animation().submitOam(sink, offsetX, offsetY);
     }
 }

@@ -11,7 +11,6 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
-import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
@@ -43,24 +42,10 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
 
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
-    /** @deprecated Use {@link GroundStatus#NORMAL}. */
-    @Deprecated(forRemoval = true)
-    public static final int GROUND_STATUS_NORMAL = 0x00;
-    /** @deprecated Use {@link GroundStatus#PIT}. */
-    @Deprecated(forRemoval = true)
-    public static final int GROUND_STATUS_PIT = 0x07;
+
     /** @deprecated Use {@link LinkMotionState#DEFAULT}. */
     @Deprecated(forRemoval = true)
     public static final int LINK_MOTION_DEFAULT = 0x00;
-    /** @deprecated Use {@link LinkMotionState#PASS_OUT}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_PASS_OUT = 0x07;
-    /** @deprecated Use {@link LinkMotionState#SWIMMING}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_SWIMMING = 0x01;
-    /** @deprecated Use {@link LinkMotionState#RECOVER}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_RECOVER = 0x08;
 
     public Link(
             InputState inputState,

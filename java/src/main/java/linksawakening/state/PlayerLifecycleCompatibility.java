@@ -24,18 +24,6 @@ abstract class PlayerLifecycleCompatibility extends PlayerInventoryCompatibility
         progression().setSeashells(value);
     }
 
-    /** @deprecated Use equipmentLevels().powerUp(). */
-    @Deprecated(forRemoval = true)
-    public PowerUp powerUp() {
-        return equipmentLevels().powerUp();
-    }
-
-    /** @deprecated Use equipmentLevels().setPowerUp(value). */
-    @Deprecated(forRemoval = true)
-    public void setPowerUp(PowerUp value) {
-        equipmentLevels().setPowerUp(value);
-    }
-
     /** @deprecated Use equipmentLevels().activePowerUp(). */
     @Deprecated(forRemoval = true)
     public int activePowerUp() {
@@ -58,18 +46,6 @@ abstract class PlayerLifecycleCompatibility extends PlayerInventoryCompatibility
     @Deprecated(forRemoval = true)
     public int powerUpHits() {
         return equipmentLevels().powerUpHits();
-    }
-
-    /** @deprecated Use equipmentLevels().tunic(). */
-    @Deprecated(forRemoval = true)
-    public Tunic tunic() {
-        return equipmentLevels().tunic();
-    }
-
-    /** @deprecated Use equipmentLevels().setTunic(value). */
-    @Deprecated(forRemoval = true)
-    public void setTunic(Tunic value) {
-        equipmentLevels().setTunic(value);
     }
 
     /** @deprecated Use equipmentLevels().tunicType(). */
@@ -132,18 +108,6 @@ abstract class PlayerLifecycleCompatibility extends PlayerInventoryCompatibility
         progression().setOcarinaSongFlags(value);
     }
 
-    /** @deprecated Use progression().selectedSongIndex(). */
-    @Deprecated(forRemoval = true)
-    public int selectedSongIndex() {
-        return progression().selectedSongIndex();
-    }
-
-    /** @deprecated Use progression().setSelectedSongIndex(value). */
-    @Deprecated(forRemoval = true)
-    public void setSelectedSongIndex(int value) {
-        progression().setSelectedSongIndex(value);
-    }
-
     /** @deprecated Use inventory().setSubscreenItems(items). */
     @Deprecated(forRemoval = true)
     public void setSubscreenItems(int[] items) {
@@ -166,11 +130,5 @@ abstract class PlayerLifecycleCompatibility extends PlayerInventoryCompatibility
     @Deprecated(forRemoval = true)
     public void swapItemAWithSubscreen(int slotIndex) {
         inventory().swapItemAWithSubscreen(slotIndex);
-    }
-
-    /** @deprecated Use inventory().swapItemBWithSubscreen(slotIndex). */
-    @Deprecated(forRemoval = true)
-    public void swapItemBWithSubscreen(int slotIndex) {
-        inventory().swapItemBWithSubscreen(slotIndex);
     }
 }
