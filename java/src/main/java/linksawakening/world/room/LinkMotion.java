@@ -19,11 +19,7 @@ public record LinkMotion(
             boolean airborne, LinkMotionState state, boolean shield, int invincibility, int speedX, int speedY) {
         this(airborne, state, shield, invincibility, speedX, speedY, state.romValue());
     }
-    /** @deprecated Pass LinkMotionState; retained for app/gameplay/EntityFrameInputsFactory.java. */
-    @Deprecated(forRemoval = true)
-    public LinkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {
-        this(airborne, stateForRomByte(state), shield, invincibility, speedX, speedY, state);
-    }
+
     /** Unknown raw dispatch bytes retain their numeric gating behavior without inventing an enum. */
     public static LinkMotionState stateForRomByte(int raw) {
         return raw >= 0 && raw <= LinkMotionState.UNKNOWN_0A.romValue() ? LinkMotionState.fromRom(raw) : null;

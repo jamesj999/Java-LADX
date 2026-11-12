@@ -55,7 +55,15 @@ final class FrameInputCache {
                 || pickup.airborne() != airborne
                 || pickup.interactive() != interactive
                 || pickup.rawDirection() != direction
-                || pickup.z() != z) pickup = new EntityPickupInputs.Link(x, y, airborne, interactive, direction, z);
+                || pickup.z() != z)
+            pickup = new EntityPickupInputs.Link(
+                    x,
+                    y,
+                    airborne,
+                    interactive,
+                    linksawakening.state.Direction.fromJavaOrUnknown(direction),
+                    z,
+                    direction);
         return pickup;
     }
 
@@ -77,7 +85,17 @@ final class FrameInputCache {
                 || ground.rawMotionState() != motion
                 || ground.slowWalkingSpeed() != slow
                 || ground.itemUsageContext() != usage) {
-            ground = new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, motion, slow, usage);
+            ground = new LinkGroundFrame(
+                    x,
+                    y,
+                    airborne,
+                    blocked,
+                    dialog,
+                    transition,
+                    linksawakening.world.room.LinkMotion.stateForRomByte(motion),
+                    slow,
+                    usage,
+                    motion);
         }
         return ground;
     }

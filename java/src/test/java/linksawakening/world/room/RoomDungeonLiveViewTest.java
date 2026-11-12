@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 class RoomDungeonLiveViewTest {
     @Test
     void minimapViewTracksStatusWritesRoomChangesAndTowerCollapse() {
-        var session = RoomRenderAllocationTest.room();
-        var world = session.components.roomState();
+        byte[] bytes = new byte[0x100000];
         // Synthetic ROM setup before the map view reads its immutable layout.
-        byte[] bytes = session.components.romData().unsafeBytes();
         bytes[RomSymbols.MapLayout0.offset()] = 7;
         bytes[RomSymbols.MapLayout0.offset() + 6 * 64] = 8;
         bytes[RomSymbols.MapLayout12.offset()] = 9;
         bytes[RomSymbols.MapLayout11.offset()] = 10;
+        var session = RoomRenderAllocationTest.room(bytes);
+        var world = session.components.roomState();
         world.indoorARoomStatus[7] = 21;
         world.indoorBRoomStatus[8] = 22;
         world.indoorBRoomStatus[9] = 23;

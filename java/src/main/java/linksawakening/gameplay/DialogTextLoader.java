@@ -23,13 +23,6 @@ public final class DialogTextLoader {
         this.romData = Rom.unchecked(romData.bytes(RomAddress.fromOffset(0), romData.size()));
     }
 
-    /** @deprecated Legacy capture tools still supply partial byte buffers; use the Rom overload. */
-    @Deprecated(forRemoval = true)
-    public static DialogTextLoader loadFromRom(byte[] romData) {
-        if (romData == null) throw new IllegalArgumentException("ROM data is required");
-        return loadFromRom(Rom.unchecked(romData));
-    }
-
     public static DialogTextLoader loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");

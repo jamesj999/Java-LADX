@@ -50,11 +50,9 @@ class WorldRomEntryPointsTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("entries")
-    void typedEntryAndDeprecatedByteDelegateRemainAvailable(Entry entry) throws Exception {
+    void typedEntryRemainsAfterByteDelegateRetirement(Entry entry) throws Exception {
         assertNull(entry.resolve(Rom.class).getAnnotation(Deprecated.class));
-        var legacy = entry.resolve(byte[].class).getAnnotation(Deprecated.class);
-        assertNotNull(legacy);
-        assertTrue(legacy.forRemoval());
+        assertThrows(NoSuchMethodException.class, () -> entry.resolve(byte[].class));
     }
 
     @Test
@@ -77,7 +75,7 @@ class WorldRomEntryPointsTest {
                 new RoomSessionConfig.Presentation(null, null, room -> {}),
                 new RomRandomByteSource());
         assertSame(rom, config.romData());
-        assertSame(bytes, config.romData().unsafeBytes());
+        linksawakening.rom.RomOwnershipAssertions.assertBackedBy(bytes, config.romData());
         assertSame(loader, config.roomLoader());
         assertSame(tilesets, config.overworldTilesetTable());
         assertEquals(0x35, tilesets.tilesetIdForRoom(0));

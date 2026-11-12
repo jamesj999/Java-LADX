@@ -38,52 +38,6 @@ public record EntityProjectileEvent(
                 slot, 0x03, Kind.HOOKSHOT_PULL, 0, 0, SoundChannel.NONE, -1, false, false, 0, 0, speedX, speedY, 0);
     }
 
-    /** @deprecated Use builder; external callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
-    @Deprecated
-    public EntityProjectileEvent(
-            int slot,
-            int type,
-            Kind kind,
-            int collisionValue,
-            int linkDamage,
-            SoundChannel soundChannel,
-            int soundId,
-            boolean remove,
-            boolean swordPokeVfx) {
-        this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId, remove, swordPokeVfx, 0, 0);
-    }
-
-    /** @deprecated Use builder; external callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
-    @Deprecated
-    public EntityProjectileEvent(
-            int slot,
-            int type,
-            Kind kind,
-            int collisionValue,
-            int linkDamage,
-            SoundChannel soundChannel,
-            int soundId,
-            boolean remove,
-            boolean swordPokeVfx,
-            int swordPokeX,
-            int swordPokeY) {
-        this(
-                slot,
-                type,
-                kind,
-                collisionValue,
-                linkDamage,
-                soundChannel,
-                soundId,
-                remove,
-                swordPokeVfx,
-                swordPokeX,
-                swordPokeY,
-                0,
-                0,
-                0);
-    }
-
     public EntityProjectileEvent {
         if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

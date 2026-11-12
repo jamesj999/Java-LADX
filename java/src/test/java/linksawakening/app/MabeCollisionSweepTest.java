@@ -34,7 +34,7 @@ final class MabeCollisionSweepTest {
         int cases = 0;
         List<String> mismatches = new ArrayList<>();
         for (int roomId : ROOMS) {
-            var room = new RoomLoader(bytes).loadOverworld(roomId);
+            var room = new RoomLoader(linksawakening.rom.Rom.unchecked(bytes)).loadOverworld(roomId);
             var collision = new OverworldCollision(tables);
             collision.setRoom(room.roomObjectsArea());
             for (int y = 0; y <= 112; y += 8)
@@ -84,7 +84,7 @@ final class MabeCollisionSweepTest {
             RoomSession session = game.services().world().roomSession();
             for (int roomId : ROOMS) {
                 game.debugTeleport(new Warp(0, 0, roomId, 80, 96, -1));
-                var loaded = new RoomLoader(bytes).loadOverworld(roomId);
+                var loaded = new RoomLoader(linksawakening.rom.Rom.unchecked(bytes)).loadOverworld(roomId);
                 for (int y = 8; y <= 104; y += 8)
                     for (int x = 8; x <= 136; x += 8) {
                         if (!walkable(rom, loaded, x, y)) continue;

@@ -34,10 +34,4 @@ public final class OverworldTilesetTable {
         }
         return currentTilesetId != tilesetId;
     }
-
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/WorldWiring.java:rooms; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
-    @Deprecated(forRemoval = true)
-    public OverworldTilesetTable(byte[] romData) {
-        this(romData == null ? null : Rom.unchecked(romData));
-    }
 }

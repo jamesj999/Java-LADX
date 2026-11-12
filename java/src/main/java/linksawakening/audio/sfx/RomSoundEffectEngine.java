@@ -21,7 +21,7 @@ final class RomSoundEffectEngine {
 
     // Range-checked real-time reads retain the caller-owned bytes without mutation.
     // Avoid RomAddress construction on every interpreted instruction/operand fetch.
-    private final byte[] romBytes;
+    private final linksawakening.rom.RomSlice romBytes;
     private final GameBoyApu apu;
     private static final SoundEffectNamespace[] NAMESPACES = SoundEffectNamespace.values();
     private final SfxCpu cpu = new SfxCpu(this);
@@ -29,7 +29,8 @@ final class RomSoundEffectEngine {
     private final RomSoundEffectTables tables;
 
     RomSoundEffectEngine(Rom romData, GameBoyApu apu) {
-        romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();
+        Objects.requireNonNull(romData, "romData");
+        romBytes = romData.view(linksawakening.rom.RomAddress.fromOffset(0), romData.size());
         this.apu = Objects.requireNonNull(apu, "apu");
         tables = new RomSoundEffectTables(romData);
     }
@@ -133,10 +134,10 @@ final class RomSoundEffectEngine {
         address &= 0xFFFF;
         if (address >= 0x4000 && address <= 0x7FFF) {
             int offset = RomBank.romOffset(RomSoundEffectTables.SFX_BANK, address);
-            if (offset < 0 || offset >= romBytes.length) {
+            if (offset < 0 || offset >= romBytes.size()) {
                 throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x" + hex16(address));
             }
-            return Byte.toUnsignedInt(romBytes[offset]);
+            return romBytes.u8(offset);
         }
         if (address >= 0xFF10 && address <= 0xFF26) {
             return apu.readRegister(address & 0xFF);

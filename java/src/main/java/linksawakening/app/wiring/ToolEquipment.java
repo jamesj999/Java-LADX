@@ -80,7 +80,10 @@ final class ToolEquipment {
 
                             @Override
                             public int shovelAnimationState(int javaDirection, int timer) {
-                                return c.roomSession().playerItems().shovelAnimationState(javaDirection, timer);
+                                return c.roomSession()
+                                        .playerItems()
+                                        .shovelAnimationState(
+                                                linksawakening.state.Direction.fromJava(javaDirection), timer);
                             }
                         },
                         c.link().equipment()::canUseItems));

@@ -388,10 +388,4 @@ public final class OverworldBushInteraction {
         }
         return bank * BANK_SIZE + (address - 0x4000);
     }
-
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/SubsystemWiring.java:build. Legacy partial buffers retain their validation timing. */
-    @Deprecated(forRemoval = true)
-    public OverworldBushInteraction(byte[] romData, RomTables romTables) {
-        this(romData == null ? null : Rom.unchecked(romData), romTables);
-    }
 }

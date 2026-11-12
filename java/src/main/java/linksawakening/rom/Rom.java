@@ -32,9 +32,12 @@ public final class Rom {
         return data.length;
     }
 
-    /** Temporary migration escape hatch. Returns caller-owned mutable storage; do not mutate it. */
-    public byte[] unsafeBytes() {
-        return data;
+    int unsignedByteAt(int offset) {
+        return Byte.toUnsignedInt(data[offset]);
+    }
+
+    int signedByteAt(int offset) {
+        return data[offset];
     }
 
     int checkedOffset(RomAddress address, int length) {

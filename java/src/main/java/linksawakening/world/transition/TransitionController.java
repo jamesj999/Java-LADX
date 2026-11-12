@@ -209,10 +209,4 @@ public final class TransitionController {
         b = b + (0xFF - b) * num / den;
         return (r << 16) | (g << 8) | b;
     }
-
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/SubsystemWiring.java:build. Legacy partial buffers retain their validation timing. */
-    @Deprecated(forRemoval = true)
-    public void setRomData(byte[] romData) {
-        setRomData(romData == null ? null : Rom.unchecked(romData));
-    }
 }

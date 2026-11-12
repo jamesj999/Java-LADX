@@ -66,7 +66,8 @@ public final class DialogInteractions {
                 .tryOpenChest(
                         player.link().position().pixelX(),
                         player.link().position().pixelY(),
-                        player.link().animation().direction(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(
+                                player.link().animation().direction()),
                         true,
                         player.playerState().equipmentLevels().swordLevel());
         return result.opened();

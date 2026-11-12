@@ -40,28 +40,4 @@ public record LinkGroundFrame(
                 itemUsageContext,
                 motionState.romValue());
     }
-    /** @deprecated Pass LinkMotionState; retained for app/gameplay/LinkEquipmentPhase.java. */
-    @Deprecated(forRemoval = true)
-    public LinkGroundFrame(
-            int pixelX,
-            int pixelY,
-            boolean airborne,
-            boolean interactionBlocked,
-            boolean dialogActive,
-            boolean roomTransitionActive,
-            int motionState,
-            int slowWalkingSpeed,
-            int itemUsageContext) {
-        this(
-                pixelX,
-                pixelY,
-                airborne,
-                interactionBlocked,
-                dialogActive,
-                roomTransitionActive,
-                LinkMotion.stateForRomByte(motionState),
-                slowWalkingSpeed,
-                itemUsageContext,
-                motionState);
-    }
 }
