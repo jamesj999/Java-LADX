@@ -26,61 +26,104 @@ public final class SaveRamLayout {
 
     // Offsets within the main WRAM save block, derived from wOverworldRoomStatus=$D800.
     public static final int ROOM_STATUS_TABLE_SIZE = 0x100;
+    // wOverworldRoomStatus ($D800), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_OVERWORLD_ROOM_STATUS_OFFSET = 0x000;
+    // wIndoorARoomStatus ($D900), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_INDOOR_A_ROOM_STATUS_OFFSET = 0x100;
+    // wIndoorBRoomStatus ($DA00), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_INDOOR_B_ROOM_STATUS_OFFSET = 0x200;
     public static final int MAIN_ROOM_STATUS_SIZE = 0x300;
     public static final int DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE = DX2_SIZE;
     // wDungeonItemFlags at DB16, relative to wOverworldRoomStatus at D800.
+    // wDungeonItemFlags ($DB16), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_DUNGEON_ITEM_FLAGS_OFFSET = 0x316;
     public static final int MAIN_DUNGEON_ITEM_FLAGS_SIZE = 0x2D;
     public static final int DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE = DX1_SIZE;
+    // wInventoryItems ($DB00), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_ITEM_B_OFFSET = 0x300;
     public static final int MAIN_ITEM_A_OFFSET = 0x301;
     public static final int MAIN_SUBSCREEN_OFFSET = 0x302;
+    // wHasFlippers ($DB0C), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_FLIPPERS_OFFSET = 0x30C;
+    // wHasMedicine ($DB0D), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MEDICINE_OFFSET = 0x30D;
+    // wTradeSequenceItem ($DB0E), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_TRADE_SEQUENCE_ITEM_OFFSET = 0x30E;
+    // wSeashellsCount ($DB0F), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SEASHELLS_OFFSET = 0x30F;
     public static final int MAIN_MEDICINE_COUNT_OFFSET = 0x310;
+    // wHasTailKey ($DB11), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_TAIL_KEY_OFFSET = 0x311;
+    // wHasAnglerKey ($DB12), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_ANGLER_KEY_OFFSET = 0x312;
+    // wHasFaceKey ($DB13), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_FACE_KEY_OFFSET = 0x313;
+    // wHasBirdKey ($DB14), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_BIRD_KEY_OFFSET = 0x314;
+    // wGoldenLeavesCount ($DB15), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_GOLDEN_LEAVES_OFFSET = 0x315;
     // wTarinFlag at DB48, relative to wOverworldRoomStatus at D800.
+    // wTarinFlag ($DB48), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_TARIN_FLAG_OFFSET = 0x348;
     // wOcarinaSongFlags/wSelectedSongIndex at DB49/DB4A, relative to
     // wOverworldRoomStatus at D800.
+    // wOcarinaSongFlags ($DB49), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_OCARINA_SONG_FLAGS_OFFSET = 0x349;
+    // wSelectedSongIndex ($DB4A), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SELECTED_SONG_INDEX_OFFSET = 0x34A;
+    // wHasToadstool ($DB4B), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_HAS_TOADSTOOL_OFFSET = 0x34B;
+    // wShieldLevel ($DB44), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SHIELD_OFFSET = 0x344;
+    // wPowerBraceletLevel ($DB43), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_POWER_BRACELET_OFFSET = 0x343;
+    // wArrowCount ($DB45), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_ARROWS_OFFSET = 0x345;
+    // wMagicPowderCount ($DB4C), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MAGIC_POWDER_OFFSET = 0x34C;
+    // wBombCount ($DB4D), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_BOMBS_OFFSET = 0x34D;
+    // wSwordLevel ($DB4E), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SWORD_OFFSET = 0x34E;
+    // wName ($DB4F), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_NAME_OFFSET = 0x34F;
+    // wDeathCount ($DB57), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_DEATH_COUNT_OFFSET = 0x357;
+    // wHealth ($DB5A), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_HEALTH_OFFSET = 0x35A;
+    // wMaxHearts ($DB5B), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MAX_HEARTS_OFFSET = 0x35B;
+    // wHeartPiecesCount ($DB5C), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_HEART_PIECES_OFFSET = 0x35C;
+    // wRupeeCountHigh ($DB5D), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_RUPEE_HIGH_OFFSET = 0x35D;
+    // wRupeeCountLow ($DB5E), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_RUPEE_LOW_OFFSET = 0x35E;
+    // wSpawnIsIndoor ($DB5F), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_INDOOR_OFFSET = 0x35F;
+    // wSpawnMapId ($DB60), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_MAP_ID_OFFSET = 0x360;
+    // wSpawnMapRoom ($DB61), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_MAP_ROOM_OFFSET = 0x361;
+    // wSpawnPositionX ($DB62), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_X_OFFSET = 0x362;
+    // wSpawnPositionY ($DB63), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_Y_OFFSET = 0x363;
+    // wSpawnIndoorRoom ($DB64), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_INDOOR_ROOM_OFFSET = 0x364;
+    // wHasInstrument1 ($DB65), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET = 0x365;
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_SIZE = 0x08;
+    // wIsBowWowFollowingLink ($DB56), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_BOW_WOW_STATE_OFFSET = 0x356;
     // wRichardSpokenFlag at DB55, relative to wOverworldRoomStatus at D800.
+    // wRichardSpokenFlag ($DB55), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_RICHARD_SPOKEN_FLAG_OFFSET = 0x355;
+    // wMaxMagicPowder ($DB76), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MAX_MAGIC_POWDER_OFFSET = 0x376;
+    // wMaxBombs ($DB77), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MAX_BOMBS_OFFSET = 0x377;
+    // wMaxArrows ($DB78), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_MAX_ARROWS_OFFSET = 0x378;
 
     // DX3's first byte is wTunicType in the current Java model.

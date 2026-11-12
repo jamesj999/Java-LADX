@@ -332,6 +332,7 @@ public final class AudioBrowserFrame extends JFrame {
         }
     }
 
+    /** Availability and labels presented by the browser transport. */
     public record TransportControls(
             boolean playEnabled, boolean pauseResumeEnabled, boolean stopEnabled, String pauseResumeText) {}
 

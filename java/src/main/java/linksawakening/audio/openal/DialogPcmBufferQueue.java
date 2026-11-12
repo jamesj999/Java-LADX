@@ -56,7 +56,7 @@ final class DialogPcmBufferQueue {
     }
 
     List<Integer> buffersToDeleteOnClose() {
-        List<Integer> result = liveBuffers();
+        List<Integer> result = new ArrayList<>(liveBuffers());
         clear();
         return result;
     }

@@ -2,6 +2,8 @@ package linksawakening.audio.openal;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryUtil;
 
@@ -210,5 +212,49 @@ final class OpenAlStream {
             return throwable.getClass().getSimpleName();
         }
         return message;
+    }
+
+    private final ShortBuffer streamingPcm = BufferUtils.createShortBuffer(2048);
+
+    boolean hasSource() {
+        return source != 0;
+    }
+
+    boolean hasSourceAndContext() {
+        return hasSource() && context != MemoryUtil.NULL;
+    }
+
+    void activateForCleanup() {
+        ALC10.alcMakeContextCurrent(context);
+    }
+
+    void pause() {
+        AL10.alSourcePause(source);
+    }
+
+    void play() {
+        AL10.alSourcePlay(source);
+    }
+
+    void stop() {
+        AL10.alSourceStop(source);
+    }
+
+    void setGain(float volume) {
+        AL10.alSourcef(source, AL10.AL_GAIN, volume);
+    }
+
+    boolean isPlaying() {
+        return AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING;
+    }
+
+    void queuePcm(short[] pcm, int sampleRate, boolean streaming) {
+        int buffer = freeBuffers.removeFirst();
+        ShortBuffer data = streaming ? streamingPcm : BufferUtils.createShortBuffer(pcm.length);
+        data.clear();
+        data.put(pcm).flip();
+        AL10.alBufferData(buffer, AL10.AL_FORMAT_STEREO16, data, sampleRate);
+        AL10.alSourceQueueBuffers(source, buffer);
+        queuedBuffers++;
     }
 }

@@ -1,8 +1,11 @@
 package linksawakening.audio.openal;
 
-import linksawakening.gameplay.PcmSoundOutput;
+import java.util.Objects;
+import java.util.function.IntSupplier;
+import linksawakening.audio.music.ReusableFramePcmOutput;
 
-public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
+/** Native PCM output with queue pressure handling and device recovery. */
+public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private static final int MAX_BUFFERS = 8;
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
     private final PcmStreamBuffering buffering = new PcmStreamBuffering();
@@ -27,7 +30,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
     }
 
     OpenAlPcmSoundOutput(PcmAlDevice device) {
-        this.device = java.util.Objects.requireNonNull(device);
+        this.device = Objects.requireNonNull(device);
         available = true;
         statusMessage = "OpenAL PCM output ready";
     }
@@ -77,7 +80,7 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
                 lastFailure == null ? "none" : conciseMessage(lastFailure));
     }
 
-    private int querySafely(java.util.function.IntSupplier query) {
+    private int querySafely(IntSupplier query) {
         if (device == null || closed) return -1;
         try {
             return query.getAsInt();
@@ -196,7 +199,10 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         // Deleting/recreating the source detaches buffers even in AL_INITIAL,
         // where alSourceStop is a no-op and unqueueing pending buffers is illegal.
         device.resetSource();
-        for (int buffer : allocatedBuffers.liveBuffers()) device.deleteBuffer(buffer);
+        for (int buffer : allocatedBuffers.liveBuffers()) {
+            device.deleteBuffer(buffer);
+            allocatedBuffers.markDeleted(buffer);
+        }
         allocatedBuffers.clear();
         bufferQueue.clear();
         buffering.reset();

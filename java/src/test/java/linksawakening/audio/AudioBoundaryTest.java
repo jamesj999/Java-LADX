@@ -21,7 +21,7 @@ final class AudioBoundaryTest {
             try (var paths = Files.walk(root.resolve("linksawakening/" + pkg))) {
                 for (Path file :
                         paths.filter(p -> p.toString().endsWith(".class")).toList()) {
-                    if (file.toString().contains("/audio/openal/")) continue;
+                    if (file.startsWith(root.resolve("linksawakening/audio/openal"))) continue;
                     try (var input = new DataInputStream(Files.newInputStream(file))) {
                         assertEquals(0xCAFEBABE, input.readInt());
                         input.readInt();
@@ -42,6 +42,21 @@ final class AudioBoundaryTest {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    void onlyOpenAlSourcesMayImportLwjglIncludingInlinedConstants() throws Exception {
+        Path root = Path.of("src/main/java/linksawakening/audio");
+        try (var paths = Files.walk(root)) {
+            for (Path file :
+                    paths.filter(path -> path.toString().endsWith(".java")).toList()) {
+                if (file.startsWith(root.resolve("openal"))) continue;
+                String source = Files.readString(file);
+                assertFalse(
+                        source.contains("import org.lwjgl") || source.contains("import static org.lwjgl"),
+                        file.toString());
             }
         }
     }

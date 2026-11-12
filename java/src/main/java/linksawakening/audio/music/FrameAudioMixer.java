@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+import java.util.Arrays;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
@@ -35,7 +36,7 @@ public final class FrameAudioMixer {
 
     /** Returned storage is reused by the next call. */
     public short[] renderBufferPcm() {
-        java.util.Arrays.fill(pcm, (short) 0);
+        Arrays.fill(pcm, (short) 0);
         int framesRendered = 0;
 
         while (framesRendered < BUFFER_FRAMES && ensureAudioPlaying()) {

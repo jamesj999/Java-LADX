@@ -2,6 +2,7 @@ package linksawakening.audio.music;
 
 import java.util.Objects;
 
+/** Coordinates gameplay music selection with an injected transport. */
 public final class GameplayMusicController {
     private final AreaMusicResolver resolver;
     private final MusicCatalog catalog;

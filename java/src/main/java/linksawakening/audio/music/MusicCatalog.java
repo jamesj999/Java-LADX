@@ -12,6 +12,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
+/** Catalog of ROM music tracks with source bank and pointer metadata. */
 public final class MusicCatalog {
     private static final int BANK_1B = RomSymbols.MusicDataPointerTable_1B.bank();
     private static final int BANK_1B_TABLE = RomSymbols.MusicDataPointerTable_1B.address();

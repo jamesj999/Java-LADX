@@ -1,6 +1,8 @@
 package linksawakening.audio.music;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntPredicate;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -18,11 +20,10 @@ public final class MusicDriver {
         new MusicChannelState(1), new MusicChannelState(2), new MusicChannelState(3), new MusicChannelState(4)
     };
 
-    java.util.function.IntPredicate sfxOwnsChannel = channel -> false;
-    java.util.function.BooleanSupplier takeWaveRestoreRequest = () -> false;
+    IntPredicate sfxOwnsChannel = channel -> false;
+    BooleanSupplier takeWaveRestoreRequest = () -> false;
 
-    public void setSoundEffectState(
-            java.util.function.IntPredicate ownsChannel, java.util.function.BooleanSupplier waveRestoreRequest) {
+    public void setSoundEffectState(IntPredicate ownsChannel, BooleanSupplier waveRestoreRequest) {
         sfxOwnsChannel = Objects.requireNonNull(ownsChannel);
         takeWaveRestoreRequest = Objects.requireNonNull(waveRestoreRequest);
     }

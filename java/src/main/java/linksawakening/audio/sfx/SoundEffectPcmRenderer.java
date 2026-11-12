@@ -1,10 +1,10 @@
 package linksawakening.audio.sfx;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 
+/** Renders a complete ROM-backed SFX audition into owned PCM storage. */
 public final class SoundEffectPcmRenderer {
     private static final int TICKS_PER_SECOND = 60;
     private static final int MAX_SOUND_EFFECT_TICKS = TICKS_PER_SECOND * 10;
@@ -30,7 +30,7 @@ public final class SoundEffectPcmRenderer {
         int wholeFramesPerTick = apu.sampleRate() / TICKS_PER_SECOND;
         int frameRemainderPerTick = apu.sampleRate() % TICKS_PER_SECOND;
         int frameRemainder = 0;
-        List<short[]> chunks = new ArrayList<>();
+        short[] storage = new short[Math.multiplyExact(apu.sampleRate(), 20)];
         int sampleCount = 0;
 
         for (int tick = 0; tick < MAX_SOUND_EFFECT_TICKS && player.isPlaying(); tick++) {
@@ -40,18 +40,11 @@ public final class SoundEffectPcmRenderer {
                 frames++;
                 frameRemainder -= TICKS_PER_SECOND;
             }
-            short[] chunk = apu.render(frames);
-            chunks.add(chunk);
-            sampleCount += chunk.length;
+            apu.renderInto(storage, sampleCount, frames);
+            sampleCount += frames * 2;
             player.tick60Hz();
         }
 
-        short[] pcm = new short[sampleCount];
-        int offset = 0;
-        for (short[] chunk : chunks) {
-            System.arraycopy(chunk, 0, pcm, offset, chunk.length);
-            offset += chunk.length;
-        }
-        return pcm;
+        return Arrays.copyOf(storage, sampleCount);
     }
 }

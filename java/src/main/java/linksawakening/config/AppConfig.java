@@ -13,20 +13,24 @@ public final class AppConfig {
 
     private static final String RESOURCE_PATH = "config/config.json";
 
+    /** Supported configured starting map categories. */
     public enum StartLocationType {
         OVERWORLD
     }
 
+    /** Selects the startup location policy. */
     public enum StartMode {
         CONFIGURED_LOCATION,
         NORMAL
     }
 
+    /** Initial player inventory policy. */
     public enum ItemProfile {
         DEBUG_ALL_ITEMS,
         NEW_GAME
     }
 
+    /** Configured map category and room identifier. */
     public record StartLocation(StartLocationType type, int roomId) {}
 
     private final boolean showTitleScreen;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 
+/** Frame-driven facade over ROM-backed sound effect execution. */
 public final class SoundEffectPlayer {
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
