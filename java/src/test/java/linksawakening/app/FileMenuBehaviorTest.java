@@ -71,33 +71,35 @@ class FileMenuBehaviorTest {
     void newGameResetsPersistentWorldStateBeforeHouseEntitiesAreLoaded() {
         try (var s = new Scenario()) {
             s.c.services().world().roomSession().story().setTarinFlag(1);
-            s.c.services().player().playerState().setShieldLevel(1);
-            s.c.services().player().playerState().setSwordLevel(1);
+            s.c.services().player().playerState().equipmentLevels().setShieldLevel(1);
+            s.c.services().player().playerState().equipmentLevels().setSwordLevel(1);
             s.c.runtime().flows().saves().startNewGame();
             assertEquals(0, s.c.services().world().roomSession().story().tarinFlag());
-            assertEquals(0, s.c.services().player().playerState().shieldLevel());
-            assertEquals(0, s.c.services().player().playerState().swordLevel());
+            assertEquals(
+                    0, s.c.services().player().playerState().equipmentLevels().shieldLevel());
+            assertEquals(
+                    0, s.c.services().player().playerState().equipmentLevels().swordLevel());
             assertEquals(0xA3, s.c.services().world().roomSession().rooms().currentRoomId());
             assertTrue(s.c.services().world().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
                     .anyMatch(e -> e.type() == 0x3F));
             s.game.stepWithoutRender();
-            assertTrue(s.c.services().player().link().isMarinWakeUpBedVisible());
+            assertTrue(s.c.services().player().link().animation().isMarinWakeUpBedVisible());
         }
     }
 
     @Test
     void savedAndNewGamePositionsUseRomOamCoordinates() {
         try (var s = new Scenario()) {
-            assertEquals(0x50, s.c.services().player().link().roomEntryRomPositionX());
-            assertEquals(0x60, s.c.services().player().link().roomEntryRomPositionY());
+            assertEquals(0x50, s.c.services().player().link().position().roomEntryRomPositionX());
+            assertEquals(0x60, s.c.services().player().link().position().roomEntryRomPositionY());
             var store = SaveRamStore.inMemory();
             store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
             store.writeSpawnLocation(0, 1, 0x10, 0xA3, 0x48, 0x68, 0);
             s.c.runtime().flows().saves().startSavedGame(store.readSlot(0));
-            assertEquals(0x48, s.c.services().player().link().roomEntryRomPositionX());
-            assertEquals(0x68, s.c.services().player().link().roomEntryRomPositionY());
-            assertEquals(0x40, s.c.services().player().link().pixelX());
-            assertEquals(0x58, s.c.services().player().link().pixelY());
+            assertEquals(0x48, s.c.services().player().link().position().roomEntryRomPositionX());
+            assertEquals(0x68, s.c.services().player().link().position().roomEntryRomPositionY());
+            assertEquals(0x40, s.c.services().player().link().position().pixelX());
+            assertEquals(0x58, s.c.services().player().link().position().pixelY());
         }
     }
 
@@ -118,7 +120,7 @@ class FileMenuBehaviorTest {
                                     .visibleText()
                                     .replaceAll("\\s+", "")),
                     s.c.services().ui().dialogController().visibleText());
-            assertTrue(s.c.services().player().link().isMarinWakeUpBedVisible());
+            assertTrue(s.c.services().player().link().animation().isMarinWakeUpBedVisible());
         }
     }
 
@@ -145,7 +147,7 @@ class FileMenuBehaviorTest {
             s.game.headlessButton("right", false);
             assertTrue(s.c.state().opening().wakeUp().complete());
             s.frames(64);
-            assertFalse(s.c.services().player().link().isMarinWakeUpBedVisible());
+            assertFalse(s.c.services().player().link().animation().isMarinWakeUpBedVisible());
             assertFalse(s.c.runtime()
                     .flows()
                     .interactions()
@@ -156,8 +158,8 @@ class FileMenuBehaviorTest {
                     .filter(e -> e.type() == 0x3E)
                     .findFirst()
                     .orElseThrow();
-            s.c.services().player().link().setPixelPosition(marin.x() - 8, marin.y() - 8);
-            s.c.services().player().link().setRomDirection(2);
+            s.c.services().player().link().position().setPixelPosition(marin.x() - 8, marin.y() - 8);
+            s.c.services().player().link().animation().setRomDirection(2);
             assertTrue(s.c.runtime()
                     .flows()
                     .interactions()
@@ -255,8 +257,8 @@ class FileMenuBehaviorTest {
             store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
             s.store(store);
             s.c.state().screens().currentSaveSlot = 0;
-            s.c.services().player().playerState().setRupees(237);
-            s.c.services().player().playerState().setShieldLevel(1);
+            s.c.services().player().playerState().wallet().setRupees(237);
+            s.c.services().player().playerState().equipmentLevels().setShieldLevel(1);
             s.c.services().world().roomSession().story().setTarinFlag(1);
             s.c.runtime().flows().saves().saveCurrentPlayerState();
             var saved = SaveRamStore.open(path).readSlot(0);
@@ -288,7 +290,7 @@ class FileMenuBehaviorTest {
             assertEquals(0xA3, s.c.services().world().roomSession().rooms().currentRoomId());
             assertEquals(1, s.c.services().world().roomSession().story().tarinFlag());
             assertArrayEquals(a, s.c.services().world().roomSession().dungeon().indoorARoomStatusSnapshot());
-            assertEquals(0x48, s.c.services().player().link().roomEntryRomPositionX());
+            assertEquals(0x48, s.c.services().player().link().position().roomEntryRomPositionX());
         }
     }
 }

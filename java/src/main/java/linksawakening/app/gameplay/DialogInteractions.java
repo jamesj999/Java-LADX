@@ -45,9 +45,9 @@ public final class DialogInteractions {
                         room.roomId(),
                         room.mapCategory(),
                         room.roomObjectsArea(),
-                        player.link().pixelX(),
-                        player.link().pixelY(),
-                        player.link().direction(),
+                        player.link().position().pixelX(),
+                        player.link().position().pixelY(),
+                        player.link().animation().direction(),
                         new OverworldDialogInteraction.Interaction(
                                 true, dialogBlockers.current(), ui.dialogController()));
     }
@@ -61,11 +61,11 @@ public final class DialogInteractions {
         ChestOpenResult result = world.roomSession()
                 .doors()
                 .tryOpenChest(
-                        player.link().pixelX(),
-                        player.link().pixelY(),
-                        player.link().direction(),
+                        player.link().position().pixelX(),
+                        player.link().position().pixelY(),
+                        player.link().animation().direction(),
                         true,
-                        player.playerState().swordLevel());
+                        player.playerState().equipmentLevels().swordLevel());
         return result.opened();
     }
 
@@ -83,6 +83,7 @@ public final class DialogInteractions {
             ui.dialogController()
                     .openPreformattedForLinkY(
                             ui.dialogTextLoader().load(dialogRef),
-                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
+                            LinkDialogPosition.dialogYFromTopLeft(
+                                    player.link().position().pixelY()));
     }
 }

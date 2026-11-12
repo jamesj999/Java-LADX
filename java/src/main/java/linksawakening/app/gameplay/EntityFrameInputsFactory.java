@@ -31,39 +31,50 @@ final class EntityFrameInputsFactory {
         var l = c.link();
         var p = c.playerState();
         return new LinkInputs(
-                new LinkPosition(l.romEntityX(), l.romEntityY(), l.romEntityZ(), l.direction(), l.romCollisionType()),
+                new LinkPosition(
+                        l.position().romEntityX(),
+                        l.position().romEntityY(),
+                        l.animation().romEntityZ(),
+                        l.animation().direction(),
+                        l.position().romCollisionType()),
                 new LinkMotion(
-                        l.isAirborne(),
-                        l.romMotionState(),
-                        l.isUsingShield(),
-                        l.isCollisionDamageImmune() ? 1 : p.invincibilityCounter(),
-                        l.romSpeedX(),
-                        l.romSpeedY()),
-                l.romAttackStepAnimationCountdown(),
-                l.romFinalPositionX(),
-                l.debugNoClip(),
-                l.zVelocity());
+                        l.airborne().isAirborne(),
+                        l.airborne().romMotionState(),
+                        l.equipment().isUsingShield(),
+                        l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter(),
+                        l.position().romSpeedX(),
+                        l.position().romSpeedY()),
+                l.equipment().romAttackStepAnimationCountdown(),
+                l.position().romFinalPositionX(),
+                l.motion().debugNoClip(),
+                l.airborne().zVelocity());
     }
 
     private static PlayerInputs buildPlayerInputs(GameplaySimulation c) {
         var p = c.playerState();
         return new PlayerInputs(
                 new ProgressInputs(
-                        p.heartPieces(),
-                        p.birdKeyCount() != 0,
-                        p.tailKeyCount() != 0,
-                        p.tradeSequenceItem(),
-                        p.hasToadstool(),
-                        p.magicPowderCount(),
-                        p.goldenLeavesCount()),
+                        p.progression().heartPieces(),
+                        p.progression().birdKeyCount() != 0,
+                        p.progression().tailKeyCount() != 0,
+                        p.progression().tradeSequenceItem(),
+                        p.ammunition().hasToadstool(),
+                        p.ammunition().magicPowderCount(),
+                        p.progression().goldenLeavesCount()),
                 new InventoryInputs(
-                        p.itemA(),
-                        p.itemB(),
-                        p.tunicType() == Tunic.RED.romValue(),
-                        p.activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
-                new PlayerLevels(p.shieldLevel(), p.swordLevel(), p.powerBraceletLevel()),
+                        p.inventory().itemA(),
+                        p.inventory().itemB(),
+                        p.equipmentLevels().tunicType() == Tunic.RED.romValue(),
+                        p.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
+                new PlayerLevels(
+                        p.equipmentLevels().shieldLevel(),
+                        p.equipmentLevels().swordLevel(),
+                        p.equipmentLevels().powerBraceletLevel()),
                 new PlayerHealth(
-                        p.maxHearts(), p.health(), p.activePowerUp() != PowerUp.NONE.romValue(), p.isOnLowHealth()));
+                        p.vitals().maxHearts(),
+                        p.vitals().health(),
+                        p.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue(),
+                        p.vitals().isOnLowHealth()));
     }
 
     private static UiInputs buildUiInputs(GameplaySimulation c) {
@@ -95,7 +106,7 @@ final class EntityFrameInputsFactory {
                         || i.isDown(k.bKey())
                         || i.isDown(k.selectKey())
                         || i.isDown(k.menuOpenKey())),
-                l.romPressedButtonsMask(),
+                l.controls().romPressedButtonsMask(),
                 lift.isPowerBraceletButtonHeld(),
                 lift.isBombButtonHeld());
     }

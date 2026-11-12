@@ -101,7 +101,8 @@ public final class EnemyProjectileEventConsumer {
             applyLinkResponse(event, link);
             return;
         }
-        if (playerState.vitals().invincibilityCounter() != 0 || (link != null && link.isCollisionDamageImmune())) {
+        if (playerState.vitals().invincibilityCounter() != 0
+                || (link != null && link.status().isCollisionDamageImmune())) {
             return;
         }
 
@@ -121,8 +122,8 @@ public final class EnemyProjectileEventConsumer {
 
     private static void applyLinkResponse(EntityProjectileEvent event, Link link) {
         if (link != null && hasLinkResponse(event)) {
-            link.applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
-            link.setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
+            link.position().applyRomSpeed(event.linkSpeedX(), event.linkSpeedY());
+            link.status().setCollisionIgnoreFrames(event.linkIgnoreCollisionCountdown());
         }
     }
 

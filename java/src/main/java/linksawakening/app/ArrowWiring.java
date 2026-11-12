@@ -24,14 +24,17 @@ final class ArrowWiring {
                                 ArrowShotResult result = c.roomSession()
                                         .playerItems()
                                         .shootArrowResult(
-                                                c.link().romEntityX(),
-                                                c.link().romEntityY(),
-                                                c.link().romEntityZ(),
-                                                c.link().applyRomItemDirectionFromInput(),
-                                                c.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue());
+                                                c.link().position().romEntityX(),
+                                                c.link().position().romEntityY(),
+                                                c.link().animation().romEntityZ(),
+                                                c.link().equipment().applyRomItemDirectionFromInput(),
+                                                c.playerState()
+                                                                .equipmentLevels()
+                                                                .activePowerUp()
+                                                        == PowerUp.PIECE_OF_POWER.romValue());
                                 playWhooshForLastShot = result.playWhoosh();
                                 if (result.spawned()) {
-                                    c.link().startRomItemAttackStep();
+                                    c.link().equipment().startRomItemAttackStep();
                                 }
                                 return result.spawned();
                             }
@@ -46,6 +49,6 @@ final class ArrowWiring {
                                 return c.roomSession().playerItems().activeProjectileCount();
                             }
                         },
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }

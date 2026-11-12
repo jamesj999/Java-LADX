@@ -2,7 +2,6 @@ package linksawakening.app.gameplay;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 class LinkPassOutAnimationTest {
@@ -19,7 +18,7 @@ class LinkPassOutAnimationTest {
 
     @Test
     void countdownDoesNotWrapAndHidesAtCompletion() {
-        var animation = new LinkPassOutAnimation(new Rom(new byte[0x8000]));
+        var animation = new LinkPassOutAnimation(linksawakening.testing.TestRoms.partial(new byte[0x8000]));
         assertEquals(191, animation.countdown());
         for (int i = 0; i < 190; i++) animation.advanceFrame();
         assertFalse(animation.finished());

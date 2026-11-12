@@ -38,7 +38,7 @@ final class SessionAllocationTest {
             for (int i = 0; i < 32; i++) session.stepWithoutRender();
             session.headlessButton("right", false);
             assertFalse(session.diagnostics().dialogController().isActive());
-            assertEquals(70, session.diagnostics().link().romEntityX(), "Left the bed");
+            assertEquals(70, session.diagnostics().link().position().romEntityX(), "Left the bed");
             long bytesPerFrame = measure(session);
             System.out.println("Active simulation allocation bytes/frame: " + bytesPerFrame);
             // Round 3 baseline: 18,871; achieved about 14,986. Budget includes ~25% headroom.

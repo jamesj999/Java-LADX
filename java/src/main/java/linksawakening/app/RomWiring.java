@@ -35,7 +35,7 @@ final class RomWiring {
             throw new IllegalStateException("ROM data is not available");
         }
 
-        BackgroundSceneLoader backgroundSceneLoader = new BackgroundSceneLoader(romData.unsafeBytes());
+        BackgroundSceneLoader backgroundSceneLoader = new BackgroundSceneLoader(romData);
         gpu.loadTitleScreenTiles(romData);
         BackgroundScene scene = backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE);
         int[] currentTilemap = scene.tilemap();

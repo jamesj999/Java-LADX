@@ -43,10 +43,10 @@ public final class DebugTeleporter implements TeleportTarget {
     public void teleport(Warp destination) {
         rooms.transitions().loadWarpDestination(destination);
         opening.clear();
-        link.resetTransientStateForDebug();
-        link.setDebugNoClip(debug.debugNoClip);
-        link.setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);
-        link.setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
+        link.motion().resetTransientStateForDebug();
+        link.motion().setDebugNoClip(debug.debugNoClip);
+        link.sideView().setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);
+        link.position().setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
         effects.clear();
         rupees.clear();
         input.clear();

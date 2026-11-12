@@ -62,7 +62,7 @@ public final class ScreenRouter {
         actions.navigator().show(ScreenKind.CUTSCENE);
         actions.music().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         rom.gpu().loadIntroSequenceTiles(rom.romData());
-        ui.cutsceneManager().startIntro(rom.romData().unsafeBytes(), this::loadIntroBackgroundScene);
+        ui.cutsceneManager().startIntro(rom.romData(), this::loadIntroBackgroundScene);
     }
 
     public BackgroundScene loadIntroBackgroundScene(String sceneId) {
@@ -85,7 +85,7 @@ public final class ScreenRouter {
         state.screens().fileSaveController = null;
         rom.gpu().loadMenuTiles(rom.romData());
         setFileMenuController(new FileMenuController(
-                new FileMenuRomData(rom.romData().unsafeBytes()),
+                new FileMenuRomData(rom.romData()),
                 this::loadFileMenuBackgroundScene,
                 actions.saveState().saveRamStore.saveFilesMask(),
                 actions.saveState().saveRamStore.savedNames(),
@@ -145,15 +145,15 @@ public final class ScreenRouter {
         state.opening().wakeUp(null);
         state.opening().shield(null);
         state.screens().currentSaveSlot = -1;
-        player.link().resetTransientStateForDebug();
-        player.playerState().initializeDebugState();
+        player.link().motion().resetTransientStateForDebug();
+        player.playerState().playerInitialization().initializeDebugState();
         world.roomSession().story().initializeNewGameWorldState();
         world.roomSession().story().setBowWowState(0);
         world.roomSession().story().setBirdKeyOwned(true);
         world.roomSession().story().setTailKeyOwned(true);
         actions.navigator().show(ScreenKind.GAMEPLAY);
         state.debug().debugNoClip = false;
-        player.link().setDirection(Direction.DOWN.javaIndex());
+        player.link().animation().setDirection(Direction.DOWN.javaIndex());
         rom.gpu().loadBaseTiles(rom.romData());
         loadOverworldScreen();
         DebugLog.log("Debug gameplay started (F3 toggles no-clip)");
@@ -182,7 +182,7 @@ public final class ScreenRouter {
         // tiles to the left of the room center so he lands on walkable ground.
         int startX = ROOM_PIXEL_WIDTH() / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;
         int startY = ROOM_PIXEL_HEIGHT() / 2 - Link.SPRITE_SIZE / 2 - 10;
-        player.link().setRoomEntryPixelPosition(startX, startY);
+        player.link().position().setRoomEntryPixelPosition(startX, startY);
     }
 
     public static void applyConfiguredItemProfile(AppConfig config, PlayerState playerState) {

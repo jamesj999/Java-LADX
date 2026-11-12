@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import linksawakening.config.AppConfig;
-import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.world.room.RoomConstants;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ class ObjectInteractionSessionTest {
         game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.diagnostics().roomSession().rooms().loadIndoor(0, 0x17);
-        game.diagnostics().link().setPixelPosition(40, 40);
+        game.diagnostics().link().position().setPixelPosition(40, 40);
         return game;
     }
 
@@ -32,8 +31,8 @@ class ObjectInteractionSessionTest {
         assertEquals(0xDF, room.roomObjectsArea()[index]);
         game.headlessFrame();
         assertEquals(0xAE, room.roomObjectsArea()[index]);
-        for (int i = 0; i < 64 && !game.diagnostics().link().isFallingIntoPit(); i++) game.headlessFrame();
-        assertTrue(game.diagnostics().link().isFallingIntoPit());
+        for (int i = 0; i < 64 && !game.diagnostics().link().airborne().isFallingIntoPit(); i++) game.headlessFrame();
+        assertTrue(game.diagnostics().link().airborne().isFallingIntoPit());
     }
 
     @Test
@@ -57,10 +56,10 @@ class ObjectInteractionSessionTest {
         var game = session();
         var roomSession = game.diagnostics().roomSession();
         var player = game.diagnostics().playerState();
-        player.setHasToadstool(true);
-        player.setMagicPowderCount(0);
-        player.setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
-        player.setItemB(0);
+        player.ammunition().setHasToadstool(true);
+        player.ammunition().setMagicPowderCount(0);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.MAGIC_POWDER.romValue());
+        player.inventory().setItemB(0);
         game.headlessFrame();
         roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
         for (int i = 0; i < 17; i++) game.headlessFrame();
@@ -69,7 +68,7 @@ class ObjectInteractionSessionTest {
         game.headlessButton("a", true);
         game.headlessFrame();
         game.headlessButton("a", false);
-        assertTrue(game.diagnostics().link().dialogGotItemActive());
+        assertTrue(game.diagnostics().link().animation().dialogGotItemActive());
         game.headlessFrame();
         assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
         assertEquals(0xDF, roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33]);
@@ -83,7 +82,7 @@ class ObjectInteractionSessionTest {
         roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xDF;
         roomSession.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x34] = 0xDF;
         for (int i = 0; i < 17; i++) game.headlessFrame();
-        game.diagnostics().link().setPixelPosition(56, 40); // entity-style move between Link passes
+        game.diagnostics().link().position().setPixelPosition(56, 40); // entity-style move between Link passes
         game.headlessFrame();
         assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
         game.headlessFrame();
@@ -94,14 +93,14 @@ class ObjectInteractionSessionTest {
     void levelOneSwordBreaksIndoorCrystalThroughGameplayPhase() throws Exception {
         var game = session();
         var player = game.diagnostics().playerState();
-        player.setSwordLevel(1);
-        player.setItemA(PlayerState.INVENTORY_SWORD);
+        player.equipmentLevels().setSwordLevel(1);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
         var room = game.diagnostics().roomSession().rooms().activeRoom();
         // Face right, then put a crystal at the ROM's sword probe (X+$16,Y+$08).
         game.headlessButton("right", true);
         game.headlessFrame();
         game.headlessButton("right", false);
-        game.diagnostics().link().setPixelPosition(32, 40);
+        game.diagnostics().link().position().setPixelPosition(32, 40);
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
         room.roomObjectsArea()[index] = 0xDD;
         game.headlessButton("a", true);

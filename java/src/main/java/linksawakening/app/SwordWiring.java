@@ -20,21 +20,21 @@ final class SwordWiring {
                         new Sword.BeamTarget() {
                             @Override
                             public boolean fireSwordBeam() {
-                                int romDirection = c.link().applyRomItemDirectionFromInput();
-                                if (c.playerState().swordLevel() != 2
-                                        || !c.playerState().fullHearts()
+                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
+                                if (c.playerState().equipmentLevels().swordLevel() != 2
+                                        || !c.playerState().vitals().fullHearts()
                                         || c.roomSession().playerItems().activeProjectileCount() != 0) {
                                     return false;
                                 }
                                 boolean spawned = c.roomSession()
                                         .playerItems()
                                         .fireSwordBeam(
-                                                c.link().romEntityX(),
-                                                c.link().romEntityY(),
-                                                c.link().romEntityZ(),
+                                                c.link().position().romEntityX(),
+                                                c.link().position().romEntityY(),
+                                                c.link().animation().romEntityZ(),
                                                 romDirection);
                                 if (spawned) {
-                                    c.link().startRomItemAttackStep();
+                                    c.link().equipment().startRomItemAttackStep();
                                 }
                                 return spawned;
                             }

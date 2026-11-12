@@ -105,9 +105,9 @@ final class SaveRoundTripTest {
             PlayerState player = game.services().player().playerState();
             RoomSession room = game.services().world().roomSession();
             // Represent progress made during play; exercise the session snapshot, not just the codec.
-            player.setShieldLevel(1);
-            player.setItemB(PlayerState.INVENTORY_SHIELD);
-            player.setRupees(237);
+            player.equipmentLevels().setShieldLevel(1);
+            player.inventory().setItemB(linksawakening.state.InventoryItem.SHIELD.romValue());
+            player.wallet().setRupees(237);
             room.story().setTarinFlag(1);
             game.headlessFrame();
             SaveCoordinator saves = game.flows().saves();
@@ -124,7 +124,7 @@ final class SaveRoundTripTest {
                 press(game, "down");
                 press(game, "a");
             } else {
-                player.setHealth(0);
+                player.vitals().setHealth(0);
                 saves.finishGameOver(gameOverOption);
             }
             SaveSlotState expected = store.readSlot(0);
@@ -144,10 +144,10 @@ final class SaveRoundTripTest {
                         RenderScreen.OVERWORLD,
                         relaunched.state().screens().currentScreen.renderScreen());
                 PlayerState restored = relaunched.services().player().playerState();
-                assertEquals(expected.rupees(), restored.rupees());
-                assertEquals(expected.health(), restored.health());
-                assertEquals(expected.itemB(), restored.itemB());
-                assertEquals(expected.shieldLevel(), restored.shieldLevel());
+                assertEquals(expected.rupees(), restored.wallet().rupees());
+                assertEquals(expected.health(), restored.vitals().health());
+                assertEquals(expected.itemB(), restored.inventory().itemB());
+                assertEquals(expected.shieldLevel(), restored.equipmentLevels().shieldLevel());
                 assertEquals(
                         expected.tarinFlag(),
                         relaunched.services().world().roomSession().story().tarinFlag());
@@ -168,8 +168,8 @@ final class SaveRoundTripTest {
                 assertArrayEquals(
                         expected.dungeonProgressFlags(), restoredRoom.dungeon().dungeonProgressFlagsSnapshot());
                 var restoredLink = relaunched.services().player().link();
-                assertEquals(expected.spawnPositionX(), restoredLink.roomEntryRomPositionX());
-                assertEquals(expected.spawnPositionY(), restoredLink.roomEntryRomPositionY());
+                assertEquals(expected.spawnPositionX(), restoredLink.position().roomEntryRomPositionX());
+                assertEquals(expected.spawnPositionY(), restoredLink.position().roomEntryRomPositionY());
                 assertEquals(expected.spawnMapRoom(), restoredRoom.rooms().currentRoomId());
             } finally {
                 relaunched.close();

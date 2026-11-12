@@ -18,13 +18,13 @@ final class BoomerangWiring {
                                 boolean spawned = c.roomSession()
                                         .playerItems()
                                         .fireBoomerang(
-                                                c.link().romEntityX(),
-                                                c.link().romEntityY(),
-                                                c.link().romEntityZ(),
-                                                c.link().applyRomItemDirectionFromInput(),
-                                                c.link().romPressedButtonsMask());
+                                                c.link().position().romEntityX(),
+                                                c.link().position().romEntityY(),
+                                                c.link().animation().romEntityZ(),
+                                                c.link().equipment().applyRomItemDirectionFromInput(),
+                                                c.link().controls().romPressedButtonsMask());
                                 if (spawned) {
-                                    c.link().startRomItemAttackStep();
+                                    c.link().equipment().startRomItemAttackStep();
                                 }
                                 return spawned;
                             }
@@ -34,6 +34,6 @@ final class BoomerangWiring {
                                 return c.roomSession().playerItems().boomerangActive();
                             }
                         },
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }

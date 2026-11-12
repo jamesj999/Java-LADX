@@ -5,11 +5,11 @@ import linksawakening.entity.Link;
 interface LinkMotionDriver {
     LinkMotionDriver DIRECT = new LinkMotionDriver() {
         public void capture(Link link) {
-            link.captureRomFinalPosition();
+            link.position().captureRomFinalPosition();
         }
 
         public void update(Link link) {
-            link.update();
+            link.motion().update();
         }
     };
 

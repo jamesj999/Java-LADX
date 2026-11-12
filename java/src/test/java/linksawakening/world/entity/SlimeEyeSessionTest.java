@@ -42,8 +42,7 @@ final class SlimeEyeSessionTest {
             room.rooms().loadIndoor(2, 0x5A);
             link.setRoomEntryRomPosition(80, 96);
             link.setDirection(Direction.UP.javaIndex());
-            GameplaySoundSink original =
-                    (GameplaySoundSink) game.gameplaySounds().sink();
+            GameplaySoundSink original = game.gameplaySounds().sink();
             game.gameplaySounds().replace((GameplaySoundSink) sound -> {
                 sounds.add(sound);
                 original.play(sound);

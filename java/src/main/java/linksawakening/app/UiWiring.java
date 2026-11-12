@@ -25,9 +25,8 @@ final class UiWiring {
         var inputConfig = input.inputConfig();
         var gameplaySoundSink = audio.gameplaySoundSink();
         var musicPlayer = audio.musicPlayer();
-        InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData.unsafeBytes());
-        InventoryMenu inventoryMenu =
-                new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData.unsafeBytes());
+        InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
+        InventoryMenu inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
         InventoryController inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         DialogController dialogController = DialogController.forGameplay();
         DialogTextLoader dialogTextLoader = DialogTextLoader.loadFromRom(romData);

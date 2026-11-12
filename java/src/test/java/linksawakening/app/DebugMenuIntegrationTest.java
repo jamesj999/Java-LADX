@@ -33,8 +33,8 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
         assertEquals(0x17, game.diagnostics().roomSession().rooms().currentRoomId());
         assertEquals(1, game.diagnostics().roomSession().rooms().mapCategory());
-        assertEquals(72, game.diagnostics().link().pixelX());
-        assertEquals(96, game.diagnostics().link().pixelY());
+        assertEquals(72, game.diagnostics().link().position().pixelX());
+        assertEquals(96, game.diagnostics().link().position().pixelY());
         // Exercise category changes and the separate Color Dungeon tables.
         teleport(game, menu, 2, 0, 0x19);
         assertEquals(2, game.diagnostics().roomSession().rooms().mapCategory());
@@ -49,12 +49,12 @@ class DebugMenuIntegrationTest {
                 .findFirst()
                 .orElseThrow();
         sword.write().accept(0);
-        assertEquals(0, game.diagnostics().playerState().itemA());
+        assertEquals(0, game.diagnostics().playerState().inventory().itemA());
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
-        game.diagnostics().playerState().applyEntityPickup(0x2E);
+        game.diagnostics().playerState().playerRewards().applyEntityPickup(0x2E);
         menu.entries().getFirst().write().accept(123);
-        assertEquals(123, game.diagnostics().playerState().rupees());
-        assertEquals(0, game.diagnostics().playerState().addRupeeBuffer());
+        assertEquals(123, game.diagnostics().playerState().wallet().rupees());
+        assertEquals(0, game.diagnostics().playerState().wallet().addRupeeBuffer());
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         assertFalse(menu.isOpen());
         assertTrue(game.lifecycle().running());
@@ -78,7 +78,7 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
         assertEquals("DEBUG 2/5 INVENTORY", menu(game).title());
         game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
-        assertEquals(1, game.diagnostics().playerState().itemA());
+        assertEquals(1, game.diagnostics().playerState().inventory().itemA());
         game.headlessFrame();
         assertEquals(before.frame(), game.diagnostics().frameCounter());
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);

@@ -1,5 +1,6 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.entity.Link;
 import linksawakening.entity.LinkCommand;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -91,9 +92,7 @@ final class LinkCommandAdapter {
                 r.speedX(),
                 r.speedY(),
                 r.velocityZ(),
-                r.airborneState(),
-                r.motionBlocked(),
-                r.applyHeldLinkPose());
+                Link.GrabFlags.of(r.airborneState(), r.motionBlocked(), r.applyHeldLinkPose()));
     }
 
     static LinkCommand from(LikeLikeEvent r) {

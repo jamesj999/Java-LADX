@@ -50,8 +50,8 @@ public final class SessionInput {
                                 world.roomSession().rooms().mapCategory(),
                                 world.roomSession().rooms().mapId(),
                                 world.roomSession().rooms().currentRoomId(),
-                                player.link().pixelX(),
-                                player.link().pixelY());
+                                player.link().position().pixelX(),
+                                player.link().position().pixelY());
                 input.inputState().clear();
                 screenSet.gameplay().clearPendingInput();
             }

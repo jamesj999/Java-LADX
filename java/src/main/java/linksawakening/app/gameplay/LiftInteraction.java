@@ -40,13 +40,14 @@ public final class LiftInteraction {
     public void synchronizeLinkLiftedPresentation() {
         var state = roomSession.rooms().liftedEntityState();
         if (state.active()) {
-            link.setCarryingLiftedObjectState(state.carryState(), state.effectiveRomDirection());
+            link.actions().setCarryingLiftedObjectState(state.carryState(), state.effectiveRomDirection());
         } else {
-            if (link.isRoosterCarryActive()) {
-                link.clearRoosterCarryState();
+            if (link.actions().isRoosterCarryActive()) {
+                link.actions().clearRoosterCarryState();
             }
-            link.setCarryingLiftedObjectState(
-                    0, Direction.fromJava(link.direction()).romIndex());
+            link.actions()
+                    .setCarryingLiftedObjectState(
+                            0, Direction.fromJava(link.animation().direction()).romIndex());
         }
     }
 }

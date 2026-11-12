@@ -15,6 +15,6 @@ final class BombWiring {
                         c.playerState(),
                         c.gameplaySoundSink(),
                         new RoomBombPlacement(c.link(), c.roomSession().playerItems()),
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }

@@ -27,7 +27,7 @@ public final class PassOutController {
 
     boolean tick(GameplaySimulation context, boolean dialog) {
         var link = context.link();
-        handledFrame = link.isPassingOut();
+        handledFrame = link.status().isPassingOut();
         if (owner != link) {
             owner = link;
             animation = null;
@@ -39,29 +39,29 @@ public final class PassOutController {
         }
         boolean transition = context.scrollController().isActive()
                 || context.transitionController().isInputBlocked();
-        boolean itemBlocked = link.dialogGotItemActive()
-                || link.romItemAnimationFrameBlocked()
+        boolean itemBlocked = link.animation().dialogGotItemActive()
+                || link.sideView().romItemAnimationFrameBlocked()
                 || ((context.roomSession().entityState().gotItemPresentationActive()
                         || context.roomSession().entityState().swordPickupSequenceActive()));
         if (LinkPassOutAnimation.shouldStart(
-                context.playerState().health(),
+                context.playerState().vitals().health(),
                 itemBlocked ? 1 : 0,
                 context.inventoryController().shouldBlockOverworldInput() ? 1 : 0,
                 dialog,
                 transition,
-                link.isPassingOut())) {
+                link.status().isPassingOut())) {
             handledFrame = true;
             animation = new LinkPassOutAnimation(context.romData());
-            link.beginPassOut();
+            link.status().beginPassOut();
             context.musicDirector().playDirectMusic(0);
             context.gameplaySoundSink().play(GameplaySoundEvent.LINK_DIES);
-        } else if (link.isPassingOut() && animation != null && !dialog && !transition) {
+        } else if (link.status().isPassingOut() && animation != null && !dialog && !transition) {
             animation.advanceFrame();
         }
-        if (!link.isPassingOut() || animation == null) return false;
+        if (!link.status().isPassingOut() || animation == null) return false;
         context.scrollController().setScriptedScreenShakeHorizontal(false, 0);
-        link.presentPassOut(animation.countdown(), animation.animationState(), animation.paletteEffect());
-        link.update();
+        link.status().presentPassOut(animation.countdown(), animation.animationState(), animation.paletteEffect());
+        link.motion().update();
         if (animation.finished()) gameOver = new GameOverPresentation(context);
         return true;
     }

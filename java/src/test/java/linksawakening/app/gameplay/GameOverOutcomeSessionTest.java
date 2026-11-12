@@ -31,20 +31,20 @@ class GameOverOutcomeSessionTest {
         room.transitions().loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
         room.rooms().loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
         var link = game.diagnostics().link();
-        link.setPixelPosition(80, 64);
+        link.position().setPixelPosition(80, 64);
         var player = game.diagnostics().playerState();
-        player.setMaxHearts(6);
-        player.setRupees(17);
-        player.setDeathCount(8);
-        player.setActivePowerUp(1);
-        player.applyRomEnemyDamage(1);
-        player.clearResourceBuffersForDebug();
-        player.setHealth(0);
+        player.vitals().setMaxHearts(6);
+        player.wallet().setRupees(17);
+        player.progression().setDeathCount(8);
+        player.equipmentLevels().setActivePowerUp(1);
+        player.vitals().applyRomEnemyDamage(1);
+        player.playerResources().clearResourceBuffersForDebug();
+        player.vitals().setHealth(0);
         for (int i = 0; i < 208; i++) game.headlessFrame();
-        assertEquals(4, link.gameOverStage());
-        assertEquals(9, player.deathCount());
-        assertEquals(0, player.activePowerUp());
-        assertEquals(0, player.powerUpHits());
+        assertEquals(4, link.status().gameOverStage());
+        assertEquals(9, player.progression().deathCount());
+        assertEquals(0, player.equipmentLevels().activePowerUp());
+        assertEquals(0, player.equipmentLevels().powerUpHits());
         game.headlessFrame(); // First interactive handler draws cursor.
         for (int i = 0; i < option; i++) {
             game.headlessButton("down", true);
@@ -54,23 +54,23 @@ class GameOverOutcomeSessionTest {
         }
         game.headlessButton(option == 0 ? "a" : option == 1 ? "b" : "start", true);
         game.headlessFrame();
-        assertEquals(40, player.health()); // MaxHeartsToStartingHealthTable[6]: five hearts.
-        assertEquals(17, player.rupees());
-        assertEquals(9, player.deathCount());
-        assertEquals(0, link.romMotionState());
-        assertEquals(0, link.romPhysicsModifier());
-        assertNotEquals(255, link.romAnimationState());
-        assertEquals(0, player.activePowerUp());
-        assertEquals(0, player.powerUpHits());
+        assertEquals(40, player.vitals().health()); // MaxHeartsToStartingHealthTable[6]: five hearts.
+        assertEquals(17, player.wallet().rupees());
+        assertEquals(9, player.progression().deathCount());
+        assertEquals(0, link.airborne().romMotionState());
+        assertEquals(0, link.motion().romPhysicsModifier());
+        assertNotEquals(255, link.animation().romAnimationState());
+        assertEquals(0, player.equipmentLevels().activePowerUp());
+        assertEquals(0, player.equipmentLevels().powerUpHits());
         if (option == 1) {
             assertInstanceOf(
                     linksawakening.app.screen.FileMenuScreen.class, game.state().screens().currentScreen);
         } else {
             assertEquals(0x92, room.rooms().currentRoomId());
             assertEquals(0, room.rooms().mapCategory());
-            assertEquals(0x50 - 8, link.pixelX());
-            assertEquals(0x60 - 16, link.pixelY());
-            assertEquals(128, player.invincibilityCounter());
+            assertEquals(0x50 - 8, link.position().pixelX());
+            assertEquals(0x60 - 16, link.position().pixelY());
+            assertEquals(128, player.vitals().invincibilityCounter());
         }
         assertEquals(option == 2 ? 0 : 9, store.readSlot(0).deathCountBcd());
         if (option != 2) {
@@ -78,6 +78,6 @@ class GameOverOutcomeSessionTest {
             assertEquals(0x50, store.readSlot(0).spawnPositionX());
             assertEquals(40, store.readSlot(0).health());
         }
-        assertFalse(link.gameOverScreenPending());
+        assertFalse(link.status().gameOverScreenPending());
     }
 }

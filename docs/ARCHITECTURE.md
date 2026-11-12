@@ -212,9 +212,17 @@ parameter overloads remain for an off-limits audio test.
 `DialogTextLoader`, `SignpostDialogTable` and ROM-backed sound construction accept
 `Rom`. Dialog text retains its owned snapshot and bounds behavior. Only the dialog
 loader keeps a deprecated byte-array bridge, needed by `render/DialogEmulatorCapture`.
-App passes `Rom` wherever the callee supports it. Byte-array-only room, transition,
-player/equipment, VFX, scene, UI and cutscene entry points still require
-`unsafeBytes()` at their wiring boundaries; those packages own their API migration.
+App passes `Rom` wherever the callee supports it, including player/equipment,
+VFX, scene, UI and cutscene construction. Five byte-array bridges remain in
+`SessionWiring` and `WorldWiring` for the world-owned TransitionController,
+OverworldBushInteraction, RoomSessionConfig, RoomLoader and OverworldTilesetTable.
+Their packages own the remaining API migration.
+
+App/gameplay main and test callers use PlayerState's component APIs and Link's
+composed roles, including bound method references. Link construction uses
+`Link.Services`, and Roc's Feather targets the airborne role directly. No owned
+caller depends on the deprecated inheritance bridges; a full temporary
+`-Xlint:deprecation,removal` compile reports zero owned removal warnings.
 State enum values replace deprecated inventory, tunic, power-up and direction
 constants, with explicit ROM/engine index conversion at integer boundaries.
 

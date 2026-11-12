@@ -19,24 +19,26 @@ public final class LiftButtons {
     }
 
     public boolean isPowerBraceletButtonHeld() {
-        if (playerState.itemB() == InventoryItem.POWER_BRACELET.romValue()) {
+        if (playerState.inventory().itemB() == InventoryItem.POWER_BRACELET.romValue()) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == InventoryItem.POWER_BRACELET.romValue() && inputState.isDown(inputConfig.aKey());
+        return playerState.inventory().itemA() == InventoryItem.POWER_BRACELET.romValue()
+                && inputState.isDown(inputConfig.aKey());
     }
 
     /** $14:537D uses newly pressed buttons for throws, with B-slot priority. */
     public boolean isThrowButtonPressed(boolean bomb) {
         int item = bomb ? InventoryItem.BOMBS.romValue() : InventoryItem.POWER_BRACELET.romValue();
-        if (playerState.itemB() == item) return inputState.wasPressed(inputConfig.bKey());
-        if (playerState.itemA() == item) return inputState.wasPressed(inputConfig.aKey());
+        if (playerState.inventory().itemB() == item) return inputState.wasPressed(inputConfig.bKey());
+        if (playerState.inventory().itemA() == item) return inputState.wasPressed(inputConfig.aKey());
         return inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.bKey());
     }
 
     public boolean isBombButtonHeld() {
-        if (playerState.itemB() == InventoryItem.BOMBS.romValue()) {
+        if (playerState.inventory().itemB() == InventoryItem.BOMBS.romValue()) {
             return inputState.isDown(inputConfig.bKey());
         }
-        return playerState.itemA() == InventoryItem.BOMBS.romValue() && inputState.isDown(inputConfig.aKey());
+        return playerState.inventory().itemA() == InventoryItem.BOMBS.romValue()
+                && inputState.isDown(inputConfig.aKey());
     }
 }

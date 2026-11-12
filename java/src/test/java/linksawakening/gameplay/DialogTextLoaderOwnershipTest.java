@@ -24,8 +24,9 @@ final class DialogTextLoaderOwnershipTest {
 
     @Test
     void partialBuffersRetainTheTableBoundsFailure() {
-        var error =
-                assertThrows(IllegalArgumentException.class, () -> DialogTextLoader.loadFromRom(new Rom(new byte[7])));
+        var error = assertThrows(
+                IllegalArgumentException.class,
+                () -> DialogTextLoader.loadFromRom(linksawakening.testing.TestRoms.partial(new byte[7])));
         assertEquals("DialogPointerTable is outside the ROM data", error.getMessage());
     }
 }
