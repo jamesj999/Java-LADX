@@ -104,12 +104,12 @@ final class EntityRoomInspectionFixture {
 
     int owlEventStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.story.readOwlEventState(slot);
+        return runtime.story.owlState().readOwlEventState(slot);
     }
 
     int owlPrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.story.readOwlPrivateCountdown1(slot);
+        return runtime.story.owlState().readOwlPrivateCountdown1(slot);
     }
 
     int sideViewPlatformSpeedYForTest(int slot) {

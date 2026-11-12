@@ -22,15 +22,15 @@ public final class BooBuddyMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10;
     public static final int OPTIONS1 = 0x20 | 0x08;
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $50 uses the ordinary no-op initialization path. */
     public void initialize(int slot) {
@@ -97,91 +97,19 @@ public final class BooBuddyMotion {
             int roomTriggerCount,
             boolean swordMiddle,
             IntSupplier randomByteSupplier) {
-        if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Boo Buddy motion entity");
-        }
-        if (randomByteSupplier == null) {
-            throw new IllegalArgumentException("Boo Buddy random-byte supplier cannot be null");
-        }
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        int countdown = transitionCountdown & 0xFF;
-        int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
-        int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        // $06:79AC renders before the state handlers write the next variant.
-        int renderedVariant = selectedVariant[slot];
-        int variant = renderedVariant;
-        // func_006_5E54 reads the active coordinates cached before movement.
-        boolean unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88 || entity.x() >= 0xA8;
-        int healthOverride = -1;
+        return advanceAfterTimers(new BooBuddyFrame(
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                transitionCountdown,
+                roomTriggerCount,
+                swordMiddle,
+                randomByteSupplier));
+    }
 
-        // func_006_5E54 runs before the state dispatch. ClearEntityStatus_06
-        // does not persist the Boo Buddy when this boundary is reached, so
-        // return the unload request before changing its state.
-        if (unloaded) {
-            return new Update(withPosition(entity, x, y, variant), countdown, unloaded, healthOverride);
-        }
-
-        switch (state[slot]) {
-            case 0 -> {
-                if (roomTriggerCount != 0) {
-                    state[slot] = 1;
-                    break;
-                }
-                if (swordMiddle && countdown == 0 && privateCountdown1[slot] == 0) {
-                    if (!withinSwordTriggerWindow(x, y, linkEntityX, linkEntityY)) {
-                        // Both distant-swing branches jump straight to animation.
-                        variant = directionVariant(x, linkEntityX, frameCounter);
-                        break;
-                    }
-                    countdown = 0x20;
-                }
-                if (countdown != 0) {
-                    speedX[slot] = 0;
-                    speedY[slot] = 0;
-                    variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
-                    if (privateState1[slot] != 0) {
-                        // func_006_7AB0 sets this flag at countdown one, then
-                        // func_006_7A8C reflects the position around ($50,$48).
-                        privateCountdown1[slot] = 0x20;
-                        privateState1[slot] = 0;
-                        x = (0xA0 - x) & 0xFF;
-                        y = (0x90 - y) & 0xFF;
-                        variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
-                    }
-                    break;
-                }
-                if (privateCountdown1[slot] != 0) {
-                    speedX[slot] = 0;
-                    speedY[slot] = 0;
-                    variant = animateTransition(frameCounter, x, linkEntityX, slot, countdown);
-                    break;
-                }
-
-                int length = 0x06 + ((randomByteSupplier.getAsInt() ^ slot) & 0x07);
-                Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY, length);
-                speedY[slot] = approachByFour(speedY[slot], vector.y());
-                speedX[slot] = approachByFour(speedX[slot], vector.x());
-                variant = directionVariant(x, linkEntityX, frameCounter);
-            }
-            case 1 -> {
-                if (roomTriggerCount == 0) {
-                    state[slot] = 0;
-                    break;
-                }
-                healthOverride = 0x01;
-                Vector vector = vectorTowardsLink(x, y, linkEntityX, linkEntityY, 0x04);
-                speedY[slot] = negate(vector.y());
-                speedX[slot] = negate(vector.x());
-                variant = 0x04 + ((frameCounter >>> 4) & 0x01);
-            }
-            default -> throw new IllegalStateException("Invalid Boo Buddy state: " + state[slot]);
-        }
-
-        selectedVariant[slot] = variant;
-        return new Update(withPosition(entity, x, y, renderedVariant), countdown, false, healthOverride);
+    public linksawakening.world.entity.motion.BooBuddyMotion.Update advanceAfterTimers(BooBuddyFrame inputs) {
+        return new BooBuddyFrameStep(this, inputs).run();
     }
 
     public void clear(int slot) {
@@ -233,7 +161,7 @@ public final class BooBuddyMotion {
         }
     }
 
-    private int animateTransition(int frameCounter, int x, int linkEntityX, int slot, int countdown) {
+    int animateTransition(int frameCounter, int x, int linkEntityX, int slot, int countdown) {
         int variant;
         if (((frameCounter >>> 2) & 0x01) == 0) {
             variant = -1;
@@ -245,18 +173,18 @@ public final class BooBuddyMotion {
         return variant;
     }
 
-    private static boolean withinSwordTriggerWindow(int x, int y, int linkX, int linkY) {
+    static boolean withinSwordTriggerWindow(int x, int y, int linkX, int linkY) {
         int distanceX = signedByte((linkX - x) & 0xFF);
         int distanceY = signedByte((linkY - y) & 0xFF);
         return distanceX >= -0x24 && distanceX < 0x24 && distanceY >= -0x24 && distanceY < 0x24;
     }
 
-    private static int directionVariant(int entityX, int linkX, int frameCounter) {
+    static int directionVariant(int entityX, int linkX, int frameCounter) {
         int direction = signedByte((linkX - entityX) & 0xFF) < 0 ? 2 : 0;
         return direction + ((frameCounter >>> 4) & 0x01);
     }
 
-    private static RoomEntity withPosition(RoomEntity entity, int x, int y, int variant) {
+    static RoomEntity withPosition(RoomEntity entity, int x, int y, int variant) {
         return EntitySnapshots.withMotion(
                 entity,
                 x & 0xFF,
@@ -268,7 +196,7 @@ public final class BooBuddyMotion {
                 entity.powerRecoilDeath());
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -282,7 +210,7 @@ public final class BooBuddyMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static int approachByFour(int current, int target) {
+    static int approachByFour(int current, int target) {
         int difference = (target - current) & 0xFF;
         if (difference == 0) {
             return current & 0xFF;
@@ -290,7 +218,7 @@ public final class BooBuddyMotion {
         return (current + ((difference & 0x80) == 0 ? 4 : -4)) & 0xFF;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
+    static Vector vectorTowardsLink(int entityX, int entityY, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         boolean xNegative = distanceX < 0;
@@ -323,7 +251,7 @@ public final class BooBuddyMotion {
         return result;
     }
 
-    private static int negate(int value) {
+    static int negate(int value) {
         return (-signedByte(value)) & 0xFF;
     }
 
@@ -332,7 +260,7 @@ public final class BooBuddyMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {}
+    record Vector(int x, int y) {}
 
     public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded, int healthOverride) {}
 }

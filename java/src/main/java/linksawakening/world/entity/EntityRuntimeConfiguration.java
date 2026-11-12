@@ -294,11 +294,11 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setOwlStatueDialogId(int globalDialogId) {
-        runtime.story().writeOwlStatueDialogId(globalDialogId);
+        runtime.story().owlState().writeOwlStatueDialogId(globalDialogId);
     }
 
     public void setOwlDialogResolver(IntUnaryOperator resolver) {
-        runtime.story().writeOwlDialogResolver(Objects.requireNonNull(resolver, "Owl dialog resolver"));
+        runtime.story().owlState().writeOwlDialogResolver(Objects.requireNonNull(resolver, "Owl dialog resolver"));
     }
 
     public void setOwlInstrumentFlags(int instrument1Flags, int instrument2Flags) {
@@ -309,7 +309,9 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setOwlDefaultMusicResolver(IntUnaryOperator resolver) {
-        runtime.story().writeOwlDefaultMusicResolver(Objects.requireNonNull(resolver, "Owl default music resolver"));
+        runtime.story()
+                .owlState()
+                .writeOwlDefaultMusicResolver(Objects.requireNonNull(resolver, "Owl default music resolver"));
     }
 
     public void setOcarinaPlayback(int countdown, int songFlags, int selectedSong) {

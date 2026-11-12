@@ -130,7 +130,7 @@ final class EntityPersistentSlotReset {
         runtime.pickups().writeChestSpeedYAccumulator(slot, 0);
         runtime.pickups().writeChestInertia(slot, 0);
         runtime.pickups().writeChestItemBySlot(slot, 0);
-        runtime.story().writeOwlPrivateCountdown1(slot, 0);
+        runtime.story().owlState().writeOwlPrivateCountdown1(slot, 0);
         runtime.physicsTables().writeEntityGroundStatus(slot, 0);
         runtime.physicsTables().writeFallingTargetX(slot, 0);
         runtime.physicsTables().writeFallingTargetY(slot, 0);

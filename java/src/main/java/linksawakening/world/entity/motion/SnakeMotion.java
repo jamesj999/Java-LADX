@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -14,15 +13,15 @@ public final class SnakeMotion {
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] SPRITE_DIRECTION_OFFSET = {0x02, 0x00, -1, -1};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -44,81 +43,16 @@ public final class SnakeMotion {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown) {
-        if ((entity.type() & 0xFF) != ENTITY_SNAKE) {
-            throw new IllegalArgumentException(
-                    "Unsupported Snake motion entity type: 0x" + Integer.toHexString(entity.type()));
-        }
-        if (randomByteSupplier == null) {
-            throw new IllegalArgumentException("Snake random-byte supplier cannot be null");
-        }
-
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
-        }
-
-        int countdown = transitionCountdown & 0xFF;
-        int x = entity.x() & 0xFF;
-        int y = entity.y() & 0xFF;
-        // RenderActiveEntitySpritesPair runs before movement and state
-        // dispatch. The handler adds the persistent direction offset to the
-        // previously selected base animation variant, then writes the next
-        // base variant only after the current frame has been drawn.
-        int renderedVariant = (animationVariant[slot] + direction[slot]) & 0xFF;
-
-        // SnakeEntityHandler updates its position and applies background
-        // interaction before dispatching the state table. A collision then
-        // resets the state, transition byte, and private countdown; state 0
-        // clears the speed in the same handler pass.
-        Position moved = move(entity, x, y, backgroundCollision);
-        x = moved.x();
-        y = moved.y();
-        if (moved.collided()) {
-            state[slot] = 0;
-            countdown = 0x08;
-            privateCountdown1[slot] = 0x20;
-        }
-
-        switch (state[slot]) {
-            case 0 -> {
-                if (countdown == 0) {
-                    state[slot] = 1;
-                    int random = randomByteSupplier.getAsInt() & 0xFF;
-                    countdown = 0x30 + (random & 0x1F);
-                    setSpeed(slot, random & 0x03);
-                    // The ROM returns immediately from this branch, leaving
-                    // the previous base animation variant in place.
-                } else {
-                    clearSpeed(slot);
-                    countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY, countdown);
-                    setAnimationVariant(slot, crawlingAnimation(frameCounter));
-                }
-            }
-            case 1 -> {
-                if (countdown == 0) {
-                    countdown = 0x18;
-                    state[slot] = 2;
-                }
-                countdown = startDashIfNeeded(slot, x, y, linkEntityX, linkEntityY, countdown);
-                setAnimationVariant(slot, crawlingAnimation(frameCounter));
-            }
-            case 2 -> {
-                if (countdown == 0) {
-                    countdown = 0x20;
-                    state[slot] = 0;
-                    privateCountdown1[slot] = 0x40;
-                }
-                setAnimationVariant(slot, dashingAnimation(frameCounter));
-            }
-            default -> throw new IllegalStateException("Invalid Snake state: " + state[slot]);
-        }
-
-        RoomEntity updated = EntitySnapshots.withMotion(
-                entity, x, y, renderedVariant, entity.entityFlipAttribute(), entity.z(), -1, false);
-        return new Update(updated, countdown);
+        return new SnakeFrameStep(
+                        this,
+                        entity,
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        randomByteSupplier,
+                        backgroundCollision,
+                        transitionCountdown)
+                .run();
     }
 
     public void clear(int slot) {
@@ -142,7 +76,7 @@ public final class SnakeMotion {
         return speedY[slot];
     }
 
-    private int startDashIfNeeded(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY, int countdown) {
+    int startDashIfNeeded(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY, int countdown) {
         if (privateCountdown1[slot] != 0) {
             return countdown;
         }
@@ -170,7 +104,7 @@ public final class SnakeMotion {
         // the state-2 dash window.
     }
 
-    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
+    Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
@@ -190,7 +124,7 @@ public final class SnakeMotion {
         return new Position(nextX, nextY, collided);
     }
 
-    private void setSpeed(int slot, int directionIndex) {
+    void setSpeed(int slot, int directionIndex) {
         int index = directionIndex & 0x03;
         speedX[slot] = SPEED_X_BY_DIRECTION[index];
         speedY[slot] = SPEED_Y_BY_DIRECTION[index];
@@ -200,12 +134,12 @@ public final class SnakeMotion {
         }
     }
 
-    private void clearSpeed(int slot) {
+    void clearSpeed(int slot) {
         speedX[slot] = 0;
         speedY[slot] = 0;
     }
 
-    private void setAnimationVariant(int slot, int variant) {
+    void setAnimationVariant(int slot, int variant) {
         animationVariant[slot] = variant & 0x01;
     }
 
@@ -221,11 +155,11 @@ public final class SnakeMotion {
         return signedByte(distance) < 0 ? 2 : 3;
     }
 
-    private static int crawlingAnimation(int frameCounter) {
+    static int crawlingAnimation(int frameCounter) {
         return (frameCounter >>> 3) & 0x01;
     }
 
-    private static int dashingAnimation(int frameCounter) {
+    static int dashingAnimation(int frameCounter) {
         return (frameCounter >>> 2) & 0x01;
     }
 
@@ -249,7 +183,7 @@ public final class SnakeMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y, boolean collided) {}
+    record Position(int x, int y, boolean collided) {}
 
     public record Update(RoomEntity entity, int transitionCountdown) {}
 }

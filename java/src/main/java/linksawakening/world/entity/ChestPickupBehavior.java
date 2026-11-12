@@ -33,7 +33,7 @@ final class ChestPickupBehavior {
         if (itemType == ChestContentsTable.CHEST_TAIL_KEY) {
             for (RoomEntity candidate : runtime.slots()) {
                 if (candidate.loaded() && candidate.type() == EntityRomConstants.ENTITY_OWL_EVENT) {
-                    runtime.story().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
+                    runtime.story().owlState().writeOwlPrivateCountdown1(candidate.slot(), 0x38);
                     break;
                 }
             }

@@ -7,21 +7,15 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BowWowMotion;
-import linksawakening.world.entity.motion.FloatingItemMotion;
-import linksawakening.world.entity.motion.HeartPiecePickupMotion;
-import linksawakening.world.entity.motion.KeyDropPointMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
-import linksawakening.world.room.ChestContentsTable;
 
 /** Slot clearing, status countdowns and persistence lifecycle. */
 public final class EntitySlotLifecycle {
-    private final EntitySlotLifecycleServices runtime;
+    final EntitySlotLifecycleServices runtime;
 
     EntitySlotLifecycle(EntitySlotLifecycleServices runtime) {
         this.runtime = runtime;
@@ -70,111 +64,7 @@ public final class EntitySlotLifecycle {
     }
 
     EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
-        boolean linkInteractive = inputs.linkInteractive();
-        int linkDirection = inputs.linkDirection();
-        int linkZ = inputs.linkZ();
-        boolean swordActive = inputs.swordActive();
-        int swordX = inputs.swordX();
-        int swordWidth = inputs.swordWidth();
-        int swordY = inputs.swordY();
-        int swordHeight = inputs.swordHeight();
-        if (!linkInteractive) {
-            return null;
-        }
-        int romDirection = romDirectionForJavaDirection(linkDirection);
-
-        for (int index = runtime.slots().length - 1; index >= 0; index--) {
-            RoomEntity entity = runtime.slots()[index];
-            if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                runtime.motions()
-                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                        .ensureInitialized(
-                                entity.slot(), runtime.roomVariables().readEntityRoomId());
-            }
-            boolean swordPickup =
-                    swordActive && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
-            boolean floatingType = FloatingItemMotion.isFloatingItem(entity.type());
-            boolean floating = isRuntimeFloatingItem(entity);
-            if (!entity.loaded()
-                    || entity.status() != EntityStatus.ACTIVE
-                    || !RoomEntityPickupRules.isPickable(entity.type())
-                    || (floatingType && !floating)
-                    || (entity.type() == 0x35 && runtime.pickups().readHeartPiecePickup(entity.slot()) != null)
-                    || runtime.rewards().readPowerUpPickupCountdown(entity.slot()) != 0
-                    || runtime.bossRewards().readDropPrivateCountdown1(entity.slot()) > 0
-                    || (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER
-                            && runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()) != 0)
-                    || (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL
-                            && runtime.rewards().readToadstoolPickupSequenceActive(entity.slot()))
-                    || (isCommonDroppableType(entity.type())
-                            && runtime.bossRewards().readDroppablePrivateState3(entity.slot()) != 0)
-                    || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
-                            && (runtime.motions()
-                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateState3(entity.slot())
-                                            != 0
-                                    || runtime.motions()
-                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateCountdown1(entity.slot())
-                                            != 0))
-                    || (!swordPickup
-                            && !floating
-                            && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))
-                    || (!swordPickup && !floating && linkAirborne)
-                    || (floating
-                            && !FloatingItemMotion.linkZAllowsCollection(
-                                    runtime.physicsTables().readGroundInteractionSideScrolling(), linkZ))
-                    || !(swordPickup
-                            || (floating
-                                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
-                                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)))) {
-                continue;
-            }
-
-            int persistentClearMask = entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
-                            && runtime.pickups().readChestSwordLevel() == 0
-                    ? 0
-                    : persistentClearMask(entity);
-            if (entity.type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
-                if (runtime.roomVariables().readEntityRoomId() == 0x80 || entity.spriteVariant() != 0) {
-                    runtime.physicsTables()
-                            .writeEnemyTransitionCountdown(entity.slot(), KeyDropPointMotion.TRANSITION_COUNTDOWN);
-                } else {
-                    runtime.events()
-                            .pendingKeyRewardEvents
-                            .add(new KeyRewardEvent(entity.slot(), ChestContentsTable.CHEST_SMALL_KEY));
-                    clearEntity(entity.slot());
-                }
-            } else if (entity.type() == 0x35) {
-                runtime.pickups().writeHeartPiecePickup(entity.slot(), new HeartPiecePickupMotion());
-                runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 5);
-                runtime.presentationState().writePendingMusicTrack(0x10);
-            } else if (entity.type() == EntityRomConstants.ENTITY_HEART_CONTAINER) {
-                runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x70);
-            } else if (entity.type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP
-                    && runtime.pickups().readChestSwordLevel() == 0) {
-                runtime.startSwordPickup(entity.slot());
-            } else if (entity.type() == EntityRomConstants.ENTITY_SLEEPY_TOADSTOOL) {
-                runtime.startToadstoolPickup(entity.slot());
-            } else if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS) {
-                runtime.rewards().startInstrumentPickup(entity.slot());
-            } else if (entity.type() == 0x33 || entity.type() == 0x34) {
-                runtime.rewards().writePowerUpPickupCountdown(entity.slot(), 0x30);
-                runtime.roomVariables().writeEntityInteractionCountdown(0x30);
-                runtime.presentationState().writePendingMusicTrack(0x27);
-            } else if (requiresHeldPickupTransition(entity.type())) {
-                runtime.beginLift(entity.slot(), romDirection);
-            } else {
-                clearEntity(entity.slot());
-            }
-            return new EntityPickupEvent(
-                    entity.slot(), entity.type(), persistentClearMask, floating ? entity.spriteVariant() : -1);
-        }
-        return null;
+        return new EntitySlotLifecycleFrameStep(this, inputs).run();
     }
 
     public int clearEntity(int slot) {
@@ -309,9 +199,9 @@ public final class EntitySlotLifecycle {
         if (runtime.bombInteractions().readBombPrivateCountdown3(slot) > 0) {
             runtime.bombInteractions().postBombPrivateCountdown3(slot, -1);
         }
-        if (runtime.story().readOwlPrivateCountdown1(slot) > 0
+        if (runtime.story().owlState().readOwlPrivateCountdown1(slot) > 0
                 && runtime.backgroundMechanics().entityTimersInteractive()) {
-            runtime.story().postOwlPrivateCountdown1(slot, -1);
+            runtime.story().owlState().postOwlPrivateCountdown1(slot, -1);
         }
         runtime.motions().get(HinoxMotion.class, HinoxMotion::new).decrementPrivateCountdown1(slot);
         if (runtime.liftThrow().readLiftableRockSmashActive(slot)

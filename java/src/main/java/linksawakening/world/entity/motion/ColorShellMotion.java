@@ -28,19 +28,19 @@ public final class ColorShellMotion {
     static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xFD, 0x03};
     private static final int[] CHARGE_DIRECTION_BY_DIRECTION = {0x02, 0x03, 0x01, 0x00};
     private static final int[] PUZZLE_EXPECTED_OBJECTS = {0x5E, 0x59, 0x63};
-    private static final int[] PUZZLE_FINAL_OBJECTS = {0x5F, 0x5A, 0x64};
+    static final int[] PUZZLE_FINAL_OBJECTS = {0x5F, 0x5A, 0x64};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] positionX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] positionY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] positionZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -281,68 +281,23 @@ public final class ColorShellMotion {
     }
 
     void advanceState9(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
-        if (transitionCountdown[slot] != 0) {
-            return;
-        }
-        if (speedX[slot] != 0) {
-            moveWithBackground(entity, backgroundCollision, false, slot);
-        }
-        speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot], speedZAccumulator, slot);
-        if ((positionZ[slot] & 0x80) != 0) {
-            positionZ[slot] = 0;
-            speedZ[slot] = 0x08;
-            speedX[slot] = arithmeticShiftRight(speedX[slot]);
-            state[slot] = 0x0A;
-        }
+        ColorShellRecovery.advanceState9(this, backgroundCollision, slot, entity);
     }
 
     void advanceStateA(RoomEntityBackgroundCollision backgroundCollision, int slot, RoomEntity entity) {
-        moveWithBackground(entity, backgroundCollision, false, slot);
-        speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-        positionZ[slot] = addSpeedToPosition(positionZ[slot], speedZ[slot], speedZAccumulator, slot);
-        if ((positionZ[slot] & 0x80) != 0) {
-            transitionCountdown[slot] = 0x20;
-            state[slot]++;
-        }
+        ColorShellRecovery.advanceStateA(this, backgroundCollision, slot, entity);
     }
 
     void advanceStateB(int slot) {
-        if (transitionCountdown[slot] != 0) {
-            return;
-        }
-        transitionCountdown[slot] = 0;
-        speedZ[slot] = 0;
-        speedX[slot] = 0;
-        state[slot] = 1;
-        physicsFlags[slot] &= 0x7F;
+        ColorShellRecovery.advanceStateB(this, slot);
     }
 
     void advanceStateC(RoomEntity entity, ColorShellWorld world, List<RoomEntity> allEntities, int slot) {
-        for (RoomEntity other : allEntities) {
-            if (other == null
-                    || !isColorShellType(other.type())
-                    || !other.loaded()
-                    || other.status().value() == 0
-                    || state[other.slot()] >= 0x0C) {
-                continue;
-            }
-            return;
-        }
-        int color = entity.type() - ENTITY_COLOR_SHELL_RED;
-        transitionCountdown[slot] = 0x18;
-        state[slot] = 0x0D;
-        world.writeObject(entity, 0x67 + color);
+        ColorShellRecovery.advanceStateC(this, entity, world, allEntities, slot);
     }
 
     boolean advanceStateD(RoomEntity entity, ColorShellWorld world, int slot) {
-        if (transitionCountdown[slot] != 0) {
-            return false;
-        }
-        int color = entity.type() - ENTITY_COLOR_SHELL_RED;
-        world.writeObject(entity, PUZZLE_FINAL_OBJECTS[color]);
-        world.spawnPoof(positionX[slot], (positionY[slot] - positionZ[slot]) & 0xFF);
-        return true;
+        return ColorShellRecovery.advanceStateD(this, entity, world, slot);
     }
 
     private void animateJumpVariant(int frame, int slot) {
@@ -395,7 +350,7 @@ public final class ColorShellMotion {
         return Math.max(minimum, Math.min(maximum, value & 0xFF));
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -410,7 +365,7 @@ public final class ColorShellMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static int arithmeticShiftRight(int value) {
+    static int arithmeticShiftRight(int value) {
         return (signedByte(value) >> 1) & 0xFF;
     }
 

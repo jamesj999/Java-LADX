@@ -2,21 +2,19 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
-import linksawakening.world.entity.RoomEntityBackgroundCollision;
-import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.LikeLikeEvent;
 
 /** Bank-$06 Like LikeEntityHandler state and its shared Gibdo walk. */
 public final class LikeLikeMotion {
-    private static final int INVENTORY_SHIELD = 0x04;
-    private static final int LINK_MOTION_DEFAULT = 0x00;
-    private static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
+    static final int INVENTORY_SHIELD = 0x04;
+    static final int LINK_MOTION_DEFAULT = 0x00;
+    static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
 
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final GibdoMotion walkMotion = new GibdoMotion();
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final GibdoMotion walkMotion = new GibdoMotion();
 
     public record Update(RoomEntity entity, int slowTransitionCountdown, LikeLikeEvent event, int spriteVariant) {}
 
@@ -37,103 +35,7 @@ public final class LikeLikeMotion {
     }
 
     public Update advance(LikeLikeFrame inputs) {
-        RoomEntity entity = inputs.entity();
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        int linkZ = inputs.linkZ();
-        int linkMotionState = inputs.linkMotionState();
-        boolean actionButtonsHeld = inputs.actionButtonsHeld();
-        int linkItemA = inputs.linkItemA();
-        int linkItemB = inputs.linkItemB();
-        int shieldLevel = inputs.shieldLevel();
-        int slowTransitionCountdown = inputs.slowTransitionCountdown();
-        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
-        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        int renderedVariant = walkMotion.spriteVariant(slot);
-
-        if (privateState3[slot] == 0) {
-            if (slowTransitionCountdown == 0
-                    && linkZ == 0
-                    && linkMotionState < LINK_MOTION_NON_INTERACTIVE
-                    && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, slot)
-                    && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                privateState3[slot] = 1;
-                inertia[slot] = 0;
-            }
-            return new Update(
-                    walkMotion.advance(entity, randomByteSupplier, backgroundCollision),
-                    slowTransitionCountdown,
-                    null,
-                    -1);
-        }
-
-        if (actionButtonsHeld) {
-            inertia[slot] = (inertia[slot] + 1) & 0xFF;
-            if (inertia[slot] >= 0x08) {
-                privateState3[slot] = 0;
-                slowTransitionCountdown = 0x15;
-                return new Update(
-                        entity,
-                        slowTransitionCountdown,
-                        new LikeLikeEvent(slot, LikeLikeEvent.Kind.RELEASE, entity.x(), entity.y(), -1, 0),
-                        renderedVariant);
-            }
-        }
-
-        int stolenInventorySlot = -1;
-        int stolenShieldLevel = 0;
-        if (privateState1[slot] == 0) {
-            if (linkItemB == INVENTORY_SHIELD) {
-                if (shieldLevel < 2) {
-                    privateState1[slot] = shieldLevel & 0xFF;
-                    stolenInventorySlot = 0;
-                    stolenShieldLevel = shieldLevel & 0xFF;
-                }
-            } else if (linkItemA == INVENTORY_SHIELD && shieldLevel < 2) {
-                privateState1[slot] = shieldLevel & 0xFF;
-                stolenInventorySlot = 1;
-                stolenShieldLevel = shieldLevel & 0xFF;
-            }
-        }
-
-        // $7E27-$7E55 hides Link and removes the shield before checking his
-        // motion state. Only the position writes and animation calls are gated.
-        if (linkMotionState != LINK_MOTION_DEFAULT) {
-            return new Update(
-                    entity,
-                    slowTransitionCountdown,
-                    new LikeLikeEvent(
-                            slot,
-                            LikeLikeEvent.Kind.CAPTURE,
-                            entity.x(),
-                            entity.y(),
-                            stolenInventorySlot,
-                            stolenShieldLevel,
-                            false),
-                    renderedVariant);
-        }
-
-        // Both $7F05 calls use the same privateState4 counter as walking.
-        // The handler rendered before these writes, so present the old frame.
-        walkMotion.advanceAnimation(slot);
-        walkMotion.advanceAnimation(slot);
-
-        return new Update(
-                entity,
-                slowTransitionCountdown,
-                new LikeLikeEvent(
-                        slot,
-                        LikeLikeEvent.Kind.CAPTURE,
-                        entity.x(),
-                        entity.y(),
-                        stolenInventorySlot,
-                        stolenShieldLevel),
-                renderedVariant);
+        return new LikeLikeFrameStep(this, inputs).run();
     }
 
     public int state(int slot) {

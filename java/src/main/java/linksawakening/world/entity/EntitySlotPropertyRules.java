@@ -95,110 +95,49 @@ final class EntitySlotPropertyRules {
         if (isGhiniType(runtime.slots()[slot].type())) {
             return EntityRomConstants.GHINI_OPTIONS1;
         }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOMB) {
-            return EntityRomConstants.BOMB_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOMBER) {
-            return EntityRomConstants.BOMBER_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MAD_BOMBER) {
-            return EntityRomConstants.MAD_BOMBER_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE) {
-            return EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
-            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
+        return switch (runtime.slots()[slot].type()) {
+            case EntityRomConstants.ENTITY_BOMB -> EntityRomConstants.BOMB_OPTIONS1;
+            case EntityRomConstants.ENTITY_BOMBER -> EntityRomConstants.BOMBER_OPTIONS1;
+            case EntityRomConstants.ENTITY_MAD_BOMBER -> EntityRomConstants.MAD_BOMBER_OPTIONS1;
+            case EntityRomConstants.ENTITY_WIZROBE_PROJECTILE -> EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
+            case EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                     | EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
-            return EntityRomConstants.KEY_DROP_POINT_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
-            return EntityRomConstants.ARMOS_KNIGHT_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_HINOX) {
-            return EntityRomConstants.HINOX_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
-            return 0x84;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
-            return 0x40;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
-            return EntityRomConstants.CHEST_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_FISH) {
-            return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CROW) {
-            return EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CUCCO) {
-            return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER) {
-            return GopongaFlowerMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER) {
-            return GiantGopongaMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_POKEY) {
-            return PokeyMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ZORA) {
-            return ZoraMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ZOMBIE) {
-            return ZombieMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
-            return BuzzBlobMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SAND_CRAB) {
-            return SandCrabMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_URCHIN) {
-            return UrchinMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_WITCH_RAT) {
-            return WitchRatMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE) {
-            return GopongaProjectileMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
-            return BooBuddyMotion.OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            return EntityRomConstants.FAIRY_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
-            // The static table starts at splash-only. The handler writes the
-            // sword-clink-off bit on its first normal active pass.
-            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_POLS_VOICE) {
-            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
-            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MOLDORM) {
-            return MoldormMotion.INITIAL_OPTIONS1;
-        }
-        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MIMIC) {
-            return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
-        }
-        if (isBombiteType(runtime.slots()[slot].type())) {
+            case EntityRomConstants.ENTITY_KEY_DROP_POINT -> EntityRomConstants.KEY_DROP_POINT_OPTIONS1;
+            case EntityRomConstants.ENTITY_ARMOS_KNIGHT -> EntityRomConstants.ARMOS_KNIGHT_OPTIONS1;
+            case EntityRomConstants.ENTITY_HINOX -> EntityRomConstants.HINOX_OPTIONS1;
+            case EntityRomConstants.ENTITY_ROLLING_BONES -> 0x84;
+            case EntityRomConstants.ENTITY_ROLLING_BONES_BAR -> 0x40;
+            case EntityRomConstants.ENTITY_CHEST_WITH_ITEM -> EntityRomConstants.CHEST_OPTIONS1;
+            case EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL -> EntityRomConstants
+                    .SECRET_SEASHELL_HIDDEN_OPTIONS1;
+            case EntityRomConstants.ENTITY_FISH -> EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+            case EntityRomConstants.ENTITY_CROW -> EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
+            case EntityRomConstants.ENTITY_CUCCO -> EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
+            case EntityRomConstants.ENTITY_GOPONGA_FLOWER -> GopongaFlowerMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER -> GiantGopongaMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_POKEY -> PokeyMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_ZORA -> ZoraMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_ZOMBIE -> ZombieMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_BUZZ_BLOB -> BuzzBlobMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_SAND_CRAB -> SandCrabMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_URCHIN -> UrchinMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_WITCH_RAT -> WitchRatMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE -> GopongaProjectileMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_BOO_BUDDY -> BooBuddyMotion.OPTIONS1;
+            case EntityRomConstants.ENTITY_DROPPABLE_FAIRY -> EntityRomConstants.FAIRY_OPTIONS1;
+            case EntityRomConstants.ENTITY_POLS_VOICE -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
+            case EntityRomConstants.ENTITY_MINI_MOLDORM -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
+            case EntityRomConstants.ENTITY_MOLDORM -> MoldormMotion.INITIAL_OPTIONS1;
+            case EntityRomConstants.ENTITY_MIMIC -> EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
+            default -> fallbackOptions(runtime.slots()[slot].type());
+        };
+    }
+
+    private static int fallbackOptions(int type) {
+        if (isBombiteType(type)) {
             return EntityRomConstants.BOMBITE_OPTIONS1;
         }
-        return runtime.slots()[slot].type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
-                        || runtime.slots()[slot].type() == EntityRomConstants.ENTITY_LIKE_LIKE
+        return type == EntityRomConstants.ENTITY_STALFOS_EVASIVE || type == EntityRomConstants.ENTITY_LIKE_LIKE
                 ? EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                 : 0;
     }

@@ -6,7 +6,6 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import linksawakening.world.entity.RoomEntityRuntime.ProjectileObjectCollision;
-import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BoomerangMotion;
 
@@ -158,90 +157,6 @@ final class PlayerProjectileDamage {
 
     static void applyPlayerProjectileDamage(
             EntityProjectileController owner, RoomEntity target, int damageType, int speedX, int speedY) {
-        var runtime = owner.runtime;
-        int targetSlot = target.slot();
-        runtime.motions()
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .configureFromSpeed(targetSlot, speedX, speedY);
-
-        RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables() == null
-                ? null
-                : runtime.enemyCombatTables()
-                        .resolveAttackDamage(
-                                target.type(), runtime.combatTables().readEnemyHealthGroup(target.slot()), damageType);
-        int rawDamage =
-                damageResult == null ? RoomEntityCombatRules.basicSwordDamage(target.type()) : damageResult.rawValue();
-        if (rawDamage == 0) {
-            return;
-        }
-
-        int enemyDamage = rawDamage < 0xF0 ? rawDamage : 0;
-        int specialAction = rawDamage >= 0xF0 ? rawDamage : -1;
-        EntityCombatEvent.SoundChannel secondaryChannel = EntityCombatEvent.SoundChannel.NONE;
-        int secondarySoundId = -1;
-
-        if (rawDamage == 0xFE) {
-            runtime.physicsTables().writeEnemyTransitionCountdown(targetSlot, 0x60);
-            runtime.combatTables().writeEnemyStunnedCountdown(targetSlot, 0);
-            runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0);
-            runtime.combatTables().writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-            runtime.physicsTables()
-                    .writeEnemyPhysicsFlags(
-                            targetSlot, (runtime.physicsTables().readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
-            runtime.motions()
-                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                    .clear(targetSlot);
-            runtime.slots()[targetSlot] = withStatus(target, EntityStatus.BURNING);
-            secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
-            secondarySoundId = 0x12;
-        } else if (rawDamage == 0xFF) {
-            runtime.physicsTables().writeEnemyTransitionCountdown(targetSlot, 0);
-            runtime.combatTables().writeEnemyStunnedCountdown(targetSlot, 0xFF);
-            runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0);
-            runtime.combatTables().writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-            runtime.motions()
-                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                    .clear(targetSlot);
-            runtime.slots()[targetSlot] = withStatus(target, EntityStatus.STUNNED);
-        } else if (rawDamage == 0xFD) {
-            // The fairy-conversion branch is entity-specific in the ROM. The
-            // generic table result is still surfaced so the pending special
-            // action is not silently changed into numeric damage.
-            runtime.motions()
-                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                    .clear(targetSlot);
-        } else {
-            runtime.combatTables()
-                    .writeEnemyHealth(
-                            targetSlot, Math.max(0, runtime.combatTables().readEnemyHealth(targetSlot) - enemyDamage));
-            if (runtime.combatTables().readEnemyHealth(targetSlot) == 0) {
-                runtime.combatTables().writeDyingCountdown(targetSlot, 0x2F);
-                runtime.combatTables().writePowerRecoilDeath(targetSlot, false);
-                runtime.slots()[targetSlot] = withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false);
-            } else if (isZolGelType(target.type())) {
-                runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
-                if (target.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers() != null) {
-                    runtime.slots()[targetSlot] =
-                            withDefinition(target, runtime.spriteHandlers().forZolSlimeEye(), target.spriteVariant());
-                }
-            }
-            runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0x18);
-            runtime.combatTables().writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-        }
-
-        runtime.events()
-                .pendingEntityEvents
-                .add(new EntityCombatEvent(
-                        targetSlot,
-                        target.type(),
-                        0,
-                        false,
-                        enemyDamage,
-                        specialAction,
-                        EntityCombatEvent.SoundChannel.JINGLE,
-                        0x03,
-                        secondaryChannel,
-                        secondarySoundId,
-                        null));
+        new PlayerProjectileDamageFrameStep(owner, target, damageType, speedX, speedY).run();
     }
 }

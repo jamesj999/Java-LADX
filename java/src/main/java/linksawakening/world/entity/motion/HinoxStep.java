@@ -44,27 +44,7 @@ final class HinoxStep {
         if (!applyFlashBombTransition()) return completedResult;
         if (!advanceBehavior()) return completedResult;
 
-        return owner.update(new HinoxResult(
-                entity,
-                x,
-                y,
-                transition,
-                spriteVariant,
-                linkMotionBlockedAtEntry,
-                linkX,
-                linkY,
-                0,
-                linkSpeedX,
-                linkSpeedY,
-                linkVelocityZ,
-                airborne,
-                linkDamage,
-                jingle,
-                wave,
-                dust,
-                false,
-                false,
-                bomb));
+        return result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, 0, false, false);
     }
 
     private HinoxMotion.Update completedResult;
@@ -167,27 +147,7 @@ final class HinoxStep {
             owner.state[slot] = STATE_INITIAL;
             transition = 0;
             {
-                completedResult = owner.update(new HinoxResult(
-                        entity,
-                        x,
-                        y,
-                        transition,
-                        spriteVariant,
-                        linkMotionBlockedAtEntry,
-                        linkX,
-                        linkY,
-                        linkZ,
-                        linkSpeedX,
-                        linkSpeedY,
-                        linkVelocityZ,
-                        airborne,
-                        linkDamage,
-                        jingle,
-                        wave,
-                        dust,
-                        false,
-                        false,
-                        bomb));
+                completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
                 return false;
             }
         } else if (transition == 0x20) {
@@ -201,27 +161,8 @@ final class HinoxStep {
             linkY = y;
             owner.privateCountdown1[slot] = 0x50;
             {
-                completedResult = owner.update(new HinoxResult(
-                        entity,
-                        x,
-                        y,
-                        transition,
-                        entity.spriteVariant(),
-                        linkMotionBlockedAtEntry,
-                        linkX,
-                        linkY,
-                        linkZ,
-                        linkSpeedX,
-                        linkSpeedY,
-                        linkVelocityZ,
-                        airborne,
-                        linkDamage,
-                        jingle,
-                        wave,
-                        dust,
-                        true,
-                        false,
-                        bomb));
+                completedResult =
+                        result(entity.spriteVariant(), linkMotionBlockedAtEntry, linkX, linkY, linkZ, true, false);
                 return false;
             }
         }
@@ -302,27 +243,7 @@ final class HinoxStep {
             owner.state[slot] = STATE_BOMB;
             transition = 0x20;
             {
-                completedResult = owner.update(new HinoxResult(
-                        entity,
-                        x,
-                        y,
-                        transition,
-                        spriteVariant,
-                        linkMotionBlockedAtEntry,
-                        linkX,
-                        linkY,
-                        linkZ,
-                        linkSpeedX,
-                        linkSpeedY,
-                        linkVelocityZ,
-                        airborne,
-                        linkDamage,
-                        jingle,
-                        wave,
-                        dust,
-                        false,
-                        false,
-                        bomb));
+                completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
                 return false;
             }
         }
@@ -376,28 +297,34 @@ final class HinoxStep {
         }
         spriteVariant = GRAB_BODY_VARIANT[Math.min(transition >>> 3, GRAB_BODY_VARIANT.length - 1)];
         {
-            completedResult = owner.update(new HinoxResult(
-                    entity,
-                    x,
-                    y,
-                    transition,
-                    spriteVariant,
-                    blocked,
-                    heldX,
-                    heldY,
-                    heldZ,
-                    linkSpeedX,
-                    linkSpeedY,
-                    linkVelocityZ,
-                    airborne,
-                    linkDamage,
-                    jingle,
-                    wave,
-                    dust,
-                    heldPositionWritten,
-                    applyHeldLinkPose,
-                    bomb));
+            completedResult =
+                    result(spriteVariant, blocked, heldX, heldY, heldZ, heldPositionWritten, applyHeldLinkPose);
             return false;
         }
+    }
+
+    private HinoxMotion.Update result(
+            int variant, boolean blocked, int heldX, int heldY, int heldZ, boolean heldWritten, boolean heldPose) {
+        return owner.update(new HinoxResult(
+                entity,
+                x,
+                y,
+                transition,
+                variant,
+                blocked,
+                heldX,
+                heldY,
+                heldZ,
+                linkSpeedX,
+                linkSpeedY,
+                linkVelocityZ,
+                airborne,
+                linkDamage,
+                jingle,
+                wave,
+                dust,
+                heldWritten,
+                heldPose,
+                bomb));
     }
 }

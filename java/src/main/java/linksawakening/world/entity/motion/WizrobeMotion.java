@@ -2,7 +2,6 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 WizrobeEntityHandler state machine and launch timing. */
@@ -41,90 +40,15 @@ public final class WizrobeMotion {
             IntSupplier randomByteSupplier,
             int transitionCountdown,
             int currentPhysicsFlags) {
-        if ((entity.type() & 0xFF) != ENTITY_WIZROBE) {
-            throw new IllegalArgumentException(
-                    "Unsupported Wizrobe motion entity type: 0x" + Integer.toHexString(entity.type()));
-        }
-        if (randomByteSupplier == null) {
-            throw new IllegalArgumentException("Wizrobe random-byte supplier cannot be null");
-        }
-
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot, entity.spriteVariant());
-        }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
-        }
-
-        // RenderActiveEntitySpritesPair runs before the state dispatch. Keep
-        // the state-table write separate so the snapshot remains the pixels
-        // selected for this handler pass while the next pass sees the newly
-        // written variant.
-        int renderedVariant = currentSpriteVariant[slot];
-        int nextVariant = renderedVariant;
-        int countdown = transitionCountdown & 0xFF;
-        // State 0..2 explicitly select projectile-noclip physics. State 3
-        // writes normal physics on its >=2 countdown path, but its $01/$00
-        // branches return without touching the table; preserve the previous
-        // value for those two frames.
-        int physicsFlags = (state[slot] & 0xFF) == 3 && privateCountdown1[slot] >= 0x02
-                ? 0x02
-                : ((state[slot] & 0xFF) == 3 ? currentPhysicsFlags & 0xFF : 0x42);
-        ProjectileSpawn projectileSpawn = null;
-
-        switch (state[slot] & 0xFF) {
-            case 0 -> {
-                if (countdown == 0) {
-                    state[slot] = 1;
-                    privateState1[slot] = 0x01;
-                    privateCountdown1[slot] = 0x20;
-                }
-                nextVariant = 0xFF;
-            }
-            case 1 -> {
-                if (privateCountdown1[slot] != 0) {
-                    nextVariant = (privateState1[slot] & 0x02) != 0 ? 0 : 0xFF;
-                } else {
-                    state[slot] = (state[slot] + privateState1[slot]) & 0xFF;
-                    countdown = 0x30;
-                }
-            }
-            case 2 -> {
-                nextVariant = 0;
-                if (privateCountdown1[slot] < 0x02) {
-                    if (privateCountdown1[slot] == 0x01) {
-                        state[slot] = (state[slot] + privateState1[slot]) & 0xFF;
-                        if (state[slot] == 0x01) {
-                            privateCountdown1[slot] = 0x20;
-                        }
-                    } else {
-                        privateCountdown1[slot] = 0x18;
-                    }
-                }
-            }
-            case 3 -> {
-                if (privateCountdown1[slot] == 0x28) {
-                    projectileSpawn = projectileSpawn(entity, direction[slot]);
-                    physicsFlags = 0x02;
-                } else if (privateCountdown1[slot] < 0x02) {
-                    if (privateCountdown1[slot] == 0x01) {
-                        privateState1[slot] = 0xFF;
-                        state[slot] = (state[slot] - 1) & 0xFF;
-                    } else {
-                        privateCountdown1[slot] = 0x40;
-                        direction[slot] = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
-                        nextVariant = direction[slot] + 1;
-                    }
-                }
-            }
-            default -> throw new IllegalStateException("Invalid Wizrobe state: " + state[slot]);
-        }
-
-        currentSpriteVariant[slot] = normalizeVariant(nextVariant);
-        RoomEntity updated = EntitySnapshots.withMotion(
-                entity, entity.x(), entity.y(), renderedVariant, entity.entityFlipAttribute(), entity.z(), -1, false);
-        return new Update(updated, countdown, physicsFlags, projectileSpawn);
+        return new WizrobeFrameStep(
+                        this,
+                        entity,
+                        linkEntityX,
+                        linkEntityY,
+                        randomByteSupplier,
+                        transitionCountdown,
+                        currentPhysicsFlags)
+                .run();
     }
 
     public void clear(int slot) {
@@ -152,7 +76,7 @@ public final class WizrobeMotion {
         return currentSpriteVariant[slot];
     }
 
-    private ProjectileSpawn projectileSpawn(RoomEntity source, int projectileDirection) {
+    ProjectileSpawn projectileSpawn(RoomEntity source, int projectileDirection) {
         int directionIndex = projectileDirection & 0x03;
         return new ProjectileSpawn(
                 (source.x() + signedByte(PROJECTILE_OFFSET_X[directionIndex])) & 0xFF,
@@ -160,7 +84,7 @@ public final class WizrobeMotion {
                 directionIndex);
     }
 
-    private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
+    static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte(linkX - entityX);
         int distanceY = signedByte(linkY - entityY);
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -177,7 +101,7 @@ public final class WizrobeMotion {
         currentSpriteVariant[slot] = 0;
     }
 
-    private static int normalizeVariant(int variant) {
+    static int normalizeVariant(int variant) {
         return variant == 0xFF ? -1 : variant & 0xFF;
     }
 

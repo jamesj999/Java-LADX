@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -15,7 +14,7 @@ public final class WitchRatMotion {
     public static final int OPTIONS1 = 0x02;
 
     // Data_015_78D6.
-    private static final int[] SPEEDS = {0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8};
+    static final int[] SPEEDS = {0x02, 0x08, 0x0C, 0x08, 0xFE, 0xF8, 0xF4, 0xF8};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -24,8 +23,8 @@ public final class WitchRatMotion {
     final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] storedSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] storedSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
@@ -51,89 +50,9 @@ public final class WitchRatMotion {
             int transitionCountdown,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction) {
-        checkType(entity);
-        validateByte(frameCounter, "Witch Rat frame counter");
-        validateByte(transitionCountdown, "Witch Rat transition countdown");
-        Objects.requireNonNull(randomByteSupplier, "Witch Rat random-byte supplier");
-
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-
-        int countdown = transitionCountdown & 0xFF;
-        int renderedVariant = storedSpriteVariant[slot] + (direction[slot] == 0 ? 0x02 : 0x00);
-        int z = addSpeedToPosition(entity.z(), speedZ[slot], speedZAccumulator, slot);
-        speedZ[slot] = (speedZ[slot] - 2) & 0xFF;
-        boolean wrappedZ = (z & 0x80) != 0;
-        if (wrappedZ) {
-            z = 0;
-            speedZ[slot] = 0;
-        }
-
-        int collisionFlags = 0;
-        boolean appliesBackgroundInteraction = false;
-        switch (state[slot]) {
-            case 0 -> {
-                if (countdown == 0) {
-                    int index = randomByteSupplier.getAsInt() & 0x07;
-                    speedX[slot] = SPEEDS[index];
-                    direction[slot] = index & 0x04;
-                    int yIndex = randomByteSupplier.getAsInt() & 0x07;
-                    speedY[slot] = SPEEDS[yIndex];
-                    countdown = (randomByteSupplier.getAsInt() & 0x1F) + 0x30;
-                    state[slot] = 1;
-                } else {
-                    storedSpriteVariant[slot] = 0x01;
-                    if ((frameCounter & 0x1F) == 0 && (randomByteSupplier.getAsInt() & 0x01) == 0) {
-                        direction[slot] ^= 0x04;
-                    }
-                }
-            }
-            case 1 -> {
-                PositionAndCollision moved = moveWithBackground(entity, backgroundInteraction, slot);
-                entity = withPosition(entity, moved.x(), moved.y(), z, renderedVariant);
-                collisionFlags = moved.collisionFlags();
-                appliesBackgroundInteraction = true;
-                if (wrappedZ) {
-                    if (countdown == 0) {
-                        countdown = 0x48;
-                        state[slot] = 0;
-                        // The ROM returns before its final SetEntitySpriteVariant.
-                        return new Update(
-                                entity,
-                                state[slot],
-                                countdown,
-                                direction[slot],
-                                speedX[slot] & 0xFF,
-                                speedY[slot] & 0xFF,
-                                speedZ[slot] & 0xFF,
-                                collisionFlags,
-                                appliesBackgroundInteraction);
-                    }
-                    speedZ[slot] = 0x08;
-                    z = (z + 1) & 0xFF;
-                    entity = withPosition(entity, moved.x(), moved.y(), z, renderedVariant);
-                }
-                storedSpriteVariant[slot] = 0x00;
-            }
-            default -> throw new IllegalStateException("Invalid Witch Rat state: " + state[slot]);
-        }
-
-        // State 0 did not move in X/Y; state 1 already replaced those
-        // coordinates with the background-probed values. Both paths still
-        // need the top-of-handler Z update and the source-rendered variant.
-        entity = withPosition(entity, entity.x(), entity.y(), z, renderedVariant);
-        return new Update(
-                entity,
-                state[slot],
-                countdown,
-                direction[slot],
-                speedX[slot] & 0xFF,
-                speedY[slot] & 0xFF,
-                speedZ[slot] & 0xFF,
-                collisionFlags,
-                appliesBackgroundInteraction);
+        return new WitchRatFrameStep(
+                        this, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction)
+                .run();
     }
 
     public int state(int slot) {
@@ -167,8 +86,7 @@ public final class WitchRatMotion {
         initialized[slot] = false;
     }
 
-    private PositionAndCollision moveWithBackground(
-            RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+    PositionAndCollision moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int collisionFlags = 0;
@@ -207,7 +125,7 @@ public final class WitchRatMotion {
         storedSpriteVariant[slot] = 0;
     }
 
-    private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z, int variant) {
+    static RoomEntity withPosition(RoomEntity entity, int x, int y, int z, int variant) {
         return EntitySnapshots.withMotion(
                 entity,
                 x & 0xFF,
@@ -219,7 +137,7 @@ public final class WitchRatMotion {
                 entity.powerRecoilDeath());
     }
 
-    private static void checkType(RoomEntity entity) {
+    static void checkType(RoomEntity entity) {
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Witch Rat entity");
         }
@@ -237,7 +155,7 @@ public final class WitchRatMotion {
         }
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -256,5 +174,5 @@ public final class WitchRatMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record PositionAndCollision(int x, int y, int collisionFlags) {}
+    record PositionAndCollision(int x, int y, int collisionFlags) {}
 }

@@ -312,40 +312,11 @@ public final class HookshotChainMotion {
     }
 
     static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
-        int distanceX = signedByte(linkX - entityX);
-        int distanceY = signedByte(linkY - entityY + entityZ);
-        int absoluteX = Math.abs(distanceX);
-        int absoluteY = Math.abs(distanceY);
-        boolean swapped = absoluteX < absoluteY;
-        int smaller = Math.min(absoluteX, absoluteY);
-        int larger = Math.max(absoluteX, absoluteY);
-        int result = romDivide(length, smaller, larger);
-        int x = swapped ? result : length;
-        int y = swapped ? length : result;
-        if (distanceX < 0) {
-            x = -x;
-        }
-        if (distanceY < 0) {
-            y = -y;
-        }
-        return new Vector(x & 0xFF, y & 0xFF);
+        return HookshotChainGeometry.vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
     }
 
-    private static int romDivide(int length, int smallerDistance, int largerDistance) {
-        if (length == 0 || largerDistance == 0) {
-            return largerDistance == 0 ? length : 0;
-        }
-        int result = 0;
-        int remainder = 0;
-        for (int count = 0; count < length; count++) {
-            int sum = remainder + smallerDistance;
-            if (sum >= largerDistance) {
-                sum -= largerDistance;
-                result++;
-            }
-            remainder = sum & 0xFF;
-        }
-        return result;
+    static int romDivide(int length, int smallerDistance, int largerDistance) {
+        return HookshotChainGeometry.romDivide(length, smallerDistance, largerDistance);
     }
 
     static SpeedStep addSpeed(int position, int speed, int accumulator) {
@@ -379,7 +350,7 @@ public final class HookshotChainMotion {
         return HookshotChainBehavior.copy(inputs);
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
