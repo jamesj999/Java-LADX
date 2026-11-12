@@ -331,10 +331,6 @@ final class EntityRuntimeState {
 
     final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];
 
-    final boolean[] rollingBonesDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] moldormDestructionTailState = new int[EntityRoomLoader.MAX_ENTITIES];
-
     final int[] enemyStunnedCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 
     boolean gelClingingToLink;
@@ -347,14 +343,6 @@ final class EntityRuntimeState {
 
     final int[] enemyHealthGroup = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] enemyHealth = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] ironMaskPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] ironMasksMaskSourceHookshotSlot = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] rollingBonesSwordHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] moblinKingLethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
 
     final int[] enemyFlashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
 

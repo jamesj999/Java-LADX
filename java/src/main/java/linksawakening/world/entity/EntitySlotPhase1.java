@@ -13,8 +13,8 @@ final class EntitySlotPhase1 {
         if (state.runtime.liftThrow.advanceStatueRubble(state.entity, state.sideViewPotInteractive)) return false;
         state.moldormIntroOpenedThisFrame = false;
         state.rollingBonesHitThisFrame = state.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES
-                && state.runtime.entityState.rollingBonesSwordHitFrame[state.index] == state.frame + 1;
-        state.runtime.entityState.rollingBonesSwordHitFrame[state.index] = 0;
+                && state.runtime.entityState.rollingBonesMotion.swordHitFrame(state.index) == state.frame + 1;
+        state.runtime.entityState.rollingBonesMotion.setSwordHitFrame(state.index, 0);
         if (!state.entity.loaded()) {
             return false;
         }

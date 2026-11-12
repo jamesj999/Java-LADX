@@ -545,7 +545,7 @@ public final class EntityProjectileController {
                 continue;
             }
             if (target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                    && runtime.entityState.ironMaskPrivateState2[targetSlot] == 0
+                    && runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(targetSlot) == 0
                     && (runtime.entityState.roamingEnemyMotion.direction(targetSlot) ^ 0x01)
                             == runtime.entityState.magicRodFireballMotion.direction(sourceSlot)) {
                 runtime.entityState.magicRodFireballMotion.setCollision(sourceSlot, true);
@@ -671,7 +671,7 @@ public final class EntityProjectileController {
 
     boolean ironMaskBlocksProjectile(RoomEntity target, int direction) {
         return target.type() == EntityRomConstants.ENTITY_IRON_MASK
-                && runtime.entityState.ironMaskPrivateState2[target.slot()] == 0
+                && runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(target.slot()) == 0
                 && (runtime.entityState.roamingEnemyMotion.direction(target.slot()) ^ 1) == direction;
     }
 
@@ -740,11 +740,11 @@ public final class EntityProjectileController {
             if (target.type() != EntityRomConstants.ENTITY_IRON_MASK
                     || ((runtime.entityState.roamingEnemyMotion.direction(targetSlot) ^ 0x01)
                             != hookshotState.direction())
-                    || runtime.entityState.ironMaskPrivateState2[targetSlot] != 0) {
+                    || runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(targetSlot) != 0) {
                 continue;
             }
 
-            runtime.entityState.ironMaskPrivateState2[targetSlot] = 1;
+            runtime.entityState.unmaskedIronMaskMotion.setMaskRemovalState(targetSlot, 1);
             runtime.entityState.unmaskedIronMaskMotion.initializeFromMasked(
                     targetSlot,
                     runtime.entityState.roamingEnemyMotion.direction(targetSlot),

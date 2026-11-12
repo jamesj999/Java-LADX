@@ -6,6 +6,26 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Active state machines from bank $06's Rolling Bones and rolling-bar handlers. */
 public final class RollingBonesMotion {
+    private final boolean[] deathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    public boolean deathInitialized(int slot) {
+        return deathInitialized[slot];
+    }
+
+    public void setDeathInitialized(int slot, boolean value) {
+        deathInitialized[slot] = value;
+    }
+
+    private final int[] swordHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int swordHitFrame(int slot) {
+        return swordHitFrame[slot];
+    }
+
+    public void setSwordHitFrame(int slot, int value) {
+        swordHitFrame[slot] = value;
+    }
+
     static final int ENTITY_BOSS = 0x81;
     static final int ENTITY_BAR = 0x82;
 

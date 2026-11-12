@@ -65,7 +65,7 @@ public final class EntityPlayerSpawns {
         // mask handler does not consume that byte, but retaining the value
         // keeps the dynamic entity's provenance ROM-shaped for later pickup
         // and item-interaction work.
-        runtime.entityState.ironMasksMaskSourceHookshotSlot[freeSlot] = (sourceHookshotSlot + 1) & 0xFF;
+        runtime.entityState.unmaskedIronMaskMotion.setMaskSourceHookshotSlot(freeSlot, (sourceHookshotSlot + 1) & 0xFF);
     }
 
     int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {

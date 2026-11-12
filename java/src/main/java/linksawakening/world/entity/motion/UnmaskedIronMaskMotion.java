@@ -8,6 +8,26 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** Bank-$03 movement used after an Iron Mask's mask has been removed. */
 public final class UnmaskedIronMaskMotion {
+    private final int[] maskSourceHookshotSlot = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int maskSourceHookshotSlot(int slot) {
+        return maskSourceHookshotSlot[slot];
+    }
+
+    public void setMaskSourceHookshotSlot(int slot, int value) {
+        maskSourceHookshotSlot[slot] = value;
+    }
+
+    private final int[] maskRemovalState = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int maskRemovalState(int slot) {
+        return maskRemovalState[slot];
+    }
+
+    public void setMaskRemovalState(int slot, int value) {
+        maskRemovalState[slot] = value;
+    }
+
     private static final int[] SPEED_X_BY_DIRECTION = {0x0C, 0xF4, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF4, 0x0C};
 

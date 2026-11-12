@@ -12,6 +12,16 @@ import linksawakening.world.entity.event.MoldormSegmentPosition;
 
 /** Bank-$04 active movement and 128-entry tail history for Moldorm ($59). */
 public final class MoldormMotion {
+    private final int[] destructionTailState = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int destructionTailState(int slot) {
+        return destructionTailState[slot];
+    }
+
+    public void setDestructionTailState(int slot, int value) {
+        destructionTailState[slot] = value;
+    }
+
     static final int ENTITY_TYPE = 0x59;
     public static final int INITIAL_PHYSICS_FLAGS = 0x08;
     public static final int INITIAL_OPTIONS1 = 0xD0;

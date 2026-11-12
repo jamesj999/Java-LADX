@@ -210,8 +210,8 @@ public final class EntitySlotLifecycle {
         runtime.entityState.musicalNoteSpeedX[slot] = 0;
         runtime.entityState.musicalNoteSpeedY[slot] = 0;
         runtime.entityState.entityUnknownJ[slot] = 0;
-        runtime.entityState.ironMaskPrivateState2[slot] = 0;
-        runtime.entityState.ironMasksMaskSourceHookshotSlot[slot] = 0;
+        runtime.entityState.unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
+        runtime.entityState.unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
         runtime.entityState.liftableRockSmashCountdown[slot] = 0;
         runtime.entityState.liftableRockSmashSourceVariant[slot] = 0;
         runtime.entityState.liftableRockSmashActive[slot] = false;
@@ -535,7 +535,7 @@ public final class EntitySlotLifecycle {
         runtime.entityState.slowTimerInitialized[slot] = false;
         runtime.entityState.enemyTransitionCountdown[slot] = 0;
         runtime.entityState.bossDeathProducerState[slot] = 0;
-        runtime.entityState.moldormDestructionTailState[slot] = 0;
+        runtime.entityState.moldormMotion.setDestructionTailState(slot, 0);
         runtime.entityState.enemyStunnedCountdown[slot] = 0;
         runtime.entityState.dyingCountdown[slot] = 0;
         runtime.entityState.powerRecoilDeath[slot] = false;
@@ -573,8 +573,8 @@ public final class EntitySlotLifecycle {
         runtime.entityState.magicPowderPrivateState4[slot] = 0;
         runtime.entityState.bombPrivateCountdown1[slot] = 0;
         runtime.entityState.bombPrivateCountdown3[slot] = 0;
-        runtime.entityState.ironMaskPrivateState2[slot] = 0;
-        runtime.entityState.ironMasksMaskSourceHookshotSlot[slot] = 0;
+        runtime.entityState.unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
+        runtime.entityState.unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
         runtime.entityState.liftableRockSmashCountdown[slot] = 0;
         runtime.entityState.liftableRockSmashSourceVariant[slot] = 0;
         runtime.entityState.liftableRockSmashActive[slot] = false;

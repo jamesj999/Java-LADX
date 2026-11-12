@@ -360,7 +360,7 @@ final class EntityCombatResolver {
                 }
             } else if (swordHit
                     && entity.type() == EntityRomConstants.ENTITY_IRON_MASK
-                    && runtime.entityState.ironMaskPrivateState2[entity.slot()] == 0
+                    && runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(entity.slot()) == 0
                     && runtime.entityState.linkState.lastRomLinkDirection
                             != runtime.entityState.roamingEnemyMotion.direction(entity.slot())) {
                 // DefaultEnemyDamageCollisionHandler's masked Iron Mask branch
@@ -426,7 +426,8 @@ final class EntityCombatResolver {
                     // $06:6CEB checks existing recoil before $6CEE applies a new hit.
                     // Main resolves combat before ticking handlers, so preserve that phase.
                     if (entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES)
-                        runtime.entityState.rollingBonesSwordHitFrame[entity.slot()] = (frameCounter & 0xFF) + 1;
+                        runtime.entityState.rollingBonesMotion.setSwordHitFrame(
+                                entity.slot(), (frameCounter & 0xFF) + 1);
                     runtime.entityState.enemyHealth[entity.slot()] =
                             Math.max(0, runtime.entityState.enemyHealth[entity.slot()] - swordDamage);
                     if (entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
@@ -475,11 +476,11 @@ final class EntityCombatResolver {
                             : (attackContext.powerRecoil() ? 0x40 : 0x2F);
                     if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                         runtime.entityState.bossDeathProducerState[entity.slot()] = 0;
-                        runtime.entityState.moblinKingLethalHitFrame[entity.slot()] = (frameCounter & 255) + 1;
+                        runtime.entityState.moblinKingMotion.setLethalHitFrame(entity.slot(), (frameCounter & 255) + 1);
                     }
                     if (entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
                         runtime.entityState.bossDeathProducerState[entity.slot()] = 0;
-                        runtime.entityState.moldormDestructionTailState[entity.slot()] = 0;
+                        runtime.entityState.moldormMotion.setDestructionTailState(entity.slot(), 0);
                     }
                     if (entity.type() == 0x12) {
                         runtime.bossRewards.cascadeGhiniDeath(

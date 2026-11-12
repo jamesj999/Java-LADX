@@ -61,7 +61,7 @@ public final class EntityEnemyInspection {
 
     int ironMaskPrivateState2(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState.ironMaskPrivateState2[slot];
+        return runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(slot);
     }
 
     int moblinSwordState(int slot) {

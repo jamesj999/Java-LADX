@@ -94,8 +94,8 @@ public final class EntityBossRewards {
 
     public void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
-        if (!runtime.entityState.rollingBonesDeathInitialized[slot]) {
-            runtime.entityState.rollingBonesDeathInitialized[slot] = true;
+        if (!runtime.entityState.rollingBonesMotion.deathInitialized(slot)) {
+            runtime.entityState.rollingBonesMotion.setDeathInitialized(slot, true);
             runtime.entityState.enemyTransitionCountdown[slot] = 0xFF;
             runtime.entityState.enemyFlashCountdown[slot] = 0xFF;
             return;
@@ -143,8 +143,8 @@ public final class EntityBossRewards {
         int slot = source.slot();
         // Main resolves sword damage before dispatch; the ROM dispatches the
         // dying branch on the following frame, after this hit's active handler.
-        boolean hitThisFrame = runtime.entityState.moblinKingLethalHitFrame[slot] == frame + 1;
-        runtime.entityState.moblinKingLethalHitFrame[slot] = 0;
+        boolean hitThisFrame = runtime.entityState.moblinKingMotion.lethalHitFrame(slot) == frame + 1;
+        runtime.entityState.moblinKingMotion.setLethalHitFrame(slot, 0);
         if (hitThisFrame) return;
         if (runtime.spriteHandlers != null)
             source = withDefinition(source, runtime.spriteHandlers.forMoblinKingState(12, -1, source.z() != 0), 0);
@@ -179,7 +179,7 @@ public final class EntityBossRewards {
 
     public void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
         int slot = source.slot();
-        int tailState = runtime.entityState.moldormDestructionTailState[slot];
+        int tailState = runtime.entityState.moldormMotion.destructionTailState(slot);
         if (runtime.spriteHandlers != null) {
             RoomEntity rendered = withDefinition(
                     source,
@@ -224,7 +224,7 @@ public final class EntityBossRewards {
                         .currentTailSegments(slot)
                         .get(3 - tailState);
                 createMoldormPoof(source, poofPosition.x(), poofPosition.y());
-                runtime.entityState.moldormDestructionTailState[slot] = tailState + 1;
+                runtime.entityState.moldormMotion.setDestructionTailState(slot, tailState + 1);
             }
             default -> advanceMoldormBossExplosion(source);
         }
@@ -249,7 +249,7 @@ public final class EntityBossRewards {
         createMoldormPoof(
                 source, (source.x() + xOffsets[index]) & 0xFF, ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
         if (countdown == 0x10) {
-            runtime.entityState.moldormDestructionTailState[slot] = 5;
+            runtime.entityState.moldormMotion.setDestructionTailState(slot, 5);
         }
     }
 

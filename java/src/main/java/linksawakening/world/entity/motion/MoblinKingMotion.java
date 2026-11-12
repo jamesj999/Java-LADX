@@ -7,6 +7,16 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Bank-$15 {@code MoblinKingEntityHandler}'s ten-state fight sequence. */
 public final class MoblinKingMotion {
+    private final int[] lethalHitFrame = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int lethalHitFrame(int slot) {
+        return lethalHitFrame[slot];
+    }
+
+    public void setLethalHitFrame(int slot, int value) {
+        lethalHitFrame[slot] = value;
+    }
+
     public record ArrowRequest(int x, int y, int speedX, int speedY, int direction) {}
 
     public record Update(
