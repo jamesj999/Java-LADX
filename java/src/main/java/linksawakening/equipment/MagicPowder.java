@@ -8,7 +8,7 @@ import linksawakening.state.PlayerState;
 
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
 public final class MagicPowder implements EquipmentItem {
-
+    /** Contract for sprinkle target. */
     public interface SprinkleTarget {
         /** Allocates the ROM's type-$08 sprinkle entity. */
         boolean sprinkleMagicPowder();
@@ -52,12 +52,12 @@ public final class MagicPowder implements EquipmentItem {
         // UseMagicPowder $00:1492-14A6 checks the mushroom before the
         // powder count. Grounded use starts DIALOG_GOT_TOADSTOOL/$2A;
         // ApplyGotItem later shows the item and opens Dialog00E.
-        if (playerState.hasToadstool()) {
+        if (playerState.ammunition().hasToadstool()) {
             if (target.linkPositionZ() != 0) return;
             target.presentToadstool();
             return;
         }
-        if (playerState.magicPowderCount() == 0) {
+        if (playerState.ammunition().magicPowderCount() == 0) {
             soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
             return;
         }
@@ -68,7 +68,7 @@ public final class MagicPowder implements EquipmentItem {
         if (!target.sprinkleMagicPowder()) {
             return;
         }
-        if (!playerState.consumeMagicPowder()) {
+        if (!playerState.ammunition().consumeMagicPowder()) {
             throw new IllegalStateException("Magic Powder disappeared after a successful spawn");
         }
         target.startMagicPowderAttackStep();

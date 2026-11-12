@@ -2,6 +2,7 @@ package linksawakening.startup;
 
 /** Source-timed state for TarinEntityHandler's indoor shield sequence. */
 public final class TarinShieldMotion {
+    /** Named state values. */
     public enum State {
         IDLE,
         OFFER,
@@ -93,7 +94,7 @@ public final class TarinShieldMotion {
         }
         return directionToLink == (linkDirection ^ 0x01);
     }
-
+    /** Immutable update values. */
     public record Update(
             int linkY,
             int dialogLowId,

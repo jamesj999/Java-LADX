@@ -110,7 +110,7 @@ public final class MarinWakeUpMotion {
         }
         return distanceX < 0 ? 1 : 0;
     }
-
+    /** Immutable update values. */
     public record Update(
             boolean openWakeDialog,
             int dialogLowId,
@@ -119,6 +119,6 @@ public final class MarinWakeUpMotion {
             int linkRomX,
             int linkRomY,
             int bedSpriteVariant) {}
-
+    /** Immutable marin presentation values. */
     public record MarinPresentation(int romX, int romY, int romDirection, int spriteVariant) {}
 }

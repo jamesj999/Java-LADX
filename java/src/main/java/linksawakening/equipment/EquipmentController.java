@@ -4,6 +4,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 
+/** Equipment controller behavior and state. */
 public final class EquipmentController {
 
     private final InputState inputState;
@@ -20,16 +21,16 @@ public final class EquipmentController {
     }
 
     public void dispatchButtonEdges() {
-        dispatchButtonEdges(inputConfig.aKey(), playerState.itemA());
-        dispatchButtonEdges(inputConfig.bKey(), playerState.itemB());
+        dispatchButtonEdges(inputConfig.aKey(), playerState.inventory().itemA());
+        dispatchButtonEdges(inputConfig.bKey(), playerState.inventory().itemB());
     }
 
     public void tickEquippedItems() {
-        tickEquippedItems(null);
+        tickEquippedItems(false, 0);
     }
 
     public void tickEquippedItems(int frameCounter) {
-        tickEquippedItems(Integer.valueOf(frameCounter));
+        tickEquippedItems(true, frameCounter);
     }
 
     /** Finish existing animations without activating or holding equipment. */
@@ -37,13 +38,22 @@ public final class EquipmentController {
         itemRegistry.tickWithoutInput(playerState, frameCounter);
     }
 
-    private void tickEquippedItems(Integer frameCounter) {
+    private void tickEquippedItems(boolean hasFrame, int frameCounter) {
         boolean aHeld = inputState.isDown(inputConfig.aKey());
         boolean bHeld = inputState.isDown(inputConfig.bKey());
-        if (frameCounter == null) {
-            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB());
+        if (!hasFrame) {
+            itemRegistry.tickAll(
+                    aHeld,
+                    bHeld,
+                    playerState.inventory().itemA(),
+                    playerState.inventory().itemB());
         } else {
-            itemRegistry.tickAll(aHeld, bHeld, playerState.itemA(), playerState.itemB(), frameCounter);
+            itemRegistry.tickAll(
+                    aHeld,
+                    bHeld,
+                    playerState.inventory().itemA(),
+                    playerState.inventory().itemB(),
+                    frameCounter);
         }
     }
 

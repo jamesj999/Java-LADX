@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Cutscene script behavior and state. */
 public final class CutsceneScript {
 
     private final List<CutsceneStep> steps;

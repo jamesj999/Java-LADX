@@ -27,7 +27,15 @@ final class LinkSideViewMotionTest {
         var collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(objects);
-        var link = new Link(input, config, tables, collision, null, player, new ItemRegistry());
+        var link = new LinkTestBuilder()
+                .input(input)
+                .config(config)
+                .tables(tables)
+                .collision(collision)
+                .sprites(null)
+                .player(player)
+                .items(new ItemRegistry())
+                .build();
         link.setPixelPosition(x - 8, y - 16);
         link.setSideScrolling(true);
         return link;

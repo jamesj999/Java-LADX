@@ -10,7 +10,7 @@ import linksawakening.state.PlayerState;
 public final class Arrow implements EquipmentItem {
     private static final int MAX_ACTIVE_PROJECTILES = 0x02;
     private static final int SHOOTING_COUNTDOWN = 0x10;
-
+    /** Contract for shoot target. */
     public interface ShootTarget {
         boolean shootArrow();
 
@@ -50,14 +50,14 @@ public final class Arrow implements EquipmentItem {
 
         // ShootArrow starts this gate before checking the inventory count.
         shootingCountdown = SHOOTING_COUNTDOWN;
-        if (playerState.arrowCount() == 0) {
+        if (playerState.ammunition().arrowCount() == 0) {
             soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
             return;
         }
 
         // The ROM spends the arrow before SpawnPlayerProjectile. A failed
         // allocation therefore does not refund the inventory item.
-        playerState.setArrowCount(playerState.arrowCount() - 1);
+        playerState.ammunition().setArrowCount(playerState.ammunition().arrowCount() - 1);
         if (target.shootArrow() && target.playWhooshForLastShot()) {
             soundSink.play(GameplaySoundEvent.ARROW_SHOT);
         }

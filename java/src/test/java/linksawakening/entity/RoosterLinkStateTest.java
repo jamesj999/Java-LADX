@@ -13,14 +13,15 @@ final class RoosterLinkStateTest {
 
     @Test
     void appliesAndClearsTheHandlerOwnedAirborneCarryState() {
-        Link link = new Link(
-                new InputState(),
-                new InputConfig(1, 2, 3, 4, 5, 6, 7),
-                null,
-                null,
-                null,
-                new PlayerState(),
-                new linksawakening.equipment.ItemRegistry());
+        Link link = new LinkTestBuilder()
+                .input(new InputState())
+                .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new linksawakening.equipment.ItemRegistry())
+                .build();
 
         link.applyRoosterFlightState(0x14, 0x00, 0xF8, 0x00, 2);
 

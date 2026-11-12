@@ -7,6 +7,7 @@ import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.dialog.DialogController;
 
+/** Sfx dialog sound sink behavior and state. */
 public final class SfxDialogSoundSink implements DialogSoundSink {
     private static final int SAMPLE_RATE = 44_100;
 

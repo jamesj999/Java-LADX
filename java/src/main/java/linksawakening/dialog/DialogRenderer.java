@@ -2,6 +2,7 @@ package linksawakening.dialog;
 
 import linksawakening.gpu.Framebuffer;
 
+/** Dialog renderer behavior and state. */
 public final class DialogRenderer {
 
     private static final int BOX_X = 8;

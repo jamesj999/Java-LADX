@@ -33,11 +33,7 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                Map.of(),
-                Map.of(),
-                null,
-                null,
-                null);
+                new Presentation(Map.of(), Map.of(), null, null, null));
     }
 
     public EntitySpriteSelection(
@@ -55,13 +51,10 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                spriteOverrides,
-                Map.of(),
-                null,
-                null,
-                null);
+                new Presentation(spriteOverrides, Map.of(), null, null, null));
     }
-
+    /** @deprecated Use the Presentation argument bundle overload. */
+    @Deprecated(forRemoval = true)
     private EntitySpriteSelection(
             EntityRoomLoader.RoomTable roomTable,
             int roomId,
@@ -74,6 +67,35 @@ public final class EntitySpriteSelection {
             EntitySpriteDefinition burningSpriteDefinition,
             EntitySpriteDefinition deathSpriteDefinition,
             EntitySpriteDefinition powerRecoilDeathSpriteDefinition) {
+        this(
+                roomTable,
+                roomId,
+                groupIndex,
+                sheetValues,
+                standardSheets,
+                objectPalettes,
+                new Presentation(
+                        spriteOverrides,
+                        spriteOverlays,
+                        burningSpriteDefinition,
+                        deathSpriteDefinition,
+                        powerRecoilDeathSpriteDefinition));
+    }
+
+    private EntitySpriteSelection(
+            EntityRoomLoader.RoomTable roomTable,
+            int roomId,
+            int groupIndex,
+            int[] sheetValues,
+            boolean standardSheets,
+            int[][] objectPalettes,
+            Presentation arguments) {
+        Map<Integer, EntitySpriteDefinition> spriteOverrides = arguments.spriteOverrides();
+        Map<Integer, EntitySpriteDefinition> spriteOverlays = arguments.spriteOverlays();
+        EntitySpriteDefinition burningSpriteDefinition = arguments.burningSpriteDefinition();
+        EntitySpriteDefinition deathSpriteDefinition = arguments.deathSpriteDefinition();
+        EntitySpriteDefinition powerRecoilDeathSpriteDefinition = arguments.powerRecoilDeathSpriteDefinition();
+
         this.roomTable = roomTable;
         this.roomId = roomId;
         this.groupIndex = groupIndex;
@@ -178,11 +200,12 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 palettes,
-                spriteOverrides,
-                spriteOverlays,
-                burningSpriteDefinition,
-                deathSpriteDefinition,
-                powerRecoilDeathSpriteDefinition);
+                new EntitySpriteSelection.Presentation(
+                        spriteOverrides,
+                        spriteOverlays,
+                        burningSpriteDefinition,
+                        deathSpriteDefinition,
+                        powerRecoilDeathSpriteDefinition));
     }
 
     public EntitySpriteSelection withBurningSpriteDefinition(EntitySpriteDefinition definition) {
@@ -196,11 +219,12 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                spriteOverrides,
-                spriteOverlays,
-                definition,
-                deathSpriteDefinition,
-                powerRecoilDeathSpriteDefinition);
+                new EntitySpriteSelection.Presentation(
+                        spriteOverrides,
+                        spriteOverlays,
+                        definition,
+                        deathSpriteDefinition,
+                        powerRecoilDeathSpriteDefinition));
     }
 
     public EntitySpriteSelection withDeathSpriteDefinitions(
@@ -214,11 +238,8 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                spriteOverrides,
-                spriteOverlays,
-                burningSpriteDefinition,
-                death,
-                powerDeath);
+                new EntitySpriteSelection.Presentation(
+                        spriteOverrides, spriteOverlays, burningSpriteDefinition, death, powerDeath));
     }
 
     public EntitySpriteSelection withSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
@@ -229,11 +250,12 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                overrides,
-                spriteOverlays,
-                burningSpriteDefinition,
-                deathSpriteDefinition,
-                powerRecoilDeathSpriteDefinition);
+                new EntitySpriteSelection.Presentation(
+                        overrides,
+                        spriteOverlays,
+                        burningSpriteDefinition,
+                        deathSpriteDefinition,
+                        powerRecoilDeathSpriteDefinition));
     }
 
     public EntitySpriteSelection withSpriteOverride(int entityType, EntitySpriteDefinition definition) {
@@ -250,11 +272,12 @@ public final class EntitySpriteSelection {
                 sheetValues,
                 standardSheets,
                 objectPalettes,
-                spriteOverrides,
-                overlays,
-                burningSpriteDefinition,
-                deathSpriteDefinition,
-                powerRecoilDeathSpriteDefinition);
+                new EntitySpriteSelection.Presentation(
+                        spriteOverrides,
+                        overlays,
+                        burningSpriteDefinition,
+                        deathSpriteDefinition,
+                        powerRecoilDeathSpriteDefinition));
     }
 
     public EntitySpriteSelection withSpriteOverlay(int entityType, EntitySpriteDefinition definition) {
@@ -279,4 +302,12 @@ public final class EntitySpriteSelection {
         }
         return copy;
     }
+
+    /** Arguments shared by EntitySpriteSelection operations. */
+    public record Presentation(
+            Map<Integer, EntitySpriteDefinition> spriteOverrides,
+            Map<Integer, EntitySpriteDefinition> spriteOverlays,
+            EntitySpriteDefinition burningSpriteDefinition,
+            EntitySpriteDefinition deathSpriteDefinition,
+            EntitySpriteDefinition powerRecoilDeathSpriteDefinition) {}
 }

@@ -1,7 +1,7 @@
 package linksawakening.entity;
 
 import java.util.Arrays;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Tunic;
 
 /** ROM object palettes used by Link's green, red, and blue tunics. */
 public final class LinkTunicPalette {
@@ -31,7 +31,7 @@ public final class LinkTunicPalette {
 
     /** Returns the exact four RGB colors selected by {@code wTunicType}. */
     public int[] forTunic(int tunicType) {
-        if (tunicType < PlayerState.TUNIC_GREEN || tunicType > PlayerState.TUNIC_BLUE) {
+        if (tunicType < Tunic.GREEN.romValue() || tunicType > Tunic.BLUE.romValue()) {
             throw new IllegalArgumentException("Tunic type must be 0..2: " + tunicType);
         }
         return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]].clone();

@@ -6,6 +6,7 @@ import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
+/** Sfx gameplay sound sink behavior and state. */
 public final class SfxGameplaySoundSink implements GameplaySoundSink {
     private static final int SAMPLE_RATE = 44_100;
 

@@ -1,6 +1,7 @@
 package linksawakening.cutscene;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import linksawakening.rom.Rom;
@@ -73,7 +74,7 @@ public final class IntroRomData {
 
     public byte[] tileBytes(int address, int count) {
         int offset = checkedOffset("Intro animated tiles", 0x30, address, count);
-        return java.util.Arrays.copyOfRange(romData, offset, offset + count);
+        return Arrays.copyOfRange(romData, offset, offset + count);
     }
 
     public int animationFrameAddress(boolean beach, int frameCounter) {
@@ -87,7 +88,7 @@ public final class IntroRomData {
 
     public int[] titleLineScroll(int phase, int baseY) {
         int[] lines = new int[144];
-        java.util.Arrays.fill(lines, baseY);
+        Arrays.fill(lines, baseY);
         if (phase >= 16) return lines;
         int pointer = readUnsignedWord(checkedOffset("Title distortion pointers", 0x20, 0x5224, 34) + phase * 2);
         int limit = (byte) romView.u8(
@@ -261,11 +262,11 @@ public final class IntroRomData {
     private static int signedByte(byte value) {
         return value;
     }
-
+    /** Immutable oam entry values. */
     public record OamEntry(int yOffset, int xOffset, int tileIndex, int attributes) {}
-
+    /** Immutable sprite pair values. */
     public record SpritePair(int firstTileIndex, int firstAttributes, int secondTileIndex, int secondAttributes) {}
-
+    /** Immutable title row values. */
     public record TitleRow(int tileTargetAddress, int attributeTargetAddress, int[] tileBytes, int[] attributeBytes) {
         public TitleRow {
             tileBytes = tileBytes.clone();
@@ -282,7 +283,7 @@ public final class IntroRomData {
             return attributeBytes.clone();
         }
     }
-
+    /** Immutable palette block values. */
     public record PaletteBlock(int[][] rows) {
         public PaletteBlock {
             rows = copyRows(rows);

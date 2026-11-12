@@ -1,5 +1,5 @@
 package linksawakening.gameplay;
-
+/** Contract for pcm sound output. */
 public interface PcmSoundOutput extends AutoCloseable {
 
     void play(short[] stereoPcm, int sampleRate);

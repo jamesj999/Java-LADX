@@ -11,6 +11,7 @@ package linksawakening.ui;
  * than the house trace's 7 frames in WORLD_TILESET.
  */
 public final class InventoryTransition {
+    /** Named state values. */
     public enum State {
         WORLD,
         INITIAL,

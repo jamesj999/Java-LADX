@@ -5,6 +5,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomUtil;
 
+/** Inventory tilemap loader behavior and state. */
 public final class InventoryTilemapLoader {
 
     public static final int WIDTH = 20;

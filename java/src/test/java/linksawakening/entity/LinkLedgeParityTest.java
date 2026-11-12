@@ -105,7 +105,7 @@ final class LinkLedgeParityTest {
         var fixture = fixture(true);
         for (int direction = 0; direction < 4; direction++) {
             Link link = fixture.link;
-            link.direction = direction;
+            link.linkAnimationState.direction = direction;
             link.linkAirborne.airborne = true;
             link.linkAnimator.jumpAnimationCounter = 0;
             for (int frame = 0; frame < 24; frame++) {
@@ -154,8 +154,9 @@ final class LinkLedgeParityTest {
             var actual = columns.get(half);
             // The sink receives the two 8x8 halves in screen order: an 8x16
             // Y flip swaps the halves as well as flipping each tile's pixels.
-            assertSame(fixture.link.spriteSheet.tile(tile + ((attrs & 0x40) != 0 ? 1 : 0)), actual.top());
-            assertSame(fixture.link.spriteSheet.tile(tile + ((attrs & 0x40) != 0 ? 0 : 1)), actual.bottom());
+            assertSame(fixture.link.linkServices.spriteSheet.tile(tile + ((attrs & 0x40) != 0 ? 1 : 0)), actual.top());
+            assertSame(
+                    fixture.link.linkServices.spriteSheet.tile(tile + ((attrs & 0x40) != 0 ? 0 : 1)), actual.bottom());
             assertEquals((attrs & 0x20) != 0, actual.fx());
             assertEquals((attrs & 0x40) != 0, actual.fy());
             assertEquals(fixture.link.pixelX() + half * 8, actual.x());
@@ -181,14 +182,15 @@ final class LinkLedgeParityTest {
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
         return new Fixture(
-                new Link(
-                        input,
-                        config,
-                        tables,
-                        collision,
-                        LinkSpriteSheet.loadFromRom(rom),
-                        new PlayerState(),
-                        new ItemRegistry()),
+                new LinkTestBuilder()
+                        .input(input)
+                        .config(config)
+                        .tables(tables)
+                        .collision(collision)
+                        .sprites(LinkSpriteSheet.loadFromRom(rom))
+                        .player(new PlayerState())
+                        .items(new ItemRegistry())
+                        .build(),
                 rom,
                 room);
     }

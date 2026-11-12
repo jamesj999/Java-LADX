@@ -8,7 +8,7 @@ import java.util.List;
  * Fixed-slot transient VFX runtime for short-lived overworld gameplay effects.
  */
 public final class TransientVfxSystem {
-
+    /** Immutable slot values. */
     public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
         public Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
             this(slotIndex, type, countdown, worldX, worldY, 0);
@@ -95,7 +95,9 @@ public final class TransientVfxSystem {
 
     public List<Slot> activeSlots() {
         List<Slot> active = new ArrayList<>(slots.length);
-        Arrays.stream(slots).filter(slot -> slot != null).forEach(slot -> active.add(slot.snapshot()));
+        for (MutableSlot slot : slots) {
+            if (slot != null) active.add(slot.snapshot());
+        }
         return List.copyOf(active);
     }
 }

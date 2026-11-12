@@ -7,6 +7,11 @@ import linksawakening.rom.RomUtil;
 
 /** ROM CreateMinimapTilemap, LoadMinimap and the dungeon inventory draw commands. */
 final class InventoryDungeonPanel {
+    private final int[] rowTiles = new int[11];
+    private final int[] rowAttributes = new int[11];
+
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
+
     private final byte[] rom;
     private final linksawakening.rom.Rom data;
     private final GPU tiles = new GPU();
@@ -105,21 +110,20 @@ final class InventoryDungeonPanel {
         if (items[4] != 0) attrs[5 * 20 + 18] = attrs[6 * 20 + 18] = 1;
     }
 
-    void render(
-            byte[] buffer,
-            int[] map,
-            int[] attrs,
-            int[][] palettes,
-            int offsetY,
-            int mapId,
-            int position,
-            int frame,
-            int[][] objectPalettes) {
+    void render(byte[] buffer, int[] map, int[] attrs, int[][] palettes, int offsetY, Presentation arguments) {
+        int mapId = arguments.mapId();
+        int position = arguments.position();
+        int frame = arguments.frame();
+        int[][] objectPalettes = arguments.objectPalettes();
+
         // Render only the right-hand panel using its own VRAM so gameplay tiles survive closing.
         for (int y = 3; y < 17; y++) {
-            int[] row = Arrays.copyOfRange(map, y * 20 + 9, y * 20 + 20);
-            int[] attributes = Arrays.copyOfRange(attrs, y * 20 + 9, y * 20 + 20);
-            TilemapRenderer.render(buffer, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
+            copyRow(map, y * 20 + 9, rowTiles);
+            int[] row = rowTiles;
+            copyRow(attrs, y * 20 + 9, rowAttributes);
+            int[] attributes = rowAttributes;
+            TilemapRenderer.render(
+                    buffer, tiles, row, attributes, palettes, tileRegion.set(11, 1, 72, y * 8 + offsetY));
         }
         if (position < 0 || position >= 64) return;
         int layout = read(
@@ -162,15 +166,20 @@ final class InventoryDungeonPanel {
             int[] attrs,
             int[][] palettes,
             int offsetY,
-            int mapId,
-            int position,
-            int frame,
-            int[][] objectPalettes) {
+            Presentation arguments) {
+        int mapId = arguments.mapId();
+        int position = arguments.position();
+        int frame = arguments.frame();
+        int[][] objectPalettes = arguments.objectPalettes();
+
         // Render only the right-hand panel using its own VRAM so gameplay tiles survive closing.
         for (int y = 3; y < 17; y++) {
-            int[] row = Arrays.copyOfRange(map, y * 20 + 9, y * 20 + 20);
-            int[] attributes = Arrays.copyOfRange(attrs, y * 20 + 9, y * 20 + 20);
-            TilemapRenderer.submit(frameModel, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
+            copyRow(map, y * 20 + 9, rowTiles);
+            int[] row = rowTiles;
+            copyRow(attrs, y * 20 + 9, rowAttributes);
+            int[] attributes = rowAttributes;
+            TilemapRenderer.submit(
+                    frameModel, tiles, row, attributes, palettes, tileRegion.set(11, 1, 72, y * 8 + offsetY));
         }
         if (position < 0 || position >= 64) return;
         int layout = read(
@@ -179,5 +188,47 @@ final class InventoryDungeonPanel {
         int x = 88 + (position & 7) * 8 + ((layout & 0x10) != 0 && (position & 7) >= 4 ? 8 : 0);
         int y = 64 + (position & 0x38) - ((layout & 0x20) != 0 && position < 32 ? 8 : 0);
         frameModel.sprite8x16(tiles, 0x3E, x, y + offsetY, false, false, objectPalettes[(frame & 8) == 0 ? 1 : 4]);
+    }
+
+    private static void copyRow(int[] source, int offset, int[] destination) {
+        int count = Math.min(11, source.length - offset);
+        System.arraycopy(source, offset, destination, 0, count);
+        Arrays.fill(destination, count, 11, 0);
+    }
+
+    /** Arguments shared by render operations. */
+    public static final class Presentation {
+        private int mapId;
+        private int position;
+        private int frame;
+        private int[][] objectPalettes;
+
+        public Presentation(int mapId, int position, int frame, int[][] objectPalettes) {
+            set(mapId, position, frame, objectPalettes);
+        }
+
+        Presentation set(int mapId, int position, int frame, int[][] objectPalettes) {
+            this.mapId = mapId;
+            this.position = position;
+            this.frame = frame;
+            this.objectPalettes = objectPalettes;
+            return this;
+        }
+
+        public int mapId() {
+            return mapId;
+        }
+
+        public int position() {
+            return position;
+        }
+
+        public int frame() {
+            return frame;
+        }
+
+        public int[][] objectPalettes() {
+            return objectPalettes;
+        }
     }
 }

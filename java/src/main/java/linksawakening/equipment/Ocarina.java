@@ -11,7 +11,7 @@ import linksawakening.state.PlayerState;
  * the selected song state and hands the playback countdown to the room.
  */
 public final class Ocarina implements EquipmentItem {
-
+    /** Contract for playback target. */
     public interface PlaybackTarget {
         boolean startOcarina(int countdown, int songFlags, int selectedSong);
 
@@ -44,8 +44,8 @@ public final class Ocarina implements EquipmentItem {
             return;
         }
 
-        int songFlags = playerState.ocarinaSongFlags() & 0x07;
-        int selectedSong = playerState.selectedSongIndex() & 0xFF;
+        int songFlags = playerState.progression().ocarinaSongFlags() & 0x07;
+        int selectedSong = playerState.progression().selectedSongIndex() & 0xFF;
         Playback playback = Playback.forSelection(songFlags, selectedSong);
         if (target.startOcarina(playback.countdown(), songFlags, selectedSong)) {
             soundSink.play(playback.sound());

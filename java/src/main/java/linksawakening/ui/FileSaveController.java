@@ -16,6 +16,7 @@ import linksawakening.scene.BackgroundSceneCatalog;
  * with the d-pad and A, B, or Start confirms the current option.</p>
  */
 public final class FileSaveController {
+    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
     private static final int OPTION_COUNT = 2;
     private static final int SAVE_ARROW_TILE = 0xBE;
@@ -62,18 +63,19 @@ public final class FileSaveController {
                     "sceneProvider returned null for " + BackgroundSceneCatalog.FILE_SAVE_SCENE);
         }
         int oamY = SAVE_OPTION_OAM_Y[selectedOption];
-        snapshot = new FileMenuFrameSnapshot(
-                BackgroundSceneCatalog.FILE_SAVE_SCENE,
-                selectedOption,
-                false,
-                false,
-                0,
-                0,
-                new int[5],
-                scene.tilemap(),
-                scene.attrmap(),
-                scene.palettes(),
-                scene.objectPalettes(),
-                List.of(new IntroSprite(SAVE_ARROW_TILE, SAVE_ARROW_OAM_X - 8, oamY - 8, 0, false, false)));
+        snapshot = snapshotBuilder
+                .sceneId(BackgroundSceneCatalog.FILE_SAVE_SCENE)
+                .selectedSlot(selectedOption)
+                .commandRowArrowShifted(false)
+                .creation(false)
+                .selectedCharacter(0)
+                .namePosition(0)
+                .nameBytes(new int[5])
+                .tilemap(scene.tilemap())
+                .attrmap(scene.attrmap())
+                .bgPalettes(scene.palettes())
+                .objectPalettes(scene.objectPalettes())
+                .sprites(List.of(new IntroSprite(SAVE_ARROW_TILE, SAVE_ARROW_OAM_X - 8, oamY - 8, 0, false, false)))
+                .build();
     }
 }

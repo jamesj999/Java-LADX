@@ -2,6 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.entity.Link;
 
+/** Link dialog position behavior and state. */
 public final class LinkDialogPosition {
 
     private LinkDialogPosition() {}

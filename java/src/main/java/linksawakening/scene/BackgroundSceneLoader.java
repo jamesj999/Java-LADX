@@ -2,6 +2,7 @@ package linksawakening.scene;
 
 import linksawakening.rom.RomBank;
 
+/** Background scene loader behavior and state. */
 public final class BackgroundSceneLoader {
 
     public static final int SCREEN_TILE_WIDTH = 20;

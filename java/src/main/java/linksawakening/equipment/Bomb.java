@@ -12,7 +12,7 @@ import linksawakening.state.PlayerState;
  * ordering around the spawn request.
  */
 public final class Bomb implements EquipmentItem {
-
+    /** Contract for placement target. */
     public interface PlacementTarget {
         boolean placeBomb();
 
@@ -56,14 +56,14 @@ public final class Bomb implements EquipmentItem {
         if (target.bombActive()) {
             return;
         }
-        if (playerState.bombCount() == 0) {
+        if (playerState.ammunition().bombCount() == 0) {
             soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
             return;
         }
 
         // The ROM spends the bomb before SpawnPlayerProjectile. Do not refund
         // it if the room target cannot allocate a slot.
-        playerState.setBombCount(playerState.bombCount() - 1);
+        playerState.ammunition().setBombCount(playerState.ammunition().bombCount() - 1);
         if (target.placeBomb() && target.playBumpForLastPlacement()) {
             soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
         }

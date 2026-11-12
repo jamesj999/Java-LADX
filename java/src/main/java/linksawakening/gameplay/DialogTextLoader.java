@@ -3,6 +3,7 @@ package linksawakening.gameplay;
 import linksawakening.rom.*;
 import linksawakening.rom.RomBank;
 
+/** Dialog text loader behavior and state. */
 public final class DialogTextLoader {
 
     private static final int POINTER_TABLE_BANK = RomSymbols.DialogPointerTable.bank();

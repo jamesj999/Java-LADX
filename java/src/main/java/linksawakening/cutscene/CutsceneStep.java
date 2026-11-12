@@ -3,6 +3,7 @@ package linksawakening.cutscene;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/** Contract for cutscene step. */
 public interface CutsceneStep {
 
     boolean tick(CutsceneContext context);

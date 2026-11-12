@@ -3,6 +3,7 @@ package linksawakening.scene;
 import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.rom.RomSymbols;
 
+/** Background scene catalog behavior and state. */
 public final class BackgroundSceneCatalog {
 
     public static final String FILE_SELECTION_SCENE = "selection";

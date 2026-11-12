@@ -3,14 +3,14 @@ package linksawakening.entity;
 /** Complete Link-side effects, independent of world event record locations. */
 public interface LinkCommand {
     void applyTo(Link link);
-
+    /** Immutable facing values. */
     public record Facing(int romDirection, boolean preserveWalkingPhase) implements LinkCommand {
         public void applyTo(Link link) {
             if (preserveWalkingPhase) link.faceRomDirectionPreservingWalkPhase(romDirection);
             else link.setRomDirection(romDirection);
         }
     }
-
+    /** Immutable final position values. */
     public record FinalPosition(boolean clearIncrement, boolean markPushing, boolean resetBoots)
             implements LinkCommand {
         public void applyTo(Link link) {
@@ -20,14 +20,14 @@ public interface LinkCommand {
             if (resetBoots) link.resetPegasusBoots();
         }
     }
-
+    /** Immutable platform contact values. */
     public record PlatformContact(int horizontalDelta, int positionY, int speedY, boolean standing)
             implements LinkCommand {
         public void applyTo(Link link) {
             link.applySideViewPlatformContact(horizontalDelta, positionY, speedY, standing);
         }
     }
-
+    /** Immutable pot contact values. */
     public record PotContact(
             boolean restoreFinalX,
             boolean resetBoots,
@@ -45,7 +45,7 @@ public interface LinkCommand {
             if (snapTop) link.applySideViewPotContact(positionY, speedY);
         }
     }
-
+    /** Immutable motion block values. */
     public record MotionBlock(int deltaX, int deltaY, int value) implements LinkCommand {
         public MotionBlock(int deltaX, int deltaY) {
             this(deltaX, deltaY, 2);
@@ -56,33 +56,33 @@ public interface LinkCommand {
             link.writeRomInteractiveMotionBlock(value);
         }
     }
-
+    /** Immutable warp values. */
     public record Warp(int positionX, int visualPositionY, int immunityCountdown) implements LinkCommand {
         public void applyTo(Link link) {
             link.applyWarpState3(positionX, visualPositionY, immunityCountdown);
         }
     }
-
+    /** Immutable held item pose values. */
     public record HeldItemPose(boolean powerUp) implements LinkCommand {
         public void applyTo(Link link) {
             if (powerUp) link.showPowerUpPickupPose();
             else link.showHeldItemPose();
         }
     }
-
+    /** Immutable sword spin pose values. */
     public record SwordSpinPose(int countdown) implements LinkCommand {
         public void applyTo(Link link) {
             link.showSwordAcquisitionSpinPose(countdown);
         }
     }
-
+    /** Immutable rooster flight values. */
     public record RoosterFlight(int positionZ, int velocityZ, int speedX, int speedY, int romDirection)
             implements LinkCommand {
         public void applyTo(Link link) {
             link.applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
         }
     }
-
+    /** Immutable hinox grab values. */
     public record HinoxGrab(
             int positionX,
             int positionY,
@@ -94,25 +94,55 @@ public interface LinkCommand {
             boolean motionBlocked,
             boolean heldPose)
             implements LinkCommand {
+        /** @deprecated Use the overload accepting Link.GrabFlags. */
+        @Deprecated(forRemoval = true)
+        public HinoxGrab {}
+
+        public HinoxGrab(
+                int positionX,
+                int positionY,
+                int positionZ,
+                int speedX,
+                int speedY,
+                int velocityZ,
+                Link.GrabFlags flags) {
+            this(
+                    positionX,
+                    positionY,
+                    positionZ,
+                    speedX,
+                    speedY,
+                    velocityZ,
+                    flags.airborneState(),
+                    flags.motionBlocked(),
+                    flags.applyHeldLinkPose());
+        }
+
         public void applyTo(Link link) {
             link.applyHinoxGrabState(
-                    positionX, positionY, positionZ, speedX, speedY, velocityZ, airborneState, motionBlocked, heldPose);
+                    positionX,
+                    positionY,
+                    positionZ,
+                    speedX,
+                    speedY,
+                    velocityZ,
+                    Link.GrabFlags.of(airborneState, motionBlocked, heldPose));
         }
     }
-
+    /** Immutable capture values. */
     public record Capture(int positionX, int positionY, boolean pinPosition) implements LinkCommand {
         public void applyTo(Link link) {
             link.applyLikeLikeCapture(positionX, positionY, pinPosition);
         }
     }
-
+    /** Immutable contact recoil values. */
     public record ContactRecoil(int speedX, int speedY, int ignoreCollisionCountdown) implements LinkCommand {
         public void applyTo(Link link) {
             link.applyRomSpeed(speedX, speedY);
             link.setCollisionIgnoreFrames(ignoreCollisionCountdown);
         }
     }
-
+    /** Immutable projectile response values. */
     public record ProjectileResponse(int speedX, int speedY, int ignoreCollisionCountdown, boolean immediatePosition)
             implements LinkCommand {
         public void applyTo(Link link) {
@@ -123,7 +153,7 @@ public interface LinkCommand {
             }
         }
     }
-
+    /** Named action values. */
     public enum Action implements LinkCommand {
         BLOCK_MOTION,
         FALLEN_POSE,

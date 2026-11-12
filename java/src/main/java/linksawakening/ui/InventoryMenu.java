@@ -5,10 +5,15 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
 /** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
 public final class InventoryMenu {
+    private final InventoryDungeonPanel.Presentation dungeonPresentation =
+            new InventoryDungeonPanel.Presentation(0, 0, 0, null);
+
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     // Subscreen grid: 2 cols x 5 rows. Even slot index = left column,
     // odd = right column. Up/down moves by 2 slots (next row, same col);
@@ -172,8 +177,8 @@ public final class InventoryMenu {
         if (next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
-            if (playerState.subscreenItem(cursorSlot) == PlayerState.INVENTORY_OCARINA
-                    && playerState.ocarinaSongFlags() != 0) {
+            if (playerState.inventory().subscreenItem(cursorSlot) == InventoryItem.OCARINA.romValue()
+                    && playerState.progression().ocarinaSongFlags() != 0) {
                 ocarinaSongMenu.requestOpen();
             }
         }
@@ -185,8 +190,8 @@ public final class InventoryMenu {
             return;
         }
         if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemAWithSubscreen(cursorSlot);
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemAWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
@@ -196,14 +201,15 @@ public final class InventoryMenu {
             return;
         }
         if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemBWithSubscreen(cursorSlot);
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemBWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
 
     private void openOcarinaIfSelected(int selectedItem) {
-        if (selectedItem == PlayerState.INVENTORY_OCARINA && playerState.ocarinaSongFlags() != 0) {
+        if (selectedItem == InventoryItem.OCARINA.romValue()
+                && playerState.progression().ocarinaSongFlags() != 0) {
             ocarinaSongMenu.requestOpen();
         }
     }
@@ -233,7 +239,8 @@ public final class InventoryMenu {
     }
 
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
-        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
+        if (romData != null)
+            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);
@@ -257,10 +264,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                InventoryTilemapLoader.WIDTH,
-                InventoryTilemapLoader.HEIGHT,
-                0,
-                offsetY);
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -273,10 +277,8 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    dungeonMapId,
-                    dungeonPosition,
-                    dungeonFrame,
-                    tilemapLoader.objectPalettes());
+                    dungeonPresentation.set(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {
             instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
@@ -293,7 +295,7 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
-
+    /** Immutable closed window values. */
     public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
 
     public boolean canSubmitClosedWindow() {
@@ -312,7 +314,8 @@ public final class InventoryMenu {
     }
 
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
-        if (romData != null) gpu.updatePowderInventoryTiles(romData, playerState.hasToadstool());
+        if (romData != null)
+            gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
         int[] tilemap = tilemapLoader.copyBaseTilemap();
         int[] attrmap = tilemapLoader.copyAttrmap();
         HudOverlay.apply(tilemap, attrmap, playerState);
@@ -336,10 +339,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                InventoryTilemapLoader.WIDTH,
-                InventoryTilemapLoader.HEIGHT,
-                0,
-                offsetY);
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -352,10 +352,8 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    dungeonMapId,
-                    dungeonPosition,
-                    dungeonFrame,
-                    tilemapLoader.objectPalettes());
+                    dungeonPresentation.set(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {
             instrumentPanel.submitNavigation(frameModel, tilemapLoader.objectPalettes(), instrumentPaletteFrame);

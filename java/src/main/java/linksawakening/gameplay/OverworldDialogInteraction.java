@@ -8,8 +8,10 @@ import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 import java.util.Objects;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
+import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
+/** Overworld dialog interaction behavior and state. */
 public final class OverworldDialogInteraction {
 
     private static final int OBJECT_OWL_STATUE = 0x6F;
@@ -22,7 +24,8 @@ public final class OverworldDialogInteraction {
         this.signpostDialogTable = Objects.requireNonNull(signpostDialogTable);
         this.dialogTextLoader = Objects.requireNonNull(dialogTextLoader);
     }
-
+    /** @deprecated Use the Interaction argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public boolean tryOpenSignpostDialog(
             int roomId,
             int mapCategory,
@@ -33,10 +36,32 @@ public final class OverworldDialogInteraction {
             boolean actionPressed,
             OverworldDialogBlockers blockers,
             DialogController dialogController) {
+        return tryOpenSignpostDialog(
+                roomId,
+                mapCategory,
+                roomObjectsArea,
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                new Interaction(actionPressed, blockers, dialogController));
+    }
+
+    public boolean tryOpenSignpostDialog(
+            int roomId,
+            int mapCategory,
+            int[] roomObjectsArea,
+            int linkPixelX,
+            int linkPixelY,
+            int linkDirection,
+            Interaction arguments) {
+        boolean actionPressed = arguments.actionPressed();
+        OverworldDialogBlockers blockers = arguments.blockers();
+        DialogController dialogController = arguments.dialogController();
+
         if (!actionPressed
                 || (blockers != null && blockers.blocksOpening())
                 || mapCategory != Warp.CATEGORY_OVERWORLD
-                || linkDirection != Link.DIRECTION_UP
+                || linkDirection != Direction.UP.javaIndex()
                 || roomObjectsArea == null
                 || dialogController == null
                 || dialogController.isActive()) {
@@ -67,4 +92,8 @@ public final class OverworldDialogInteraction {
         }
         return ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + col;
     }
+
+    /** Arguments shared by tryOpenSignpostDialog operations. */
+    public record Interaction(
+            boolean actionPressed, OverworldDialogBlockers blockers, DialogController dialogController) {}
 }

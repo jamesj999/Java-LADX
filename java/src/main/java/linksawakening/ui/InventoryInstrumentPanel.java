@@ -7,6 +7,8 @@ import linksawakening.rom.RomUtil;
 
 /** LoadInstrumentsBG ($01:6BEA) and the palette cycle at $20:5EB5. */
 final class InventoryInstrumentPanel {
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
+
     private final int[] positions = new int[8];
     private final int[] numbers = new int[8];
     private final int[] instruments = new int[8];
@@ -84,10 +86,7 @@ final class InventoryInstrumentPanel {
                     tilemapForInstrument(i, flags[i]),
                     attrs,
                     palettes,
-                    2,
-                    2,
-                    col * 8,
-                    row * 8 + windowY);
+                    tileRegion.set(2, 2, col * 8, row * 8 + windowY));
         }
     }
 
@@ -108,10 +107,7 @@ final class InventoryInstrumentPanel {
                     tilemapForInstrument(i, flags[i]),
                     attrs,
                     palettes,
-                    2,
-                    2,
-                    col * 8,
-                    row * 8 + windowY);
+                    tileRegion.set(2, 2, col * 8, row * 8 + windowY));
         }
     }
 

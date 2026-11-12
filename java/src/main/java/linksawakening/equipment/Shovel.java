@@ -12,7 +12,7 @@ public final class Shovel implements EquipmentItem {
 
     /** The result of the ROM's adjacent-object probe at the moment of use. */
     public record StartResult(boolean started, boolean poking) {}
-
+    /** Contract for dig target. */
     public interface DigTarget {
         /** Starts the source shovel state and returns whether the probe was a poke. */
         StartResult startShovel();

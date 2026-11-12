@@ -13,7 +13,7 @@ public final class BeachSwordRewardConsumer {
         Objects.requireNonNull(playerState, "playerState");
 
         for (var ignored : roomSession.consumeSwordPickupRewards()) {
-            playerState.applyBeachSwordReward();
+            playerState.playerRewards().applyBeachSwordReward();
         }
     }
 }

@@ -7,7 +7,15 @@ import org.junit.jupiter.api.Test;
 
 final class LinkDamageTest {
     private Link link(PlayerState player) {
-        Link link = new Link(null, null, null, null, null, player, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(player)
+                .items(null)
+                .build();
         link.setPixelPosition(64, 64);
         return link;
     }

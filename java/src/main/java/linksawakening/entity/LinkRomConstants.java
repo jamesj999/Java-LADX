@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
 
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 
 /** Constants and lookup tables mirroring the ROM Link motion paths. */
@@ -19,14 +20,14 @@ final class LinkRomConstants {
     // keeps the previous facing. Encoded as one of DIRECTION_* or -1 (= KEEP).
     static final int[] JOYPAD_TO_DIRECTION = {
         -1, //  0000 none       -> keep
-        DIRECTION_RIGHT, //  0001 right
-        DIRECTION_LEFT, //  0010 left
+        Direction.RIGHT.javaIndex(), //  0001 right
+        Direction.LEFT.javaIndex(), //  0010 left
         -1, //  0011 right+left -> keep
-        DIRECTION_UP, //  0100 up
+        Direction.UP.javaIndex(), //  0100 up
         -1, //  0101 up+right   -> keep
         -1, //  0110 up+left    -> keep
         -1, //  0111 keep
-        DIRECTION_DOWN, //  1000 down
+        Direction.DOWN.javaIndex(), //  1000 down
         -1, //  1001 down+right -> keep
         -1, //  1010 down+left  -> keep
         -1, //  1011 keep

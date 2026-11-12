@@ -1,5 +1,6 @@
 package linksawakening.equipment;
 
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
 /**
@@ -24,16 +25,16 @@ public final class ItemRegistry {
 
     /** Resolve the equipped sword, including its pre-inventory pickup spin. */
     public Sword activeSword(PlayerState playerState) {
-        EquipmentItem a = lookup(playerState.itemA());
+        EquipmentItem a = lookup(playerState.inventory().itemA());
         if (a instanceof Sword sword) {
             return sword;
         }
-        EquipmentItem b = lookup(playerState.itemB());
+        EquipmentItem b = lookup(playerState.inventory().itemB());
         if (b instanceof Sword sword) {
             return sword;
         }
         // The acquisition sequence spins the sword before it enters inventory.
-        EquipmentItem registered = lookup(PlayerState.INVENTORY_SWORD);
+        EquipmentItem registered = lookup(InventoryItem.SWORD.romValue());
         if (registered instanceof Sword sword && sword.spinAttackActive()) return sword;
         return null;
     }
@@ -42,27 +43,32 @@ public final class ItemRegistry {
     public void tickWithoutInput(PlayerState playerState, int frameCounter) {
         Sword sword = activeSword(playerState);
         if (sword != null) sword.releaseHoldWithoutSpin();
-        tickAll(false, false, playerState.itemA(), playerState.itemB(), frameCounter);
+        tickAll(
+                false,
+                false,
+                playerState.inventory().itemA(),
+                playerState.inventory().itemB(),
+                frameCounter);
     }
 
     /** Advance every registered item's state machine once. Called once per frame. */
     public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId) {
-        tickAll(aHeld, bHeld, itemAId, itemBId, null);
+        tickAll(aHeld, bHeld, itemAId, itemBId, false, 0);
     }
 
     /** Advance every registered item while exposing the global ROM frame. */
     public void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId, int frameCounter) {
-        tickAll(aHeld, bHeld, itemAId, itemBId, Integer.valueOf(frameCounter));
+        tickAll(aHeld, bHeld, itemAId, itemBId, true, frameCounter);
     }
 
-    private void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId, Integer frameCounter) {
+    private void tickAll(boolean aHeld, boolean bHeld, int itemAId, int itemBId, boolean hasFrame, int frameCounter) {
         for (int id = 0; id < byInventoryId.length; id++) {
             EquipmentItem item = byInventoryId[id];
             if (item == null) {
                 continue;
             }
             boolean held = (id == itemAId && aHeld) || (id == itemBId && bHeld);
-            if (frameCounter == null) {
+            if (!hasFrame) {
                 item.tick(held);
             } else {
                 item.tick(held, frameCounter);
