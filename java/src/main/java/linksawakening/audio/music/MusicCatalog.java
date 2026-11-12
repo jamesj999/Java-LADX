@@ -228,9 +228,4 @@ public final class MusicCatalog {
     private static String formatHex(int value) {
         return "0x" + Integer.toHexString(value).toUpperCase();
     }
-
-    @Deprecated(forRemoval = true)
-    public static MusicCatalog fromRom(byte[] romData) {
-        return fromRom(Rom.unchecked(romData));
-    }
 }

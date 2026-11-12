@@ -62,11 +62,20 @@ public class Vram {
         return null;
     }
 
+    private EntitySpriteTileSnapshot entitySnapshot;
+
+    final void invalidateEntitySnapshot() {
+        entitySnapshot = null;
+    }
+
     public EntitySpriteTileSnapshot snapshotEntityTiles() {
+        if (entitySnapshot != null && entitySnapshot.matches(tiles, EntitySpriteTileSnapshot.BASE_TILE_INDEX))
+            return entitySnapshot;
         Tile[] entityTiles = new Tile[EntitySpriteTileSnapshot.TILE_COUNT];
         for (int i = 0; i < entityTiles.length; i++) {
             entityTiles[i] = tiles[EntitySpriteTileSnapshot.BASE_TILE_INDEX + i];
         }
-        return new EntitySpriteTileSnapshot(entityTiles);
+        entitySnapshot = new EntitySpriteTileSnapshot(entityTiles);
+        return entitySnapshot;
     }
 }

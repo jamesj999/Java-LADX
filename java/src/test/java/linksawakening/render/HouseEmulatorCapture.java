@@ -9,6 +9,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
@@ -32,7 +33,7 @@ public final class HouseEmulatorCapture {
         byte[] rom = CaptureImageWriter.readRom();
         GPU gpu = new GPU();
         gpu.loadBaseTiles(TestRoms.partial(rom));
-        var tables = RomTables.loadFromRom(rom);
+        var tables = RomTables.load(Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
                 rom,

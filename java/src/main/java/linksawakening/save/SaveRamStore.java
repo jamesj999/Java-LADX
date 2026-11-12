@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -26,24 +27,34 @@ public final class SaveRamStore {
     }
 
     public static SaveRamStore open(Path path) throws IOException {
+        return open(path, Files::readAllBytes);
+    }
+
+    @FunctionalInterface
+    interface ImageReader {
+        byte[] read(Path path) throws IOException;
+    }
+
+    static SaveRamStore open(Path path, ImageReader reader) throws IOException {
         Objects.requireNonNull(path, "path");
+        byte[] bytes;
+        try {
+            bytes = reader.read(path);
+        } catch (NoSuchFileException missing) {
+            return new SaveRamStore(path, SaveRamImage.empty());
+        }
         SaveRamImage image;
         Path backup = null;
-        if (!Files.exists(path)) {
-            image = SaveRamImage.empty();
+        if (bytes.length == SaveRamLayout.IMAGE_SIZE) {
+            image = SaveRamImage.fromBytes(bytes);
         } else {
-            byte[] bytes = Files.readAllBytes(path);
-            if (bytes.length == SaveRamLayout.IMAGE_SIZE) {
-                image = SaveRamImage.fromBytes(bytes);
-            } else {
-                String timestamp = Instant.now().toString().replace(':', '-');
-                backup = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp);
-                Files.copy(path, backup);
-                System.err.println("Wrong-sized save preserved at " + backup);
-                image = SaveRamImage.empty();
-            }
-            image.initializeInvalidSlots();
+            String timestamp = Instant.now().toString().replace(':', '-');
+            backup = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp);
+            Files.copy(path, backup);
+            System.err.println("Wrong-sized save preserved at " + backup);
+            image = SaveRamImage.empty();
         }
+        image.initializeInvalidSlots();
         SaveRamStore store = new SaveRamStore(path, image);
         store.corruptBackup = backup;
         return store;
@@ -167,8 +178,14 @@ public final class SaveRamStore {
             } catch (AtomicMoveNotSupportedException unsupported) {
                 Files.move(temporary, absolutePath, StandardCopyOption.REPLACE_EXISTING);
             }
-        } finally {
-            Files.deleteIfExists(temporary);
+        } catch (IOException | RuntimeException | Error failure) {
+            try {
+                Files.deleteIfExists(temporary);
+            } catch (IOException cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            throw failure;
         }
+        Files.deleteIfExists(temporary);
     }
 }

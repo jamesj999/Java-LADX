@@ -2,7 +2,6 @@ package linksawakening.gpu;
 
 import linksawakening.rom.GbcBanks;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 /** Named ROM tile uploads used by the compatibility GPU facade. */
@@ -135,6 +134,7 @@ class RomTileLoader extends Vram {
      * {@code wLoadedEntitySpritesheets}; {@code $FF} keeps that slot intact.
      */
     public void loadEntitySpriteSheets(Rom romData, int[] sheetValues) {
+        invalidateEntitySnapshot();
         new EntitySheetTileLoader(this).loadEntitySpriteSheets(romData, sheetValues);
     }
 
@@ -145,6 +145,7 @@ class RomTileLoader extends Vram {
      * fixed OAM slot unchanged.
      */
     public void loadColorDungeonEntitySheets(Rom romData, int roomId) {
+        invalidateEntitySnapshot();
         new EntitySheetTileLoader(this).loadColorDungeonEntitySheets(romData, roomId);
     }
 
@@ -230,10 +231,14 @@ class RomTileLoader extends Vram {
 
         // The legacy selector's bank-zero row uses a flat ROM offset,
         // including addresses outside ROM0's CPU window. Preserve that API.
-        byte[] source = bank == 0 && address >= 0x4000
-                ? romData.bytes(RomAddress.fromOffset(romOffset), byteCount)
-                : romData.bytes(new RomAddress(bank, address), byteCount);
-        System.arraycopy(source, 0, vram, vramOffset, byteCount);
+        // Retain the original CPU-window validation for switchable banks.
+        if (!(bank == 0 && address >= 0x4000)
+                && (bank > Integer.MAX_VALUE / 0x4000
+                        || address < (bank == 0 ? 0 : 0x4000)
+                        || address >= (bank == 0 ? 0x4000 : 0x8000))) {
+            throw new IllegalArgumentException("Invalid ROM bank/address");
+        }
+        romData.copyInto(romOffset, vram, vramOffset, byteCount);
         for (int tile = 0; tile < tileCount; tile++) {
             updateTile(vramTileIndex + tile);
         }

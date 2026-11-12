@@ -99,9 +99,4 @@ public final class SoundEffectPlayer {
             throw new IllegalStateException("Failed to load ROM: " + e.getMessage(), e);
         }
     }
-
-    @Deprecated(forRemoval = true)
-    public SoundEffectPlayer(GameBoyApu apu, byte[] romData) {
-        this(apu, Rom.unchecked(romData));
-    }
 }

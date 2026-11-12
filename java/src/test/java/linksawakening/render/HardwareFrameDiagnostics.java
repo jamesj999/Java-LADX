@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Optional pixel provenance and narrowly evidenced legacy comparison for capture tools. */
-final class HardwareFrameDiagnostics {
+final class HardwareFrameDiagnostics implements HardwareFrameObserver {
     private HardwareFrame frame;
     final boolean[] approvedHudEvidence = new boolean[WIDTH * HEIGHT];
     final int[] hudTiles = new int[WIDTH * HEIGHT], hudAttributes = new int[WIDTH * HEIGHT];
@@ -17,7 +17,8 @@ final class HardwareFrameDiagnostics {
     boolean[] inventoryOriginalHidden;
     String[] inventoryOriginalSources;
 
-    void reset() {
+    @Override
+    public void reset() {
         Arrays.fill(approvedHudEvidence, false);
         Arrays.fill(hudTiles, 0);
         Arrays.fill(hudAttributes, 0);
@@ -29,11 +30,13 @@ final class HardwareFrameDiagnostics {
         inventoryOriginalSources = null;
     }
 
-    void attach(HardwareFrame frame) {
+    @Override
+    public void attach(HardwareFrame frame) {
         this.frame = frame;
     }
 
-    void beforeInventoryHiding(List<OamEntry> before, int windowY) {
+    @Override
+    public void beforeInventoryHiding(List<OamEntry> before, int windowY) {
         boolean anyHidden = false;
         for (var entry : before) if (((entry.entryY() + 16) & 255) >= windowY + 8) anyHidden = true;
         if (windowY <= 0 || windowY >= 128 || !anyHidden) return;
@@ -126,7 +129,8 @@ final class HardwareFrameDiagnostics {
         return legacy[at + 3] == (byte) 255 && hardware[at + 3] == (byte) 255;
     }
 
-    void closedHudTile(linksawakening.gpu.Tile tile, int tileId, int attributes, int x, int y) {
+    @Override
+    public void closedHudTile(linksawakening.gpu.Tile tile, int tileId, int attributes, int x, int y) {
         stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
             hudTiles[pixel] = tileId;
             hudAttributes[pixel] = attributes;
@@ -146,5 +150,37 @@ final class HardwareFrameDiagnostics {
                 if (px < 0 || py < 0 || px >= WIDTH || py >= HEIGHT) continue;
                 writer.write(py * WIDTH + px, tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty));
             }
+    }
+
+    @Override
+    public void backgroundPixel(int pixel, String source) {
+        approvedHudEvidence[pixel] = false;
+        bgSources[pixel] = source;
+    }
+
+    @Override
+    public void hudPixel(int pixel, int tile, int attributes) {
+        hudTiles[pixel] = tile;
+        hudAttributes[pixel] = attributes;
+    }
+
+    @Override
+    public void copiedBackgroundPixel(int pixel, HardwareFrameObserver source, String layer) {
+        HardwareFrameDiagnostics other = source instanceof HardwareFrameDiagnostics data ? data : null;
+        hudTiles[pixel] = other == null ? 0 : other.hudTiles[pixel];
+        hudAttributes[pixel] = other == null ? 0 : other.hudAttributes[pixel];
+        bgSources[pixel] = layer;
+        approvedHudEvidence[pixel] = false;
+    }
+
+    @Override
+    public void beginComposition() {
+        Arrays.fill(objSources, null);
+    }
+
+    @Override
+    public void objectPixel(int pixel, String source, int flags) {
+        objSources[pixel] = source;
+        objFlags[pixel] = flags;
     }
 }
