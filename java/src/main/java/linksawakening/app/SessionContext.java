@@ -834,4 +834,31 @@ public final class SessionContext {
         if (dialogs_blockers == null) dialogs_blockers = session::currentOverworldDialogBlockers;
         return dialogs_blockers;
     }
+
+    public InputState lifting_inputState() {
+        return session.services.inputState();
+    }
+
+    public InputConfig lifting_inputConfig() {
+        return session.services.inputConfig();
+    }
+
+    public PlayerState lifting_playerState() {
+        return session.services.playerState();
+    }
+
+    public Link lifting_link() {
+        return session.services.link();
+    }
+
+    public RoomSession lifting_roomSession() {
+        return session.services.roomSession();
+    }
+
+    private IntUnaryOperator lifting_direction;
+
+    public IntUnaryOperator lifting_direction() {
+        if (lifting_direction == null) lifting_direction = session::romDirectionForLink;
+        return lifting_direction;
+    }
 }

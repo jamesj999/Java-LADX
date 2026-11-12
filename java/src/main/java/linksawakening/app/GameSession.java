@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    LiftInteraction liftingInstance;
     DialogInteractions dialogsInstance;
     BushInteraction bushesInstance;
     OpeningStory openingStoryInstance;
@@ -358,6 +359,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        liftingInstance = new LiftInteraction(context);
         dialogsInstance = new DialogInteractions(context);
         bushesInstance = new BushInteraction(context);
         openingStoryInstance = new OpeningStory(context);
@@ -381,13 +383,7 @@ public class GameSession {
     }
 
     LiftInteraction lifting() {
-        return new LiftInteraction(
-                services.inputState(),
-                services.inputConfig(),
-                services.playerState(),
-                services.link(),
-                services.roomSession(),
-                this::romDirectionForLink);
+        return liftingInstance;
     }
 
     final linksawakening.app.gameplay.PassOutController passOutController =
