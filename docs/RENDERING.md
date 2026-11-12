@@ -21,10 +21,11 @@ top boxes, at least $58 for bottom boxes. Fully open inventory bypasses this
 filter. Entity-layer hiding is retained and the compositor applies the same
 filter to submitted nonreserved sources. No BG priority bit is invented.
 
-Hardware is the production default and FrameScene composes RGBA once. The
+Hardware is the production compositor and FrameScene composes RGBA once. The
 selectable legacy backend and duplicated layer rasterizers have been removed.
-Direct `render(RenderContext)` calls and custom RGBA callbacks retain narrow
-source-compatible adapters; production indexed scenes never use them.
+Direct `render(RenderContext)` calls submit an isolated hardware frame.
+Custom RGBA callback composition exists only in the test-only `CallbackScene`;
+`FrameScene` rejects non-hardware layers before drawing.
 The ignored `RenderPipeline` selector has been removed.
 The test-only reference preserves old RGBA layer composition through those
 compatibility APIs; independent emulator fixtures still verify raster output.
@@ -78,62 +79,32 @@ The headless `house-route.tsv` replay completed all 22 checkpoints
 ending in overworld room `$A2`, Link ROM position `(88,82)`, shield 1, health 24.
 No frame-hash expectations were changed. These checks establish bounded
 rendering behavior, not game-wide parity.
-Final full suite: 2,636 cases, 2,634 passed, 1 failed, 1 skipped (the opt-in
-OpenAL live test). The sole failure remains `MainOpeningRouteTest`, blocked at
-`left+a*+b x=72 4`, room `$0E`, ROM position `(84,91)`; it is left untouched.
-Its route SHA-256 is
-`7516e7d1d09a7d703ac6a87e99915cc5bed98153037db1f1b751f99e3abc1678`.
+## Composition ownership and diagnostics
 
-Production composition and diagnostics (2026-11-12):
+`GameFrameSceneBuilder` owns one reusable `HardwareFrame`. Scenes retain immutable
+layer lists; each draw resets the compositor before submission. Pixel planes,
+transform IDs, OAM entries and background scratch retain capacity across frames.
+Palette scopes preserve inner-to-outer evaluation. A builder and its scenes are
+confined to one rendering thread; do not retain `hardwareFrame()` across draws.
 
-`GameFrameSceneBuilder` owns one reusable `HardwareFrame` for its lifetime.
-Scenes retain immutable layer lists; the builder reuses only its construction
-lists and stable Link layer. Each draw resets the compositor before submitting
-those layers. The pixel planes, transform-ID array, OAM entry pool and optional
-background-copy scratch retain their capacity across frames. Palette transforms
-are composed once per scope and referenced through a small table, preserving
-inner-to-outer evaluation. OBJ painter order and original entry Y are unchanged.
-A scene/builder and its scratch are confined to one rendering thread: do not
-retain the package-private `hardwareFrame()` result across another draw.
+Production has no pixel provenance arrays. Tests attach `HardwareFrameDiagnostics`
+explicitly when rebuilding scenes. Layer class names are resolved only for those
+frames; reserved OBJ source identity remains available for dialog hiding.
+`FrameScene.drawTo(buffer, gpu, observer)` accepts explicit completed-frame inspection.
+For session captures, `GameFrameSceneBuilder.setDrawObserver` attaches an optional
+observer to subsequently built scenes. The two-argument draw performs no service
+lookup. There is no global production observer or service provider.
 
-Production frames have no pixel provenance arrays. Tests and local capture
-code explicitly attach `HardwareFrameDiagnostics` when rebuilding a scene to
-classify differences. It owns source strings, HUD evidence, hidden-inventory
-history and legacy comparison methods. Production keeps only source identity
-per OAM entry, which the whole-entry dialog visibility rules require.
-`FrameDrawObserver` is an explicit optional completed-frame observer. Existing
-session replay tests use a test-resources service provider whose scoped observer
-storage lives entirely in test sources; production has no ThreadLocal observer.
+`SceneParityExtension` explicitly attaches to builders reachable from test-instance
+fields before test execution and detaches afterwards. Tests creating a session
+inside their method must attach their own builder observer; standalone scenes
+pass an observer to the explicit draw overload. This bounds automatic parity
+coverage; dedicated `RenderPipelineParityTest` checks remain independent.
 
-`RgbaCallbackCompatibility` remains for the supported direct `RenderLayer.render`
-and custom callback APIs, including palette overlays. Indexed production scenes
-never enter it. Hardware capability is checked without streams; migration
-inspection and legacy comparison run only in tests. Immutable `GameFrameState`
-updates preserve referenced snapshot ownership and byte-masked frame counters.
-
-`ComposeAllocationTest` uses synthetic full-screen BG tiles, 40 OBJ tiles and
-sliding-window entry hiding, with 1,000 warm-up frames and 200 measured frames.
-Its thread-allocation measurement excludes parity instrumentation and guards a
-fixed budget below 4,096 bytes/frame. Baseline was 1,133,344 bytes/frame; the
-reused compose path measured 64 bytes/frame. This is a composition benchmark,
-not a whole-session allocation claim. The optional ROM benchmark was omitted
-because `GameSession.headlessFrame()` also advances simulation/audio and does
-not expose its private render assembler independently.
-
-Verification for this refactor: the ROM-enabled default suite completed 2,681
-cases with zero failures/errors and one skipped live-audio case. Scene parity
-reported 30,708 identical scenes, zero unexplained mismatches and 33 scenes
-containing the same 330 evidenced fidelity-fix pixels. One custom callback scene
-is deliberately outside indexed parity. All 37 entity regression tests were
-preserved while splitting their former large source file. No new emulator
-capture was made; these checks do not establish game-wide parity.
-
-The separately tagged `MainOpeningRouteTest` replay attempted the unchanged
-627-checkpoint tail-cave route (SHA-256
-`7516e7d1d09a7d703ac6a87e99915cc5bed98153037db1f1b751f99e3abc1678`).
-It stopped at the alive assertion: map $00, room $F1, position (88,40), frame
-counter 59, health 0. Recompiling the pre-refactor render/gpu sources into a
-local temporary classpath reproduced the identical complete failure message
-against the same application code. No route fixture or expected hash changed.
-The known-gap task's classpath needed a temporary Gradle init script to include
-the user-ROM test resource; repository build configuration was left unchanged.
+`ComposeAllocationTest` measures synthetic full-screen BG, 40 OBJ tiles and
+sliding-window hiding after 1,000 warm-up frames, over 200 measured frames.
+The 2026-11-12 cleanup measured **64 bytes/frame**, below **4,096 bytes/frame**.
+This protects composition reuse, not whole-session allocation.
+The ROM-enabled default suite passed 2,743 cases (zero failures/errors, one skipped
+live-audio case) after the cleanup. No route fixtures or expected hashes changed.
+No new emulator capture was run; these checks bound behavior and do not prove parity.

@@ -421,7 +421,9 @@ status also changes.
 Software layers submit indexed BG/window pixels and OBJ entries.
 `GPU` is a facade over VRAM, animation and ROM tile loaders.
 `OpenGlFramePresenter` owns GL presentation; gameplay does not issue GL calls.
-Hardware composition is the production default and produces RGBA once.
+Hardware-only `FrameScene` composition produces RGBA once. Optional completed-frame
+observers attach explicitly through the draw overload or session-local builder;
+production performs no service lookup. RGBA callback scenes live in tests.
 
 CGB OBJ-to-background/window composition uses color-zero transparency,
 both priority flags and LCDC bit 0. OBJ-to-OBJ ordering currently retains the
@@ -496,7 +498,8 @@ Dated evidence is indexed in [README.md](README.md).
 
 `.github/workflows/ci.yml` runs on pull requests targeting `main` only.
 Its Ubuntu/macOS matrix uses Java 21 and runs
-`./gradlew classes romFreeTest distZip -PallPlatforms`.
+`./gradlew spotlessCheck classes romFreeTest distZip -PallPlatforms`.
+Wrapper validation and ROM-free Python lint/unit checks accompany the Java jobs.
 Failure artifacts include test reports and results. CI does not supply a ROM
 or establish gameplay parity.
 

@@ -12,7 +12,7 @@ Place your ROM at java/src/main/resources/rom/azle.gbc, or pass
 The verifyRom helper reports a non-fatal MD5 mismatch against
 07c211479386825042efb4ad31bb525f, from LADX-Disassembly/ladx.md5.
 
-./gradlew test runs all tests when a ROM is available. Without one,
+./gradlew test runs the default suite when a ROM is available. Without one,
 ROM integration tests are skipped with a reason. ./gradlew romFreeTest
 excludes tests tagged rom. Mark every new ROM integration test class with
 @linksawakening.testing.RequiresRom (including indirect ROM consumers).
@@ -114,3 +114,31 @@ frame counter 118, health 4, powder 19, before clearing the forest. Re-running
 with the original `GameSession` reproduced the identical failure/state.
 No new emulator pixel comparison was performed: these checks verify debug
 controls and bounded room loading, not later-game parity.
+
+## Code style and checks
+
+Java uses Spotless with Palantir Java Format. From `java/`, run
+`./gradlew spotlessApply` before committing and `./gradlew spotlessCheck` to
+check formatting without edits. With a local ROM configured, the pre-merge gate
+is `./gradlew spotlessApply test` (or `./gradlew test` after formatting).
+
+`test` is the default regression oracle, including `@RequiresRom` integrations
+when a ROM is available. `romFreeTest` excludes ROM-tagged tests. `knownGapTest`
+is a separate opt-in task for a deliberately excluded pre-existing route gap;
+it is not part of the default gate. Do not weaken tests or route fixtures.
+
+`ComposeAllocationTest` protects reusable indexed composition scratch below
+4,096 bytes/frame. `SessionAllocationTest` bounds headless frame allocation;
+`AudioAllocationTest` checks retained audio buffers. See [TESTING.md](TESTING.md)
+for setup, assumptions and adding coverage.
+
+Public CI runs only for pull requests into `main`, with wrapper validation,
+`spotlessCheck`, ROM-free tests and Python lint/unit checks. ROM-backed tests
+cannot run in public CI by design: no ROM may be distributed or uploaded as a
+CI fixture. A passing public build does not replace the local ROM-enabled gate.
+
+Python tools target Python 3.11+ (validated locally with 3.12); use the exact
+pins in `tools/requirements.txt`. From the repository root run
+`python -m ruff check tools`, `python -m ruff format --check tools` and
+`python -m pytest tools`. These checks need no ROM. Capture commands do;
+see [tools/README.md](../tools/README.md).

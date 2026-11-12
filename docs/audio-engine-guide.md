@@ -5,7 +5,7 @@ This project is an open source engine reimplementation for preservation of
 Users must supply their own ROMs to use it. The engine must not bundle or
 redistribute the original game, ROMs, or extracted original game assets.
 
-This guide is for future agents working on the Link's Awakening DX audio code. It describes the current music-first implementation, how the pieces fit together, and the safest way to extend it.
+This guide is for future agents working on the Link's Awakening DX audio code. It describes the current music/SFX implementation, how the pieces fit together, and the safest way to extend it.
 
 The browser retains its sample-driven `OpenAlMusicPlayer` transport. Its
 pause/resume, looping, volume, channel meters and device-status controls go
