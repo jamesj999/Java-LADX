@@ -317,20 +317,14 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     private static RoomEntity entity(int type, int z) {
-        return new RoomEntity(
-                0,
-                0,
-                type,
-                0x40,
-                0x40,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                -1,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(0x40, 0x40)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .z(z)
+                .build();
     }
 
     private static EntityBackgroundCollisionResult resolve(

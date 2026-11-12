@@ -8,7 +8,7 @@ final class LiftedEntityMotionTest {
 
     @Test
     void phaseZeroUsesPhaseOneForDrawingWithoutChangingStoredPhase() {
-        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
                 0,
                 2,
                 LiftedEntityMotion.ROM_DIRECTION_RIGHT,
@@ -20,7 +20,7 @@ final class LiftedEntityMotionTest {
                 0x05,
                 false,
                 false,
-                0x22);
+                0x22));
 
         assertEquals(0, update.phase());
         assertEquals(2, update.transitionCountdown());
@@ -33,7 +33,7 @@ final class LiftedEntityMotionTest {
 
     @Test
     void countdownReloadUsesTheOldPhaseAndThenAdvances() {
-        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
                 1,
                 0,
                 LiftedEntityMotion.ROM_DIRECTION_LEFT,
@@ -45,7 +45,7 @@ final class LiftedEntityMotionTest {
                 0x05,
                 false,
                 false,
-                0x22);
+                0x22));
 
         assertEquals(2, update.phase());
         assertEquals(8, update.transitionCountdown());
@@ -57,7 +57,7 @@ final class LiftedEntityMotionTest {
 
     @Test
     void fullyHeldPhaseUsesCurrentDirectionAndSideScrollZOffset() {
-        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
                 4,
                 7,
                 LiftedEntityMotion.ROM_DIRECTION_RIGHT,
@@ -69,7 +69,7 @@ final class LiftedEntityMotionTest {
                 0x05,
                 true,
                 false,
-                0x22);
+                0x22));
 
         assertEquals(4, update.phase());
         assertEquals(7, update.transitionCountdown());
@@ -82,7 +82,7 @@ final class LiftedEntityMotionTest {
 
     @Test
     void fastTransitionTableMatchesBombOrPoweredLiftPath() {
-        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
                 1,
                 0,
                 LiftedEntityMotion.ROM_DIRECTION_DOWN,
@@ -94,7 +94,7 @@ final class LiftedEntityMotionTest {
                 0x02,
                 false,
                 true,
-                0);
+                0));
 
         assertEquals(2, update.phase());
         assertEquals(4, update.transitionCountdown());

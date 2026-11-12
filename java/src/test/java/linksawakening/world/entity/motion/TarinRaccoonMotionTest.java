@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class TarinRaccoonMotionTest {
@@ -116,7 +116,7 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateOneBlocksLinkClearsAttackFacesLinkAndCyclesTheSourceVariants() {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
-        motion.setStateForTest(SLOT, 1, 0, 0, 0, 0, 0, false);
+        MotionTestFixture.setStateForTest(motion, SLOT, 1, 0, 0, 0, 0, 0, false);
 
         List<Integer> observed = new ArrayList<>();
         RoomEntity entity = raccoon();
@@ -137,7 +137,7 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateOneMovesBeforeTheFinalWindowAndBouncesOnBackgroundCollision() {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
-        motion.setStateForTest(SLOT, 1, 0x10, 0, 0, 0, 0, false);
+        MotionTestFixture.setStateForTest(motion, SLOT, 1, 0x10, 0, 0, 0, 0, false);
         RoomEntityBackgroundInteraction wall =
                 (entity, direction, x, y) -> EntityBackgroundCollisionResult.blocked(direction, 0xFF, 0, x, y);
 
@@ -153,14 +153,14 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateOneLowYExtendsTheWindowButHighYStartsTheSourceZAndSpeedDamping() {
         TarinRaccoonMotion low = new TarinRaccoonMotion();
-        low.setStateForTest(SLOT, 1, 0x10, 0, 0, 0, 0, false);
+        MotionTestFixture.setStateForTest(low, SLOT, 1, 0x10, 0, 0, 0, 0, false);
         RoomEntity lowEntity = withPosition(raccoon(), 0x78, 0x2F, 0);
         TarinRaccoonMotion.Update extended = low.advance(lowEntity, inputWithCountdowns(1, 0x50, 0x40, 0, 5, 0));
         assertEquals(8, extended.slowTransitionCountdown());
         assertEquals(0, extended.speedZ());
 
         TarinRaccoonMotion high = new TarinRaccoonMotion();
-        high.setStateForTest(SLOT, 1, 0xF0, 0x10, 0, 0, 0, false);
+        MotionTestFixture.setStateForTest(high, SLOT, 1, 0xF0, 0x10, 0, 0, 0, false);
         RoomEntity highEntity = withPosition(raccoon(), 0x78, 0x30, 0);
         TarinRaccoonMotion.Update arcing = high.advance(highEntity, inputWithCountdowns(1, 0x50, 0x40, 0, 5, 0));
         assertEquals(5, arcing.slowTransitionCountdown());
@@ -172,7 +172,7 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateOneExpiryRequestsTheExactBombAndPersistenceWrites() {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
-        motion.setStateForTest(SLOT, 1, 0x20, 0xE0, 0x12, 0, 0, false);
+        MotionTestFixture.setStateForTest(motion, SLOT, 1, 0x20, 0xE0, 0x12, 0, 0, false);
         RoomEntity source = withPosition(raccoon(), 0x66, 0x55, 0x0A);
 
         TarinRaccoonMotion.Update update = motion.advance(source, inputWithCountdowns(4, 0x50, 0x40, 0, 0, 0));
@@ -188,7 +188,7 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateTwoArcLandsWithSourceCountdownFacingAndNearLatch() {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
-        motion.setStateForTest(SLOT, 2, 0, 0, 0xF0, 0, 0, false);
+        MotionTestFixture.setStateForTest(motion, SLOT, 2, 0, 0, 0xF0, 0, 0, false);
         RoomEntity source = withPosition(raccoon(), 0x78, 0x40, 0);
 
         TarinRaccoonMotion.Update update = motion.advance(source, inputWithCountdowns(0, 0x79, 0x40, 0, 0, 0));
@@ -204,7 +204,7 @@ final class TarinRaccoonMotionTest {
     @Test
     void stateThreeUsesAlreadyDecrementedCountdownThenFacesPushesAndTalks() {
         TarinRaccoonMotion motion = new TarinRaccoonMotion();
-        motion.setStateForTest(SLOT, 3, 0, 0, 0, 0, 0, false);
+        MotionTestFixture.setStateForTest(motion, SLOT, 3, 0, 0, 0, 0, 0, false);
 
         TarinRaccoonMotion.Update dialogA = motion.advance(raccoon(), inputWithCountdowns(1, 0x78, 0x50, 2, 0, 1));
         assertEquals(0x00A, dialogA.dialogGlobalId());
@@ -247,36 +247,27 @@ final class TarinRaccoonMotionTest {
     }
 
     private static RoomEntity withPosition(RoomEntity source, int x, int y, int z) {
-        return new RoomEntity(
-                source.slot(),
-                source.sourceLoadOrder(),
-                source.type(),
-                x,
-                y,
-                source.status(),
-                source.spriteDefinition(),
-                source.spriteVariant(),
-                source.entityFlipAttribute(),
-                source.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(source.slot())
+                .sourceLoadOrder(source.sourceLoadOrder())
+                .type(source.type())
+                .at(x, y)
+                .status(source.status())
+                .spriteDefinition(source.spriteDefinition())
+                .spriteVariant(source.spriteVariant())
+                .entityFlipAttribute(source.entityFlipAttribute())
+                .spriteTileOffset(source.spriteTileOffset())
+                .z(z)
+                .build();
     }
 
     private static RoomEntity raccoon() {
-        return new RoomEntity(
-                SLOT,
-                0,
-                0x3F,
-                0x78,
-                0x40,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x3F),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(SLOT)
+                .sourceLoadOrder(0)
+                .type(0x3F)
+                .at(0x78, 0x40)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x3F))
+                .build();
     }
 }

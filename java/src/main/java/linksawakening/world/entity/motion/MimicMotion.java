@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -12,10 +13,10 @@ public final class MimicMotion {
     private static final int[] SPEED_BY_BUTTON_INDEX = {0x21, 0xF0, 0x10, 0x21};
     private static final int[] VERTICAL_VARIANT_BASE_BY_INDEX = {0, 2, 0, 6};
 
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(RoomEntity entity) {}
 
@@ -118,16 +119,6 @@ public final class MimicMotion {
         return speedY[slot];
     }
 
-    void setSpeedForTest(int slot, int newSpeedX, int newSpeedY) {
-        validateSlot(slot);
-        validateByte(newSpeedX, "Mimic X speed");
-        validateByte(newSpeedY, "Mimic Y speed");
-        speedX[slot] = newSpeedX;
-        speedY[slot] = newSpeedY;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-    }
-
     public void clear(int slot) {
         initialize(slot);
     }
@@ -160,17 +151,12 @@ public final class MimicMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());
@@ -181,13 +167,13 @@ public final class MimicMotion {
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private static void validateSlot(int slot) {
+    static void validateSlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }

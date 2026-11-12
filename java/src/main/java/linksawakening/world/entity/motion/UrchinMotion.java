@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -44,17 +45,17 @@ public final class UrchinMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int physicsFlags,
-            int linkEntityX,
-            int linkEntityY,
-            int linkDirection,
-            boolean usingShield,
-            boolean swordCollisionActive,
-            boolean linkInteractive,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(UrchinFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int physicsFlags = inputs.physicsFlags();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkDirection = inputs.linkDirection();
+        boolean usingShield = inputs.usingShield();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        boolean linkInteractive = inputs.linkInteractive();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
         checkType(entity);
         validateByte(frameCounter, "Urchin frame counter");
         validateByte(physicsFlags, "Urchin physics flags");
@@ -189,17 +190,12 @@ public final class UrchinMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

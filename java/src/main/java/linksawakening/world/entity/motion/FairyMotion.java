@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /**
@@ -88,11 +89,6 @@ public final class FairyMotion {
         return speedY[slot] & 0xFF;
     }
 
-    void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int ignoredSpeedZ) {
-        validateByte(ignoredSpeedZ, "Fairy Z speed");
-        setSpeed(slot, newSpeedX, newSpeedY);
-    }
-
     public void setSpeed(int slot, int newSpeedX, int newSpeedY) {
         validateSlot(slot);
         validateByte(newSpeedX, "Fairy X speed");
@@ -176,20 +172,8 @@ public final class FairyMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z & 0xFF,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x & 0xFF, y & 0xFF, variant, entity.entityFlipAttribute(), z & 0xFF, -1, false);
     }
 
     private static int signedByte(int value) {
@@ -203,7 +187,7 @@ public final class FairyMotion {
         }
     }
 
-    private static void validateByte(int value, String name) {
+    static void validateByte(int value, String name) {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }

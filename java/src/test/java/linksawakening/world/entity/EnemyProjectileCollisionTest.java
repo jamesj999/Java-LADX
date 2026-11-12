@@ -229,8 +229,10 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimeEmitsProjectileEventsBeforeAdvancingTheSharedHandler() {
-        RoomEntityRuntime rockRuntime =
-                RoomEntityRuntime.from(snapshot(projectile(0x0A, 0x40, 0x50, 0)), false, () -> 0);
+        RoomEntityRuntime rockRuntime = RoomEntityRuntime.builder(snapshot(projectile(0x0A, 0x40, 0x50, 0)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
 
         var rockEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(
                 rockRuntime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 1, true)));
@@ -238,14 +240,17 @@ final class EnemyProjectileCollisionTest {
         assertEquals(1, rockEvents.size());
         assertEquals(
                 EntityProjectileEvent.Kind.SHIELD_BLOCK, rockEvents.getFirst().kind());
-        assertEquals(0x18, rockRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(
+                0x18, new EntityEnemyInspectionQueries(rockRuntime.enemies()).enemyProjectileTransitionCountdown(0));
 
         var nextFrameEvents = rockRuntime.tick(EntityTestFrames.projectileFrame(
                 rockRuntime, 1, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 1, true)));
         assertTrue(nextFrameEvents.isEmpty());
 
-        RoomEntityRuntime arrowRuntime =
-                RoomEntityRuntime.from(snapshot(projectile(0x0C, 0x40, 0x50, 0)), false, () -> 0);
+        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(projectile(0x0C, 0x40, 0x50, 0)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
         var arrowEvents = arrowRuntime.tick(EntityTestFrames.projectileFrame(
                 arrowRuntime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 0, false)));
 
@@ -254,13 +259,16 @@ final class EnemyProjectileCollisionTest {
         assertEquals(
                 EntityStatus.DISABLED,
                 arrowRuntime.inspection().snapshot().slots().get(0).status());
-        assertEquals(0, arrowRuntime.enemies().enemyProjectileTransitionCountdown(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(arrowRuntime.enemies()).enemyProjectileTransitionCountdown(0));
     }
 
     @Test
     void runtimeChecksPairoddProjectileAfterBankFourMovementAndPublishesVfx() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(snapshot(projectile(0x58, 0x3F, 0x50, 0)), false, () -> 0);
-        runtime.debug().setPairoddProjectileForTest(0, 0x10, 0, 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x3F, 0x50, 0)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setPairoddProjectileForTest(0, 0x10, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime, 0, 0x40, 0x50, () -> 0, null, link(0x40, 0x50, 0, 0x00, 0, false)));
@@ -281,9 +289,11 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimeChecksPairoddSwordAfterBankFourMovementAndPublishesBumpResponse() {
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.from(snapshot(projectile(0x58, 0x32, 0x58, 0x08)), false, () -> 0);
-        runtime.debug().setPairoddProjectileForTest(0, 0x60, 0, 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x32, 0x58, 0x08)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setPairoddProjectileForTest(0, 0x60, 0, 0);
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime, 0, 0, 0, () -> 0, null, link(0, 0, 0, 0x02, 0, false), true, 0x40, 1, 0x58, 1));
@@ -307,8 +317,10 @@ final class EnemyProjectileCollisionTest {
 
     @Test
     void runtimePreservesLinkAndSwordResponsesWhenBothPairoddChecksHit() {
-        RoomEntityRuntime runtime =
-                RoomEntityRuntime.from(snapshot(projectile(0x58, 0x38, 0x58, 0x08)), false, () -> 0);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(projectile(0x58, 0x38, 0x58, 0x08)))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .build();
 
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime, 0, 0x38, 0x50, () -> 0, null, link(0x38, 0x50, 0, 0x00, 0, false), true, 0x40, 1, 0x58, 1));
@@ -328,20 +340,13 @@ final class EnemyProjectileCollisionTest {
     }
 
     private static RoomEntity projectile(int type, int x, int y, int z) {
-        return new RoomEntity(
-                0,
-                -1,
-                type,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                -1,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .z(z)
+                .build();
     }
 
     private static int positionForWindow(int linkPosition, int windowValue) {

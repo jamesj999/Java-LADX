@@ -3,8 +3,8 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -125,19 +125,13 @@ final class EnemyDropMotionTest {
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y, int z) {
-        return new RoomEntity(
-                slot,
-                -1,
-                type,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                -1,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .z(z)
+                .build();
     }
 }

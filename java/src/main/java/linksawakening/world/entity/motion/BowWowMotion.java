@@ -3,9 +3,10 @@ package linksawakening.world.entity.motion;
 import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.BowWowChain;
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -18,28 +19,38 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
  * without running a general Game Boy CPU.</p>
  */
 public final class BowWowMotion {
-    private static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8, 0xF4, 0xF8};
-    private static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
+    private int bowWowState;
+
+    public int readBowWowState() {
+        return bowWowState;
+    }
+
+    public int writeBowWowState(int value) {
+        return bowWowState = value;
+    }
+
+    static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8, 0xF4, 0xF8};
+    static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
 
     private final BowWowChain[] chains = new BowWowChain[EntityRoomLoader.MAX_ENTITIES];
 
-    private final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] updatedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] updatedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         clear(slot);
@@ -54,7 +65,7 @@ public final class BowWowMotion {
             int linkEntityZ,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advanceWithTargetScan(
+        return advanceWithTargetScan(new BowWowTargetFrame(
                         entity,
                         frameCounter,
                         linkEntityX,
@@ -63,182 +74,20 @@ public final class BowWowMotion {
                         randomByteSupplier,
                         backgroundCollision,
                         List.of(entity),
-                        type -> false)
+                        type -> false))
                 .entity();
     }
 
-    Update advanceWithTargetScan(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity) {
-        tickTimers(entity.slot());
-        return advanceAfterTimers(
-                entity,
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                randomByteSupplier,
-                backgroundCollision,
-                entities,
-                canEatEntity);
+    Update advanceWithTargetScan(BowWowTargetFrame inputs) {
+        return BowWowBehavior.advanceWithTargetScan(this, inputs);
     }
 
-    public Update advanceAfterTimers(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity) {
-        return advanceAfterTimers(
-                entity,
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkEntityZ,
-                randomByteSupplier,
-                backgroundCollision,
-                entities,
-                canEatEntity,
-                1);
+    public Update advanceAfterTimers(BowWowFrame inputs) {
+        return BowWowBehavior.advanceAfterTimers(this, inputs);
     }
 
-    public Update advanceAfterTimers(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity,
-            int bowWowState) {
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        int variant = selectedVariant[slot];
-        // $05:4060 draws the saved variant; $44CB then selects the next one
-        // from the existing speeds, before gravity and state dispatch.
-        if ((speedX[slot] | speedY[slot]) != 0) {
-            selectedVariant[slot] = movementVariant(frameCounter, slot);
-        }
-
-        if (privateState4[slot] == 0) {
-            return new Update(setup(entity), targetSlot[slot], null);
-        }
-
-        if (bowWowState != 0 && bowWowState != 0x80) {
-            targetX[slot] = byteValue(linkEntityX);
-            // Kidnapped BowWow retains the pen anchor written by setup.
-            // Following BowWow uses hLinkPositionZModified ($05:40E6).
-            targetY[slot] = byteValue(linkEntityY - linkEntityZ);
-        }
-
-        boolean wasAboveGround = updateZ(entity.z(), slot);
-        int x = entity.x();
-        int y = entity.y();
-        int z = updatedZ[slot];
-        TargetContact targetContact = null;
-
-        switch (activeState[slot]) {
-            case 0 -> {
-                if (transitionCountdown[slot] == 0) {
-                    transitionCountdown[slot] = 0x28;
-                    if (bowWowState == 0) {
-                        speedZ[slot] = 0x20;
-                        activeState[slot] = 2;
-                        Vector vector = vectorTowardsTarget(
-                                entity, withPositionAndVariant(entity, linkEntityX, linkEntityY, 0, 0), z, 0x20);
-                        speedX[slot] = vector.x();
-                        speedY[slot] = vector.y();
-                        break;
-                    }
-                    // $05:4297 skips both target scanning and its RNG read
-                    // while BowWow is chained inside the hideout.
-                    int selectedTarget = bowWowState == 0x80
-                            ? -1
-                            : findTarget(entity, linkEntityX, linkEntityY, randomByteSupplier, entities, canEatEntity);
-                    if (selectedTarget >= 0) {
-                        RoomEntity target = entities.get(selectedTarget);
-                        targetSlot[slot] = selectedTarget;
-                        Vector vector = vectorTowardsTarget(entity, target, z, 0x30);
-                        speedX[slot] = vector.x();
-                        speedY[slot] = vector.y();
-                        speedZ[slot] = 0x10;
-                        activeState[slot] = 4;
-                    } else {
-                        transitionCountdown[slot] = 0x10;
-                    }
-                } else if (privateCountdown1[slot] == 0) {
-                    privateCountdown1[slot] = 0x20 + (randomByteSupplier.getAsInt() & 0x3F);
-                    activeState[slot] = 1;
-                    int direction = randomByteSupplier.getAsInt() & 0x07;
-                    speedX[slot] = SPEED_X_BY_RANDOM[direction];
-                    speedY[slot] = SPEED_Y_BY_RANDOM[direction];
-                }
-            }
-            case 1 -> {
-                if (privateCountdown1[slot] == 0) {
-                    privateCountdown1[slot] = 0x20;
-                    // func_005_41CF increments the state pointer, then writes
-                    // B (zero), returning to the target-selection handler.
-                    activeState[slot] = 0;
-                }
-                if (wasAboveGround) {
-                    speedZ[slot] = 0x10;
-                }
-                int[] moved = move(entity, x, y, slot, backgroundCollision);
-                x = correctTargetX(moved[0], x, slot);
-                y = correctTargetY(moved[1], y, slot);
-            }
-            case 2, 4 -> {
-                boolean stopLunge = transitionCountdown[slot] == 0;
-                if (transitionCountdown[slot] != 0) {
-                    int[] moved = move(entity, x, y, slot, backgroundCollision);
-                    x = correctTargetX(moved[0], x, slot);
-                    y = correctTargetY(moved[1], y, slot);
-                    // func_005_4228 returns E>1 when either axis is restored;
-                    // $41F6 then enters the same pause as an expired lunge.
-                    stopLunge = !inSignedWindow(signedByte(targetX[slot] - moved[0]), 0x20)
-                            || !inSignedWindow(signedByte(targetY[slot] - moved[1]), 0x20);
-                }
-                if (stopLunge) {
-                    speedX[slot] = 0;
-                    speedY[slot] = 0;
-                    activeState[slot] = 3;
-                    transitionCountdown[slot] = 0x10;
-                }
-                // func_005_41EB reaches label_005_4335 after every moving
-                // state-2/state-4 frame, not only when the timer expires.
-                if (bowWowState != 0) {
-                    targetContact = findTargetContact(entity.x(), entity.y(), entity.z(), targetSlot[slot], entities);
-                }
-            }
-            case 3 -> {
-                if (transitionCountdown[slot] == 0) {
-                    // func_005_420E starts a ten-frame pause, then writes B
-                    // (zero) back to wEntitiesStateTable for a fresh scan.
-                    int pause = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
-                    transitionCountdown[slot] = bowWowState == 0 ? pause : 0x10;
-                    activeState[slot] = 0;
-                }
-            }
-            default -> activeState[slot] = 0;
-        }
-
-        return new Update(withPositionAndVariant(entity, x, y, z, variant), targetSlot[slot], targetContact);
+    public Update advanceAfterTimers(BowWowCollisionFrame inputs) {
+        return BowWowBehavior.advanceAfterTimers(this, inputs);
     }
 
     public void clear(int slot) {
@@ -316,10 +165,6 @@ public final class BowWowMotion {
         return speedY[slot] & 0xFF;
     }
 
-    public void setTransitionCountdownForTest(int slot, int value) {
-        setTransitionCountdown(slot, value);
-    }
-
     public void setTransitionCountdown(int slot, int value) {
         if (slot < 0 || slot >= transitionCountdown.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -340,7 +185,7 @@ public final class BowWowMotion {
         privateCountdown2[slot] = value;
     }
 
-    private RoomEntity setup(RoomEntity entity) {
+    RoomEntity setup(RoomEntity entity) {
         int slot = entity.slot();
         int x = byteValue(entity.x() + 0x04);
         int y = byteValue(entity.y() + 0x08);
@@ -367,7 +212,7 @@ public final class BowWowMotion {
     }
 
     /** Returns whether the source's gravity step crossed below signed zero. */
-    private boolean updateZ(int positionZ, int slot) {
+    boolean updateZ(int positionZ, int slot) {
         int nextZ = addSpeedToPosition(positionZ, speedZ[slot], speedZAccumulator, slot);
         speedZ[slot] = byteValue(speedZ[slot] - 0x02);
         if ((nextZ & 0x80) == 0) {
@@ -379,7 +224,7 @@ public final class BowWowMotion {
         return true;
     }
 
-    private int[] move(RoomEntity entity, int x, int y, int slot, RoomEntityBackgroundCollision backgroundCollision) {
+    int[] move(RoomEntity entity, int x, int y, int slot, RoomEntityBackgroundCollision backgroundCollision) {
         int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
         int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
         // ApplyEntityInteractionWithBackground returns before the generic wall
@@ -388,15 +233,15 @@ public final class BowWowMotion {
         return new int[] {nextX, nextY};
     }
 
-    private int correctTargetX(int nextX, int beforeX, int slot) {
+    int correctTargetX(int nextX, int beforeX, int slot) {
         return inSignedWindow(signedByte(targetX[slot] - nextX), 0x20) ? nextX : beforeX;
     }
 
-    private int correctTargetY(int nextY, int beforeY, int slot) {
+    int correctTargetY(int nextY, int beforeY, int slot) {
         return inSignedWindow(signedByte(targetY[slot] - nextY), 0x20) ? nextY : beforeY;
     }
 
-    private int movementVariant(int frameCounter, int slot) {
+    int movementVariant(int frameCounter, int slot) {
         int horizontal = Math.abs(signedByte(speedX[slot]));
         int vertical = Math.abs(signedByte(speedY[slot]));
         int base;
@@ -408,35 +253,17 @@ public final class BowWowMotion {
         return base == 6 ? 6 : base + ((frameCounter >>> 3) & 0x01);
     }
 
-    private static int findTarget(
+    static int findTarget(
             RoomEntity source,
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier,
             List<RoomEntity> entities,
             IntPredicate canEatEntity) {
-        boolean descending = (randomByteSupplier.getAsInt() & 0x01) == 0;
-        int step = descending ? -1 : 1;
-        int candidate = descending ? EntityRoomLoader.MAX_ENTITIES - 1 : 0;
-        int end = descending ? -1 : EntityRoomLoader.MAX_ENTITIES;
-        while (candidate != end) {
-            if (candidate != source.slot() && candidate >= 0 && candidate < entities.size()) {
-                RoomEntity target = entities.get(candidate);
-                if (target.loaded()
-                        && target.status() != EntityStatus.DYING
-                        && target.spriteVariant() != 1
-                        && canEatEntity.test(target.type())
-                        && inUnsignedWindow(linkEntityX - target.x(), 0x2F, 0x5E)
-                        && inUnsignedWindow(linkEntityY - target.y(), 0x2F, 0x5E)) {
-                    return candidate;
-                }
-            }
-            candidate += step;
-        }
-        return -1;
+        return BowWowBehavior.findTarget(source, linkEntityX, linkEntityY, randomByteSupplier, entities, canEatEntity);
     }
 
-    private static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target, int sourceZ, int length) {
+    static Vector vectorTowardsTarget(RoomEntity source, RoomEntity target, int sourceZ, int length) {
         int distanceX = signedByte(target.x() - source.x());
         // The shared vector helper reads Z after this handler's gravity update.
         int distanceY = signedByte(target.y() - source.y() + sourceZ);
@@ -471,12 +298,12 @@ public final class BowWowMotion {
         return result;
     }
 
-    private static boolean inUnsignedWindow(int difference, int offset, int limit) {
+    static boolean inUnsignedWindow(int difference, int offset, int limit) {
         return ((difference + offset) & 0xFF) < limit;
     }
 
     /** Mirrors label_005_4335's final X/visual-Y contact test. */
-    private static TargetContact findTargetContact(
+    static TargetContact findTargetContact(
             int sourceX, int sourceY, int sourceZ, int targetSlot, List<RoomEntity> entities) {
         if (targetSlot < 0 || targetSlot >= entities.size()) {
             return null;
@@ -505,34 +332,21 @@ public final class BowWowMotion {
         return byteValue(position + delta);
     }
 
-    private static boolean inSignedWindow(int distance, int halfOpen) {
+    static boolean inSignedWindow(int distance, int halfOpen) {
         return distance >= -halfOpen && distance < halfOpen;
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private static int byteValue(int value) {
+    static int byteValue(int value) {
         return value & 0xFF;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+    static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
     public record Update(RoomEntity entity, int targetSlot, TargetContact targetContact) {
@@ -543,5 +357,5 @@ public final class BowWowMotion {
 
     public record TargetContact(int slot, int type) {}
 
-    private record Vector(int x, int y) {}
+    record Vector(int x, int y) {}
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
 import linksawakening.world.entity.motion.MotionTestAccess;
 import org.junit.jupiter.api.Test;
@@ -50,25 +51,18 @@ final class DogRuntimeTest {
     void usesDogsRomMetadataAndHandlerHealthSeed() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_DOG,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD),
-                        2,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_DOG)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .spriteVariant(2)
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
@@ -78,7 +72,7 @@ final class DogRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
 
         assertEquals(0x4C, runtime.enemies().enemyHealth(0));
-        assertEquals(0x01, runtime.enemies().dogState(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).dogState(0));
     }
 
     @Test
@@ -86,8 +80,8 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
 
-        DogMotion.Update update =
-                motion.advance(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, sequence(0x00, 0x01, 0x1F), null);
+        DogMotion.Update update = motion.advance(
+                new DogFrame(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, sequence(0x00, 0x01, 0x1F), null));
 
         assertEquals(0x01, update.state());
         assertEquals(0x4F, update.transitionCountdown());
@@ -107,13 +101,14 @@ final class DogRuntimeTest {
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0x00);
 
-        DogMotion.Update moved = motion.advance(dog, 8, 0x03, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null);
+        DogMotion.Update moved =
+                motion.advance(new DogFrame(dog, 8, 0x03, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
         assertEquals(0x41, moved.entity().x());
         assertEquals(0x40, moved.entity().y());
         assertEquals(0x01, moved.state());
         assertEquals(0x03, moved.transitionCountdown());
 
-        DogMotion.Update blocked = motion.advance(
+        DogMotion.Update blocked = motion.advance(new DogFrame(
                 moved.entity(),
                 16,
                 0x03,
@@ -125,7 +120,7 @@ final class DogRuntimeTest {
                 false,
                 () -> 0,
                 (entity, direction, nextX, nextY) ->
-                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY));
+                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY)));
 
         assertEquals(0x41, blocked.entity().x());
         assertEquals(0x40, blocked.entity().y());
@@ -141,7 +136,7 @@ final class DogRuntimeTest {
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 1, 0, 0x10, 0x00, 0xFE);
 
-        DogMotion.Update update = motion.advance(
+        DogMotion.Update update = motion.advance(new DogFrame(
                 dog,
                 0,
                 0x00,
@@ -153,7 +148,7 @@ final class DogRuntimeTest {
                 false,
                 () -> 0,
                 (entity, direction, nextX, nextY) ->
-                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY));
+                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY)));
 
         assertEquals(0x00, update.state());
         assertEquals(0x30, update.transitionCountdown());
@@ -167,7 +162,8 @@ final class DogRuntimeTest {
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0x00, 0x00, 0x00);
 
-        DogMotion.Update launched = motion.advance(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null);
+        DogMotion.Update launched =
+                motion.advance(new DogFrame(dog, 0, 0x00, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
         assertEquals(0x03, launched.state());
         assertEquals(0x24, launched.speedX());
         assertEquals(0x00, launched.speedY());
@@ -176,7 +172,7 @@ final class DogRuntimeTest {
         assertEquals(0x00, launched.entity().z());
 
         MotionTestAccess.setStateForTest(motion, 0, 3, 0, 0x10, 0x00, 0x00);
-        DogMotion.Update blocked = motion.advance(
+        DogMotion.Update blocked = motion.advance(new DogFrame(
                 dog,
                 0,
                 0x20,
@@ -188,7 +184,7 @@ final class DogRuntimeTest {
                 false,
                 () -> 0,
                 (entity, direction, nextX, nextY) ->
-                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY));
+                        EntityBackgroundCollisionResult.blocked(direction, 0x40, 0x40, nextX, nextY)));
 
         assertEquals(0x03, blocked.state(), "Wall contact does not end the charge");
         assertEquals(0x20, blocked.transitionCountdown());
@@ -200,9 +196,10 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
         MotionTestAccess.setStateForTest(motion, 0, 2, 0, 0, 0, 0);
-        DogMotion.Update update = motion.advance(dog, 0, 0, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null);
+        DogMotion.Update update =
+                motion.advance(new DogFrame(dog, 0, 0, 0x92, 0x70, 0x40, 0, false, false, () -> 0, null));
         for (int frame = 1; frame <= 26; frame++) {
-            update = motion.advance(
+            update = motion.advance(new DogFrame(
                     update.entity(),
                     frame,
                     0,
@@ -215,7 +212,7 @@ final class DogRuntimeTest {
                     () -> {
                         throw new AssertionError("Charge does not draw RNG");
                     },
-                    null);
+                    null));
             assertEquals(0x40 + (frame * 0x24) / 16, update.entity().x());
             assertEquals(frame == 26 ? 0 : 3, update.state());
         }
@@ -228,7 +225,8 @@ final class DogRuntimeTest {
         DogMotion motion = new DogMotion();
         RoomEntity dog = dog(loadRom());
 
-        DogMotion.Update update = motion.advance(dog, 0, 0x20, 0x92, 0x4F, 0x40, 1, true, false, () -> 0, null);
+        DogMotion.Update update =
+                motion.advance(new DogFrame(dog, 0, 0x20, 0x92, 0x4F, 0x40, 1, true, false, () -> 0, null));
 
         assertTrue(update.dialogRequested());
         assertEquals(0x20, update.dialogLowId());
@@ -238,25 +236,18 @@ final class DogRuntimeTest {
     void nonInteractiveLinkMotionSkipsDogTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_DOG,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD),
-                        2,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_DOG)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .spriteVariant(2)
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         AtomicInteger terrainCalls = new AtomicInteger();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -278,7 +269,13 @@ final class DogRuntimeTest {
     private static RoomEntity dog(byte[] rom) {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
-        return new RoomEntity(0, 0, ENTITY_DOG, 0x40, 0x40, EntityStatus.ACTIVE, definition, 2, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_DOG)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .spriteVariant(2)
+                .build();
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

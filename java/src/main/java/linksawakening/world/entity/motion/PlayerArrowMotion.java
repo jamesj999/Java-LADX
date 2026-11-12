@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySideViewGravity;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.PlayerProjectileLaunchSpeed;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -21,16 +22,16 @@ public final class PlayerArrowMotion {
     private static final int[] SPIN_VARIANTS = {0, 3, 1, 2};
 
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] collision = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     static SpawnData spawnData(int projectileDirection) {
@@ -192,26 +193,6 @@ public final class PlayerArrowMotion {
         collision[slot] = false;
     }
 
-    void setSpeedForTest(int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
-        validateSlot(slot);
-        speedX[slot] = newSpeedX & 0xFF;
-        speedY[slot] = newSpeedY & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
-        initialized[slot] = true;
-    }
-
-    void setTransitionForTest(int slot, int countdown, int z, int newSpeedZ) {
-        validateSlot(slot);
-        transitionCountdown[slot] = countdown & 0xFF;
-        zPosition[slot] = z & 0xFF;
-        speedZ[slot] = newSpeedZ & 0xFF;
-        speedZAccumulator[slot] = 0;
-        initialized[slot] = true;
-    }
-
     private Update advanceWallTransition(RoomEntity entity, int frameCounter, int groundStatus, boolean sideScrolling) {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -267,7 +248,7 @@ public final class PlayerArrowMotion {
         return direction;
     }
 
-    private static void validateSlot(int slot) {
+    static void validateSlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -279,20 +260,7 @@ public final class PlayerArrowMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
     record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}

@@ -17,14 +17,16 @@ final class BowWowPauseTest {
     void pausesMovementGravityAndIgnoreHitsButUsesTheSharedTimerGate(String gate) throws IOException {
         RoomEntityRuntime runtime = wanderingBowWow();
         RoomEntity before = runtime.inspection().snapshot().slots().getFirst();
-        runtime.debug().setBowWowTransitionCountdownForTest(0, 8);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 3);
+        EntityRuntimeFixture.debug(runtime).setBowWowTransitionCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 3);
         setGate(runtime, gate, true);
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> {
             throw new AssertionError("Paused BowWow must not select targets");
         }));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
-        assertEquals(gate.equals("got_item") ? 7 : 8, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(
+                gate.equals("got_item") ? 7 : 8,
+                new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
         assertEquals(3, runtime.enemies().enemyIgnoreHitsCountdown(0));
         setGate(runtime, gate, false);
         runtime.tick(EntityTestFrames.frame(runtime, 17, 0x44, 0x58, () -> 0));
@@ -41,11 +43,11 @@ final class BowWowPauseTest {
     void ocarinaPausesSharedTimersWhileBowWowStillMoves() throws IOException {
         RoomEntityRuntime runtime = wanderingBowWow();
         RoomEntity before = runtime.inspection().snapshot().slots().getFirst();
-        runtime.debug().setBowWowTransitionCountdownForTest(0, 8);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 3);
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setBowWowTransitionCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 3);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> 0));
-        assertEquals(8, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(8, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
         assertEquals(2, runtime.enemies().enemyIgnoreHitsCountdown(0));
         // Speeds use four fractional bits; one tick need not cross a pixel.
         for (int frame = 17; frame < 21; frame++) {
@@ -59,21 +61,21 @@ final class BowWowPauseTest {
     void creditsDoNotBypassBowWowsExplicitSequenceCheck() throws IOException {
         RoomEntityRuntime runtime = wanderingBowWow();
         RoomEntity before = runtime.inspection().snapshot().slots().getFirst();
-        runtime.debug().setBowWowTransitionCountdownForTest(0, 8);
-        runtime.debug().setGameplayWorldForTest(false);
-        runtime.debug().setTransitionSequenceCounterForTest(3);
+        EntityRuntimeFixture.debug(runtime).setBowWowTransitionCountdownForTest(0, 8);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 16, 0x44, 0x58, () -> 0, true));
         assertEquals(before, runtime.inspection().snapshot().slots().getFirst());
-        assertEquals(7, runtime.inspection().bowWowTransitionCountdown(0));
+        assertEquals(7, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(0));
     }
 
     private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
         switch (gate) {
             case "dialog" -> runtime.configuration().setDialogActive(active);
             case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
-            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException(gate);
         }
     }
@@ -93,22 +95,17 @@ final class BowWowPauseTest {
         }
         slots.set(
                 0,
-                new RoomEntity(
-                        0,
-                        -1,
-                        0x6D,
-                        0x40,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        catalog.forFollowerEntityType(0x6D),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots), false, () -> 0, catalog, new RomEnemyCombatTables(rom));
+                new RoomEntityBuilder()
+                        .type(0x6D)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(catalog.forFollowerEntityType(0x6D))
+                        .build());
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
         for (int frame = 0; frame < 6; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x44, 0x58, () -> 0));

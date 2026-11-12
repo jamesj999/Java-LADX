@@ -28,7 +28,7 @@ public final class HookshotChainMotion {
     private static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_HEIGHT = 0x05;
 
-    private final State[] states = new State[EntityRoomLoader.MAX_ENTITIES];
+    final State[] states = new State[EntityRoomLoader.MAX_ENTITIES];
 
     public record State(
             int x,
@@ -53,30 +53,6 @@ public final class HookshotChainMotion {
             validateByte(speedXAccumulator, "speedXAccumulator");
             validateByte(speedYAccumulator, "speedYAccumulator");
             validateByte(entityState, "entityState");
-        }
-
-        public State(
-                int x,
-                int y,
-                int z,
-                int direction,
-                int speedX,
-                int speedY,
-                int transitionCountdown,
-                int speedXAccumulator,
-                int speedYAccumulator) {
-            this(
-                    x,
-                    y,
-                    z,
-                    direction,
-                    speedX,
-                    speedY,
-                    transitionCountdown,
-                    speedXAccumulator,
-                    speedYAccumulator,
-                    0,
-                    false);
         }
     }
 
@@ -122,7 +98,7 @@ public final class HookshotChainMotion {
 
     public static State enterPulling(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -134,12 +110,12 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 PULLING_STATE,
-                false);
+                false));
     }
 
     public static State deferWallPoke(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -151,12 +127,12 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                true);
+                true));
     }
 
     public static State completeWallPoke(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -168,14 +144,14 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                false);
+                false));
     }
 
     public static State rollbackTo(State state, int x, int y) {
         requireState(state);
         validateByte(x, "x");
         validateByte(y, "y");
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 x,
                 y,
@@ -187,7 +163,7 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                state.wallCollisionPending());
+                state.wallCollisionPending()));
     }
 
     public static int speedXForDirection(int direction) {
@@ -220,12 +196,12 @@ public final class HookshotChainMotion {
      * hookshotable-object pull state for the shared collision increment.</p>
      */
     public static Step advance(State state, int linkX, int linkY, boolean blocked) {
-        return advance(state, linkX, linkY, blocked, true);
+        return HookshotChainBehavior.advance(state, linkX, linkY, blocked);
     }
 
     public static State decrementTransitionCountdown(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -237,48 +213,11 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                state.wallCollisionPending());
+                state.wallCollisionPending()));
     }
 
     public static Step advance(State state, int linkX, int linkY, boolean blocked, boolean tickCountdown) {
-        if (state == null) {
-            throw new IllegalArgumentException("Hookshot state cannot be null");
-        }
-        validateByte(linkX, "linkX");
-        validateByte(linkY, "linkY");
-        if (blocked) {
-            return new Step(state, true, false, state.transitionCountdown() == 0);
-        }
-
-        SpeedStep nextX = addSpeed(state.x(), state.speedX(), state.speedXAccumulator());
-        SpeedStep nextY = addSpeed(state.y(), state.speedY(), state.speedYAccumulator());
-        int nextCountdown = tickCountdown ? Math.max(0, state.transitionCountdown() - 1) : state.transitionCountdown();
-        boolean returning = nextCountdown == 0;
-        int nextSpeedX = state.speedX();
-        int nextSpeedY = state.speedY();
-        if (returning) {
-            Vector vector =
-                    vectorTowardsLink(nextX.position(), nextY.position(), state.z(), linkX, linkY, HOOKSHOT_SPEED);
-            nextSpeedX = vector.x();
-            nextSpeedY = vector.y();
-        }
-        State next = new State(
-                nextX.position(),
-                nextY.position(),
-                state.z(),
-                state.direction(),
-                nextSpeedX,
-                nextSpeedY,
-                nextCountdown,
-                nextX.accumulator(),
-                nextY.accumulator(),
-                state.entityState(),
-                state.wallCollisionPending());
-        // The chain is spawned on Link's collision box. The ROM only treats
-        // that overlap as the unload condition after the transition countdown
-        // has switched the entity to its return path; otherwise the outbound
-        // launch would immediately collide with its owner.
-        return new Step(next, false, returning && overlapsLink(state, linkX, linkY), returning);
+        return HookshotChainBehavior.advance(state, linkX, linkY, blocked, tickCountdown);
     }
 
     /**
@@ -329,11 +268,7 @@ public final class HookshotChainMotion {
     }
 
     public Step advance(int slot, int linkX, int linkY, boolean blocked) {
-        validateSlot(slot);
-        State state = requireState(slot);
-        Step step = advance(state, linkX, linkY, blocked);
-        states[slot] = step.state();
-        return step;
+        return HookshotChainBehavior.advance(this, slot, linkX, linkY, blocked);
     }
 
     public void setState(int slot, State state) {
@@ -352,44 +287,15 @@ public final class HookshotChainMotion {
         states[slot] = null;
     }
 
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
-        int distanceX = signedByte(linkX - entityX);
-        int distanceY = signedByte(linkY - entityY + entityZ);
-        int absoluteX = Math.abs(distanceX);
-        int absoluteY = Math.abs(distanceY);
-        boolean swapped = absoluteX < absoluteY;
-        int smaller = Math.min(absoluteX, absoluteY);
-        int larger = Math.max(absoluteX, absoluteY);
-        int result = romDivide(length, smaller, larger);
-        int x = swapped ? result : length;
-        int y = swapped ? length : result;
-        if (distanceX < 0) {
-            x = -x;
-        }
-        if (distanceY < 0) {
-            y = -y;
-        }
-        return new Vector(x & 0xFF, y & 0xFF);
+    static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
+        return HookshotChainGeometry.vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
     }
 
-    private static int romDivide(int length, int smallerDistance, int largerDistance) {
-        if (length == 0 || largerDistance == 0) {
-            return largerDistance == 0 ? length : 0;
-        }
-        int result = 0;
-        int remainder = 0;
-        for (int count = 0; count < length; count++) {
-            int sum = remainder + smallerDistance;
-            if (sum >= largerDistance) {
-                sum -= largerDistance;
-                result++;
-            }
-            remainder = sum & 0xFF;
-        }
-        return result;
+    static int romDivide(int length, int smallerDistance, int largerDistance) {
+        return HookshotChainGeometry.romDivide(length, smallerDistance, largerDistance);
     }
 
-    private static SpeedStep addSpeed(int position, int speed, int accumulator) {
+    static SpeedStep addSpeed(int position, int speed, int accumulator) {
         int unsignedSpeed = speed & 0xFF;
         if (unsignedSpeed == 0) {
             return new SpeedStep(position & 0xFF, accumulator & 0xFF);
@@ -402,7 +308,7 @@ public final class HookshotChainMotion {
         return new SpeedStep((position + delta) & 0xFF, fractionalSum & 0xFF);
     }
 
-    private State requireState(int slot) {
+    State requireState(int slot) {
         State state = states[slot];
         if (state == null) {
             throw new IllegalStateException("No active hookshot chain in slot " + slot);
@@ -416,34 +322,11 @@ public final class HookshotChainMotion {
         }
     }
 
-    private static State copy(
-            State state,
-            int x,
-            int y,
-            int z,
-            int direction,
-            int speedX,
-            int speedY,
-            int transitionCountdown,
-            int speedXAccumulator,
-            int speedYAccumulator,
-            int entityState,
-            boolean wallCollisionPending) {
-        return new State(
-                x,
-                y,
-                z,
-                direction,
-                speedX,
-                speedY,
-                transitionCountdown,
-                speedXAccumulator,
-                speedYAccumulator,
-                entityState,
-                wallCollisionPending);
+    private static State copy(HookshotChainSnapshot inputs) {
+        return HookshotChainBehavior.copy(inputs);
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
@@ -453,7 +336,7 @@ public final class HookshotChainMotion {
         return difference < 0x80 ? difference : 0x100 - difference;
     }
 
-    private static void validateSlot(int slot) {
+    static void validateSlot(int slot) {
         if (slot < 0 || slot >= EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
@@ -465,7 +348,7 @@ public final class HookshotChainMotion {
         }
     }
 
-    private static void validateByte(int value, String label) {
+    static void validateByte(int value, String label) {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
@@ -473,7 +356,7 @@ public final class HookshotChainMotion {
 
     public record Position(int x, int y) {}
 
-    private record SpeedStep(int position, int accumulator) {}
+    record SpeedStep(int position, int accumulator) {}
 
-    private record Vector(int x, int y) {}
+    record Vector(int x, int y) {}
 }

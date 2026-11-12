@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class ThrownEntityMotionTest {
@@ -149,6 +150,14 @@ final class ThrownEntityMotionTest {
                 0,
                 java.util.List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(2, 0))));
-        return new RoomEntity(slot, 0, type, x, y, EntityStatus.THROWN, definition, 0, 0, 0, z, -1, false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(x, y)
+                .status(EntityStatus.THROWN)
+                .spriteDefinition(definition)
+                .z(z)
+                .build();
     }
 }

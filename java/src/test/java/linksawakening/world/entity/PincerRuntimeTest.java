@@ -42,12 +42,17 @@ final class PincerRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xB0)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -59,14 +64,14 @@ final class PincerRuntimeTest {
                 new EnemyProjectileCollision.LinkState(
                         48, 40, 0, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE, 0, false)));
 
-        assertEquals(0, runtime.enemies().pincerState(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).pincerState(0));
         assertEquals(0, runtime.enemies().transitionCountdown(0));
-        assertEquals(0, runtime.enemies().pincerSpeedX(0));
-        assertEquals(0, runtime.enemies().pincerSpeedY(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).pincerSpeedX(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).pincerSpeedY(0));
         assertEquals(0x02, runtime.enemies().physicsFlags(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
-        assertEquals(List.of(), runtime.enemies().pincerBodyOam());
+        assertEquals(List.of(), new EntityEnemyInspectionQueries(runtime.enemies()).pincerBodyOam());
     }
 
     @Test
@@ -75,12 +80,17 @@ final class PincerRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0xB0, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(0, 0, 0xB0, 64, 64, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false)),
-                true,
-                () -> 0,
-                catalog,
-                tables);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xB0)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 64, 64, () -> 0));
@@ -88,10 +98,24 @@ final class PincerRuntimeTest {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 96, 64, () -> 0));
         }
 
-        assertEquals(3, runtime.enemies().pincerState(0));
-        assertEquals(3, runtime.enemies().pincerBodyOam().size());
-        assertEquals(0x6A, runtime.enemies().pincerBodyOam().get(0).tileIndex());
-        assertEquals(0x02, runtime.enemies().pincerBodyOam().get(0).attributes());
+        assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).pincerState(0));
+        assertEquals(
+                3,
+                new EntityEnemyInspectionQueries(runtime.enemies())
+                        .pincerBodyOam()
+                        .size());
+        assertEquals(
+                0x6A,
+                new EntityEnemyInspectionQueries(runtime.enemies())
+                        .pincerBodyOam()
+                        .get(0)
+                        .tileIndex());
+        assertEquals(
+                0x02,
+                new EntityEnemyInspectionQueries(runtime.enemies())
+                        .pincerBodyOam()
+                        .get(0)
+                        .attributes());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

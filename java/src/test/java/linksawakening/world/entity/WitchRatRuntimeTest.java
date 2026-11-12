@@ -48,25 +48,17 @@ final class WitchRatRuntimeTest {
     void exposesWitchRatRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_WITCH_RAT,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                true,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_WITCH_RAT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
+                        .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_WITCH_RAT));
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_WITCH_RAT));
@@ -158,25 +150,17 @@ final class WitchRatRuntimeTest {
     void runtimeWiresWitchRatStateAndRomPresentation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_WITCH_RAT,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                true,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_WITCH_RAT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
+                        .build()))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -187,9 +171,9 @@ final class WitchRatRuntimeTest {
                 null,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
-        assertEquals(1, runtime.enemies().witchRatState(0));
-        assertEquals(0x30, runtime.enemies().witchRatTransitionCountdown(0));
-        assertEquals(0xFE, runtime.enemies().witchRatSpeedZ(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatState(0));
+        assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatTransitionCountdown(0));
+        assertEquals(0xFE, new EntityEnemyInspectionQueries(runtime.enemies()).witchRatSpeedZ(0));
         assertEquals(
                 0x15,
                 runtime.inspection()
@@ -211,8 +195,12 @@ final class WitchRatRuntimeTest {
     private static RoomEntity witchRat(byte[] rom) {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
                 .forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B);
-        return new RoomEntity(
-                0, 0, ENTITY_WITCH_RAT, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_WITCH_RAT)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

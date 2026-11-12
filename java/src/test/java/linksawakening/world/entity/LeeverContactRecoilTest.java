@@ -12,7 +12,7 @@ final class LeeverContactRecoilTest {
     @Test
     void acceptedContactKeepsCachedHitboxButUsesMovedPositionForRecoil() {
         var runtime = chasingLeever(110, 40);
-        var contact = runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0)
+        var contact = runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0))
                 .getFirst();
         assertEquals(4, contact.linkDamage());
         assertTrue(runtime.deferContactRecoil(contact.slot(), 109, 39));
@@ -27,7 +27,7 @@ final class LeeverContactRecoilTest {
     @Test
     void backgroundRestorationKeepsTheOriginalRecoilVector() {
         var runtime = chasingLeever(64, 65);
-        runtime.resolveCombat(35, 63, 64, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 63, 64, false, true, false, 0, 0, 0, 0));
         assertTrue(runtime.deferContactRecoil(2, 63, 64));
 
         runtime.tick(EntityTestFrames.frame(runtime, 35, 63, 64, () -> 0, (entity, direction, x, y) -> true));
@@ -39,7 +39,7 @@ final class LeeverContactRecoilTest {
     @Test
     void contactsRejectedByThePlayerDamageGateDoNotWriteRecoil() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -47,7 +47,7 @@ final class LeeverContactRecoilTest {
     @Test
     void skippedHandlerDoesNotLeaveAResponseForTheFollowingFrame() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
         runtime.deferContactRecoil(2, 109, 39);
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
@@ -78,12 +78,20 @@ final class LeeverContactRecoilTest {
                         new EntitySpriteDefinition.Variant(
                                 new EntitySpriteDefinition.OamAttribute(0, 0),
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
-        slots.set(2, new RoomEntity(2, 0, 0x0E, x, y, EntityStatus.ACTIVE, sprite, 0, 0, 0, 0, -1, false));
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        slots.set(
+                2,
+                new RoomEntityBuilder()
+                        .slot(2)
+                        .sourceLoadOrder(0)
+                        .type(0x0E)
+                        .at(x, y)
+                        .spriteDefinition(sprite)
+                        .build());
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         for (int frame = 0; frame <= 34; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, x - 10, y, () -> 0));
-        assertEquals(2, runtime.enemies().leeverState(2));
-        assertEquals(0xF8, runtime.enemies().leeverSpeedX(2));
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(2));
+        assertEquals(0xF8, new EntityEnemyInspectionQueries(runtime.enemies()).leeverSpeedX(2));
         return runtime;
     }
 }

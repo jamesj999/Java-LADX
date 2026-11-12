@@ -281,23 +281,23 @@ Key types: OverworldBushInteraction, BombObjectInteraction, SwitchBlockAnimation
 
 ### `world.entity`
 
-ROM slot simulation, lifecycle, collision, spawns, rewards and frame request production.
-Key types: RoomEntityRuntime, RoomEntity, EntityFrameContext, EntityFrameExecution.
+ROM slot orchestration, owned state, scoped controller services, collision and frame requests.
+Key types: RoomEntityRuntime, EntityMotionRegistry, EntityPhysicsTables, EntityCombatTables, EntityFrameExecution.
 
 ### `world.entity.handler`
 
-Type and family dispatch implementations, internal to entity simulation. Handlers do not depend on world.room.
+Explicit type registration and ordered dispatch-site callbacks, internal to entity simulation. Handlers do not depend on world.room.
 Key types: EntityHandlerFamilies, BombHandler, RoamingEnemyTypeHandler.
 
 ### `world.entity.motion`
 
-Entity-specific motion and state-machine calculations, internal to entity simulation.
+Entity-owned slot state and state-machine calculations, acquired through the typed motion registry.
 Key types: BombMotion, MoldormMotion, FollowingNpcMotion.
 
 ### `world.entity.event`
 
 Value events and requests exchanged across the entity boundary.
-Key types: EntityEvent, EntityRequest, DialogRequest, LinkFinalPositionRequest.
+Key types: EntityEvent, EntityRequest, EntityCombatEventBuilder, DialogRequest, LinkFinalPositionRequest.
 
 ### Dependency boundaries
 
@@ -410,55 +410,85 @@ sequenceDiagram
 
 ## Entity system
 
-`RoomEntityRuntime` owns slot orchestration; `EntityRuntimeState` holds slot
-arrays and room handler state. `RoomEntity` represents an occupied entity.
-Slots preserve ROM identity and ordering; they are not an unordered collection.
-Lifecycle and spawn helpers coordinate replacement and allocation.
-Do not compact slots or sort entities by type during a refactor.
+`RoomEntityRuntime` is the source-compatible room facade. It contains an
+`EntityRuntimeState`; neither class inherits fields or constants. The state
+composition has nine references, including four cohesive stores:
+`EntityPhysicsTables`, `EntityCombatTables`, `EntityRoomVariables` and
+`EntityPresentationState`. Their fields are private and accessed through slot
+or room methods. `EntityRomConstants` is a final, non-instantiable holder; the
+one deprecated facade alias remains for `RoomEntityBridge`.
 
-`EntityHandlerRegistry` dispatches on the ROM type byte with 256 bindings.
-It supports initialization, advance functions and stage-specific handlers.
-Duplicate registrations fail. Unregistered types remain explicitly unsupported.
-`EntityHandlerFamilies` supplies family registrations; individual handlers
-encode type-specific work without taking ownership of the room facade.
+Per-type state belongs to its motion or controller: for example Iron Mask,
+Moldorm, Rolling Bones and Moblin King retain their own slot latches, Genie
+owns its jar/body/projectile coordination, and the story controller owns owl
+state. `EntityMotionRegistry` lazily supplies one typed motion instance per
+room through `get(MotionClass.class, MotionClass::new)`. Adding a motion does
+not add a field to central runtime state. Controllers receive narrowly scoped
+service interfaces; bindings connect those capabilities to the room facade.
+Stateless behavior helpers operate on their owner's state. Longer operations
+use private, per-invocation scratch and named state handlers; persistent slot
+state never lives in those invocation objects.
 
-`EntityTickStage` names source dispatch sites, not ROM entity IDs.
-Its phase-prefixed names distinguish repeated visits to the same type.
-Actual call sites in the slot phases establish execution order; enum declaration
-order alone is not the runtime schedule. Preserve early returns and repeated
-stage visits when moving code between handlers.
+`EntitySlotOrchestrator` runs the five slot phases in descending slot order.
+`RoomEntity` is an immutable snapshot whose slot and load order are ROM
+identity. Lifecycle and spawn helpers preserve allocation, reset and early
+return sites. Do not compact slots, sort by type, add resets on slot reuse or
+move RNG reads and byte writes across their original execution points.
 
-`EntityFrameContext` is an immutable record of frame inputs: Link coordinates,
-Z, direction, speeds, sword box, collision services, RNG and interaction gates.
-Referenced services preserve their identity; the record does not make them pure.
-`EntityFrameExecution` holds mutable execution locals for the current slot.
-It exposes lifecycle/spawn services, slot replacement and typed emit methods.
-Motion classes implement entity-specific progression while runtime orchestration
-retains slot ownership and ordering.
+`EntityHandlerRegistry` has 256 type bindings for initialization, generic
+advance and stage hooks. Handlers register explicit type IDs and named static
+callbacks. Their initializer and advance registrations live beside their tick
+hooks. `EntityHandlerFamilies.INSTALLERS` is the ordered installation list;
+duplicate registrations fail and unsupported bindings remain explicit.
+
+`EntityTickStage` describes 27 dispatch sites between the phase operations.
+Each site retains ordered visit positions, preserving all 141 original visits.
+Dispatch reads the current slot type at each visit, so an earlier hook that
+replaces or transforms an entity affects subsequent selection exactly as
+before. A false callback stops the slot immediately. Site names and visit
+positions describe source order; enum order and numeric entity IDs do not
+establish the schedule.
+
+`EntityFrameContext` is immutable frame input. Use its builder or `toBuilder`
+when changing Link state, collision services, RNG or interaction gates; service
+references retain their identity. `EntityFrameExecution` exposes operations,
+not public mutable fields. Its private scratch is grouped into frame inputs,
+timer gates, slot execution and presentation flags. Frame setup and commit
+remain separate from individual handler behavior.
 
 Typed events and requests accumulate in the entity outbox rather than calling
-app orchestration from handlers. Consumption bridges world effects into Link,
-player progression, dialogs, music and transient effects.
-A request's source slot matters when multiple handlers write Link in one frame.
+app orchestration from handlers. Room/app consumers apply Link, progression,
+dialog, music and transient effects. Source slots preserve the order of
+multiple Link writes in a frame. `EntityCombatEvent.builder` names optional
+combat effects without positional argument lists.
+
+Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
+`EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
+setup and queries without production test hooks. Runtime tests are split by
+entity family and behavior. Three deprecated `ForTest` delegates remain only
+for `world.room.RoomSessionViews`; the externally used `from` overloads, frame
+constructor and combat/follower adapters also remain deprecated. Immutable
+record schemas retain their canonical constructor signatures and validation
+for source compatibility; these value schemas are the exception to the
+normal eight-parameter method limit.
 
 To add an entity type:
 
-1. Locate its ROM handler, tables, initialization and dispatch sites in the
-   disassembly; record exact symbols and intentional offsets.
-2. Trace an existing related family through `EntityHandlerFamilies`, registry
-   registration and the relevant slot-phase calls.
-3. Implement motion/state transitions in `world.entity.motion` and handler
-   dispatch in `world.entity.handler`, preserving byte arithmetic and timers.
-4. Register the type and every required stage; do not invent a stage order from
-   type IDs or assume one handler invocation per frame.
-5. Use frame collision/RNG services and lifecycle/spawn helpers. Emit typed
-   events for cross-boundary effects instead of importing room or app classes.
-6. Add the needed consumption at the room/app entity boundary and adapt Link
-   writes through commands with the existing source-slot merge semantics.
-7. Supply ROM-backed sprite/table reads and verify palette, animation and
-   placement against the original loaders rather than exported assets.
-8. Add focused synthetic/unit coverage and ROM integration coverage where
-   required, then replay and compare the affected route against the emulator.
+1. Add its motion/state owner in `world.entity.motion`, using the disassembly's
+   exact initialization, timers, byte arithmetic and RNG ordering.
+2. Add its handler in `world.entity.handler`. Register initialization, advance
+   and the required site/visit hooks there, acquire its motion through the
+   typed registry, and emit typed events for effects outside the entity tree.
+3. Add one `NewEntityHandler::install` entry to
+   `EntityHandlerFamilies.INSTALLERS`.
+
+Add focused behavior coverage using the test fixtures and ROM-backed tables;
+never add extracted assets. For this refactor the required headless oracle is
+`LA_ROM=/path/to/user/rom ./gradlew spotlessApply test` from `java/`, including
+its default session replays. Explicitly tagged `known-gap` routes are excluded
+from that suite and are not refactor validation targets. Preserve existing
+consumer and sprite contracts when implementing a handler within the current
+entity boundary.
 
 ## Rooms and world
 

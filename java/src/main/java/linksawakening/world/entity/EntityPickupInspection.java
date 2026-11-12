@@ -1,72 +1,92 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
+
+import linksawakening.world.entity.motion.*;
 
 /** Read-only inspection for Pickup. */
 final class EntityPickupInspection {
-    private final RoomEntityRuntime runtime;
+    private final EntityPickupInspectionServices runtime;
 
-    EntityPickupInspection(RoomEntityRuntime runtime) {
+    EntityPickupInspection(EntityPickupInspectionServices runtime) {
         this.runtime = runtime;
     }
 
     int keyDropTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.physicsTables().readEnemyTransitionCountdown(slot);
     }
 
     int colorShellState(int slot) {
-        return runtime.colorShellMotion.state(slot);
+        return runtime.motions()
+                .get(ColorShellMotion.class, ColorShellMotion::new)
+                .state(slot);
     }
 
     int bombiteState(int slot) {
-        return runtime.bombiteMotion.state(slot);
+        return runtime.motions().get(BombiteMotion.class, BombiteMotion::new).state(slot);
     }
 
     int bombitePrivateCountdown1(int slot) {
-        return runtime.bombPrivateCountdown1[slot];
+        return runtime.bombInteractions().readBombPrivateCountdown1(slot);
     }
 
     int bombiteSpeedX(int slot) {
-        return runtime.bombiteMotion.speedX(slot);
+        return runtime.motions().get(BombiteMotion.class, BombiteMotion::new).speedX(slot);
     }
 
     int bombiteSpeedY(int slot) {
-        return runtime.bombiteMotion.speedY(slot);
+        return runtime.motions().get(BombiteMotion.class, BombiteMotion::new).speedY(slot);
     }
 
     int colorShellPhysicsFlags(int slot) {
-        return runtime.colorShellMotion.physicsFlags(slot);
+        return runtime.motions()
+                .get(ColorShellMotion.class, ColorShellMotion::new)
+                .physicsFlags(slot);
     }
 
     int secretSeashellPrivateState3(int slot) {
-        return runtime.secretSeashellMotion.privateState3(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .privateState3(slot);
     }
 
     int secretSeashellPrivateState4(int slot) {
-        return runtime.secretSeashellMotion.privateState4(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .privateState4(slot);
     }
 
     int secretSeashellPrivateCountdown1(int slot) {
-        return runtime.secretSeashellMotion.privateCountdown1(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .privateCountdown1(slot);
     }
 
     int secretSeashellSlowTransitionCountdown(int slot) {
-        return runtime.secretSeashellMotion.slowTransitionCountdown(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .slowTransitionCountdown(slot);
     }
 
     int secretSeashellSpeedX(int slot) {
-        return runtime.secretSeashellMotion.speedX(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .speedX(slot);
     }
 
     int secretSeashellSpeedY(int slot) {
-        return runtime.secretSeashellMotion.speedY(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .speedY(slot);
     }
 
     int secretSeashellSpeedZ(int slot) {
-        return runtime.secretSeashellMotion.speedZ(slot);
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .speedZ(slot);
     }
 }

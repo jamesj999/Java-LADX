@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.WingedOctorokOam;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,8 @@ final class WingedOctorokMotionTest {
         WingedOctorokMotion motion = new WingedOctorokMotion();
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
 
-        WingedOctorokMotion.Update update = motion.advance(entity, 0, 0x20, 0x40, () -> 0x02, null, 0, 0, false, 0, 0);
+        WingedOctorokMotion.Update update =
+                motion.advance(new WingedOctorokFrame(entity, 0, 0x20, 0x40, () -> 0x02, null, 0, 0, false, 0, 0));
 
         assertEquals(1, update.state());
         assertEquals(0x12, update.transitionCountdown());
@@ -32,9 +33,10 @@ final class WingedOctorokMotionTest {
     void stateOneAtCountdownTenSpawnsTheRockOnlyWhenFacingLink() {
         WingedOctorokMotion motion = new WingedOctorokMotion();
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
-        motion.forceStateForTest(0, 1, 0x0A, 0, 0, 0);
+        MotionTestFixture.forceStateForTest(motion, 0, 1, 0x0A, 0, 0, 0);
 
-        WingedOctorokMotion.Update update = motion.advance(entity, 0, 0x60, 0x40, () -> 0, null, 0x0A, 0, false, 0, 0);
+        WingedOctorokMotion.Update update =
+                motion.advance(new WingedOctorokFrame(entity, 0, 0x60, 0x40, () -> 0, null, 0x0A, 0, false, 0, 0));
 
         assertEquals(new WingedOctorokMotion.RockSpawn(0), update.rockSpawn());
         assertEquals(0, motion.speedX(0));
@@ -45,9 +47,10 @@ final class WingedOctorokMotionTest {
     void stateTwoStoresTheAnimationFrameAndReturnsToStateOneAfterZWraps() {
         WingedOctorokMotion motion = new WingedOctorokMotion();
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
-        motion.forceStateForTest(0, 2, 0, 0, 0xFF, 0x01);
+        MotionTestFixture.forceStateForTest(motion, 0, 2, 0, 0, 0xFF, 0x01);
 
-        WingedOctorokMotion.Update update = motion.advance(entity, 4, 0x40, 0x40, () -> 0, null, 0, 0, false, 0, 0);
+        WingedOctorokMotion.Update update =
+                motion.advance(new WingedOctorokFrame(entity, 4, 0x40, 0x40, () -> 0, null, 0, 0, false, 0, 0));
 
         assertEquals(1, update.state());
         assertEquals(0x20, update.transitionCountdown());
@@ -62,15 +65,15 @@ final class WingedOctorokMotionTest {
         WingedOctorokMotion motion = new WingedOctorokMotion();
         RoomEntity entity = entity(0, 0x40, 0x40, 0);
 
-        motion.forceStateForTest(0, 1, 0, 0, 0, 0);
-        WingedOctorokMotion.Update aOnly =
-                motion.advance(entity, 0, 0x50, 0x40, () -> 0, null, 0, 0, true, false, 0x00, 0x01);
+        MotionTestFixture.forceStateForTest(motion, 0, 1, 0, 0, 0, 0);
+        WingedOctorokMotion.Update aOnly = motion.advance(
+                new WingedOctorokInteractionFrame(entity, 0, 0x50, 0x40, () -> 0, null, 0, 0, true, false, 0x00, 0x01));
         assertEquals(0, aOnly.state());
         assertTrue(!aOnly.jumped());
 
-        motion.forceStateForTest(0, 1, 0, 0, 0, 0);
-        WingedOctorokMotion.Update bHeld =
-                motion.advance(entity, 0, 0x50, 0x40, () -> 0, null, 0, 0, false, true, 0x00, 0x01);
+        MotionTestFixture.forceStateForTest(motion, 0, 1, 0, 0, 0, 0);
+        WingedOctorokMotion.Update bHeld = motion.advance(
+                new WingedOctorokInteractionFrame(entity, 0, 0x50, 0x40, () -> 0, null, 0, 0, false, true, 0x00, 0x01));
         assertEquals(2, bHeld.state());
         assertTrue(bHeld.jumped());
         assertTrue(bHeld.skippedDefaultCollision());
@@ -91,19 +94,13 @@ final class WingedOctorokMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int variant) {
-        return new RoomEntity(
-                slot,
-                0,
-                0xAE,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xAE),
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(0xAE)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0xAE))
+                .spriteVariant(variant)
+                .build();
     }
 }

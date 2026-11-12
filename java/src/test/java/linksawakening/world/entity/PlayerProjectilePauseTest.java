@@ -52,7 +52,8 @@ final class PlayerProjectilePauseTest {
         if (type == 1) {
             // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
             assertEquals(
-                    gate.equals("got_item") ? 0x27 : 0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+                    gate.equals("got_item") ? 0x27 : 0x28,
+                    new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         }
 
         setGate(runtime, gate, false);
@@ -82,12 +83,14 @@ final class PlayerProjectilePauseTest {
         int slot = spawn(runtime, 4);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
         tick(runtime, 0, 0);
-        assertEquals(0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+        assertEquals(
+                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         setGate(runtime, gate, true);
         tick(runtime, 8, 0);
         tick(runtime, 9, 0);
         assertEquals(
-                gate.equals("got_item") ? 0x2E : 0x30, runtime.inspection().magicRodFireballPrivateCountdown1(slot));
+                gate.equals("got_item") ? 0x2E : 0x30,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
         // The fireball writes its next frame before ReturnIfNonInteractive.
         assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
@@ -97,9 +100,9 @@ final class PlayerProjectilePauseTest {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, 1);
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         tick(runtime, 8, 0);
-        assertEquals(0x28, runtime.inspection().boomerangTransitionCountdown(slot));
+        assertEquals(0x28, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         assertEquals(
                 beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
     }
@@ -110,8 +113,8 @@ final class PlayerProjectilePauseTest {
         RoomEntityRuntime runtime = runtime();
         int slot = spawn(runtime, type);
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
-        runtime.debug().setGameplayWorldForTest(false);
-        runtime.debug().setTransitionSequenceCounterForTest(3);
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
         runtime.tick(EntityTestFrames.frame(runtime, 8, 0, 0, () -> 0, true));
         assertEquals(
                 beforeX + speed(type),
@@ -127,11 +130,11 @@ final class PlayerProjectilePauseTest {
             if (stream == null) {
                 throw new IOException("Missing shipped ROM");
             }
-            return RoomEntityRuntime.from(
-                    new RoomEntitySnapshot(slots),
-                    false,
-                    () -> 0,
-                    new EntitySpriteHandlerCatalog(stream.readAllBytes()));
+            return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                    .indoorRoom(false)
+                    .randomByteSupplier(() -> 0)
+                    .spriteHandlers(new EntitySpriteHandlerCatalog(stream.readAllBytes()))
+                    .build();
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
@@ -170,10 +173,10 @@ final class PlayerProjectilePauseTest {
         switch (gate) {
             case "dialog" -> runtime.configuration().setDialogActive(active);
             case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "gameplay" -> EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(!active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException("Unexpected gate");
         }
     }

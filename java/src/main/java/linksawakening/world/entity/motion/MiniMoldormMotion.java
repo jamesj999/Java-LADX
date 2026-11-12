@@ -2,8 +2,8 @@ package linksawakening.world.entity.motion;
 
 import java.util.Arrays;
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -16,36 +16,36 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
  */
 public final class MiniMoldormMotion {
     private static final int HISTORY_LENGTH = 0x20;
-    private static final int HISTORY_MASK = HISTORY_LENGTH - 1;
-    private static final int[] HEAD_SPRITE_VARIANTS = {
+    static final int HISTORY_MASK = HISTORY_LENGTH - 1;
+    static final int[] HEAD_SPRITE_VARIANTS = {
         0x03, 0x03, 0x05, 0x05, 0x00, 0x00, 0x04, 0x04,
         0x02, 0x02, 0x06, 0x06, 0x01, 0x01, 0x07, 0x07
     };
     // The ROM's four-byte MoldormYSpeeds label is immediately followed by
     // MoldormXSpeeds. Indexing it with the full 0..$0F angle therefore yields
     // this contiguous sixteen-byte sine table.
-    private static final int[] Y_SPEEDS = {
+    static final int[] Y_SPEEDS = {
         0x00, 0x06, 0x0C, 0x0E, 0x10, 0x0E, 0x0C, 0x06,
         0x00, 0xFA, 0xF4, 0xF2, 0xF0, 0xF2, 0xF4, 0xFA
     };
-    private static final int[] X_SPEEDS = {
+    static final int[] X_SPEEDS = {
         0x10, 0x0E, 0x0C, 0x06, 0x00, 0xFA, 0xF4, 0xF2,
         0xF0, 0xF2, 0xF4, 0xFA, 0x00, 0x06, 0x0C, 0x0E
     };
 
-    private final int[][] historyX = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
-    private final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
-    private final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[][] historyX = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
+    final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
+    final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -121,94 +121,16 @@ public final class MiniMoldormMotion {
             RoomEntityBackgroundInteraction backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(entity);
-        }
-        if (randomByteSupplier == null) {
-            throw new IllegalArgumentException("Mini Moldorm random source cannot be null");
-        }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
-        }
-
-        int nextTransitionCountdown = transitionCountdown & 0xFF;
-        if (nextTransitionCountdown > 0) {
-            nextTransitionCountdown--;
-        }
-        int x = entity.x() & 0xFF;
-        int y = entity.y() & 0xFF;
-        int collisionFlags = 0;
-        if ((flashCountdown & 0xFF) == 0) {
-            int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-            if (nextX != x && backgroundInteraction != null) {
-                int direction = signedByte(speedX[slot]) < 0
-                        ? EntityBackgroundCollisionResult.LEFT
-                        : EntityBackgroundCollisionResult.RIGHT;
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction, nextX, y, ignoreHitsCountdown & 0xFF, frameCounter);
-                if (result.blocked()) {
-                    collisionFlags |= result.collisionFlag();
-                } else {
-                    x = nextX;
-                }
-            } else {
-                x = nextX;
-            }
-
-            int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-            if (nextY != y && backgroundInteraction != null) {
-                int direction = signedByte(speedY[slot]) < 0
-                        ? EntityBackgroundCollisionResult.UP
-                        : EntityBackgroundCollisionResult.DOWN;
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction, x, nextY, ignoreHitsCountdown & 0xFF, frameCounter);
-                if (result.blocked()) {
-                    collisionFlags |= result.collisionFlag();
-                } else {
-                    y = nextY;
-                }
-            } else {
-                y = nextY;
-            }
-        }
-
-        if (collisionFlags != 0) {
-            privateState1[slot] = (collisionFlags & 0x01) != 0
-                    ? 0x08
-                    : (collisionFlags & 0x02) != 0 ? 0x00 : (collisionFlags & 0x04) != 0 ? 0x04 : 0x0C;
-            if ((randomByteSupplier.getAsInt() & 0x01) == 0) {
-                privateState2[slot] = -privateState2[slot];
-            }
-            nextTransitionCountdown = 0x10;
-        }
-
-        if (privateCountdown1[slot] == 0) {
-            privateCountdown1[slot] = 0x04;
-            privateState1[slot] = (privateState1[slot] + privateState2[slot]) & 0x0F;
-            headSpriteVariant[slot] = HEAD_SPRITE_VARIANTS[privateState1[slot]];
-            speedY[slot] = Y_SPEEDS[privateState1[slot]];
-            speedX[slot] = X_SPEEDS[privateState1[slot]];
-        }
-
-        if (nextTransitionCountdown == 0) {
-            nextTransitionCountdown = 0x10 + (randomByteSupplier.getAsInt() & 0x1F);
-            privateState2[slot] = (randomByteSupplier.getAsInt() & 0x02) - 1;
-        }
-
-        int key = historyKey[slot];
-        int segment1Index = (inertia[slot] - 0x09) & HISTORY_MASK;
-        int segment2Index = (inertia[slot] - 0x10) & HISTORY_MASK;
-        RoomEntity moved = withPosition(entity, x, y);
-        return new Update(
-                moved,
-                nextTransitionCountdown,
-                headSpriteVariant[slot],
-                collisionFlags,
-                historyX[key][segment1Index],
-                historyY[key][segment1Index],
-                historyX[key][segment2Index],
-                historyY[key][segment2Index]);
+        return new MiniMoldormFrameStep(
+                        this,
+                        entity,
+                        transitionCountdown,
+                        ignoreHitsCountdown,
+                        flashCountdown,
+                        backgroundInteraction,
+                        randomByteSupplier,
+                        frameCounter)
+                .run();
     }
 
     int inertia(int slot) {
@@ -250,24 +172,19 @@ public final class MiniMoldormMotion {
         return sourceLoadOrder;
     }
 
-    private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+    static RoomEntity withPosition(RoomEntity entity, int x, int y) {
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 -1,
                 false);
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -281,7 +198,7 @@ public final class MiniMoldormMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
     }

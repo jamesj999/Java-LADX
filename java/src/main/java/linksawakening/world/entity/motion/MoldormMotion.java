@@ -6,12 +6,23 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
 /** Bank-$04 active movement and 128-entry tail history for Moldorm ($59). */
 public final class MoldormMotion {
+    private final int[] destructionTailState = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int destructionTailState(int slot) {
+        return destructionTailState[slot];
+    }
+
+    public void setDestructionTailState(int slot, int value) {
+        destructionTailState[slot] = value;
+    }
+
     static final int ENTITY_TYPE = 0x59;
     public static final int INITIAL_PHYSICS_FLAGS = 0x08;
     public static final int INITIAL_OPTIONS1 = 0xD0;
@@ -339,17 +350,12 @@ public final class MoldormMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 -1,
                 false);

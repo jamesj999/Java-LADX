@@ -13,7 +13,7 @@ final class RoamingSimultaneousContactTest {
     void bodyContactRetainsRecoilWhenTheSameFrameAlsoDamagesTheEnemy() {
         for (int type : new int[] {0x09, 0x0B}) {
             var runtime = enemy(type);
-            var event = runtime.resolveCombat(135, 51, 88, false, true, true, 66, 5, 90, 5)
+            var event = runtime.resolveCombat(new EntitySwordContactFrame(135, 51, 88, false, true, true, 66, 5, 90, 5))
                     .getFirst();
 
             assertTrue(event.swordHit());
@@ -28,7 +28,7 @@ final class RoamingSimultaneousContactTest {
     void swordHitOnTheOtherCollisionParityDoesNotInventBodyRecoil() {
         for (int type : new int[] {0x09, 0x0B}) {
             var runtime = enemy(type);
-            var event = runtime.resolveCombat(134, 51, 88, false, true, true, 66, 5, 90, 5)
+            var event = runtime.resolveCombat(new EntitySwordContactFrame(134, 51, 88, false, true, true, 66, 5, 90, 5))
                     .getFirst();
 
             assertTrue(event.swordHit());
@@ -52,9 +52,18 @@ final class RoamingSimultaneousContactTest {
                         new EntitySpriteDefinition.Variant(
                                 new EntitySpriteDefinition.OamAttribute(0, 0),
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
-        slots.set(2, new RoomEntity(2, 0, type, 58, 82, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
-        var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
-        runtime.enemyHealth[2] = 8; // Synthetic nonlethal target, matching the CPU-hook probe.
+        slots.set(
+                2,
+                new RoomEntityBuilder()
+                        .slot(2)
+                        .sourceLoadOrder(0)
+                        .type(type)
+                        .at(58, 82)
+                        .spriteDefinition(definition)
+                        .build());
+        var runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
+        runtime.entityState.combatTables.writeEnemyHealth(
+                2, 8); // Synthetic nonlethal target, matching the CPU-hook probe.
         return runtime;
     }
 }

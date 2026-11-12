@@ -42,17 +42,12 @@ public final class BowWowChain {
         if (pulledX) align(y, anchorY);
         if (pulledY) align(x, anchorX);
         if (!pulledX && !pulledY) return entity;
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x[0],
                 (y[0] + entity.z()) & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -171,19 +171,14 @@ final class EnemyRecoilMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int z) {
-        return new RoomEntity(
-                slot,
-                0,
-                0x09,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x09),
-                -1,
-                0,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x09))
+                .spriteVariant(-1)
+                .z(z)
+                .build();
     }
 }

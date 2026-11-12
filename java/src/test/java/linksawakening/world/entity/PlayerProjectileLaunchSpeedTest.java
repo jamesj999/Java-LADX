@@ -35,20 +35,12 @@ final class PlayerProjectileLaunchSpeedTest {
         assertEquals(expectedX, fireball.speedX(0));
         assertEquals(expectedY, fireball.speedY(0));
 
-        RoomEntity entity = new RoomEntity(
-                0,
-                -1,
-                0x00,
-                0x40,
-                0x50,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x00),
-                direction,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(0x00)
+                .at(0x40, 0x50)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x00))
+                .spriteVariant(direction)
+                .build();
         RoomEntity movedArrow = arrow.advance(entity, null).entity();
         RoomEntity movedFireball = fireball.advancePosition(entity);
         assertEquals(0x40 + ((byte) expectedX >> 4), movedArrow.x());

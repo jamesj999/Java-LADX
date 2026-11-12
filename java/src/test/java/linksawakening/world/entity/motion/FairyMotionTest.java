@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -132,20 +132,13 @@ final class FairyMotionTest {
         assertEquals(0x10, held.entity().z());
 
         FairyMotion.Update down = motion.advance(
-                new RoomEntity(
-                        0,
-                        0,
-                        FairyMotion.ENTITY_TYPE,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        definition(),
-                        0,
-                        0,
-                        0,
-                        0x11,
-                        -1,
-                        false),
+                new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(FairyMotion.ENTITY_TYPE)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(definition())
+                        .z(0x11)
+                        .build(),
                 0x04,
                 0x40,
                 0x40,
@@ -158,7 +151,7 @@ final class FairyMotionTest {
     void usesThePreMovementXSpeedBitForTheTwoRomSpriteVariants() {
         FairyMotion motion = new FairyMotion();
         motion.initialize(0);
-        motion.setSpeedForTest(0, 0xF7, 0, 0);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0xF7, 0, 0);
 
         FairyMotion.Update update = motion.advance(entity(0x40, 0x40, 0x10), 0x01, 0x40, 0x40, () -> 0, 0);
 
@@ -166,8 +159,12 @@ final class FairyMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int z) {
-        return new RoomEntity(
-                0, -1, FairyMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
+        return new RoomEntityBuilder()
+                .type(FairyMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .z(z)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

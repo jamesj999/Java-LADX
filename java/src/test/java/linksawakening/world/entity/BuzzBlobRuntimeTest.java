@@ -54,25 +54,17 @@ final class BuzzBlobRuntimeTest {
     void usesBuzzBlobsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_BUZZ_BLOB,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_BUZZ_BLOB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_BUZZ_BLOB));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_BUZZ_BLOB));
@@ -87,8 +79,12 @@ final class BuzzBlobRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
-        RoomEntity buzzBlob = new RoomEntity(
-                0, 0, ENTITY_BUZZ_BLOB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity buzzBlob = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_BUZZ_BLOB)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
 
         BuzzBlobMotion.Update first = motion.advance(buzzBlob, 0, 0x00, () -> 0x03, null);
         assertEquals(0, first.state());
@@ -116,8 +112,12 @@ final class BuzzBlobRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
-        RoomEntity buzzBlob = new RoomEntity(
-                0, 0, ENTITY_BUZZ_BLOB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity buzzBlob = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_BUZZ_BLOB)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
 
         BuzzBlobMotion.Update first = motion.advance(
                 buzzBlob,
@@ -144,8 +144,12 @@ final class BuzzBlobRuntimeTest {
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
         MotionTestAccess.initializeStateOne(motion, 0);
-        RoomEntity buzzBlob = new RoomEntity(
-                0, 0, ENTITY_BUZZ_BLOB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity buzzBlob = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_BUZZ_BLOB)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
 
         BuzzBlobMotion.Update animated = motion.advance(buzzBlob, 0, 0x04, () -> 0, null);
         assertEquals(1, animated.state());
@@ -162,25 +166,17 @@ final class BuzzBlobRuntimeTest {
     void nonInteractiveLinkMotionSkipsBuzzBlobTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_BUZZ_BLOB,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_BUZZ_BLOB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             groundCalls.incrementAndGet();
@@ -204,27 +200,19 @@ final class BuzzBlobRuntimeTest {
     void nonInteractiveLinkMotionSkipsBuzzBlobSharedRecoil() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_BUZZ_BLOB,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
-        runtime.debug().configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_BUZZ_BLOB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
+        EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -240,35 +228,28 @@ final class BuzzBlobRuntimeTest {
         assertEquals(0x40, after.x());
         assertEquals(0x40, after.y());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.enemies().enemyRecoilActive(0));
+        assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
     }
 
     @Test
     void nonInteractiveLinkMotionSkipsBuzzBlobCombat() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_BUZZ_BLOB,
-                        0x40,
-                        0x40,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_BUZZ_BLOB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
 
-        assertTrue(runtime.resolveCombat(0, 0x40, 0x40, false, false, true, 0x40, 1, 0x40, 1)
-                .isEmpty());
+        assertTrue(
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, false, true, 0x40, 1, 0x40, 1))
+                        .isEmpty());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

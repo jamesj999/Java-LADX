@@ -1,12 +1,30 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** ROM bank-$07 Moblin Sword state machine plus bank-$03 falling presentation state. */
 public final class MoblinSwordMotion {
+    private int swordMoblinAlertingSoundCounter;
+
+    public int readSwordMoblinAlertingSoundCounter() {
+        return swordMoblinAlertingSoundCounter;
+    }
+
+    public int writeSwordMoblinAlertingSoundCounter(int value) {
+        return swordMoblinAlertingSoundCounter = value;
+    }
+
+    public int postSwordMoblinAlertingSoundCounter(int delta) {
+        int previous = swordMoblinAlertingSoundCounter;
+        swordMoblinAlertingSoundCounter += delta;
+        return previous;
+    }
+
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
     private static final int[] SPEED_X_BY_DIRECTION = {0x06, 0xFA, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xFA, 0x06};
@@ -65,7 +83,7 @@ public final class MoblinSwordMotion {
             int ignoreHitsCountdown,
             int alertingSoundCounter,
             int frameCounter) {
-        return advance(
+        return advance(new MoblinSwordFrame(
                 entity,
                 linkEntityX,
                 linkEntityY,
@@ -74,19 +92,19 @@ public final class MoblinSwordMotion {
                 alertingSoundCounter,
                 -1,
                 0,
-                frameCounter);
+                frameCounter));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown,
-            int alertingSoundCounter,
-            int mapId,
-            int transitionSequenceCounter,
-            int frameCounter) {
+    public Update advance(MoblinSwordFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        int alertingSoundCounter = inputs.alertingSoundCounter();
+        int mapId = inputs.mapId();
+        int transitionSequenceCounter = inputs.transitionSequenceCounter();
+        int frameCounter = inputs.frameCounter();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.x());
@@ -357,37 +375,12 @@ public final class MoblinSwordMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static int signedByte(int value) {

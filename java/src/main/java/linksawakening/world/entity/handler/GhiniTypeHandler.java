@@ -1,46 +1,61 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityTypeRules.isHidingGhiniType;
 
+import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for GhiniType. */
 final class GhiniTypeHandler {
     static void install(EntityHandlerRegistration registry) {
-        for (int type = 0; type < 256; type++) {
-            if (((isGhiniType(type)))) {
-                registry.registerTick(type, EntityTickStage.PHASE_2_GHINI_TYPE, state -> {
-                    {
-                        state.ghiniMotion().initialize(state.entity.slot(), state.entity.type());
-                        if (isHidingGhiniType(state.entity.type())) {
-                            state.preserveGhiniPresentation = true;
-                        }
-                    }
-                    return true;
-                });
-            }
+        registry.registerTick(
+                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
+        registry.registerTick(
+                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
+        registry.registerTick(
+                ENTITY_GHINI, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 8, GhiniTypeHandler::phase2GhiniType);
+        registry.registerTick(
+                ENTITY_HIDING_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
+        registry.registerTick(
+                ENTITY_GIANT_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
+        registry.registerTick(
+                ENTITY_GHINI, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 19, GhiniTypeHandler::phase4GhiniType);
+    }
+
+    private static boolean phase2GhiniType(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
+
+        state.motion(GhiniMotion.class, GhiniMotion::new)
+                .initialize(slotState.entity().slot(), slotState.entity().type());
+        if (isHidingGhiniType(slotState.entity().type())) {
+            presentationFlags.preserveGhiniPresentation(true);
         }
-        for (int type = 0; type < 256; type++) {
-            if ((isGhiniType(type))) {
-                registry.registerTick(type, EntityTickStage.PHASE_4_GHINI_TYPE, state -> {
-                    if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-                        state.updated = state.ghiniMotion()
-                                .advance(
-                                        state.entity,
-                                        state.frame,
-                                        state.entity.type(),
-                                        state.linkEntityX,
-                                        state.linkEntityY,
-                                        state.romCollisionType,
-                                        state.randomByteSupplier);
-                        state.preserveGhiniPresentation = true;
-                    }
-                    return true;
-                });
-            }
+
+        return true;
+    }
+
+    private static boolean phase4GhiniType(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            slotState.updated(state.motion(GhiniMotion.class, GhiniMotion::new)
+                    .advance(
+                            slotState.entity(),
+                            frameInput.frame(),
+                            slotState.entity().type(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romCollisionType(),
+                            frameInput.randomByteSupplier()));
+            presentationFlags.preserveGhiniPresentation(true);
         }
+        return true;
     }
 }

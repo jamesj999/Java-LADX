@@ -87,6 +87,11 @@ final class SideViewPotContactTest {
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
-        return new RoomEntity(0, 0, 0xD6, x, y, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xD6)
+                .at(x, y)
+                .spriteDefinition(definition)
+                .build();
     }
 }

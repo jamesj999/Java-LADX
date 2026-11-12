@@ -9,18 +9,18 @@ public final class CrowMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10 | 0x40;
     static final int ACTIVE_PHYSICS_FLAGS = 0x02 | 0x10;
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $7A uses EntityInitNoop; the handler owns all of these fields. */
     public void initialize(int slot) {
@@ -59,114 +59,16 @@ public final class CrowMotion {
             int linkEntityY,
             boolean allowLinkProximityTrigger,
             boolean externalTakeoffTrigger) {
-        if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
-            throw new IllegalArgumentException("Unsupported Crow motion entity");
-        }
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-
-        int countdown = transitionCountdown & 0xFF;
-        int x = entity.x() & 0xFF;
-        int y = entity.y() & 0xFF;
-        int z = entity.z() & 0xFF;
-        int variant = selectedVariant[slot];
-        boolean boomerangSound = false;
-        boolean unloaded = false;
-
-        // $5CBE mirrors only the active display variant, then renders it.
-        // SetEntitySpriteVariant later writes the stored frame for the next
-        // handler pass, without changing this frame's displayed facing.
-        if (direction[slot] == 0) {
-            variant += 2;
-        }
-
-        switch (state[slot]) {
-            case 0 -> {
-                // The first handler pass lifts the visual origin by four
-                // pixels and advances the state before checking proximity.
-                if (!perchPositionAdjusted[slot]) {
-                    y = (y - 4) & 0xFF;
-                    perchPositionAdjusted[slot] = true;
-                }
-                direction[slot] = signedByte((linkEntityX - x) & 0xFF) < 0 ? 1 : 0;
-                int distanceX = signedByte((linkEntityX - x) & 0xFF);
-                int distanceY = signedByte((linkEntityY - y) & 0xFF);
-                if (externalTakeoffTrigger
-                        || allowLinkProximityTrigger
-                                && distanceX >= -0x18
-                                && distanceX < 0x18
-                                && distanceY >= -0x30
-                                && distanceY < 0x30) {
-                    physicsFlags[slot] = ACTIVE_PHYSICS_FLAGS;
-                    countdown = 0x22;
-                    state[slot] = 1;
-                }
-            }
-            case 1 -> {
-                if (countdown == 0) {
-                    countdown = 0x30;
-                    state[slot] = 2;
-                } else {
-                    speedX[slot] = 0;
-                    speedY[slot] = 0;
-                    speedZ[slot] = 0x08;
-                    z = addSpeedToPosition(z, speedZ[slot], speedZAccumulator, slot);
-                    boomerangSound = true;
-                    // AddEntityZSpeedToPos_06 leaves HL at the updated Z byte.
-                    selectedVariant[slot] = (z >>> 3) & 0x01;
-                }
-            }
-            case 2 -> {
-                if (countdown == 0) {
-                    state[slot] = 3;
-                } else {
-                    if ((countdown & 0x01) == 0) {
-                        Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x20);
-                        speedY[slot] = approach(speedY[slot], vector.y());
-                        speedX[slot] = approach(speedX[slot], vector.x());
-                        direction[slot] = speedX[slot] & 0x80;
-                    }
-                    x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-                    y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-                    boomerangSound = true;
-                    selectedVariant[slot] = flightVariant(y, speedY[slot]);
-                }
-            }
-            case 3 -> {
-                if ((frameCounter & 0x03) == 0) {
-                    Vector vector = vectorTowardsLink(x, y, z, linkEntityX, linkEntityY, 0x20);
-                    speedY[slot] = approach(speedY[slot], negate(vector.y()));
-                    speedX[slot] = approach(speedX[slot], negate(vector.x()));
-                    direction[slot] = speedX[slot] & 0x80;
-                }
-                x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-                y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-                boomerangSound = true;
-                selectedVariant[slot] = flightVariant(y, speedY[slot]);
-                // $5E54 reads the cached active position. The movement helpers
-                // update WRAM positions without refreshing those HRAM bytes.
-                unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88 || entity.x() >= 0xA8;
-            }
-            default -> throw new IllegalStateException("Invalid Crow state: " + state[slot]);
-        }
-
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                entity.deathSpriteVariant(),
-                entity.powerRecoilDeath());
-        return new Update(updated, countdown, physicsFlags[slot], unloaded, boomerangSound);
+        return new CrowStep(
+                        this,
+                        entity,
+                        transitionCountdown,
+                        frameCounter,
+                        linkEntityX,
+                        linkEntityY,
+                        allowLinkProximityTrigger,
+                        externalTakeoffTrigger)
+                .run();
     }
 
     public void clear(int slot) {
@@ -198,25 +100,13 @@ public final class CrowMotion {
         return state[slot] >= 1;
     }
 
-    void setStateForTest(int slot, int value) {
-        ensureInitialized(slot);
-        state[slot] = value & 0xFF;
-    }
-
-    void setSpeedForTest(int slot, int x, int y, int z) {
-        ensureInitialized(slot);
-        speedX[slot] = x & 0xFF;
-        speedY[slot] = y & 0xFF;
-        speedZ[slot] = z & 0xFF;
-    }
-
-    private void ensureInitialized(int slot) {
+    void ensureInitialized(int slot) {
         if (!initialized[slot]) {
             initialize(slot);
         }
     }
 
-    private static int flightVariant(int movedY, int speedY) {
+    static int flightVariant(int movedY, int speedY) {
         // At $5E0B, HL is left by UpdateEntityPosWithSpeed_06: either the
         // updated Y position, or the zero Y-speed byte on its early return.
         // Both PlayBoomerangSfx calls preserve HL.
@@ -224,7 +114,7 @@ public final class CrowMotion {
     }
 
     /** Mirrors AddEntitySpeedToPos_06's signed high-nibble fixed point step. */
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -239,7 +129,7 @@ public final class CrowMotion {
     }
 
     /** Port of GetVectorTowardsLink with the requested infinity norm. */
-    private static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
+    static Vector vectorTowardsLink(int entityX, int entityY, int entityZ, int linkX, int linkY, int length) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         // The flight trampoline uses bank $03's height-aware distance helper,
         // unlike the bank $06 helper used for the perched proximity check.
@@ -273,7 +163,7 @@ public final class CrowMotion {
     }
 
     /** The Crow handler changes each component by one toward its target byte. */
-    private static int approach(int current, int target) {
+    static int approach(int current, int target) {
         int difference = (target - current) & 0xFF;
         if ((difference & 0x80) == 0) {
             return (current + 1) & 0xFF;
@@ -281,16 +171,16 @@ public final class CrowMotion {
         return (current - 1) & 0xFF;
     }
 
-    private static int negate(int value) {
+    static int negate(int value) {
         return (-signedByte(value)) & 0xFF;
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Vector(int x, int y) {}
+    record Vector(int x, int y) {}
 
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, boolean unloaded, boolean boomerangSound) {}

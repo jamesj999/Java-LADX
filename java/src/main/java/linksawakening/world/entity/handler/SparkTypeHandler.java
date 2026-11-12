@@ -1,44 +1,69 @@
 package linksawakening.world.entity.handler;
 
-import static linksawakening.world.entity.EntityTypeRules.isSparkType;
+import static linksawakening.world.entity.EntityRomConstants.*;
 
+import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.motion.*;
 
 /** ROM handler stages for SparkType. */
 final class SparkTypeHandler {
     static void install(EntityHandlerRegistration registry) {
-        for (int type = 0; type < 256; type++) {
-            if (((isSparkType(type)))) {
-                registry.registerTick(type, EntityTickStage.PHASE_2_SPARK_TYPE, state -> {
-                    {
-                        state.sparkMotion().initialize(state.entity.slot(), state.entity.type());
-                    }
-                    return true;
-                });
-            }
+        registry.registerTick(
+                ENTITY_SPARK_COUNTER_CLOCKWISE,
+                EntityTickStage.PHASE_2_AFTER_INITIALIZE,
+                2,
+                SparkTypeHandler::phase2SparkType);
+        registry.registerTick(
+                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 2, SparkTypeHandler::phase2SparkType);
+        registry.registerTick(
+                ENTITY_SPARK_COUNTER_CLOCKWISE,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                6,
+                SparkTypeHandler::phase2SparkType2);
+        registry.registerTick(
+                ENTITY_SPARK_CLOCKWISE,
+                EntityTickStage.PHASE_2_AFTER_RECOIL_APPLICATION,
+                6,
+                SparkTypeHandler::phase2SparkType2);
+        registry.registerTick(
+                ENTITY_SPARK_COUNTER_CLOCKWISE,
+                EntityTickStage.PHASE_3_BEFORE_LASER,
+                4,
+                SparkTypeHandler::phase3SparkType);
+        registry.registerTick(
+                ENTITY_SPARK_CLOCKWISE, EntityTickStage.PHASE_3_BEFORE_LASER, 4, SparkTypeHandler::phase3SparkType);
+    }
+
+    private static boolean phase2SparkType(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
+        state.motion(SparkMotion.class, SparkMotion::new)
+                .initialize(slotState.entity().slot(), slotState.entity().type());
+
+        return true;
+    }
+
+    private static boolean phase2SparkType2(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+
+        if (slotState.wasInitializing()) {
+            slotState.updated(
+                    state.motion(SparkMotion.class, SparkMotion::new).applyInitializationOffset(slotState.entity()));
         }
-        for (int type = 0; type < 256; type++) {
-            if ((isSparkType(type))) {
-                registry.registerTick(type, EntityTickStage.PHASE_2_SPARK_TYPE_2, state -> {
-                    if (state.wasInitializing) {
-                        state.updated = state.sparkMotion().applyInitializationOffset(state.entity);
-                    }
-                    return true;
-                });
-            }
+        return true;
+    }
+
+    private static boolean phase3SparkType(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            slotState.updated(state.motion(SparkMotion.class, SparkMotion::new)
+                    .advance(slotState.entity(), frameInput.frame(), frameInput.backgroundCollision()));
         }
-        for (int type = 0; type < 256; type++) {
-            if ((isSparkType(type))) {
-                registry.registerTick(type, EntityTickStage.PHASE_3_SPARK_TYPE, state -> {
-                    if (state.status == EntityStatus.ACTIVE && !state.wasInitializing) {
-                        state.updated =
-                                state.sparkMotion().advance(state.entity, state.frame, state.backgroundCollision);
-                    }
-                    return true;
-                });
-            }
-        }
+        return true;
     }
 }

@@ -20,8 +20,12 @@ final class BushHeartTrajectoryTest {
                 .filter(e -> e.type() == 0x2D)
                 .findFirst()
                 .orElseThrow();
-        var runtime = RoomEntityRuntime.from(
-                initial, false, () -> 0, new EntitySpriteHandlerCatalog(rom), new RomEnemyCombatTables(rom));
+        var runtime = RoomEntityRuntime.builder(initial)
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setObjectQuery(e -> new RoomEntityObjectSample(0x04, 0, 0, 0));
         int slot = heart.slot();
         runtime.tick(EntityTestFrames.frame(runtime, 0, heart.x() - 16, heart.y() - 16, () -> 0));

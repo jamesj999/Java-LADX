@@ -50,7 +50,7 @@ final class HookshotBridgeRuntimeTest {
         assertTrue(runtime.inspection().hookshotBridgeUpdates().isEmpty());
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == HookshotBridgeMotion.ENTITY_TYPE));
-        assertTrue(runtime.inspection()
+        assertTrue(new EntityRoomInspectionQueries(runtime.inspection())
                 .hookshotWallCollisionPending(runtime.inspection().hookshotSlot()));
     }
 
@@ -104,7 +104,10 @@ final class HookshotBridgeRuntimeTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        return RoomEntityRuntime.from(new RoomEntitySnapshot(slots), true, () -> 0);
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .build();
     }
 
     private static RoomEntity findBridge(RoomEntityRuntime runtime) {

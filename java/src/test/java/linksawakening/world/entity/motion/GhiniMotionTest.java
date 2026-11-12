@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class GhiniMotionTest {
@@ -173,20 +173,16 @@ final class GhiniMotionTest {
 
     private static RoomEntity entity(
             int slot, int type, int x, int y, int z, EntitySpriteDefinition definition, int flipAttribute) {
-        return new RoomEntity(
-                slot,
-                slot,
-                type,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                definition,
-                definition.initialVariant(),
-                flipAttribute,
-                0,
-                z,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(definition)
+                .spriteVariant(definition.initialVariant())
+                .entityFlipAttribute(flipAttribute)
+                .z(z)
+                .build();
     }
 
     private static EntitySpriteDefinition pairDefinition(int type) {

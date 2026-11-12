@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -56,10 +56,14 @@ final class CrowMotionTest {
         assertEquals(0x40, update.entity().x());
         assertTrue(update.boomerangSound());
 
-        motion.setStateForTest(0, 3);
-        motion.setSpeedForTest(0, 0x20, 0, 0);
-        RoomEntity outwardStart = new RoomEntity(
-                0, 0, CrowMotion.ENTITY_TYPE, 0xA6, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0, -1, false);
+        MotionTestFixture.setStateForTest(motion, 0, 3);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0x20, 0, 0);
+        RoomEntity outwardStart = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CrowMotion.ENTITY_TYPE)
+                .at(0xA6, 0x50)
+                .spriteDefinition(definition())
+                .build();
         CrowMotion.Update crossing = motion.advance(outwardStart, 0, 0x40, 0x50);
         assertFalse(crossing.unloaded());
         CrowMotion.Update unloaded = motion.advance(crossing.entity(), 0, 0x40, 0x50);
@@ -69,8 +73,8 @@ final class CrowMotionTest {
     @Test
     void vectorSteeringApproachesTargetByOneRomSpeedUnit() {
         CrowMotion motion = new CrowMotion();
-        motion.setStateForTest(0, 2);
-        motion.setSpeedForTest(0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 2);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0, 0, 0);
         RoomEntity entity = entity(0x40, 0x50, 0);
 
         CrowMotion.Update update = motion.advance(entity, 0x02, 0x60, 0x60);
@@ -85,9 +89,14 @@ final class CrowMotionTest {
     @CsvSource({"2, 1, 1", "3, 255, 255"})
     void airbornePursuitAndRetreatSteerFromVisualHeight(int state, int speedX, int speedY) {
         CrowMotion motion = new CrowMotion();
-        motion.setStateForTest(0, state);
-        RoomEntity airborne = new RoomEntity(
-                0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 0x10, -1, false);
+        MotionTestFixture.setStateForTest(motion, 0, state);
+        RoomEntity airborne = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CrowMotion.ENTITY_TYPE)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition())
+                .z(0x10)
+                .build();
 
         // Link is below the crow's visual Y ($40), but above its ground Y ($50).
         // Both flight states call bank $03 GetVectorTowardsLink via $3BB5.
@@ -106,10 +115,15 @@ final class CrowMotionTest {
     })
     void escapeBoundsUseTheHandlerEntryPosition(int x, int y, int z, int speedX, int speedY, boolean unload) {
         CrowMotion motion = new CrowMotion();
-        motion.setStateForTest(0, 3);
-        motion.setSpeedForTest(0, speedX, speedY, 0);
-        RoomEntity crow = new RoomEntity(
-                0, 0, CrowMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), 0, 0, 0, z, -1, false);
+        MotionTestFixture.setStateForTest(motion, 0, 3);
+        MotionTestFixture.setSpeedForTest(motion, 0, speedX, speedY, 0);
+        RoomEntity crow = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CrowMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .z(z)
+                .build();
 
         // Frame 1 skips steering. Each speed moves one pixel across a boundary.
         // $5E54 reads cached hActiveEntityPosX / hActiveEntityVisualPosY.
@@ -133,9 +147,14 @@ final class CrowMotionTest {
     @Test
     void climbSelectsNextWingFrameFromAltitudeAfterMovement() {
         CrowMotion motion = new CrowMotion();
-        motion.setStateForTest(0, 1);
-        RoomEntity crow = new RoomEntity(
-                0, 0, CrowMotion.ENTITY_TYPE, 0x40, 0x50, EntityStatus.ACTIVE, definition(), 0, 0, 0, 7, -1, false);
+        MotionTestFixture.setStateForTest(motion, 0, 1);
+        RoomEntity crow = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CrowMotion.ENTITY_TYPE)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition())
+                .z(7)
+                .build();
 
         CrowMotion.Update first = motion.advance(crow, 0x20, 0x40, 0x50);
         assertEquals(7, first.entity().z());
@@ -151,8 +170,8 @@ final class CrowMotionTest {
     @CsvSource({"2, 16, 3", "3, 16, 3", "2, 0, 2", "3, 0, 2"})
     void flightSelectsNextWingFrameFromTheMovementHelpersFinalByte(int state, int speedY, int nextVariant) {
         CrowMotion motion = new CrowMotion();
-        motion.setStateForTest(0, state);
-        motion.setSpeedForTest(0, 0, speedY, 0);
+        MotionTestFixture.setStateForTest(motion, 0, state);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0, speedY, 0);
         // When Y moves, HL points at updated Y ($49). A zero Y speed returns
         // early with HL still at the speed byte (zero). Neither is the timer.
         CrowMotion.Update first = motion.advance(entity(0x40, 0x48, 0), 3, 1, 0, 0);
@@ -162,8 +181,13 @@ final class CrowMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(
-                0, 0, CrowMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CrowMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .spriteVariant(variant)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

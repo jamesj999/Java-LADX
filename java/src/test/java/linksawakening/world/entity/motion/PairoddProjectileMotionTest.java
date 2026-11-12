@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class PairoddProjectileMotionTest {
@@ -62,7 +62,11 @@ final class PairoddProjectileMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, -1, 0x58, x, y, EntityStatus.ACTIVE, projectileDefinition(), 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .type(0x58)
+                .at(x, y)
+                .spriteDefinition(projectileDefinition())
+                .build();
     }
 
     private static EntitySpriteDefinition projectileDefinition() {

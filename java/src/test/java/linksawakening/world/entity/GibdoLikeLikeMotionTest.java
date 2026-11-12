@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.motion.GibdoMotion;
+import linksawakening.world.entity.motion.LikeLikeFrame;
 import linksawakening.world.entity.motion.LikeLikeMotion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,7 +47,8 @@ final class GibdoLikeLikeMotionTest {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(slot == 0 ? entity(type) : RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
 
         for (int pass = 0; pass <= 33; pass++) {
             // The global frame is deliberately offset from the new entity's
@@ -65,19 +67,19 @@ final class GibdoLikeLikeMotionTest {
         RoomEntity entity = entity(0x23);
         for (int pass = 0; pass < 15; pass++) {
             LikeLikeMotion.Update update =
-                    motion.advance(entity, pass, 0xA0, 0xA0, 0, 0, false, 0, 0, 1, 0, () -> 1, null);
+                    motion.advance(new LikeLikeFrame(entity, pass, 0xA0, 0xA0, 0, 0, false, 0, 0, 1, 0, () -> 1, null));
             entity = update.entity();
         }
-        LikeLikeMotion.Update caught =
-                motion.advance(entity, 15, entity.x(), entity.y(), 0, 0, false, 0, 0, 1, 0, () -> 1, null);
+        LikeLikeMotion.Update caught = motion.advance(
+                new LikeLikeFrame(entity, 15, entity.x(), entity.y(), 0, 0, false, 0, 0, 1, 0, () -> 1, null));
         assertEquals(1, motion.state(0));
         // Sixteen walking passes leave counter $10. Capture calls $7F05 twice,
         // selecting frame 1 for the following pass from the same counter.
-        LikeLikeMotion.Update first =
-                motion.advance(caught.entity(), 16, 0x40, 0x40, 0, 0, false, 0, 0, 1, 0, () -> 1, null);
+        LikeLikeMotion.Update first = motion.advance(
+                new LikeLikeFrame(caught.entity(), 16, 0x40, 0x40, 0, 0, false, 0, 0, 1, 0, () -> 1, null));
         assertEquals(0, first.spriteVariant());
-        LikeLikeMotion.Update second =
-                motion.advance(first.entity(), 17, 0x40, 0x40, 0, 0, false, 0, 0, 1, 0, () -> 1, null);
+        LikeLikeMotion.Update second = motion.advance(
+                new LikeLikeFrame(first.entity(), 17, 0x40, 0x40, 0, 0, false, 0, 0, 1, 0, () -> 1, null));
         assertEquals(1, second.spriteVariant());
     }
 
@@ -87,19 +89,19 @@ final class GibdoLikeLikeMotionTest {
             int motionState, int itemA, int itemB, int shieldLevel, int stolenSlot) {
         LikeLikeMotion motion = new LikeLikeMotion();
         RoomEntity entity = entity(0x23);
-        LikeLikeMotion.Update caught =
-                motion.advance(entity, 1, 0x40, 0x40, 0, 0, false, itemA, itemB, shieldLevel, 0, () -> 1, null);
+        LikeLikeMotion.Update caught = motion.advance(
+                new LikeLikeFrame(entity, 1, 0x40, 0x40, 0, 0, false, itemA, itemB, shieldLevel, 0, () -> 1, null));
         assertEquals(1, motion.state(0));
 
-        LikeLikeMotion.Update hidden = motion.advance(
-                caught.entity(), 2, 0x50, 0x60, 0, motionState, false, itemA, itemB, shieldLevel, 0, () -> 1, null);
+        LikeLikeMotion.Update hidden = motion.advance(new LikeLikeFrame(
+                caught.entity(), 2, 0x50, 0x60, 0, motionState, false, itemA, itemB, shieldLevel, 0, () -> 1, null));
         assertEquals(LikeLikeEvent.Kind.CAPTURE, hidden.event().kind());
         assertFalse(hidden.event().pinLinkPosition());
         assertEquals(stolenSlot, hidden.event().stolenInventorySlot());
         assertEquals(stolenSlot >= 0 ? shieldLevel : 0, motion.privateState1(0));
 
-        LikeLikeMotion.Update resumed = motion.advance(
-                hidden.entity(), 3, 0x50, 0x60, 0, 0, false, itemA, itemB, shieldLevel, 0, () -> 1, null);
+        LikeLikeMotion.Update resumed = motion.advance(new LikeLikeFrame(
+                hidden.entity(), 3, 0x50, 0x60, 0, 0, false, itemA, itemB, shieldLevel, 0, () -> 1, null));
         assertTrue(resumed.event().pinLinkPosition());
         assertEquals(-1, resumed.event().stolenInventorySlot());
     }
@@ -109,6 +111,11 @@ final class GibdoLikeLikeMotionTest {
         EntitySpriteDefinition.Variant pair = new EntitySpriteDefinition.Variant(tile, tile);
         EntitySpriteDefinition definition = new EntitySpriteDefinition(
                 type, 6, type == 0x1F ? 0x7E6F : 0x7DD4, EntitySpriteDefinition.Shape.PAIR, 0, List.of(pair, pair));
-        return new RoomEntity(0, 0, type, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
     }
 }

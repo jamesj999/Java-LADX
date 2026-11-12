@@ -1,73 +1,62 @@
 package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntityMotionMath.*;
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
-import static linksawakening.world.entity.RoomEntityRuntime.*;
 
 import java.util.Arrays;
+import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BowWowCollisionFrame;
 import linksawakening.world.entity.motion.BowWowMotion;
+import linksawakening.world.entity.motion.FollowingNpcFrame;
 
 /** Ordered slot dispatch phase 4; false preserves the ROM handler early return. */
 final class EntitySlotPhase4 {
     static boolean run(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
 
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GENIE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ARMOS_KNIGHT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_HINOX, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ROLLING_BONES, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ROLLING_BONES_BAR, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_MOBLIN_KING, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GOPONGA_FLOWER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GIANT_GOPONGA_FLOWER, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_POKEY, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_PIRANHA_PLANT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ZORA, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_ZOMBIE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_BUZZ_BLOB, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_SAND_CRAB, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_DOG, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_TARIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_WITCH, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_URCHIN, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_WITCH_RAT, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_GHINI_TYPE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_HARDHAT_BEETLE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_POLS_VOICE, state)) return false;
-        if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_4_SPIKED_BEETLE, state)) return false;
-        if (state.status == EntityStatus.ACTIVE
-                && !state.wasInitializing
-                && (isDynamicFollowingNpc(state.entity) || state.entity.type() == state.runtime.ENTITY_BOW_WOW)) {
-            if (state.entity.type() == state.runtime.ENTITY_BOW_WOW) {
-                BowWowMotion.Update bowWowUpdate = state.runtime.bowWowMotion.advanceAfterTimers(
-                        state.entity,
-                        state.frame,
-                        state.linkEntityX,
-                        state.linkEntityY,
-                        state.runtime.linkState.followingLinkZ,
-                        state.randomByteSupplier,
-                        state.backgroundCollision,
-                        Arrays.asList(state.runtime.slots),
-                        state.runtime.enemyCombatTables == null
-                                ? type -> false
-                                : state.runtime.enemyCombatTables::canBowWowEatEntity,
-                        state.runtime.bowWowState);
-                state.updated = bowWowUpdate.entity();
+        if (!state.handlers().tick(EntityTickStage.PHASE_4_BEFORE_FOLLOWER, state)) return false;
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && (isDynamicFollowingNpc(slotState.entity())
+                        || slotState.entity().type() == EntityRomConstants.ENTITY_BOW_WOW)) {
+            if (slotState.entity().type() == EntityRomConstants.ENTITY_BOW_WOW) {
+                BowWowMotion.Update bowWowUpdate = state.motion(BowWowMotion.class, BowWowMotion::new)
+                        .advanceAfterTimers(new BowWowCollisionFrame(
+                                slotState.entity(),
+                                frameInput.frame(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                state.linkState().followingLinkZ,
+                                frameInput.randomByteSupplier(),
+                                frameInput.backgroundCollision(),
+                                Arrays.asList(state.runtime().slots),
+                                state.runtime().enemyCombatTables == null
+                                        ? type -> false
+                                        : state.runtime().enemyCombatTables::canBowWowEatEntity,
+                                state.motion(BowWowMotion.class, BowWowMotion::new)
+                                        .readBowWowState()));
+                slotState.updated(bowWowUpdate.entity());
                 if (bowWowUpdate.targetContact() != null) {
-                    state.runtime.lifecycle.handleBowWowTargetContact(
-                            state.entity, bowWowUpdate.targetContact(), state.randomByteSupplier);
+                    state.lifecycle()
+                            .handleBowWowTargetContact(
+                                    slotState.entity(), bowWowUpdate.targetContact(), frameInput.randomByteSupplier());
                 }
             } else {
-                state.updated = state.runtime.followingNpcMotion.advance(
-                        state.entity,
-                        state.frame,
-                        state.linkEntityX,
-                        state.linkEntityY,
-                        state.runtime.linkState.followingLinkZ,
-                        state.runtime.linkState.followingLinkDirection,
-                        state.runtime.linkState.followingEntityYOffset,
-                        state.runtime.followingLinkPositionHistory,
-                        state.backgroundCollision);
+                slotState.updated(state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                        .advance(new FollowingNpcFrame(
+                                slotState.entity(),
+                                frameInput.frame(),
+                                frameInput.linkEntityX(),
+                                frameInput.linkEntityY(),
+                                state.linkState().followingLinkZ,
+                                state.linkState().followingLinkDirection,
+                                state.linkState().followingEntityYOffset,
+                                state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                                        .readFollowingLinkPositionHistory(),
+                                frameInput.backgroundCollision())));
             }
         }
         return true;

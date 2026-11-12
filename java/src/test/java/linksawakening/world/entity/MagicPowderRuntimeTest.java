@@ -38,11 +38,11 @@ final class MagicPowderRuntimeTest {
                 EntitySpriteDefinition.Shape.RECTANGLE,
                 sprinkle.spriteDefinition().shape());
         assertEquals(0xC3, runtime.enemies().physicsFlags(slot));
-        assertEquals(0x17, runtime.inspection().magicPowderTransitionCountdown(slot));
+        assertEquals(0x17, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderTransitionCountdown(slot));
 
         tick(runtime, 0, 0x20, 0x20, 0);
 
-        assertEquals(0x16, runtime.inspection().magicPowderTransitionCountdown(slot));
+        assertEquals(0x16, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderTransitionCountdown(slot));
         assertEquals(0x05, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
 
@@ -50,7 +50,7 @@ final class MagicPowderRuntimeTest {
     void outdoorBushRevealUsesTheSourceCellFormulaAndPoofSideEffects() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x38, 0x40, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 0x08);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 0x08);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0x01, 0x30, 0x40));
 
@@ -74,21 +74,22 @@ final class MagicPowderRuntimeTest {
     void indoorTorchMovesToStateOneAndQueuesExpirationAfterTheSlowTransition() throws IOException {
         RoomEntityRuntime runtime = runtime(true);
         int slot = runtime.spawnMagicPowderSprinkle(0x48, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 0x08);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 0x08);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0xAB, 0x01, 0x40, 0x40));
 
         tick(runtime, 0, 0x20, 0x20, 0);
 
-        assertEquals(1, runtime.inspection().magicPowderState(slot));
-        assertEquals(0x80, runtime.inspection().magicPowderSlowTransitionCountdown(slot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderState(slot));
+        assertEquals(
+                0x80, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderSlowTransitionCountdown(slot));
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).x());
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).y());
         assertEquals(
                 MagicPowderObjectAction.IGNITE_TORCH,
                 runtime.enemies().magicPowderObjectRequests().getFirst().action());
 
-        runtime.debug().setMagicPowderSlowTransitionCountdownForTest(slot, 1);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderSlowTransitionCountdownForTest(slot, 1);
         tick(runtime, 4, 0x20, 0x20, 0);
 
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
@@ -102,14 +103,15 @@ final class MagicPowderRuntimeTest {
     void pausedSprinkleRendersButDoesNotSampleObjects(String gate) throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x40, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         setGate(runtime, gate, true);
         runtime.configuration().setObjectIntersectionQuery(entity -> {
             throw new AssertionError("Paused powder sampled a room object");
         });
         tick(runtime, 0, 0, 0, 0);
         int expected = gate.equals("got_item") ? 7 : 8;
-        assertEquals(expected, runtime.inspection().magicPowderTransitionCountdown(slot));
+        assertEquals(
+                expected, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderTransitionCountdown(slot));
         assertEquals(
                 expected >> 2, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
         assertTrue(runtime.enemies().magicPowderObjectRequests().isEmpty());
@@ -120,14 +122,16 @@ final class MagicPowderRuntimeTest {
     void torchExpiryWaitsForItsHandlerAndUsesTheGlobalSlowTimerGate(String gate) throws IOException {
         RoomEntityRuntime runtime = runtime(true);
         int slot = runtime.spawnMagicPowderSprinkle(0x48, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0xAB, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, 0);
-        runtime.debug().setMagicPowderSlowTransitionCountdownForTest(slot, 1);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderSlowTransitionCountdownForTest(slot, 1);
         setGate(runtime, gate, true);
         tick(runtime, 4, 0, 0, 0);
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
-        assertEquals(gate.equals("got_item") ? 0 : 1, runtime.inspection().magicPowderSlowTransitionCountdown(slot));
+        assertEquals(
+                gate.equals("got_item") ? 0 : 1,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicPowderSlowTransitionCountdown(slot));
         assertTrue(runtime.enemies().magicPowderObjectRequests().isEmpty());
         setGate(runtime, gate, false);
         tick(runtime, 8, 0, 0, 6);
@@ -141,13 +145,13 @@ final class MagicPowderRuntimeTest {
     void zeroCountdownIsHiddenButNotUnloadedBeforeTheHandlerResumes() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x40, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 1);
-        runtime.debug().setWitchGotItemPresentationActiveForTest(true);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 1);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(true);
         tick(runtime, 0, 0, 0, 0);
-        assertEquals(0, runtime.inspection().magicPowderTransitionCountdown(slot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderTransitionCountdown(slot));
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(-1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
-        runtime.debug().setWitchGotItemPresentationActiveForTest(false);
+        EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(false);
         tick(runtime, 1, 0, 0, 0);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
     }
@@ -157,7 +161,7 @@ final class MagicPowderRuntimeTest {
     void linksMotionStateDoesNotPreventOutdoorPowderEffects(int motionState) throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x40, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, motionState);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
@@ -172,11 +176,11 @@ final class MagicPowderRuntimeTest {
             int motionState, boolean paletteTransition, boolean ignite) throws IOException {
         RoomEntityRuntime runtime = runtime(true);
         int slot = runtime.spawnMagicPowderSprinkle(0x48, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         runtime.configuration().setTorchPaletteTransitionState(4, paletteTransition);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0xAB, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, motionState);
-        assertEquals(ignite ? 1 : 0, runtime.inspection().magicPowderState(slot));
+        assertEquals(ignite ? 1 : 0, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderState(slot));
         assertEquals(
                 ignite ? 1 : 0, runtime.enemies().magicPowderObjectRequests().size());
     }
@@ -185,12 +189,12 @@ final class MagicPowderRuntimeTest {
     void bankEighteenDoesNotAllowTheCreditsHandlerException() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x40, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         runtime.configuration().setObjectIntersectionQuery(entity -> {
             throw new AssertionError("Credits reached the powder object handler");
         });
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, true));
-        assertEquals(7, runtime.inspection().magicPowderTransitionCountdown(slot));
+        assertEquals(7, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderTransitionCountdown(slot));
         assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }
 
@@ -199,7 +203,7 @@ final class MagicPowderRuntimeTest {
     void enemyCollisionUsesTheRomsAsymmetricByteWindows(int dx, int dy, boolean hits) throws IOException {
         RoomEntityRuntime runtime = runtimeWithAntiFairy(false, 0x40 + dx, 0x50 + dy);
         int slot = runtime.spawnMagicPowderSprinkle(0x32, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 0x10);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 0x10);
         tick(runtime, 0, 0, 0, 0);
         assertEquals(
                 hits,
@@ -212,7 +216,7 @@ final class MagicPowderRuntimeTest {
     void objectSamplingTickSkipsEnemyCollisionForNonTorchIndoorObjects(boolean indoor) throws IOException {
         RoomEntityRuntime runtime = runtimeWithAntiFairy(indoor, 0x40, 0x50);
         int slot = runtime.spawnMagicPowderSprinkle(0x32, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 8);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0, 0, 0x30, 0x40));
         tick(runtime, 0, 0, 0, 0);
         assertEquals(
@@ -225,20 +229,20 @@ final class MagicPowderRuntimeTest {
     void torchExpirationBlocksIgnitionLaterInTheSameEntityPass() throws IOException {
         RoomEntityRuntime runtime = runtime(true);
         int expiring = runtime.spawnMagicPowderSprinkle(0x48, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(expiring, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(expiring, 8);
         runtime.configuration()
                 .setObjectIntersectionQuery(
                         entity -> new RoomEntityObjectSample(0xAB, 1, entity.x() & 0xF0, (entity.y() - 8) & 0xF0));
         tick(runtime, 0, 0, 0, 0);
-        runtime.debug().setMagicPowderSlowTransitionCountdownForTest(expiring, 0);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderSlowTransitionCountdownForTest(expiring, 0);
         runtime.configuration().setTorchPaletteTransitionState(0, false);
         int igniting = runtime.spawnMagicPowderSprinkle(0x68, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(igniting, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(igniting, 8);
 
         tick(runtime, 1, 0, 0, 0);
 
         assertFalse(runtime.inspection().snapshot().slots().get(expiring).loaded());
-        assertEquals(0, runtime.inspection().magicPowderState(igniting));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderState(igniting));
         assertEquals(1, runtime.enemies().magicPowderObjectRequests().size());
         assertEquals(
                 MagicPowderObjectAction.EXTINGUISH_TORCH,
@@ -250,15 +254,15 @@ final class MagicPowderRuntimeTest {
         RoomEntityRuntime runtime = runtime(true);
         int firstSlot = runtime.spawnMagicPowderSprinkle(0x48, 0x4C, 0, 3);
         int secondSlot = runtime.spawnMagicPowderSprinkle(0x68, 0x4C, 0, 3);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(firstSlot, 8);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(secondSlot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(firstSlot, 8);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(secondSlot, 8);
         runtime.configuration().setTorchPaletteTransitionState(8, false);
         runtime.configuration()
                 .setObjectIntersectionQuery(
                         entity -> new RoomEntityObjectSample(0xAB, 1, entity.x() & 0xF0, (entity.y() - 8) & 0xF0));
         tick(runtime, 0, 0, 0, 0);
-        assertEquals(1, runtime.inspection().magicPowderState(firstSlot));
-        assertEquals(0, runtime.inspection().magicPowderState(secondSlot));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderState(firstSlot));
+        assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).magicPowderState(secondSlot));
         assertEquals(1, runtime.enemies().magicPowderObjectRequests().size());
     }
 
@@ -266,8 +270,8 @@ final class MagicPowderRuntimeTest {
     void ocarinaFreezesPowderCountdownWithoutDisablingItsHandler() throws IOException {
         RoomEntityRuntime runtime = runtime(false);
         int slot = runtime.spawnMagicPowderSprinkle(0x40, 0x50, 0, 0);
-        runtime.debug().setMagicPowderTransitionCountdownForTest(slot, 7);
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setMagicPowderTransitionCountdownForTest(slot, 7);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 1, 0x40, 0x40));
         tick(runtime, 0, 0, 0, 0);
         assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
@@ -280,10 +284,10 @@ final class MagicPowderRuntimeTest {
         switch (gate) {
             case "dialog" -> runtime.configuration().setDialogActive(active);
             case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
-            case "transition" -> runtime.debug().setRoomTransitionStateForTest(active);
-            case "gameplay" -> runtime.debug().setGameplayWorldForTest(!active);
-            case "sequence" -> runtime.debug().setTransitionSequenceCounterForTest(active ? 3 : 4);
-            case "got_item" -> runtime.debug().setWitchGotItemPresentationActiveForTest(active);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "gameplay" -> EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(!active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
             default -> throw new IllegalArgumentException(gate);
         }
     }
@@ -294,34 +298,30 @@ final class MagicPowderRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(
                 0,
-                new RoomEntity(
-                        0,
-                        -1,
-                        0x15,
-                        x,
-                        y,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false));
-        return RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots),
-                indoor,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom),
-                new ChestContentsTable(rom));
+                new RoomEntityBuilder()
+                        .type(0x15)
+                        .at(x, y)
+                        .spriteDefinition(catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                        .build());
+        return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(indoor)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static RoomEntityRuntime runtime(boolean indoor) throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        return RoomEntityRuntime.from(
-                emptySnapshot(), indoor, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        return RoomEntityRuntime.builder(emptySnapshot())
+                .indoorRoom(indoor)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY, int linkMotionState) {

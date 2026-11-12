@@ -1,39 +1,39 @@
 package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** Bank-$03 state shared by Octorok, Moblin, and masked Iron Mask roaming. */
 public final class RoamingEnemyMotion {
-    private static final int ENTITY_OCTOROK = 0x09;
+    static final int ENTITY_OCTOROK = 0x09;
     private static final int ENTITY_MOBLIN = 0x0B;
     private static final int ENTITY_IRON_MASK = 0x24;
     private static final int ENTITY_OCTOROK_ROCK = 0x0A;
     private static final int ENTITY_MOBLIN_ARROW = 0x0C;
-    private static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
-    private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
+    static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
+    static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] IRON_MASK_SPEED_X_BY_DIRECTION = {0x0C, 0xF4, 0x00, 0x00};
     private static final int[] IRON_MASK_SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF4, 0x0C};
-    private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
+    static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -134,84 +134,22 @@ public final class RoamingEnemyMotion {
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
-        int slot = entity.slot();
-        if (!initialized[slot]) {
-            initialize(slot);
-        }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
-        }
-        if (transitionCountdown[slot] > 0) {
-            transitionCountdown[slot]--;
-        }
-
-        if (state[slot] != 0) {
-            LaunchRequest launchRequest = launchRequestIfEligible(entity, linkEntityX, linkEntityY, creditsGameplay);
-            if (launchRequest != null && entity.type() == ENTITY_OCTOROK) {
-                return new Update(entity, launchRequest);
-            }
-            if (transitionCountdown[slot] == 0) {
-                transitionCountdown[slot] = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
-                state[slot] = 0;
-                privateState1[slot] = (privateState1[slot] + 1) & 0x03;
-                direction[slot] = privateState1[slot] == 0
-                        ? directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
-                        : randomByteSupplier.getAsInt() & 0x03;
-                speedX[slot] = speedXFor(entity.type(), direction[slot]);
-                speedY[slot] = speedYFor(entity.type(), direction[slot]);
-            } else {
-                // $03:7A30-7A64 clears collisions, then skips both wall
-                // probes when paused (both speeds are zero).
-                collisionsTable[slot] = 0;
-                horizontallyCollidedObject[slot] = 0;
-            }
-            return new Update(entity, launchRequest);
-        }
-
-        int x = entity.x();
-        int y = entity.y();
-        if ((collisionsTable[slot] & 0x0F) != 0 || transitionCountdown[slot] == 0) {
-            transitionCountdown[slot] = 0x10 | (randomByteSupplier.getAsInt() & 0x0F);
-            state[slot] = 1;
-            speedX[slot] = 0;
-            speedY[slot] = 0;
-            collisionsTable[slot] = 0;
-        } else {
-            int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-            if (nextX != x && backgroundInteraction != null) {
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
-                if (result.blocked()) {
-                    collisionsTable[slot] |= result.collisionFlag();
-                    horizontallyCollidedObject[slot] = result.objectId();
-                } else {
-                    x = nextX;
-                }
-            } else {
-                x = nextX;
-            }
-
-            int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-            if (nextY != y && backgroundInteraction != null) {
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
-                if (result.blocked()) {
-                    collisionsTable[slot] |= result.collisionFlag();
-                    verticallyCollidedObject[slot] = result.objectId();
-                } else {
-                    y = nextY;
-                }
-            } else {
-                y = nextY;
-            }
-        }
-
-        inertia[slot] = (inertia[slot] + 1) & 0xFF;
-        int variant = VARIANT_BY_DIRECTION[direction[slot]] | ((inertia[slot] >>> 3) & 0x01);
-        return new Update(withPositionAndVariant(entity, x, y, variant), null);
+        return advanceInternal(new RoamingEnemyFrame(
+                entity,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundInteraction,
+                ignoreHitsCountdown,
+                frameCounter,
+                creditsGameplay));
     }
 
-    private LaunchRequest launchRequestIfEligible(
+    private linksawakening.world.entity.motion.RoamingEnemyMotion.Update advanceInternal(RoamingEnemyFrame inputs) {
+        return new RoamingEnemyFrameStep(this, inputs).run();
+    }
+
+    LaunchRequest launchRequestIfEligible(
             RoomEntity entity, int linkEntityX, int linkEntityY, boolean creditsGameplay) {
         int type = entity.type() & 0xFF;
         if (transitionCountdown[entity.slot()] != 0x0A
@@ -235,10 +173,6 @@ public final class RoamingEnemyMotion {
             return new LaunchRequest(entity.slot(), type, ENTITY_MOBLIN_ARROW);
         }
         return null;
-    }
-
-    void setPrivateCountdown1ForTest(int slot, int value) {
-        privateCountdown1[slot] = value & 0xFF;
     }
 
     public void clear(int slot) {
@@ -301,29 +235,7 @@ public final class RoamingEnemyMotion {
         return VARIANT_BY_DIRECTION[direction[slot]] | ((inertia[slot] >>> 3) & 0x01);
     }
 
-    void setStateForTest(
-            int slot,
-            int newState,
-            int newTransitionCountdown,
-            int newInertia,
-            int newPrivateState1,
-            int newDirection) {
-        state[slot] = newState & 0xFF;
-        transitionCountdown[slot] = newTransitionCountdown & 0xFF;
-        inertia[slot] = newInertia & 0xFF;
-        privateState1[slot] = newPrivateState1 & 0x03;
-        direction[slot] = newDirection & 0x03;
-        speedX[slot] = SPEED_X_BY_DIRECTION[direction[slot]];
-        speedY[slot] = SPEED_Y_BY_DIRECTION[direction[slot]];
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        collisionsTable[slot] = 0;
-        horizontallyCollidedObject[slot] = 0;
-        verticallyCollidedObject[slot] = 0;
-        initialized[slot] = true;
-    }
-
-    private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
+    static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
         int distanceX = signedByte((linkX - entityX) & 0xFF);
         int distanceY = signedByte((linkY - entityY) & 0xFF);
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -332,7 +244,7 @@ public final class RoamingEnemyMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         speed &= 0xFF;
         if (speed == 0) {
             return position & 0xFF;
@@ -353,33 +265,20 @@ public final class RoamingEnemyMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private static int speedXFor(int entityType, int entityDirection) {
+    static int speedXFor(int entityType, int entityDirection) {
         return entityType == ENTITY_IRON_MASK
                 ? IRON_MASK_SPEED_X_BY_DIRECTION[entityDirection]
                 : SPEED_X_BY_DIRECTION[entityDirection];
     }
 
-    private static int speedYFor(int entityType, int entityDirection) {
+    static int speedYFor(int entityType, int entityDirection) {
         return entityType == ENTITY_IRON_MASK
                 ? IRON_MASK_SPEED_Y_BY_DIRECTION[entityDirection]
                 : SPEED_Y_BY_DIRECTION[entityDirection];
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+    static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     public record Update(RoomEntity entity, LaunchRequest launchRequest) {}

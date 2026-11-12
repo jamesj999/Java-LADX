@@ -26,6 +26,8 @@ public record EntityFrameContext(
         int linkSpeedY,
         boolean creditsGameplay,
         boolean handlerLinkCollisionEnabled) {
+    /** Compatibility for world.room.RoomEntityBridge; use builder for new callers. */
+    @Deprecated
     public EntityFrameContext(
             int frameCounter,
             int linkEntityX,
@@ -72,55 +74,46 @@ public record EntityFrameContext(
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
 
+    public static EntityFrameContextBuilder builder() {
+        return new EntityFrameContextBuilder();
+    }
+
+    public EntityFrameContextBuilder toBuilder() {
+        return builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(linkAirborne)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(linkSpeedX)
+                .linkSpeedY(linkSpeedY)
+                .creditsGameplay(creditsGameplay)
+                .handlerLinkCollisionEnabled(handlerLinkCollisionEnabled);
+    }
+
     EntityFrameContext withRuntimeInputs(int frame, int linkX, int linkY, RoomEntityBackgroundCollision collision) {
-        return new EntityFrameContext(
-                frame,
-                linkX,
-                linkY,
-                collisionType,
-                randomByteSupplier,
-                collision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                linkAirborne,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                linkSpeedX,
-                linkSpeedY,
-                creditsGameplay,
-                handlerLinkCollisionEnabled);
+        return toBuilder()
+                .frameCounter(frame)
+                .linkEntityX(linkX)
+                .linkEntityY(linkY)
+                .backgroundCollision(collision)
+                .build();
     }
 
     EntityFrameContext withLinkSpeeds(int speedX, int speedY) {
-        return new EntityFrameContext(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                collisionType,
-                randomByteSupplier,
-                backgroundCollision,
-                objectCollision,
-                linkPositionHistory,
-                linkZ,
-                linkAirborne,
-                linkDirection,
-                entityYOffset,
-                projectileLinkState,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                speedX,
-                speedY,
-                creditsGameplay,
-                handlerLinkCollisionEnabled);
+        return toBuilder().linkSpeedX(speedX).linkSpeedY(speedY).build();
     }
 }

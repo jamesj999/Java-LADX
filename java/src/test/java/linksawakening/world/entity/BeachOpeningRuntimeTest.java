@@ -55,25 +55,18 @@ final class BeachOpeningRuntimeTest {
     void swordPickupUsesTheRomFanfareSequenceBeforeGrantingTheSword() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        1,
-                        ENTITY_SWORD_SHIELD_PICKUP,
-                        0x58,
-                        0x60,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_SWORD_SHIELD_PICKUP, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(1)
+                        .type(ENTITY_SWORD_SHIELD_PICKUP)
+                        .at(0x58, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_SWORD_SHIELD_PICKUP, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         runtime.configuration().setEntityRoomStatus(0);
         runtime.configuration().setChestPlayerLevels(0, 0, 0);
@@ -127,8 +120,8 @@ final class BeachOpeningRuntimeTest {
                 foundSpinNoise,
                 "rewards=" + rewards + ", status="
                         + runtime.inspection().snapshot().slots().get(0).status() + ", state="
-                        + runtime.inspection().swordPickupStateForTest(0) + ", slow="
-                        + runtime.inspection().slowTransitionCountdownForTest(0));
+                        + EntityRuntimeFixture.inspection(runtime).swordPickupStateForTest(0) + ", slow="
+                        + EntityRuntimeFixture.inspection(runtime).slowTransitionCountdownForTest(0));
         assertTrue(foundSpinPose);
         assertTrue(foundSpinFrameWithoutMotionBlock);
         assertTrue(foundFinalPose);
@@ -142,25 +135,18 @@ final class BeachOpeningRuntimeTest {
     void sleepyToadstoolUsesTheRomHeldItemSequenceBeforeGrantingItsReward() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_SLEEPY_TOADSTOOL,
-                        0x58,
-                        0x60,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_SLEEPY_TOADSTOOL)
+                        .at(0x58, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setEntityRoomId(0x50);
         runtime.configuration().setToadstoolPlayerState(false, 0);
         runtime.configuration().setOwlDefaultMusicResolver(roomId -> 0x09);
@@ -231,34 +217,26 @@ final class BeachOpeningRuntimeTest {
     void beachOwlTriggersInTheRomRectangleAndCompletesItsDialogEvent() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_OWL_EVENT,
-                        0x08,
-                        0x10,
-                        EntityStatus.ACTIVE,
-                        catalog.forOwlEvent(false),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_OWL_EVENT)
+                        .at(0x08, 0x10)
+                        .spriteDefinition(catalog.forOwlEvent(false))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         runtime.configuration().setEntityRoomStatus(0);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x3F, 0x44, () -> 0));
-        assertEquals(0, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
         assertEquals(-1, runtime.consumePendingMusicTrack());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x44, () -> 0));
-        assertEquals(1, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
         assertEquals(0x22, runtime.consumePendingMusicTrack());
 
         boolean dialogOpened = false;
@@ -290,33 +268,25 @@ final class BeachOpeningRuntimeTest {
     void landedOwlReleasesLinkForTheFiveSourceInteractionCountdownFrames() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_OWL_EVENT,
-                        0x08,
-                        0x10,
-                        EntityStatus.ACTIVE,
-                        catalog.forOwlEvent(false),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_OWL_EVENT)
+                        .at(0x08, 0x10)
+                        .spriteDefinition(catalog.forOwlEvent(false))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         int frame = 0;
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x44, () -> 0));
-        while (runtime.inspection().owlEventStateForTest(0) != 2 && frame < 200) {
+        while (EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0) != 2 && frame < 200) {
             runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x58, 0x45, () -> 0));
             runtime.consumePendingLinkMotionBlockRequests();
         }
-        assertEquals(2, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(2, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
         // Captured ROM: C111 counts 5..1 while C1A8 retains the pre-decrement
         // value. No motion-block write occurs in these state-2 frames.
         for (int delay = 0; delay < 5; delay++) {
@@ -349,7 +319,7 @@ final class BeachOpeningRuntimeTest {
         armed.configuration().setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
 
         armed.tick(EntityTestFrames.frame(armed, 0, 0x50, 0x50, () -> 0));
-        assertEquals(1, armed.inspection().owlEventStateForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(armed).owlEventStateForTest(0));
         assertEquals(0x22, armed.consumePendingMusicTrack());
         armed.tick(EntityTestFrames.frame(armed, 1, 0x50, 0x50, () -> 0));
         assertEquals(List.of(new LinkFacingRequest(0, 0)), armed.consumePendingLinkFacingRequests());
@@ -396,7 +366,7 @@ final class BeachOpeningRuntimeTest {
         assertEquals(
                 EntityStatus.ACTIVE,
                 ordered.inspection().snapshot().slots().get(0).status());
-        assertEquals(2, ordered.inspection().owlEventStateForTest(0));
+        assertEquals(2, EntityRuntimeFixture.inspection(ordered).owlEventStateForTest(0));
         assertEquals(0x22, ordered.consumePendingMusicTrack());
     }
 
@@ -404,57 +374,54 @@ final class BeachOpeningRuntimeTest {
     void tailKeyOwlWaitsForOwnershipAndTheChestInitializedPrivateCountdown() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity owl = new RoomEntity(
-                0,
-                0,
-                ENTITY_OWL_EVENT,
-                0x58,
-                0x50,
-                EntityStatus.ACTIVE,
-                catalog.forOwlEvent(false),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(owl), false, () -> 0, catalog, new RomEnemyCombatTables(rom), new ChestContentsTable(rom));
+        RoomEntity owl = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(ENTITY_OWL_EVENT)
+                .at(0x58, 0x50)
+                .spriteDefinition(catalog.forOwlEvent(false))
+                .build();
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(owl))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .chestContentsTable(new ChestContentsTable(rom))
+                .build();
         runtime.configuration().setEntityRoomId(0x41);
         runtime.configuration().setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
-        assertEquals(0, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
 
         runtime.configuration().setTailKeyOwned(true);
         int chestSlot = runtime.spawnChestWithItem(0x38, 0x31, ChestContentsTable.CHEST_TAIL_KEY);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x50, 0x50, () -> 0));
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, chestSlot);
-        assertEquals(0x37, runtime.inspection().owlPrivateCountdown1ForTest(0));
-        assertEquals(0, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(0x37, EntityRuntimeFixture.inspection(runtime).owlPrivateCountdown1ForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
 
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x50, 0x50, () -> 0));
-        assertEquals(0x37, runtime.inspection().owlPrivateCountdown1ForTest(0));
+        assertEquals(0x37, EntityRuntimeFixture.inspection(runtime).owlPrivateCountdown1ForTest(0));
         runtime.configuration().setDialogActive(false);
 
         runtime.configuration().setTalkState(true, 0, 0x80);
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x50, 0x50, () -> 0));
-        assertEquals(0x37, runtime.inspection().owlPrivateCountdown1ForTest(0));
+        assertEquals(0x37, EntityRuntimeFixture.inspection(runtime).owlPrivateCountdown1ForTest(0));
         runtime.configuration().setTalkState(false, 0, 0x80);
 
-        runtime.debug().setOcarinaPlaybackForTest(1, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x50, 0x50, () -> 0));
-        assertEquals(0x37, runtime.inspection().owlPrivateCountdown1ForTest(0));
-        runtime.debug().setOcarinaPlaybackForTest(0, 0, 0);
+        assertEquals(0x37, EntityRuntimeFixture.inspection(runtime).owlPrivateCountdown1ForTest(0));
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(0, 0, 0);
 
         for (int frame = 5; frame < 0x3B; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x50, 0x50, () -> 0));
         }
-        assertEquals(0, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x3B, 0x50, 0x50, () -> 0));
-        assertEquals(1, runtime.inspection().owlEventStateForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));
         assertEquals(0x22, runtime.consumePendingMusicTrack());
 
         boolean dialogOpened = false;
@@ -467,47 +434,32 @@ final class BeachOpeningRuntimeTest {
     }
 
     private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
-        return RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_OWL_EVENT,
-                        0x58,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        catalog.forOwlEvent(false),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        return RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_OWL_EVENT)
+                        .at(0x58, 0x50)
+                        .spriteDefinition(catalog.forOwlEvent(false))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
     }
 
     private static RoomEntityRuntime toadstoolRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
-        return RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        ENTITY_SLEEPY_TOADSTOOL,
-                        0x58,
-                        0x60,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                () -> 0,
-                catalog,
-                new RomEnemyCombatTables(rom));
+        return RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_SLEEPY_TOADSTOOL)
+                        .at(0x58, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .build();
     }
 
     private static boolean hasType(RoomEntitySnapshot snapshot, int type) {

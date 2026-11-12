@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -57,6 +57,11 @@ final class HardHatMotionTest {
                 EntitySpriteDefinition.Shape.PAIR,
                 0,
                 List.of(new EntitySpriteDefinition.Variant(tile, tile)));
-        return new RoomEntity(0, 0, 0x20, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x20)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
     }
 }

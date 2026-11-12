@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class PairoddMotionTest {
@@ -168,7 +168,12 @@ final class PairoddMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(0, 0, 0x57, x, y, EntityStatus.ACTIVE, pairDefinition(), 0, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x57)
+                .at(x, y)
+                .spriteDefinition(pairDefinition())
+                .build();
     }
 
     private static EntitySpriteDefinition pairDefinition() {

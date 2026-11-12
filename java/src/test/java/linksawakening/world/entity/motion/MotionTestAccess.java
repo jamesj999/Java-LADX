@@ -16,7 +16,7 @@ public final class MotionTestAccess {
 
     public static void setStateForTest(
             DogMotion motion, int slot, int newState, int newDirection, int newSpeedX, int newSpeedY, int newSpeedZ) {
-        motion.setStateForTest(slot, newState, newDirection, newSpeedX, newSpeedY, newSpeedZ);
+        MotionTestFixture.setStateForTest(motion, slot, newState, newDirection, newSpeedX, newSpeedY, newSpeedZ);
     }
 
     public static void setStateForTest(
@@ -28,7 +28,8 @@ public final class MotionTestAccess {
             int newSpeedX,
             int newSpeedY,
             int newSpeedZ) {
-        motion.setStateForTest(slot, newState, transitionCountdown, newDirection, newSpeedX, newSpeedY, newSpeedZ);
+        MotionTestFixture.setStateForTest(
+                motion, slot, newState, transitionCountdown, newDirection, newSpeedX, newSpeedY, newSpeedZ);
     }
 
     public static void initializeStateOne(BuzzBlobMotion motion, int slot) {

@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -41,16 +42,16 @@ public final class MaskedMimicMotion {
      * Cave-Water dispatch to GoriyaEntityHandler is selected by the caller;
      * this helper intentionally contains only the input-driven path.
      */
-    public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            int romLinkDirection,
-            int pressedButtonsMask,
-            int collisionType,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown,
-            int currentFrame) {
+    public Update advance(MaskedMimicFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int romLinkDirection = inputs.romLinkDirection();
+        int pressedButtonsMask = inputs.pressedButtonsMask();
+        int collisionType = inputs.collisionType();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        int currentFrame = inputs.currentFrame();
         validateRomDirection(romLinkDirection);
         int slot = entity.slot();
         int directionToLink = directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY);
@@ -169,17 +170,12 @@ public final class MaskedMimicMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -19,8 +20,8 @@ public final class ThreeOfAKindMotion {
         MATCH
     }
 
-    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -39,17 +40,12 @@ public final class ThreeOfAKindMotion {
         int slot = entity.slot();
         int x = move(entity, true, collision);
         int y = move(
-                new RoomEntity(
-                        entity.slot(),
-                        entity.sourceLoadOrder(),
-                        entity.type(),
+                EntitySnapshots.withMotion(
+                        entity,
                         x,
                         entity.y(),
-                        entity.status(),
-                        entity.spriteDefinition(),
                         entity.spriteVariant(),
                         entity.entityFlipAttribute(),
-                        entity.spriteTileOffset(),
                         entity.z(),
                         -1,
                         false),
@@ -92,13 +88,13 @@ public final class ThreeOfAKindMotion {
         return new Update(withPositionAndVariant(entity, x, y, variant), transitionCountdown);
     }
 
-    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, int[] transitionCountdowns) {
+    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, java.util.function.IntUnaryOperator countdown) {
         List<RoomEntity> cards = entities.stream()
                 .filter(entity -> entity.status() == EntityStatus.ACTIVE && entity.type() == ENTITY_TYPE)
                 .toList();
         if (cards.size() != 3
                 || cards.stream()
-                        .anyMatch(entity -> state[entity.slot()] != 2 || transitionCountdowns[entity.slot()] != 0)) {
+                        .anyMatch(entity -> state[entity.slot()] != 2 || countdown.applyAsInt(entity.slot()) != 0)) {
             return PuzzleResult.NONE;
         }
         int face = direction[cards.getFirst().slot()];
@@ -137,11 +133,6 @@ public final class ThreeOfAKindMotion {
 
     int speedY(int slot) {
         return speedY[slot];
-    }
-
-    public void setSettledForTest(int slot, int face) {
-        state[slot] = 2;
-        direction[slot] = face & 3;
     }
 
     public void clear(int slot) {
@@ -185,19 +176,6 @@ public final class ThreeOfAKindMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 }

@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class CuccoMotionTest {
@@ -21,7 +21,7 @@ final class CuccoMotionTest {
         AtomicInteger randomIndex = new AtomicInteger();
         int[] random = {0x02, 0x01, 0x01};
 
-        CuccoMotion.Update update = motion.advance(
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
                 entity,
                 0,
                 0,
@@ -36,7 +36,7 @@ final class CuccoMotionTest {
                 null,
                 false,
                 false,
-                0x04);
+                0x04));
 
         assertEquals(1, motion.state(0));
         assertEquals(0x06, motion.speedX(0));
@@ -50,10 +50,10 @@ final class CuccoMotionTest {
     @Test
     void expiredWalkReturnsToIdleInsteadOfFleeing() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 1, 0, 0, 0, 0, 0x80);
+        MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0, 0x80);
 
-        CuccoMotion.Update update = motion.advance(
-                entity(0x40, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
+                entity(0x40, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
 
         assertEquals(0, motion.state(0));
         assertEquals(0x30, update.transitionCountdown());
@@ -64,10 +64,10 @@ final class CuccoMotionTest {
     @Test
     void homingStateUsesTheRomVectorAndUpdatesDirection() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 2, 0, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(
-                entity(0x40, 0x50, 0), 0, 0, 0, 0x30, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
+                entity(0x40, 0x50, 0), 0, 0, 0, 0x30, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
 
         assertEquals(0x0C, motion.speedX(0));
         assertEquals(0x00, motion.speedY(0));
@@ -78,9 +78,9 @@ final class CuccoMotionTest {
     @Test
     void powerBraceletCollisionRequestsTheCuccoLiftBeforeItsStateHandler() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 0, 0x20, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
                 entity(0x40, 0x50, 0),
                 0,
                 0x20,
@@ -97,7 +97,7 @@ final class CuccoMotionTest {
                 null,
                 false,
                 false,
-                0x04);
+                0x04));
 
         assertTrue(update.liftRequested());
         assertEquals(0, motion.state(0));
@@ -109,8 +109,8 @@ final class CuccoMotionTest {
         CuccoMotion motion = new CuccoMotion();
         motion.initializeAngry(0, 0x10, 0);
 
-        CuccoMotion.Update update = motion.advance(
-                entity(0xA8, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
+                entity(0xA8, 0x50, 0), 0, 0, 0, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
 
         assertTrue(update.unloaded());
         assertTrue(update.boomerangSound());
@@ -120,9 +120,9 @@ final class CuccoMotionTest {
     @Test
     void marinFlashPathRaisesDialogAndCanRequestAnAngrySpawn() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setPrivateStateForTest(0, 0x22);
-        CuccoMotion.Update dialog = motion.advance(
-                entity(0x40, 0x50, 0), 1, 0, 8, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, true, 0x04);
+        MotionTestFixture.setPrivateStateForTest(motion, 0, 0x22);
+        CuccoMotion.Update dialog = motion.advance(new CuccoFrame(
+                entity(0x40, 0x50, 0), 1, 0, 8, 0x40, 0x50, 0, true, false, false, () -> 0, null, false, true, 0x04));
 
         assertEquals(0x23, motion.privateState1(0));
         assertEquals(2, motion.state(0));
@@ -130,9 +130,9 @@ final class CuccoMotionTest {
         assertEquals(0x76, dialog.dialogLowId());
 
         CuccoMotion spawnMotion = new CuccoMotion();
-        spawnMotion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
-        CuccoMotion.Update spawn = spawnMotion.advance(
-                entity(0x40, 0x50, 0), 0, 1, 0, 0x60, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04);
+        MotionTestFixture.setStateForTest(spawnMotion, 0, 2, 0, 0x23, 0, 0, 0);
+        CuccoMotion.Update spawn = spawnMotion.advance(new CuccoFrame(
+                entity(0x40, 0x50, 0), 0, 1, 0, 0x60, 0x50, 0, true, false, false, () -> 0, null, false, false, 0x04));
 
         assertNotNull(spawn.spawnRequest());
         assertEquals(0x28, spawn.spawnRequest().x());
@@ -144,9 +144,9 @@ final class CuccoMotionTest {
     @Test
     void attackStepWindowBlocksPowerBraceletLift() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 0, 0x20, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 0, 0x20, 0, 0, 0, 0);
 
-        CuccoMotion.Update update = motion.advance(
+        CuccoMotion.Update update = motion.advance(new CuccoFrame(
                 entity(0x40, 0x50, 0),
                 0,
                 0x20,
@@ -163,7 +163,7 @@ final class CuccoMotionTest {
                 null,
                 false,
                 false,
-                0x04);
+                0x04));
 
         assertFalse(update.liftRequested());
         assertEquals(0, motion.state(0));
@@ -174,9 +174,10 @@ final class CuccoMotionTest {
         for (int randomX : new int[] {2, 6}) {
             CuccoMotion motion = new CuccoMotion();
             RoomEntity chicken = entity(0x40, 0x50, 0);
-            motion.advance(chicken, 0, 0, 0, 0, 0, 0, true, false, false, () -> randomX, null, false, false, 4);
+            motion.advance(new CuccoFrame(
+                    chicken, 0, 0, 0, 0, 0, 0, true, false, false, () -> randomX, null, false, false, 4));
             for (int frame = 1; frame <= 16; frame++) {
-                chicken = motion.advance(
+                chicken = motion.advance(new CuccoFrame(
                                 chicken,
                                 frame,
                                 20,
@@ -193,7 +194,7 @@ final class CuccoMotionTest {
                                 null,
                                 false,
                                 false,
-                                4)
+                                4))
                         .entity();
                 assertEquals(randomX == 2 ? 2 : 0, chicken.spriteVariant() & 2);
             }
@@ -204,8 +205,8 @@ final class CuccoMotionTest {
     @Test
     void fullAngrySpawnRangeConsumesNoRandomByte() {
         CuccoMotion motion = new CuccoMotion();
-        motion.setStateForTest(0, 2, 0, 0x23, 0, 0, 0);
-        var result = motion.advance(
+        MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0x23, 0, 0, 0);
+        var result = motion.advance(new CuccoInteractionFrame(
                 entity(0x40, 0x50, 0),
                 0,
                 1,
@@ -223,13 +224,18 @@ final class CuccoMotionTest {
                 false,
                 false,
                 4,
-                false);
+                false));
         org.junit.jupiter.api.Assertions.assertNull(result.spawnRequest());
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new RoomEntity(
-                0, 0, CuccoMotion.ENTITY_TYPE, x, y, EntityStatus.ACTIVE, definition(), variant, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(CuccoMotion.ENTITY_TYPE)
+                .at(x, y)
+                .spriteDefinition(definition())
+                .spriteVariant(variant)
+                .build();
     }
 
     private static EntitySpriteDefinition definition() {

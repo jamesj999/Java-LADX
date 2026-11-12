@@ -6,9 +6,83 @@ import java.util.List;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.motion.CrowMotion;
 import org.junit.jupiter.api.Test;
 
 class EntityInfrastructureTest {
+    @Test
+    void dispatchSiteKeepsRepeatedVisitsAndStopsAtTheFirstEarlyReturn() {
+        EntityHandlerRegistry registry = new EntityHandlerRegistry();
+        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        frame.slotFrame().entity(RoomEntity.disabled(15));
+        var visited = new java.util.ArrayList<Integer>();
+        var site = EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE;
+        registry.registerTick(255, site, 2, actual -> {
+            visited.add(2);
+            return false;
+        });
+        registry.registerTick(255, site, 0, actual -> {
+            visited.add(0);
+            return true;
+        });
+        registry.registerTick(255, site, 1, actual -> {
+            visited.add(1);
+            return true;
+        });
+        registry.registerTick(255, site, 3, actual -> {
+            fail("Visit after early return");
+            return true;
+        });
+        assertFalse(registry.tick(site, frame));
+        assertEquals(List.of(0, 1, 2), visited);
+    }
+
+    @Test
+    void dispatchSiteRereadsEntityTypeBetweenVisits() {
+        EntityHandlerRegistry registry = new EntityHandlerRegistry();
+        EntityFrameExecution frame = new EntityFrameExecution(null, null);
+        frame.slotFrame().entity(RoomEntity.disabled(15));
+        var visited = new java.util.ArrayList<Integer>();
+        var site = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
+        registry.registerTick(254, site, 0, actual -> {
+            fail("Earlier visits must not repeat");
+            return true;
+        });
+        registry.registerTick(255, site, 0, actual -> {
+            actual.slotFrame()
+                    .entity(EntitySnapshots.withType(
+                            actual.slotFrame().entity(),
+                            254,
+                            actual.slotFrame().entity().spriteDefinition()));
+            visited.add(0);
+            return true;
+        });
+        registry.registerTick(254, site, 1, actual -> {
+            visited.add(1);
+            return true;
+        });
+        assertTrue(registry.tick(site, frame));
+        assertEquals(List.of(0, 1), visited);
+        assertEquals(15, frame.slotFrame().entity().slot());
+    }
+
+    @Test
+    void motionRegistryRetainsTheFirstInstanceForEachType() {
+        EntityMotionRegistry registry = new EntityMotionRegistry();
+        var motion = registry.get(CrowMotion.class, CrowMotion::new);
+        assertSame(motion, registry.get(CrowMotion.class, () -> {
+            throw new AssertionError("A motion must not be recreated");
+        }));
+    }
+
+    @Test
+    void motionRegistriesDoNotShareStateBetweenRooms() {
+        EntityMotionRegistry firstRoom = new EntityMotionRegistry();
+        EntityMotionRegistry secondRoom = new EntityMotionRegistry();
+        assertNotSame(
+                firstRoom.get(CrowMotion.class, CrowMotion::new), secondRoom.get(CrowMotion.class, CrowMotion::new));
+    }
+
     @Test
     void outboxKeepsStagedAndLiveEventsSeparate() {
         EntityOutbox outbox = new EntityOutbox();
@@ -64,16 +138,17 @@ class EntityInfrastructureTest {
     void registryKeepsStageRoutingWhenAdvanceIsAddedLater() {
         EntityHandlerRegistry registry = new EntityHandlerRegistry();
         EntityFrameExecution frame = new EntityFrameExecution(null, null);
-        frame.entity = RoomEntity.disabled(15);
-        var stage = EntityTickStage.PHASE_1_TARIN;
+        frame.slotFrame().entity(RoomEntity.disabled(15));
+        var stage = EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS;
         registry.registerTick(255, stage, actual -> {
             assertSame(frame, actual);
             return false;
         });
         registry.registerAdvance(255, (entity, context) -> entity);
         assertFalse(registry.tick(stage, frame));
-        assertTrue(registry.tick(EntityTickStage.PHASE_1_BOW_WOW, frame));
-        assertSame(frame.entity, registry.advance(frame.entity, null));
+        assertTrue(registry.tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, frame));
+        assertSame(
+                frame.slotFrame().entity(), registry.advance(frame.slotFrame().entity(), null));
         assertThrows(IllegalArgumentException.class, () -> registry.registerTick(255, stage, actual -> true));
         assertThrows(IllegalArgumentException.class, () -> registry.registerAdvance(255, (entity, context) -> entity));
     }
@@ -82,27 +157,28 @@ class EntityInfrastructureTest {
     void effectiveFrameCopyPreservesInputAndServiceIdentity() {
         java.util.function.IntSupplier random = () -> 91;
         RoomEntityBackgroundCollision collision = (entity, direction, x, y) -> false;
-        EntityFrameContext original = new EntityFrameContext(
-                4,
-                10,
-                20,
-                0,
-                random,
-                collision,
-                null,
-                null,
-                0,
-                false,
-                2,
-                0,
-                EnemyProjectileCollision.LinkState.nonInteractive(),
-                false,
-                0,
-                0,
-                0,
-                0,
-                1,
-                2);
+        EntityFrameContext original = EntityFrameContext.builder()
+                .frameCounter(4)
+                .linkEntityX(10)
+                .linkEntityY(20)
+                .collisionType(0)
+                .randomByteSupplier(random)
+                .backgroundCollision(collision)
+                .objectCollision(null)
+                .linkPositionHistory(null)
+                .linkZ(0)
+                .linkAirborne(false)
+                .linkDirection(2)
+                .entityYOffset(0)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .swordCollisionActive(false)
+                .swordX(0)
+                .swordWidth(0)
+                .swordY(0)
+                .swordHeight(0)
+                .linkSpeedX(1)
+                .linkSpeedY(2)
+                .build();
         EntityFrameContext effective = original.withRuntimeInputs(5, 30, 40, collision);
         assertEquals(10, original.linkEntityX());
         assertEquals(30, effective.linkEntityX());

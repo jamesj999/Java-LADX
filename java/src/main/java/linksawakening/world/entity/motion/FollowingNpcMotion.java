@@ -1,6 +1,8 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -12,6 +14,26 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
  * eight-frame Z bob without introducing a general entity CPU.
  */
 public final class FollowingNpcMotion {
+    private FollowingNpcState followingNpcState = FollowingNpcState.none();
+
+    public FollowingNpcState readFollowingNpcState() {
+        return followingNpcState;
+    }
+
+    public FollowingNpcState writeFollowingNpcState(FollowingNpcState value) {
+        return followingNpcState = value;
+    }
+
+    private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
+
+    public LinkPositionHistory readFollowingLinkPositionHistory() {
+        return followingLinkPositionHistory;
+    }
+
+    public LinkPositionHistory writeFollowingLinkPositionHistory(LinkPositionHistory value) {
+        return followingLinkPositionHistory = value;
+    }
+
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
@@ -44,19 +66,20 @@ public final class FollowingNpcMotion {
             int linkEntityX,
             int linkEntityY,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision);
+        return advance(new FollowingNpcFrame(
+                entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision));
     }
 
-    public RoomEntity advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkDirection,
-            int entityYOffset,
-            LinkPositionHistory linkPositionHistory,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(FollowingNpcFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        int linkDirection = inputs.linkDirection();
+        int entityYOffset = inputs.entityYOffset();
+        LinkPositionHistory linkPositionHistory = inputs.linkPositionHistory();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         return switch (entity.type()) {
             case ENTITY_GHOST -> advanceGhost(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
             case ENTITY_ROOSTER -> advanceRooster(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
@@ -303,20 +326,7 @@ public final class FollowingNpcMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
     private record Vector(int x, int y) {}

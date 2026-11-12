@@ -19,6 +19,12 @@ public record EntityCombatEvent(
         LinkCollisionResponse linkCollisionResponse)
         implements EntityEvent {
 
+    public static EntityCombatEventBuilder builder(int slot, int type) {
+        return new EntityCombatEventBuilder(slot, type);
+    }
+
+    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
+    @Deprecated
     public EntityCombatEvent(
             int slot,
             int type,
@@ -109,7 +115,8 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that provide both raw sounds. */
+    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
+    @Deprecated
     public EntityCombatEvent(
             int slot,
             int type,
@@ -137,66 +144,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for handler-written Link actions. */
-    public EntityCombatEvent(
-            int slot,
-            int type,
-            int linkDamage,
-            boolean swordHit,
-            int enemyDamage,
-            int enemySpecialAction,
-            SoundChannel soundChannel,
-            int soundId,
-            SoundChannel secondarySoundChannel,
-            int secondarySoundId,
-            SwordPokeVfx swordPokeVfx,
-            LinkAction linkAction) {
-        this(
-                slot,
-                type,
-                linkDamage,
-                swordHit,
-                enemyDamage,
-                enemySpecialAction,
-                soundChannel,
-                soundId,
-                secondarySoundChannel,
-                secondarySoundId,
-                swordPokeVfx,
-                linkAction,
-                LinkCollisionResponse.NONE);
-    }
-
     /** Compatibility constructor for a generic Link collision response. */
-    public EntityCombatEvent(
-            int slot,
-            int type,
-            int linkDamage,
-            boolean swordHit,
-            int enemyDamage,
-            int enemySpecialAction,
-            SoundChannel soundChannel,
-            int soundId,
-            SoundChannel secondarySoundChannel,
-            int secondarySoundId,
-            SwordPokeVfx swordPokeVfx,
-            LinkCollisionResponse linkCollisionResponse) {
-        this(
-                slot,
-                type,
-                linkDamage,
-                swordHit,
-                enemyDamage,
-                enemySpecialAction,
-                soundChannel,
-                soundId,
-                secondarySoundChannel,
-                secondarySoundId,
-                swordPokeVfx,
-                LinkAction.NONE,
-                linkCollisionResponse);
-    }
-
     public EntityCombatEvent {
         if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

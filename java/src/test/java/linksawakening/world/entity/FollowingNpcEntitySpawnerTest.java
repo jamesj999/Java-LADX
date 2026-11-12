@@ -25,7 +25,7 @@ final class FollowingNpcEntitySpawnerTest {
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
-                .synchronize(
+                .synchronize(new FollowingNpcSpawn(
                         initial,
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
                         new FollowingNpcState(false, 0, true, false, 0, 0, false),
@@ -34,7 +34,7 @@ final class FollowingNpcEntitySpawnerTest {
                         0x02,
                         0x04,
                         0x03,
-                        history);
+                        history));
 
         RoomEntity spawned = result.snapshot().slots().get(15);
         assertEquals(EntityStatus.DISABLED, result.snapshot().slots().get(0).status());
@@ -58,11 +58,11 @@ final class FollowingNpcEntitySpawnerTest {
     @Test
     void runtimeSnapshotPreservesSideScrollingThroughFollowerSynchronization() {
         RoomEntitySnapshot initial = new RoomEntitySnapshot(disabledSlots(), selection()).withSideScrolling(true);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
-                .synchronize(
+                .synchronize(new FollowingNpcSpawn(
                         runtime.inspection().snapshot(),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
                         new FollowingNpcState(true, 0, false, false, 0, 0, false),
@@ -71,7 +71,7 @@ final class FollowingNpcEntitySpawnerTest {
                         0x00,
                         0x00,
                         0x00,
-                        new LinkPositionHistory());
+                        new LinkPositionHistory()));
 
         assertTrue(runtime.inspection().snapshot().sideScrolling());
         assertTrue(result.snapshot().sideScrolling());
@@ -81,7 +81,7 @@ final class FollowingNpcEntitySpawnerTest {
     void sourceOrderUsesHighestFreeSlotForRoosterGhostMarinThenBowWow() {
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
-                .synchronize(
+                .synchronize(new FollowingNpcSpawn(
                         new RoomEntitySnapshot(disabledSlots(), selection()),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
                         new FollowingNpcState(true, 1, true, true, 0, 0, false),
@@ -90,7 +90,7 @@ final class FollowingNpcEntitySpawnerTest {
                         0,
                         0,
                         0,
-                        new LinkPositionHistory());
+                        new LinkPositionHistory()));
 
         assertEquals(0xD5, result.snapshot().slots().get(15).type());
         assertEquals(0xD4, result.snapshot().slots().get(14).type());
@@ -106,7 +106,7 @@ final class FollowingNpcEntitySpawnerTest {
     void ghostTriggerStateIsUpdatedWithoutSpawningDuringTheCheckPass() {
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
-                .synchronize(
+                .synchronize(new FollowingNpcSpawn(
                         new RoomEntitySnapshot(disabledSlots(), selection()),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x40),
                         new FollowingNpcState(false, 2, false, false, 0x02, 1, false),
@@ -115,7 +115,7 @@ final class FollowingNpcEntitySpawnerTest {
                         0,
                         0,
                         0,
-                        new LinkPositionHistory());
+                        new LinkPositionHistory()));
 
         assertEquals(1, result.state().ghostFollowingState());
         assertTrue(result.snapshot().loadedEntities().isEmpty());
@@ -131,7 +131,7 @@ final class FollowingNpcEntitySpawnerTest {
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
                         new EntitySpriteHandlerCatalog(syntheticRom()))
-                .synchronize(
+                .synchronize(new FollowingNpcSpawn(
                         initial,
                         new FollowingNpcRoomContext(true, false, 0x09, 0x20),
                         new FollowingNpcState(true, 1, true, true, 0, 0, false),
@@ -140,7 +140,7 @@ final class FollowingNpcEntitySpawnerTest {
                         0,
                         0,
                         0,
-                        history);
+                        history));
 
         assertSameEntity(existing, result.snapshot().slots().get(0));
         assertEquals(EntityStatus.DISABLED, result.snapshot().slots().get(15).status());
@@ -162,7 +162,14 @@ final class FollowingNpcEntitySpawnerTest {
     }
 
     private static RoomEntity active(int slot, int type, EntitySpriteDefinition definition) {
-        return new RoomEntity(slot, slot, type, 0x20, 0x30, EntityStatus.ACTIVE, definition, -1, 0, 0, 0, -1, false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(0x20, 0x30)
+                .spriteDefinition(definition)
+                .spriteVariant(-1)
+                .build();
     }
 
     private static void assertSameEntity(RoomEntity expected, RoomEntity actual) {

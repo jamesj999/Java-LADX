@@ -3,28 +3,20 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class SpikedBeetleMotionTest {
     @Test
     void flippedBeetleShakesThenRecoversAndResumesWalking() {
         SpikedBeetleMotion motion = new SpikedBeetleMotion();
-        RoomEntity entity = new RoomEntity(
-                0,
-                0,
-                0x2C,
-                64,
-                64,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0x2C),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x2C)
+                .at(64, 64)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x2C))
+                .build();
         motion.flipFromShield(0, 0);
         var leftShake = motion.advance(entity, 0, 120, 120, () -> 0, null, 0x58, 0);
         assertEquals(0xF8, motion.speedX(0)); // $07:791A-$792A

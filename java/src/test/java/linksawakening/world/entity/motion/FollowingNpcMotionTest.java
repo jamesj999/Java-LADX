@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class FollowingNpcMotionTest {
@@ -18,8 +18,11 @@ final class FollowingNpcMotionTest {
     void ghostUsesTheBank19FollowThresholdVectorPhaseAndBobTable() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity entity =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x10, 0x10, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x10, 0x10)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -52,8 +55,11 @@ final class FollowingNpcMotionTest {
     void ghostSteersUsingTheCurrentBobHeightBeforeMovement() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity current =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x50, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity current = new RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x40, 0x50)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(0, ENTITY_GHOST);
 
@@ -70,8 +76,11 @@ final class FollowingNpcMotionTest {
     void ghostStaysPutInsideTheRomFollowWindow() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
-        RoomEntity entity =
-                new RoomEntity(0, -1, ENTITY_GHOST, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(ENTITY_GHOST)
+                .at(0x40, 0x40)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -86,8 +95,11 @@ final class FollowingNpcMotionTest {
     void roosterUsesFourDirectionDisplayPairsAndEightFrameVectorRefresh() {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_ROOSTER);
-        RoomEntity entity = new RoomEntity(
-                0, -1, ENTITY_ROOSTER, 0x10, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(ENTITY_ROOSTER)
+                .at(0x10, 0x40)
+                .spriteDefinition(definition)
+                .build();
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
@@ -117,15 +129,19 @@ final class FollowingNpcMotionTest {
     @Test
     void marinConsumesTheNextPositionAndZHistoryEntriesWhileRefreshingTheCurrentEntry() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
-        RoomEntity entity =
-                new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(0xC1)
+                .at(0x10, 0x20)
+                .spriteDefinition(definition)
+                .build();
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x01, 0x02);
         history.write(1, 0x30, 0x40, 0x03, 0x01);
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
-        RoomEntity result = motion.advance(entity, 0, 0x50, 0x60, 0x04, 0x00, 0x00, history, null);
+        RoomEntity result =
+                motion.advance(new FollowingNpcFrame(entity, 0, 0x50, 0x60, 0x04, 0x00, 0x00, history, null));
 
         assertEquals(0x30, result.x());
         assertEquals(0x40, result.y());
@@ -140,8 +156,11 @@ final class FollowingNpcMotionTest {
     @Test
     void marinAdvancesItsHistoryIndicesAndUsesTheFollowingDirectionOnTheNextFrame() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
-        RoomEntity entity =
-                new RoomEntity(0, -1, 0xC1, 0x10, 0x20, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
+        RoomEntity entity = new RoomEntityBuilder()
+                .type(0xC1)
+                .at(0x10, 0x20)
+                .spriteDefinition(definition)
+                .build();
         LinkPositionHistory history = new LinkPositionHistory();
         history.fill(0x10, 0x20, 0x00, 0x03);
         history.write(1, 0x30, 0x40, 0x01, 0x00);
@@ -149,9 +168,12 @@ final class FollowingNpcMotionTest {
         FollowingNpcMotion motion = new FollowingNpcMotion();
         motion.initialize(entity.slot(), entity.type());
 
-        RoomEntity first = motion.advance(entity, 0, 0x50, 0x60, 0x00, 0x00, 0x00, history, null);
-        RoomEntity second = motion.advance(first, 1, 0x51, 0x61, 0x00, 0x00, 0x00, history, null);
-        RoomEntity third = motion.advance(second, 2, 0x52, 0x62, 0x00, 0x00, 0x00, history, null);
+        RoomEntity first =
+                motion.advance(new FollowingNpcFrame(entity, 0, 0x50, 0x60, 0x00, 0x00, 0x00, history, null));
+        RoomEntity second =
+                motion.advance(new FollowingNpcFrame(first, 1, 0x51, 0x61, 0x00, 0x00, 0x00, history, null));
+        RoomEntity third =
+                motion.advance(new FollowingNpcFrame(second, 2, 0x52, 0x62, 0x00, 0x00, 0x00, history, null));
 
         assertEquals(0x31, third.x());
         assertEquals(0x41, third.y());

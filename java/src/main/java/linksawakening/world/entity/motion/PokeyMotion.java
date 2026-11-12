@@ -1,9 +1,9 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -56,16 +56,16 @@ public final class PokeyMotion {
         initialized[slot] = true;
     }
 
-    public Update advanceMain(
-            RoomEntity entity,
-            int frameCounter,
-            int inertia,
-            int transitionCountdown,
-            int flashCountdown,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advanceMain(PokeyFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int inertia = inputs.inertia();
+        int transitionCountdown = inputs.transitionCountdown();
+        int flashCountdown = inputs.flashCountdown();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         checkType(entity);
         validateByte(inertia, "Pokey inertia");
         validateByte(transitionCountdown, "Pokey transition countdown");
@@ -284,37 +284,20 @@ public final class PokeyMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 -1,
                 false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x & 0xFF, y & 0xFF, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static void checkType(RoomEntity entity) {

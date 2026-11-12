@@ -3,8 +3,8 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class PincerMotionTest {
@@ -49,8 +49,13 @@ final class PincerMotionTest {
     void prepareStateSetsTheSourceSpeedAtCountdownTenAndEntersLungeAtZero() {
         PincerMotion motion = new PincerMotion();
         EntitySpriteDefinition definition = EntitySpriteDefinition.unsupported(0xB0);
-        RoomEntity entity = new RoomEntity(0, 0, 0xB0, 64, 80, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
-        motion.forceStateForTest(0, 2, 0x10, 0x40);
+        RoomEntity entity = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0xB0)
+                .at(64, 80)
+                .spriteDefinition(definition)
+                .build();
+        MotionTestFixture.forceStateForTest(motion, 0, 2, 0x10, 0x40);
 
         PincerMotion.Update prepared = motion.advance(entity, 0x10, 0x40, 96, 80);
         assertEquals(2, prepared.state());
@@ -60,7 +65,7 @@ final class PincerMotionTest {
         assertEquals(1, prepared.entity().spriteVariant());
         assertEquals(2, motion.lungeVariant(0));
 
-        motion.forceStateForTest(0, 2, 0, 0x40);
+        MotionTestFixture.forceStateForTest(motion, 0, 2, 0, 0x40);
         PincerMotion.Update lunging = motion.advance(entity, 0, 0x40, 96, 80);
         assertEquals(3, lunging.state());
         assertEquals(0x18, lunging.transitionCountdown());
@@ -72,8 +77,8 @@ final class PincerMotionTest {
     void returningStateUsesTheStoredHoleAndLoopsToHiddenState() {
         PincerMotion motion = new PincerMotion();
         RoomEntity entity = entity(0, 64, 80, 0);
-        motion.forceStateForTest(0, 5, 0, 0);
-        motion.setHoleForTest(0, 64, 80);
+        MotionTestFixture.forceStateForTest(motion, 0, 5, 0, 0);
+        MotionTestFixture.setHoleForTest(motion, 0, 64, 80);
 
         PincerMotion.Update update = motion.advance(entity, 0, 0, 64, 80);
 
@@ -85,19 +90,13 @@ final class PincerMotionTest {
     }
 
     private static RoomEntity entity(int slot, int x, int y, int variant) {
-        return new RoomEntity(
-                slot,
-                0,
-                0xB0,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(0xB0),
-                variant,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(0)
+                .type(0xB0)
+                .at(x, y)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0xB0))
+                .spriteVariant(variant)
+                .build();
     }
 }

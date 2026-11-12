@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$04 Ghini motion, including the shared hidden/visible handler state. */
@@ -104,20 +105,7 @@ public final class GhiniMotion {
         }
 
         int flipAttribute = entity.entityFlipAttribute() ^ (isNegative(speedX[slot]) ? 0 : 0x20);
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                flipAttribute,
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, entity.spriteVariant(), flipAttribute, z, -1, false);
     }
 
     public RoomEntity advance(
@@ -305,20 +293,7 @@ public final class GhiniMotion {
             selectedVariant = ordinaryVariant == HIDDEN_SPRITE_VARIANT ? HIDDEN_SPRITE_VARIANT : giantVariant;
             genericFlipAttribute = flipAttribute & 0x0F;
         }
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                selectedVariant,
-                genericFlipAttribute,
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, selectedVariant, genericFlipAttribute, z, -1, false);
     }
 
     private static int animationVariant(int frameCounter, int slot) {
@@ -371,19 +346,7 @@ public final class GhiniMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), z, -1, false);
     }
 }

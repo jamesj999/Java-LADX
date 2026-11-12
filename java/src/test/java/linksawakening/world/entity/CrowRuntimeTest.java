@@ -21,24 +21,17 @@ final class CrowRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        CrowMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(CrowMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x50, () -> 0));
         assertEquals(
@@ -46,16 +39,16 @@ final class CrowRuntimeTest {
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.flyingEnemies().crowState(0));
         assertEquals(0x52, runtime.enemies().physicsFlags(0));
-        assertTrue(runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
 
-        runtime.debug().setEntityRoomIdForTest(0x58);
+        EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x58);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x44, 0x50, () -> 0));
         assertEquals(0, runtime.flyingEnemies().crowState(0));
 
         int bombSlot = runtime.spawnBomb(0x38, 0x50, 0, 0);
-        runtime.debug().setBombTransitionCountdownForTest(bombSlot, 0x13);
-        runtime.debug().setEnemyFlashCountdownForTest(bombSlot, 0x10);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
+        EntityRuntimeFixture.debug(runtime).setEnemyFlashCountdownForTest(bombSlot, 0x10);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x44, 0x50, () -> 0));
         RoomEntity triggered = runtime.inspection().snapshot().slots().get(0);
         assertEquals(1, runtime.flyingEnemies().crowState(0));
@@ -66,7 +59,8 @@ final class CrowRuntimeTest {
 
         assertEquals(
                 0x08,
-                runtime.resolveCombat(3, triggered.x(), triggered.y(), false, true, false, 0, 0, 0, 0)
+                runtime.resolveCombat(new EntitySwordContactFrame(
+                                3, triggered.x(), triggered.y(), false, true, false, 0, 0, 0, 0))
                         .getFirst()
                         .linkDamage());
 
@@ -86,24 +80,18 @@ final class CrowRuntimeTest {
     @Test
     void takeoffKeepsFacingAndPresentsThePreviousAltitudeWingFrame() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        CrowMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(CrowMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(
+                                catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x3C, 0x50, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x3C, 0x50, () -> 0));
@@ -125,33 +113,27 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowUsesTheSourceLeafDropAndRoomCompletionPersistence() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        4,
-                        CrowMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
-        runtime.debug().setEntityRoomIdForTest(0x58);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(4)
+                        .type(CrowMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(
+                                catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x58);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
         RoomEntity crow = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0xFF, crow.sourceLoadOrder());
-        assertEquals(0x3C, runtime.inspection().droppedItemForTest(0));
+        assertEquals(0x3C, EntityRuntimeFixture.inspection(runtime).droppedItemForTest(0));
 
-        runtime.debug().setEntityRoomStatusForTest(0x10);
+        EntityRuntimeFixture.debug(runtime).setEntityRoomStatusForTest(0x10);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(
                 EntityStatus.DISABLED,
@@ -161,25 +143,19 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowTakesOffForANearbySmashedRock() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        CrowMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
-        runtime.debug().setEntityRoomIdForTest(0x58);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(CrowMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(
+                                catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x58);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
         assertEquals(0, runtime.flyingEnemies().crowState(0));
@@ -193,26 +169,19 @@ final class CrowRuntimeTest {
     @Test
     void kanaletCrowAppliesThePatchedIgnoreHitsReductionBeforeItsHandler() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                snapshot(new RoomEntity(
-                        0,
-                        0,
-                        CrowMotion.ENTITY_TYPE,
-                        0x40,
-                        0x50,
-                        EntityStatus.ACTIVE,
-                        catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD),
-                        0,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false)),
-                false,
-                null,
-                catalog);
-        runtime.debug().setEntityRoomIdForTest(0x58);
-        runtime.debug().setEnemyIgnoreHitsCountdownForTest(0, 0x20);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(CrowMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(
+                                catalog.forEntityType(CrowMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
+        EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x58);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x20);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
