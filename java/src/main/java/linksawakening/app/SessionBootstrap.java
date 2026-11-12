@@ -416,7 +416,7 @@ public final class SessionBootstrap {
         dialogSoundOutput = host.createPcmOutput();
         initMusicSystem(headless);
         var audio = (FrameAudioPlayer) musicPlayer;
-        var catalog = new SoundEffectPlayer(new GameBoyApu(48_000), romData.unsafeBytes()).catalog();
+        var catalog = new SoundEffectPlayer(new GameBoyApu(48_000), romData).catalog();
         var dialogEffects = DialogSoundEffectMap.fromCatalog(catalog);
         var gameplayEffects = GameplaySoundEffectMap.fromCatalog(catalog);
         dialogSoundSink = event -> dialogEffects.resolve(event).ifPresent(audio::playSoundEffect);
@@ -429,7 +429,7 @@ public final class SessionBootstrap {
         overworldDialogInteraction = new OverworldDialogInteraction(
                 SignpostDialogTable.loadFromRom(romData.unsafeBytes()), dialogTextLoader);
         cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene());
-        var introCatalog = SoundEffectCatalog.fromRom(romData.unsafeBytes());
+        var introCatalog = SoundEffectCatalog.fromRom(romData);
         cutsceneManager.setIntroNoiseSound(id -> introCatalog
                 .find(SoundEffectNamespace.NOISE, id)
                 .ifPresent(((FrameAudioPlayer) musicPlayer)::playSoundEffect));
@@ -763,13 +763,13 @@ public final class SessionBootstrap {
     }
 
     private void initMusicSystem(boolean headless) {
-        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData.unsafeBytes());
-        musicPlayer = new FrameAudioPlayer(romData.unsafeBytes(), 48_000, dialogSoundOutput);
+        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
+        musicPlayer = new FrameAudioPlayer(romData, 48_000, dialogSoundOutput);
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.
-        gameplayMusicController = new GameplayMusicController(
-                AreaMusicResolver.fromRom(romData.unsafeBytes()), musicCatalog, musicPlayer);
+        gameplayMusicController =
+                new GameplayMusicController(AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
     }
 
     private void loadGraphicsData() {

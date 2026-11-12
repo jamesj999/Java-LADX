@@ -58,13 +58,8 @@ public final class GameplaySimulation {
         return context.gpu();
     }
 
-    public linksawakening.rom.Rom rom() {
+    public linksawakening.rom.Rom romData() {
         return context.romData();
-    }
-
-    @Deprecated(forRemoval = true)
-    public byte[] romData() {
-        return context.romData().unsafeBytes();
     }
 
     public RoomSession roomSession() {

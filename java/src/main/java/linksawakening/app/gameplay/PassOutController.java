@@ -52,7 +52,7 @@ public final class PassOutController {
                 transition,
                 link.isPassingOut())) {
             handledFrame = true;
-            animation = new LinkPassOutAnimation(context.rom());
+            animation = new LinkPassOutAnimation(context.romData());
             link.beginPassOut();
             context.musicDirector().playDirectMusic(0);
             context.gameplaySoundSink().play(GameplaySoundEvent.LINK_DIES);

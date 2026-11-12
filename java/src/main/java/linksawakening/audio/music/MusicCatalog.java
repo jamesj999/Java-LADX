@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
 /** Catalog of ROM music tracks with source bank and pointer metadata. */
@@ -152,7 +151,7 @@ public final class MusicCatalog {
         this.tracksById = Map.copyOf(byId);
     }
 
-    public static MusicCatalog fromRom(byte[] romData) {
+    public static MusicCatalog fromRom(Rom romData) {
         Objects.requireNonNull(romData, "romData");
         List<MusicTrack> tracks = new ArrayList<>(0x70);
         addBank1BTracks(romData, tracks);
@@ -177,7 +176,7 @@ public final class MusicCatalog {
         return track;
     }
 
-    private static void addBank1BTracks(byte[] romData, List<MusicTrack> tracks) {
+    private static void addBank1BTracks(Rom romData, List<MusicTrack> tracks) {
         for (int inputId = 1; inputId <= BANK_1B_ENTRIES; inputId++) {
             int publicId;
             if (inputId <= 0x10) {
@@ -191,29 +190,29 @@ public final class MusicCatalog {
         }
     }
 
-    private static void addBank1ETracks(byte[] romData, List<MusicTrack> tracks) {
+    private static void addBank1ETracks(Rom romData, List<MusicTrack> tracks) {
         for (int inputId = 1; inputId <= BANK_1E_ENTRIES; inputId++) {
             int publicId = inputId <= 0x20 ? inputId + 0x10 : inputId + 0x20;
             tracks.add(trackFromPointerTable(romData, publicId, BANK_1E, BANK_1E_TABLE, inputId));
         }
     }
 
-    private static MusicTrack trackFromPointerTable(byte[] romData, int id, int bank, int tableStart, int inputId) {
+    private static MusicTrack trackFromPointerTable(Rom romData, int id, int bank, int tableStart, int inputId) {
         int pointerAddress = tableStart + ((inputId - 1) * 2);
-        int pointerOffset = RomBank.romOffset(bank, pointerAddress);
+        int pointerOffset = new RomAddress(bank, pointerAddress).offset();
         requireReadableWord(romData, pointerOffset, bank, pointerAddress);
         int headerAddress = readLittleEndianWord(romData, pointerOffset);
-        int romOffset = RomBank.romOffset(bank, headerAddress);
+        // Preserve the legacy header offset even for zero pointers in partial test ROMs.
+        int romOffset = (bank == 0 ? headerAddress : bank * 0x4000 + (headerAddress - 0x4000));
         return new MusicTrack(id, nameFor(id), bank, pointerAddress, headerAddress, romOffset);
     }
 
-    private static int readLittleEndianWord(byte[] romData, int offset) {
-        return new Rom(romData).u8(RomAddress.fromOffset(offset))
-                | (new Rom(romData).u8(RomAddress.fromOffset(offset + 1)) << 8);
+    private static int readLittleEndianWord(Rom romData, int offset) {
+        return romData.u16le(RomAddress.fromOffset(offset));
     }
 
-    private static void requireReadableWord(byte[] romData, int offset, int bank, int address) {
-        if (offset < 0 || offset + 1 >= romData.length) {
+    private static void requireReadableWord(Rom romData, int offset, int bank, int address) {
+        if (offset < 0 || offset + 1 >= romData.size()) {
             throw new IllegalArgumentException("Music pointer table entry out of ROM range: bank " + formatHex(bank)
                     + " address " + formatHex(address));
         }
@@ -228,5 +227,10 @@ public final class MusicCatalog {
 
     private static String formatHex(int value) {
         return "0x" + Integer.toHexString(value).toUpperCase();
+    }
+
+    @Deprecated(forRemoval = true)
+    public static MusicCatalog fromRom(byte[] romData) {
+        return fromRom(new Rom(romData));
     }
 }

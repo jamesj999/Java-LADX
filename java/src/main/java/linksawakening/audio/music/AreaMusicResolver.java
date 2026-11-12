@@ -3,7 +3,6 @@ package linksawakening.audio.music;
 import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
 /** Resolves area music through ROM tables and source-shaped overrides. */
@@ -30,7 +29,7 @@ public final class AreaMusicResolver {
         this.musicOverridesPowerUpTrack = musicOverridesPowerUpTrack;
     }
 
-    public static AreaMusicResolver fromRom(byte[] romData) {
+    public static AreaMusicResolver fromRom(Rom romData) {
         Objects.requireNonNull(romData, "romData");
         return new AreaMusicResolver(
                 readTable(romData, OVERWORLD_MUSIC_TRACKS_ADDR, OVERWORLD_MUSIC_TRACKS_LENGTH),
@@ -89,17 +88,18 @@ public final class AreaMusicResolver {
         return map;
     }
 
-    private static int[] readTable(byte[] romData, int address, int length) {
-        int offset = RomBank.romOffset(SELECT_MUSIC_BANK, address);
-        if (offset < 0 || offset + length > romData.length) {
+    private static int[] readTable(Rom romData, int address, int length) {
+        int offset = new RomAddress(SELECT_MUSIC_BANK, address).offset();
+        if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalArgumentException("Music selection table out of ROM range: bank 0x"
                     + Integer.toHexString(SELECT_MUSIC_BANK).toUpperCase()
                     + " address 0x" + Integer.toHexString(address).toUpperCase());
         }
-        int[] table = new int[length];
-        for (int i = 0; i < length; i++) {
-            table[i] = new Rom(romData).u8(RomAddress.fromOffset(offset + i));
-        }
-        return table;
+        return romData.u8Table(RomAddress.fromOffset(offset), length);
+    }
+
+    @Deprecated(forRemoval = true)
+    public static AreaMusicResolver fromRom(byte[] romData) {
+        return fromRom(new Rom(romData));
     }
 }

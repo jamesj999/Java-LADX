@@ -9,6 +9,7 @@ import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectPlayer;
+import linksawakening.rom.Rom;
 
 /** Standalone entry point for the Swing audio audition tool. */
 public final class AudioBrowserMain {
@@ -24,7 +25,7 @@ public final class AudioBrowserMain {
     private static void start() {
         OpenAlMusicPlayer player = null;
         try {
-            byte[] romData = loadRom();
+            Rom romData = loadRom();
             MusicCatalog catalog = MusicCatalog.fromRom(romData);
             GameBoyApu apu = new GameBoyApu(SAMPLE_RATE);
             MusicDriver driver = new MusicDriver(romData, apu);
@@ -42,12 +43,12 @@ public final class AudioBrowserMain {
         }
     }
 
-    private static byte[] loadRom() {
+    private static Rom loadRom() {
         try (InputStream stream = AudioBrowserMain.class.getClassLoader().getResourceAsStream(ROM_RESOURCE)) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing: " + ROM_RESOURCE);
             }
-            return stream.readAllBytes();
+            return Rom.of(stream.readAllBytes());
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load ROM: " + e.getMessage(), e);
         }

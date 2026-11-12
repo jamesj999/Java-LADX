@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
 
 /** Frame-driven facade over ROM-backed sound effect execution. */
 public final class SoundEffectPlayer {
@@ -20,11 +21,11 @@ public final class SoundEffectPlayer {
         this(apu, loadRomResource());
     }
 
-    public SoundEffectPlayer(GameBoyApu apu, byte[] romData) {
+    public SoundEffectPlayer(GameBoyApu apu, Rom romData) {
         this(apu, romData, SoundEffectCatalog.fromRom(romData));
     }
 
-    public SoundEffectPlayer(GameBoyApu apu, byte[] romData, SoundEffectCatalog catalog) {
+    public SoundEffectPlayer(GameBoyApu apu, Rom romData, SoundEffectCatalog catalog) {
         this.apu = Objects.requireNonNull(apu, "apu");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
         engine = new RomSoundEffectEngine(Objects.requireNonNull(romData, "romData"), apu);
@@ -88,14 +89,24 @@ public final class SoundEffectPlayer {
         engine.stop();
     }
 
-    private static byte[] loadRomResource() {
+    private static Rom loadRomResource() {
         try (InputStream stream = SoundEffectPlayer.class.getClassLoader().getResourceAsStream(ROM_RESOURCE)) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing: " + ROM_RESOURCE);
             }
-            return stream.readAllBytes();
+            return Rom.of(stream.readAllBytes());
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load ROM: " + e.getMessage(), e);
         }
+    }
+
+    @Deprecated(forRemoval = true)
+    public SoundEffectPlayer(GameBoyApu apu, byte[] romData) {
+        this(apu, new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public SoundEffectPlayer(GameBoyApu apu, byte[] romData, SoundEffectCatalog catalog) {
+        this(apu, new Rom(romData), catalog);
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import linksawakening.rom.Rom;
 
 /** Catalog of named ROM-backed effects grouped by namespace. */
 public final class SoundEffectCatalog {
@@ -143,7 +144,7 @@ public final class SoundEffectCatalog {
         this.effects = List.copyOf(Objects.requireNonNull(effects, "effects"));
     }
 
-    public static SoundEffectCatalog fromRom(byte[] romData) {
+    public static SoundEffectCatalog fromRom(Rom romData) {
         Objects.requireNonNull(romData, "romData");
         RomSoundEffectTables tables = new RomSoundEffectTables(romData);
         List<SoundEffect> effects = new ArrayList<>(JINGLE_NAMES.length + WAVE_NAMES.length + NOISE_NAMES.length);
@@ -183,5 +184,10 @@ public final class SoundEffectCatalog {
 
     private static String romAddr(int bank, int addr) {
         return String.format("%02X:%04X", bank & 0xFF, addr & 0xFFFF);
+    }
+
+    @Deprecated(forRemoval = true)
+    public static SoundEffectCatalog fromRom(byte[] romData) {
+        return fromRom(new Rom(romData));
     }
 }

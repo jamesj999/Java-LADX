@@ -5,6 +5,7 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.gameplay.PcmSoundOutput;
+import linksawakening.rom.Rom;
 
 /**
  * Device-independent audio transport. Each update is exactly one gameplay frame.
@@ -21,7 +22,7 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     private final short[] wholeFramePcm;
     private final short[] extraFramePcm;
 
-    public FrameAudioPlayer(byte[] rom, int sampleRate, PcmSoundOutput output) {
+    public FrameAudioPlayer(Rom rom, int sampleRate, PcmSoundOutput output) {
         if (sampleRate < 60) throw new IllegalArgumentException("sampleRate must be at least 60");
         this.sampleRate = sampleRate;
         wholeFramePcm = new short[(sampleRate / 60) * 2];
@@ -75,5 +76,10 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     @Override
     public void close() {
         stop();
+    }
+
+    @Deprecated(forRemoval = true)
+    public FrameAudioPlayer(byte[] rom, int sampleRate, PcmSoundOutput output) {
+        this(new Rom(rom), sampleRate, output);
     }
 }
