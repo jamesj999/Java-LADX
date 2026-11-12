@@ -209,20 +209,23 @@ Link declares retained role accessors directly. Nine narrow interfaces cover
 position, motion, animation, actions, status, equipment, airborne motion,
 side-view motion and controls. Their implementations receive state-owning
 components, never Link. LinkAssembly binds cyclic dependencies once; components
-and service references are final. Link's deprecated superclass chain owns no
-state and delegates legacy calls to those roles, pending external caller migration.
+and service references are final. Link is a final aggregate with no superclass;
+update delegates frame orchestration to its retained motion role. The sole
+deprecated member is the JumpTarget adapter used by a world route fixture.
 
 LinkMotion, LinkAirborne, LinkAnimator and LinkStateMachine contain their own
 command implementations. Collision integration, jump integration, ordered frame
 phases and animation selection remain distinct internal responsibilities.
 Link receives player components directly and retains themed ROM motion/sword
-tables. Direction conversions distinguish Java and ROM indices explicitly.
+tables. Direction conversions distinguish Java and ROM indices explicitly. Animation
+facing is stored as Direction; raw snapshot and permissive equipment boundaries
+retain their integer representation and documented fallback behavior.
 
 Sprite registrations are grouped by entity responsibility. Context-sensitive
 validation and fallback selection retain first priority; the other families
 cover disjoint entity IDs. Named display-list addresses match local ROM symbols.
-Typed Rom readers preserve bank selection and format checks. The external
-RoomPaletteLoader byte-only boundary temporarily receives the ROM backing array.
+Typed Rom readers preserve bank selection and format checks. EntitySpriteCatalog
+passes Rom directly to the world-owned RoomPaletteLoader.
 ROM-free allocation guards cover walking with repeated sword swings.
 
 ### `equipment`
@@ -243,8 +246,8 @@ Gameplay integration contracts, dialog interactions, sound routing and event con
 Key types: EnemyCombatEventConsumer, EnemyProjectileEventConsumer, PcmSoundOutput.
 
 Owned consumers address focused PlayerState components. The sound boundary
-adapts resource requests to presentation events; the old PlayerState sound
-return type remains an isolated deprecated compatibility bridge. Signpost
+adapts resource requests to presentation events through PlayerSounds; PlayerState
+has no gameplay sound compatibility bridge. Signpost
 interaction uses its seven-argument entry point and `Interaction` bundle.
 `DamageConsequences` names the contact-hurt and power-up-ended effects requested
 by projectile consumption. Its app implementor is retained; the older callback
@@ -298,6 +301,13 @@ Key types: FrameScene, HardwareFrame, OamSink, OpenGlFramePresenter.
 Typed ROM addresses, symbols, bank mapping and shared tables.
 Key types: Rom, RomAddress, RomSymbols, GbcBanks.
 
+Rom construction uses validated `of` or explicitly alignment-unchecked
+`unchecked`; its constructor is private. Tests use `TestRoms.partial` for
+synthetic buffers. RomTables exposes themed table holders only: all deprecated
+aggregate methods and RomUtil delegates are removed. Five app wiring byte
+handoffs remain for the world entry-point migration; backing-array ownership
+and validation timing remain unchanged.
+
 ### `save`
 
 Source-shaped SRAM layout, image operations, player-field codec and host persistence.
@@ -332,19 +342,19 @@ Player resources, progression, ROM value types and save-value application.
 Key types: PlayerState, Inventory, Vitals, Ammunition, Progression, Wallet,
 EquipmentLevels, PlayerInitialization, PlayerSaveLoader and ResourceSound.
 
-PlayerState owns and directly exposes its components. Its temporary superclass
-chain contains deprecated delegates and abstract dispatch contracts, with no
-fields or component ownership. LinkPlayerState remains a deprecated public
-compatibility contract; owned Link behavior addresses the components instead.
+PlayerState is a final aggregate with no superclass or deprecated members. It
+owns and directly exposes its components. The former LinkPlayerState interface
+and all PlayerState compatibility layers have been deleted; Link behavior
+addresses the components directly.
 The external migration work list is in
 [link-player-api-migration.md](archive/history/link-player-api-migration.md).
 
 Initialization and save loading preserve write order and raw saved inventory
 bytes. Reward components accept state-owned values without world dependencies.
-Resource sounds are last-write-wins values; presentation mapping preserves the
-legacy gameplay-sound return signature in one deprecated bridge.
-StateDependencyTest enforces the state/rom/save boundary with that explicit
-exception and also checks that physics remains input-free.
+Resource sounds are last-write-wins values mapped by the presentation consumer.
+StateDependencyTest enforces the state/rom/save boundary without exceptions and
+also checks that physics remains input-free. Composition guards require both
+aggregates to extend Object directly.
 
 ### `ui`
 

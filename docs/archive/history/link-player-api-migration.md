@@ -1,6 +1,10 @@
 # Link and player API migration
 
-Round 4: composed API and the current external migration work list (following round 3). Public inherited Object operations retain their Java contract. External caller lists resolve Java receiver types and overload signatures with the compiler, including method references, constructors and static field references. Reflection/string-based access is not inferred. Nested public value types remain source-compatible.
+**Round 5 status: aggregate-layer removal complete.** Link and PlayerState have
+no superclass. See the final section for the current remaining external work;
+earlier tables are historical checkpoints, not the current API surface.
+
+Round 4 historical checkpoint (superseded by the Round 5 completion below). Public inherited Object operations retain their Java contract. External caller lists resolve Java receiver types and overload signatures with the compiler, including method references, constructors and static field references. Reflection/string-based access is not inferred. Nested public value types remain source-compatible.
 
 | Aggregate | Public member | Decision and replacement | External caller files |
 | --- | --- | --- | --- |
@@ -644,7 +648,7 @@ external migration clients. The typed RoomPaletteLoader call is now used.
 
 ## Round 5 aggregate flattening
 
-- Link: superclass depth 4 → 0; source lines 249 → 218; declared public methods 15 → 17.
+- Link: superclass depth 4 → 0; source lines 249 → 218; declared public methods 10 → 12.
 - PlayerState: superclass depth 4 → 0; source lines 139 → 84; declared public methods 12 → 12.
 - Deprecated aggregate bridge methods 205 → 1; constants 22 → 0; constructor 1 → 0.
 - Eight compatibility layer classes deleted. PlayerState has no deprecated members.
@@ -752,3 +756,53 @@ Remaining audited occurrences:
 - `java/src/main/java/linksawakening/app/headless/HeadlessState.java:36`: `private final int direction;`
 - `java/src/main/java/linksawakening/app/headless/HeadlessState.java:193`: `public int direction() {`
 - `java/src/main/java/linksawakening/app/gameplay/entity/EntityInputCache.java:30`: `LinkPosition linkPosition(int x, int y, int z, int direction, int collisionType) {`
+
+## Round 5 completion and remaining owners
+
+All six ordered steps are complete. Link/PlayerState inheritance depth is zero,
+eight layers are deleted, and rom has zero deprecated members. The default
+suite contains 2,872 tests, zero failures/errors and one existing skip. No
+off-limits source, test, fixture or build configuration was changed.
+
+The following deprecated APIs still have off-limits clients; those engineers
+must migrate the listed files before deletion (including interface adaptation):
+
+| Member | Remaining caller / owner |
+| --- | --- |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderTest.java` |
+| `linksawakening.entity.Link.useRocsFeather()` | `java/src/test/java/linksawakening/world/room/GameplayRouteStage1.java` |
+| `linksawakening.gameplay.DialogTextLoader.loadFromRom(byte[])` | `java/src/test/java/linksawakening/render/DialogEmulatorCapture.java` |
+| `linksawakening.ui.FileMenuFrameSnapshot.<init>(java.lang.String,int,boolean,boolean,int,int,int[],int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java` |
+
+Other deprecated signatures outside this round's targeted aggregate/ROM
+removal scope remain listed below. Record canonical constructors are required
+implementation endpoints for their builders; uncalled loader/value delegates
+can be pruned separately. None creates an aggregate inheritance layer.
+
+- `linksawakening.cutscene.CutsceneManager.startIntro(byte[],java.util.function.Function<java.lang.String,linksawakening.scene.BackgroundScene>)`
+- `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int,int[],byte[],int)`
+- `linksawakening.entity.EntitySpriteCatalog.<init>(byte[])`
+- `linksawakening.entity.EntitySpriteHandlerCatalog.<init>(byte[])`
+- `linksawakening.entity.EntitySpriteSelection.<init>(linksawakening.world.entity.EntityRoomLoader.RoomTable,int,int,int[],boolean,int[][],java.util.Map<java.lang.Integer,linksawakening.entity.EntitySpriteDefinition>,java.util.Map<java.lang.Integer,linksawakening.entity.EntitySpriteDefinition>,linksawakening.entity.EntitySpriteDefinition,linksawakening.entity.EntitySpriteDefinition,linksawakening.entity.EntitySpriteDefinition)`
+- `linksawakening.entity.LinkCommand.HinoxGrab.<init>(int,int,int,int,int,int,int,boolean,boolean)`
+- `linksawakening.entity.LinkSpriteSheet.loadFromRom(byte[])`
+- `linksawakening.entity.LinkTunicPalette.loadFromRom(byte[])`
+- `linksawakening.equipment.SwordPalette.loadFromRom(byte[])`
+- `linksawakening.equipment.SwordSpriteSheet.loadFromRom(byte[])`
+- `linksawakening.scene.BackgroundSceneLoader.<init>(byte[])`
+- `linksawakening.startup.NewGameStartProfile.<init>(int,int,int,int,int,int,int,int,int,int,int,int)`
+- `linksawakening.ui.FileMenuRomData.<init>(byte[])`
+- `linksawakening.ui.InventoryMenu.<init>(linksawakening.ui.InventoryTilemapLoader,linksawakening.state.PlayerState,linksawakening.gameplay.GameplaySoundSink,byte[])`
+- `linksawakening.ui.InventoryTilemapLoader.loadFromRom(byte[])`
+- `linksawakening.ui.OcarinaSongMenu.songFlagForIndex(int)`
+- `linksawakening.ui.TilemapRenderer.render(byte[],linksawakening.gpu.GPU,int[],int[],int[][],int,int,int,int)`
+- `linksawakening.ui.TilemapRenderer.submit(linksawakening.render.HardwareFrame,linksawakening.gpu.GPU,int[],int[],int[][],int,int,int,int)`
+- `linksawakening.vfx.TransientVfxSpriteSheet.loadFromRom(byte[])`
+
+The inheritance audit above justifies every retained non-framework relationship
+individually (35 total). The integer audit records 37 → 34 exact occurrences;
+raw-byte compatibility is intentional, not an incomplete enum classification.
+Five app wiring unsafeBytes sites await the world entry-point migration; two
+audio internals and two backing-array ownership assertions also remain.
+
+Final compiled API metrics (`javap -public`, excluding constructors and nested types): Link 209 lines / 12 declared public methods; PlayerState 84 lines / 12 declared public methods. This corrects the step-2 commit message’s source-pattern count of 17 for Link, which included nested declarations.
