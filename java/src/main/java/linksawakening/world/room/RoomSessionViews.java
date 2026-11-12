@@ -298,7 +298,7 @@ final class RoomSessionViews {
         }
         RoomEntity entity = dependencies.location().activeRoom == null
                 ? null
-                : dependencies.location().activeRoom.entities().slots().get(slot);
+                : dependencies.location().activeRoom.entityView().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
                 ? dependencies.entityBridge().get().entityRuntime.inspection().warpTransitionCountdown(slot)
                 : dependencies.entityBridge().get().entityRuntime.enemies().transitionCountdown(slot);

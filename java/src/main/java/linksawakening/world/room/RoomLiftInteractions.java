@@ -154,7 +154,7 @@ final class RoomLiftInteractions {
                     .get()
                     .entityRuntime
                     .inspection()
-                    .snapshot()
+                    .view()
                     .loadedEntities()) {
                 if (entity.type() == 0x9D
                         && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE
@@ -229,7 +229,7 @@ final class RoomLiftInteractions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
     }
 
     private void replaceLiftedObject(LiftTarget target) {
@@ -289,7 +289,7 @@ final class RoomLiftInteractions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
     }
 
     private record LiftTarget(

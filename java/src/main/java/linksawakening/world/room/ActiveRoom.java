@@ -20,6 +20,10 @@ public final class ActiveRoom {
     private final int staircaseLocation;
     private int shutterDoorMask;
     private RoomEntitySnapshot entities;
+    private RoomEntitySnapshot ownedEntities;
+    // NPC direction/walk presentations repeat while gameplay is gated by dialogs.
+    private final RoomEntitySnapshot[] recentPresentations = new RoomEntitySnapshot[8];
+    private int nextPresentation;
 
     private ActiveRoom(LoadedRoom room) {
         this(room, room.entities());
@@ -118,7 +122,25 @@ public final class ActiveRoom {
         shutterDoorMask &= mask;
     }
 
+    /** Owned immutable entity state, suitable for retention by external callers. */
     public RoomEntitySnapshot entities() {
+        if (entities == null) return null;
+        if (!entities.samePresentationAs(ownedEntities)) {
+            for (int i = 0; i < recentPresentations.length; i++) {
+                var previous = recentPresentations[i];
+                if (previous != null && entities.samePresentationAs(previous)) {
+                    ownedEntities = previous;
+                    return ownedEntities;
+                }
+            }
+            ownedEntities = entities.ownedCopy();
+            recentPresentations[nextPresentation] = ownedEntities;
+            nextPresentation = (nextPresentation + 1) % recentPresentations.length;
+        }
+        return ownedEntities;
+    }
+    /** Immediate, same-thread room integration reads; never retain as historical state. */
+    public RoomEntitySnapshot entityView() {
         return entities;
     }
 
@@ -146,6 +168,6 @@ public final class ActiveRoom {
 
     public RoomRenderSnapshot renderSnapshot() {
         return new RoomRenderSnapshot(
-                tileIds, tileAttrs, palettes, entities, null, null, mapCategory == 0 && roomId == 0x32 ? 6 : 0);
+                tileIds, tileAttrs, palettes, entities(), null, null, mapCategory == 0 && roomId == 0x32 ? 6 : 0);
     }
 }

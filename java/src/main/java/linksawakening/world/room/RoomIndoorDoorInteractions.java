@@ -159,7 +159,7 @@ final class RoomIndoorDoorInteractions {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         return true;
     }

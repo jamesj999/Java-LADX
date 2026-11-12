@@ -28,7 +28,7 @@ final class RoomNpcPresentation {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -49,29 +49,33 @@ final class RoomNpcPresentation {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
     }
 
     void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
         if (dependencies.location().activeRoom == null
-                || dependencies.location().activeRoom.entities() == null
-                || dependencies.location().activeRoom.entities().spriteSelection() == null) {
+                || dependencies.location().activeRoom.entityView() == null
+                || dependencies.location().activeRoom.entityView().spriteSelection() == null) {
             return;
         }
-        Map<Integer, EntitySpriteDefinition> merged = new HashMap<>(
-                dependencies.location().activeRoom.entities().spriteSelection().spriteOverrides());
+        Map<Integer, EntitySpriteDefinition> merged = new HashMap<>(dependencies
+                .location()
+                .activeRoom
+                .entityView()
+                .spriteSelection()
+                .spriteOverrides());
         if (overrides != null) {
             merged.putAll(overrides);
         }
         RoomEntitySnapshot updated = dependencies
                 .location()
                 .activeRoom
-                .entities()
+                .entityView()
                 .withSpriteSelection(dependencies
                         .location()
                         .activeRoom
-                        .entities()
+                        .entityView()
                         .spriteSelection()
                         .withSpriteOverrides(merged));
         dependencies.location().activeRoom.replaceEntities(updated);

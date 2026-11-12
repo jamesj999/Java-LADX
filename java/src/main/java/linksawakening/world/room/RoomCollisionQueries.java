@@ -35,9 +35,16 @@ final class RoomCollisionQueries {
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
-        boolean sideViewEntityActive = dependencies.location().activeRoom.entities() != null
-                && !dependencies.location().activeRoom.entities().slots().isEmpty()
-                && dependencies.location().activeRoom.entities().slots().get(0).status() != EntityStatus.DISABLED;
+        boolean sideViewEntityActive = dependencies.location().activeRoom.entityView() != null
+                && !dependencies.location().activeRoom.entityView().slots().isEmpty()
+                && dependencies
+                                .location()
+                                .activeRoom
+                                .entityView()
+                                .slots()
+                                .get(0)
+                                .status()
+                        != EntityStatus.DISABLED;
         return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
                 new linksawakening.world.transition.RoomBoundaryInputs.Room(
                         dependencies.location().activeRoom.mapCategory(),

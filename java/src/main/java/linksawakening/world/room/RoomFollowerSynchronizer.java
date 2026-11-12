@@ -25,7 +25,7 @@ final class RoomFollowerSynchronizer {
         if (!dependencies.followers().followingNpcRoomNeedsSync
                 || dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null
-                || dependencies.location().activeRoom.entities() == null) {
+                || dependencies.location().activeRoom.entityView() == null) {
             return;
         }
         FollowingNpcRoomContext room = new FollowingNpcRoomContext(
@@ -36,7 +36,7 @@ final class RoomFollowerSynchronizer {
         FollowingNpcEntitySpawner.Result result = dependencies
                 .followingNpcEntitySpawner()
                 .synchronize(new linksawakening.world.entity.FollowingNpcSpawn(
-                        dependencies.location().activeRoom.entities(),
+                        dependencies.location().activeRoom.entityView().ownedCopy(),
                         room,
                         dependencies.followers().followingNpcState,
                         dependencies.followers().followingLinkX,
@@ -82,7 +82,7 @@ final class RoomFollowerSynchronizer {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         dependencies.roomLoadCoordinator().get().configureEnemyDropRuntime();
     }

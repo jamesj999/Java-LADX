@@ -9,6 +9,8 @@ import linksawakening.world.entity.event.EntityProjectileEvent;
 
 final class RoomEntitySimulation {
     private final Dependencies dependencies;
+    private final linksawakening.world.entity.EntityFrameContextBuilder frameInputs =
+            linksawakening.world.entity.EntityFrameContext.builder();
     private final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
     private final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
 
@@ -58,7 +60,7 @@ final class RoomEntitySimulation {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .tick(linksawakening.world.entity.EntityFrameContext.builder()
+                .tick(frameInputs
                         .frameCounter(frameCounter)
                         .linkEntityX(linkEntityX)
                         .linkEntityY(linkEntityY)

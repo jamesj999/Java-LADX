@@ -126,7 +126,7 @@ final class RoomEventTriggers {
     }
 
     boolean killAllEnemiesTriggerResolved() {
-        for (RoomEntity entity : dependencies.location().activeRoom.entities().slots()) {
+        for (RoomEntity entity : dependencies.location().activeRoom.entityView().slots()) {
             if (entity.status() != EntityStatus.DISABLED
                     && (dependencies.romTables().entityPropertyTables().entityOptions1(entity.type())
                                     & ENTITY_OPTION_EXCLUDED_FROM_KILL_ALL)
@@ -176,7 +176,7 @@ final class RoomEventTriggers {
                                 .get()
                                 .entityRuntime
                                 .inspection()
-                                .snapshot());
+                                .view());
             }
             dependencies.puzzles().activeRoomEvent = 0;
         } else if (effect == EVENT_EFFECT_REVEAL_STAIRWAY) {

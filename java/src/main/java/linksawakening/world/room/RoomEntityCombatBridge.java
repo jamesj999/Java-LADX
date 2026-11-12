@@ -59,7 +59,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return events;
     }
 
@@ -88,7 +88,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return mask;
     }
 
@@ -225,7 +225,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return event;
     }
 

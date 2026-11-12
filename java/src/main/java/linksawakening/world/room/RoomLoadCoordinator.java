@@ -131,9 +131,9 @@ final class RoomLoadCoordinator {
                                 dependencies.followers().tarinFlag, dependencies.followers().playerShieldLevel)));
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         var oldSelection = dependencies.location().activeRoom == null
-                        || dependencies.location().activeRoom.entities() == null
+                        || dependencies.location().activeRoom.entityView() == null
                 ? null
-                : dependencies.location().activeRoom.entities().spriteSelection();
+                : dependencies.location().activeRoom.entityView().spriteSelection();
         var palettes = dependencies
                 .roomPaletteLoader()
                 .indoorTransition(

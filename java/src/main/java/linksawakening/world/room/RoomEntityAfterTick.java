@@ -72,7 +72,8 @@ final class RoomEntityAfterTick {
         List<BombExplosionEvent> bombExplosionEvents =
                 dependencies.entityBridge().get().entityRuntime.consumeBombExplosionEvents();
         dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.clear();
-        dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.addAll(bombExplosionEvents);
+        RoomEntityOutbox.append(
+                dependencies.entityBridge().get().outbox.pendingBombExplosionEvents, bombExplosionEvents);
         List<ChestRewardEvent> chestRewards =
                 dependencies.entityBridge().get().entityRuntime.consumePendingChestRewardEvents();
         for (int rewardIndex = 0; rewardIndex < chestRewards.size(); rewardIndex++) {
@@ -83,18 +84,15 @@ final class RoomEntityAfterTick {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
             }
         }
-        dependencies.entityBridge().get().outbox.pendingChestRewardEvents.addAll(chestRewards);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingChestRewardEvents, chestRewards);
         dependencies.roomEntityRewards().get().harvestKeyQuicksandEvents();
         dependencies.roomEntityRewards().get().harvestKeyRewardEvents();
         dependencies.roomEntityRewards().get().harvestSlimeKeyRewardEvents();
         dependencies.roomPuzzleController().get().harvestThrownRoomEventCollisions();
         dependencies.roomEntityRewards().get().harvestHeartContainerRewards();
-        dependencies
-                .entityBridge()
-                .get()
-                .outbox
-                .pendingMadamMeowMeowFullHealRequests
-                .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
+        RoomEntityOutbox.append(
+                dependencies.entityBridge().get().outbox.pendingMadamMeowMeowFullHealRequests,
+                dependencies.entityBridge().get().entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
         dependencies.roomEntityRewards().get().harvestSwordPickupRewards();
         dependencies.roomEntityRewards().get().harvestToadstoolRewards();
         dependencies.roomEntityRewards().get().harvestInstrumentRewards();
@@ -177,7 +175,7 @@ final class RoomEntityAfterTick {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         boolean objectRequests = !bombExplosionEvents.isEmpty();
         dependencies.roomObjectMutations().get().applyBombObjectInteractions(bombExplosionEvents);
         var boomerangs =
@@ -201,7 +199,7 @@ final class RoomEntityAfterTick {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         dependencies.roomPuzzleController().get().tickPushedBlockMotion(linkEntityX, linkEntityY);
         dependencies.roomPuzzleController().get().tickRoomEvent(linkEntityX, linkEntityY);
     }

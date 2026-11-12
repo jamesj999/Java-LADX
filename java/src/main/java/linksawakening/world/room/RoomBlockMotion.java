@@ -62,7 +62,7 @@ final class RoomBlockMotion {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         if (dependencies.puzzles().pushedBlockMotionFrames != 0) {
             return;
@@ -175,7 +175,7 @@ final class RoomBlockMotion {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         dependencies.puzzles().pushedBlockEntitySlot = -1;
         dependencies.roomTileRedraw().get().refreshActiveRoomTilemap();

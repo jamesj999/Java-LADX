@@ -45,7 +45,7 @@ final class RoomPlayerItemActions {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         return thrown;
     }
@@ -79,7 +79,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -104,7 +104,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -129,7 +129,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -162,7 +162,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -187,7 +187,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -232,7 +232,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return true;
     }
 
@@ -280,7 +280,7 @@ final class RoomPlayerItemActions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return new ArrowShotResult(true, playWhoosh);
     }
 

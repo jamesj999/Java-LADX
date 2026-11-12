@@ -72,10 +72,15 @@ final class EntityEffectConsumption {
     }
 
     List<EntityCombatEvent> consumePendingEntityEvents() {
-        List<EntityCombatEvent> pending = new ArrayList<>(runtime.events().pendingPreTickEntityEvents);
-        pending.addAll(runtime.events().pendingEntityEvents);
-        runtime.events().pendingPreTickEntityEvents.clear();
-        runtime.events().pendingEntityEvents.clear();
+        var first = runtime.events().pendingPreTickEntityEvents;
+        var second = runtime.events().pendingEntityEvents;
+        int size = first.size() + second.size();
+        if (size == 0) return List.of();
+        List<EntityCombatEvent> pending = new ArrayList<>(size);
+        for (int i = 0; i < first.size(); i++) pending.add(first.get(i));
+        for (int i = 0; i < second.size(); i++) pending.add(second.get(i));
+        first.clear();
+        second.clear();
         return List.copyOf(pending);
     }
 
@@ -128,10 +133,15 @@ final class EntityEffectConsumption {
     }
 
     List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
-        List<LinkAttackStepRequest> pending = new ArrayList<>(runtime.events().pendingPreTickLinkAttackStepRequests);
-        pending.addAll(runtime.events().pendingLinkAttackStepRequests);
-        runtime.events().pendingPreTickLinkAttackStepRequests.clear();
-        runtime.events().pendingLinkAttackStepRequests.clear();
+        var first = runtime.events().pendingPreTickLinkAttackStepRequests;
+        var second = runtime.events().pendingLinkAttackStepRequests;
+        int size = first.size() + second.size();
+        if (size == 0) return List.of();
+        List<LinkAttackStepRequest> pending = new ArrayList<>(size);
+        for (int i = 0; i < first.size(); i++) pending.add(first.get(i));
+        for (int i = 0; i < second.size(); i++) pending.add(second.get(i));
+        first.clear();
+        second.clear();
         return List.copyOf(pending);
     }
 

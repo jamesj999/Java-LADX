@@ -114,12 +114,9 @@ final class RoomGroundMutations {
                     .entityRuntime
                     .spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
             // Link runs before the entity tick, which clears its frame outbox.
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .outbox
-                    .pendingRoomEntityEvents
-                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingEntityEvents());
+            RoomEntityOutbox.append(
+                    dependencies.entityBridge().get().outbox.pendingRoomEntityEvents,
+                    dependencies.entityBridge().get().entityRuntime.consumePendingEntityEvents());
         }
         return true;
     }

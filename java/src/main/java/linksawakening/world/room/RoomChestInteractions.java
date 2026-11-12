@@ -84,7 +84,7 @@ final class RoomChestInteractions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 

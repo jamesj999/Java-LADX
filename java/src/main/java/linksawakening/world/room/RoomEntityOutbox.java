@@ -55,6 +55,11 @@ final class RoomEntityOutbox {
         return first != null || events.isEmpty() ? first : events.getFirst();
     }
 
+    /** Empty List.copyOf/addAll implementations can still allocate an array; avoid that boundary. */
+    static <T> void append(List<T> target, List<? extends T> source) {
+        if (!source.isEmpty()) target.addAll(source);
+    }
+
     RoomEntityOutbox(java.util.function.Supplier<RoomEntityRuntime> runtime) {
         this.runtime = runtime;
     }
@@ -159,60 +164,70 @@ final class RoomEntityOutbox {
     }
 
     List<ChestRewardEvent> consumeChestRewardEvents() {
+        if (pendingChestRewardEvents.isEmpty()) return List.of();
         List<ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
         pendingChestRewardEvents.clear();
         return rewards;
     }
 
     List<KeyRewardEvent> consumeKeyRewardEvents() {
+        if (pendingKeyRewardEvents.isEmpty()) return List.of();
         List<KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
         pendingKeyRewardEvents.clear();
         return rewards;
     }
 
     List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+        if (pendingSlimeKeyRewardEvents.isEmpty()) return List.of();
         List<SlimeKeyRewardEvent> rewards = List.copyOf(pendingSlimeKeyRewardEvents);
         pendingSlimeKeyRewardEvents.clear();
         return rewards;
     }
 
     List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
+        if (pendingHeartContainerRewards.isEmpty()) return List.of();
         List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
         pendingHeartContainerRewards.clear();
         return rewards;
     }
 
     List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
+        if (pendingMadamMeowMeowFullHealRequests.isEmpty()) return List.of();
         List<MadamMeowMeowFullHealRequest> requests = List.copyOf(pendingMadamMeowMeowFullHealRequests);
         pendingMadamMeowMeowFullHealRequests.clear();
         return requests;
     }
 
     List<RichardProgressEvent> consumeRichardProgressEvents() {
+        if (pendingRichardProgressEvents.isEmpty()) return List.of();
         List<RichardProgressEvent> events = List.copyOf(pendingRichardProgressEvents);
         pendingRichardProgressEvents.clear();
         return events;
     }
 
     List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
+        if (pendingSwordPickupRewards.isEmpty()) return List.of();
         List<SwordPickupRewardEvent> rewards = List.copyOf(pendingSwordPickupRewards);
         pendingSwordPickupRewards.clear();
         return rewards;
     }
 
     List<ToadstoolRewardEvent> consumeToadstoolRewards() {
+        if (pendingToadstoolRewards.isEmpty()) return List.of();
         List<ToadstoolRewardEvent> rewards = List.copyOf(pendingToadstoolRewards);
         pendingToadstoolRewards.clear();
         return rewards;
     }
 
     List<WitchExchangeEvent> consumeWitchExchangeEvents() {
+        if (pendingWitchExchangeEvents.isEmpty()) return List.of();
         List<WitchExchangeEvent> events = List.copyOf(pendingWitchExchangeEvents);
         pendingWitchExchangeEvents.clear();
         return events;
     }
 
     List<WitchRewardEvent> consumeWitchRewardEvents() {
+        if (pendingWitchRewardEvents.isEmpty()) return List.of();
         List<WitchRewardEvent> events = List.copyOf(pendingWitchRewardEvents);
         pendingWitchRewardEvents.clear();
         return events;
@@ -250,6 +265,7 @@ final class RoomEntityOutbox {
     }
 
     List<BombExplosionEvent> consumeBombExplosionEvents() {
+        if (pendingBombExplosionEvents.isEmpty()) return List.of();
         List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
         pendingBombExplosionEvents.clear();
         return pending;
