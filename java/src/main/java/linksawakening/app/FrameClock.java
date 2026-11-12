@@ -1,4 +1,5 @@
 package linksawakening.app;
+
 /** Byte-sized simulation frame clock, explicitly seedable by headless callers. */
 public final class FrameClock {
     private int value;

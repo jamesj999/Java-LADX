@@ -100,7 +100,7 @@ class EntityFrameSessionTest {
                     calls.add("instrument");
                 }
             };
-            new EntityPhase(routing).routeDialogs(c);
+            new EntityPhase(c.combatEvents(), routing).routeDialogs(c);
             assertEquals(List.of("music", "dialogs", "manbo", "instrument"), calls);
         } finally {
             SessionTestAccess.cleanup(game);
@@ -120,7 +120,7 @@ class EntityFrameSessionTest {
             var c = SessionTestAccess.context(game).runtime().flows().simulation();
             int hearts = c.playerState().maxHearts();
             linksawakening.world.room.RoomFrameTestAccess.heart(c.roomSession());
-            var phase = new EntityPhase();
+            var phase = new EntityPhase(c.combatEvents(), EntityDialogRouting.DIRECT);
             phase.applyChestRewards(c);
             assertEquals(hearts + 1, c.playerState().maxHearts());
             assertEquals(0xFF, c.playerState().vitals().addHealthBuffer());

@@ -1,7 +1,9 @@
 package linksawakening.gameplay;
 
-import linksawakening.rom.*;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 /** Signpost dialog table behavior and state. */
 public final class SignpostDialogTable {

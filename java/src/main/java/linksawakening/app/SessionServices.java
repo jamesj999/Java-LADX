@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 
 /** Subsystem bundles owned by a single game session. */

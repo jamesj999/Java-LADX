@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Hookshot;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.state.Direction;
@@ -15,9 +13,6 @@ final class HookshotWiring {
         registry.register(InventoryItem.HOOKSHOT.romValue(), new Hookshot(new Hookshot.LaunchTarget() {
             @Override
             public boolean fireHookshot() {
-                if (c.link() == null || c.roomSession() == null) {
-                    return false;
-                }
                 return c.roomSession()
                         .playerItems()
                         .fireHookshot(
@@ -31,7 +26,7 @@ final class HookshotWiring {
 
             @Override
             public boolean hookshotActive() {
-                return c.roomSession() != null && c.roomSession().playerItems().hookshotActive();
+                return c.roomSession().playerItems().hookshotActive();
             }
         }));
     }

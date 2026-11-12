@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.app.debug.DebugMenuOverlay;
 

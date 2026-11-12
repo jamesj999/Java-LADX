@@ -1,7 +1,6 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
+import linksawakening.app.screen.ScreenNavigator;
 import linksawakening.audio.music.FrameAudioPlayer;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
@@ -21,11 +20,7 @@ final class UiWiring {
     private UiWiring() {}
 
     static UiServices build(
-            Rom romData,
-            PlayerState playerState,
-            InputServices input,
-            AudioServices audio,
-            linksawakening.app.screen.ScreenNavigator navigator) {
+            Rom romData, PlayerState playerState, InputServices input, AudioServices audio, ScreenNavigator navigator) {
         var inputState = input.inputState();
         var inputConfig = input.inputConfig();
         var gameplaySoundSink = audio.gameplaySoundSink();

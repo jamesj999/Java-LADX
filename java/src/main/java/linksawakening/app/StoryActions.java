@@ -1,12 +1,8 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.story.MusicRequests;
+import linksawakening.app.story.OpeningStory;
 
 /** Story effects used when entering a new or saved game. */
 public record StoryActions(MusicRequests music, OpeningStory story) {

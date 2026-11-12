@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Bomb;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.state.InventoryItem;

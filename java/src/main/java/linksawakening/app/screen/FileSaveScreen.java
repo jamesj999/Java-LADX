@@ -1,26 +1,37 @@
 package linksawakening.app.screen;
 
-import static linksawakening.world.room.RoomConstants.*;
-
+import java.util.Objects;
+import linksawakening.app.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 import linksawakening.ui.FileSaveAction;
 
+/** Owns save-menu ticks and returns to the requested screen. */
 public final class FileSaveScreen implements Screen {
+    /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(
-            linksawakening.app.ScreenState screens,
+            ScreenState screens,
             InputState inputState,
             InputConfig inputConfig,
             SaveActions actions,
             ScreenNavigator navigator,
-            InputCompletion completeInput) {}
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(completeInput);
+        }
+    }
 
     private final Dependencies dependencies;
 
     public FileSaveScreen(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies);
     }
 
     @Override

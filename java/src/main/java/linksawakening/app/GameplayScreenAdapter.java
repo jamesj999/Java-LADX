@@ -1,7 +1,8 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.gameplay.*;
+import linksawakening.app.gameplay.GameplayFrame;
+import linksawakening.app.gameplay.PassOutController;
 import linksawakening.app.screen.GameplayScreenDriver;
 import linksawakening.ui.FileMenuFrameSnapshot;
 

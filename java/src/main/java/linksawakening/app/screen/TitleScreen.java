@@ -1,25 +1,32 @@
 package linksawakening.app.screen;
 
-import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.Objects;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
+/** Owns title-screen input edges and advances title presentation. */
 public final class TitleScreen implements Screen {
-    public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {}
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(navigator);
+        }
+    }
 
     private final Dependencies dependencies;
 
     public TitleScreen(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies);
     }
 
     @Override
     public void tick() {
-        if (dependencies.cutsceneManager() != null)
-            dependencies.cutsceneManager().tick();
+        dependencies.cutsceneManager().tick();
         dependencies.inputState().tickEdges();
         return;
     }

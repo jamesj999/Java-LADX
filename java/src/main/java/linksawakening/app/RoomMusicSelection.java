@@ -2,7 +2,9 @@ package linksawakening.app;
 
 import java.util.Objects;
 import linksawakening.state.PlayerState;
-import linksawakening.world.room.*;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomLoadListener;
+import linksawakening.world.room.RoomSession;
 
 /** Adapts room loading to music selection after the world is assembled. */
 public final class RoomMusicSelection implements RoomLoadListener {

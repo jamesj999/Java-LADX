@@ -2,6 +2,7 @@ package linksawakening.app.screen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 
@@ -15,7 +16,7 @@ public final class GameplayScreen implements Screen {
     private boolean fileSaveRequested;
 
     public GameplayScreen(GameplayScreenDriver driver) {
-        this.driver = java.util.Objects.requireNonNull(driver);
+        this.driver = Objects.requireNonNull(driver);
     }
 
     @Override

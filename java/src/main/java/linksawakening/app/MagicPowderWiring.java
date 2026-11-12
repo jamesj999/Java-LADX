@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.MagicPowder;
 import linksawakening.state.InventoryItem;
@@ -19,9 +17,6 @@ final class MagicPowderWiring {
                         new MagicPowder.SprinkleTarget() {
                             @Override
                             public boolean sprinkleMagicPowder() {
-                                if (c.link() == null || c.roomSession() == null) {
-                                    return false;
-                                }
                                 int romDirection = c.link().applyRomItemDirectionFromInput();
                                 return c.roomSession()
                                         .playerItems()
@@ -34,14 +29,13 @@ final class MagicPowderWiring {
 
                             @Override
                             public void startMagicPowderAttackStep() {
-                                if (c.link() != null) {
-                                    c.link().startRomMagicPowderAttackStep();
-                                }
+
+                                c.link().startRomMagicPowderAttackStep();
                             }
 
                             @Override
                             public boolean magicPowderAttackStepActive() {
-                                return c.link() != null && c.link().romAttackStepAnimationCountdown() != 0;
+                                return c.link().romAttackStepAnimationCountdown() != 0;
                             }
 
                             @Override

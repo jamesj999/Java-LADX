@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.world.entity.EntityStatus;
 
 /** Immutable replay checkpoint values; the driver exposes the compatibility State name. */

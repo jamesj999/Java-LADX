@@ -1,9 +1,13 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.screen.*;
+import linksawakening.app.screen.Screen;
+import linksawakening.app.screen.ScreenKind;
+import linksawakening.app.screen.ScreenNavigator;
+import linksawakening.app.screen.ScreenSet;
 import linksawakening.scene.BackgroundScene;
-import linksawakening.world.room.*;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.RoomLoadListener;
 
 /** The sole two-phase cycle boundary. Construct before ROM/UI/world wiring; attach once
  * after screens and routes exist, before publishing the session or loading its first room. */

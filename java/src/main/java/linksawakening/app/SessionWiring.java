@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.io.IOException;
 import linksawakening.app.host.Host;
 import linksawakening.config.AppConfig;
@@ -21,6 +19,7 @@ import linksawakening.world.transition.TransitionController;
 public final class SessionWiring {
     private SessionWiring() {}
 
+    /** Initial services, scene state, and save storage produced by subsystem wiring. */
     public record Built(SessionServices services, SceneState scene, SaveState saves) {}
 
     public static Built build(

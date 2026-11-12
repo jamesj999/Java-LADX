@@ -1,7 +1,8 @@
 package linksawakening.app.screen;
 
-import static linksawakening.world.room.RoomConstants.*;
-
+import java.util.Objects;
+import linksawakening.app.SaveState;
+import linksawakening.app.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
@@ -9,19 +10,30 @@ import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuAction;
 
+/** Ticks the file-selection controller and dispatches its save actions. */
 public final class FileMenuScreen implements Screen {
+    /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(
-            linksawakening.app.ScreenState screens,
+            ScreenState screens,
             InputState inputState,
             InputConfig inputConfig,
-            linksawakening.app.SaveState saves,
+            SaveState saves,
             SaveActions actions,
-            InputCompletion completeInput) {}
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(saves);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(completeInput);
+        }
+    }
 
     private final Dependencies dependencies;
 
     public FileMenuScreen(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package linksawakening.app.gameplay;
 
 import java.util.List;
+import linksawakening.app.screen.InputCompletion;
 
 /**
  * Ordered gameplay frame. Simulation includes its dialog/story gates; completion
@@ -16,6 +17,7 @@ public final class GameplayFrame {
         void tick();
     }
 
+    /** Observable order of the retained gameplay frame phases. */
     public enum Phase {
         TRANSITIONS,
         SIMULATION,
@@ -28,10 +30,9 @@ public final class GameplayFrame {
 
     private final Transitions transitions;
     private final Simulation simulation;
-    private final linksawakening.app.screen.InputCompletion inputCompletion;
+    private final InputCompletion inputCompletion;
 
-    public GameplayFrame(
-            Transitions transitions, Simulation simulation, linksawakening.app.screen.InputCompletion inputCompletion) {
+    public GameplayFrame(Transitions transitions, Simulation simulation, InputCompletion inputCompletion) {
         this.transitions = transitions;
         this.simulation = simulation;
         this.inputCompletion = inputCompletion;

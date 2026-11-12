@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.entity.LinkTunicPalette;
@@ -59,9 +57,8 @@ final class PlayerWiring {
                 gameplaySoundSink,
                 linkTunicPalette);
         link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
-                && (roomSession == null
-                        || (!roomSession.entityState().powerUpPickupSequenceActive()
-                                && !roomSession.rooms().heartPiecePickupActive())));
+                && (!roomSession.entityState().powerUpPickupSequenceActive()
+                        && !roomSession.rooms().heartPiecePickupActive()));
 
         var c = new EquipmentInputs(playerState, link, roomSession, romTables, graphics, gameplaySoundSink, random);
         register(c, itemRegistry);

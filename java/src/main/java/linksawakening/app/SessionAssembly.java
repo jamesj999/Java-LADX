@@ -1,12 +1,13 @@
 package linksawakening.app;
 
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
+import linksawakening.app.gameplay.GameplayFrame;
+import linksawakening.app.gameplay.TransitionPhase;
+import linksawakening.app.host.DesktopHost;
+import linksawakening.app.host.HeadlessHost;
+import linksawakening.app.host.Host;
 import linksawakening.gpu.GPU;
-import linksawakening.world.transition.*;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 /** Connects application flows after ROM-backed services have been constructed. */
 final class SessionAssembly {
@@ -48,92 +49,40 @@ final class SessionAssembly {
             SessionNavigator navigator,
             Host host,
             RunState lifecycle) {
-        var music = new MusicDirector(s.audio().musicPlayer(), s.audio().gameplayMusicController());
-        var dialogSounds =
-                new SessionDialogSounds(s.ui().dialogController(), s.audio().dialogSoundSink());
-        var blockers = new DialogBlockerPolicy(
-                s.ui().inventoryController(),
-                s.ui().dialogController(),
-                s.world().scrollController(),
-                s.world().transitionController(),
-                state.input());
-        var completion = new FrameInputCompletion(s.input().inputState(), state.input());
-        var lift = new LiftInteraction(
-                s.input().inputState(),
-                s.input().inputConfig(),
-                s.player().playerState(),
-                s.player().link(),
-                s.world().roomSession());
-        var dialogs = new DialogInteractions(s.input(), s.world(), s.player(), s.ui(), blockers);
-        var bush = new BushInteraction(s.world(), s.player(), s.visual(), state.sounds());
-        var story = new OpeningStory(
-                s.player(),
-                s.world(),
-                s.input(),
-                s.ui(),
-                state,
-                new OpeningActions(s.visual().newGameTarinShieldPalette(), blockers, music));
-        var renderer = new RenderStateAssembler(s.rom(), s.world(), s.player(), s.ui(), s.visual(), state);
-        var saves = new SaveCoordinator(
-                s.rom(), s.world(), s.player(), s.input(), state, saveState, navigator, new StoryActions(music, story));
-        var passOut = new PassOutController();
-        var gameOver = new GameOverFlow(
-                s.player().equipmentController(),
-                passOut,
-                saves,
-                s.visual().transientVfxSystem(),
-                s.visual().droppableRupeeSystem());
-        var router = new ScreenRouter(
-                s.rom(),
-                s.world(),
-                s.player(),
-                s.ui(),
-                s.input(),
-                state,
-                new ScreenActions(navigator, saves, saveState, music));
-        var input = new InputRouter(
-                s.input(),
-                s.world(),
-                s.player(),
-                s.ui(),
-                state,
-                new InputActions(
-                        s.rom().romTables(),
-                        navigator,
-                        lifecycle,
-                        new NoClipControl(state.debug(), s.player().link()),
-                        saves,
-                        story,
-                        dialogs));
-        var interactions = new GameplayInteractions(story, lift, bush, dialogs);
-        var simulation = new GameplaySimulation(
-                s.rom(),
-                s.world(),
-                s.player(),
-                s.ui(),
-                s.input(),
-                s.visual(),
-                state,
-                new GameplayControl(s.audio(), music, interactions, passOut, gameOver, blockers, input, dialogSounds));
+        var prepared = GameplayWiring.build(s, state);
+        var wired = FlowWiring.build(s, state, saveState, navigator, lifecycle, prepared);
+        return finish(s, state, saveState, navigator, host, lifecycle, prepared, wired);
+    }
+
+    private static SessionContext finish(
+            SessionServices s,
+            SessionState state,
+            SaveState saveState,
+            SessionNavigator navigator,
+            Host host,
+            RunState lifecycle,
+            GameplayWiring.PreparedGameplay prepared,
+            FlowWiring.Flows wired) {
         var frame = new GameplayFrame(
                 new TransitionPhase(
                         s.world().scrollController(),
                         s.world().transitionController(),
                         s.player().link(),
                         4),
-                simulation,
-                completion);
+                wired.simulation(),
+                prepared.completion());
         var screens = ScreenWiring.build(
-                new ScreenDependencies(s.ui(), s.input(), state.screens(), saveState, dialogSounds, music),
+                new ScreenDependencies(
+                        s.ui(), s.input(), state.screens(), saveState, prepared.dialogSounds(), wired.music()),
                 navigator,
-                saves,
-                completion,
-                new GameplayScreenAdapter(input, frame, passOut));
+                wired.saves(),
+                prepared.completion(),
+                new GameplayScreenAdapter(wired.input(), frame, wired.passOut()));
         navigator.attach(
                 screens,
-                router,
+                wired.router(),
                 new RoomMusicSelection(
-                        music, s.player().playerState(), s.world().roomSession()));
+                        wired.music(), s.player().playerState(), s.world().roomSession()));
         state.screens().currentScreen = screens.title();
         var teleporter = new DebugTeleporter(
                 s.world().roomSession(),
@@ -144,11 +93,20 @@ final class SessionAssembly {
                 s.visual().droppableRupeeSystem(),
                 s.input().inputState(),
                 screens.gameplay());
-        var flows = new SessionFlows(saves, router, input, renderer, simulation, interactions, teleporter, music);
+        var flows = new SessionFlows(
+                wired.saves(),
+                wired.router(),
+                wired.input(),
+                wired.renderer(),
+                wired.simulation(),
+                wired.interactions(),
+                teleporter,
+                wired.music());
         var runtime = new SessionRuntime(
                 screens,
-                new FramePresentation(renderer, state.debug(), s.visual().indexedDisplayBuffer()),
-                new SessionInput(state, s.input(), s.world(), s.player(), screens, input, teleporter),
+                new FramePresentation(
+                        wired.renderer(), state.debug(), s.visual().indexedDisplayBuffer()),
+                new SessionInput(state, s.input(), s.world(), s.player(), screens, wired.input(), teleporter),
                 new SessionShutdown(host, s.audio()),
                 flows,
                 saveState);

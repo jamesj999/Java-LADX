@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import linksawakening.app.gameplay.BushInteraction;
 import linksawakening.app.gameplay.DialogInteractions;
@@ -14,6 +12,7 @@ import linksawakening.startup.StartupCoordinator;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.transition.Warp;
 
+/** Owns the desktop and headless frame loops and delegates to retained session flows. */
 public class GameSession implements AutoCloseable {
     private final FrameClock clock = new FrameClock();
     private final OpeningStoryState opening = new OpeningStoryState();

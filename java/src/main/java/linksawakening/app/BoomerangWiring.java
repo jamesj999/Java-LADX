@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Boomerang;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.state.InventoryItem;
@@ -17,9 +15,6 @@ final class BoomerangWiring {
                         new Boomerang.LaunchTarget() {
                             @Override
                             public boolean fireBoomerang() {
-                                if (c.link() == null || c.roomSession() == null) {
-                                    return false;
-                                }
                                 boolean spawned = c.roomSession()
                                         .playerItems()
                                         .fireBoomerang(
@@ -36,8 +31,7 @@ final class BoomerangWiring {
 
                             @Override
                             public boolean boomerangActive() {
-                                return c.roomSession() != null
-                                        && c.roomSession().playerItems().boomerangActive();
+                                return c.roomSession().playerItems().boomerangActive();
                             }
                         },
                         c.link()::canUseItems));

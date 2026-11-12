@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.app.screen.Screen;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileSaveController;

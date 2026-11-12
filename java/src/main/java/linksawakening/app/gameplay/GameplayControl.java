@@ -1,12 +1,8 @@
 package linksawakening.app.gameplay;
 
 import java.util.Objects;
-import linksawakening.app.*;
-import linksawakening.app.debug.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.AudioServices;
+import linksawakening.app.MusicDirector;
 
 /** Named flow ports required by simulation phases. */
 public record GameplayControl(

@@ -1,7 +1,18 @@
 package linksawakening.app.gameplay;
 
 import java.util.List;
-import linksawakening.world.entity.event.*;
+import linksawakening.world.entity.event.ChestRewardEvent;
+import linksawakening.world.entity.event.EntityRequest;
+import linksawakening.world.entity.event.HeartContainerRewardEvent;
+import linksawakening.world.entity.event.HeartPiecePickupUpdate;
+import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
+import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
+import linksawakening.world.entity.event.ToadstoolRewardEvent;
+import linksawakening.world.entity.event.WitchExchangeEvent;
+import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.room.RoomFrameDrain;
 
 /** Synchronous reward batches; immutable snapshots stay available to retaining clients. */
@@ -18,7 +29,7 @@ final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> {
         results.rewards().drainSlimeKeyRewardEvents(this);
         var heartPieceUpdates = results.rewards().consumeHeartPieceUpdates();
         for (int updateIndex = 0; updateIndex < heartPieceUpdates.size(); updateIndex++) {
-            linksawakening.world.entity.event.HeartPiecePickupUpdate update = heartPieceUpdates.get(updateIndex);
+            HeartPiecePickupUpdate update = heartPieceUpdates.get(updateIndex);
 
             c.dialogController().setInteractionLocked(update.interactionLocked());
             if (update.incrementPiece())

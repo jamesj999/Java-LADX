@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import java.util.stream.Collectors;
 import linksawakening.dialog.DialogController;
@@ -130,15 +128,15 @@ public abstract sealed class SessionDiagnostics permits HeadlessGameDriver.Diagn
     }
 
     public String headlessInstrumentTrace() {
-        return roomSession == null ? "" : roomSession.rooms().instrumentTrace();
+        return roomSession.rooms().instrumentTrace();
     }
 
     public String headlessMoblinKingTrace() {
-        return roomSession == null ? "-1" : roomSession.rooms().moblinKingTrace() + "," + playerState.activePowerUp();
+        return roomSession.rooms().moblinKingTrace() + "," + playerState.activePowerUp();
     }
 
     public int headlessBowWowState() {
-        return roomSession == null ? 0 : roomSession.story().bowWowState();
+        return roomSession.story().bowWowState();
     }
 
     public String headlessCombatTrace() {

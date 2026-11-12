@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Arrow;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.state.InventoryItem;
@@ -23,10 +21,6 @@ final class ArrowWiring {
 
                             @Override
                             public boolean shootArrow() {
-                                if (c.link() == null || c.roomSession() == null) {
-                                    playWhooshForLastShot = false;
-                                    return false;
-                                }
                                 ArrowShotResult result = c.roomSession()
                                         .playerItems()
                                         .shootArrowResult(
@@ -49,9 +43,7 @@ final class ArrowWiring {
 
                             @Override
                             public int activeProjectileCount() {
-                                return c.roomSession() == null
-                                        ? 0
-                                        : c.roomSession().playerItems().activeProjectileCount();
+                                return c.roomSession().playerItems().activeProjectileCount();
                             }
                         },
                         c.link()::canUseItems));

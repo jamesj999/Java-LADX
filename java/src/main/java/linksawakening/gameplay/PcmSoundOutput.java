@@ -1,4 +1,5 @@
 package linksawakening.gameplay;
+
 /** Contract for pcm sound output. */
 public interface PcmSoundOutput extends AutoCloseable {
 

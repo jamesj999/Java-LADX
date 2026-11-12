@@ -1,12 +1,8 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.gameplay.GameplayInteractions;
+import linksawakening.app.gameplay.GameplaySimulation;
 
 /** Retained application flows, available to headless diagnostics and setup. */
 public record SessionFlows(

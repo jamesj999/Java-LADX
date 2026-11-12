@@ -1,4 +1,5 @@
 package linksawakening.gameplay;
+
 /** Immutable signpost dialog ref values. */
 public record SignpostDialogRef(int tableId, int dialogLowId) {
 

@@ -1,12 +1,20 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Sword;
 import linksawakening.state.PowerUp;
 import linksawakening.state.Tunic;
-import linksawakening.world.room.*;
+import linksawakening.world.room.ButtonInputs;
+import linksawakening.world.room.EntityFrameInputs;
+import linksawakening.world.room.InventoryInputs;
+import linksawakening.world.room.LinkInputs;
+import linksawakening.world.room.LinkMotion;
+import linksawakening.world.room.LinkPosition;
+import linksawakening.world.room.PlayerHealth;
+import linksawakening.world.room.PlayerInputs;
+import linksawakening.world.room.PlayerLevels;
+import linksawakening.world.room.ProgressInputs;
+import linksawakening.world.room.SwordBox;
+import linksawakening.world.room.UiInputs;
 
 final class EntityFrameInputsFactory {
     static EntityFrameInputs create(GameplaySimulation c, Sword.CollisionBox b) {

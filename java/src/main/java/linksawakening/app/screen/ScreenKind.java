@@ -1,4 +1,5 @@
 package linksawakening.app.screen;
+
 /** Stable identities for the session's retained screens. */
 public enum ScreenKind {
     TITLE,

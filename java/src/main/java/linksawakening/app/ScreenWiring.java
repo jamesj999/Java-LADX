@@ -1,6 +1,15 @@
 package linksawakening.app;
 
-import linksawakening.app.screen.*;
+import linksawakening.app.screen.CutsceneScreen;
+import linksawakening.app.screen.FileMenuScreen;
+import linksawakening.app.screen.FileSaveScreen;
+import linksawakening.app.screen.GameplayScreen;
+import linksawakening.app.screen.GameplayScreenDriver;
+import linksawakening.app.screen.InputCompletion;
+import linksawakening.app.screen.SaveActions;
+import linksawakening.app.screen.ScreenNavigator;
+import linksawakening.app.screen.ScreenSet;
+import linksawakening.app.screen.TitleScreen;
 
 /** Builds the five screens after their concrete collaborators have been constructed. */
 final class ScreenWiring {

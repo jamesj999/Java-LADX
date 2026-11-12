@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.MagicRod;
 import linksawakening.state.InventoryItem;
@@ -22,16 +20,12 @@ final class MagicRodWiring {
                         new MagicRod.LaunchTarget() {
                             @Override
                             public void startMagicRodAttackStep() {
-                                if (c.link() != null) {
-                                    c.link().startRomMagicRodAttackStep();
-                                }
+
+                                c.link().startRomMagicRodAttackStep();
                             }
 
                             @Override
                             public boolean fireMagicRodFireball() {
-                                if (c.link() == null || c.roomSession() == null || c.playerState() == null) {
-                                    return false;
-                                }
                                 int romDirection = c.link().applyRomItemDirectionFromInput();
                                 boolean spawned = c.roomSession()
                                         .playerItems()
@@ -46,9 +40,7 @@ final class MagicRodWiring {
 
                             @Override
                             public int activeProjectileCount() {
-                                return c.roomSession() == null
-                                        ? 0
-                                        : c.roomSession().playerItems().activeProjectileCount();
+                                return c.roomSession().playerItems().activeProjectileCount();
                             }
                         },
                         c.link()::canUseItems));

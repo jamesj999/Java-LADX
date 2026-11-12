@@ -1,12 +1,7 @@
 package linksawakening.app.gameplay;
 
 import java.util.Objects;
-import linksawakening.app.*;
-import linksawakening.app.debug.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.story.OpeningStory;
 
 /** Retained gameplay interactions in their dependency order. */
 public record GameplayInteractions(

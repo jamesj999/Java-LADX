@@ -1,10 +1,9 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.state.PlayerState;
 import linksawakening.vfx.CutLeavesEffectRenderer;
@@ -13,6 +12,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.room.RoomLoadListener;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomSessionConfig;
@@ -26,7 +26,7 @@ final class WorldWiring {
     private WorldWiring() {}
 
     static VisualServices visuals(Rom romData, RomRandomByteSource random, byte[] framebuffer) {
-        int[] shield = RomBank.loadPalettes(romData, new linksawakening.rom.RomAddress(0x05, 0x4C94), 1)[0];
+        int[] shield = RomBank.loadPalettes(romData, new RomAddress(0x05, 0x4C94), 1)[0];
         var sheet = TransientVfxSpriteSheet.loadFromRom(romData.unsafeBytes());
         return new VisualServices(
                 new TransientVfxSystem(16),
@@ -41,7 +41,7 @@ final class WorldWiring {
             VisualServices visuals,
             OverworldCollision collision,
             RomRandomByteSource random,
-            linksawakening.world.room.RoomLoadListener music,
+            RoomLoadListener music,
             GameplaySoundSink sounds) {
         Rom romData = rom.romData();
         var roomSession = new RoomSession(new RoomSessionConfig(

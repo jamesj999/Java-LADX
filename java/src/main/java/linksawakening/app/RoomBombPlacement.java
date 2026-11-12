@@ -1,5 +1,6 @@
 package linksawakening.app;
 
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.equipment.Bomb;
 import linksawakening.state.Direction;
@@ -12,15 +13,11 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
     private boolean bump;
 
     RoomBombPlacement(Link link, RoomPlayerItems items) {
-        this.link = link;
-        this.items = items;
+        this.link = Objects.requireNonNull(link);
+        this.items = Objects.requireNonNull(items);
     }
 
     public boolean placeBomb() {
-        if (link == null || items == null) {
-            bump = false;
-            return false;
-        }
         boolean placed = items.placeBomb(
                 link.romEntityX(),
                 link.romEntityY(),
@@ -36,6 +33,6 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
     }
 
     public boolean bombActive() {
-        return items != null && items.bombActive();
+        return items.bombActive();
     }
 }

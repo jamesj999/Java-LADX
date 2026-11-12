@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;

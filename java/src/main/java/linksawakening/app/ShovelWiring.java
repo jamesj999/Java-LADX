@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Shovel;
 import linksawakening.state.InventoryItem;
@@ -23,9 +21,6 @@ final class ShovelWiring {
 
                             @Override
                             public Shovel.StartResult startShovel() {
-                                if (c.link() == null || c.roomSession() == null) {
-                                    return new Shovel.StartResult(false, true);
-                                }
                                 romDirection = c.link().applyRomItemDirectionFromInput();
                                 linkEntityX = c.link().romEntityX();
                                 linkEntityY = c.link().romEntityY();
@@ -41,18 +36,15 @@ final class ShovelWiring {
 
                             @Override
                             public void advanceShovel(int timer) {
-                                if (c.roomSession() != null) {
-                                    c.roomSession()
-                                            .playerItems()
-                                            .advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
-                                }
+
+                                c.roomSession()
+                                        .playerItems()
+                                        .advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
                             }
 
                             @Override
                             public int shovelAnimationState(int javaDirection, int timer) {
-                                return c.roomSession() == null
-                                        ? -1
-                                        : c.roomSession().playerItems().shovelAnimationState(javaDirection, timer);
+                                return c.roomSession().playerItems().shovelAnimationState(javaDirection, timer);
                             }
                         },
                         c.link()::canUseItems));

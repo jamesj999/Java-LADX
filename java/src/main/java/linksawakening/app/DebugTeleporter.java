@@ -6,7 +6,8 @@ import linksawakening.app.screen.GameplayScreen;
 import linksawakening.entity.Link;
 import linksawakening.input.InputState;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.room.*;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
 /** Resets only the source-defined debug-entry state after loading a destination. */

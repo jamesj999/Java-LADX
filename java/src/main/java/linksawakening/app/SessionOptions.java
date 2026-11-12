@@ -1,13 +1,7 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
 import linksawakening.config.AppConfig;
-import linksawakening.world.transition.*;
 
 /** Mutable launch options, also used for headless scenario setup. */
 public final class SessionOptions {

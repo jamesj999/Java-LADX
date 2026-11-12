@@ -1,12 +1,7 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.screen.ScreenSet;
 
 /** Fully wired runtime entry points; contains no session callbacks. */
 public record SessionRuntime(

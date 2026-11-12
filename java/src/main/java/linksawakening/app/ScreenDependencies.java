@@ -1,12 +1,8 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.gameplay.DialogSoundRouting;
+import linksawakening.app.story.MusicRequests;
 
 /** The concrete services shared by screen constructors. */
 public record ScreenDependencies(

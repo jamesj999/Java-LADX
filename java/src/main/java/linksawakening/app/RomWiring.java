@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;

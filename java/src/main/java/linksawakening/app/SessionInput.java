@@ -1,12 +1,8 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.debug.DebugMenu;
+import linksawakening.app.screen.ScreenSet;
 
 /** Routes debug-menu input before ordinary screen input, preserving edge ownership. */
 public final class SessionInput {

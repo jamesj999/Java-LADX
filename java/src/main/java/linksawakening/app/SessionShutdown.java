@@ -1,12 +1,7 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.host.Host;
 
 /** Releases presentation, PCM, music, then the host in source order. */
 public final class SessionShutdown {

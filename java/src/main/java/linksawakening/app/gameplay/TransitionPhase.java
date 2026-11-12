@@ -1,5 +1,6 @@
 package linksawakening.app.gameplay;
 
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
@@ -12,9 +13,9 @@ public final class TransitionPhase implements GameplayFrame.Transitions {
     private final int scrollSpeed;
 
     public TransitionPhase(ScrollController scroll, TransitionController transition, Link link, int scrollSpeed) {
-        this.scroll = scroll;
-        this.transition = transition;
-        this.link = link;
+        this.scroll = Objects.requireNonNull(scroll);
+        this.transition = Objects.requireNonNull(transition);
+        this.link = Objects.requireNonNull(link);
         this.scrollSpeed = scrollSpeed;
     }
 
@@ -22,7 +23,7 @@ public final class TransitionPhase implements GameplayFrame.Transitions {
     public void run() {
         if (scroll.isActive()) scroll.tick(scrollSpeed);
         transition.tick();
-        if (link != null && (scroll.isActive() || transition.isInputBlocked())) {
+        if (scroll.isActive() || transition.isInputBlocked()) {
             link.clearSideViewPlatformState();
         }
     }

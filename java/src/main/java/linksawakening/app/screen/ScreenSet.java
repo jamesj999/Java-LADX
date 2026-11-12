@@ -1,4 +1,5 @@
 package linksawakening.app.screen;
+
 /** The five lifecycle instances retained by one session. */
 public record ScreenSet(
         TitleScreen title,

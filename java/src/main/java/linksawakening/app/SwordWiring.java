@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
 import linksawakening.state.InventoryItem;
@@ -22,9 +20,6 @@ final class SwordWiring {
                         new Sword.BeamTarget() {
                             @Override
                             public boolean fireSwordBeam() {
-                                if (c.link() == null || c.roomSession() == null || c.playerState() == null) {
-                                    return false;
-                                }
                                 int romDirection = c.link().applyRomItemDirectionFromInput();
                                 if (c.playerState().swordLevel() != 2
                                         || !c.playerState().fullHearts()

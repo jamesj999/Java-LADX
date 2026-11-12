@@ -1,7 +1,5 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 /**
  * Owns an isolated, window-free game session for input replay and capture.
  * Frames use the same input, simulation and composition paths as the desktop.

@@ -1,12 +1,7 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.debug.*;
-import linksawakening.app.gameplay.*;
-import linksawakening.app.host.*;
-import linksawakening.app.screen.*;
-import linksawakening.app.story.*;
-import linksawakening.world.transition.*;
+import linksawakening.app.host.Host;
 
 /** Immutable composition result; all behavior belongs to the referenced owners. */
 public record SessionContext(

@@ -1,8 +1,5 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
@@ -61,50 +58,54 @@ final class CombatPhase {
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
                 EntityCombatEvent event = combatEvents.get(eventIndex);
 
-                if (event.linkDamage() > 0
-                        && context.playerState().invincibilityCounter() == 0
-                        && (!context.link().isCollisionDamageImmune())) {
-                    int previousPowerUp = context.playerState().activePowerUp();
-                    context.playerState().applyRomEnemyDamage(event.linkDamage());
-                    if (previousPowerUp != PowerUp.NONE.romValue()
-                            && context.playerState().activePowerUp() == PowerUp.NONE.romValue()) {
-                        context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
-                    }
-                    context.roomSession().entityState().resetGuardianAcornCounterOnHurt();
-                    if (event.linkCollisionResponse().active()) {
-                        EntityCombatEvent.LinkCollisionResponse response = event.linkCollisionResponse();
-                        if (!context.roomSession()
-                                .entityState()
-                                .deferContactRecoil(
-                                        event.slot(),
-                                        context.link().romEntityX(),
-                                        context.link().romEntityY())) {
-                            context.link().applyRomSpeed(response.speedX(), response.speedY());
-                        }
-                        context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
-                        if (response.invincibilityCountdown() != 0) {
-                            context.playerState().setInvincibilityCounter(response.invincibilityCountdown());
-                        }
-                        context.playerState().setRunningWithPegasusBoots(false);
-                        // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
-                        // before the shared Link response helper.
-                        context.gameplaySoundSink().play(GameplaySoundEvent.LINK_HURT);
-                    }
-                }
-                if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
-                    var response = event.linkCollisionResponse();
-                    context.link().applyRomSpeed(response.speedX(), response.speedY());
-                    context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
-                    context.playerState().setRunningWithPegasusBoots(false);
-                }
-                if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
-                    context.link().bounceFromGoomba();
-                } else if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
-                    context.link().applyRomSpeed(0, 0xF0);
-                }
+                applyEvent(context, event);
             }
         }
 
         return swordBoxForEntityTick;
+    }
+
+    private static void applyEvent(GameplaySimulation context, EntityCombatEvent event) {
+        if (event.linkDamage() > 0
+                && context.playerState().invincibilityCounter() == 0
+                && (!context.link().isCollisionDamageImmune())) {
+            int previousPowerUp = context.playerState().activePowerUp();
+            context.playerState().applyRomEnemyDamage(event.linkDamage());
+            if (previousPowerUp != PowerUp.NONE.romValue()
+                    && context.playerState().activePowerUp() == PowerUp.NONE.romValue()) {
+                context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
+            }
+            context.roomSession().entityState().resetGuardianAcornCounterOnHurt();
+            if (event.linkCollisionResponse().active()) {
+                EntityCombatEvent.LinkCollisionResponse response = event.linkCollisionResponse();
+                if (!context.roomSession()
+                        .entityState()
+                        .deferContactRecoil(
+                                event.slot(),
+                                context.link().romEntityX(),
+                                context.link().romEntityY())) {
+                    context.link().applyRomSpeed(response.speedX(), response.speedY());
+                }
+                context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+                if (response.invincibilityCountdown() != 0) {
+                    context.playerState().setInvincibilityCounter(response.invincibilityCountdown());
+                }
+                context.playerState().setRunningWithPegasusBoots(false);
+                // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
+                // before the shared Link response helper.
+                context.gameplaySoundSink().play(GameplaySoundEvent.LINK_HURT);
+            }
+        }
+        if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
+            var response = event.linkCollisionResponse();
+            context.link().applyRomSpeed(response.speedX(), response.speedY());
+            context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+            context.playerState().setRunningWithPegasusBoots(false);
+        }
+        if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
+            context.link().bounceFromGoomba();
+        } else if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
+            context.link().applyRomSpeed(0, 0xF0);
+        }
     }
 }
