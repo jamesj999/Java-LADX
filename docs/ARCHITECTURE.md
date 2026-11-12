@@ -101,27 +101,68 @@ Key types: AppConfig, MiniJson.
 ### `cutscene`
 
 Scripted intro sequence, cutscene lifecycle and ROM-backed intro data.
-Key types: CutsceneManager, CutsceneScript, IntroSequence.
+Key types: CutsceneManager, CutsceneScript, IntroSequence, IntroSequenceState.
+
+The intro retains one state instance and one RNG. Lifecycle, scene motion,
+beach motion, transitions and rendering are bounded implementation sections
+sharing that state through the internal class hierarchy. Public IntroSequence
+constructors and constants remain the entry points. Published frame snapshots
+retain their immutable copies.
 
 ### `dialog`
 
 Dialog state, ROM text layout, font and box rendering.
-Key types: DialogController, DialogRomLayout, DialogRenderer.
+Key types: DialogController, DialogState, DialogLifecycle, DialogPaging,
+DialogTextFormatting, DialogRomLayout, DialogRenderer.
+
+The controller's internal sections share one dialog state, preserving input
+edges, reveal timing, page scrolling, choice selection and sound ordering.
+The public controller and nested value types retain their existing names.
 
 ### `entity`
 
-Link state and motion, command application, and shared sprite definitions. Room entity simulation lives in world.entity.
-Key types: Link, LinkCommand, LinkStateMachine, EntitySpriteCatalog.
+Link composition, motion, command application and shared sprite definitions.
+Room entity simulation lives in world.entity.
+Key types: Link, LinkAssembly, LinkPosition, LinkAnimationState, LinkItemState,
+LinkGroundMotion, LinkSignals, LinkRecovery, EntitySpriteCatalog.
+
+Link exposes the existing API through bounded compatibility views. Components
+own their position, animation, timers and status fields. Each behavior receives
+only its declared peer dependencies through typed assembly cells; no behavior
+retains Link. LinkAssembly binds the cyclic graph once before publishing the
+instance. LinkServices and the aggregate's component references are final.
+Position, collision, jumping, scripted poses and motion lifecycle use bounded
+implementation sections sharing their respective component's state.
+
+LinkFrameMotion keeps ordered frame phases and a retained working-value holder.
+Direction conversions explicitly distinguish Java indices, ROM indices and
+legacy invalid-input fallbacks. Public integer constants remain deprecated
+constant expressions for external switch compatibility.
+
+Entity sprite registrations are short source-ordered groups, separate from
+lookup, dynamic/boss compositions and ROM decoding. The decoder owns one ROM
+view. LinkComponentOwnershipTest guards against facade back-references.
 
 ### `equipment`
 
 Equipped item behavior, activation and item sprite support.
-Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword.
+Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword,
+SwordState, SwordAttackMotion, SwordChargeMotion.
+
+Sword implementation sections retain one attack/charge state. Equipment tick
+dispatch uses primitive frame counters with an explicit presence flag, retaining
+held/edge ordering without boxed per-frame counters. Inventory classification
+uses state.InventoryItem; raw inventory bytes still address the registry.
 
 ### `gameplay`
 
 Gameplay integration contracts, dialog interactions, sound routing and event consumers.
 Key types: EnemyCombatEventConsumer, EnemyProjectileEventConsumer, PcmSoundOutput.
+
+Owned consumers address focused PlayerState components. The sound boundary
+adapts resource requests to presentation events; the old PlayerState sound
+return type remains an isolated deprecated compatibility bridge. Signpost
+interaction has a named argument bundle alongside its legacy long signature.
 
 ### `gpu`
 
@@ -138,6 +179,9 @@ Key types: InputConfig, InputState, KeyCodes.
 
 Room collision queries and physical flags.
 Key types: OverworldCollision, PhysicsFlags.
+
+Physics remains input-free. StateDependencyTest scans this package for input
+dependencies as well as checking the player-state boundary.
 
 ### `render`
 
@@ -160,27 +204,58 @@ Key types: SaveRamStore, SaveRamLayout, SaveRamImage, SaveSlotCodec, SaveSlotSta
 ### `scene`
 
 ROM-backed background scene catalog and loading.
-Key types: BackgroundSceneLoader, BackgroundSceneSpec.
+Key types: BackgroundSceneLoader, BackgroundSceneSpec, BackgroundSceneCatalog.
+
+Scene loading supplies decoded ROM-backed backgrounds to the intro and menus;
+those controllers own their presentation state and snapshots.
 
 ### `startup`
 
 New-game starting profile and wake-up/shield motion state machines.
-Key types: StartupCoordinator, MarinWakeUpMotion, TarinShieldMotion.
+Key types: StartupCoordinator, NewGameStartProfile, MarinWakeUpMotion, TarinShieldMotion.
+
+Startup uses focused player initialization and equipment state operations while
+retaining the source-shaped opening-motion timers and presentation contracts.
 
 ### `state`
 
-Player progression and Link-facing player state contract.
-Key types: PlayerState, LinkPlayerState.
+Player resources, progression, ROM value types and the Link-facing state contract.
+Key types: PlayerState, LinkPlayerState, Inventory, Vitals, Ammunition, Progression,
+EquipmentLevels, Wallet, Direction, InventoryItem, Tunic, PowerUp, OcarinaSong.
+
+PlayerState is the aggregate; deprecated compatibility sections forward old
+methods to the owning components. PlayerInitialization and PlayerSaveLoader
+preserve ordered initialization and load writes, including saved ammunition
+above ordinary pickup capacity. PlayerRewards and ChestRewards apply primitive
+reward values without importing world. Raw unknown inventory bytes survive
+classification and save round trips.
+
+Resource sounds use a single last-write-wins ResourceSound value. The legacy
+GameplaySoundEvent return type is confined to one deprecated bridge in
+PlayerResourceCompatibility. StateDependencyTest allows only state, rom and
+save dependencies outside that method, and rejects world imports entirely.
+Player components have focused boundary tests; reusable test builders provide
+named player and Link setup without hidden ROM loading.
 
 ### `ui`
 
 Inventory, HUD and file-menu controllers and overlays.
-Key types: InventoryController, InventoryMenu, HudOverlay, FileMenuController.
+Key types: InventoryController, InventoryMenu, HudOverlay, FileMenuController,
+FileMenuState, FileMenuFlow, FileMenuEditing, TilemapRenderer.
+
+File-menu implementation sections share one state instance. Inventory rendering
+retains row buffers and mutable call arguments consumed synchronously by the
+renderer. TilemapRenderer.Region groups geometry; legacy long signatures remain
+deprecated bridges. Public frame snapshots retain immutable ownership.
+OcarinaSong defines the flag-to-selection-index mapping used by the song menu.
 
 ### `vfx`
 
 Transient visual effects and cut-leaf presentation.
-Key types: TransientVfxSystem, TransientVfxSpriteSheet.
+Key types: TransientVfxSystem, TransientVfxSpriteSheet, CutLeavesEffectRenderer.
+
+Slot collection uses an ordered loop without per-call stream/lambda allocation.
+Returned slot and sprite-placement snapshots retain their immutable semantics.
 
 ### `world`
 
