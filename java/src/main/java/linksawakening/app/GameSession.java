@@ -253,6 +253,10 @@ public class GameSession {
         return indexedDisplayBuffer.clone();
     }
 
+    void stepWithoutRender() {
+        update();
+    }
+
     private void composeFrameBuffer() {
         renderer().composeFrameBuffer();
         if (debugMenu != null && debugMenu.isOpen()) {
