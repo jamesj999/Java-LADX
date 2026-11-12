@@ -89,7 +89,10 @@ Totals: **68 files**, **148 parameters/fields**, **3 locals**, **5 return declar
 Counts scan `java/src` outside the `rom` package, including tests. Qualified
 static calls are counted by class and method name; overloads share a count.
 Instance calls are counted by method name after a dot (constructor calls by
-`new Rom`). Static imports were checked separately; none imports these helpers.
+`new Rom`). Static imports add eight `RomBank.romOffset` calls in
+`GameplayDialogIntegrationTest`: 243 qualified + 8 imported = 251 total.
+Other static totals: RomBank.decodeRgb555 44; RomUtil.romOffset 4;
+RomUtil.decodeRgb555 5.
 External code is unchanged in this work, so before/after counts are identical.
 
 | Member | External calls | Replacement |

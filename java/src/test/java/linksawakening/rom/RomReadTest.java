@@ -101,4 +101,28 @@ class RomReadTest {
         full.skip(0x4000);
         assertEquals(RomAddress.fromOffset(0x4000), full.position());
     }
+
+    @Test
+    void viewsAndPointerTablesTraverseFileOrderExplicitly() {
+        byte[] data = new byte[0x8000];
+        data[0x3FFF] = 0x34;
+        data[0x4000] = 0x12;
+        data[0x4001] = 0;
+        data[0x4002] = 0x40;
+        Rom rom = Rom.of(data);
+        RomAddress last = RomAddress.fromOffset(0x3FFF);
+        assertEquals(0x1234, rom.u16le(last));
+        assertArrayEquals(
+                new RomAddress[] {new RomAddress(0, 0x1234), new RomAddress(2, 0x4000)}, rom.pointerTable(last, 2, 2));
+        RomCursor cursor = rom.view(last, 4).cursor();
+        assertEquals(0x34, cursor.u8());
+        assertEquals(new RomAddress(1, 0x4000), cursor.position());
+        assertEquals(0x12, cursor.u8());
+        cursor.skip(2);
+        assertEquals(new RomAddress(1, 0x4003), cursor.position());
+        assertArrayEquals(new int[0], rom.u8Table(START, 0));
+        assertArrayEquals(new int[0], rom.s8Table(START, 0));
+        assertArrayEquals(new RomAddress[0], rom.pointerTable(START, 0, 0));
+        assertEquals(0, Rom.of(new byte[0]).size());
+    }
 }

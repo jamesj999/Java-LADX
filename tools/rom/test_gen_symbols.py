@@ -34,7 +34,10 @@ class GeneratorTest(unittest.TestCase):
     def test_user_rom_symbols_are_readable_and_not_blank(self):
         import re
 
-        rom = ROOT / "java/src/main/resources/rom/azle.gbc"
+        import os
+        from pathlib import Path
+
+        rom = Path(os.environ.get("LA_ROM", ROOT / "java/src/main/resources/rom/azle.gbc"))
         if not rom.exists():
             self.skipTest("User-supplied ROM unavailable")
         data = rom.read_bytes()

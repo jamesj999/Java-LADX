@@ -30,16 +30,19 @@ public final class CollisionTables {
         return new CollisionTables(rom);
     }
 
+    /** Signed X offset from EntityCollisionPointsX[box][direction]. */
     public int entityCollisionPointX(int collisionBoxType, int direction) {
         int index = collisionPointIndex(collisionBoxType, direction);
         return entityCollisionPointsX[index];
     }
 
+    /** Signed Y offset from EntityCollisionPointsY[box][direction]. */
     public int entityCollisionPointY(int collisionBoxType, int direction) {
         int index = collisionPointIndex(collisionBoxType, direction);
         return entityCollisionPointsY[index];
     }
 
+    /** Unsigned fine-collision shape byte for a physics flag and quadrant. */
     public int entityFineCollisionShape(int physicsFlag, int quadrant) {
         if (physicsFlag < ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS
                 || physicsFlag > ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS
@@ -52,6 +55,7 @@ public final class CollisionTables {
                         + quadrant];
     }
 
+    /** Unsigned Link collision byte from Data_002_49CA[physics-$7C][quadrant]. */
     public int linkFineCollisionShape(int physicsFlag, int quadrant) {
         if (physicsFlag < LINK_FINE_COLLISION_SHAPES_FIRST_PHYSICS
                 || physicsFlag > LINK_FINE_COLLISION_SHAPES_LAST_PHYSICS

@@ -72,6 +72,13 @@ public final class SwordTables {
         return new SwordTables(rom);
     }
 
+    /**
+     * Look up an {@code hLinkAnimationState} for (ROM-encoded direction, sword
+     * animation state). Returns {@code 0xFF} when the table is marked
+     * LINK_ANIMATION_STATE_HIDDEN — callers should treat that as "keep the
+     * current state". {@code romDirection} uses the disassembly's encoding
+     * (RIGHT=0, LEFT=1, UP=2, DOWN=3), not the Java Link.DIRECTION_* values.
+     */
     public int swordDirectionAnimState(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         if (index < 0 || index >= swordAnimState.length) {
@@ -80,24 +87,39 @@ public final class SwordTables {
         return swordAnimState[index];
     }
 
+    /**
+     * Returns the 8-valued sword direction (SWORD_DIRECTION_* in
+     * {@code constants/gameplay.asm}) that the ROM assigns for a given
+     * Link-direction + sword-animation-state pair.
+     */
     public int swordDirectionFor(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         return index < swordDirection.length ? swordDirection[index] : 0;
     }
 
+    /** ROM {@code LinkDirectionToSwordAnimationState} for a spin sector. */
     public int swordSpinAnimationState(int baseRomDirection, int sector) {
         return swordSpinAnimationState[spinTableIndex(baseRomDirection, sector)];
     }
 
+    /** ROM {@code LinkDirectionToAbsolute} for a spin sector. */
     public int swordSpinAbsoluteDirection(int baseRomDirection, int sector) {
         return swordSpinAbsoluteDirection[spinTableIndex(baseRomDirection, sector)];
     }
 
+    /**
+     * Blade X offset from Link's world X (wC13A in the ROM). Signed.
+     */
     public int swordBladeXOffset(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         return index < swordXOffset.length ? swordXOffset[index] : 0;
     }
 
+    /**
+     * Blade Y offset from Link's world Y: wC13B + wC139 combined (see
+     * {@code ApplyLinkMotionState} in bank0.asm and
+     * {@code func_020_4AB3} in bank20.asm).
+     */
     public int swordBladeYOffset(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         if (index >= swordYBase.length || index >= swordYOffset.length) {
@@ -106,43 +128,73 @@ public final class SwordTables {
         return swordYBase[index] + swordYOffset[index];
     }
 
+    /** True when the current sword pose enables the enemy collision rectangle. */
     public boolean swordEnemyCollisionEnabled(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         return index >= 0 && index < swordCollisionNeeded.length && swordCollisionNeeded[index] != 0;
     }
 
+    /** wC140 offset from Link X, including LinkDirectionToStaticSword... . */
     public int swordCollisionXOriginOffset(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         return swordXOffset[index] + swordCollisionNeeded[index];
     }
 
+    /** wC141 half-width used by DefaultEnemyDamageCollisionHandler. */
     public int swordCollisionWidth(int romDirection, int swordState) {
         return swordCollisionWidth[swingTableIndex(romDirection, swordState)];
     }
 
+    /** wC142 offset from Link Y, excluding Link's vertical position. */
     public int swordCollisionYOriginOffset(int romDirection, int swordState) {
         int index = swingTableIndex(romDirection, swordState);
         return swordYOffset[index] + swordCollisionOffset[index];
     }
 
+    /** wC143 half-height used by DefaultEnemyDamageCollisionHandler. */
     public int swordCollisionHeight(int romDirection, int swordState) {
         return swordCollisionHeight[swingTableIndex(romDirection, swordState)];
     }
 
+    /**
+     * Sword blade OAM tile id for the given sword direction (0-7) and sprite
+     * slot (0 = left half, 1 = right half). {@code 0xFF} means the slot is
+     * hidden (vertical blades only use slot 1).
+     */
     public int swordSpriteTile(int swordDirection, int spriteSlot) {
         int index = (swordDirection & 0x7) * 2 + (spriteSlot & 0x1);
         return swordSpriteTiles[index];
     }
 
+    /**
+     * OAM attribute byte for the blade sprite (bit 5 = flipX, bit 6 = flipY,
+     * bits 0-2 = palette).
+     */
     public int swordSpriteAttr(int swordDirection, int spriteSlot) {
         int index = (swordDirection & 0x7) * 2 + (spriteSlot & 0x1);
         return swordSpriteAttrs[index];
     }
 
+    /**
+     * Signed X collision offset from Link's position for static-object sword
+     * collision in the ROM collision-map index:
+     * 0-3 = normal swing (RIGHT, LEFT, UP, DOWN),
+     * 4-11 = spin attack angles.
+     * Table: {@code SwordCollisionMapX} in
+     * {@code CheckStaticSwordCollision}.
+     */
     public int staticSwordCollisionOffsetX(int collisionIndex) {
         return staticSwordCollisionX[collisionIndex % staticSwordCollisionX.length];
     }
 
+    /**
+     * Signed Y collision offset from Link's position for static-object sword
+     * collision in the ROM collision-map index:
+     * 0-3 = normal swing (RIGHT, LEFT, UP, DOWN),
+     * 4-11 = spin attack angles.
+     * Table: {@code SwordCollisionMapY} in
+     * {@code CheckStaticSwordCollision}.
+     */
     public int staticSwordCollisionOffsetY(int collisionIndex) {
         return staticSwordCollisionY[collisionIndex % staticSwordCollisionY.length];
     }

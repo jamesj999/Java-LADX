@@ -30,22 +30,30 @@ public final class EquipmentTables {
         return new EquipmentTables(rom);
     }
 
+    /** Signed Link-top-left X offset for one Magic Rod swing direction. */
     public int magicRodXOffset(int tableIndex) {
         return magicRodXOffset[tableIndex & 0x07];
     }
 
+    /** Signed Link-top-left Y offset for one Magic Rod swing direction. */
     public int magicRodYOffset(int tableIndex) {
         return magicRodYOffset[tableIndex & 0x07];
     }
 
+    /** Link-character tile used by one Magic Rod OAM slot. */
     public int magicRodTile(int tableIndex, int spriteSlot) {
         return magicRodTiles[(tableIndex & 0x07) * 2 + (spriteSlot & 0x01)];
     }
 
+    /** OAM attributes used by one Magic Rod OAM slot. */
     public int magicRodAttribute(int tableIndex, int spriteSlot) {
         return magicRodAttributes[(tableIndex & 0x07) * 2 + (spriteSlot & 0x01)];
     }
 
+    /**
+     * Link animation state selected by the ROM shovel timer. Timer values
+     * below $10 use phase zero; values from $10 onward use phase one.
+     */
     public int shovelAnimationState(int timer, int romDirection) {
         if (romDirection < 0 || romDirection > 3) {
             throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);

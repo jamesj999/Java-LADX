@@ -195,8 +195,9 @@ emulator replay comparison was performed for this address-preserving refactor.
 
 The starting API exposes four public Rom members (constructor and three reads).
 RomTables has 744 lines and 43 public methods. RomUtil/RomBank expose six
-byte-array helper overloads (two/four); external main sources contain 156
-`byte[] rom*` declarations. Counts are lexical declarations, not unique objects.
+byte-array helper overloads (two/four). The initial lexical count of 156
+`byte[] rom*` occurrences comprises 148 parameters/fields, 3 locals, and 5
+return declarations, as detailed in the migration inventory.
 
 ## Reading the ROM
 

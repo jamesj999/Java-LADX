@@ -5,7 +5,7 @@ import java.util.Map;
 
 public final class RomUtil {
 
-    public static final int BANK_SIZE = 0x4000;
+    public static final int BANK_SIZE = RomBank.BANK_SIZE;
     public static final int BG_MAP_ROW_WIDTH = 0x20;
 
     private RomUtil() {}

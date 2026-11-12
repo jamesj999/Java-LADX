@@ -75,6 +75,7 @@ public final class LinkMotionTables {
         return palettes;
     }
 
+    /** LinkMotionRevolvingDoorHandler and Data_002_4E1C. */
     public int revolvingDoorAnimation(int frame) {
         return revolvingDoorAnimation[(frame >> 3) % 7];
     }
@@ -83,6 +84,7 @@ public final class LinkMotionTables {
         return revolvingDoorPalettes[variant].clone();
     }
 
+    /** Signed current speeds from Data_002_7C40/7C48. */
     public int pitWarpArrivalDirection(int frameCounter) {
         return pitWarpArrivalDirections[(frameCounter >>> 2) & 3];
     }
@@ -95,10 +97,12 @@ public final class LinkMotionTables {
         return waterCurrentY[index & 7];
     }
 
+    /** Signed ground speed for the D-Pad mask and power-up row bit. */
     public int linkSpeedX(int joypadMask) {
         return linkSpeedX[joypadMask & 0x1F];
     }
 
+    /** ApplyLinkGroundMotion's per-axis targets, including opposite-button inputs. */
     public int airSpeedX(int axisMask) {
         return airSpeedX[axisMask & 3];
     }
@@ -111,18 +115,22 @@ public final class LinkMotionTables {
         return linkSpeedY[joypadMask & 0x1F];
     }
 
+    /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */
     public int swimmingSpeedX(int joypadMask, boolean fast) {
         return swimmingSpeedX[(fast ? 0x10 : 0) | (joypadMask & 0x0F)];
     }
 
+    /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */
     public int swimmingSpeedY(int joypadMask, boolean fast) {
         return swimmingSpeedY[(fast ? 0x10 : 0) | (joypadMask & 0x0F)];
     }
 
+    /** Signed direction-indexed entry speed written when flippers start swimming. */
     public int swimmingEntrySpeedX(int romDirection) {
         return swimmingEntrySpeedX[romDirection & 0x03];
     }
 
+    /** Signed direction-indexed entry speed written when flippers start swimming. */
     public int swimmingEntrySpeedY(int romDirection) {
         return swimmingEntrySpeedY[romDirection & 0x03];
     }

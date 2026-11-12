@@ -2,7 +2,9 @@ package linksawakening.rom;
 /** Immutable copies of PhysicsTables ROM lookup data. */
 public final class PhysicsTables {
     private static final int PHYSICS_FLAGS_TABLE_SIZE = 0x100;
-    private static final int PHYSICS_TABLE_OVERWORLD = 0;
+    public static final int PHYSICS_TABLE_OVERWORLD = 0;
+    public static final int PHYSICS_TABLE_INDOORS1 = 1;
+    public static final int PHYSICS_TABLE_INDOORS2 = 2;
     // OverworldObjectPhysicFlags: original loader length.
     private static final int PHYSICS_FLAGS_LENGTH = 256;
     private final int[][] physicsFlags;
@@ -19,6 +21,13 @@ public final class PhysicsTables {
         return new PhysicsTables(rom);
     }
 
+    /**
+     * Physics flag for an object in the given context table. Pick
+     * {@link #PHYSICS_TABLE_OVERWORLD} for overworld rooms and
+     * {@link #PHYSICS_TABLE_INDOORS1} for regular indoor rooms (houses,
+     * caves, dungeons). {@link #PHYSICS_TABLE_INDOORS2} covers Color Dungeon
+     * with {@code wIsIndoor != 0}.
+     */
     public int objectPhysicsFlag(int tableIndex, int objectId) {
         if (tableIndex < 0 || tableIndex >= physicsFlags.length) {
             return 0;
@@ -29,6 +38,7 @@ public final class PhysicsTables {
         return physicsFlags[tableIndex][objectId];
     }
 
+    /** Back-compat shim: overworld physics flag for an object id. */
     public int overworldPhysicsFlag(int objectId) {
         return objectPhysicsFlag(PHYSICS_TABLE_OVERWORLD, objectId);
     }
