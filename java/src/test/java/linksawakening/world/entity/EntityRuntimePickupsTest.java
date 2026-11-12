@@ -35,7 +35,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x10);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
@@ -74,7 +74,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xDA);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x09, 0, 0x40, 0x40));
@@ -100,7 +100,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xA4);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
@@ -136,7 +136,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x10);
         runtime.configuration().setChestPlayerLevels(1, 2, 1);
@@ -159,7 +159,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0x10);
         EntityRuntimeFixture.debug(runtime).setEntityRoomStatusForTest(0x10);

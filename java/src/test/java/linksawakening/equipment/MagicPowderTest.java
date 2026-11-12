@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ final class MagicPowderTest {
 
         assertEquals(1, target.sprinkleRequests);
         assertEquals(1, target.attackStepRequests);
-        assertEquals(1, player.magicPowderCount());
+        assertEquals(1, player.ammunition().magicPowderCount());
         assertEquals(List.of(GameplaySoundEvent.MAGIC_POWDER), sounds.events);
         assertTrue(powder.blocksMotion());
         assertTrue(powder.locksFacing());
@@ -48,7 +49,7 @@ final class MagicPowderTest {
     void toadstoolUseBypassesEmptyPowderErrorAndSprinkling() {
         for (int count : new int[] {0, 20}) {
             PlayerState player = playerWithPowder(count);
-            player.setHasToadstool(true);
+            player.ammunition().setHasToadstool(true);
             RecordingTarget target = new RecordingTarget();
             RecordingSoundSink sounds = new RecordingSoundSink();
             new MagicPowder(player, sounds, target).onPress();
@@ -56,15 +57,15 @@ final class MagicPowderTest {
             assertEquals(0, target.sprinkleRequests);
             assertEquals(0, target.attackStepRequests);
             assertEquals(1, target.toadstoolPresentations);
-            assertEquals(count, player.magicPowderCount());
-            assertTrue(player.hasToadstool()); // the Witch handler owns the trade
+            assertEquals(count, player.ammunition().magicPowderCount());
+            assertTrue(player.ammunition().hasToadstool()); // the Witch handler owns the trade
         }
     }
 
     @Test
     void toadstoolUseAboveGroundReturnsBeforePresentationOrSound() {
         PlayerState player = playerWithPowder(0);
-        player.setHasToadstool(true);
+        player.ammunition().setHasToadstool(true);
         RecordingTarget target = new RecordingTarget();
         target.z = 1;
         RecordingSoundSink sounds = new RecordingSoundSink();
@@ -84,7 +85,7 @@ final class MagicPowderTest {
 
         powder.onPress();
 
-        assertEquals(1, player.magicPowderCount());
+        assertEquals(1, player.ammunition().magicPowderCount());
         assertEquals(0, target.attackStepRequests);
         assertEquals(List.of(), sounds.events);
     }
@@ -92,14 +93,14 @@ final class MagicPowderTest {
     @Test
     void consumingTheLastPowderClearsBothButtonSlotsThatStillHoldPowder() {
         PlayerState player = playerWithPowder(1);
-        player.setItemB(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.inventory().setItemB(InventoryItem.MAGIC_POWDER.romValue());
         RecordingTarget target = new RecordingTarget();
 
         new MagicPowder(player, GameplaySoundSink.none(), target).onPress();
 
-        assertEquals(0, player.magicPowderCount());
-        assertEquals(PlayerState.INVENTORY_EMPTY, player.itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, player.itemB());
+        assertEquals(0, player.ammunition().magicPowderCount());
+        assertEquals(InventoryItem.EMPTY.romValue(), player.inventory().itemA());
+        assertEquals(InventoryItem.EMPTY.romValue(), player.inventory().itemB());
     }
 
     @Test
@@ -110,7 +111,7 @@ final class MagicPowderTest {
 
         blocked.onPress();
         assertEquals(0, target.sprinkleRequests);
-        assertEquals(1, player.magicPowderCount());
+        assertEquals(1, player.ammunition().magicPowderCount());
 
         target.attackStepActive = true;
         MagicPowder alreadyAttacking = new MagicPowder(player, GameplaySoundSink.none(), target);
@@ -129,9 +130,9 @@ final class MagicPowderTest {
 
     private static PlayerState playerWithPowder(int count) {
         PlayerState player = new PlayerState();
-        player.setMaxMagicPowder(20);
-        player.setMagicPowderCount(count);
-        player.setItemA(PlayerState.INVENTORY_MAGIC_POWDER);
+        player.ammunition().setMaxMagicPowder(20);
+        player.ammunition().setMagicPowderCount(count);
+        player.inventory().setItemA(InventoryItem.MAGIC_POWDER.romValue());
         return player;
     }
 

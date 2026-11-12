@@ -16,7 +16,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
     @Test
     void mimicUsesItsRomInputHandlerAndCombatTables() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_MIMIC, EntityRoomLoader.RoomTable.INDOORS_B);
@@ -53,7 +53,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
     @Test
     void maskedMimicUsesItsRomInputHandlerAndCombatTables() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
@@ -90,7 +90,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
     @Test
     void maskedMimicShieldedSideUsesDynamicSwordClinkOption() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
@@ -124,7 +124,7 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
     @Test
     void maskedMimicVulnerableSideUsesDynamicDamageOption() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);

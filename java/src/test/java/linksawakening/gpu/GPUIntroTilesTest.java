@@ -3,6 +3,7 @@ package linksawakening.gpu;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ final class GPUIntroTilesTest {
     void introSequenceTilesFollowTilesetIntroLoadOrder() {
         GPU gpu = new GPU();
 
-        gpu.loadIntroSequenceTiles(ROM);
+        gpu.loadIntroSequenceTiles(Rom.of(ROM));
 
         assertVramMatchesRom(gpu, 0x0000, 0x30, 0x5400, 0x10);
         assertVramMatchesRom(gpu, 0x0700, 0x01, 0x6D4A, 0x10);
@@ -26,10 +27,10 @@ final class GPUIntroTilesTest {
     void titleTilesOverwriteIntroTilesOnlyWhenTitleTilesetIsLoaded() {
         GPU gpu = new GPU();
 
-        gpu.loadIntroSequenceTiles(ROM);
+        gpu.loadIntroSequenceTiles(Rom.of(ROM));
         assertVramMatchesRom(gpu, 0x0800, 0x30, 0x4000, 0x10);
 
-        gpu.loadTitleScreenTiles(ROM);
+        gpu.loadTitleScreenTiles(Rom.of(ROM));
         assertVramMatchesRom(gpu, 0x0800, 0x2F, 0x4900, 0x10);
         assertVramMatchesRom(gpu, 0x0200, 0x38, 0x6500, 0x10);
     }

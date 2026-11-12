@@ -70,7 +70,7 @@ final class ZoraRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZORA));
@@ -232,7 +232,7 @@ final class ZoraRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x07, 0x40, 0x40));
 

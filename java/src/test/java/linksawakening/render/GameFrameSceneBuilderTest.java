@@ -102,7 +102,7 @@ final class GameFrameSceneBuilderTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        link.showMarinWakeUpBed(3);
+        link.animation().showMarinWakeUpBed(3);
 
         FrameScene scene = new GameFrameSceneBuilder()
                 .build(GameFrameState.empty()

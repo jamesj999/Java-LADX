@@ -10,7 +10,7 @@ import linksawakening.state.GroundStatus;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
-/** LinkJumpMotion behavior on the shared LinkAirborne state. */
+/** Link jump motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkJumpMotion extends LinkAirborneState {
     protected LinkJumpMotion(Dependencies dependencies) {
         super(dependencies);
@@ -38,14 +38,14 @@ abstract class LinkJumpMotion extends LinkAirborneState {
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
                 && !directionalLedgeJumpMotionLocked
                 && (linkServices.get().playerState == null
-                        || !linkServices.get().playerState.runningWithPegasusBoots())) {
+                        || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())) {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
-                int target = linkServices.get().romTables.airSpeedX(mask & 3);
+                int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);
                 linkMotion.get().lastRomSpeedX = steerAirSpeed(linkMotion.get().lastRomSpeedX, target);
             }
             if ((mask & (LinkRomConstants.JOY_UP | LinkRomConstants.JOY_DOWN)) != 0) {
-                int target = linkServices.get().romTables.airSpeedY((mask >>> 2) & 3);
+                int target = linkServices.get().linkMotionTables.airSpeedY((mask >>> 2) & 3);
                 linkMotion.get().lastRomSpeedY = steerAirSpeed(linkMotion.get().lastRomSpeedY, target);
             }
         }

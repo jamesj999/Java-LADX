@@ -231,4 +231,6 @@ public final class CuccoMotion {
     record Position(int x, int y) {}
 
     record Vector(int x, int y) {}
+
+    final CuccoStep cuccoStep = new CuccoStep();
 }

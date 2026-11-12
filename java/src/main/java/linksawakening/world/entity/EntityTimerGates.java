@@ -164,4 +164,25 @@ public final class EntityTimerGates {
     public boolean ignoreHitsDecrementedBeforeHandler(boolean value) {
         return ignoreHitsDecrementedBeforeHandler = value;
     }
+
+    void reset() {
+        handlerLinkCollisionEnabled = false;
+        countdownBlocksInteraction = false;
+        threeOfAKindInteractive = false;
+        handlerInteractive = false;
+        bowWowHandlerInteractive = false;
+        projectileTimersInteractive = false;
+        sideViewPotInteractive = false;
+        sideViewPotLinkCollisionInteractive = false;
+        freezeTarinTimers = false;
+        freezeThreeOfAKindTimers = false;
+        freezeHinoxTimers = false;
+        freezeGenieTimers = false;
+        freezeWitchTimers = false;
+        freezePowderTimers = false;
+        freezeBooBuddyTimers = false;
+        freezeBowWowTimers = false;
+        freezeMoblinKingTimers = false;
+        ignoreHitsDecrementedBeforeHandler = false;
+    }
 }

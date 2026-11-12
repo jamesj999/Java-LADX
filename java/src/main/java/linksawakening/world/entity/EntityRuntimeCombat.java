@@ -52,7 +52,7 @@ interface EntityRuntimeCombat {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
-    /** Compatibility for world.room.RoomEntityBridge; use the frame input overload. */
+    /** Compatibility for world.room.RoomEntityCombatBridge; use the frame input overload. */
     @Deprecated
     default EntityPickupEvent collectIfNeeded(
             int frameCounter,
@@ -144,7 +144,7 @@ interface EntityRuntimeCombat {
                 EnemyAttackContext.standard()));
     }
 
-    /** Compatibility for world.room.RoomSessionTest; use the frame input overload. */
+    /** Compatibility for world.room.RoomSessionTestSupport; use the frame input overload. */
     @Deprecated
     default List<EntityCombatEvent> resolveCombat(
             int frameCounter,
@@ -223,7 +223,7 @@ interface EntityRuntimeCombat {
                 attackContext));
     }
 
-    /** Compatibility for world.room.RoomEntityBridge; use the frame input overload. */
+    /** Compatibility for world.room.RoomEntityCombatBridge; use the frame input overload. */
     @Deprecated
     default List<EntityCombatEvent> resolveCombat(
             int frameCounter,

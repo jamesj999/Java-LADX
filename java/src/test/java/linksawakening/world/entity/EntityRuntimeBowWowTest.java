@@ -78,7 +78,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setBowWowState(0x80);
 
@@ -103,7 +103,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setBowWowState(0x80);
         runtime.configuration().setDialogActive(true);
@@ -218,7 +218,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
 
@@ -232,7 +232,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void bowWowConsumesAnOrdinaryTargetThroughDidKillEnemy() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
@@ -254,7 +254,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(6, EnemyDropResolver.ENTITY_NONE);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
@@ -280,7 +281,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void bowWowFlashesKikiWithoutConsumingIt() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
@@ -328,7 +329,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void bowWowOpensTheSecretShellDialogOnlyForAnActiveShell() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)

@@ -3,7 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
-/** LinkItemState owns its Link state and operations. */
+/** Link item state state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkItemState {
     int romLinkPushing;
     int romAttackStepAnimationCountdown;

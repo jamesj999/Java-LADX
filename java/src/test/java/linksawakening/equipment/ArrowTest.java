@@ -33,7 +33,7 @@ final class ArrowTest {
 
         arrow.onPress();
 
-        assertEquals(0, player.arrowCount());
+        assertEquals(0, player.ammunition().arrowCount());
         assertEquals(0, target.shotRequests);
         assertEquals(List.of(), sounds.events);
     }
@@ -47,7 +47,7 @@ final class ArrowTest {
 
         arrow.onPress();
 
-        assertEquals(0, player.arrowCount());
+        assertEquals(0, player.ammunition().arrowCount());
         assertEquals(0, target.shotRequests);
         assertEquals(List.of(GameplaySoundEvent.WRONG_ANSWER), sounds.events);
     }
@@ -61,7 +61,7 @@ final class ArrowTest {
 
         arrow.onPress();
 
-        assertEquals(1, player.arrowCount());
+        assertEquals(1, player.ammunition().arrowCount());
         assertEquals(1, target.shotRequests);
         assertEquals(1, target.countObservedAtShot);
         assertEquals(0x10, arrow.shootingCountdownForTest());
@@ -77,7 +77,7 @@ final class ArrowTest {
 
         arrow.onPress();
 
-        assertEquals(1, player.arrowCount());
+        assertEquals(1, player.ammunition().arrowCount());
         assertEquals(1, target.shotRequests);
         assertEquals(1, target.countObservedAtShot);
     }
@@ -98,8 +98,8 @@ final class ArrowTest {
 
     private static PlayerState playerWithArrows(int count) {
         PlayerState player = new PlayerState();
-        player.setMaxArrows(99);
-        player.setArrowCount(count);
+        player.ammunition().setMaxArrows(99);
+        player.ammunition().setArrowCount(count);
         return player;
     }
 
@@ -122,7 +122,7 @@ final class ArrowTest {
         @Override
         public boolean shootArrow() {
             shotRequests++;
-            countObservedAtShot = player == null ? -1 : player.arrowCount();
+            countObservedAtShot = player == null ? -1 : player.ammunition().arrowCount();
             return shotSucceeds;
         }
 

@@ -72,7 +72,7 @@ final class ZombieRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_ZOMBIE));
@@ -288,7 +288,7 @@ final class ZombieRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> randomCalls.getAndIncrement() == 0 ? 0x03 : 0x12)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration()
                 .setObjectQuery(entity -> new RoomEntityObjectSample(0x00, 0x00, entity.x(), entity.y()));
@@ -327,7 +327,7 @@ final class ZombieRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
@@ -349,7 +349,7 @@ final class ZombieRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));

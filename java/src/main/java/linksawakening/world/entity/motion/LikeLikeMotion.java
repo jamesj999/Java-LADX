@@ -35,7 +35,7 @@ public final class LikeLikeMotion {
     }
 
     public Update advance(LikeLikeFrame inputs) {
-        return new LikeLikeFrameStep(this, inputs).run();
+        return likeLikeFrameStep.run(this, inputs);
     }
 
     public int state(int slot) {
@@ -57,4 +57,6 @@ public final class LikeLikeMotion {
     public int walkSpeedY(int slot) {
         return walkMotion.speedY(slot);
     }
+
+    final LikeLikeFrameStep likeLikeFrameStep = new LikeLikeFrameStep();
 }

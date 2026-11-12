@@ -21,7 +21,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolAndGelApplyBankSixRecoilBeforeTheirStateMovement() throws IOException {
         int[] types = {0x1B, 0x1C};
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
             // ConfigureEntityRecoil runs before the ROM damage lookup. A
@@ -53,7 +54,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolAndGelKeepBankSixRecoilWhenBackgroundBlocksTheStep() throws IOException {
         int[] types = {0x1B, 0x1C};
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
             EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
@@ -225,7 +227,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void zolSplittingTurnsTheOriginalSlotIntoAGelAndUsesTheLastFreeSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables combatTables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         assertEquals(1, combatTables.initialHealth(0x1B));
         EntitySpriteDefinition definition = catalog.forEntityType(0x1B, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()

@@ -159,7 +159,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertEquals(0x84, runtime.enemies().physicsFlags(0));
@@ -205,7 +205,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -246,7 +246,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -311,7 +311,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));

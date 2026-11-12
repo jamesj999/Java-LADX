@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for BushCrawlerMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BushCrawlerMotion.advance; values are assigned in source order. */
 final class BushCrawlerStep {
-    private final BushCrawlerMotion owner;
+    private BushCrawlerMotion owner;
     private linksawakening.world.entity.motion.BushCrawlerFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -29,10 +29,7 @@ final class BushCrawlerStep {
     private boolean liftRequested;
     private linksawakening.world.entity.RoomEntity updated;
 
-    BushCrawlerStep(BushCrawlerMotion owner, linksawakening.world.entity.motion.BushCrawlerFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BushCrawlerStep() {}
 
     linksawakening.world.entity.motion.BushCrawlerMotion.Update run() {
         entity = inputs.entity();
@@ -149,5 +146,52 @@ final class BushCrawlerStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.BushCrawlerMotion.Update run(
+            BushCrawlerMotion owner, linksawakening.world.entity.motion.BushCrawlerFrame inputs) {
+        if (inUse) {
+            return new BushCrawlerStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        transitionCountdown = 0;
+        linkCollision = false;
+        actionButtonAHeld = false;
+        actionButtonBHeld = false;
+        linkItemA = 0;
+        linkItemB = 0;
+        slot = 0;
+        wasInitialized = false;
+        crawlOverlayRendered = false;
+        renderedVariant = 0;
+        renderedVisualYOffset = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        liftRequested = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

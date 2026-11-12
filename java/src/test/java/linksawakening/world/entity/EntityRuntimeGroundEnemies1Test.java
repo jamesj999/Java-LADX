@@ -467,7 +467,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void romBurningGibdoBecomesAnActiveStalfosAfterItsTimerExpires() throws IOException {
         byte[] rom = romWithSwordResult(0x1F, 0xFE);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

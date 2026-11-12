@@ -32,8 +32,7 @@ final class StarHandler {
             RoomEntityBackgroundInteraction starBackgroundInteraction =
                     state.background().interaction();
             if (starBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                starBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                starBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             slotState.updated(state.motion(StarMotion.class, StarMotion::new)
                     .advance(

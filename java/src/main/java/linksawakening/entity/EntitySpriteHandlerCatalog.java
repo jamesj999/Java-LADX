@@ -1,5 +1,7 @@
 package linksawakening.entity;
 
+import linksawakening.rom.Rom;
+
 /**
  * ROM-backed display-list decoder plus the small handler-to-list mapping
  * required by the first entity rendering increment.
@@ -42,7 +44,13 @@ public final class EntitySpriteHandlerCatalog extends EntitySpriteDecodeGeometry
     public static final int LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE = 14;
     public static final int ENTITY_INSTRUMENT_OF_THE_SIRENS = 0x39;
 
-    public EntitySpriteHandlerCatalog(byte[] romData) {
+    public EntitySpriteHandlerCatalog(Rom romData) {
         super(romData);
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public EntitySpriteHandlerCatalog(byte[] romData) {
+        this(romData == null ? null : Rom.unchecked(romData));
     }
 }

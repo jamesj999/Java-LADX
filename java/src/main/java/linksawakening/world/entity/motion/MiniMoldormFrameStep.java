@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 
-/** Per-invocation scratch for MiniMoldormMotion.advanceAfterHistory; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MiniMoldormMotion.advanceAfterHistory; values are assigned in source order. */
 final class MiniMoldormFrameStep {
-    private final MiniMoldormMotion owner;
+    private MiniMoldormMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int transitionCountdown;
     private int ignoreHitsCountdown;
@@ -22,24 +22,7 @@ final class MiniMoldormFrameStep {
     private int segment2Index;
     private linksawakening.world.entity.RoomEntity moved;
 
-    MiniMoldormFrameStep(
-            MiniMoldormMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int transitionCountdown,
-            int ignoreHitsCountdown,
-            int flashCountdown,
-            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
-            java.util.function.IntSupplier randomByteSupplier,
-            int frameCounter) {
-        this.owner = owner;
-        this.entity = entity;
-        this.transitionCountdown = transitionCountdown;
-        this.ignoreHitsCountdown = ignoreHitsCountdown;
-        this.flashCountdown = flashCountdown;
-        this.backgroundInteraction = backgroundInteraction;
-        this.randomByteSupplier = randomByteSupplier;
-        this.frameCounter = frameCounter;
-    }
+    MiniMoldormFrameStep() {}
 
     linksawakening.world.entity.motion.MiniMoldormMotion.Update run() {
         if (!prepareTimers()) return completedResult;
@@ -150,5 +133,60 @@ final class MiniMoldormFrameStep {
         segment2Index = (owner.inertia[slot] - 0x10) & MiniMoldormMotion.HISTORY_MASK;
         moved = MiniMoldormMotion.withPosition(entity, x, y);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.MiniMoldormMotion.Update run(
+            MiniMoldormMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            int flashCountdown,
+            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
+            java.util.function.IntSupplier randomByteSupplier,
+            int frameCounter) {
+        if (inUse) {
+            return new MiniMoldormFrameStep()
+                    .run(
+                            owner,
+                            entity,
+                            transitionCountdown,
+                            ignoreHitsCountdown,
+                            flashCountdown,
+                            backgroundInteraction,
+                            randomByteSupplier,
+                            frameCounter);
+        }
+        inUse = true;
+        slot = 0;
+        nextTransitionCountdown = 0;
+        x = 0;
+        y = 0;
+        collisionFlags = 0;
+        key = 0;
+        segment1Index = 0;
+        segment2Index = 0;
+        moved = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.transitionCountdown = transitionCountdown;
+        this.ignoreHitsCountdown = ignoreHitsCountdown;
+        this.flashCountdown = flashCountdown;
+        this.backgroundInteraction = backgroundInteraction;
+        this.randomByteSupplier = randomByteSupplier;
+        this.frameCounter = frameCounter;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.backgroundInteraction = null;
+            this.randomByteSupplier = null;
+            this.moved = null;
+            this.completedResult = null;
+        }
     }
 }

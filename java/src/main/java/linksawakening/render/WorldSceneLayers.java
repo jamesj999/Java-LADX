@@ -69,7 +69,7 @@ final class WorldSceneLayers {
 
     private void addLinkSprites(GameFrameState state) {
         if (state.link() != null) {
-            if (state.link().isMarinWakeUpBedVisible()) {
+            if (state.link().animation().isMarinWakeUpBedVisible()) {
                 if (state.room().entities() != null
                         && state.room().entities().spriteTiles() != null
                         && state.room().entities().spriteSelection() != null) {
@@ -100,7 +100,7 @@ final class WorldSceneLayers {
                             state.scrollController(),
                             state.room().linkGrassPalette()));
                 }
-                if (state.link().presentedDialogGotItem() != 0
+                if (state.link().animation().presentedDialogGotItem() != 0
                         && state.room().entities() != null
                         && state.room().entities().spriteSelection() != null) {
                     sprites.add(StorySprites.dialogGotItem(
@@ -108,7 +108,7 @@ final class WorldSceneLayers {
                             state.room().entities().spriteSelection().objectPalettes(),
                             state.scrollController()));
                 }
-                if (state.link().isTarinShieldPresentationVisible()
+                if (state.link().animation().isTarinShieldPresentationVisible()
                         && state.room().entities() != null
                         && state.room().entities().spriteSelection() != null) {
                     sprites.add(StorySprites.tarinShield(state.link(), state.scrollController()));

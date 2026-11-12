@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -17,7 +18,7 @@ import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.world.entity.RomRandomByteSource;
 
-/** Shared state and dependency ownership for IntroSequence. */
+/** Intro sequencing, presentation or ROM data used by ROM {@code IntroHandler}. */
 abstract class IntroSequenceState {
     protected final IntroFrameSnapshot.Builder snapshotBuilder = new IntroFrameSnapshot.Builder();
     protected final List<IntroSprite> renderSpriteScratch = new ArrayList<>();
@@ -122,14 +123,14 @@ abstract class IntroSequenceState {
     protected IntroFrameSnapshot snapshot;
     protected IntroFrameSnapshot transitionFrame;
 
-    protected record DefaultResources(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {}
+    protected record DefaultResources(Rom romData, Function<String, BackgroundScene> backgroundProvider) {}
 
     /** Compatibility constructor for older callers; runtime data still comes from the bundled ROM. */
     public IntroSequenceState() {
         this(defaultResources());
     }
 
-    public IntroSequenceState(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    public IntroSequenceState(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         this.rom = new IntroRomData(romData);
         this.backgroundProvider = Objects.requireNonNull(backgroundProvider, "backgroundProvider");
         this.titleRows = rom.titleRows();
@@ -217,7 +218,7 @@ abstract class IntroSequenceState {
     }
 
     protected static DefaultResources defaultResources() {
-        byte[] romData = loadBundledRom();
+        Rom romData = loadBundledRom();
         BackgroundSceneLoader loader = new BackgroundSceneLoader(romData);
         return new DefaultResources(romData, sceneId -> {
             BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
@@ -228,12 +229,12 @@ abstract class IntroSequenceState {
         });
     }
 
-    protected static byte[] loadBundledRom() {
+    protected static Rom loadBundledRom() {
         try (InputStream stream = IntroSequence.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }
-            return stream.readAllBytes();
+            return Rom.of(stream.readAllBytes());
         } catch (IOException exception) {
             throw new IllegalStateException("Unable to load ROM", exception);
         }

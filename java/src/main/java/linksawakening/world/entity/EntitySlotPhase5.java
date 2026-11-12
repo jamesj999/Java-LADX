@@ -50,7 +50,7 @@ final class EntitySlotPhase5 {
             RoomEntityBackgroundInteraction dropBackground =
                     state.physicsTables().readBackgroundInteraction();
             if (dropBackground == null && frameInput.backgroundCollision() != null) {
-                dropBackground = RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                dropBackground = frameInput.hinoxBackgroundInteraction();
             }
             slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
                     .resolveWalls(
@@ -235,20 +235,8 @@ final class EntitySlotPhase5 {
                 || slotState.updated().y() != slotState.originalEntity().y()
                 || slotState.renderFlipAttribute() != slotState.originalEntity().entityFlipAttribute()
                 || slotState.updated().z() != slotState.originalEntity().z()) {
-            state.runtime().slots[slotState.index()] = new RoomEntity(
-                    slotState.updated().slot(),
-                    slotState.updated().sourceLoadOrder(),
-                    slotState.updated().type(),
-                    slotState.updated().x(),
-                    slotState.updated().y(),
-                    slotState.status(),
-                    slotState.updated().spriteDefinition(),
-                    slotState.variant(),
-                    slotState.renderFlipAttribute(),
-                    slotState.updated().spriteTileOffset(),
-                    slotState.updated().z(),
-                    -1,
-                    false);
+            state.runtime().slots[slotState.index()] = withPresentation(
+                    slotState.updated(), slotState.status(), slotState.variant(), slotState.renderFlipAttribute());
         }
     }
 }

@@ -2,7 +2,8 @@ package linksawakening.dialog;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import linksawakening.rom.RomBank;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 
 /** ROM row orders for opening ($1C:4A18) and closing ($1C:4A8A). */
 final class DialogRomLayout {
@@ -22,11 +23,11 @@ final class DialogRomLayout {
     private static int[] loadRows(int address, int firstFrame) {
         try (var input = DialogRomLayout.class.getResourceAsStream("/rom/azle.gbc")) {
             if (input == null) throw new IllegalStateException("Missing classpath ROM");
-            byte[] rom = input.readAllBytes();
-            int start = RomBank.romOffset(0x1C, address);
+            Rom rom = Rom.of(input.readAllBytes());
+            int start = new RomAddress(0x1C, address).offset();
             int[] frames = new int[5];
             for (int i = 0; i < frames.length; i++) {
-                int row = ((rom[start + i] & 255) >>> 5) - 1;
+                int row = (rom.u8(RomAddress.fromOffset(start + i)) >>> 5) - 1;
                 if (row < 0 || row >= frames.length || frames[row] != 0) {
                     throw new IllegalArgumentException("Invalid ROM dialogue row table");
                 }

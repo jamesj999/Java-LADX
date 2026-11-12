@@ -21,12 +21,13 @@ class EntityBossBattleFlagTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new linksawakening.world.room.ChestContentsTable(rom))
-                .romTables(linksawakening.rom.RomTables.loadFromRom(rom))
-                .romData(rom)
+                .romTables(linksawakening.rom.RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
-        runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.bossRewards.writeEnemyDropResolver(
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }
 

@@ -188,6 +188,6 @@ public final class SoundEffectCatalog {
 
     @Deprecated(forRemoval = true)
     public static SoundEffectCatalog fromRom(byte[] romData) {
-        return fromRom(new Rom(romData));
+        return fromRom(Rom.unchecked(romData));
     }
 }

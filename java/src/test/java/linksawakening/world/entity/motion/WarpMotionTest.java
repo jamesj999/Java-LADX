@@ -15,7 +15,7 @@ final class WarpMotionTest {
 
     @Test
     void dungeonWarpUsesRomPairAndRequiresClearedMiniboss() throws Exception {
-        WarpMotion motion = new WarpMotion(loadRom());
+        WarpMotion motion = new WarpMotion(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntity entity = entity(0x48, 0x40);
 
         WarpMotion.Update gated = motion.advance(new WarpFrame(entity, 0, 0, 0x01, 0x28, false, 0x48, 0x40, 0));
@@ -64,7 +64,7 @@ final class WarpMotionTest {
 
     @Test
     void dungeonWarpSelectsTheOtherRomPairEntryForAnotherDungeon() throws Exception {
-        WarpMotion motion = new WarpMotion(loadRom());
+        WarpMotion motion = new WarpMotion(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         RoomEntity entity = entity(0x48, 0x40);
         WarpMotion.Update armed = motion.advance(new WarpFrame(entity, 2, 0, 0x00, 0x17, true, 0x48, 0x40, 0));
         assertEquals(3, armed.state());

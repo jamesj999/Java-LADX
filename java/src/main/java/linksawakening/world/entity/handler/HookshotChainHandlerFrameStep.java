@@ -15,16 +15,14 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.HookshotChainMotion;
 
-/** Per-invocation scratch for HookshotChainHandler.phase1HookshotChain; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for HookshotChainHandler.phase1HookshotChain; values are assigned in source order. */
 final class HookshotChainHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
     private linksawakening.world.entity.EntitySlotExecution slotState;
     private linksawakening.world.entity.EntityFrameInputs frameInput;
     private linksawakening.world.entity.EntityTimerGates timerGates;
 
-    HookshotChainHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-        this.state = state;
-    }
+    HookshotChainHandlerFrameStep() {}
 
     boolean run() {
         if (!prepareChain()) return completedResult;
@@ -273,5 +271,38 @@ final class HookshotChainHandlerFrameStep {
                 step.state().y(),
                 slotState.entity().spriteVariant()));
         return true;
+    }
+
+    private boolean inUse;
+
+    boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        if (inUse) {
+            return new HookshotChainHandlerFrameStep().run(state);
+        }
+        inUse = true;
+        slotState = null;
+        frameInput = null;
+        timerGates = null;
+        hookshotState = null;
+        nextPosition = null;
+        step = null;
+        unmasked = false;
+        collisionResult = null;
+        blocked = false;
+        completedResult = false;
+        this.state = state;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.state = null;
+            this.slotState = null;
+            this.frameInput = null;
+            this.timerGates = null;
+            this.hookshotState = null;
+            this.nextPosition = null;
+            this.step = null;
+            this.collisionResult = null;
+        }
     }
 }

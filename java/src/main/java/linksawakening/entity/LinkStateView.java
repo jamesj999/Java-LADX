@@ -1,239 +1,251 @@
 package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
 
-/** Source-compatible Link operations delegated to their state owners. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkStateView {
-    final LinkAssembly assembly;
-    final LinkAnimator linkAnimator;
-    final LinkSideView linkSideView;
-    final LinkStateMachine linkStateMachine;
-    final LinkEquipment linkEquipment;
-    final LinkEntityEffects linkEntityEffects;
-    final LinkMotion linkMotion;
-    final LinkAirborne linkAirborne;
-    final LinkSwimming linkSwimming;
-    final LinkDamage linkDamage;
-    final LinkAnimationState linkAnimationState;
-    final LinkItemState linkItemState;
-    final LinkGroundMotion linkGroundMotion;
-    final LinkSignals linkSignals;
-    final LinkRecovery linkRecovery;
-    final LinkServices linkServices;
-    final LinkControls linkControls;
-    final DialogGotItemSequence dialogGotItemSequence;
+    /** @deprecated Implemented directly by the aggregate; use its composed API. */
+    @Deprecated(forRemoval = true)
+    protected abstract LinkRoles legacyRoles();
 
-    LinkStateView(LinkServices services) {
-        assembly = new LinkAssembly(services);
-        linkAnimator = assembly.linkAnimator.get();
-        linkSideView = assembly.linkSideView.get();
-        linkStateMachine = assembly.linkStateMachine.get();
-        linkEquipment = assembly.linkEquipment.get();
-        linkEntityEffects = assembly.linkEntityEffects.get();
-        linkMotion = assembly.linkMotion.get();
-        linkAirborne = assembly.linkAirborne.get();
-        linkSwimming = assembly.linkSwimming.get();
-        linkDamage = assembly.linkDamage.get();
-        linkAnimationState = assembly.linkAnimationState.get();
-        linkItemState = assembly.linkItemState.get();
-        linkGroundMotion = assembly.linkGroundMotion.get();
-        linkSignals = assembly.linkSignals.get();
-        linkRecovery = assembly.linkRecovery.get();
-        linkServices = assembly.linkServices.get();
-        linkControls = assembly.linkControls.get();
-        dialogGotItemSequence = assembly.dialogGotItemSequence.get();
-    }
-
+    /** @deprecated Use sideView().setSideScrolling instead. */
+    @Deprecated(forRemoval = true)
     public void setSideScrolling(boolean enabled) {
-        linkSideView.accessSetSideScrolling(enabled);
+        legacyRoles().sideView().setSideScrolling(enabled);
     }
 
+    /** @deprecated Use motion().debugNoClip instead. */
+    @Deprecated(forRemoval = true)
     public boolean debugNoClip() {
-        return linkStateMachine.accessDebugNoClip();
+        return legacyRoles().motion().debugNoClip();
     }
 
+    /** @deprecated Use status().setCollisionIgnoreFrames instead. */
+    @Deprecated(forRemoval = true)
     public void setCollisionIgnoreFrames(int frames) {
-        linkDamage.accessSetCollisionIgnoreFrames(frames);
+        legacyRoles().status().setCollisionIgnoreFrames(frames);
     }
 
+    /** @deprecated Use status().setNormalRecoilRoomBoundaries instead. */
+    @Deprecated(forRemoval = true)
     public void setNormalRecoilRoomBoundaries(boolean normalBoundaries) {
-        linkDamage.accessSetNormalRecoilRoomBoundaries(normalBoundaries);
+        legacyRoles().status().setNormalRecoilRoomBoundaries(normalBoundaries);
     }
 
+    /** @deprecated Use sideView().standingOnSideViewEntity instead. */
+    @Deprecated(forRemoval = true)
     public boolean standingOnSideViewEntity() {
-        return linkSideView.accessStandingOnSideViewEntity();
+        return legacyRoles().sideView().standingOnSideViewEntity();
     }
 
+    /** @deprecated Use equipment().markRomLinkPushing instead. */
+    @Deprecated(forRemoval = true)
     public void markRomLinkPushing(int countdown) {
-        linkItemState.accessMarkRomLinkPushing(countdown);
+        legacyRoles().equipment().markRomLinkPushing(countdown);
     }
 
+    /** @deprecated Use equipment().tickRomLinkPushing instead. */
+    @Deprecated(forRemoval = true)
     public void tickRomLinkPushing() {
-        linkItemState.accessTickRomLinkPushing();
+        legacyRoles().equipment().tickRomLinkPushing();
     }
 
+    /** @deprecated Use equipment().isRomLinkPushing instead. */
+    @Deprecated(forRemoval = true)
     public boolean isRomLinkPushing() {
-        return linkItemState.accessIsRomLinkPushing();
+        return legacyRoles().equipment().isRomLinkPushing();
     }
 
-    public boolean isTarinShieldPresentationVisible() {
-        return linkAnimator.accessIsTarinShieldPresentationVisible();
-    }
-
-    public int[] tarinShieldPalette() {
-        return linkAnimator.accessTarinShieldPalette();
-    }
-
+    /** @deprecated Use animation().isMarinWakeUpBedVisible instead. */
+    @Deprecated(forRemoval = true)
     public boolean isMarinWakeUpBedVisible() {
-        return linkAnimator.accessIsMarinWakeUpBedVisible();
+        return legacyRoles().animation().isMarinWakeUpBedVisible();
     }
 
-    public int marinWakeUpBedVariant() {
-        return linkAnimator.accessMarinWakeUpBedVariant();
-    }
-
+    /** @deprecated Use animation().romEntityZ instead. */
+    @Deprecated(forRemoval = true)
     public int romEntityZ() {
-        return linkAnimationState.accessRomEntityZ();
+        return legacyRoles().animation().romEntityZ();
     }
 
-    public boolean isLikeLikeCaptured() {
-        return linkEntityEffects.accessIsLikeLikeCaptured();
-    }
-
+    /** @deprecated Use status().recoveryBlocksInput instead. */
+    @Deprecated(forRemoval = true)
     public boolean recoveryBlocksInput() {
-        return linkSignals.accessRecoveryBlocksInput();
+        return legacyRoles().status().recoveryBlocksInput();
     }
 
+    /** @deprecated Use status().consumePitWarp instead. */
+    @Deprecated(forRemoval = true)
     public boolean consumePitWarp() {
-        return linkSignals.accessConsumePitWarp();
+        return legacyRoles().status().consumePitWarp();
     }
 
+    /** @deprecated Use status().pitWarpPending instead. */
+    @Deprecated(forRemoval = true)
     public boolean pitWarpPending() {
-        return linkSignals.accessPitWarpPending();
+        return legacyRoles().status().pitWarpPending();
     }
 
+    /** @deprecated Use position().consumeDoorWarp instead. */
+    @Deprecated(forRemoval = true)
     public boolean consumeDoorWarp() {
-        return linkMotion.accessConsumeDoorWarp();
+        return legacyRoles().position().consumeDoorWarp();
     }
 
+    /** @deprecated Use airborne().setPitWarpArrival instead. */
+    @Deprecated(forRemoval = true)
     public void setPitWarpArrival(int z) {
-        linkAirborne.accessSetPitWarpArrival(z);
+        legacyRoles().airborne().setPitWarpArrival(z);
     }
 
+    /** @deprecated Use status().consumeWaterSplash instead. */
+    @Deprecated(forRemoval = true)
     public WaterSplash consumeWaterSplash() {
-        return linkSignals.accessConsumeWaterSplash();
+        return legacyRoles().status().consumeWaterSplash();
     }
 
+    /** @deprecated Use status().isPassingOut instead. */
+    @Deprecated(forRemoval = true)
     public boolean isPassingOut() {
-        return linkRecovery.accessIsPassingOut();
+        return legacyRoles().status().isPassingOut();
     }
 
+    /** @deprecated Use status().gameOverScreenPending instead. */
+    @Deprecated(forRemoval = true)
     public boolean gameOverScreenPending() {
-        return linkRecovery.accessGameOverScreenPending();
+        return legacyRoles().status().gameOverScreenPending();
     }
 
+    /** @deprecated Use status().gameOverStage instead. */
+    @Deprecated(forRemoval = true)
     public int gameOverStage() {
-        return linkRecovery.accessGameOverStage();
+        return legacyRoles().status().gameOverStage();
     }
 
+    /** @deprecated Use status().gameOverCountdown instead. */
+    @Deprecated(forRemoval = true)
     public int gameOverCountdown() {
-        return linkRecovery.accessGameOverCountdown();
+        return legacyRoles().status().gameOverCountdown();
     }
 
+    /** @deprecated Use status().presentGameOverStage instead. */
+    @Deprecated(forRemoval = true)
     public void presentGameOverStage(int stage, int countdown) {
-        linkRecovery.accessPresentGameOverStage(stage, countdown);
+        legacyRoles().status().presentGameOverStage(stage, countdown);
     }
 
+    /** @deprecated Use status().passOutCountdown instead. */
+    @Deprecated(forRemoval = true)
     public int passOutCountdown() {
-        return linkRecovery.accessPassOutCountdown();
+        return legacyRoles().status().passOutCountdown();
     }
 
+    /** @deprecated Use status().passOutBgPaletteEffectAddress instead. */
+    @Deprecated(forRemoval = true)
     public int passOutBgPaletteEffectAddress() {
-        return linkRecovery.accessPassOutBgPaletteEffectAddress();
+        return legacyRoles().status().passOutBgPaletteEffectAddress();
     }
 
+    /** @deprecated Use status().passOutPaletteEffect instead. */
+    @Deprecated(forRemoval = true)
     public int passOutPaletteEffect() {
-        return linkRecovery.accessPassOutPaletteEffect();
+        return legacyRoles().status().passOutPaletteEffect();
     }
 
-    public int passOutPaletteFrames() {
-        return linkRecovery.accessPassOutPaletteFrames();
-    }
-
+    /** @deprecated Use status().finishGameOver instead. */
+    @Deprecated(forRemoval = true)
     public void finishGameOver() {
-        linkRecovery.accessFinishGameOver();
+        legacyRoles().status().finishGameOver();
     }
 
+    /** @deprecated Use status().beginPassOut instead. */
+    @Deprecated(forRemoval = true)
     public void beginPassOut() {
-        linkRecovery.accessBeginPassOut();
+        legacyRoles().status().beginPassOut();
     }
 
+    /** @deprecated Use status().presentPassOut instead. */
+    @Deprecated(forRemoval = true)
     public void presentPassOut(int countdown, int animationState, int paletteEffect) {
-        linkRecovery.accessPresentPassOut(countdown, animationState, paletteEffect);
+        legacyRoles().status().presentPassOut(countdown, animationState, paletteEffect);
     }
 
+    /** @deprecated Use airborne().romMotionState instead. */
+    @Deprecated(forRemoval = true)
     public int romMotionState() {
-        return linkAirborne.accessRomMotionState();
+        return legacyRoles().airborne().romMotionState();
     }
 
-    public boolean isSwimming() {
-        return linkStateMachine.accessIsSwimming();
-    }
-
-    public boolean isDiving() {
-        return linkStateMachine.accessIsDiving();
-    }
-
+    /** @deprecated Use motion().romPhysicsModifier instead. */
+    @Deprecated(forRemoval = true)
     public int romPhysicsModifier() {
-        return linkStateMachine.accessRomPhysicsModifier();
+        return legacyRoles().motion().romPhysicsModifier();
     }
 
+    /** @deprecated Use equipment().romAttackStepAnimationCountdown instead. */
+    @Deprecated(forRemoval = true)
     public int romAttackStepAnimationCountdown() {
-        return linkItemState.accessRomAttackStepAnimationCountdown();
+        return legacyRoles().equipment().romAttackStepAnimationCountdown();
     }
 
+    /** @deprecated Use position().romCollisionType instead. */
+    @Deprecated(forRemoval = true)
     public int romCollisionType() {
-        return linkMotion.accessRomCollisionType();
+        return legacyRoles().position().romCollisionType();
     }
 
+    /** @deprecated Use position().romCollisionProbePixelX instead. */
+    @Deprecated(forRemoval = true)
     public int romCollisionProbePixelX() {
-        return linkMotion.accessRomCollisionProbePixelX();
+        return legacyRoles().position().romCollisionProbePixelX();
     }
 
+    /** @deprecated Use position().romCollisionProbePixelY instead. */
+    @Deprecated(forRemoval = true)
     public int romCollisionProbePixelY() {
-        return linkMotion.accessRomCollisionProbePixelY();
+        return legacyRoles().position().romCollisionProbePixelY();
     }
 
+    /** @deprecated Use position().romSpeedX instead. */
+    @Deprecated(forRemoval = true)
     public int romSpeedX() {
-        return linkMotion.accessRomSpeedX();
+        return legacyRoles().position().romSpeedX();
     }
 
+    /** @deprecated Use position().romSpeedY instead. */
+    @Deprecated(forRemoval = true)
     public int romSpeedY() {
-        return linkMotion.accessRomSpeedY();
+        return legacyRoles().position().romSpeedY();
     }
 
-    public int pegasusBootsChargeMeter() {
-        return linkStateMachine.accessPegasusBootsChargeMeter();
-    }
-
+    /** @deprecated Use motion().pegasusBootsCollisionCountdown instead. */
+    @Deprecated(forRemoval = true)
     public int pegasusBootsCollisionCountdown() {
-        return linkStateMachine.accessPegasusBootsCollisionCountdown();
+        return legacyRoles().motion().pegasusBootsCollisionCountdown();
     }
 
+    /** @deprecated Use motion().pegasusBootsCollisionPosX instead. */
+    @Deprecated(forRemoval = true)
     public int pegasusBootsCollisionPosX() {
-        return linkStateMachine.accessPegasusBootsCollisionPosX();
+        return legacyRoles().motion().pegasusBootsCollisionPosX();
     }
 
+    /** @deprecated Use motion().pegasusBootsCollisionPosY instead. */
+    @Deprecated(forRemoval = true)
     public int pegasusBootsCollisionPosY() {
-        return linkStateMachine.accessPegasusBootsCollisionPosY();
+        return legacyRoles().motion().pegasusBootsCollisionPosY();
     }
 
+    /** @deprecated Use motion().setGelClinging instead. */
+    @Deprecated(forRemoval = true)
     public void setGelClinging(boolean clinging, int worldFrame) {
-        linkStateMachine.accessSetGelClinging(clinging, worldFrame);
+        legacyRoles().motion().setGelClinging(clinging, worldFrame);
     }
 
+    /** @deprecated Use position().romSwordCollisionY instead. */
+    @Deprecated(forRemoval = true)
     public int romSwordCollisionY() {
-        return linkMotion.accessRomSwordCollisionY();
+        return legacyRoles().position().romSwordCollisionY();
     }
 }

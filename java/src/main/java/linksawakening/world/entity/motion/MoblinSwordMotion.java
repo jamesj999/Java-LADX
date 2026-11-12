@@ -7,7 +7,7 @@ import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
-/** ROM bank-$07 Moblin Sword state machine plus bank-$03 falling presentation state. */
+/** MoblinSwordEntityHandler ($07:7941), plus bank-$03 falling presentation state. */
 public final class MoblinSwordMotion {
     private int swordMoblinAlertingSoundCounter;
 
@@ -32,8 +32,10 @@ public final class MoblinSwordMotion {
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // GetEntityPrivateCountdown1: pause facing Link before the pursuit movement.
+    private final int[] alertCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // wEntitiesPrivateState3Table, func_007_79D7: one-time hideout dialog latch.
+    private final int[] hideoutDialogShown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -53,7 +55,7 @@ public final class MoblinSwordMotion {
     public void initialize(int slot, int activeX) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
+        alertCountdown[slot] = 0;
         int initialDirection = (activeX & 0x10) != 0 ? 0 : 3;
         direction[slot] = initialDirection ^ 0x01;
         speedX[slot] = 0;
@@ -112,8 +114,8 @@ public final class MoblinSwordMotion {
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (alertCountdown[slot] > 0) {
+            alertCountdown[slot]--;
         }
 
         if (mapId == MAP_BOWWOW_HIDEOUT || ignoreHitsCountdown > 0 || alertingSoundCounter > 0) {
@@ -153,9 +155,9 @@ public final class MoblinSwordMotion {
             }
         }
         if (state[slot] == 2 && !enteredStateTwo) {
-            if (privateCountdown1[slot] != 0) {
-                if (mapId == MAP_BOWWOW_HIDEOUT && transitionSequenceCounter == 0x04 && privateState3[slot] == 0) {
-                    privateState3[slot] = 1;
+            if (alertCountdown[slot] != 0) {
+                if (mapId == MAP_BOWWOW_HIDEOUT && transitionSequenceCounter == 0x04 && hideoutDialogShown[slot] == 0) {
+                    hideoutDialogShown[slot] = 1;
                     dialogRequested = true;
                 }
                 updated = faceLink(updated, linkEntityX, linkEntityY);
@@ -164,6 +166,7 @@ public final class MoblinSwordMotion {
                     transitionCountdown[slot] = 0x18;
                     state[slot] = 0;
                 }
+                // Both ROM variant calls advance inertia; do not collapse them.
                 updated = setVariant(updated);
                 updated = setVariant(updated);
                 updated = moveAndRender(updated, backgroundInteraction, ignoreHitsCountdown, frameCounter, false);
@@ -196,11 +199,11 @@ public final class MoblinSwordMotion {
     }
 
     public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+        return alertCountdown[slot];
     }
 
     public int privateState3(int slot) {
-        return privateState3[slot];
+        return hideoutDialogShown[slot];
     }
 
     public int direction(int slot) {
@@ -222,8 +225,8 @@ public final class MoblinSwordMotion {
     public void clear(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateState3[slot] = 0;
+        alertCountdown[slot] = 0;
+        hideoutDialogShown[slot] = 0;
         direction[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -236,7 +239,7 @@ public final class MoblinSwordMotion {
 
     private void enterAlertState(int slot) {
         if (state[slot] != 2) {
-            privateCountdown1[slot] = 0x10;
+            alertCountdown[slot] = 0x10;
         }
         state[slot] = 2;
         transitionCountdown[slot] = 0x80;

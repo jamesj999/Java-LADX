@@ -49,8 +49,7 @@ final class MoblinSwordHandler {
             RoomEntityBackgroundInteraction swordBackgroundInteraction =
                     state.background().interaction();
             if (swordBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                swordBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                swordBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             MoblinSwordMotion.Update moblinSwordUpdate = state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new)
                     .advance(new MoblinSwordFrame(

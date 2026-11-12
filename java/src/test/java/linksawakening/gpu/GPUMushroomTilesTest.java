@@ -2,6 +2,7 @@ package linksawakening.gpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +15,13 @@ final class GPUMushroomTilesTest {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
-        gpu.updatePowderInventoryTiles(rom, true);
+        gpu.loadBaseTiles(Rom.of(rom));
+        gpu.updatePowderInventoryTiles(Rom.of(rom), true);
         assertPair(gpu, rom, 0x68C0);
-        gpu.loadBaseOverworldTiles(rom);
-        gpu.updatePowderInventoryTiles(rom, true);
+        gpu.loadBaseOverworldTiles(Rom.of(rom));
+        gpu.updatePowderInventoryTiles(Rom.of(rom), true);
         assertPair(gpu, rom, 0x68C0);
-        gpu.updatePowderInventoryTiles(rom, false);
+        gpu.updatePowderInventoryTiles(Rom.of(rom), false);
         assertPair(gpu, rom, 0x48E0);
     }
 

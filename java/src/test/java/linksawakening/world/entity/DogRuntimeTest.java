@@ -61,7 +61,7 @@ final class DogRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
@@ -246,7 +246,7 @@ final class DogRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         AtomicInteger terrainCalls = new AtomicInteger();
 

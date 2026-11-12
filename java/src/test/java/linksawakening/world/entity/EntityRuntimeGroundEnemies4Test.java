@@ -20,7 +20,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void snakeBackgroundCollisionResetsTheRomStateAndPrivateRecoveryWindow() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -53,7 +53,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void snakeUsesHealthGroupZeroContactAndSwordValues() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xA1, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -86,7 +86,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleUsesTheRomRestWalkAndAnimationStateMachine() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -134,7 +134,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleRestingKeepsTheLastHandlerSelectedAnimation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -167,7 +167,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleFlipsOnShieldContactAndDoesNotTakeDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -220,7 +220,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleShieldChecksAllFourDirections() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         int[] linkX = {56, 72, 64, 64};
         int[] linkY = {64, 64, 72, 59};
         int[] flipX = {0x10, 0xF0, 0, 0};
@@ -257,7 +257,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleNormalHandlerUsesTheRomSwordPokeOptions() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -295,7 +295,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void spikedBeetleUsesTheRomHealthAndContactDamageValues() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x2C, EntityRoomLoader.RoomTable.INDOORS_A, 0x00);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -320,7 +320,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void polsVoiceUsesTheRomJumpLoopAndAnimation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -371,7 +371,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void polsVoiceForcesTheRomIgnoreHitsByteOnlyAroundBackgroundInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -412,7 +412,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void polsVoiceUsesTheRomBalladOcarinaDeathPreamble() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -443,7 +443,7 @@ final class EntityRuntimeGroundEnemies4Test extends EntityRuntimeTestSupport {
     void polsVoiceUsesTheRomHealthAndContactDamageValues() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

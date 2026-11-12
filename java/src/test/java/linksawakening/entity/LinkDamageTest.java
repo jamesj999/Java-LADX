@@ -16,37 +16,37 @@ final class LinkDamageTest {
                 .player(player)
                 .items(null)
                 .build();
-        link.setPixelPosition(64, 64);
+        link.position().setPixelPosition(64, 64);
         return link;
     }
 
     @Test
     void recoilConsumesPendingSignedSpeedAndPreservesFractionalPosition() {
         Link link = link(null);
-        link.applyRomSpeed(0xFF, 0x08);
-        link.setCollisionIgnoreFrames(2);
+        link.position().applyRomSpeed(0xFF, 0x08);
+        link.status().setCollisionIgnoreFrames(2);
         link.linkDamage.tickRecoil();
-        assertEquals(63, link.pixelX());
-        assertEquals(64, link.pixelY());
-        assertEquals(0xFF, link.romSpeedX());
+        assertEquals(63, link.position().pixelX());
+        assertEquals(64, link.position().pixelY());
+        assertEquals(0xFF, link.position().romSpeedX());
         assertFalse(link.linkMotion.forcedSpeedPending);
         assertTrue(link.linkDamage.hasRecoil());
         link.linkDamage.tickRecoil();
-        assertEquals(65, link.pixelY());
+        assertEquals(65, link.position().pixelY());
         assertFalse(link.linkDamage.hasRecoil());
     }
 
     @Test
     void roomBoundaryCancelsRecoilAndRestoresBothAxes() {
         Link link = link(null);
-        link.setPixelPosition(80, 115);
-        link.applyRomSpeed(8, 32);
-        link.setCollisionIgnoreFrames(2);
+        link.position().setPixelPosition(80, 115);
+        link.position().applyRomSpeed(8, 32);
+        link.status().setCollisionIgnoreFrames(2);
         link.linkDamage.tickRecoil();
-        assertEquals(80, link.pixelX());
-        assertEquals(115, link.pixelY());
-        assertEquals(0, link.romSpeedX());
-        assertEquals(0, link.romSpeedY());
+        assertEquals(80, link.position().pixelX());
+        assertEquals(115, link.position().pixelY());
+        assertEquals(0, link.position().romSpeedX());
+        assertEquals(0, link.position().romSpeedY());
         assertFalse(link.linkDamage.hasRecoil());
     }
 
@@ -54,9 +54,9 @@ final class LinkDamageTest {
     void invincibilityTicksIndependentlyOfRecoil() {
         PlayerState player = new PlayerState();
         Link link = link(player);
-        player.setInvincibilityCounter(2);
+        player.vitals().setInvincibilityCounter(2);
         link.linkDamage.tickInvincibility();
-        assertEquals(1, player.invincibilityCounter());
+        assertEquals(1, player.vitals().invincibilityCounter());
         assertFalse(link.linkDamage.hasRecoil());
     }
 }

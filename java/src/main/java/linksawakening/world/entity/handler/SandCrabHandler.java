@@ -35,8 +35,7 @@ final class SandCrabHandler {
             RoomEntityBackgroundInteraction sandCrabBackgroundInteraction =
                     state.background().interaction();
             if (sandCrabBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                sandCrabBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                sandCrabBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             SandCrabMotion.Update sandCrabUpdate = state.motion(SandCrabMotion.class, SandCrabMotion::new)
                     .advance(

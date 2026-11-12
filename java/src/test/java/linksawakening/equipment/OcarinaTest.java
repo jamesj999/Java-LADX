@@ -15,8 +15,8 @@ final class OcarinaTest {
     @Test
     void startsTheRomBalladCountdownAndSound() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x04);
-        player.setSelectedSongIndex(0);
+        player.progression().setOcarinaSongFlags(0x04);
+        player.progression().setSelectedSongIndex(0);
         RecordingTarget target = new RecordingTarget();
         List<GameplaySoundEvent> sounds = new ArrayList<>();
         Ocarina ocarina = new Ocarina(player, sounds::add, target);
@@ -34,17 +34,17 @@ final class OcarinaTest {
     @Test
     void selectsTheRomMamboAndFrogDurations() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x07);
+        player.progression().setOcarinaSongFlags(0x07);
         RecordingTarget target = new RecordingTarget();
         Ocarina ocarina = new Ocarina(player, event -> {}, target);
 
-        player.setSelectedSongIndex(1);
+        player.progression().setSelectedSongIndex(1);
         ocarina.onPress();
         assertEquals(0xD0, target.countdown);
         assertEquals(GameplaySoundEvent.OCARINA_MAMBO, target.sound);
 
         target.playing = false;
-        player.setSelectedSongIndex(2);
+        player.progression().setSelectedSongIndex(2);
         ocarina.onPress();
         assertEquals(0xBB, target.countdown);
         assertEquals(GameplaySoundEvent.OCARINA_FROG, target.sound);

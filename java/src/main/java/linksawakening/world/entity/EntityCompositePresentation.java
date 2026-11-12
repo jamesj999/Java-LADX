@@ -6,7 +6,6 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
@@ -18,16 +17,17 @@ final class EntityCompositePresentation {
         var runtime = owner.runtime;
         ThreeOfAKindMotion.PuzzleResult result = runtime.motions()
                 .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                .resolvePuzzle(Arrays.asList(runtime.slots()), runtime.physicsTables()::readEnemyTransitionCountdown);
+                .resolvePuzzle(owner.puzzleEntities(), owner.puzzleCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
-        int coordinatorSlot = Arrays.stream(runtime.slots())
-                .filter(entity -> entity.status() == EntityStatus.ACTIVE
-                        && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND)
-                .mapToInt(RoomEntity::slot)
-                .findFirst()
-                .orElse(0);
+        int coordinatorSlot = 0;
+        for (RoomEntity entity : runtime.slots()) {
+            if (entity.status() == EntityStatus.ACTIVE && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
+                coordinatorSlot = entity.slot();
+                break;
+            }
+        }
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
                 ? runtime.motions()
                         .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
@@ -77,7 +77,7 @@ final class EntityCompositePresentation {
 
     static void updateBowWowChain(EntitySlotProperties owner, int frame) {
         var runtime = owner.runtime;
-        List<BowWowChain.Entry> entries = new ArrayList<>();
+        List<BowWowChain.Entry> entries = null;
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
         if (runtime.roomVariables().readTransitionSequenceCounter() != 4
@@ -103,6 +103,7 @@ final class EntityCompositePresentation {
                                     .get(BowWowMotion.class, BowWowMotion::new)
                                     .readBowWowState(),
                             moving);
+            if (entries == null) entries = new ArrayList<>();
             entries.addAll(runtime.motions()
                     .get(BowWowMotion.class, BowWowMotion::new)
                     .chainEntries(
@@ -112,6 +113,6 @@ final class EntityCompositePresentation {
                                     .readBowWowState(),
                             frame));
         }
-        owner.writeBowWowChainOam(List.copyOf(entries));
+        owner.writeBowWowChainOam(entries == null ? List.of() : List.copyOf(entries));
     }
 }

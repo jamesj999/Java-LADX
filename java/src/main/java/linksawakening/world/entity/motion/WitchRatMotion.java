@@ -50,9 +50,8 @@ public final class WitchRatMotion {
             int transitionCountdown,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction) {
-        return new WitchRatFrameStep(
-                        this, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction)
-                .run();
+        return witchRatFrameStep.run(
+                this, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
     }
 
     public int state(int slot) {
@@ -175,4 +174,6 @@ public final class WitchRatMotion {
     }
 
     record PositionAndCollision(int x, int y, int collisionFlags) {}
+
+    final WitchRatFrameStep witchRatFrameStep = new WitchRatFrameStep();
 }

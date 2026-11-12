@@ -67,7 +67,7 @@ public final class WitchMotion {
     final boolean[] musicTrackTiming = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, int transitionCountdown, Input input) {
-        return new WitchStep(this, source, transitionCountdown, input).run();
+        return witchStep.run(this, source, transitionCountdown, input);
     }
 
     static boolean nearbyAndFacing(RoomEntity entity, Input input) {
@@ -99,4 +99,6 @@ public final class WitchMotion {
         return EntitySnapshots.withMotion(
                 source, source.x(), y, variant, source.entityFlipAttribute(), source.z(), -1, false);
     }
+
+    final WitchStep witchStep = new WitchStep();
 }

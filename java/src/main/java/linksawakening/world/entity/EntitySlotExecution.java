@@ -180,4 +180,26 @@ public final class EntitySlotExecution {
     public int renderFlipAttribute(int value) {
         return renderFlipAttribute = value;
     }
+
+    void reset() {
+        lifted = null;
+        liftedRomDirection = 0;
+        carryingEntity = false;
+        index = 0;
+        entity = null;
+        moldormIntroOpenedThisFrame = false;
+        rollingBonesHitThisFrame = false;
+        kanaletLeafProducer = false;
+        originalEntity = null;
+        initialStatus = null;
+        wasInitializing = false;
+        status = null;
+        keyDropTransitionActive = false;
+        preAppliedGroundResult = null;
+        applyGenericGroundInteraction = false;
+        updated = null;
+        genericLinkPushPolicy = null;
+        variant = 0;
+        renderFlipAttribute = 0;
+    }
 }

@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import java.util.Objects;
 
-/** Per-invocation scratch for WitchRatMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for WitchRatMotion.advance; values are assigned in source order. */
 final class WitchRatFrameStep {
-    private final WitchRatMotion owner;
+    private WitchRatMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
     private int transitionCountdown;
@@ -18,20 +18,7 @@ final class WitchRatFrameStep {
     private int collisionFlags;
     private boolean appliesBackgroundInteraction;
 
-    WitchRatFrameStep(
-            WitchRatMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int transitionCountdown,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.transitionCountdown = transitionCountdown;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundInteraction = backgroundInteraction;
-    }
+    WitchRatFrameStep() {}
 
     linksawakening.world.entity.motion.WitchRatMotion.Update run() {
         WitchRatMotion.checkType(entity);
@@ -134,5 +121,45 @@ final class WitchRatFrameStep {
         owner.storedSpriteVariant[slot] = 0x00;
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.WitchRatMotion.Update run(
+            WitchRatMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
+        if (inUse) {
+            return new WitchRatFrameStep()
+                    .run(owner, entity, frameCounter, transitionCountdown, randomByteSupplier, backgroundInteraction);
+        }
+        inUse = true;
+        slot = 0;
+        countdown = 0;
+        renderedVariant = 0;
+        z = 0;
+        wrappedZ = false;
+        collisionFlags = 0;
+        appliesBackgroundInteraction = false;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.transitionCountdown = transitionCountdown;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundInteraction = backgroundInteraction;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.completedResult = null;
+        }
     }
 }

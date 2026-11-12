@@ -46,7 +46,7 @@ final class GenieBodyBehavior {
             int linkEntityX,
             int linkEntityY,
             IntSupplier randomByteSupplier) {
-        new GenieBodyStep(owner, body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier).run();
+        owner.genieBodyStep.run(owner, body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier);
     }
 
     static int spawnGenieAimedFireball(

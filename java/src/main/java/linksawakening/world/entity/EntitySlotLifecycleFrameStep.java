@@ -13,9 +13,9 @@ import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.entity.motion.KeyDropPointMotion;
 import linksawakening.world.room.ChestContentsTable;
 
-/** Per-invocation scratch for EntitySlotLifecycle.collectIfNeeded; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for EntitySlotLifecycle.collectIfNeeded; values are assigned in source order. */
 final class EntitySlotLifecycleFrameStep {
-    private final EntitySlotLifecycle owner;
+    private EntitySlotLifecycle owner;
     private linksawakening.world.entity.EntityPickupFrame inputs;
     private int frameCounter;
     private int linkEntityX;
@@ -31,10 +31,7 @@ final class EntitySlotLifecycleFrameStep {
     private int swordHeight;
     private int romDirection;
 
-    EntitySlotLifecycleFrameStep(EntitySlotLifecycle owner, linksawakening.world.entity.EntityPickupFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    EntitySlotLifecycleFrameStep() {}
 
     linksawakening.world.entity.EntityPickupEvent run() {
         frameCounter = inputs.frameCounter();
@@ -155,5 +152,37 @@ final class EntitySlotLifecycleFrameStep {
                         || (floating
                                 ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
                                 : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))));
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.EntityPickupEvent run(
+            EntitySlotLifecycle owner, linksawakening.world.entity.EntityPickupFrame inputs) {
+        if (inUse) {
+            return new EntitySlotLifecycleFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkAirborne = false;
+        linkInteractive = false;
+        linkDirection = 0;
+        linkZ = 0;
+        swordActive = false;
+        swordX = 0;
+        swordWidth = 0;
+        swordY = 0;
+        swordHeight = 0;
+        romDirection = 0;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+        }
     }
 }

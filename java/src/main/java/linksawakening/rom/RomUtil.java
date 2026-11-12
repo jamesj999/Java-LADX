@@ -25,7 +25,8 @@ public final class RomUtil {
     /** @deprecated Use {@link #loadPalettesFromRom(Rom, RomAddress, int)}. */
     @Deprecated(forRemoval = true)
     public static int[][] loadPalettesFromRom(byte[] romData, int bank, int address, int paletteCount) {
-        return loadPalettesFromRom(new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), paletteCount);
+        return loadPalettesFromRom(
+                Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), paletteCount);
     }
 
     public static int[][] loadPalettesFromRom(Rom rom, RomAddress address, int paletteCount) {
@@ -36,7 +37,7 @@ public final class RomUtil {
     @Deprecated(forRemoval = true)
     public static int[] decodeBackgroundFromRom(byte[] romData, int bank, int address, int tilemapWidth, int filler) {
         return decodeBackgroundFromRom(
-                new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), tilemapWidth, filler);
+                Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), tilemapWidth, filler);
     }
 
     public static int[] decodeBackgroundFromRom(Rom rom, RomAddress address, int tilemapWidth, int filler) {

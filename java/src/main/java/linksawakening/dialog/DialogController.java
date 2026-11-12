@@ -1,5 +1,5 @@
 package linksawakening.dialog;
-/** Dialog controller behavior and state. */
+/** Public controller for DialogDrawNextCharacterHandler and the dialog opening/closing state machine. */
 public final class DialogController extends DialogTextFormatting {
     /** Named sound event values. */
     public enum SoundEvent {

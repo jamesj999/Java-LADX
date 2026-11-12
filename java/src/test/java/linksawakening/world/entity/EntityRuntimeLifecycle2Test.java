@@ -568,8 +568,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     void terminalStaticDeathRecordsKillAndDynamicDeathDoesNot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EnemyDropResolver resolver = new EnemyDropResolver(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        EnemyDropResolver resolver = new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         RoomEntityRuntime staticRuntime = RoomEntityRuntime.builder(snapshotAt(dyingEntity(0, 0, 0x09, catalog)))
                 .indoorRoom(false)
@@ -612,7 +612,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         snapshot(dyingEntity(0, 0, 0x09, catalog), dyingEntity(1, 1, 0x0B, catalog)))
                 .indoorRoom(false)
@@ -620,7 +620,8 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(0, EnemyDropResolver.ENTITY_NONE);
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(1, 0);
         AtomicInteger randomReads = new AtomicInteger();

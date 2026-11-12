@@ -121,16 +121,15 @@ public final class MiniMoldormMotion {
             RoomEntityBackgroundInteraction backgroundInteraction,
             IntSupplier randomByteSupplier,
             int frameCounter) {
-        return new MiniMoldormFrameStep(
-                        this,
-                        entity,
-                        transitionCountdown,
-                        ignoreHitsCountdown,
-                        flashCountdown,
-                        backgroundInteraction,
-                        randomByteSupplier,
-                        frameCounter)
-                .run();
+        return miniMoldormFrameStep.run(
+                this,
+                entity,
+                transitionCountdown,
+                ignoreHitsCountdown,
+                flashCountdown,
+                backgroundInteraction,
+                randomByteSupplier,
+                frameCounter);
     }
 
     int inertia(int slot) {
@@ -202,4 +201,6 @@ public final class MiniMoldormMotion {
         value &= 0xFF;
         return value < 0x80 ? value : value - 0x100;
     }
+
+    final MiniMoldormFrameStep miniMoldormFrameStep = new MiniMoldormFrameStep();
 }

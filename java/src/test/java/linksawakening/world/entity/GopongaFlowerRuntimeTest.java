@@ -51,7 +51,7 @@ final class GopongaFlowerRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x00, 0, 0, () -> 0));
@@ -81,7 +81,7 @@ final class GopongaFlowerRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
@@ -110,7 +110,7 @@ final class GopongaFlowerRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(

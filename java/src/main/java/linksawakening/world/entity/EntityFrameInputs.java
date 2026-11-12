@@ -222,4 +222,31 @@ public final class EntityFrameInputs {
     public int romLinkDirection(int value) {
         return romLinkDirection = value;
     }
+
+    void reset() {
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        collisionType = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        objectCollision = null;
+        linkPositionHistory = null;
+        linkZ = 0;
+        linkAirborne = false;
+        linkDirection = 0;
+        entityYOffset = 0;
+        projectileLinkState = null;
+        creditsGameplay = false;
+        swordCollisionActive = false;
+        swordX = 0;
+        swordWidth = 0;
+        swordY = 0;
+        swordHeight = 0;
+        frame = 0;
+        romCollisionType = 0;
+        hinoxBackgroundInteraction = null;
+        projectileEvents = null;
+        romLinkDirection = 0;
+    }
 }

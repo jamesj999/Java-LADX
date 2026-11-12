@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -15,25 +17,25 @@ final class HudOverlayTest {
     void equippedIconsUseTheSameColourPalettesAsMatchingInventoryIcons() throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
 
         PlayerState player = new PlayerState();
-        player.setItemB(PlayerState.INVENTORY_BOW);
-        player.setItemA(PlayerState.INVENTORY_HOOKSHOT);
-        player.setSubscreenItems(new int[] {
-            PlayerState.INVENTORY_BOW,
-            PlayerState.INVENTORY_HOOKSHOT,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY,
-            PlayerState.INVENTORY_EMPTY
+        player.inventory().setItemB(InventoryItem.BOW.romValue());
+        player.inventory().setItemA(InventoryItem.HOOKSHOT.romValue());
+        player.inventory().setSubscreenItems(new int[] {
+            InventoryItem.BOW.romValue(),
+            InventoryItem.HOOKSHOT.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue(),
+            InventoryItem.EMPTY.romValue()
         });
 
-        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(Rom.of(rom)), player);
         menu.requestToggle();
         for (int frame = 0; frame < 16; frame++) {
             menu.tick();

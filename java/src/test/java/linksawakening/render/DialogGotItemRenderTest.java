@@ -29,9 +29,9 @@ final class DialogGotItemRenderTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        link.setPixelPosition(0x30, 0x50);
-        link.presentToadstool();
-        link.tickDialogGotItem(false);
+        link.position().setPixelPosition(0x30, 0x50);
+        link.animation().presentToadstool();
+        link.airborne().tickDialogGotItem(false);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         StorySprites.dialogGotItem(link, palettes, new ScrollController()).render(new RenderContext(buffer, gpu));
         assertEquals(0xCC7722, pixel(buffer, 0x30, 0x42));

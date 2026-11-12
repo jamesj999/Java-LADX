@@ -146,7 +146,7 @@ public final class RoamingEnemyMotion {
     }
 
     private linksawakening.world.entity.motion.RoamingEnemyMotion.Update advanceInternal(RoamingEnemyFrame inputs) {
-        return new RoamingEnemyFrameStep(this, inputs).run();
+        return roamingEnemyFrameStep.run(this, inputs);
     }
 
     LaunchRequest launchRequestIfEligible(
@@ -285,4 +285,6 @@ public final class RoamingEnemyMotion {
 
     public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
             implements linksawakening.world.entity.event.EntityRequestBridge {}
+
+    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep();
 }

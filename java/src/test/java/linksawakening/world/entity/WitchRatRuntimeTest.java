@@ -57,7 +57,7 @@ final class WitchRatRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_WITCH_RAT));
@@ -159,7 +159,7 @@ final class WitchRatRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(

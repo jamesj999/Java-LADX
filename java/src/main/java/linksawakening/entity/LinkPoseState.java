@@ -8,7 +8,7 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 
-/** Shared state and dependency ownership for LinkAnimator. */
+/** Link pose state state and operations used by ROM {@code UpdateLinkAnimation}. */
 abstract class LinkPoseState {
 
     protected final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;

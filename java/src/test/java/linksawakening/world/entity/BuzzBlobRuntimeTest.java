@@ -63,7 +63,7 @@ final class BuzzBlobRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_BUZZ_BLOB));
@@ -175,7 +175,7 @@ final class BuzzBlobRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
@@ -209,7 +209,7 @@ final class BuzzBlobRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 0x40, 0x40, 0x10);
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0x0A);
@@ -244,7 +244,7 @@ final class BuzzBlobRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(

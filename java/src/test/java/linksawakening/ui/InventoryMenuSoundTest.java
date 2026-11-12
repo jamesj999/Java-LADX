@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.rom.Rom;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -56,7 +58,7 @@ final class InventoryMenuSoundTest {
     @Test
     void menuEventsUseTheRomJingleNamespaceAndIds() throws Exception {
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(loadRom()));
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(Rom.of(loadRom())));
         var events = List.of(
                 GameplaySoundEvent.INVENTORY_OPEN,
                 GameplaySoundEvent.INVENTORY_CLOSE,
@@ -115,8 +117,8 @@ final class InventoryMenuSoundTest {
     void ocarinaAnimationSuppressesValidationSounds() throws Exception {
         var sink = new RecordingGameplaySoundSink();
         var player = new PlayerState();
-        player.setSubscreenItems(new int[] {0, PlayerState.INVENTORY_OCARINA, 0, 0, 0, 0, 0, 0, 0, 0});
-        player.setOcarinaSongFlags(7);
+        player.inventory().setSubscreenItems(new int[] {0, InventoryItem.OCARINA.romValue(), 0, 0, 0, 0, 0, 0, 0, 0});
+        player.progression().setOcarinaSongFlags(7);
         var menu = new InventoryMenu(loadTilemap(), player, sink);
         openMenu(menu);
         menu.moveCursor(1, 0);
@@ -141,7 +143,7 @@ final class InventoryMenuSoundTest {
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
         try (InputStream stream = linksawakening.testing.TestRom.open()) {
-            return InventoryTilemapLoader.loadFromRom(stream.readAllBytes());
+            return InventoryTilemapLoader.loadFromRom(Rom.of(stream.readAllBytes()));
         }
     }
 

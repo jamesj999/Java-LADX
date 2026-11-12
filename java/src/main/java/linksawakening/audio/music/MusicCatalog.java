@@ -231,6 +231,6 @@ public final class MusicCatalog {
 
     @Deprecated(forRemoval = true)
     public static MusicCatalog fromRom(byte[] romData) {
-        return fromRom(new Rom(romData));
+        return fromRom(Rom.unchecked(romData));
     }
 }

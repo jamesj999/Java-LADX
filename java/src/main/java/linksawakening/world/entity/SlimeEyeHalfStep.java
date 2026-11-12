@@ -8,7 +8,7 @@ import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.SlimeEyeHalfMotion;
 
-/** Per-invocation scratch for SlimeEyeBehavior.advanceHalf; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for SlimeEyeBehavior.advanceHalf; values are assigned in source order. */
 final class SlimeEyeHalfStep {
     private linksawakening.world.entity.SlimeEyeController owner;
     private linksawakening.world.entity.EntityFrameExecution f;
@@ -16,11 +16,7 @@ final class SlimeEyeHalfStep {
     private int s;
     private linksawakening.world.entity.RoomEntity e;
 
-    SlimeEyeHalfStep(
-            linksawakening.world.entity.SlimeEyeController owner, linksawakening.world.entity.EntityFrameExecution f) {
-        this.owner = owner;
-        this.f = f;
-    }
+    SlimeEyeHalfStep() {}
 
     void run() {
         runtime = owner.runtime;
@@ -143,5 +139,29 @@ final class SlimeEyeHalfStep {
         if (result.jingle() >= 0) owner.sound(s, result.jingle());
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(linksawakening.world.entity.SlimeEyeController owner, linksawakening.world.entity.EntityFrameExecution f) {
+        if (inUse) {
+            new SlimeEyeHalfStep().run(owner, f);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        s = 0;
+        e = null;
+        this.owner = owner;
+        this.f = f;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.f = null;
+            this.runtime = null;
+            this.e = null;
+        }
     }
 }

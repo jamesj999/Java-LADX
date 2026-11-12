@@ -11,6 +11,7 @@ import linksawakening.audio.music.MusicTrack;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -29,7 +30,7 @@ class HealthRefillTraceTest {
         var expected = new ArrayList<SfxRegisterTrace.Write>();
         // func_01F_55F9 -> 6365 -> 635A -> 62F8.
         addHealthStart(expected, 0);
-        var view = new Rom(rom);
+        var view = TestRoms.partial(rom);
         for (int i = 0; i < 16; i++) {
             assertEquals(view.u8(new RomAddress(0x1F, 0x63BC).plus(i)), trace.apu.readWaveRam(i));
         }

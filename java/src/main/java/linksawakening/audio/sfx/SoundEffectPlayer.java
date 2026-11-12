@@ -102,6 +102,6 @@ public final class SoundEffectPlayer {
 
     @Deprecated(forRemoval = true)
     public SoundEffectPlayer(GameBoyApu apu, byte[] romData) {
-        this(apu, new Rom(romData));
+        this(apu, Rom.unchecked(romData));
     }
 }

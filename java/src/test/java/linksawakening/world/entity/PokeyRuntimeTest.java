@@ -73,7 +73,8 @@ final class PokeyRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
@@ -102,7 +103,7 @@ final class PokeyRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         // The runtime performs the shared pre-handler decrement first, so $15

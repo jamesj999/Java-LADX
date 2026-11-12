@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import linksawakening.world.entity.EntityLinkCollisionRules;
 import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -13,16 +12,14 @@ import linksawakening.world.entity.event.RoomStatusPersistenceRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.TarinRaccoonMotion;
 
-/** Per-invocation scratch for TarinHandler.phase4Tarin; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for TarinHandler.phase4Tarin; values are assigned in source order. */
 final class TarinHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
     private linksawakening.world.entity.EntitySlotExecution slotState;
     private linksawakening.world.entity.EntityFrameInputs frameInput;
     private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
-    TarinHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-        this.state = state;
-    }
+    TarinHandlerFrameStep() {}
 
     boolean run() {
         if (!advanceMotion()) return completedResult;
@@ -55,7 +52,7 @@ final class TarinHandlerFrameStep {
 
         tarinBackgroundInteraction = state.background().interaction();
         if (tarinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-            tarinBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+            tarinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
         }
         tarinUpdate = state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                 .advance(
@@ -126,5 +123,32 @@ final class TarinHandlerFrameStep {
             state.emit(new RoomStatusPersistenceRequest(slotState.entity().slot(), 0x10, 1));
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        if (inUse) {
+            return new TarinHandlerFrameStep().run(state);
+        }
+        inUse = true;
+        slotState = null;
+        frameInput = null;
+        presentationFlags = null;
+        tarinBackgroundInteraction = null;
+        tarinUpdate = null;
+        completedResult = false;
+        this.state = state;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.state = null;
+            this.slotState = null;
+            this.frameInput = null;
+            this.presentationFlags = null;
+            this.tarinBackgroundInteraction = null;
+            this.tarinUpdate = null;
+        }
     }
 }

@@ -34,7 +34,7 @@ final class TarinRaccoonRuntimeTest {
     void room51LoadsTheOutdoorRaccoonWithItsRomSprite() {
         RoomSession session = newSession();
 
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
 
         RoomEntity raccoon = raccoon(session);
         assertEquals(0x78, raccoon.x());
@@ -49,21 +49,21 @@ final class TarinRaccoonRuntimeTest {
         RoomSession completed = newSession();
         byte[] completedOverworld = new byte[0x100];
         completedOverworld[ROOM_MYSTERIOUS_WOODS] = 0x10;
-        completed.restoreRoomStatuses(completedOverworld, new byte[0x100], new byte[0x100], new byte[0x20]);
+        completed.story().restoreRoomStatuses(completedOverworld, new byte[0x100], new byte[0x100], new byte[0x20]);
 
-        completed.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        completed.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
 
         assertTrue(hasRaccoon(completed));
-        completed.tickEntities(0, 0x50, 0x60, 0, 0);
+        completed.entities().tickEntities(0, 0x50, 0x60, 0, 0);
         assertFalse(hasRaccoon(completed));
 
         RoomSession live = newSession();
-        live.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        live.tickEntities(0, 0x50, 0x60, 0, 0);
+        live.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        live.entities().tickEntities(0, 0x50, 0x60, 0, 0);
         assertTrue(hasRaccoon(live));
 
-        live.restoreRoomStatuses(completedOverworld, new byte[0x100], new byte[0x100], new byte[0x20]);
-        live.tickEntities(1, 0x50, 0x60, 0, 0);
+        live.story().restoreRoomStatuses(completedOverworld, new byte[0x100], new byte[0x100], new byte[0x20]);
+        live.entities().tickEntities(1, 0x50, 0x60, 0, 0);
 
         assertFalse(hasRaccoon(live));
     }
@@ -71,136 +71,136 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void normalEntityPassWithoutQualifyingTarinClearsTheLostState() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x60, 0, 1);
-        session.tickEntities(1, 0x78, 0x1F, 0, 1);
-        assertTrue(session.shouldGetLostInMysteriousWoods());
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x60, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x1F, 0, 1);
+        assertTrue(session.story().shouldGetLostInMysteriousWoods());
 
-        session.loadOverworld(0x52);
-        session.tickEntities(2, 0x78, 0x1F, 0, 1);
+        session.rooms().loadOverworld(0x52);
+        session.entities().tickEntities(2, 0x78, 0x1F, 0, 1);
 
-        assertFalse(session.shouldGetLostInMysteriousWoods());
+        assertFalse(session.story().shouldGetLostInMysteriousWoods());
     }
 
     @Test
     void crossingTheNorthThresholdSetsLostStateAndQueuesDialog021Once() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.setChestPlayerLevels(1, 1, 0);
-        session.tickEntities(0, 0x50, 0x60, 0, 0);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.story().setChestPlayerLevels(1, 1, 0);
+        session.entities().tickEntities(0, 0x50, 0x60, 0, 0);
 
-        session.tickEntities(8, 0x78, 0x1F, 0, 0);
+        session.entities().tickEntities(8, 0x78, 0x1F, 0, 0);
 
-        assertTrue(session.shouldGetLostInMysteriousWoods());
+        assertTrue(session.story().shouldGetLostInMysteriousWoods());
         assertEquals(3, raccoon(session).spriteVariant());
-        assertEquals(List.of(new DialogRequest(0, 0x21)), session.consumeEntityDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x21)), session.entityState().consumeEntityDialogRequests());
 
-        session.tickEntities(9, 0x78, 0x1E, 0, 0);
+        session.entities().tickEntities(9, 0x78, 0x1E, 0, 0);
 
-        assertTrue(session.shouldGetLostInMysteriousWoods());
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.story().shouldGetLostInMysteriousWoods());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
-        session.tickEntities(0x10, 0x78, 0x30, 0, 0);
+        session.entities().tickEntities(0x10, 0x78, 0x30, 0, 0);
 
-        assertFalse(session.shouldGetLostInMysteriousWoods());
+        assertFalse(session.story().shouldGetLostInMysteriousWoods());
         assertEquals(1, raccoon(session).spriteVariant());
     }
 
     @Test
     void nearbyFacingActionQueuesDialog00dOnlyWhenDialogAndAttackGatesAreClear() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x50, 0, 1);
-        session.setEntityActionButtonsHeld(true, false);
-        session.setEntityAttackStepAnimationCountdown(1);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityActionButtonsHeld(true, false);
+        session.entityState().setEntityAttackStepAnimationCountdown(1);
 
-        session.tickEntities(1, 0x78, 0x50, 0, 1);
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.entities().tickEntities(1, 0x78, 0x50, 0, 1);
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
-        session.setEntityAttackStepAnimationCountdown(0);
-        session.setEntityDialogActive(true);
-        session.tickEntities(2, 0x78, 0x50, 0, 1);
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        session.entityState().setEntityAttackStepAnimationCountdown(0);
+        session.entityState().setEntityDialogActive(true);
+        session.entities().tickEntities(2, 0x78, 0x50, 0, 1);
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
-        session.setEntityDialogActive(false);
-        session.tickEntities(3, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityDialogActive(false);
+        session.entities().tickEntities(3, 0x78, 0x50, 0, 1);
 
-        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.consumeEntityDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.entityState().consumeEntityDialogRequests());
     }
 
     @Test
     void bOnlyDoesNotQueueDialog00d() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x50, 0, 1);
-        session.setEntityActionButtonsHeld(false, true);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityActionButtonsHeld(false, true);
 
-        session.tickEntities(1, 0x78, 0x50, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 0, 1);
 
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 
     @Test
     void explicitAirborneLinkDoesNotQueueDialog00dWhenZIsZero() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x50, 0, 1);
-        session.setEntityActionButtonsHeld(true, false);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityActionButtonsHeld(true, false);
 
-        session.tickEntities(1, 0x78, 0x50, 0, true, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 0, true, 1);
 
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 
     @Test
     void groundedLinkCanTalkWhenZIsNonzero() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x50, 0, 1);
-        session.setEntityActionButtonsHeld(true, false);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityActionButtonsHeld(true, false);
 
-        session.tickEntities(1, 0x78, 0x50, 1, false, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 1, false, 1);
 
-        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.consumeEntityDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.entityState().consumeEntityDialogRequests());
     }
 
     @Test
     void appearingInventoryDoesNotQueueDialog00d() {
         RoomSession session = actionReadySession();
-        session.setEntityTalkState(true, 0, 0x80);
+        session.entityState().setEntityTalkState(true, 0, 0x80);
 
-        session.tickEntities(1, 0x78, 0x50, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 0, 1);
 
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 
     @Test
     void appearingInventoryDefersDialog021WithoutSuppressingTheLostFlag() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x60, 0, 1);
-        session.setEntityTalkState(true, 0, 0x78);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x60, 0, 1);
+        session.entityState().setEntityTalkState(true, 0, 0x78);
 
-        session.tickEntities(1, 0x78, 0x1F, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x1F, 0, 1);
 
-        assertTrue(session.shouldGetLostInMysteriousWoods());
+        assertTrue(session.story().shouldGetLostInMysteriousWoods());
         assertEquals(2, raccoon(session).spriteVariant());
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
-        session.setEntityTalkState(false, 0, 0x80);
-        session.tickEntities(2, 0x78, 0x1E, 0, 1);
+        session.entityState().setEntityTalkState(false, 0, 0x80);
+        session.entities().tickEntities(2, 0x78, 0x1E, 0, 1);
 
-        assertEquals(List.of(new DialogRequest(0, 0x21)), session.consumeEntityDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x21)), session.entityState().consumeEntityDialogRequests());
     }
 
     @Test
     void dialogCooldownDoesNotQueueDialog00d() {
         RoomSession session = actionReadySession();
-        session.setEntityTalkState(false, 1, 0x80);
+        session.entityState().setEntityTalkState(false, 1, 0x80);
 
-        session.tickEntities(1, 0x78, 0x50, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 0, 1);
 
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 
     @Test
@@ -216,30 +216,30 @@ final class TarinRaccoonRuntimeTest {
             if (frame == 1) {
                 assertEquals(0x18, dialog.dialogCooldown());
             }
-            session.setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
-            session.tickEntities(frame, 0x78, 0x50, 0, 1);
+            session.entityState().setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
+            session.entities().tickEntities(frame, 0x78, 0x50, 0, 1);
             assertTrue(
-                    session.consumeEntityDialogRequests().isEmpty(),
+                    session.entityState().consumeEntityDialogRequests().isEmpty(),
                     "held A must remain blocked on entity pass " + frame);
             dialog.tickGameplayFrameCooldown();
         }
 
         assertEquals(0, dialog.dialogCooldown());
         dialog.tick();
-        session.setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
-        session.tickEntities(0x19, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityTalkState(false, dialog.dialogCooldown(), 0x80);
+        session.entities().tickEntities(0x19, 0x78, 0x50, 0, 1);
 
-        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.consumeEntityDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x0D)), session.entityState().consumeEntityDialogRequests());
     }
 
     @Test
     void nonGameplayWindowPositionDoesNotQueueDialog00d() {
         RoomSession session = actionReadySession();
-        session.setEntityTalkState(false, 0, 0x70);
+        session.entityState().setEntityTalkState(false, 0, 0x70);
 
-        session.tickEntities(1, 0x78, 0x50, 0, 1);
+        session.entities().tickEntities(1, 0x78, 0x50, 0, 1);
 
-        assertTrue(session.consumeEntityDialogRequests().isEmpty());
+        assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 
     @Test
@@ -412,25 +412,25 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void roomSessionPersistsTransformationWithoutTruncatingLiveTarinThenUnloadsOnReload() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         RoomEntityRuntime runtime = raccoonRuntime(false);
         EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0x12, 0, 0, false);
         EntityRuntimeFixture.debug(runtime).setSlowTransitionCountdownForTest(0, 1);
         linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
-        session.tickEntities(4, 0x50, 0x40);
+        session.entities().tickEntities(4, 0x50, 0x40);
 
         assertEquals(
                 0x10,
                 linksawakening.world.room.RoomSessionTestAccess.overworldStatus(session, ROOM_MYSTERIOUS_WOODS) & 0x10);
-        assertEquals(1, session.tarinFlag());
+        assertEquals(1, session.story().tarinFlag());
         assertTrue(hasRaccoon(session), "persisted room status must not be exposed to the live runtime");
 
-        session.tickEntities(5, 0x50, 0x40);
+        session.entities().tickEntities(5, 0x50, 0x40);
         assertTrue(hasRaccoon(session), "live Tarin must continue through states two and three");
 
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(6, 0x50, 0x40);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(6, 0x50, 0x40);
 
         assertFalse(hasRaccoon(session));
     }
@@ -438,18 +438,18 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void powderTransformationStaysInsideTheLoadedRoomAndLeavesTarinVisible() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 120, 86, 0, 1);
-        assertTrue(session.sprinkleMagicPowder(120, 86, 0, 2));
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 120, 86, 0, 1);
+        assertTrue(session.playerItems().sprinkleMagicPowder(120, 86, 0, 2));
         boolean finished = false;
         for (int frame = 1; frame < 1000 && !finished; frame++) {
-            session.tickEntities(frame, 120, 86, 0, 1);
+            session.entities().tickEntities(frame, 120, 86, 0, 1);
             RoomEntity tarin = raccoon(session);
             assertTrue(
                     tarin.x() < 160 && tarin.y() < 144,
                     "Tarin escaped the room at frame " + frame + ": " + tarin.x() + "," + tarin.y());
-            finished =
-                    session.consumeEntityDialogRequests().stream().anyMatch(dialog -> dialog.globalDialogId() == 0x00A);
+            finished = session.entityState().consumeEntityDialogRequests().stream()
+                    .anyMatch(dialog -> dialog.globalDialogId() == 0x00A);
         }
         assertTrue(finished, "Transformation must reach Tarin's recovery dialogue");
         assertEquals(
@@ -461,57 +461,60 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void newGameWorldInitializationResetsTarinFlag() {
         RoomSession session = newSession();
-        session.setTarinFlag(2);
+        session.story().setTarinFlag(2);
 
-        session.initializeNewGameWorldState();
+        session.story().initializeNewGameWorldState();
 
-        assertEquals(0, session.tarinFlag());
+        assertEquals(0, session.story().tarinFlag());
     }
 
     @Test
     void roomSessionThreadsTarinFlagIntoBothMarinHousePalettePaths() {
         byte[] rom = loadRom();
         RoomSession session = newSession();
-        session.setTarinFlag(2);
+        session.story().setTarinFlag(2);
 
-        session.loadIndoor(0x10, 0xA3);
+        session.rooms().loadIndoor(0x10, 0xA3);
 
         RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
-        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 2), session.palettes());
+        assertArrayEquals(
+                palettes.loadIndoor(0x10, 0xA3, null, 2), session.rooms().palettes());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 2),
-                session.activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
     }
 
     @Test
     void roomSessionRetainsShieldLevelForBothMarinHousePalettePaths() {
         byte[] rom = loadRom();
         RoomSession session = newSession();
-        session.setChestPlayerLevels(1, 0, 0);
+        session.story().setChestPlayerLevels(1, 0, 0);
 
-        session.loadIndoor(0x10, 0xA3);
+        session.rooms().loadIndoor(0x10, 0xA3);
 
         RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
-        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.palettes());
+        assertArrayEquals(
+                palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.rooms().palettes());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 1),
-                session.activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
     }
 
     @Test
     void newGameWorldInitializationRestoresTheShieldlessHousePalette() {
         byte[] rom = loadRom();
         RoomSession session = newSession();
-        session.setChestPlayerLevels(1, 0, 0);
+        session.story().setChestPlayerLevels(1, 0, 0);
 
-        session.initializeNewGameWorldState();
-        session.loadIndoor(0x10, 0xA3);
+        session.story().initializeNewGameWorldState();
+        session.rooms().loadIndoor(0x10, 0xA3);
 
         RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
-        assertArrayEquals(palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.palettes());
+        assertArrayEquals(
+                palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.rooms().palettes());
         assertArrayEquals(
                 palettes.loadIndoorObjectPalettes(0x10, 0xA3, false, 0, 0),
-                session.activeRoom().entities().spriteSelection().objectPalettes());
+                session.rooms().activeRoom().entities().spriteSelection().objectPalettes());
     }
 
     @Test
@@ -553,14 +556,14 @@ final class TarinRaccoonRuntimeTest {
     @Test
     void roomSessionExposesTheLiveTarinAttackClearRequest() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
         RoomEntityRuntime runtime = raccoonRuntime(false);
         EntityRuntimeFixture.debug(runtime).setTarinRaccoonStateForTest(0, 1, 0, 0, 0, 0, 0, false);
         linksawakening.world.room.RoomSessionTestAccess.replaceEntityRuntime(session, runtime);
 
-        session.tickEntities(0, 0x50, 0x60, 0, 0);
+        session.entities().tickEntities(0, 0x50, 0x60, 0, 0);
 
-        assertFalse(session.consumeLinkAttackClearRequests().isEmpty());
+        assertFalse(session.entityState().consumeLinkAttackClearRequests().isEmpty());
     }
 
     @Test
@@ -607,27 +610,27 @@ final class TarinRaccoonRuntimeTest {
 
     private static RoomSession actionReadySession() {
         RoomSession session = newSession();
-        session.loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
-        session.tickEntities(0, 0x78, 0x50, 0, 1);
-        session.setEntityActionButtonsHeld(true, false);
+        session.rooms().loadInitialOverworld(ROOM_MYSTERIOUS_WOODS);
+        session.entities().tickEntities(0, 0x78, 0x50, 0, 1);
+        session.entityState().setEntityActionButtonsHeld(true, false);
         return session;
     }
 
     private static RoomEntity raccoon(RoomSession session) {
-        return session.activeRoom().entities().loadedEntities().stream()
+        return session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == ENTITY_TARIN)
                 .findFirst()
                 .orElseThrow();
     }
 
     private static boolean hasRaccoon(RoomSession session) {
-        return session.activeRoom().entities().loadedEntities().stream()
+        return session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == ENTITY_TARIN);
     }
 
     private static RoomSession newSession() {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
         return new RoomSession(
                 rom,
                 new GPU(),
@@ -670,7 +673,7 @@ final class TarinRaccoonRuntimeTest {
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
     }

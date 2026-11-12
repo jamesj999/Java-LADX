@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import linksawakening.app.GameSession;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import org.junit.jupiter.api.Test;
 
 /** Isolated D3 setup followed by the real GameSession update and framebuffer composition. */
@@ -34,16 +34,15 @@ final class SlimeEyeSessionTest {
             var room = diagnostics.roomSession();
             var link = diagnostics.link();
             var player = diagnostics.playerState();
-            player.setSwordLevel(1);
-            player.setItemA(PlayerState.INVENTORY_SWORD);
-            player.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
-            player.setMaxHearts(14);
-            player.setHealth(14 * 8);
-            room.loadIndoor(2, 0x5A);
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
+            player.vitals().setMaxHearts(14);
+            player.vitals().setHealth(14 * 8);
+            room.rooms().loadIndoor(2, 0x5A);
             link.setRoomEntryRomPosition(80, 96);
-            link.setDirection(Link.DIRECTION_UP);
-            GameplaySoundSink original =
-                    (GameplaySoundSink) game.gameplaySounds().sink();
+            link.setDirection(Direction.UP.javaIndex());
+            GameplaySoundSink original = game.gameplaySounds().sink();
             game.gameplaySounds().replace((GameplaySoundSink) sound -> {
                 sounds.add(sound);
                 original.play(sound);
@@ -65,7 +64,7 @@ final class SlimeEyeSessionTest {
             while (eyes(room).size() == 1 && ticks < 900) {
                 var eye = eyes(room).getFirst();
                 link.setRoomEntryRomPosition(eye.x(), eye.y() + 16);
-                link.setDirection(Link.DIRECTION_UP);
+                link.setDirection(Direction.UP.javaIndex());
                 int phase = ticks % 256;
                 game.headlessButton("a", phase >= 192 || phase % 24 < 8);
                 game.headlessButton("b", phase >= 192);
@@ -83,7 +82,7 @@ final class SlimeEyeSessionTest {
                         .orElse(null);
                 if (target != null) {
                     link.setRoomEntryRomPosition(target.x(), Math.min(112, target.y() + 16));
-                    link.setDirection(Link.DIRECTION_UP);
+                    link.setDirection(Direction.UP.javaIndex());
                 }
                 game.headlessButton("a", frame % 24 < 8);
                 game.headlessFrame();
@@ -92,7 +91,7 @@ final class SlimeEyeSessionTest {
             assertTrue(eyes(room).isEmpty());
             assertEquals(
                     1,
-                    room.activeRoom().entities().loadedEntities().stream()
+                    room.rooms().activeRoom().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .count());
             save(game.headlessFrame(), output.resolve("session-defeated.png"));
@@ -110,7 +109,7 @@ final class SlimeEyeSessionTest {
     }
 
     private List<RoomEntity> eyes(linksawakening.world.room.RoomSession room) {
-        return room.activeRoom().entities().loadedEntities().stream()
+        return room.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x5B)
                 .toList();
     }

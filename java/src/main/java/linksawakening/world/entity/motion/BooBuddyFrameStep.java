@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.*;
 
-/** Per-invocation scratch for BooBuddyMotion.advanceAfterTimers; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BooBuddyMotion.advanceAfterTimers; values are assigned in source order. */
 final class BooBuddyFrameStep {
-    private final BooBuddyMotion owner;
+    private BooBuddyMotion owner;
     private linksawakening.world.entity.motion.BooBuddyFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -23,10 +23,7 @@ final class BooBuddyFrameStep {
     private boolean unloaded;
     private int healthOverride;
 
-    BooBuddyFrameStep(BooBuddyMotion owner, linksawakening.world.entity.motion.BooBuddyFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BooBuddyFrameStep() {}
 
     linksawakening.world.entity.motion.BooBuddyMotion.Update run() {
         entity = inputs.entity();
@@ -139,5 +136,44 @@ final class BooBuddyFrameStep {
         variant = 0x04 + ((frameCounter >>> 4) & 0x01);
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.BooBuddyMotion.Update run(
+            BooBuddyMotion owner, linksawakening.world.entity.motion.BooBuddyFrame inputs) {
+        if (inUse) {
+            return new BooBuddyFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        transitionCountdown = 0;
+        roomTriggerCount = 0;
+        swordMiddle = false;
+        randomByteSupplier = null;
+        slot = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        renderedVariant = 0;
+        variant = 0;
+        unloaded = false;
+        healthOverride = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.completedResult = null;
+        }
     }
 }

@@ -40,4 +40,13 @@ final class InventoryItemPalettes {
     static int[] forItem(int itemId) {
         return itemId >= 0 && itemId < INDEXES.length ? INDEXES[itemId] : INDEXES[0];
     }
+
+    static int palettePair(int itemId, PlayerState player) {
+        if (itemId == InventoryItem.MAGIC_POWDER.romValue()
+                && player.ammunition().hasToadstool()) return 0x0203;
+        if (itemId == InventoryItem.POWER_BRACELET.romValue()
+                && player.equipmentLevels().powerBraceletLevel() == 2) return 0x0202;
+        int[] values = forItem(itemId);
+        return (values[0] << 8) | values[1];
+    }
 }

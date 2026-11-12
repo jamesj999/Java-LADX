@@ -53,7 +53,7 @@ final class ItemPickupBehavior {
             int linkEntityX,
             int linkEntityY,
             int linkZ) {
-        new ItemPickupFrameStep(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ).run();
+        owner.itemPickupFrameStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
     }
 
     static void advancePowerUpPickup(

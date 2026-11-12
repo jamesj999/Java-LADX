@@ -353,7 +353,8 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
     @Test
     void waterTektiteAppliesBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -390,7 +391,8 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
     @Test
     void waterTektiteKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

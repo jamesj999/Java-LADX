@@ -29,12 +29,14 @@ public final class GameFrameSceneBuilder {
         }
 
         addDialogLayers(state);
-        if (state.link() != null && state.link().isPassingOut() && state.screen() == RenderScreen.OVERWORLD) {
+        if (state.link() != null && state.link().status().isPassingOut() && state.screen() == RenderScreen.OVERWORLD) {
             for (int i = 0; i < layers.size(); i++) {
                 RenderLayer layer = layers.get(i);
                 if (!(layer instanceof LinkRenderLayer)) {
                     layers.set(
-                            i, new PassOutPaletteRenderLayer(layer, state.link().passOutPaletteFrames()));
+                            i,
+                            new PassOutPaletteRenderLayer(
+                                    layer, state.link().status().passOutPaletteFrames()));
                 }
             }
         }

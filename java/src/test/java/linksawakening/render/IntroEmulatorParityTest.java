@@ -10,8 +10,10 @@ import java.util.TreeMap;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 /** Golden pixels recorded by running the shipped ROM, independently of the Java renderer. */
@@ -36,13 +38,14 @@ final class IntroEmulatorParityTest {
                 hash(rom),
                 "Emulator fixtures are tied to the shipped ROM revision");
         GPU gpu = new GPU();
-        gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
+        gpu.loadIntroSequenceTiles(Rom.of(rom));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(TestRoms.partial(rom));
+        IntroSequence sequence = new IntroSequence(
+                TestRoms.partial(rom), id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
         int last = golden.keySet().stream().mapToInt(Integer::intValue).max().orElseThrow();
         for (int frame = 0; frame <= last; frame++) {
-            if (BackgroundSceneCatalog.requiresTitleTileset(sequence.sceneId())) gpu.loadTitleScreenTiles(rom);
+            if (BackgroundSceneCatalog.requiresTitleTileset(sequence.sceneId())) gpu.loadTitleScreenTiles(Rom.of(rom));
             if (golden.containsKey(frame)) {
                 byte[] rgba = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
                 builder.build(GameFrameState.empty()

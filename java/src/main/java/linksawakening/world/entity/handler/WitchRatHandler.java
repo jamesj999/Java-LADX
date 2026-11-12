@@ -35,8 +35,7 @@ final class WitchRatHandler {
             RoomEntityBackgroundInteraction witchRatBackgroundInteraction =
                     state.background().interaction();
             if (witchRatBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                witchRatBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                witchRatBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             WitchRatMotion.Update witchRatUpdate = state.motion(WitchRatMotion.class, WitchRatMotion::new)
                     .advance(

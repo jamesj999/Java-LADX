@@ -8,7 +8,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 
-/** FileMenuFlow behavior on the shared FileMenuController state. */
+/** File selection and name-entry state used by ROM {@code FileSelectionHandler}. */
 abstract class FileMenuFlow extends FileMenuState {
     protected FileMenuFlow(
             FileMenuRomData romData,

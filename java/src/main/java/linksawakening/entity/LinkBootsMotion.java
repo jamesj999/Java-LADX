@@ -8,7 +8,7 @@ import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
 import linksawakening.state.LinkMotionState;
 
-/** LinkBootsMotion behavior on the shared LinkStateMachine state. */
+/** Link boots motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkBootsMotion extends LinkRoomMotion {
     protected LinkBootsMotion(Dependencies dependencies) {
         super(dependencies);
@@ -160,7 +160,7 @@ abstract class LinkBootsMotion extends LinkRoomMotion {
     protected void resetPegasusBoots() {
         pegasusBootsChargeMeter = 0;
         if (linkServices.get().playerState != null) {
-            linkServices.get().playerState.setRunningWithPegasusBoots(false);
+            linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
         }
     }
 

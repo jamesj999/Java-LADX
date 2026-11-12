@@ -35,8 +35,7 @@ final class BlooperHandler {
             RoomEntityBackgroundInteraction blooperBackgroundInteraction =
                     state.background().interaction();
             if (blooperBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                blooperBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                blooperBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             BlooperMotion.Movement movement = state.motion(BlooperMotion.class, BlooperMotion::new)
                     .move(

@@ -20,7 +20,13 @@ public final class RomEnemyCombatTables {
     private final int[] contactDamageByGroup;
     private final int[] bowWowEatableByEntity;
 
+    /** @deprecated External callers: world.room.RoomSessionContext and RoomSessionTestSupport; pass a Rom to the typed constructor. */
+    @Deprecated(forRemoval = true)
     public RomEnemyCombatTables(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
+    }
+
+    public RomEnemyCombatTables(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         healthGroupByEntity = loadUnsigned(romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);
         damageTypeMatrix =
@@ -132,13 +138,13 @@ public final class RomEnemyCombatTables {
         }
     }
 
-    private static int[] loadUnsigned(byte[] romData, RomAddress address, int length) {
+    private static int[] loadUnsigned(Rom romData, RomAddress address, int length) {
         int offset = address.offset();
-        if (offset < 0 || length < 0 || offset > romData.length - length) {
+        if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException("ROM table is truncated at bank $" + Integer.toHexString(address.bank())
                     + ":$" + Integer.toHexString(address.address()));
         }
-        Rom rom = new Rom(romData);
+        Rom rom = romData;
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
             values[index] = rom.u8(address.plus(index));

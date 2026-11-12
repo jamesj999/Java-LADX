@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.RoomEntity;
 
-/** Per-invocation scratch for PincerMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for PincerMotion.advance; values are assigned in source order. */
 final class PincerStep {
-    private final PincerMotion owner;
+    private PincerMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int transitionCountdown;
     private int physicsFlags;
@@ -18,20 +18,7 @@ final class PincerStep {
     private int nextPhysicsFlags;
     private linksawakening.world.entity.RoomEntity updated;
 
-    PincerStep(
-            PincerMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int transitionCountdown,
-            int physicsFlags,
-            int linkX,
-            int linkY) {
-        this.owner = owner;
-        this.entity = entity;
-        this.transitionCountdown = transitionCountdown;
-        this.physicsFlags = physicsFlags;
-        this.linkX = linkX;
-        this.linkY = linkY;
-    }
+    PincerStep() {}
 
     linksawakening.world.entity.motion.PincerMotion.Update run() {
         slot = entity.slot();
@@ -179,5 +166,43 @@ final class PincerStep {
         variant = 0;
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.PincerMotion.Update run(
+            PincerMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int transitionCountdown,
+            int physicsFlags,
+            int linkX,
+            int linkY) {
+        if (inUse) {
+            return new PincerStep().run(owner, entity, transitionCountdown, physicsFlags, linkX, linkY);
+        }
+        inUse = true;
+        slot = 0;
+        x = 0;
+        y = 0;
+        variant = 0;
+        nextCountdown = 0;
+        nextPhysicsFlags = 0;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.transitionCountdown = transitionCountdown;
+        this.physicsFlags = physicsFlags;
+        this.linkX = linkX;
+        this.linkY = linkY;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

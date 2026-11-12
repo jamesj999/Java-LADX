@@ -39,8 +39,7 @@ final class UrchinHandler {
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
                     state.background().interaction();
             if (urchinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                urchinBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                urchinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             UrchinMotion.Update urchinUpdate = state.motion(UrchinMotion.class, UrchinMotion::new)
                     .advance(new UrchinFrame(

@@ -3,6 +3,7 @@ package linksawakening.gpu;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ final class GPUOcarinaTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadOcarinaSymbolsTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
 
         assertRomByte(gpu, rom, ROM_BANK, OCARINA_SYMBOLS_ADDRESS, 0x20);
         assertRomByte(gpu, rom, ROM_BANK, OCARINA_SYMBOLS_ADDRESS + 0x40, 0x24);
@@ -30,8 +31,8 @@ final class GPUOcarinaTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadOcarinaSymbolsTiles(rom);
-        gpu.loadSharedVfxTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
+        gpu.loadSharedVfxTiles(Rom.of(rom));
 
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS, 0x20);
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS + 0x40, 0x24);

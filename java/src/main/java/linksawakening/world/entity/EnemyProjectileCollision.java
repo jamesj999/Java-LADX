@@ -98,7 +98,10 @@ public final class EnemyProjectileCollision {
                     pairoddProjectile || wizrobeProjectile,
                     pairoddProjectile,
                     swordPokeX,
-                    swordPokeY));
+                    swordPokeY,
+                    0,
+                    0,
+                    0));
         }
 
         // func_003_6CC0 reaches ApplyLinkCollisionWithEnemy for these generic
@@ -217,7 +220,10 @@ public final class EnemyProjectileCollision {
                     remove,
                     swordPokeVfx,
                     swordPokeX,
-                    swordPokeY);
+                    swordPokeY,
+                    0,
+                    0,
+                    0);
         }
 
         EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(

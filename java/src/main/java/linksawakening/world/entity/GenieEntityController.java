@@ -236,4 +236,7 @@ public final class GenieEntityController {
     void beginFrame() {
         java.util.Arrays.fill(genieImpactRegisteredThisFrame, false);
     }
+
+    final GenieJarStep genieJarStep = new GenieJarStep();
+    final GenieBodyStep genieBodyStep = new GenieBodyStep();
 }

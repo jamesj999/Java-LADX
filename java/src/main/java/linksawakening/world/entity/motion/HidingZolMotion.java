@@ -57,9 +57,8 @@ public final class HidingZolMotion {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction,
             int frameCounter) {
-        return new HidingZolStep(
-                        this, entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter)
-                .run();
+        return hidingZolStep.run(
+                this, entity, linkEntityX, linkEntityY, randomByteSupplier, backgroundInteraction, frameCounter);
     }
 
     public boolean allowsSwordCollision(int slot) {
@@ -204,4 +203,6 @@ public final class HidingZolMotion {
             int physicsFlags) {}
 
     record Vector(int x, int y) {}
+
+    final HidingZolStep hidingZolStep = new HidingZolStep();
 }

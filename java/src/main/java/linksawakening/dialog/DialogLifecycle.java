@@ -2,7 +2,7 @@ package linksawakening.dialog;
 
 import static linksawakening.dialog.DialogController.*;
 
-/** DialogLifecycle behavior on the shared DialogController state. */
+/** Dialog text, timing and presentation used by ROM {@code DialogDrawNextCharacterHandler}. */
 abstract class DialogLifecycle extends DialogState {
     protected DialogLifecycle(int lineWidth) {
         super(lineWidth);

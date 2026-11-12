@@ -1,252 +1,214 @@
 package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
 
 import java.util.function.BooleanSupplier;
 
-/** Source-compatible Link operations delegated to their state owners. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkActionView extends LinkMovementView {
-    LinkActionView(LinkServices services) {
-        super(services);
-    }
 
-    public int romEntityY() {
-        return linkMotion.accessRomEntityY();
-    }
-
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY) {
-        linkEntityEffects.accessApplyLikeLikeCapture(romEntityX, romEntityY);
-    }
-
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY, boolean pinPosition) {
-        linkEntityEffects.accessApplyLikeLikeCapture(romEntityX, romEntityY, pinPosition);
-    }
-
-    public void releaseLikeLikeCapture() {
-        linkEntityEffects.accessReleaseLikeLikeCapture();
-    }
-
-    public void setCarryingLiftedObjectState(int carryState, int romDirection) {
-        linkEntityEffects.accessSetCarryingLiftedObjectState(carryState, romDirection);
-    }
-
-    public void applyRoosterFlightState(int positionZ, int velocityZ, int speedX, int speedY, int romDirection) {
-        linkEntityEffects.accessApplyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
-    }
-
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            int airborneState) {
-        linkEntityEffects.accessApplyHinoxGrabState(
-                romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState);
-    }
-    /** @deprecated Use the Link.GrabFlags argument bundle overload. */
+    /** @deprecated Use position().romEntityY instead. */
     @Deprecated(forRemoval = true)
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            int airborneState,
-            boolean motionBlocked,
-            boolean applyHeldLinkPose) {
-        applyHinoxGrabState(
-                romPositionX,
-                romPositionY,
-                positionZ,
-                speedX,
-                speedY,
-                velocityZ,
-                Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
+    public int romEntityY() {
+        return legacyRoles().position().romEntityY();
     }
 
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            Link.GrabFlags arguments) {
-        int airborneState = arguments.airborneState();
-        boolean motionBlocked = arguments.motionBlocked();
-        boolean applyHeldLinkPose = arguments.applyHeldLinkPose();
-
-        linkEntityEffects.accessApplyHinoxGrabState(
-                romPositionX,
-                romPositionY,
-                positionZ,
-                speedX,
-                speedY,
-                velocityZ,
-                Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
+    /** @deprecated Use actions().setCarryingLiftedObjectState instead. */
+    @Deprecated(forRemoval = true)
+    public void setCarryingLiftedObjectState(int carryState, int romDirection) {
+        legacyRoles().actions().setCarryingLiftedObjectState(carryState, romDirection);
     }
 
-    public void applyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {
-        linkEntityEffects.accessApplyWarpState3(romPositionX, visualRomPositionY, immunityCountdown);
-    }
-
+    /** @deprecated Use actions().leaveMarinWakeUpBed instead. */
+    @Deprecated(forRemoval = true)
     public void leaveMarinWakeUpBed() {
-        linkEntityEffects.accessLeaveMarinWakeUpBed();
+        legacyRoles().actions().leaveMarinWakeUpBed();
     }
 
+    /** @deprecated Use actions().clearRoosterCarryState instead. */
+    @Deprecated(forRemoval = true)
     public void clearRoosterCarryState() {
-        linkEntityEffects.accessClearRoosterCarryState();
+        legacyRoles().actions().clearRoosterCarryState();
     }
 
-    public void showRomFallenPose() {
-        linkAnimator.accessShowRomFallenPose();
-    }
-
+    /** @deprecated Use animation().dialogGotItemActive instead. */
+    @Deprecated(forRemoval = true)
     public boolean dialogGotItemActive() {
-        return linkAnimator.accessDialogGotItemActive();
+        return legacyRoles().animation().dialogGotItemActive();
     }
 
+    /** @deprecated Use animation().dialogGotItem instead. */
+    @Deprecated(forRemoval = true)
     public int dialogGotItem() {
-        return linkAnimator.accessDialogGotItem();
+        return legacyRoles().animation().dialogGotItem();
     }
 
+    /** @deprecated Use animation().dialogGotItemCountdown instead. */
+    @Deprecated(forRemoval = true)
     public int dialogGotItemCountdown() {
-        return linkAnimator.accessDialogGotItemCountdown();
+        return legacyRoles().animation().dialogGotItemCountdown();
     }
 
+    /** @deprecated Use animation().presentedDialogGotItem instead. */
+    @Deprecated(forRemoval = true)
     public int presentedDialogGotItem() {
-        return linkAnimator.accessPresentedDialogGotItem();
+        return legacyRoles().animation().presentedDialogGotItem();
     }
 
+    /** @deprecated Use animation().presentToadstool instead. */
+    @Deprecated(forRemoval = true)
     public void presentToadstool() {
-        linkAnimator.accessPresentToadstool();
+        legacyRoles().animation().presentToadstool();
     }
 
+    /** @deprecated Use animation().clearDialogGotItem instead. */
+    @Deprecated(forRemoval = true)
     public void clearDialogGotItem() {
-        linkAnimator.accessClearDialogGotItem();
+        legacyRoles().animation().clearDialogGotItem();
     }
 
+    /** @deprecated Use airborne().tickDialogGotItem instead. */
+    @Deprecated(forRemoval = true)
     public int tickDialogGotItem(boolean dialogActive) {
-        return linkAirborne.accessTickDialogGotItem(dialogActive);
+        return legacyRoles().airborne().tickDialogGotItem(dialogActive);
     }
 
-    public void showHeldItemPose() {
-        linkAnimator.accessShowHeldItemPose();
-    }
-
-    public void showPowerUpPickupPose() {
-        linkAnimator.accessShowPowerUpPickupPose();
-    }
-
+    /** @deprecated Use animation().showTarinShieldPresentation instead. */
+    @Deprecated(forRemoval = true)
     public void showTarinShieldPresentation(int[] palette) {
-        linkAnimator.accessShowTarinShieldPresentation(palette);
+        legacyRoles().animation().showTarinShieldPresentation(palette);
     }
 
+    /** @deprecated Use animation().clearTarinShieldPresentation instead. */
+    @Deprecated(forRemoval = true)
     public void clearTarinShieldPresentation() {
-        linkAnimator.accessClearTarinShieldPresentation();
+        legacyRoles().animation().clearTarinShieldPresentation();
     }
 
+    /** @deprecated Use animation().showStandingShieldDownPose instead. */
+    @Deprecated(forRemoval = true)
     public void showStandingShieldDownPose() {
-        linkAnimator.accessShowStandingShieldDownPose();
+        legacyRoles().animation().showStandingShieldDownPose();
     }
 
-    public void showSwordAcquisitionSpinPose(int countdown) {
-        linkAnimator.accessShowSwordAcquisitionSpinPose(countdown);
-    }
-
-    public void showSwordAcquisitionFinalPose() {
-        linkAnimator.accessShowSwordAcquisitionFinalPose();
-    }
-
+    /** @deprecated Use animation().showMarinWakeUpBed instead. */
+    @Deprecated(forRemoval = true)
     public void showMarinWakeUpBed(int spriteVariant) {
-        linkAnimator.accessShowMarinWakeUpBed(spriteVariant);
+        legacyRoles().animation().showMarinWakeUpBed(spriteVariant);
     }
 
-    public void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        linkAnimator.accessRender(displayBuffer, offsetX, offsetY);
-    }
-
+    /** @deprecated Use equipment().startRomItemAttackStep instead. */
+    @Deprecated(forRemoval = true)
     public void startRomItemAttackStep() {
-        linkEquipment.accessStartRomItemAttackStep();
+        legacyRoles().equipment().startRomItemAttackStep();
     }
 
+    /** @deprecated Use equipment().startRomMagicPowderAttackStep instead. */
+    @Deprecated(forRemoval = true)
     public void startRomMagicPowderAttackStep() {
-        linkEquipment.accessStartRomMagicPowderAttackStep();
+        legacyRoles().equipment().startRomMagicPowderAttackStep();
     }
 
+    /** @deprecated Use equipment().startRomMagicRodAttackStep instead. */
+    @Deprecated(forRemoval = true)
     public void startRomMagicRodAttackStep() {
-        linkEquipment.accessStartRomMagicRodAttackStep();
+        legacyRoles().equipment().startRomMagicRodAttackStep();
     }
 
+    /** @deprecated Use equipment().clearRomAttackStepAnimationCountdown instead. */
+    @Deprecated(forRemoval = true)
     public void clearRomAttackStepAnimationCountdown() {
-        linkEquipment.accessClearRomAttackStepAnimationCountdown();
+        legacyRoles().equipment().clearRomAttackStepAnimationCountdown();
     }
 
+    /** @deprecated Use equipment().canUseItems instead. */
+    @Deprecated(forRemoval = true)
     public boolean canUseItems() {
-        return linkEquipment.accessCanUseItems();
+        return legacyRoles().equipment().canUseItems();
     }
 
+    /** @deprecated Use equipment().setShieldInputAllowed instead. */
+    @Deprecated(forRemoval = true)
     public void setShieldInputAllowed(BooleanSupplier allowed) {
-        linkEquipment.accessSetShieldInputAllowed(allowed);
+        legacyRoles().equipment().setShieldInputAllowed(allowed);
     }
 
+    /** @deprecated Use equipment().isUsingShield instead. */
+    @Deprecated(forRemoval = true)
     public boolean isUsingShield() {
-        return linkEquipment.accessIsUsingShield();
+        return legacyRoles().equipment().isUsingShield();
     }
 
+    /** @deprecated Use equipment().applyRomItemDirectionFromInput instead. */
+    @Deprecated(forRemoval = true)
     public int applyRomItemDirectionFromInput() {
-        return linkEquipment.accessApplyRomItemDirectionFromInput();
+        return legacyRoles().equipment().applyRomItemDirectionFromInput();
     }
 
+    /** @deprecated Use motion().setDebugNoClip instead. */
+    @Deprecated(forRemoval = true)
     public void setDebugNoClip(boolean enabled) {
-        linkStateMachine.accessSetDebugNoClip(enabled);
+        legacyRoles().motion().setDebugNoClip(enabled);
     }
 
+    /** @deprecated Use motion().resetTransientStateForDebug instead. */
+    @Deprecated(forRemoval = true)
     public void resetTransientStateForDebug() {
-        linkStateMachine.accessResetTransientStateForDebug();
+        legacyRoles().motion().resetTransientStateForDebug();
     }
 
+    /** @deprecated Use motion().finishRoomScroll instead. */
+    @Deprecated(forRemoval = true)
     public void finishRoomScroll(boolean downward) {
-        linkStateMachine.accessFinishRoomScroll(downward);
+        legacyRoles().motion().finishRoomScroll(downward);
     }
 
-    public void writeRomInteractiveMotionBlock(int value) {
-        linkStateMachine.accessWriteRomInteractiveMotionBlock(value);
-    }
-
+    /** @deprecated Use motion().romInteractiveMotionBlockValue instead. */
+    @Deprecated(forRemoval = true)
     public int romInteractiveMotionBlockValue() {
-        return linkStateMachine.accessRomInteractiveMotionBlockValue();
+        return legacyRoles().motion().romInteractiveMotionBlockValue();
     }
 
+    /** @deprecated Use motion().romSlowWalkingSpeed instead. */
+    @Deprecated(forRemoval = true)
     public int romSlowWalkingSpeed() {
-        return linkStateMachine.accessRomSlowWalkingSpeed();
+        return legacyRoles().motion().romSlowWalkingSpeed();
     }
 
+    /** @deprecated Use motion().romItemUsageContext instead. */
+    @Deprecated(forRemoval = true)
     public int romItemUsageContext() {
-        return linkStateMachine.accessRomItemUsageContext();
+        return legacyRoles().motion().romItemUsageContext();
     }
 
+    /** @deprecated Use sideView().romItemAnimationFrameBlocked instead. */
+    @Deprecated(forRemoval = true)
     public boolean romItemAnimationFrameBlocked() {
-        return linkSideView.accessRomItemAnimationFrameBlocked();
+        return legacyRoles().sideView().romItemAnimationFrameBlocked();
     }
 
+    /** @deprecated Use actions().setGrabbingObject instead. */
+    @Deprecated(forRemoval = true)
     public void setGrabbingObject(boolean grabbing, boolean pulling) {
-        linkEntityEffects.accessSetGrabbingObject(grabbing, pulling);
+        legacyRoles().actions().setGrabbingObject(grabbing, pulling);
     }
 
+    /** @deprecated Use motion().blockNextRomMotionFrame instead. */
+    @Deprecated(forRemoval = true)
     public void blockNextRomMotionFrame() {
-        linkStateMachine.accessBlockNextRomMotionFrame();
+        legacyRoles().motion().blockNextRomMotionFrame();
     }
 
+    /** @deprecated Use motion().initializeRoomPhysicsForRoom instead. */
+    @Deprecated(forRemoval = true)
     public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
-        linkStateMachine.accessInitializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+        legacyRoles().motion().initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 
+    /** @deprecated Use motion().setRoomPhysicsForRoom instead. */
+    @Deprecated(forRemoval = true)
     public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
-        linkStateMachine.accessSetRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+        legacyRoles().motion().setRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 }

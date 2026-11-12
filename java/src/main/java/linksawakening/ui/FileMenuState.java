@@ -13,7 +13,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 
-/** Shared state and dependency ownership for FileMenuController. */
+/** File selection and name-entry state used by ROM {@code FileSelectionHandler}. */
 abstract class FileMenuState {
     protected final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
     protected final List<IntroSprite> spriteScratch = new ArrayList<>();

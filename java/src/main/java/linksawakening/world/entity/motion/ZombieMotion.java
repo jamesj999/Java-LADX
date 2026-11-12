@@ -53,7 +53,7 @@ public final class ZombieMotion {
     }
 
     public Update advance(ZombieFrame inputs) {
-        return new ZombieStep(this, inputs).run();
+        return zombieStep.run(this, inputs);
     }
 
     boolean isChild(int slot) {
@@ -240,4 +240,6 @@ public final class ZombieMotion {
     record Vector(int x, int y) {}
 
     record PositionAndCollision(int x, int y, int collisionMask) {}
+
+    final ZombieStep zombieStep = new ZombieStep();
 }

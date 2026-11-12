@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkAirborne.*;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.GroundStatus;
 
-/** Shared state and dependency ownership for LinkAirborne. */
+/** Link airborne state state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkAirborneState {
 
     protected final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
