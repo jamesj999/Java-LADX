@@ -98,10 +98,6 @@ public final class InputRouter {
         return context.screen();
     }
 
-    public Runnable consumeDialogInput() {
-        return context.inputRouterConsumeDialogInput();
-    }
-
     public Runnable startDebug() {
         return context.startDebug();
     }
@@ -159,13 +155,13 @@ public final class InputRouter {
 
         if (story().get().marinWakeUpBlocksKeyInput()) {
             if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig(), dialogController())) {
-                consumeDialogInput().run();
+                context.gameplayInput().consume();
             }
             return;
         }
 
         if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig(), dialogController())) {
-            consumeDialogInput().run();
+            context.gameplayInput().consume();
             return;
         }
         // ApplyGotItem bypasses InitGotItemSequence ($00:1040-1077),

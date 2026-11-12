@@ -19,9 +19,10 @@ public final class GameplayFrame {
 
     private final Runnable transitions;
     private final Runnable simulation;
-    private final Runnable inputCompletion;
+    private final linksawakening.app.screen.InputCompletion inputCompletion;
 
-    public GameplayFrame(Runnable transitions, Runnable simulation, Runnable inputCompletion) {
+    public GameplayFrame(
+            Runnable transitions, Runnable simulation, linksawakening.app.screen.InputCompletion inputCompletion) {
         this.transitions = transitions;
         this.simulation = simulation;
         this.inputCompletion = inputCompletion;
@@ -30,6 +31,6 @@ public final class GameplayFrame {
     public void tick() {
         transitions.run();
         simulation.run();
-        inputCompletion.run();
+        inputCompletion.complete();
     }
 }

@@ -5,7 +5,6 @@ import static linksawakening.world.room.RoomConstants.*;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.SessionContext;
 import linksawakening.app.story.OpeningStory;
@@ -18,7 +17,6 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -47,7 +45,7 @@ public final class GameplaySimulation {
         }
 
         public boolean dialogBlocks() {
-            return dialogBlockers().get().pausesGameplay();
+            return dialogBlockers().current().pausesGameplay();
         }
 
         public void linkEquipment(boolean blocked, boolean inventory) {
@@ -203,7 +201,7 @@ public final class GameplaySimulation {
         return context.dialogInteractions();
     }
 
-    public Supplier<OverworldDialogBlockers> dialogBlockers() {
+    public linksawakening.app.gameplay.DialogBlockers dialogBlockers() {
         return context.dialogBlockers();
     }
 

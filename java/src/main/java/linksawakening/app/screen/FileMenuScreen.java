@@ -24,7 +24,7 @@ public final class FileMenuScreen implements Screen {
             Runnable startNewGame,
             Consumer<SaveSlotState> startSavedGame,
             Consumer<Runnable> persistFileMenuMutation,
-            Runnable completeInput) {}
+            InputCompletion completeInput) {}
 
     private final Dependencies dependencies;
 
@@ -68,7 +68,7 @@ public final class FileMenuScreen implements Screen {
                     .accept(() ->
                             dependencies.saveRamStore().get().copySlot(action.selectedSlot(), action.targetSlot()));
         }
-        dependencies.completeInput().run();
+        dependencies.completeInput().complete();
         return;
     }
 

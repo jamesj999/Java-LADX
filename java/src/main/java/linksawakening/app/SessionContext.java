@@ -36,9 +36,7 @@ import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.DialogTextLoader;
-import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
@@ -74,6 +72,14 @@ public final class SessionContext {
     }
 
     private final GameSession session;
+    private final GameplayInputState gameplayInput = new GameplayInputState();
+    private final linksawakening.app.gameplay.DialogBlockerPolicy dialogPolicy;
+    private final FrameInputCompletion inputCompletion;
+
+    public GameplayInputState gameplayInput() {
+        return gameplayInput;
+    }
+
     private final SessionDialogSounds dialogSoundRouting;
 
     public SessionContext(GameSession session, boolean headless) {
@@ -106,10 +112,37 @@ public final class SessionContext {
         scene.currentAttrmap = built.currentAttrmap();
         musicDirector = new MusicDirector(services().musicPlayer(), services().gameplayMusicController());
         dialogSoundRouting = new SessionDialogSounds(built.dialogController(), built.dialogSoundSink());
+        dialogPolicy = new linksawakening.app.gameplay.DialogBlockerPolicy(
+                built.inventoryController(),
+                built.dialogController(),
+                scrollController,
+                transitionController,
+                gameplayInput);
+        inputCompletion = new FrameInputCompletion(built.inputState(), gameplayInput);
+        fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(
+                () -> screens.fileMenuController,
+                () -> services().inputState(),
+                () -> services().inputConfig(),
+                () -> saveRamStore,
+                slot -> screens.currentSaveSlot = slot,
+                () -> saves().startNewGame(),
+                saved -> saves().startSavedGame(saved),
+                mutation -> saves().persistFileMenuMutation(mutation),
+                inputCompletion));
+        fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(
+                () -> screens.fileSaveController,
+                () -> services().inputState(),
+                () -> services().inputConfig(),
+                () -> {
+                    screens.fileSaveController = null;
+                    screens.currentScreen = this.gameplayScreen;
+                },
+                () -> saves().saveCurrentPlayerState(),
+                () -> router().startFileSelection(),
+                inputCompletion));
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         simulationGameOverOutcome = this::finishGameOver;
-        simulationDialogBlockers = this::currentOverworldDialogBlockers;
         inputRouterStop = () -> running = false;
         inputRouterScreen = () -> screens.currentScreen;
         inputRouterStartDebug = () -> router().startDebugGameplay();
@@ -124,15 +157,12 @@ public final class SessionContext {
         routerStartNewGame = () -> saves().startNewGame();
         savesStartFileSelection = () -> router().startFileSelection();
         savesShowFileSave = controller -> screens.fileSaveController = controller;
-        openingStoryBlockers = this::currentOverworldDialogBlockers;
-        dialogsBlockers = this::currentOverworldDialogBlockers;
         simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
         inputRouterToggleDebug = () -> {
             debug.debugNoClip = !debug.debugNoClip;
             services().link().setDebugNoClip(debug.debugNoClip);
             DebugLog.log("Debug no-clip: " + (debug.debugNoClip ? "ON" : "OFF"));
         };
-        inputRouterConsumeDialogInput = () -> overworldDialogInputConsumedThisFrame = true;
         routerBackground = backgroundValue -> {
             scene.currentTilemap = backgroundValue.tilemap();
             scene.currentAttrmap = backgroundValue.attrmap();
@@ -168,7 +198,7 @@ public final class SessionContext {
                 new TransitionPhase(
                         scrollController, transitionController, services().link(), scrollSpeed),
                 () -> simulation().tick(),
-                this::completeInputFrame);
+                inputCompletion);
         liftingInstance = new LiftInteraction(this);
         dialogsInstance = new DialogInteractions(this);
         bushesInstance = new BushInteraction(this);
@@ -306,10 +336,8 @@ public final class SessionContext {
         return dialogs();
     }
 
-    private final Supplier<OverworldDialogBlockers> simulationDialogBlockers;
-
-    public Supplier<OverworldDialogBlockers> dialogBlockers() {
-        return simulationDialogBlockers;
+    public linksawakening.app.gameplay.DialogBlockers dialogBlockers() {
+        return dialogPolicy;
     }
 
     private final BooleanSupplier simulationDebugScroll;
@@ -350,12 +378,6 @@ public final class SessionContext {
 
     public Supplier<Screen> screen() {
         return inputRouterScreen;
-    }
-
-    private final Runnable inputRouterConsumeDialogInput;
-
-    public Runnable inputRouterConsumeDialogInput() {
-        return inputRouterConsumeDialogInput;
     }
 
     private final Runnable inputRouterStartDebug;
@@ -592,10 +614,8 @@ public final class SessionContext {
         return newGameTarinShieldPalette;
     }
 
-    private final Supplier<OverworldDialogBlockers> openingStoryBlockers;
-
-    public Supplier<OverworldDialogBlockers> blockers() {
-        return openingStoryBlockers;
+    public linksawakening.app.gameplay.DialogBlockers blockers() {
+        return dialogPolicy;
     }
 
     public linksawakening.app.story.MusicRequests music() {
@@ -610,10 +630,8 @@ public final class SessionContext {
         return services().overworldDialogInteraction();
     }
 
-    private final Supplier<OverworldDialogBlockers> dialogsBlockers;
-
-    public Supplier<OverworldDialogBlockers> dialogsBlockers() {
-        return dialogsBlockers;
+    public linksawakening.app.gameplay.DialogBlockers dialogsBlockers() {
+        return dialogPolicy;
     }
 
     final GameplayFrame gameplayFrame;
@@ -652,7 +670,6 @@ public final class SessionContext {
         0x00000000, 0x00000000, 0x0010A840, 0x00F8B888,
     };
 
-    boolean overworldDialogInputConsumedThisFrame;
     MusicDirector musicDirector;
     SaveRamStore saveRamStore;
     int[] newGameTarinShieldPalette;
@@ -670,27 +687,8 @@ public final class SessionContext {
                 screens.currentScreen = titleScreen;
                 musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             }));
-    final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(
-            () -> screens.fileMenuController,
-            () -> services().inputState(),
-            () -> services().inputConfig(),
-            () -> saveRamStore,
-            slot -> screens.currentSaveSlot = slot,
-            () -> saves().startNewGame(),
-            saved -> saves().startSavedGame(saved),
-            mutation -> saves().persistFileMenuMutation(mutation),
-            this::completeInputFrame));
-    final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(
-            () -> screens.fileSaveController,
-            () -> services().inputState(),
-            () -> services().inputConfig(),
-            () -> {
-                screens.fileSaveController = null;
-                screens.currentScreen = this.gameplayScreen;
-            },
-            () -> saves().saveCurrentPlayerState(),
-            () -> router().startFileSelection(),
-            this::completeInputFrame));
+    final Screen fileMenuScreen;
+    final Screen fileSaveScreen;
     final GameplayScreen gameplayScreen = new GameplayScreen(
             this::tickGameplayScreen,
             (key, action) -> inputRouter().gameplayKey(key, action),
@@ -754,22 +752,11 @@ public final class SessionContext {
     }
 
     void completeInputFrame() {
-        // Run last so all consumers observe this frame's input edges.
-        services().inputState().tickEdges();
-        overworldDialogInputConsumedThisFrame = false;
+        inputCompletion.complete();
     }
 
     void routeDialogSounds() {
         dialogSoundRouting.route();
-    }
-
-    OverworldDialogBlockers currentOverworldDialogBlockers() {
-        return new OverworldDialogBlockers(
-                services().inventoryController().shouldBlockOverworldInput(),
-                scrollController.isActive(),
-                transitionController.isInputBlocked(),
-                GameplayDialogInput.blocksGameplay(services().dialogController()),
-                overworldDialogInputConsumedThisFrame);
     }
 
     AppConfig currentAppConfig() {

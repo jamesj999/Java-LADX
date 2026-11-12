@@ -3,14 +3,12 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 import linksawakening.app.SessionContext;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.LinkDialogPosition;
-import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.input.InputConfig;
@@ -55,7 +53,7 @@ public final class DialogInteractions {
         return context.dialogTextLoader();
     }
 
-    public Supplier<OverworldDialogBlockers> blockers() {
+    public linksawakening.app.gameplay.DialogBlockers blockers() {
         return context.dialogsBlockers();
     }
 
@@ -75,14 +73,14 @@ public final class DialogInteractions {
                         link().pixelY(),
                         link().direction(),
                         true,
-                        blockers().get(),
+                        blockers().current(),
                         dialogController());
     }
 
     public boolean tryOpenChest(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
                 || !roomSession().rooms().hasActiveRoom()
-                || blockers().get().blocksOpening()) {
+                || blockers().current().blocksOpening()) {
             return false;
         }
         ChestOpenResult result = roomSession()

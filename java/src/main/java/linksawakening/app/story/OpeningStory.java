@@ -3,7 +3,6 @@ package linksawakening.app.story;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 import linksawakening.app.SessionContext;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.dialog.DialogController;
@@ -74,7 +73,7 @@ public final class OpeningStory implements OpeningRestoration {
         return context.playerState();
     }
 
-    public Supplier<OverworldDialogBlockers> blockers() {
+    public linksawakening.app.gameplay.DialogBlockers blockers() {
         return context.blockers();
     }
 
@@ -267,7 +266,7 @@ public final class OpeningStory implements OpeningRestoration {
     }
 
     private OverworldDialogBlockers currentOverworldDialogBlockers() {
-        return blockers().get();
+        return blockers().current();
     }
 
     private void playDirectMusic(int track) {

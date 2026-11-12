@@ -18,7 +18,7 @@ public final class FileSaveScreen implements Screen {
             Runnable returnToGame,
             Runnable saveCurrentPlayerState,
             Runnable startFileSelection,
-            Runnable completeInput) {}
+            InputCompletion completeInput) {}
 
     private final Dependencies dependencies;
 
@@ -43,7 +43,7 @@ public final class FileSaveScreen implements Screen {
             dependencies.saveCurrentPlayerState().run();
             dependencies.startFileSelection().run();
         }
-        dependencies.completeInput().run();
+        dependencies.completeInput().complete();
         return;
     }
 
