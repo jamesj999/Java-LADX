@@ -15,12 +15,16 @@ jobs:
         working-directory: java
     steps:
       - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+        if: runner.os == 'Linux'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew classes romFreeTest distZip -PallPlatforms
+      # Public CI cannot distribute a ROM. The local pre-merge gate is
+      # ./gradlew spotlessApply test with the contributor's own LA_ROM.
+      - run: ./gradlew spotlessCheck classes romFreeTest distZip -PallPlatforms
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -28,3 +32,24 @@ jobs:
           path: |
             java/build/reports/tests/
             java/build/test-results/
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+      # Lint and synthetic unit tests never execute a ROM or capture entry point.
+      - run: python -m pip install -r tools/requirements.txt
+      - run: python -m ruff check tools
+      - run: python -m ruff format --check tools
+      - run: python -m pytest tools --junitxml=tools/test-results.xml
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: python-test-reports
+          path: tools/test-results.xml
+          if-no-files-found: ignore

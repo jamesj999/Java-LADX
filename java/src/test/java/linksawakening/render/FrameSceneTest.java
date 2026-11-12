@@ -19,7 +19,7 @@ final class FrameSceneTest {
         }
         List<String> calls = new ArrayList<>();
 
-        FrameScene scene = FrameScene.of(List.of(
+        List<RenderLayer> layers = List.of(
                 context -> {
                     calls.add("first");
                     writePixel(context.buffer(), 0, 0, 0x112233);
@@ -27,9 +27,9 @@ final class FrameSceneTest {
                 context -> {
                     calls.add("second");
                     writePixel(context.buffer(), 1, 0, 0x445566);
-                }));
+                });
 
-        scene.drawTo(buffer, gpu);
+        CallbackScene.drawCallbacks(layers, buffer, gpu);
 
         assertEquals(List.of("first", "second"), calls);
         assertEquals(0x112233, pixelColor(buffer, 0, 0));

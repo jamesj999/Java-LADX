@@ -62,7 +62,7 @@ be disclosed. Region parity and engine-internal compositor parity do not imply
 whole-scene or emulator parity. Failed captures retain observations and do not
 produce a completion manifest.
 
-The [dated log](history/reconstruction-log.md) remains historical evidence,
+The [dated log](archive/history/reconstruction-log.md) remains historical evidence,
 including the earlier successful rescue and its then-current limitations.
 Current evidence pages are indexed in [README.md](README.md); local `/tmp`
 captures may no longer exist. This status page does not rewrite those records.

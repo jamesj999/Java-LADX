@@ -12,10 +12,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /** Measures every FrameScene draw made by the existing tests, including replay checkpoints. */
-public final class SceneParityExtension implements BeforeEachCallback, AfterEachCallback {
+public final class SceneParityExtension implements BeforeEachCallback, BeforeTestExecutionCallback, AfterEachCallback {
     private static final ExtensionContext.Namespace KEY = ExtensionContext.Namespace.create(SceneParityExtension.class);
 
     private static final class Group {
@@ -95,6 +96,33 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         });
     }
 
+    @Override
+    public void beforeTestExecution(ExtensionContext context) throws Exception {
+        var builders = new ArrayList<GameFrameSceneBuilder>();
+        var visited = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        attach(context.getRequiredTestInstance(), builders, visited, 0);
+        context.getStore(KEY).put("builders", builders);
+    }
+
+    private static void attach(Object owner, List<GameFrameSceneBuilder> builders, Set<Object> visited, int depth)
+            throws IllegalAccessException {
+        if (owner == null || depth > 5 || !visited.add(owner)) return;
+        if (owner instanceof GameFrameSceneBuilder builder) {
+            builder.setDrawObserver(TestDrawObservers.CURRENT.get());
+            builders.add(builder);
+            return;
+        }
+        for (Class<?> type = owner.getClass();
+                type != null && type.getName().startsWith("linksawakening");
+                type = type.getSuperclass()) {
+            for (var field : type.getDeclaredFields()) {
+                if (!field.getType().getName().startsWith("linksawakening")) continue;
+                field.setAccessible(true);
+                attach(field.get(owner), builders, visited, depth + 1);
+            }
+        }
+    }
+
     private static List<String> blockedLayers(FrameScene scene) {
         return scene.layersForComparison().stream()
                 .filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
@@ -125,6 +153,9 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
+        @SuppressWarnings("unchecked")
+        var builders = (List<GameFrameSceneBuilder>) context.getStore(KEY).remove("builders");
+        if (builders != null) builders.forEach(builder -> builder.setDrawObserver(null));
         TestDrawObservers.CURRENT.remove();
         @SuppressWarnings("unchecked")
         var rows = (ArrayList<String>) context.getStore(KEY).remove("rows");

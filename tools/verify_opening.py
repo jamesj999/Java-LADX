@@ -13,6 +13,7 @@ checks settled pages and poses, not all transition frames or a Java input replay
 Any failed command stops the run with a nonzero exit code. Golden test fixtures
 are deliberately not updated by this runner.
 """
+
 import json
 from pathlib import Path
 import subprocess
@@ -22,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(*args):
-    print('+ ' + ' '.join(map(str, args)), flush=True)
+    print("+ " + " ".join(map(str, args)), flush=True)
     subprocess.run(args, cwd=ROOT, check=True)
 
 
@@ -31,31 +32,40 @@ def python(script, *args):
 
 
 def gradle(*args):
-    run('gradle', '-p', 'java', *args)
+    run("gradle", "-p", "java", *args)
 
 
 def main():
-    gradle('test', 'captureIntro')
-    python('tools/intro/compare.py', '--all')
-    python('tools/menu/compare.py', '--capture')
-    gradle('captureMenu')
-    python('tools/menu/compare.py')
-    python('tools/house/compare.py', '--capture')
-    gradle('captureHouse')
-    python('tools/house/compare.py')
+    gradle("test", "captureIntro")
+    python("tools/intro/compare.py", "--all")
+    python("tools/menu/compare.py", "--capture")
+    gradle("captureMenu")
+    python("tools/menu/compare.py")
+    python("tools/house/compare.py", "--capture")
+    gradle("captureHouse")
+    python("tools/house/compare.py")
     results = {}
-    for scenario in ('marin', 'marin-timing', 'marin-scroll', 'marin-close', 'bed-exit', 'tarin-offer', 'shield-pose', 'tarin-shield'):
-        python('tools/dialog/compare.py', '--capture', '--scenario', scenario)
-        gradle('captureDialog', '-PdialogScenario=' + scenario)
-        python('tools/dialog/compare.py', '--scenario', scenario)
-        folder = ROOT / 'java/build/dialog-comparison'
-        if scenario != 'marin':
+    for scenario in (
+        "marin",
+        "marin-timing",
+        "marin-scroll",
+        "marin-close",
+        "bed-exit",
+        "tarin-offer",
+        "shield-pose",
+        "tarin-shield",
+    ):
+        python("tools/dialog/compare.py", "--capture", "--scenario", scenario)
+        gradle("captureDialog", "-PdialogScenario=" + scenario)
+        python("tools/dialog/compare.py", "--scenario", scenario)
+        folder = ROOT / "java/build/dialog-comparison"
+        if scenario != "marin":
             folder /= scenario
-        result = json.loads((folder / 'results.json').read_text())
-        results[scenario] = {key: result[key] for key in ('frames', 'exact', 'max_pixels')}
-    (ROOT / 'java/build/opening-verification.json').write_text(json.dumps(results, indent=2) + '\n')
-    print('Opening verification passed. See java/build/*-comparison/report.html.')
+        result = json.loads((folder / "results.json").read_text())
+        results[scenario] = {key: result[key] for key in ("frames", "exact", "max_pixels")}
+    (ROOT / "java/build/opening-verification.json").write_text(json.dumps(results, indent=2) + "\n")
+    print("Opening verification passed. See java/build/*-comparison/report.html.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

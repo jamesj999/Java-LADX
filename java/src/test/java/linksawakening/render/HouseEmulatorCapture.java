@@ -80,7 +80,7 @@ public final class HouseEmulatorCapture {
                             .withLink(link)
                             .withInventoryController(inventory)
                             .withFrameCounter(frame))
-                    .drawTo(pixels, gpu);
+                    .drawTo(pixels, gpu, TestDrawObservers.CURRENT.get());
             CaptureImageWriter.write(pixels, folder.resolve(String.format("%03d.png", f)));
         }
     }

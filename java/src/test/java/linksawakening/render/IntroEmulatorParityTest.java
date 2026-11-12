@@ -48,7 +48,7 @@ final class IntroEmulatorParityTest {
                 builder.build(GameFrameState.empty()
                                 .withScreen(RenderScreen.CUTSCENE)
                                 .withIntroFrameSnapshot(sequence.snapshot()))
-                        .drawTo(rgba, gpu);
+                        .drawTo(rgba, gpu, TestDrawObservers.CURRENT.get());
                 byte[] rgb555 = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 3];
                 for (int pixel = 0; pixel < Framebuffer.WIDTH * Framebuffer.HEIGHT; pixel++) {
                     for (int channel = 0; channel < 3; channel++)
