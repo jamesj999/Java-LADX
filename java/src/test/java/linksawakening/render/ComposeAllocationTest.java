@@ -37,7 +37,7 @@ final class ComposeAllocationTest {
             for (int i = 0; i < 200; i++) scene.drawTo(output, gpu);
             long bytes = (bean.getThreadAllocatedBytes(thread) - before) / 200;
             System.out.println("Compose allocation: " + bytes + " bytes/frame");
-            assertTrue(bytes >= 0);
+            assertTrue(bytes < 4096, "Expected <4096 bytes/frame, measured " + bytes);
         } finally {
             if (observer != null) TestDrawObservers.CURRENT.set(observer);
         }

@@ -189,4 +189,23 @@ final class HardwareFrameTest {
         org.junit.jupiter.api.Assertions.assertFalse(
                 frame.diagnostics().explainsInventoryHiding(legacy, hardware, pixel));
     }
+
+    @Test
+    void resetDropsPlanesEntriesTransformsAndWindowFilters() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.withPaletteTransform(
+                color -> color + 100, () -> frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, true));
+        frame.append(solid(3), 0, 0, false, false, PALETTE, false);
+        frame.hideGameplayObjectsUnderWindow(64);
+        assertEquals(122, pixel(frame, 0, 0));
+        frame.reset();
+        assertEquals(0, pixel(frame, 0, 0));
+        frame.submittingLayer("EntityRenderLayer");
+        frame.append(solid(2), 0, 72, false, false, PALETTE, false);
+        frame.hideSpritesUnderDialog(true);
+        assertEquals(0, pixel(frame, 0, 72));
+        frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, false);
+        frame.append(solid(3), 0, 0, false, false, PALETTE, false);
+        assertEquals(44, pixel(frame, 0, 0));
+    }
 }
