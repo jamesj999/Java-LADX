@@ -9,7 +9,7 @@ import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 
 /** Session-local track selection, preserving ROM area and event track ownership. */
-public final class MusicDirector {
+public final class MusicDirector implements linksawakening.app.story.MusicRequests {
     private final FrameMusicPlayer musicPlayer;
     private final GameplayMusicController gameplayMusicController;
 

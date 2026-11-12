@@ -4,8 +4,6 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import linksawakening.app.SessionContext;
 import linksawakening.audio.music.MusicTrackIds;
@@ -81,12 +79,8 @@ public final class OpeningStory {
         return context.blockers();
     }
 
-    public IntConsumer music() {
+    public MusicRequests music() {
         return context.music();
-    }
-
-    public IntSupplier houseMusic() {
-        return context.houseMusic();
     }
 
     public boolean tickNewGameWakeUp() {
@@ -278,11 +272,11 @@ public final class OpeningStory {
     }
 
     private void playDirectMusic(int track) {
-        music().accept(track);
+        music().playDirectMusic(track);
     }
 
     private int newGameHouseMusicTrack() {
-        return houseMusic().getAsInt();
+        return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
     }
 
     public void restoreNewGameHouseRuntimeIfNeeded(

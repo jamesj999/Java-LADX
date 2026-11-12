@@ -38,7 +38,7 @@ final class DialogStoryPhase {
         }
         {
             context.dialogController().tick();
-            context.dialogSounds().run();
+            context.dialogSounds().route();
         }
         context.story().updateNewGameMarinPresentation();
         if (context.story().tickNewGameWakeUp()) {

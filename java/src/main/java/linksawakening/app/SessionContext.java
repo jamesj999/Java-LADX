@@ -7,7 +7,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.app.debug.DebugMenuOverlay;
@@ -36,7 +35,6 @@ import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.GameplaySoundSink;
@@ -76,6 +74,7 @@ public final class SessionContext {
     }
 
     private final GameSession session;
+    private final SessionDialogSounds dialogSoundRouting;
 
     public SessionContext(GameSession session, boolean headless) {
         this.session = Objects.requireNonNull(session);
@@ -106,11 +105,11 @@ public final class SessionContext {
         scene.currentTilemap = built.currentTilemap();
         scene.currentAttrmap = built.currentAttrmap();
         musicDirector = new MusicDirector(services().musicPlayer(), services().gameplayMusicController());
+        dialogSoundRouting = new SessionDialogSounds(built.dialogController(), built.dialogSoundSink());
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         simulationGameOverOutcome = this::finishGameOver;
         simulationDialogBlockers = this::currentOverworldDialogBlockers;
-        simulationDialogSounds = this::routeDialogSounds;
         inputRouterStop = () -> running = false;
         inputRouterScreen = () -> screens.currentScreen;
         inputRouterStartDebug = () -> router().startDebugGameplay();
@@ -126,8 +125,6 @@ public final class SessionContext {
         savesStartFileSelection = () -> router().startFileSelection();
         savesShowFileSave = controller -> screens.fileSaveController = controller;
         openingStoryBlockers = this::currentOverworldDialogBlockers;
-        openingStoryMusic = musicDirector::playDirectMusic;
-        openingStoryHouseMusic = MusicDirector::newGameHouseMusicTrack;
         dialogsBlockers = this::currentOverworldDialogBlockers;
         simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
         inputRouterToggleDebug = () -> {
@@ -326,10 +323,8 @@ public final class SessionContext {
         return simulationDebugScroll;
     }
 
-    private final Runnable simulationDialogSounds;
-
-    public Runnable dialogSounds() {
-        return simulationDialogSounds;
+    public linksawakening.app.gameplay.DialogSoundRouting dialogSounds() {
+        return dialogSoundRouting;
     }
 
     public int roomPixelWidth() {
@@ -604,16 +599,8 @@ public final class SessionContext {
         return openingStoryBlockers;
     }
 
-    private final IntConsumer openingStoryMusic;
-
-    public IntConsumer music() {
-        return openingStoryMusic;
-    }
-
-    private final IntSupplier openingStoryHouseMusic;
-
-    public IntSupplier houseMusic() {
-        return openingStoryHouseMusic;
+    public linksawakening.app.story.MusicRequests music() {
+        return musicDirector;
     }
 
     public OverworldBushInteraction overworldBushInteraction() {
@@ -774,7 +761,7 @@ public final class SessionContext {
     }
 
     void routeDialogSounds() {
-        DialogSoundRouter.routePending(services().dialogController(), services().dialogSoundSink());
+        dialogSoundRouting.route();
     }
 
     OverworldDialogBlockers currentOverworldDialogBlockers() {

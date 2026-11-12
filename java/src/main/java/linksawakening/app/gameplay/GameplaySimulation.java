@@ -211,7 +211,7 @@ public final class GameplaySimulation {
         return context.simulationDebugScroll();
     }
 
-    public Runnable dialogSounds() {
+    public DialogSoundRouting dialogSounds() {
         return context.dialogSounds();
     }
 
