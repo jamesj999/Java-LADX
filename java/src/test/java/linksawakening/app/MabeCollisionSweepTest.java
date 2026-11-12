@@ -29,8 +29,8 @@ final class MabeCollisionSweepTest {
         try (var stream = TestRom.open()) {
             bytes = stream.readAllBytes();
         }
-        Rom rom = new Rom(bytes);
-        var tables = RomTables.loadFromRom(bytes);
+        Rom rom = Rom.of(bytes);
+        var tables = RomTables.load(linksawakening.rom.Rom.unchecked(bytes));
         int cases = 0;
         List<String> mismatches = new ArrayList<>();
         for (int roomId : ROOMS) {
@@ -46,7 +46,7 @@ final class MabeCollisionSweepTest {
                         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
                         var link =
                                 new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
-                        link.setRoomEntryPixelPosition(x, y);
+                        link.position().setRoomEntryPixelPosition(x, y);
                         int key =
                                 switch (dir) {
                                     case 0 -> config.downKey();
@@ -55,12 +55,12 @@ final class MabeCollisionSweepTest {
                                     default -> config.rightKey();
                                 };
                         input.onKeyEvent(key, 1);
-                        link.update();
+                        link.motion().update();
                         cases++;
-                        if (link.romCollisionType() != 0)
+                        if (link.position().romCollisionType() != 0)
                             mismatches.add(String.format(
                                     "%02X (%d,%d) %s collision=%02X",
-                                    roomId, x, y, BUTTON[dir], link.romCollisionType()));
+                                    roomId, x, y, BUTTON[dir], link.position().romCollisionType()));
                     }
                 }
         }
@@ -74,7 +74,7 @@ final class MabeCollisionSweepTest {
         try (var stream = TestRom.open()) {
             bytes = stream.readAllBytes();
         }
-        var rom = new Rom(bytes);
+        var rom = Rom.of(bytes);
         var game = new GameSession((pcm, rate) -> {});
         game.initializeHeadlessNewGame();
         List<String> invisible = new ArrayList<>();
@@ -93,18 +93,22 @@ final class MabeCollisionSweepTest {
                             if (session.rooms().currentRoomId() != roomId
                                     || session.rooms().mapCategory() != 0)
                                 game.debugTeleport(new Warp(0, 0, roomId, 80, 96, -1));
-                            link.resetTransientStateForDebug();
-                            link.setRoomEntryPixelPosition(x, y);
+                            link.motion().resetTransientStateForDebug();
+                            link.position().setRoomEntryPixelPosition(x, y);
                             game.headlessButton(BUTTON[dir], true);
                             game.headlessFrame();
                             game.headlessButton(BUTTON[dir], false);
                             cases++;
-                            if (link.pixelX() == x && link.pixelY() == y && link.romCollisionType() == 0) {
+                            if (link.position().pixelX() == x
+                                    && link.position().pixelY() == y
+                                    && link.position().romCollisionType() == 0) {
                                 entityBlocks++;
                                 for (var entity :
                                         session.rooms().activeRoom().entities().loadedEntities()) {
-                                    if (Math.abs(entity.x() - link.romEntityX()) < 20
-                                            && Math.abs(entity.y() - link.romEntityY()) < 20
+                                    if (Math.abs(entity.x() - link.position().romEntityX()) < 20
+                                            && Math.abs(entity.y()
+                                                            - link.position().romEntityY())
+                                                    < 20
                                             && !entity.spriteDefinition().supported()) {
                                         invisible.add(String.format(
                                                 "room=%02X (%d,%d) %s slot=%d type=%02X entity=(%d,%d)",

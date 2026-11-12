@@ -9,6 +9,7 @@ final class FeatherWiring {
     private FeatherWiring() {}
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
-        registry.register(InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(c.link()));
+        registry.register(
+                InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(c.link().airborne()::useRocsFeather));
     }
 }

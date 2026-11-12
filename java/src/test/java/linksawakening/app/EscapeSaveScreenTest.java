@@ -61,7 +61,7 @@ final class EscapeSaveScreenTest {
                             state.roomSession().rooms().renderSnapshot(),
                             160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
-            case PASS_OUT -> state.link().beginPassOut();
+            case PASS_OUT -> state.link().status().beginPassOut();
         }
         press(game, "escape");
         assertEquals(RenderScreen.OVERWORLD, screen(game));
@@ -81,7 +81,7 @@ final class EscapeSaveScreenTest {
             }
             case SCROLL -> state.scrollController().tick(160);
             case TRANSITION -> frames(game, 40);
-            case PASS_OUT -> state.link().finishGameOver();
+            case PASS_OUT -> state.link().status().finishGameOver();
         }
         frames(game, 2);
         assertEquals(RenderScreen.OVERWORLD, screen(game), "Blocked request must be discarded");

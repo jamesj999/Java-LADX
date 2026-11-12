@@ -15,7 +15,7 @@ public final class NoClipControl implements DebugActions {
 
     public void toggleNoClip() {
         state.debugNoClip = !state.debugNoClip;
-        link.setDebugNoClip(state.debugNoClip);
+        link.motion().setDebugNoClip(state.debugNoClip);
         DebugLog.log("Debug no-clip: " + (state.debugNoClip ? "ON" : "OFF"));
     }
 }

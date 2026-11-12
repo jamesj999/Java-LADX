@@ -120,9 +120,9 @@ public abstract sealed class SessionDiagnostics permits HeadlessGameDriver.Diagn
     }
 
     public boolean headlessHasInventoryItem(int item) {
-        if (playerState.itemA() == item || playerState.itemB() == item) return true;
+        if (playerState.inventory().itemA() == item || playerState.inventory().itemB() == item) return true;
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
-            if (playerState.subscreenItem(slot) == item) return true;
+            if (playerState.inventory().subscreenItem(slot) == item) return true;
         }
         return false;
     }
@@ -132,7 +132,8 @@ public abstract sealed class SessionDiagnostics permits HeadlessGameDriver.Diagn
     }
 
     public String headlessMoblinKingTrace() {
-        return roomSession.rooms().moblinKingTrace() + "," + playerState.activePowerUp();
+        return roomSession.rooms().moblinKingTrace() + ","
+                + playerState.equipmentLevels().activePowerUp();
     }
 
     public int headlessBowWowState() {
@@ -143,7 +144,10 @@ public abstract sealed class SessionDiagnostics permits HeadlessGameDriver.Diagn
         Sword sword = equipmentController.activeSword();
         Sword.CollisionBox box = sword == null
                 ? Sword.CollisionBox.inactive()
-                : sword.enemyCollisionBox(link.romEntityX(), link.romSwordCollisionY(), link.direction());
+                : sword.enemyCollisionBox(
+                        link.position().romEntityX(),
+                        link.position().romSwordCollisionY(),
+                        link.animation().direction());
         return "%d,%d,%d,%d,%d;%s"
                 .formatted(
                         box.active() ? 1 : 0,

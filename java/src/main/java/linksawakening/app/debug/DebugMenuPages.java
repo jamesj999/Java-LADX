@@ -45,101 +45,120 @@ final class DebugMenuPages {
     };
 
     static void inventory(DebugMenu menu, PlayerState p) {
-        menu.add(1, "A", p::itemA, p::setItemA, 0, 13, v -> ITEMS[v]);
-        menu.add(1, "B", p::itemB, p::setItemB, 0, 13, v -> ITEMS[v]);
+        menu.add(1, "A", p.inventory()::itemA, p.inventory()::setItemA, 0, 13, v -> ITEMS[v]);
+        menu.add(1, "B", p.inventory()::itemB, p.inventory()::setItemB, 0, 13, v -> ITEMS[v]);
         for (int i = 0; i < PlayerState.SUBSCREEN_SLOT_COUNT; i++) {
             final int slot = i;
             menu.add(
                     1,
                     "Slot " + (i + 1),
-                    () -> p.subscreenItem(slot),
+                    () -> p.inventory().subscreenItem(slot),
                     v -> {
                         int[] items = new int[PlayerState.SUBSCREEN_SLOT_COUNT];
-                        for (int j = 0; j < items.length; j++) items[j] = p.subscreenItem(j);
+                        for (int j = 0; j < items.length; j++)
+                            items[j] = p.inventory().subscreenItem(j);
                         items[slot] = v;
-                        p.setSubscreenItems(items);
+                        p.inventory().setSubscreenItems(items);
                     },
                     0,
                     13,
                     v -> ITEMS[v]);
         }
-        menu.add(1, "Sword level", p::swordLevel, p::setSwordLevel, 0, 2);
-        menu.add(1, "Shield level", p::shieldLevel, p::setShieldLevel, 0, 2);
-        menu.add(1, "Bracelet level", p::powerBraceletLevel, p::setPowerBraceletLevel, 0, 2);
+        menu.add(1, "Sword level", p.equipmentLevels()::swordLevel, p.equipmentLevels()::setSwordLevel, 0, 2);
+        menu.add(1, "Shield level", p.equipmentLevels()::shieldLevel, p.equipmentLevels()::setShieldLevel, 0, 2);
+        menu.add(
+                1,
+                "Bracelet level",
+                p.equipmentLevels()::powerBraceletLevel,
+                p.equipmentLevels()::setPowerBraceletLevel,
+                0,
+                2);
     }
 
     static void resources(DebugMenu menu, PlayerState p) {
         menu.add(
                 2,
                 "Rupees",
-                p::rupees,
+                p.wallet()::rupees,
                 v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setRupees(v);
+                    p.playerResources().clearResourceBuffersForDebug();
+                    p.wallet().setRupees(v);
                 },
                 0,
                 999);
         menu.add(
                 2,
                 "Hearts",
-                p::maxHearts,
+                p.vitals()::maxHearts,
                 v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setMaxHearts(v);
+                    p.playerResources().clearResourceBuffersForDebug();
+                    p.vitals().setMaxHearts(v);
                 },
                 1,
                 14);
         menu.add(
                 2,
                 "HP (1/8 heart)",
-                p::health,
+                p.vitals()::health,
                 v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setHealth(v);
+                    p.playerResources().clearResourceBuffersForDebug();
+                    p.vitals().setHealth(v);
                 },
                 0,
                 112);
-        menu.add(2, "Heart pieces", p::heartPieces, p::setHeartPieces, 0, 3);
-        menu.add(2, "Max arrows", p::maxArrows, p::setMaxArrows, 0, 99);
-        menu.add(2, "Arrows", p::arrowCount, p::setArrowCount, 0, 99);
-        menu.add(2, "Max bombs", p::maxBombs, p::setMaxBombs, 0, 99);
-        menu.add(2, "Bombs", p::bombCount, p::setBombCount, 0, 99);
-        menu.add(2, "Max powder", p::maxMagicPowder, p::setMaxMagicPowder, 0, 99);
-        menu.add(2, "Powder", p::magicPowderCount, p::setMagicPowderCount, 0, 99);
-        menu.add(2, "Seashells", p::seashells, p::setSeashells, 0, 99);
+        menu.add(2, "Heart pieces", p.progression()::heartPieces, p.progression()::setHeartPieces, 0, 3);
+        menu.add(2, "Max arrows", p.ammunition()::maxArrows, p.ammunition()::setMaxArrows, 0, 99);
+        menu.add(2, "Arrows", p.ammunition()::arrowCount, p.ammunition()::setArrowCount, 0, 99);
+        menu.add(2, "Max bombs", p.ammunition()::maxBombs, p.ammunition()::setMaxBombs, 0, 99);
+        menu.add(2, "Bombs", p.ammunition()::bombCount, p.ammunition()::setBombCount, 0, 99);
+        menu.add(2, "Max powder", p.ammunition()::maxMagicPowder, p.ammunition()::setMaxMagicPowder, 0, 99);
+        menu.add(2, "Powder", p.ammunition()::magicPowderCount, p.ammunition()::setMagicPowderCount, 0, 99);
+        menu.add(2, "Seashells", p.progression()::seashells, p.progression()::setSeashells, 0, 99);
     }
 
     static void questItems(DebugMenu menu, PlayerState p, RoomSession world) {
-        menu.add(3, "Flippers", () -> p.hasFlippers() ? 1 : 0, v -> p.setHasFlippers(v != 0), 0, 1);
-        menu.add(3, "Toadstool", () -> p.hasToadstool() ? 1 : 0, v -> p.setHasToadstool(v != 0), 0, 1);
+        menu.add(
+                3,
+                "Flippers",
+                () -> p.progression().hasFlippers() ? 1 : 0,
+                v -> p.progression().setHasFlippers(v != 0),
+                0,
+                1);
+        menu.add(
+                3,
+                "Toadstool",
+                () -> p.ammunition().hasToadstool() ? 1 : 0,
+                v -> p.ammunition().setHasToadstool(v != 0),
+                0,
+                1);
         menu.add(
                 3,
                 "Medicine",
-                p::medicineCount,
+                p.progression()::medicineCount,
                 v -> {
-                    p.setMedicineCount(v);
-                    p.setHasMedicine(v != 0);
+                    p.progression().setMedicineCount(v);
+                    p.progression().setHasMedicine(v != 0);
                 },
                 0,
                 255);
         menu.add(
                 3,
                 "Tail key",
-                p::tailKeyCount,
+                p.progression()::tailKeyCount,
                 v -> {
-                    p.setTailKeyCount(v);
+                    p.progression().setTailKeyCount(v);
                     world.story().setTailKeyOwned(v != 0);
                 },
                 0,
                 1);
-        menu.add(3, "Angler key", p::anglerKeyCount, p::setAnglerKeyCount, 0, 1);
-        menu.add(3, "Face key", p::faceKeyCount, p::setFaceKeyCount, 0, 1);
+        menu.add(3, "Angler key", p.progression()::anglerKeyCount, p.progression()::setAnglerKeyCount, 0, 1);
+        menu.add(3, "Face key", p.progression()::faceKeyCount, p.progression()::setFaceKeyCount, 0, 1);
         menu.add(
                 3,
                 "Bird key",
-                p::birdKeyCount,
+                p.progression()::birdKeyCount,
                 v -> {
-                    p.setBirdKeyCount(v);
+                    p.progression().setBirdKeyCount(v);
                     world.story().setBirdKeyOwned(v != 0);
                 },
                 0,
@@ -147,17 +166,17 @@ final class DebugMenuPages {
     }
 
     static void questProgress(DebugMenu menu, PlayerState p, RoomSession world) {
-        menu.add(3, "Leaves/key", p::goldenLeavesCount, p::setGoldenLeavesCount, 0, 6);
+        menu.add(3, "Leaves/key", p.progression()::goldenLeavesCount, p.progression()::setGoldenLeavesCount, 0, 6);
         menu.add(
                 3,
                 "Trade",
-                p::tradeSequenceItem,
-                p::setTradeSequenceItem,
+                p.progression()::tradeSequenceItem,
+                p.progression()::setTradeSequenceItem,
                 0,
                 14,
                 v -> v < TRADES.length ? TRADES[v] : Integer.toString(v));
-        menu.add(3, "Song bits", p::ocarinaSongFlags, p::setOcarinaSongFlags, 0, 7);
-        menu.add(3, "Tunic", p::tunicType, p::setTunicType, 0, 2);
+        menu.add(3, "Song bits", p.progression()::ocarinaSongFlags, p.progression()::setOcarinaSongFlags, 0, 7);
+        menu.add(3, "Tunic", p.equipmentLevels()::tunicType, p.equipmentLevels()::setTunicType, 0, 2);
         menu.add(3, "BowWow state", world.story()::bowWowState, world.story()::setBowWowState, 0, 255);
         menu.add(3, "Richard flag", world.story()::richardSpokenFlag, world.story()::setRichardSpokenFlag, 0, 255);
         menu.add(3, "Tarin flag", world.story()::tarinFlag, world.story()::setTarinFlag, 0, 255);

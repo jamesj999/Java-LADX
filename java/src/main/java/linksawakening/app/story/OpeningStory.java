@@ -54,18 +54,19 @@ public final class OpeningStory implements OpeningRestoration {
                 .wakeUp()
                 .tick(state.clock().value(), ui.dialogController().isActive(), directionPressed);
         if (update.linkMotionBlocked()) {
-            player.link().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
-            player.link().blockNextRomMotionFrame();
-            player.link().showMarinWakeUpBed(update.bedSpriteVariant());
+            player.link().position().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
+            player.link().motion().blockNextRomMotionFrame();
+            player.link().animation().showMarinWakeUpBed(update.bedSpriteVariant());
         }
         if (update.openWakeDialog()) {
             ui.dialogController()
                     .openPreformattedForLinkY(
                             ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
-                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
+                            LinkDialogPosition.dialogYFromTopLeft(
+                                    player.link().position().pixelY()));
         }
         if (update.leaveBed()) {
-            player.link().leaveMarinWakeUpBed();
+            player.link().actions().leaveMarinWakeUpBed();
         }
         return true;
     }
@@ -80,8 +81,8 @@ public final class OpeningStory implements OpeningRestoration {
                     .story()
                     .updateHouseTarinPresentation(
                             state.clock().value(),
-                            player.link().romEntityX(),
-                            player.link().romEntityY());
+                            player.link().position().romEntityX(),
+                            player.link().position().romEntityY());
         }
         if (state.opening().wakeUp() == null
                 || !world.roomSession().rooms().hasActiveRoom()
@@ -102,8 +103,8 @@ public final class OpeningStory implements OpeningRestoration {
                             state.clock().value(),
                             entity.x(),
                             entity.y(),
-                            player.link().romEntityX(),
-                            player.link().romEntityY());
+                            player.link().position().romEntityX(),
+                            player.link().position().romEntityY());
             world.roomSession()
                     .story()
                     .applyMarinWakeUpPresentation(
@@ -132,25 +133,26 @@ public final class OpeningStory implements OpeningRestoration {
                     && TarinShieldMotion.canTalkToEntity(
                             entity.x(),
                             entity.y(),
-                            player.link().romEntityX(),
-                            player.link().romEntityY(),
-                            Direction.fromJava(player.link().direction()).romIndex(),
-                            player.link().isAirborne(),
+                            player.link().position().romEntityX(),
+                            player.link().position().romEntityY(),
+                            Direction.fromJava(player.link().animation().direction())
+                                    .romIndex(),
+                            player.link().airborne().isAirborne(),
                             true,
                             ui.dialogController().isActive())) {
                 TarinShieldMotion.Update update = state.opening()
                         .shield()
                         .tick(
                                 false,
-                                player.link().romEntityY(),
+                                player.link().position().romEntityY(),
                                 true,
-                                player.playerState().shieldLevel());
+                                player.playerState().equipmentLevels().shieldLevel());
                 if (update.dialogLowId() >= 0) {
                     ui.dialogController()
                             .openPreformattedForLinkY(
                                     ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
                                     LinkDialogPosition.dialogYFromTopLeft(
-                                            player.link().pixelY()));
+                                            player.link().position().pixelY()));
                 }
                 return true;
             }
@@ -180,11 +182,11 @@ public final class OpeningStory implements OpeningRestoration {
                             .canOpenFollowUpDialog(
                                     entity.x(),
                                     entity.y(),
-                                    player.link().romEntityX(),
-                                    player.link().romEntityY(),
-                                    Direction.fromJava(player.link().direction())
+                                    player.link().position().romEntityX(),
+                                    player.link().position().romEntityY(),
+                                    Direction.fromJava(player.link().animation().direction())
                                             .romIndex(),
-                                    player.link().isAirborne(),
+                                    player.link().airborne().isAirborne(),
                                     true,
                                     ui.dialogController().isActive())) {
                 ui.dialogController()
@@ -193,7 +195,7 @@ public final class OpeningStory implements OpeningRestoration {
                                         .load(new SignpostDialogRef(
                                                 0, state.opening().wakeUp().followUpDialogLowId())),
                                 LinkDialogPosition.dialogYFromTopLeft(
-                                        player.link().pixelY()));
+                                        player.link().position().pixelY()));
                 return true;
             }
         }
@@ -211,21 +213,21 @@ public final class OpeningStory implements OpeningRestoration {
                 .shield()
                 .tick(
                         ui.dialogController().isActive(),
-                        player.link().romEntityY(),
+                        player.link().position().romEntityY(),
                         false,
-                        player.playerState().shieldLevel());
+                        player.playerState().equipmentLevels().shieldLevel());
         if (update.presentShield()) {
-            player.link().showTarinShieldPresentation(actions.shieldPalette());
+            player.link().animation().showTarinShieldPresentation(actions.shieldPalette());
         } else {
-            player.link().clearTarinShieldPresentation();
+            player.link().animation().clearTarinShieldPresentation();
         }
-        if (update.linkY() != player.link().romEntityY()) {
-            player.link().setPixelPosition(player.link().pixelX(), update.linkY() - 0x10);
-            player.link().blockNextRomMotionFrame();
+        if (update.linkY() != player.link().position().romEntityY()) {
+            player.link().position().setPixelPosition(player.link().position().pixelX(), update.linkY() - 0x10);
+            player.link().motion().blockNextRomMotionFrame();
         }
         if (update.grantShield()) {
-            player.playerState().applyChestReward(ChestContentsTable.CHEST_SHIELD);
-            player.link().showStandingShieldDownPose();
+            player.playerState().chestRewards().applyChestReward(ChestContentsTable.CHEST_SHIELD);
+            player.link().animation().showStandingShieldDownPose();
             // MUSIC_OBTAIN_ITEM is a jingle in the ROM.  The host music
             // player loops direct tracks, so resume the house track when
             // TarinShield2Handler awards the shield and opens Dialog091.
@@ -238,7 +240,8 @@ public final class OpeningStory implements OpeningRestoration {
             ui.dialogController()
                     .openPreformattedForLinkY(
                             ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
-                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
+                            LinkDialogPosition.dialogYFromTopLeft(
+                                    player.link().position().pixelY()));
         }
         return update.linkMotionBlocked();
     }
@@ -273,11 +276,11 @@ public final class OpeningStory implements OpeningRestoration {
 
     public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved, OpeningRestoration target) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
-            if (player.playerState().swordLevel() == 0) {
+            if (player.playerState().equipmentLevels().swordLevel() == 0) {
                 target.restoreWake(MarinWakeUpMotion.postWake());
                 target.refreshPresentation();
             }
-            if (player.playerState().shieldLevel() == 0) {
+            if (player.playerState().equipmentLevels().shieldLevel() == 0) {
                 target.restoreShield(new TarinShieldMotion());
             }
         }

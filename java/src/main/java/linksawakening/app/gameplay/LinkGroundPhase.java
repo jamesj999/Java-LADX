@@ -11,7 +11,10 @@ final class LinkGroundPhase {
                 .terrain()
                 .tickCrackedFloor(
                         groundFrame(
-                                context, context.link().pixelX(), context.link().pixelY(), interactionBlocked),
+                                context,
+                                context.link().position().pixelX(),
+                                context.link().position().pixelY(),
+                                interactionBlocked),
                         dialogGotItemActive(context));
     }
 
@@ -19,7 +22,7 @@ final class LinkGroundPhase {
      * sequence (UseMagicPowder $00:149E) and the witch presentation
      * ($05:4834, $05:48DB). */
     static boolean dialogGotItemActive(GameplaySimulation context) {
-        return (context.link().dialogGotItemActive())
+        return (context.link().animation().dialogGotItemActive())
                 || (context.roomSession().entityState().gotItemPresentationActive());
     }
 
@@ -27,13 +30,13 @@ final class LinkGroundPhase {
         return new LinkGroundFrame(
                 pixelX,
                 pixelY,
-                context.link().isAirborne(),
+                context.link().airborne().isAirborne(),
                 interactionBlocked,
                 context.dialogController().isActive(),
                 context.scrollController().isActive()
                         || context.transitionController().isInputBlocked(),
-                context.link().romMotionState(),
-                context.link().romSlowWalkingSpeed(),
-                context.link().romItemUsageContext());
+                context.link().airborne().romMotionState(),
+                context.link().motion().romSlowWalkingSpeed(),
+                context.link().motion().romItemUsageContext());
     }
 }

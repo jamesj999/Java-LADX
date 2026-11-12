@@ -11,6 +11,7 @@ import linksawakening.ui.GameOverMenu;
 /** $01:420F-42D8. Cursor and interactive choices are deliberately a separate stage. */
 final class GameOverPresentation {
     private final GameOverMenu menu;
+    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
     private boolean cursorVisible;
     private int stage = 1;
     private int countdown = 16;
@@ -31,10 +32,10 @@ final class GameOverPresentation {
                 tiles[y * 32 + x] = 0xAE + ((x ^ y) & 1);
             }
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
-        context.playerState().incrementDeathCount();
+        context.playerState().progression().incrementDeathCount();
         context.roomSession().progress().clearGameOverPowerCounter();
-        context.playerState().setActivePowerUp(PowerUp.NONE.romValue());
-        context.link().presentGameOverStage(stage, countdown);
+        context.playerState().equipmentLevels().setActivePowerUp(PowerUp.NONE.romValue());
+        context.link().status().presentGameOverStage(stage, countdown);
         refresh(true);
     }
 
@@ -67,7 +68,7 @@ final class GameOverPresentation {
             }
             default -> {}
         }
-        context.link().presentGameOverStage(stage, countdown);
+        context.link().status().presentGameOverStage(stage, countdown);
         // Stage 2 restores original palettes via LoadFileMenuBG ($20:6C00).
         refresh(stage < 3);
     }
@@ -82,18 +83,19 @@ final class GameOverPresentation {
             palettes = new int[8][4];
             for (int[] palette : palettes) Arrays.fill(palette, 0xF8F8F8);
         }
-        snapshot = new FileMenuFrameSnapshot(
-                "game_over",
-                menu.selected(),
-                false,
-                false,
-                0,
-                0,
-                new int[5],
-                tiles,
-                attributes,
-                palettes,
-                objects,
-                cursorVisible ? List.of(menu.cursor()) : List.of());
+        snapshot = snapshotBuilder
+                .sceneId("game_over")
+                .selectedSlot(menu.selected())
+                .commandRowArrowShifted(false)
+                .creation(false)
+                .selectedCharacter(0)
+                .namePosition(0)
+                .nameBytes(new int[5])
+                .tilemap(tiles)
+                .attrmap(attributes)
+                .bgPalettes(palettes)
+                .objectPalettes(objects)
+                .sprites(cursorVisible ? List.of(menu.cursor()) : List.of())
+                .build();
     }
 }

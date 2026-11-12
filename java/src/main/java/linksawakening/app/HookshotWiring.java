@@ -16,12 +16,13 @@ final class HookshotWiring {
                 return c.roomSession()
                         .playerItems()
                         .fireHookshot(
-                                c.link().romEntityX(),
-                                c.link().romEntityY(),
-                                c.link().romEntityZ(),
-                                Direction.fromJava(c.link().direction()).romIndex(),
-                                c.link().isAirborne(),
-                                c.link().isRomLinkPushing());
+                                c.link().position().romEntityX(),
+                                c.link().position().romEntityY(),
+                                c.link().animation().romEntityZ(),
+                                Direction.fromJava(c.link().animation().direction())
+                                        .romIndex(),
+                                c.link().airborne().isAirborne(),
+                                c.link().equipment().isRomLinkPushing());
             }
 
             @Override

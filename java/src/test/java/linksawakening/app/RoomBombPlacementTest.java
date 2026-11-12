@@ -12,13 +12,13 @@ class RoomBombPlacementTest {
     @Test
     void registersRomPositionAndDirectionBeforeStartingTheItemAttackStep() {
         var link = new Link(null, null, null, null, null, null, null);
-        link.setPixelPosition(40, 50);
-        link.setRomDirection(1);
+        link.position().setPixelPosition(40, 50);
+        link.animation().setRomDirection(1);
         var calls = new ArrayList<String>();
         var items = (RoomPlayerItems) Proxy.newProxyInstance(
                 getClass().getClassLoader(), new Class<?>[] {RoomPlayerItems.class}, (proxy, method, args) -> {
                     calls.add(method.getName());
-                    assertEquals(0, link.romAttackStepAnimationCountdown());
+                    assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
                     if (method.getName().equals("placeBomb")) {
                         assertArrayEquals(new Object[] {48, 66, 0, 1}, args);
                         return true;
@@ -29,7 +29,7 @@ class RoomBombPlacementTest {
         var target = new RoomBombPlacement(link, items);
         assertTrue(target.placeBomb());
         assertTrue(target.playBumpForLastPlacement());
-        assertTrue(link.romAttackStepAnimationCountdown() > 0);
+        assertTrue(link.equipment().romAttackStepAnimationCountdown() > 0);
         assertEquals(List.of("placeBomb", "lastBombPlacementPlayedBump"), calls);
     }
 
@@ -44,6 +44,6 @@ class RoomBombPlacementTest {
         var target = new RoomBombPlacement(link, items);
         assertFalse(target.placeBomb());
         assertFalse(target.playBumpForLastPlacement());
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
     }
 }

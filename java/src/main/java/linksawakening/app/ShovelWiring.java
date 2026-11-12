@@ -21,16 +21,16 @@ final class ShovelWiring {
 
                             @Override
                             public Shovel.StartResult startShovel() {
-                                romDirection = c.link().applyRomItemDirectionFromInput();
-                                linkEntityX = c.link().romEntityX();
-                                linkEntityY = c.link().romEntityY();
+                                romDirection = c.link().equipment().applyRomItemDirectionFromInput();
+                                linkEntityX = c.link().position().romEntityX();
+                                linkEntityY = c.link().position().romEntityY();
                                 ShovelStartResult result = c.roomSession()
                                         .playerItems()
                                         .startShovel(
                                                 linkEntityX,
                                                 linkEntityY,
                                                 romDirection,
-                                                c.link().isAirborne());
+                                                c.link().airborne().isAirborne());
                                 return new Shovel.StartResult(result.started(), result.poking());
                             }
 
@@ -47,6 +47,6 @@ final class ShovelWiring {
                                 return c.roomSession().playerItems().shovelAnimationState(javaDirection, timer);
                             }
                         },
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }

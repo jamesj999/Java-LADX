@@ -71,7 +71,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
         }
 
         public boolean passingOut() {
-            return link().isPassingOut() || passOutController().handledFrame();
+            return link().status().isPassingOut() || passOutController().handledFrame();
         }
 
         public Sword.CollisionBox combat(boolean blocked) {

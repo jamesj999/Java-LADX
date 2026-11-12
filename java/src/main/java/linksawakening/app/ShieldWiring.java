@@ -9,6 +9,8 @@ final class ShieldWiring {
     private ShieldWiring() {}
 
     static void register(EquipmentInputs c, ItemRegistry registry) {
-        registry.register(InventoryItem.SHIELD.romValue(), new Shield(c.gameplaySoundSink(), c.link()::canUseItems));
+        registry.register(
+                InventoryItem.SHIELD.romValue(),
+                new Shield(c.gameplaySoundSink(), c.link().equipment()::canUseItems));
     }
 }

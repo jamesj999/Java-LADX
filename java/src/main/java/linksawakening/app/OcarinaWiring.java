@@ -24,8 +24,8 @@ final class OcarinaWiring {
 
                     @Override
                     public boolean canStartOcarina() {
-                        return c.link().canUseItems()
-                                && !c.link().isAirborne()
+                        return c.link().equipment().canUseItems()
+                                && !c.link().airborne().isAirborne()
                                 && !c.roomSession().playerItems().hookshotActive();
                     }
 

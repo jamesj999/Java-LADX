@@ -54,9 +54,9 @@ class EntityFrameSessionTest {
         game.initializeHeadlessNewGame();
         try {
             var c = SessionTestAccess.context(game).runtime().flows().simulation();
-            c.link().setPixelPosition(50, 60);
-            c.link().captureRomFinalPosition();
-            c.link().setPixelPosition(70, 80);
+            c.link().position().setPixelPosition(50, 60);
+            c.link().position().captureRomFinalPosition();
+            c.link().position().setPixelPosition(70, 80);
             var box = new Sword.CollisionBox(true, 1, 2, 3, 4);
             var inputs = EntityFrameInputsFactory.create(c, box);
             assertEquals(58, inputs.link().finalX());
@@ -118,14 +118,14 @@ class EntityFrameSessionTest {
         game.initializeHeadlessNewGame();
         try {
             var c = SessionTestAccess.context(game).runtime().flows().simulation();
-            int hearts = c.playerState().maxHearts();
+            int hearts = c.playerState().vitals().maxHearts();
             linksawakening.world.room.RoomFrameTestAccess.heart(c.roomSession());
             var phase = new EntityPhase(c.combatEvents(), EntityDialogRouting.DIRECT);
             phase.applyChestRewards(c);
-            assertEquals(hearts + 1, c.playerState().maxHearts());
+            assertEquals(hearts + 1, c.playerState().vitals().maxHearts());
             assertEquals(0xFF, c.playerState().vitals().addHealthBuffer());
             phase.applyChestRewards(c);
-            assertEquals(hearts + 1, c.playerState().maxHearts());
+            assertEquals(hearts + 1, c.playerState().vitals().maxHearts());
         } finally {
             SessionTestAccess.cleanup(game);
         }

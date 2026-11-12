@@ -23,29 +23,29 @@ final class CombatPhase {
             swordBoxForEntityTick = sword == null
                     ? Sword.CollisionBox.inactive()
                     : sword.enemyCollisionBox(
-                            context.link().romEntityX(),
-                            context.link().romSwordCollisionY(),
-                            context.link().direction(),
-                            context.playerState().runningWithPegasusBoots());
+                            context.link().position().romEntityX(),
+                            context.link().position().romSwordCollisionY(),
+                            context.link().animation().direction(),
+                            context.playerState().equipmentLevels().runningWithPegasusBoots());
             EnemyAttackContext attackContext = new EnemyAttackContext(
-                    context.playerState().swordLevel(),
-                    context.playerState().tunicType() == Tunic.RED.romValue(),
-                    context.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
+                    context.playerState().equipmentLevels().swordLevel(),
+                    context.playerState().equipmentLevels().tunicType() == Tunic.RED.romValue(),
+                    context.playerState().equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
                     sword != null && sword.spinAttackActive(),
-                    context.playerState().runningWithPegasusBoots(),
-                    context.link().isUsingShield(),
-                    Direction.fromJava(context.link().direction()).romIndex(),
-                    context.link().romEntityZ());
+                    context.playerState().equipmentLevels().runningWithPegasusBoots(),
+                    context.link().equipment().isUsingShield(),
+                    Direction.fromJava(context.link().animation().direction()).romIndex(),
+                    context.link().animation().romEntityZ());
             var combatEvents = context.roomSession()
                     .entities()
                     .resolveEntityCombat(new EntityCombatInputs(
                             context.frameCounter(),
-                            context.link().romEntityX(),
-                            context.link().romEntityY(),
-                            context.link().isAirborne(),
+                            context.link().position().romEntityX(),
+                            context.link().position().romEntityY(),
+                            context.link().airborne().isAirborne(),
                             context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
-                                    ? context.link().romSpeedY()
-                                    : context.link().zVelocity(),
+                                    ? context.link().position().romSpeedY()
+                                    : context.link().airborne().zVelocity(),
                             !context.debugNoClip(),
                             new SwordBox(
                                     swordBoxForEntityTick.active(),
@@ -67,12 +67,12 @@ final class CombatPhase {
 
     private static void applyEvent(GameplaySimulation context, EntityCombatEvent event) {
         if (event.linkDamage() > 0
-                && context.playerState().invincibilityCounter() == 0
-                && (!context.link().isCollisionDamageImmune())) {
-            int previousPowerUp = context.playerState().activePowerUp();
-            context.playerState().applyRomEnemyDamage(event.linkDamage());
+                && context.playerState().vitals().invincibilityCounter() == 0
+                && (!context.link().status().isCollisionDamageImmune())) {
+            int previousPowerUp = context.playerState().equipmentLevels().activePowerUp();
+            context.playerState().vitals().applyRomEnemyDamage(event.linkDamage());
             if (previousPowerUp != PowerUp.NONE.romValue()
-                    && context.playerState().activePowerUp() == PowerUp.NONE.romValue()) {
+                    && context.playerState().equipmentLevels().activePowerUp() == PowerUp.NONE.romValue()) {
                 context.musicDirector().restoreMusicAfterPowerUpEnds(context.roomSession());
             }
             context.roomSession().entityState().resetGuardianAcornCounterOnHurt();
@@ -82,15 +82,15 @@ final class CombatPhase {
                         .entityState()
                         .deferContactRecoil(
                                 event.slot(),
-                                context.link().romEntityX(),
-                                context.link().romEntityY())) {
-                    context.link().applyRomSpeed(response.speedX(), response.speedY());
+                                context.link().position().romEntityX(),
+                                context.link().position().romEntityY())) {
+                    context.link().position().applyRomSpeed(response.speedX(), response.speedY());
                 }
-                context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+                context.link().status().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
                 if (response.invincibilityCountdown() != 0) {
-                    context.playerState().setInvincibilityCounter(response.invincibilityCountdown());
+                    context.playerState().vitals().setInvincibilityCounter(response.invincibilityCountdown());
                 }
-                context.playerState().setRunningWithPegasusBoots(false);
+                context.playerState().equipmentLevels().setRunningWithPegasusBoots(false);
                 // ApplyLinkCollisionWithEnemy writes WAVE_SFX_LINK_HURT
                 // before the shared Link response helper.
                 context.gameplaySoundSink().play(GameplaySoundEvent.LINK_HURT);
@@ -98,14 +98,14 @@ final class CombatPhase {
         }
         if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
             var response = event.linkCollisionResponse();
-            context.link().applyRomSpeed(response.speedX(), response.speedY());
-            context.link().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
-            context.playerState().setRunningWithPegasusBoots(false);
+            context.link().position().applyRomSpeed(response.speedX(), response.speedY());
+            context.link().status().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
+            context.playerState().equipmentLevels().setRunningWithPegasusBoots(false);
         }
         if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
-            context.link().bounceFromGoomba();
+            context.link().airborne().bounceFromGoomba();
         } else if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
-            context.link().applyRomSpeed(0, 0xF0);
+            context.link().position().applyRomSpeed(0, 0xF0);
         }
     }
 }

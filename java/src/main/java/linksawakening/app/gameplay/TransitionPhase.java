@@ -24,7 +24,7 @@ public final class TransitionPhase implements GameplayFrame.Transitions {
         if (scroll.isActive()) scroll.tick(scrollSpeed);
         transition.tick();
         if (scroll.isActive() || transition.isInputBlocked()) {
-            link.clearSideViewPlatformState();
+            link.sideView().clearSideViewPlatformState();
         }
     }
 }

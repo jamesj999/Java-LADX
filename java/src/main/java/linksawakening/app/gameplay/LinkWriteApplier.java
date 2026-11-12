@@ -27,7 +27,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
     private GameplaySimulation current;
 
     void applyPositionWrites(GameplaySimulation c) {
-        c.link().clearStandingOnSideViewEntity();
+        c.link().sideView().clearStandingOnSideViewEntity();
         current = c;
         try {
             c.roomSession().entityFrameResults().link().drainPositionWrites(this);
@@ -43,7 +43,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
             c.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(c.link());
             c.roomTransitionCoordinator().handleOverworldBoundary(c.link());
             if (c.scrollController().isActive() || c.transitionController().isInputBlocked())
-                c.link().clearSideViewPlatformState();
+                c.link().sideView().clearSideViewPlatformState();
         }
     }
 
@@ -115,7 +115,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
         for (int requestIndex = 0; requestIndex < linkSwordSpinPoseRequests.size(); requestIndex++) {
             LinkSwordSpinPoseRequest request = linkSwordSpinPoseRequests.get(requestIndex);
 
-            int acquisitionBaseDirection = c.link().direction();
+            int acquisitionBaseDirection = c.link().animation().direction();
             c.link().apply(LinkCommandAdapter.from(request));
             if (c.itemRegistry().lookup(InventoryItem.SWORD.romValue()) instanceof Sword acquisitionSword) {
                 if (request.countdown() == 0x20) {
@@ -185,7 +185,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
 
     static void applyHinoxEffect(Link link, PlayerState player, HinoxLinkEffectRequest request) {
         link.apply(LinkCommandAdapter.from(request));
-        if (request.damage() != 0) player.applyRomEnemyDamage(request.damage());
+        if (request.damage() != 0) player.vitals().applyRomEnemyDamage(request.damage());
     }
 
     private static void resetSword(GameplaySimulation c) {

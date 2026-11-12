@@ -48,41 +48,41 @@ public abstract sealed class HeadlessState permits HeadlessGameDriver.State {
         this.frame = snapshot.frameCounter();
         this.map = snapshot.roomSession().rooms().mapId();
         this.room = snapshot.roomSession().rooms().currentRoomId();
-        this.x = snapshot.link().romEntityX();
-        this.y = snapshot.link().romEntityY();
+        this.x = snapshot.link().position().romEntityX();
+        this.y = snapshot.link().position().romEntityY();
         this.dialog = snapshot.dialogController().isActive();
         this.pageWait = snapshot.dialogController().isWaitingForPageAdvance();
         this.text = snapshot.dialogController().visibleText();
-        this.shield = snapshot.playerState().shieldLevel();
-        this.health = snapshot.playerState().health();
-        this.sword = snapshot.playerState().swordLevel();
+        this.shield = snapshot.playerState().equipmentLevels().shieldLevel();
+        this.health = snapshot.playerState().vitals().health();
+        this.sword = snapshot.playerState().equipmentLevels().swordLevel();
         this.urchins = (int) snapshot.roomSession().rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0xC5 && entity.status() == EntityStatus.ACTIVE)
                 .count();
-        this.toadstool = snapshot.playerState().hasToadstool();
-        this.powder = snapshot.playerState().magicPowderCount();
+        this.toadstool = snapshot.playerState().ammunition().hasToadstool();
+        this.powder = snapshot.playerState().ammunition().magicPowderCount();
         this.inventoryTick = snapshot.inventoryMenu().instrumentPaletteTick();
         this.tarinX = tarin == null ? -1 : tarin.x();
         this.tarinY = tarin == null ? -1 : tarin.y();
         this.forestCleared = (snapshot.roomSession().dungeon().overworldRoomStatusSnapshot()[0x51] & 0x10) != 0;
-        this.tailKey = snapshot.playerState().tailKeyCount();
+        this.tailKey = snapshot.playerState().progression().tailKeyCount();
         this.bgTick = snapshot.gpu().animatedTilesFrameCount();
         this.smallKeys = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[4] & 0xFF;
         this.compass = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[1] & 0xFF;
         this.dungeonMap = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[0] & 0xFF;
         this.nightmareKey = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[3] & 0xFF;
-        this.animation = snapshot.link().romAnimationState();
-        this.direction = 3 - snapshot.link().direction();
+        this.animation = snapshot.link().animation().romAnimationState();
+        this.direction = 3 - snapshot.link().animation().direction();
         this.swordAnimation = snapshot.equipmentController().activeSword() == null
                 ? 0
                 : snapshot.equipmentController().activeSword().state();
-        this.z = snapshot.link().romEntityZ();
-        this.velocityZ = snapshot.link().zVelocity();
-        this.speedX = snapshot.link().romSpeedX();
-        this.speedY = snapshot.link().romSpeedY();
+        this.z = snapshot.link().animation().romEntityZ();
+        this.velocityZ = snapshot.link().airborne().zVelocity();
+        this.speedX = snapshot.link().position().romSpeedX();
+        this.speedY = snapshot.link().position().romSpeedY();
         this.loading = snapshot.scrollController().isActive()
                 || snapshot.transitionController().isInputBlocked();
-        this.maxHearts = snapshot.playerState().maxHearts();
+        this.maxHearts = snapshot.playerState().vitals().maxHearts();
         this.instrument1Flags = snapshot.roomSession().dungeon().dungeonProgressFlagsSnapshot()[0] & 0xFF;
     }
 

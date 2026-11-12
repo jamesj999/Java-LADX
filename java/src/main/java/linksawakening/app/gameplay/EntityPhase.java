@@ -112,8 +112,8 @@ final class EntityPhase {
 
     void routeDialogs(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        c.roomSession().story().setBirdKeyOwned(c.playerState().birdKeyCount() != 0);
-        c.roomSession().story().setTailKeyOwned(c.playerState().tailKeyCount() != 0);
+        c.roomSession().story().setBirdKeyOwned(c.playerState().progression().birdKeyCount() != 0);
+        c.roomSession().story().setTailKeyOwned(c.playerState().progression().tailKeyCount() != 0);
         int chestMusicTrack = results.presentation().consumePendingMusicTrack();
         if (chestMusicTrack >= 0) {
             routing.music(c, chestMusicTrack);
@@ -124,9 +124,9 @@ final class EntityPhase {
 
             if (event.kind() == LikeLikeEvent.Kind.CAPTURE) {
                 if (event.stolenInventorySlot() == 0) {
-                    c.playerState().setItemB(InventoryItem.EMPTY.romValue());
+                    c.playerState().inventory().setItemB(InventoryItem.EMPTY.romValue());
                 } else if (event.stolenInventorySlot() == 1) {
-                    c.playerState().setItemA(InventoryItem.EMPTY.romValue());
+                    c.playerState().inventory().setItemA(InventoryItem.EMPTY.romValue());
                 }
                 c.link().apply(LinkCommandAdapter.from(event));
             } else c.link().apply(LinkCommandAdapter.from(event));

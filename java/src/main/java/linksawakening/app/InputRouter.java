@@ -83,7 +83,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public void gameplayKey(int key, int action) {
-        if (player.link().isPassingOut()) return;
+        if (player.link().status().isPassingOut()) return;
         if (action != GLFW_PRESS) return;
 
         if (world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
@@ -103,7 +103,7 @@ public final class InputRouter implements DebugScroll {
         }
         // ApplyGotItem bypasses InitGotItemSequence ($00:1040-1077),
         // including its inventory/map and normal interaction input.
-        if (player.link().dialogGotItemActive()) return;
+        if (player.link().animation().dialogGotItemActive()) return;
 
         if (actions.story().tryOpenTarinShieldDialog(key)) {
             return;
@@ -118,7 +118,8 @@ public final class InputRouter implements DebugScroll {
             return;
         }
 
-        if (!player.link().recoveryBlocksInput()) ui.inventoryController().dispatchToggleInput();
+        if (!player.link().status().recoveryBlocksInput())
+            ui.inventoryController().dispatchToggleInput();
 
         // Debug: F1 dumps Link's surrounding cells with object IDs and
         // physics flags, to diagnose walk-through-wall/tree reports.
@@ -139,8 +140,8 @@ public final class InputRouter implements DebugScroll {
         if (!world.roomSession().rooms().hasActiveRoom()) return;
         ActiveRoom room = world.roomSession().rooms().activeRoom();
         int[] roomObjectsArea = room.roomObjectsArea();
-        int lx = player.link().pixelX();
-        int ly = player.link().pixelY();
+        int lx = player.link().position().pixelX();
+        int ly = player.link().position().pixelY();
         DebugLog.log("=== Link debug dump ===");
         DebugLog.log("roomId=" + String.format("%02X", room.roomId()) + " mapCat=" + room.mapCategory() + " mapId="
                 + String.format("%02X", room.mapId()));
@@ -194,13 +195,18 @@ public final class InputRouter implements DebugScroll {
         }
         switch (direction) {
             case ScrollController.LEFT -> player.link()
-                    .setPixelPosition(-1, player.link().pixelY());
+                    .position()
+                    .setPixelPosition(-1, player.link().position().pixelY());
             case ScrollController.RIGHT -> player.link()
-                    .setPixelPosition(ROOM_PIXEL_WIDTH(), player.link().pixelY());
+                    .position()
+                    .setPixelPosition(
+                            ROOM_PIXEL_WIDTH(), player.link().position().pixelY());
             case ScrollController.UP -> player.link()
-                    .setPixelPosition(player.link().pixelX(), -1);
+                    .position()
+                    .setPixelPosition(player.link().position().pixelX(), -1);
             case ScrollController.DOWN -> player.link()
-                    .setPixelPosition(player.link().pixelX(), ROOM_PIXEL_HEIGHT());
+                    .position()
+                    .setPixelPosition(player.link().position().pixelX(), ROOM_PIXEL_HEIGHT());
             default -> {
                 return false;
             }
@@ -221,7 +227,7 @@ public final class InputRouter implements DebugScroll {
         // Consume before gating: a blocked desktop request must not fire later.
         boolean requested =
                 actions.navigator().current() instanceof GameplayScreen gameplay && gameplay.consumeFileSaveRequest();
-        if (player.link().isPassingOut()
+        if (player.link().status().isPassingOut()
                 || world.roomSession().doors().tailCaveKeyholeSequenceActive()
                 || actions.story().marinWakeUpBlocksKeyInput()) return false;
         if ((requested
@@ -253,7 +259,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public boolean canPresentFileSave() {
-        return (!player.link().recoveryBlocksInput())
+        return (!player.link().status().recoveryBlocksInput())
                 && !world.scrollController().isActive()
                 && !world.transitionController().isInputBlocked()
                 && (!ui.inventoryController().shouldBlockOverworldInput())

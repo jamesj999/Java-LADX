@@ -2,6 +2,7 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.app.gameplay.LinkGroundPhase.*;
 
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
 
@@ -27,7 +28,7 @@ final class LinkEquipmentPhase {
                 && !context.transitionController().isInputBlocked()
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
-                && (!context.link().dialogGotItemActive())
+                && (!context.link().animation().dialogGotItemActive())
                 && (!context.roomSession().entityState().gotItemPresentationActive());
         boolean swordPickupSequenceActive = context.roomSession().entityState().swordPickupSequenceActive();
         linkActive = linkActive && !swordPickupSequenceActive;
@@ -36,7 +37,7 @@ final class LinkEquipmentPhase {
         } else {
             if (context.scrollController().isActive()) {
                 // Keep Link's walk animation cycling during a room transition.
-                context.link().tickAnimation();
+                context.link().animation().tickAnimation();
             }
             // $02:75C4 does not imply an unconditional pause: $76C0 can
             // return to Default via $7757 and reset wC1C9 during dialogs.
@@ -46,7 +47,7 @@ final class LinkEquipmentPhase {
                             || context.scrollController().isActive()
                             || context.transitionController().isInputBlocked()
                             || (context.roomSession().entityState().gotItemPresentationActive()))) {
-                tickCrackedFloor(context, context.link().romInteractiveMotionBlockValue() != 0);
+                tickCrackedFloor(context, context.link().motion().romInteractiveMotionBlockValue() != 0);
             }
         }
 
@@ -61,8 +62,10 @@ final class LinkEquipmentPhase {
     private static void prepare(GameplaySimulation context, boolean dialogBlocksGameplay) {
         if (!dialogBlocksGameplay) {
             {
-                context.playerState().tickResourceBuffers(context.frameCounter());
-                var resourceSound = context.playerState().takeResourceSound();
+                context.playerState().playerResources().tickResourceBuffers(context.frameCounter());
+                var resourceSound = context.playerState()
+                        .playerSounds()
+                        .takeResourceSound(sound -> GameplaySoundEvent.valueOf(sound.name()));
                 if (resourceSound != null) context.gameplaySoundSink().play(resourceSound);
             }
             {
@@ -70,22 +73,25 @@ final class LinkEquipmentPhase {
             }
             {
                 context.droppableRupeeSystem()
-                        .tick(context.link().pixelX(), context.link().pixelY(), context.playerState());
+                        .tick(
+                                context.link().position().pixelX(),
+                                context.link().position().pixelY(),
+                                context.playerState());
             }
         }
 
         // ApplyGotItem $00:0FC7 runs before normal Link/item work. A
         // toadstool requested by that work starts decrementing next frame.
         {
-            int itemDialog = context.link().tickDialogGotItem(dialogBlocksGameplay);
+            int itemDialog = context.link().airborne().tickDialogGotItem(dialogBlocksGameplay);
             if (itemDialog == 2) {
                 context.dialogController()
                         .openPreformattedForLinkY(
                                 context.dialogTextLoader().load(new SignpostDialogRef(0, 0x0E)),
                                 LinkDialogPosition.dialogYFromTopLeft(
-                                        context.link().pixelY()));
+                                        context.link().position().pixelY()));
             }
-            if (context.link().presentedDialogGotItem() == 2) {
+            if (context.link().animation().presentedDialogGotItem() == 2) {
                 context.gpu().updatePowderInventoryTiles(context.romData(), true);
             }
         }

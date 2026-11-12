@@ -18,9 +18,11 @@ final class MusicDirectorTest {
         try (var stream = TestRom.open()) {
             rom = stream.readAllBytes();
         }
-        try (var player = new FrameAudioPlayer(rom, 8000, (samples, rate) -> {})) {
-            var controller =
-                    new GameplayMusicController(AreaMusicResolver.fromRom(rom), MusicCatalog.fromRom(rom), player);
+        try (var player = new FrameAudioPlayer(linksawakening.rom.Rom.unchecked(rom), 8000, (samples, rate) -> {})) {
+            var controller = new GameplayMusicController(
+                    AreaMusicResolver.fromRom(linksawakening.rom.Rom.unchecked(rom)),
+                    MusicCatalog.fromRom(linksawakening.rom.Rom.unchecked(rom)),
+                    player);
             var director = new MusicDirector(player, controller);
             director.playDirectMusic(MusicTrackIds.MUSIC_OVERWORLD_INTRO);
             for (int frame = 0; frame < 2400; frame++) director.tick();
@@ -36,9 +38,11 @@ final class MusicDirectorTest {
         try (var stream = TestRom.open()) {
             rom = stream.readAllBytes();
         }
-        try (var transport = new FrameAudioPlayer(rom, 8000, (samples, rate) -> {})) {
-            var controller =
-                    new GameplayMusicController(AreaMusicResolver.fromRom(rom), MusicCatalog.fromRom(rom), transport);
+        try (var transport = new FrameAudioPlayer(linksawakening.rom.Rom.unchecked(rom), 8000, (samples, rate) -> {})) {
+            var controller = new GameplayMusicController(
+                    AreaMusicResolver.fromRom(linksawakening.rom.Rom.unchecked(rom)),
+                    MusicCatalog.fromRom(linksawakening.rom.Rom.unchecked(rom)),
+                    transport);
             var director = new MusicDirector(transport, controller);
             var state = new linksawakening.state.PlayerState();
             var holder = new linksawakening.world.room.RoomSession[1];
@@ -47,7 +51,8 @@ final class MusicDirectorTest {
                     new linksawakening.gpu.GPU(),
                     new linksawakening.world.room.RoomLoader(rom),
                     new linksawakening.world.room.OverworldTilesetTable(rom),
-                    new linksawakening.physics.OverworldCollision(linksawakening.rom.RomTables.loadFromRom(rom)),
+                    new linksawakening.physics.OverworldCollision(
+                            linksawakening.rom.RomTables.load(linksawakening.rom.Rom.unchecked(rom))),
                     new RoomSessionConfig.Presentation(
                             new linksawakening.vfx.TransientVfxSystem(16),
                             null,
@@ -55,7 +60,7 @@ final class MusicDirectorTest {
                     new linksawakening.world.entity.RomRandomByteSource()));
             holder[0] = rooms;
             rooms.rooms().loadInitialOverworld(0xF2);
-            state.setSwordLevel(1);
+            state.equipmentLevels().setSwordLevel(1);
             director.playDirectMusic(0x31);
             var scroll = new linksawakening.world.transition.ScrollController();
             rooms.transitions()

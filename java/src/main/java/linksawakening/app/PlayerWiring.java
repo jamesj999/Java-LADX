@@ -22,10 +22,10 @@ final class PlayerWiring {
 
     static PlayerGraphics graphics(Rom rom) {
         return new PlayerGraphics(
-                LinkSpriteSheet.loadFromRom(rom.unsafeBytes()),
-                SwordSpriteSheet.loadFromRom(rom.unsafeBytes()),
-                SwordPalette.loadFromRom(rom.unsafeBytes()),
-                LinkTunicPalette.loadFromRom(rom.unsafeBytes()));
+                LinkSpriteSheet.loadFromRom(rom),
+                SwordSpriteSheet.loadFromRom(rom),
+                SwordPalette.loadFromRom(rom),
+                LinkTunicPalette.loadFromRom(rom));
     }
 
     static PlayerServices build(
@@ -52,13 +52,11 @@ final class PlayerWiring {
                 romTables,
                 overworldCollision,
                 graphics.linkSpriteSheet(),
-                playerState,
-                itemRegistry,
-                gameplaySoundSink,
-                linkTunicPalette);
-        link.setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
-                && (!roomSession.entityState().powerUpPickupSequenceActive()
-                        && !roomSession.rooms().heartPiecePickupActive()));
+                new Link.Services(playerState, itemRegistry, gameplaySoundSink, linkTunicPalette));
+        link.equipment()
+                .setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
+                        && (!roomSession.entityState().powerUpPickupSequenceActive()
+                                && !roomSession.rooms().heartPiecePickupActive()));
 
         var c = new EquipmentInputs(playerState, link, roomSession, romTables, graphics, gameplaySoundSink, random);
         register(c, itemRegistry);

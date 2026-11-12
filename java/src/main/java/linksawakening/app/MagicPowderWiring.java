@@ -17,37 +17,37 @@ final class MagicPowderWiring {
                         new MagicPowder.SprinkleTarget() {
                             @Override
                             public boolean sprinkleMagicPowder() {
-                                int romDirection = c.link().applyRomItemDirectionFromInput();
+                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
                                 return c.roomSession()
                                         .playerItems()
                                         .sprinkleMagicPowder(
-                                                c.link().romEntityX(),
-                                                c.link().romEntityY(),
-                                                c.link().romEntityZ(),
+                                                c.link().position().romEntityX(),
+                                                c.link().position().romEntityY(),
+                                                c.link().animation().romEntityZ(),
                                                 romDirection);
                             }
 
                             @Override
                             public void startMagicPowderAttackStep() {
 
-                                c.link().startRomMagicPowderAttackStep();
+                                c.link().equipment().startRomMagicPowderAttackStep();
                             }
 
                             @Override
                             public boolean magicPowderAttackStepActive() {
-                                return c.link().romAttackStepAnimationCountdown() != 0;
+                                return c.link().equipment().romAttackStepAnimationCountdown() != 0;
                             }
 
                             @Override
                             public int linkPositionZ() {
-                                return c.link().romEntityZ();
+                                return c.link().animation().romEntityZ();
                             }
 
                             @Override
                             public void presentToadstool() {
-                                c.link().presentToadstool();
+                                c.link().animation().presentToadstool();
                             }
                         },
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }

@@ -19,12 +19,12 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
 
     public boolean placeBomb() {
         boolean placed = items.placeBomb(
-                link.romEntityX(),
-                link.romEntityY(),
-                link.romEntityZ(),
-                Direction.fromJava(link.direction()).romIndex());
+                link.position().romEntityX(),
+                link.position().romEntityY(),
+                link.animation().romEntityZ(),
+                Direction.fromJava(link.animation().direction()).romIndex());
         bump = placed && items.lastBombPlacementPlayedBump();
-        if (placed) link.startRomItemAttackStep();
+        if (placed) link.equipment().startRomItemAttackStep();
         return placed;
     }
 

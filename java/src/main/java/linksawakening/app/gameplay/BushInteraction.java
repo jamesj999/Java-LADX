@@ -43,16 +43,16 @@ public final class BushInteraction {
         int location = world.overworldBushInteraction()
                 .swordHitRoomObjectLocationForCollisionIndex(
                         true,
-                        sword.staticCollisionMapIndex(player.link().direction()),
-                        player.link().pixelX(),
-                        player.link().pixelY());
+                        sword.staticCollisionMapIndex(player.link().animation().direction()),
+                        player.link().position().pixelX(),
+                        player.link().position().pixelY());
         if (location < 0) {
             return;
         }
 
         if (world.roomSession().rooms().mapCategory() != Warp.CATEGORY_OVERWORLD) {
             if (world.roomSession().terrain().breakIndoorSwordCrystal(location)) {
-                player.link().clearRomAttackStepAnimationCountdown();
+                player.link().equipment().clearRomAttackStepAnimationCountdown();
             }
             return;
         }

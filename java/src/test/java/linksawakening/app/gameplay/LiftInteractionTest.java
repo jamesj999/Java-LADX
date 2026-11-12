@@ -14,8 +14,8 @@ final class LiftInteractionTest {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_POWER_BRACELET);
-        player.setItemB(PlayerState.INVENTORY_POWER_BRACELET);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.POWER_BRACELET.romValue());
+        player.inventory().setItemB(linksawakening.state.InventoryItem.POWER_BRACELET.romValue());
         var lift = new LiftButtons(input, config, player);
         input.onKeyEvent(config.aKey(), GLFW_PRESS);
         assertFalse(lift.isPowerBraceletButtonHeld());

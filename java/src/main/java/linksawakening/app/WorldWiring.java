@@ -27,7 +27,7 @@ final class WorldWiring {
 
     static VisualServices visuals(Rom romData, RomRandomByteSource random, byte[] framebuffer) {
         int[] shield = RomBank.loadPalettes(romData, new RomAddress(0x05, 0x4C94), 1)[0];
-        var sheet = TransientVfxSpriteSheet.loadFromRom(romData.unsafeBytes());
+        var sheet = TransientVfxSpriteSheet.loadFromRom(romData);
         return new VisualServices(
                 new TransientVfxSystem(16),
                 new DroppableRupeeSystem(16, random),
@@ -62,7 +62,7 @@ final class WorldWiring {
             TransitionController transition,
             ScrollController scroll,
             GameplaySoundSink sounds) {
-        rooms.progress().onMapBoundaryWarp(player::clearActivePowerUpForWarp);
+        rooms.progress().onMapBoundaryWarp(player.equipmentLevels()::clearActivePowerUpForWarp);
         return new RoomTransitionCoordinator(rooms, new RoomBoundaryController(), transition, scroll, sounds);
     }
 }

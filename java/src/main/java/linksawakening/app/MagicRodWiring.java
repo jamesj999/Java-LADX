@@ -21,20 +21,23 @@ final class MagicRodWiring {
                             @Override
                             public void startMagicRodAttackStep() {
 
-                                c.link().startRomMagicRodAttackStep();
+                                c.link().equipment().startRomMagicRodAttackStep();
                             }
 
                             @Override
                             public boolean fireMagicRodFireball() {
-                                int romDirection = c.link().applyRomItemDirectionFromInput();
+                                int romDirection = c.link().equipment().applyRomItemDirectionFromInput();
                                 boolean spawned = c.roomSession()
                                         .playerItems()
                                         .fireMagicRodFireball(
-                                                c.link().romEntityX(),
-                                                c.link().romEntityY(),
-                                                c.link().romEntityZ(),
+                                                c.link().position().romEntityX(),
+                                                c.link().position().romEntityY(),
+                                                c.link().animation().romEntityZ(),
                                                 romDirection,
-                                                c.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue());
+                                                c.playerState()
+                                                                .equipmentLevels()
+                                                                .activePowerUp()
+                                                        == PowerUp.PIECE_OF_POWER.romValue());
                                 return spawned;
                             }
 
@@ -43,6 +46,6 @@ final class MagicRodWiring {
                                 return c.roomSession().playerItems().activeProjectileCount();
                             }
                         },
-                        c.link()::canUseItems));
+                        c.link().equipment()::canUseItems));
     }
 }
