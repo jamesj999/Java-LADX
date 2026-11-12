@@ -142,3 +142,33 @@ pins in `tools/requirements.txt`. From the repository root run
 `python -m ruff check tools`, `python -m ruff format --check tools` and
 `python -m pytest tools`. These checks need no ROM. Capture commands do;
 see [tools/README.md](../tools/README.md).
+
+## Platform startup and persistence troubleshooting
+
+- **Failed to initialize GLFW / Failed to create window:** the GLFW error callback
+  writes native details to stderr. Startup now unwinds every resource acquired
+  before failure, including the callback and partially initialized GLFW state.
+  Closing after a failed startup is safe; cleanup failures are suppressed on the
+  original error, so the first cause remains visible.
+- **Vertex/Fragment shader compile error / GlShader program link error:** the
+  exception includes the driver compiler/linker log. Partial shaders/programs and
+  presenter resources are released before the failure propagates.
+- **OpenAL unavailable:** the browser retains a clear status and silent fallback.
+  Native-library cleanup errors are collected without preventing later releases.
+  Do not enable the opt-in live-device test during headless verification.
+- **Save read/write IOException:** only a missing save starts empty; access-denied
+  and other read failures propagate rather than risking later replacement with an
+  empty image. A failed write/replacement removes its temporary image, preserving
+  the original failure if temporary-file cleanup also fails. Wrong-sized saves
+  still require a successful timestamped backup before empty initialization.
+- **App config not found / Failed to read app config:** startup logs the resource
+  error and uses the documented defaults. Malformed JSON still fails with its
+  parser position. ROM-free tests cover missing and failing resource streams.
+
+For allocation verification without escape analysis, use a temporary local Gradle
+init script configuring `tasks.withType(Test).configureEach { jvmArgs '-XX:-DoEscapeAnalysis' }`.
+Pass it with `--init-script`; setting only the Gradle daemon's JVM options does not
+configure the forked test JVM. Do not commit local verification JVM settings.
+Default headless PCM and desktop PCM both opt into reusable frame storage; custom
+outputs retain owned arrays. Native failure tests use fakes, never a real device
+or window. Host vsync remains interval 1; the app-owned frame-pacing loop was not changed.
