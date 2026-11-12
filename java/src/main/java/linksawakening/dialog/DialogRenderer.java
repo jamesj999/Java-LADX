@@ -12,16 +12,15 @@ public final class DialogRenderer {
     private static final int TEXT_Y_OFFSET = 8;
     private static final int CELL_SIZE = 8;
     private static final int LINE_HEIGHT = 16;
-    private static final int LINE_WIDTH = 16;
-    private static final int VISIBLE_LINES = 2;
     private static final int BOX_COLOR = 0x000000;
     private static final int TEXT_COLOR = 0xF8F8F8;
+    private static final int[] DEFAULT_PALETTE = {TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR};
     private static final DialogFont FONT = DialogFont.loadDefault();
 
     private DialogRenderer() {}
 
     public static void render(byte[] buffer, DialogController dialog) {
-        render(buffer, dialog, new int[] {TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR});
+        render(buffer, dialog, DEFAULT_PALETTE);
     }
 
     public static void render(byte[] buffer, DialogController dialog, int[] palette) {
@@ -38,35 +37,25 @@ public final class DialogRenderer {
         }
         drawText(
                 buffer,
-                dialog.visibleText(),
+                dialog.renderLayout(),
                 TEXT_X,
                 boxY + TEXT_Y_OFFSET + dialog.textScrollOffset(),
                 palette,
                 dialog);
     }
 
-    private static void drawText(byte[] buffer, String text, int x, int y, int[] palette, DialogController dialog) {
-        int column = 0;
-        int row = 0;
-        for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
-            char codepoint = text.charAt(i);
-            if (codepoint == '\n') {
-                column = 0;
-                row++;
-                continue;
+    private static void drawText(
+            byte[] buffer, DialogTextLayout text, int x, int y, int[] palette, DialogController dialog) {
+        for (int i = 0; i < text.size(); i++) {
+            int boxRow = (y + text.row(i) * LINE_HEIGHT - dialog.boxY()) / CELL_SIZE;
+            if (dialog.isBoxRowVisible(boxRow)) {
+                drawGlyph(
+                        buffer,
+                        FONT.tileView(text.character(i)),
+                        x + text.column(i) * CELL_SIZE,
+                        y + text.row(i) * LINE_HEIGHT,
+                        palette);
             }
-            if (column >= LINE_WIDTH) {
-                column = 0;
-                row++;
-                if (row >= VISIBLE_LINES) {
-                    break;
-                }
-            }
-            int boxRow = (y + row * LINE_HEIGHT - dialog.boxY()) / CELL_SIZE;
-            if (codepoint != ' ' && dialog.isBoxRowVisible(boxRow)) {
-                drawGlyph(buffer, FONT.tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT, palette);
-            }
-            column++;
         }
     }
 
@@ -104,8 +93,7 @@ public final class DialogRenderer {
     public static void submitWindow(
             linksawakening.render.HardwareFrame frame, DialogController dialog, int[] suppliedPalette) {
         if (!dialog.isActive()) return;
-        int[] palette =
-                suppliedPalette == null ? new int[] {TEXT_COLOR, BOX_COLOR, BOX_COLOR, BOX_COLOR} : suppliedPalette;
+        int[] palette = suppliedPalette == null ? DEFAULT_PALETTE : suppliedPalette;
         int boxY = dialog.boxY();
         for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
             if (!dialog.isBoxRowVisible(row)) continue;
@@ -113,32 +101,21 @@ public final class DialogRenderer {
                 for (int x = 0; x < BOX_WIDTH; x++)
                     frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
         }
-        int column = 0, row = 0;
-        String text = dialog.visibleText();
+        DialogTextLayout text = dialog.renderLayout();
         int originY = boxY + TEXT_Y_OFFSET + dialog.textScrollOffset();
-        for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
-            char codepoint = text.charAt(i);
-            if (codepoint == '\n') {
-                column = 0;
-                row++;
-                continue;
-            }
-            if (column >= LINE_WIDTH) {
-                column = 0;
-                if (++row >= VISIBLE_LINES) break;
-            }
-            int y = originY + row * LINE_HEIGHT;
+        for (int i = 0; i < text.size(); i++) {
+            int y = originY + text.row(i) * LINE_HEIGHT;
             int boxRow = (y - boxY) / CELL_SIZE;
-            if (codepoint != ' ' && dialog.isBoxRowVisible(boxRow)) {
-                byte[] tile = FONT.tileFor(codepoint);
+            if (dialog.isBoxRowVisible(boxRow)) {
+                byte[] tile = FONT.tileView(text.character(i));
                 for (int ty = 0; ty < 8; ty++)
                     for (int tx = 0; tx < 8; tx++) {
                         int bit = 7 - tx;
                         int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
-                        frame.backgroundPixel(TEXT_X + column * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
+                        frame.backgroundPixel(
+                                TEXT_X + text.column(i) * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
                     }
             }
-            column++;
         }
     }
 }

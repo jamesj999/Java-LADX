@@ -164,18 +164,8 @@ final class IntroBeachActors {
         return linkVariant;
     }
 
-    int linkVariant(int value) {
-        linkVariant = value;
-        return value;
-    }
-
     int marinY() {
         return marinY;
-    }
-
-    int marinY(int value) {
-        marinY = value;
-        return value;
     }
 
     int linkY() {
@@ -214,15 +204,6 @@ final class IntroBeachActors {
         return value;
     }
 
-    int panRows() {
-        return panRows;
-    }
-
-    int panRows(int value) {
-        panRows = value;
-        return value;
-    }
-
     int marinState() {
         return marinState;
     }
@@ -241,17 +222,9 @@ final class IntroBeachActors {
         return value;
     }
 
-    int marinInertia() {
-        return marinInertia;
-    }
-
     int marinInertia(int value) {
         marinInertia = value;
         return value;
-    }
-
-    int marinTimer() {
-        return marinTimer;
     }
 
     int marinTimer(int value) {
@@ -261,11 +234,6 @@ final class IntroBeachActors {
 
     int linkX() {
         return linkX;
-    }
-
-    int linkX(int value) {
-        linkX = value;
-        return value;
     }
 
     boolean linkVisible() {

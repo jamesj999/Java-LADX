@@ -32,18 +32,27 @@ public final class LinkTunicPalette {
 
     /** Returns the exact four RGB colors selected by {@code wTunicType}. */
     public int[] forTunic(int tunicType) {
+        return tunicView(tunicType).clone();
+    }
+
+    // Borrowed immutable palette rows for immediate OAM consumption.
+    int[] tunicView(int tunicType) {
         if (tunicType < Tunic.GREEN.romValue() || tunicType > Tunic.BLUE.romValue()) {
             throw new IllegalArgumentException("Tunic type must be 0..2: " + tunicType);
         }
-        return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]].clone();
+        return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]];
     }
 
     /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
     public int[] forObjectPalette(int paletteIndex) {
+        return objectPaletteView(paletteIndex).clone();
+    }
+
+    int[] objectPaletteView(int paletteIndex) {
         if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
             throw new IllegalArgumentException("Object palette index out of range: " + paletteIndex);
         }
-        return objectPalettes[paletteIndex].clone();
+        return objectPalettes[paletteIndex];
     }
 
     /** Compatibility source for isolated Link fixtures without a ROM. */
@@ -59,10 +68,5 @@ public final class LinkTunicPalette {
             copy[i] = source[i] == null ? null : Arrays.copyOf(source[i], source[i].length);
         }
         return copy;
-    }
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public static LinkTunicPalette loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

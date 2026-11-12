@@ -22,7 +22,7 @@ import linksawakening.state.PlayerState;
  * <p>The 16x16 AABB used for both rendering and collision has its origin at
  * Link's top-left.
  */
-public final class Link implements linksawakening.equipment.RocsFeather.JumpTarget {
+public final class Link {
 
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
@@ -161,14 +161,6 @@ public final class Link implements linksawakening.equipment.RocsFeather.JumpTarg
     /** Advances one frame through the retained motion orchestration. */
     public void update() {
         motion().update();
-    }
-
-    // External compatibility: world/room/GameplayRouteStage1 still passes Link as JumpTarget.
-    /** @deprecated Use {@code airborne().useRocsFeather()} or pass {@code airborne()} as JumpTarget. */
-    @Deprecated(forRemoval = true)
-    @Override
-    public void useRocsFeather() {
-        airborne().useRocsFeather();
     }
 
     public LinkSideViewRole sideView() {

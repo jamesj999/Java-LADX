@@ -136,13 +136,4 @@ public final class OcarinaSongMenu {
         return OcarinaSong.fromSelectionIndex(songIndex)
                 .isSet(playerState.progression().ocarinaSongFlags());
     }
-
-    /** @deprecated Use {@link OcarinaSong#fromSelectionIndex(int)}. */
-    @Deprecated(forRemoval = true)
-    public static int songFlagForIndex(int songIndex) {
-        if (songIndex < 0 || songIndex >= SONG_COUNT) {
-            throw new IllegalArgumentException("Song index out of range: " + songIndex);
-        }
-        return OcarinaSong.fromSelectionIndex(songIndex).romValue();
-    }
 }

@@ -35,9 +35,4 @@ final class InventoryItemNumbers {
     private static long pair(int first, int second) {
         return ((long) first << 32) | (second & 0xFFFFFFFFL);
     }
-
-    static int[] tiles(int item, PlayerState player) {
-        long pair = tilePair(item, player);
-        return new int[] {(int) (pair >> 32), (int) pair};
-    }
 }

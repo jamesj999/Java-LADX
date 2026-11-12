@@ -204,10 +204,4 @@ public final class EntitySpriteCatalog {
         }
         return offset;
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public EntitySpriteCatalog(byte[] romData) {
-        this(romData == null ? null : Rom.unchecked(romData));
-    }
 }

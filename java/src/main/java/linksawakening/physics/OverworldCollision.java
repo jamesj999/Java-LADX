@@ -11,6 +11,10 @@ import linksawakening.world.object.SwitchBlockLinkInteraction;
  * physics flag from {@code OverworldObjectPhysicFlags}.
  */
 public final class OverworldCollision {
+    private static final GroundInteractionSample EMPTY_SAMPLE =
+            new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
+    // Immutable samples may be retained by callers. Refresh only the changed cell value.
+    private final GroundInteractionSample[] groundSamples = new GroundInteractionSample[256];
 
     private static final int CELL_SIZE = 16;
     private static final int ROOM_OBJECTS_BASE = 0x11;
@@ -222,19 +226,13 @@ public final class OverworldCollision {
      */
     public GroundInteractionSample groundInteractionSample(int entityX, int entityY) {
         if (roomObjectsArea == null) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
+            return EMPTY_SAMPLE;
         }
         int sampleX = (entityX - 1) & 0xFF;
         int sampleY = (entityY - 7) & 0xFF;
         int objectLeft = sampleX & 0xF0;
         int objectTop = sampleY & 0xF0;
-        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
-        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, objectLeft, objectTop);
-        }
-        int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(
-                objectId, physicsTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
+        return sampleAt(objectLeft, objectTop);
     }
 
     /**
@@ -250,19 +248,27 @@ public final class OverworldCollision {
     /** Complete padded-buffer sample used by ApplySwordIntersectionWithObjects. */
     public GroundInteractionSample entityInteractionSample(int entityX, int entityY) {
         if (roomObjectsArea == null) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
+            return EMPTY_SAMPLE;
         }
         int x = entityX & 0xFF;
         int y = (entityY - 0x08) & 0xFF;
         int objectLeft = x & 0xF0;
         int objectTop = y & 0xF0;
-        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
-        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, objectLeft, objectTop);
+        return sampleAt(objectLeft, objectTop);
+    }
+
+    private GroundInteractionSample sampleAt(int objectLeft, int objectTop) {
+        int cell = objectTop + (objectLeft >>> 4);
+        int areaIndex = ROOM_OBJECTS_BASE + cell;
+        boolean inBounds = areaIndex >= 0 && areaIndex < roomObjectsArea.length;
+        int objectId = inBounds ? roomObjectsArea[areaIndex] & 0xFF : 0xFF;
+        int physicsFlag = inBounds ? physicsTables.objectPhysicsFlag(physicsTableIndex, objectId) : PhysicsFlags.NONE;
+        GroundInteractionSample sample = groundSamples[cell];
+        if (sample == null || sample.objectId() != objectId || sample.physicsFlag() != physicsFlag) {
+            sample = new GroundInteractionSample(objectId, physicsFlag, objectLeft, objectTop);
+            groundSamples[cell] = sample;
         }
-        int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(
-                objectId, physicsTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
+        return sample;
     }
 
     private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY, boolean hasFlippers) {

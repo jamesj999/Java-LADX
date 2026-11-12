@@ -10,19 +10,28 @@ import linksawakening.rom.RomSymbols;
 final class InventoryInstrumentPanel {
     private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
+    private final int[] attributeScratch = new int[4];
+    private final int[][][] instrumentTiles = new int[8][2][];
+    private int[][] paletteScratch;
+    private final int[] cyclingPalette = new int[4];
     private final int[] positions = new int[8];
-    private final int[] numbers = new int[8];
-    private final int[] instruments = new int[8];
     private final int[][] cycleColors = new int[16][2];
     private final GPU tiles = new GPU();
 
     InventoryInstrumentPanel(Rom romData) {
         var data = romData;
+        int[] numbers = new int[8];
+        int[] instruments = new int[8];
         for (int i = 0; i < 8; i++) {
             positions[i] =
                     0x100 + data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BCF.offset() + i));
             numbers[i] = data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BD7.offset() + i));
             instruments[i] = data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BDF.offset() + i));
+        }
+        for (int i = 0; i < 8; i++) {
+            int tile = instruments[i];
+            instrumentTiles[i][0] = new int[] {0x7C, 0x7C, 0x7C, numbers[i]};
+            instrumentTiles[i][1] = new int[] {tile, tile + 1, tile + 0x10, tile + 0x11};
         }
         for (int i = 0; i < 32; i++) {
             int offset = RomSymbols.InventoryInstrumentCyclingColors.offset() + i * 2;
@@ -42,10 +51,23 @@ final class InventoryInstrumentPanel {
     }
 
     int[] tilemapForInstrument(int index, int flags) {
-        int tile = instruments[index];
-        return (flags & 2) != 0
-                ? new int[] {tile, tile + 1, tile + 0x10, tile + 0x11}
-                : new int[] {0x7C, 0x7C, 0x7C, numbers[index]};
+        return instrumentTileView(index, flags).clone();
+    }
+
+    private int[] instrumentTileView(int index, int flags) {
+        return instrumentTiles[index][(flags & 2) == 0 ? 0 : 1];
+    }
+
+    /** Borrowed palette rows, consumed synchronously by render/submit before the next call. */
+    int[][] framePalettes(int[][] base, int frame) {
+        if (paletteScratch == null || paletteScratch.length != base.length) paletteScratch = new int[base.length][];
+        System.arraycopy(base, 0, paletteScratch, 0, base.length);
+        System.arraycopy(base[7], 0, cyclingPalette, 0, 4);
+        int phase = (frame >>> 3) & 15;
+        cyclingPalette[1] = cycleColors[phase][0];
+        cyclingPalette[2] = cycleColors[phase][1];
+        paletteScratch[7] = cyclingPalette;
+        return paletteScratch;
     }
 
     int position(int index) {
@@ -80,11 +102,15 @@ final class InventoryInstrumentPanel {
             int row = positions[i] / 32;
             int col = positions[i] % 32;
             int at = row * 20 + col;
-            int[] attrs = {attributes[at], attributes[at + 1], attributes[at + 20], attributes[at + 21]};
+            int[] attrs = attributeScratch;
+            attrs[0] = attributes[at];
+            attrs[1] = attributes[at + 1];
+            attrs[2] = attributes[at + 20];
+            attrs[3] = attributes[at + 21];
             TilemapRenderer.render(
                     buffer,
                     tiles,
-                    tilemapForInstrument(i, flags[i]),
+                    instrumentTileView(i, flags[i]),
                     attrs,
                     palettes,
                     tileRegion.set(2, 2, col * 8, row * 8 + windowY));
@@ -101,11 +127,15 @@ final class InventoryInstrumentPanel {
             int row = positions[i] / 32;
             int col = positions[i] % 32;
             int at = row * 20 + col;
-            int[] attrs = {attributes[at], attributes[at + 1], attributes[at + 20], attributes[at + 21]};
+            int[] attrs = attributeScratch;
+            attrs[0] = attributes[at];
+            attrs[1] = attributes[at + 1];
+            attrs[2] = attributes[at + 20];
+            attrs[3] = attributes[at + 21];
             TilemapRenderer.submit(
                     frameModel,
                     tiles,
-                    tilemapForInstrument(i, flags[i]),
+                    instrumentTileView(i, flags[i]),
                     attrs,
                     palettes,
                     tileRegion.set(2, 2, col * 8, row * 8 + windowY));

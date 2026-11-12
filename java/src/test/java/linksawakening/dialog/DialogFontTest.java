@@ -16,6 +16,17 @@ final class DialogFontTest {
     private static final int TILE_SIZE = 16;
 
     @Test
+    void ownedGlyphCopyCannotChangeSubsequentRendering() {
+        byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 256];
+        rom[FONT_OFFSET] = 42;
+        var font = DialogFont.loadFromRom(TestRoms.partial(rom));
+        byte[] owned = font.tileFor('A');
+        owned[0] = 0;
+        org.junit.jupiter.api.Assertions.assertEquals(42, font.tileView('A')[0]);
+        org.junit.jupiter.api.Assertions.assertEquals(42, font.tileFor('A')[0]);
+    }
+
+    @Test
     void loadFromRomUsesFontTilesAndCodepointMapFromRomOffsets() {
         byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 256];
         rom = Arrays.copyOf(rom, Math.max(rom.length, FONT_OFFSET + 3 * TILE_SIZE));

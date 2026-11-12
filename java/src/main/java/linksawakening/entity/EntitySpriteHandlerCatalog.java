@@ -345,11 +345,6 @@ public final class EntitySpriteHandlerCatalog {
         states = new EntitySpriteStates(decoder, registrations);
         effects = new EntityEffectSprites(decoder);
     }
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public EntitySpriteHandlerCatalog(byte[] romData) {
-        this(romData == null ? null : Rom.unchecked(romData));
-    }
 
     public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable) {
         return forEntityType(entityType, roomTable, -1);

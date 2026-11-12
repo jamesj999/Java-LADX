@@ -70,10 +70,4 @@ public final class TransientVfxSpriteSheet {
     private static int romOffset(int bank, int address) {
         return new RomAddress(bank, address).offset();
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public static TransientVfxSpriteSheet loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
-    }
 }

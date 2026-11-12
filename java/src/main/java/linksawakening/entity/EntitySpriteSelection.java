@@ -53,34 +53,6 @@ public final class EntitySpriteSelection {
                 objectPalettes,
                 new Presentation(spriteOverrides, Map.of(), null, null, null));
     }
-    /** @deprecated Use the Presentation argument bundle overload. */
-    @Deprecated(forRemoval = true)
-    private EntitySpriteSelection(
-            EntityRoomLoader.RoomTable roomTable,
-            int roomId,
-            int groupIndex,
-            int[] sheetValues,
-            boolean standardSheets,
-            int[][] objectPalettes,
-            Map<Integer, EntitySpriteDefinition> spriteOverrides,
-            Map<Integer, EntitySpriteDefinition> spriteOverlays,
-            EntitySpriteDefinition burningSpriteDefinition,
-            EntitySpriteDefinition deathSpriteDefinition,
-            EntitySpriteDefinition powerRecoilDeathSpriteDefinition) {
-        this(
-                roomTable,
-                roomId,
-                groupIndex,
-                sheetValues,
-                standardSheets,
-                objectPalettes,
-                new Presentation(
-                        spriteOverrides,
-                        spriteOverlays,
-                        burningSpriteDefinition,
-                        deathSpriteDefinition,
-                        powerRecoilDeathSpriteDefinition));
-    }
 
     private EntitySpriteSelection(
             EntityRoomLoader.RoomTable roomTable,

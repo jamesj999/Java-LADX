@@ -158,11 +158,11 @@ final class LinkDash {
 
     /** Returns and clears the one-shot shake request written this frame. */
     ScreenShakeRequest consumePegasusScreenShakeRequest() {
-        ScreenShakeRequest request =
-                new ScreenShakeRequest(pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
+        int countdown = pendingPegasusScreenShakeCountdown;
+        int phase = pendingPegasusScreenShakePhase;
         pendingPegasusScreenShakeCountdown = 0;
         pendingPegasusScreenShakePhase = 0;
-        return request.countdown() == 0 ? null : request;
+        return countdown == 0 ? null : new ScreenShakeRequest(countdown, phase);
     }
 
     int accessPegasusBootsChargeMeter() {

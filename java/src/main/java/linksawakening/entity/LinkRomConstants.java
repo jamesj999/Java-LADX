@@ -3,7 +3,6 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 
 import linksawakening.state.Direction;
-import linksawakening.state.PlayerState;
 
 /** Constants and lookup tables mirroring the ROM Link motion paths. */
 final class LinkRomConstants {
@@ -55,8 +54,7 @@ final class LinkRomConstants {
     static final int JUMP_FRAME_TICKS = 8;
     static final int FALL_FRAME_TICKS = 16;
     static final int FALL_DURATION_FRAMES = 96;
-    static final int PIT_RECOVERY_INVINCIBILITY_FRAMES = 0x40;
-    static final int PIT_DAMAGE = PlayerState.HP_PER_HEART / 2;
+
     static final int ATTACK_STEP_ITEM_ANY = 0x00;
     static final int ATTACK_STEP_DURATION_MASK = 0x7F;
     static final int ROM_ITEM_ATTACK_STEP_COUNTDOWN = 0x0C | ATTACK_STEP_ITEM_ANY;

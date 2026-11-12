@@ -249,10 +249,6 @@ public final class IntroSequence {
         return frames.snapshot();
     }
 
-    private int shipX() {
-        return shipX;
-    }
-
     private void tickSea() {
         decrementLightning();
         if (shipX == 0x50) {
