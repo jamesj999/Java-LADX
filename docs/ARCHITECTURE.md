@@ -20,6 +20,29 @@ Hosts supply native input, presentation and PCM output. Headless execution
 uses the same session simulation with a different host.
 See [BUILDING.md](BUILDING.md) for setup and local ROM configuration.
 
+## Design rules
+
+Use composition for implementation reuse. A main-source class may extend a
+JDK/framework type, or participate in a sealed hierarchy used polymorphically.
+Do not divide one object's implementation into a linear superclass chain.
+A collaborator owns its private state, receives the dependencies it actually
+uses, and has a responsibility that can be tested independently. Pass shared
+mutable data through small explicit state objects; do not share protected fields
+or give file-slice helpers the owner's complete state.
+
+Cohesion takes priority over line counts. A cohesive class of roughly 500 lines
+is acceptable. Merge artificial slices, and split only at a real responsibility
+boundary; moving methods into another file is not itself a design improvement.
+Stateless algorithms and immutable table data are valid separate responsibilities
+when their inputs describe that work rather than an owning object.
+
+`architecture.NoImplementationInheritanceTest` checks superclass and sealed
+permits metadata in every main class file. Owned packages have no exceptions.
+Its temporary render/gpu/audio exceptions belong to the concurrent migration
+and must be removed as those classes are converted. The field inventories,
+responsibilities and measured before/after sizes are recorded in
+[composition-redesign.md](archive/history/composition-redesign.md).
+
 ## Package map
 
 All names below are relative to `linksawakening` under
@@ -42,7 +65,7 @@ objects built by `app.wiring.SessionWiring`.
 | `app.input` | 7 | Host/headless keys, queued gameplay routing and input completion |
 | `app.audio` | 3 | Music selection and dialog-sound routing |
 | `app.presentation` | 2 | Frame-state assembly, composition and debug-overlay ordering |
-| `app.headless` | 3 | Diagnostic views and immutable checkpoint value operations |
+| `app.headless` | 4 | Diagnostic/checkpoint contracts and their owned snapshots |
 | `app.host` | 3 | Desktop/headless resources and native boundary |
 | `app.screen` | 13 | Five screens, their lifecycle ports and retained screen set |
 | `app.gameplay` | 14 | Ordered phases, transition/input gates and immutable input reuse |
@@ -107,19 +130,18 @@ editor bindings still use functional reads/writes for editable values.
 Required service references are validated at construction. Inactive story
 motions, closed menus and absent active swords remain nullable state.
 
-`HeadlessGameDriver` retains its public input/stepping API. In `app.headless`,
-`SessionDiagnostics` exposes live views with a captured frame number,
-`HeadlessState` captures immutable checkpoints, and `HeadlessStateValues`
-preserves equality, hashing and text format. Nested `HeadlessGameDriver.State`
-and `Diagnostics` remain compatibility entry names for replay tools. Three
-**test-source** forwarding helpers preserve old static names used by tests
+`HeadlessGameDriver` retains its public input/stepping API. Its nested `State`
+and `Diagnostics` implement the `HeadlessState` and `SessionDiagnostics`
+contracts and compose `ReplayCheckpoint` and `SessionDiagnosticSnapshot`.
+The checkpoint owns its values, equality, hashing and text format. Diagnostics
+retain live views with the captured frame number. These are composed public
+entry names, with no implementation superclass or separate value-method slice.
+Three **test-source** forwarding helpers preserve old static names used by tests
 outside the app ownership boundary; they add no production entry types.
 
-App/gameplay source files stay below 300 lines, methods at most 50 lines, and
-constructors/methods at most eight parameters. Each class documents its role and
-lifetime. There are no per-frame collaborator constructions. Public top-level app
-types decreased from 89 to 86; package-private helpers remain internal to their
-own domain.
+App/gameplay classes document their role and lifetime and follow the composition
+and cohesion rules above. Per-frame orchestration retains its collaborators;
+headless diagnostic snapshots are constructed only when requested.
 
 ### `app.screen`
 
@@ -176,27 +198,36 @@ Key types: AppConfig, MiniJson.
 
 ### `cutscene`
 
-Scripted intro lifecycle and ROM-backed intro data.
-Key types: CutsceneManager, IntroSequence, IntroSequenceState and IntroRomData.
+Scripted intro orchestration and ROM-backed intro data.
+Key types: CutsceneManager, IntroSequence, IntroRomData, IntroBeachActors,
+IntroWater, IntroSpriteComposer and IntroFramePublisher.
 
-IntroHandler lifecycle, scene motion, beach motion, transitions and rendering
-share one retained state and RNG, preserving frame and random-call order.
+IntroSequence is a final stage orchestrator. Beach actors own positions and
+motion timers; water owns wave fractions and offsets. Sprite composition owns
+its decoded tables, scratch lists and RNG, preserving original call order.
+Frame publication owns palettes, delayed scene snapshots and its retained
+builder. IntroPhaseState, IntroClock and IntroVideoMemory are small explicit
+state objects for shared stage, time and hardware-map/scroll data. Palette
+arithmetic and default-ROM construction have separate, stateless responsibilities.
+
 Entry points accept Rom with deprecated byte-array compatibility delegates.
-IntroRomData preserves its defensive copy and format bounds. Snapshot builders
-and rendering scratch lists are retained; published snapshots keep immutable
-copies.
+IntroRomData preserves its defensive copy and format bounds. Pre-update snapshot
+timing, frame counters and immutable published copies retain their original
+semantics; no collaborator receives the IntroSequence owner.
 
 ### `dialog`
 
 Dialog state, ROM text layout, font and box rendering.
-Key types: DialogController, DialogState, DialogLifecycle, DialogPaging,
-DialogTextFormatting, DialogRomLayout and DialogRenderer.
+Key types: DialogController, DialogText, DialogRomLayout and DialogRenderer.
 
-The sections share one dialog state, preserving input edges, reveal timing,
-scrolling, selection and sound order. Font/layout readers use typed Rom values.
-Sound consumption reuses immutable singleton lists and copies multiple-event
-lists, preserving retained-event ownership. ROM-free allocation guards exercise
-printing ticks and sound consumption.
+DialogController owns the cohesive reveal/scroll/choice state machine and
+queued sound requests. DialogText owns name substitution and width-dependent
+layout, independently of dialog timing. Both are final and own private state;
+the former lifecycle/paging/formatting superclass layers are removed.
+Input edges, reveal timing, scrolling, selection and sound order are preserved.
+Font/layout readers use typed Rom values. Sound consumption reuses immutable
+single-event lists and copies multiple-event lists to preserve retention.
+ROM-free allocation guards exercise printing ticks and sound consumption.
 
 ### `entity`
 
@@ -205,40 +236,55 @@ Room entity simulation lives in world.entity.
 Key types: Link, LinkAssembly, LinkRoles, LinkPositionRole, LinkMotionRole,
 LinkAnimationRole, LinkActionsRole, LinkStatusRole and EntitySpriteCatalog.
 
-Link declares retained role accessors directly. Nine narrow interfaces cover
-position, motion, animation, actions, status, equipment, airborne motion,
-side-view motion and controls. Their implementations receive state-owning
-components, never Link. LinkAssembly binds cyclic dependencies once; components
-and service references are final. Link is a final aggregate with no superclass;
-update delegates frame orchestration to its retained motion role. The sole
-deprecated member is the JumpTarget adapter used by a world route fixture.
+Link is a final aggregate with direct retained role accessors and no superclass.
+Nine narrow interfaces expose position, motion, animation, actions, status,
+equipment, airborne motion, side-view motion and controls. Their implementations
+receive components, never Link. LinkAssembly binds cyclic component references
+once before publication. Update delegates to the retained motion orchestration;
+the motion command role also coordinates aggregate debug reset. The remaining
+JumpTarget adapter is deprecated for the world-owned route fixture.
 
-LinkMotion, LinkAirborne, LinkAnimator and LinkStateMachine contain their own
-command implementations. Collision integration, jump integration, ordered frame
-phases and animation selection remain distinct internal responsibilities.
-Link receives player components directly and retains themed ROM motion/sword
-tables. Direction conversions distinguish Java and ROM indices explicitly. Animation
-facing is stored as Direction; raw snapshot and permissive equipment boundaries
-retain their integer representation and documented fallback behavior.
+LinkStateMachine dispatches frame phases and composes LinkDash, LinkRoomPhysics
+and LinkDoorTraversal. They own charge/rebound/shake, room defaults and door
+traversal respectively. LinkMotionStatus contains explicit shared mode/recovery
+gates. LinkMotion composes LinkPosition for XY subpixels, speeds and position
+shadows, plus LinkCollisionState for probe/mask/door-warp state. LinkAirborne
+owns jump/landing orchestration, LinkPitFall owns pit probing and fall timing,
+and LinkElevation is their explicit height/speed state. These state fields are
+private; no implementation superclass remains.
 
-Sprite registrations are grouped by entity responsibility. Context-sensitive
-validation and fallback selection retain first priority; the other families
-cover disjoint entity IDs. Named display-list addresses match local ROM symbols.
-Typed Rom readers preserve bank selection and format checks. EntitySpriteCatalog
-passes Rom directly to the world-owned RoomPaletteLoader.
-ROM-free allocation guards cover walking with repeated sword swings.
+LinkAnimator owns pose selection and scripted presentations. LinkSpriteComposer
+receives selected pose values and owns body tile composition/equipment draw
+order; LinkPoseTables holds fallback data. Animation facing is Direction;
+Java/ROM conversions are explicit. Raw snapshots and permissive equipment
+boundaries retain their integer representation and documented fallback behavior.
+
+EntitySpriteHandlerCatalog composes immutable registration recipes, their
+context-sensitive lookup and bounded ROM decoding. Sixteen family builders
+produce EntitySpriteRecipe values; EntitySpriteRegistrationData indexes them
+once. EntitySpriteDecoder owns ROM access. BossSpriteComposer, EntitySpriteStates
+and EntityEffectSprites own boss geometry, state-dependent selection and transient
+effect composition; EntitySpriteGeometry supplies pure OAM coordinate algorithms.
+First-match priority, map-byte selectors, bank bounds and palette/tile-source
+choices remain unchanged. EntitySpriteCatalog passes Rom directly to the
+world-owned RoomPaletteLoader. ROM-free allocation guards cover walking with
+repeated sword swings.
 
 ### `equipment`
 
 Equipped item behavior, activation and item sprite support.
-Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword,
-SwordAttackMotion, SwordChargeMotion and SwordRenderer.
+Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword, SwordSpin,
+SwordRenderer and SwordPalette.
 
-Sword components retain attack and charge state and themed SwordTables;
-MagicRod retains EquipmentTables. Dispatch uses primitive frame counters and
-preserves held/edge ordering. Owned player and Link callers use their composed
-APIs. Sprite and palette loaders accept Rom; deprecated byte-array delegates
-retain external source and partial-buffer compatibility.
+Sword is a final swing/charge orchestrator with private animation and movement
+state. SwordSpin independently owns queued-start delay, spin frames, sector and
+base direction; it returns pose values and never receives Sword or its state.
+The existing renderer and palette objects handle blade presentation. Themed
+SwordTables and EquipmentTables retain ROM lookup boundaries. Primitive frame
+counters, held/input-edge priority and sound/RNG ordering are preserved.
+Owned player and Link callers use composed APIs. Sprite/palette loaders accept
+Rom; deprecated byte-array delegates retain external source and partial-buffer
+compatibility.
 
 ### `gameplay`
 
@@ -354,13 +400,14 @@ bytes. Reward components accept state-owned values without world dependencies.
 Resource sounds are last-write-wins values mapped by the presentation consumer.
 StateDependencyTest enforces the state/rom/save boundary without exceptions and
 also checks that physics remains input-free. Composition guards require both
-aggregates to extend Object directly.
+aggregates to extend Object directly; the class-file inheritance guard applies
+the same composition rule to all main packages.
 
 ### `ui`
 
 Inventory, HUD and file-menu controllers and overlays.
 Key types: InventoryController, InventoryMenu, HudOverlay, FileMenuController,
-FileMenuState, FileMenuFlow, FileMenuEditing and TilemapRenderer.
+FileNameEntry and TilemapRenderer.
 
 Inventory rendering and synchronous HardwareFrame submission reuse tile and
 attribute scratch buffers. Numeric and palette pairs use primitive values;
@@ -369,9 +416,11 @@ independent arrays. ROM-free guards cover the fully open HUD/inventory update
 and submission path, including snapshot retention checks.
 
 UI ROM readers accept Rom. FileMenuRomData preserves its defensive copy,
-including support for legacy partial synthetic buffers. File-menu sections
-share their state; published frame snapshots remain immutable and use retained
-builders. OcarinaSong supplies typed flag and selection conversions.
+including support for legacy partial synthetic buffers. FileMenuController
+owns slot/copy/erase transitions and frame publication; its FileNameEntry
+collaborator owns character selection, insertion position and name bytes. Both
+are final with private state. Published frame snapshots remain immutable and
+use retained builders. OcarinaSong supplies typed flag and selection conversions.
 
 ### `vfx`
 
