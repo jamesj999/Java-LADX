@@ -38,7 +38,7 @@ public final class PincerMotion {
     }
 
     public Update advance(RoomEntity entity, int transitionCountdown, int physicsFlags, int linkX, int linkY) {
-        return new PincerStep(this, entity, transitionCountdown, physicsFlags, linkX, linkY).run();
+        return pincerStep.run(this, entity, transitionCountdown, physicsFlags, linkX, linkY);
     }
 
     public int state(int slot) {
@@ -149,4 +149,6 @@ public final class PincerMotion {
     record Vector(int y, int x) {}
 
     record Position(int x, int y) {}
+
+    final PincerStep pincerStep = new PincerStep();
 }

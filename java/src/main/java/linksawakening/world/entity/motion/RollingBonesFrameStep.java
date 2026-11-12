@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-/** Per-invocation scratch for RollingBonesMotion.advanceBoss; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for RollingBonesMotion.advanceBoss; values are assigned in source order. */
 final class RollingBonesFrameStep {
-    private final RollingBonesMotion owner;
+    private RollingBonesMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private linksawakening.world.entity.RoomEntity bar;
     private int transitionCountdown;
@@ -18,20 +18,7 @@ final class RollingBonesFrameStep {
     private boolean landed;
     private int displayVariant;
 
-    RollingBonesFrameStep(
-            RollingBonesMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            linksawakening.world.entity.RoomEntity bar,
-            int transitionCountdown,
-            int health,
-            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
-        this.owner = owner;
-        this.entity = entity;
-        this.bar = bar;
-        this.transitionCountdown = transitionCountdown;
-        this.health = health;
-        this.backgroundCollision = backgroundCollision;
-    }
+    RollingBonesFrameStep() {}
 
     linksawakening.world.entity.motion.RollingBonesMotion.BossUpdate run() {
         slot = entity.slot();
@@ -154,5 +141,47 @@ final class RollingBonesFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.RollingBonesMotion.BossUpdate run(
+            RollingBonesMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            linksawakening.world.entity.RoomEntity bar,
+            int transitionCountdown,
+            int health,
+            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+        if (inUse) {
+            return new RollingBonesFrameStep()
+                    .run(owner, entity, bar, transitionCountdown, health, backgroundCollision);
+        }
+        inUse = true;
+        slot = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        variant = 0;
+        jingleId = 0;
+        previousSpeedZ = 0;
+        landed = false;
+        displayVariant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.bar = bar;
+        this.transitionCountdown = transitionCountdown;
+        this.health = health;
+        this.backgroundCollision = backgroundCollision;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.bar = null;
+            this.backgroundCollision = null;
+            this.completedResult = null;
+        }
     }
 }

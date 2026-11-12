@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.BoomerangMotion;
 /** Focused behavior using the state owned by EntityProjectileController. */
 final class BoomerangBehavior {
     static void advanceBoomerangEntity(EntityProjectileController owner, BoomerangFrame inputs) {
-        new BoomerangStep(owner, inputs).run();
+        owner.boomerangStep.run(owner, inputs);
     }
 
     static boolean collideBoomerangWithEntities(EntityProjectileController owner, RoomEntity boomerang, int frame) {

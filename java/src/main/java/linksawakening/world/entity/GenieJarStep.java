@@ -9,7 +9,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.GenieMotion;
 
-/** Per-invocation scratch for GenieJarBehavior.advanceGenieJar; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for GenieJarBehavior.advanceGenieJar; values are assigned in source order. */
 final class GenieJarStep {
     private linksawakening.world.entity.GenieEntityController owner;
     private linksawakening.world.entity.RoomEntity jarEntity;
@@ -26,14 +26,7 @@ final class GenieJarStep {
     private boolean landed;
     private boolean activatedThisTick;
 
-    GenieJarStep(
-            linksawakening.world.entity.GenieEntityController owner,
-            linksawakening.world.entity.RoomEntity jarEntity,
-            int linkEntityY) {
-        this.owner = owner;
-        this.jarEntity = jarEntity;
-        this.linkEntityY = linkEntityY;
-    }
+    GenieJarStep() {}
 
     void run() {
         if (!advanceJarPhysics()) return;
@@ -166,5 +159,43 @@ final class GenieJarStep {
             runtime.lifecycle().disableEntityWithoutPersistence(slot);
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.GenieEntityController owner,
+            linksawakening.world.entity.RoomEntity jarEntity,
+            int linkEntityY) {
+        if (inUse) {
+            new GenieJarStep().run(owner, jarEntity, linkEntityY);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        freeSlots = 0;
+        bodySpawnSucceeded = false;
+        rockSpawnSucceeded = false;
+        update = null;
+        jar = null;
+        fallingJar = null;
+        z = 0;
+        landed = false;
+        activatedThisTick = false;
+        this.owner = owner;
+        this.jarEntity = jarEntity;
+        this.linkEntityY = linkEntityY;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.jarEntity = null;
+            this.runtime = null;
+            this.update = null;
+            this.jar = null;
+            this.fallingJar = null;
+        }
     }
 }

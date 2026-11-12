@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-/** Per-invocation scratch for BomberMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BomberMotion.advance; values are assigned in source order. */
 final class BomberFrameStep {
-    private final BomberMotion owner;
+    private BomberMotion owner;
     private linksawakening.world.entity.motion.BomberFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int transitionCountdown;
@@ -22,10 +22,7 @@ final class BomberFrameStep {
     private linksawakening.world.entity.motion.BomberMotion.BombSpawn bombSpawn;
     private boolean playJingle;
 
-    BomberFrameStep(BomberMotion owner, linksawakening.world.entity.motion.BomberFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BomberFrameStep() {}
 
     linksawakening.world.entity.motion.BomberMotion.Update run() {
         entity = inputs.entity();
@@ -138,5 +135,48 @@ final class BomberFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.BomberMotion.Update run(
+            BomberMotion owner, linksawakening.world.entity.motion.BomberFrame inputs) {
+        if (inUse) {
+            return new BomberFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        transitionCountdown = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        romLinkDirection = 0;
+        swordAnimationActive = false;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        slot = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        moved = null;
+        nextTransitionCountdown = 0;
+        oldInertia = 0;
+        bombSpawn = null;
+        playJingle = false;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.moved = null;
+            this.bombSpawn = null;
+            this.completedResult = null;
+        }
     }
 }

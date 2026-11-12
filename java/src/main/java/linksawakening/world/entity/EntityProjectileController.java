@@ -265,4 +265,9 @@ public final class EntityProjectileController {
     boolean writeBoomerangSoundClockProvided(boolean value) {
         return boomerangSoundClockProvided = value;
     }
+
+    final PlayerProjectileDamageFrameStep playerProjectileDamageFrameStep = new PlayerProjectileDamageFrameStep();
+    final MagicPowderStep magicPowderStep = new MagicPowderStep();
+    final MagicRodFrameStep magicRodFrameStep = new MagicRodFrameStep();
+    final BoomerangStep boomerangStep = new BoomerangStep();
 }

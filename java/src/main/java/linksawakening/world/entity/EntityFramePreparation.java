@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 import linksawakening.world.entity.motion.*;
 
 /** Frame setup in the same order as AnimateEntities, before the descending slot loop. */
@@ -102,33 +101,12 @@ final class EntityFramePreparation {
     static void prepareBackgroundCollision(EntityFrameExecution state) {
 
         if (state.physicsTables().readBackgroundInteraction() != null) {
-            state.inputs().backgroundCollision((entity, direction, nextX, nextY) -> {
-                EntityBackgroundCollisionResult result = state.physicsTables()
-                        .readBackgroundInteraction()
-                        .probe(
-                                entity,
-                                direction,
-                                nextX,
-                                nextY,
-                                state.combatTables().readEnemyIgnoreHitsCountdown(entity.slot()),
-                                state.inputs().frame());
-                if (result.blocked()
-                        && entity.status() == EntityStatus.THROWN
-                        && checksThrownRoomEventTriggers(entity.type())) {
-                    state.events()
-                            .pendingThrownBackgroundCollisions
-                            .add(new ThrownBackgroundCollisionEvent(
-                                    entity.slot(), entity.type(), direction, result.objectId()));
-                }
-                return result.blocked();
-            });
+            state.inputs().backgroundCollision(state.collisionAdapters().booleanProbe());
         }
         state.inputs().hinoxBackgroundInteraction(state.physicsTables().readBackgroundInteraction());
         if (state.inputs().hinoxBackgroundInteraction() == null
                 && state.inputs().backgroundCollision() != null) {
-            state.inputs()
-                    .hinoxBackgroundInteraction(RoomEntityBackgroundInteraction.fromBoolean(
-                            state.inputs().backgroundCollision()));
+            state.inputs().hinoxBackgroundInteraction(state.collisionAdapters().richProbe());
         }
     }
 

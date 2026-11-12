@@ -13,7 +13,15 @@ import linksawakening.world.entity.motion.*;
 /** Source-ordered preparation, descending slot phases and presentation commits. */
 final class EntitySlotOrchestrator {
     static List<EntityProjectileEvent> advanceFrame(RoomEntityRuntime runtime, EntityFrameContext context) {
-        EntityFrameExecution state = new EntityFrameExecution(runtime, context);
+        EntityFrameExecution state = runtime.frameExecution.acquire(context);
+        try {
+            return advancePreparedFrame(state);
+        } finally {
+            state.release();
+        }
+    }
+
+    private static List<EntityProjectileEvent> advancePreparedFrame(EntityFrameExecution state) {
         EntityFramePreparation.copyInputs(state);
         EntityFramePreparation.prepareInteractionGates(state);
         EntityFramePreparation.advanceRoomClocks(state);

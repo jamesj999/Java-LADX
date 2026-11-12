@@ -41,7 +41,7 @@ public final class FishMotion {
             int transitionCountdown,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new FishFrameStep(this, entity, transitionCountdown, randomByteSupplier, backgroundCollision).run();
+        return fishFrameStep.run(this, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -102,4 +102,6 @@ public final class FishMotion {
     }
 
     public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags, boolean waterSplash) {}
+
+    final FishFrameStep fishFrameStep = new FishFrameStep();
 }

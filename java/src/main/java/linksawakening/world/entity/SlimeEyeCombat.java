@@ -49,6 +49,6 @@ final class SlimeEyeCombat {
     }
 
     static void resolveCombat(SlimeEyeController owner, SlimeEyeCombatFrame inputs) {
-        new SlimeEyeCombatStep(owner, inputs).run();
+        owner.slimeEyeCombatStep.run(owner, inputs);
     }
 }

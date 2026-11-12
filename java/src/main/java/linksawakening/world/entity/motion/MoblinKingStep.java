@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-/** Per-invocation scratch for MoblinKingMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MoblinKingMotion.advance; values are assigned in source order. */
 final class MoblinKingStep {
-    private final MoblinKingMotion owner;
+    private MoblinKingMotion owner;
     private linksawakening.world.entity.motion.MoblinKingFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int linkX;
@@ -28,10 +28,7 @@ final class MoblinKingStep {
     private int ignoreLinkCollisions;
     private int variant;
 
-    MoblinKingStep(MoblinKingMotion owner, linksawakening.world.entity.motion.MoblinKingFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    MoblinKingStep() {}
 
     linksawakening.world.entity.motion.MoblinKingMotion.Update run() {
         if (!prepareMotion()) return completedResult;
@@ -332,5 +329,53 @@ final class MoblinKingStep {
 
         owner.bodyVariant[slot] = variant;
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.MoblinKingMotion.Update run(
+            MoblinKingMotion owner, linksawakening.world.entity.motion.MoblinKingFrame inputs) {
+        if (inUse) {
+            return new MoblinKingStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        linkX = 0;
+        linkY = 0;
+        transitionCountdown = 0;
+        slowTransitionCountdown = 0;
+        frameCounter = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        touchingLink = false;
+        slot = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        blocked = false;
+        landed = false;
+        arrow = null;
+        openDialog = false;
+        jingle = 0;
+        strongBump = false;
+        screenShake = 0;
+        linkDamage = 0;
+        ignoreLinkCollisions = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.arrow = null;
+            this.completedResult = null;
+        }
     }
 }

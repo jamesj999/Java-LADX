@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for HidingZolMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for HidingZolMotion.advance; values are assigned in source order. */
 final class HidingZolStep {
-    private final HidingZolMotion owner;
+    private HidingZolMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int linkEntityX;
     private int linkEntityY;
@@ -22,22 +22,7 @@ final class HidingZolStep {
     private int physicsFlags;
     private linksawakening.world.entity.RoomEntity updated;
 
-    HidingZolStep(
-            HidingZolMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
-            int frameCounter) {
-        this.owner = owner;
-        this.entity = entity;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundInteraction = backgroundInteraction;
-        this.frameCounter = frameCounter;
-    }
+    HidingZolStep() {}
 
     linksawakening.world.entity.motion.HidingZolMotion.Update run() {
         slot = entity.slot();
@@ -211,5 +196,58 @@ final class HidingZolStep {
         variant = 0;
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.HidingZolMotion.Update run(
+            HidingZolMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction,
+            int frameCounter) {
+        if (inUse) {
+            return new HidingZolStep()
+                    .run(
+                            owner,
+                            entity,
+                            linkEntityX,
+                            linkEntityY,
+                            randomByteSupplier,
+                            backgroundInteraction,
+                            frameCounter);
+        }
+        inUse = true;
+        slot = 0;
+        z = 0;
+        hitGround = false;
+        x = 0;
+        y = 0;
+        variant = 0;
+        clearsIgnoreHitsCountdown = false;
+        jumpJingle = false;
+        physicsFlags = 0;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundInteraction = backgroundInteraction;
+        this.frameCounter = frameCounter;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

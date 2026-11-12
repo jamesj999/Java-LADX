@@ -64,7 +64,7 @@ public final class EntitySlotLifecycle {
     }
 
     EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
-        return new EntitySlotLifecycleFrameStep(this, inputs).run();
+        return entitySlotLifecycleFrameStep.run(this, inputs);
     }
 
     public int clearEntity(int slot) {
@@ -263,4 +263,6 @@ public final class EntitySlotLifecycle {
     public int droppablePrivateState3(int slot) {
         return runtime.bossRewards().readDroppablePrivateState3(slot);
     }
+
+    final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep();
 }

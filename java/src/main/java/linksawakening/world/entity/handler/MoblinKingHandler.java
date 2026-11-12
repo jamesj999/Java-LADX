@@ -26,6 +26,7 @@ final class MoblinKingHandler {
     }
 
     private static boolean phase4MoblinKing(EntityFrameExecution state) {
-        return new MoblinKingHandlerFrameStep(state).run();
+        return state.scratch(MoblinKingHandlerFrameStep.class, MoblinKingHandlerFrameStep::new)
+                .run(state);
     }
 }

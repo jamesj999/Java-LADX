@@ -3,9 +3,9 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.event.LikeLikeEvent;
 
-/** Per-invocation scratch for LikeLikeMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for LikeLikeMotion.advance; values are assigned in source order. */
 final class LikeLikeFrameStep {
-    private final LikeLikeMotion owner;
+    private LikeLikeMotion owner;
     private linksawakening.world.entity.motion.LikeLikeFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -25,10 +25,7 @@ final class LikeLikeFrameStep {
     private int stolenInventorySlot;
     private int stolenShieldLevel;
 
-    LikeLikeFrameStep(LikeLikeMotion owner, linksawakening.world.entity.motion.LikeLikeFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    LikeLikeFrameStep() {}
 
     linksawakening.world.entity.motion.LikeLikeMotion.Update run() {
         if (!advanceFreeMotion()) return completedResult;
@@ -150,5 +147,46 @@ final class LikeLikeFrameStep {
         owner.walkMotion.advanceAnimation(slot);
         owner.walkMotion.advanceAnimation(slot);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.LikeLikeMotion.Update run(
+            LikeLikeMotion owner, linksawakening.world.entity.motion.LikeLikeFrame inputs) {
+        if (inUse) {
+            return new LikeLikeFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkZ = 0;
+        linkMotionState = 0;
+        actionButtonsHeld = false;
+        linkItemA = 0;
+        linkItemB = 0;
+        shieldLevel = 0;
+        slowTransitionCountdown = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        slot = 0;
+        renderedVariant = 0;
+        stolenInventorySlot = 0;
+        stolenShieldLevel = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.completedResult = null;
+        }
     }
 }

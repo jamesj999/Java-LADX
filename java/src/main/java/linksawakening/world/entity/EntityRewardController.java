@@ -392,4 +392,7 @@ public final class EntityRewardController {
     int[] storageInstrumentParticleYAccumulator() {
         return instrumentParticleYAccumulator;
     }
+
+    final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep();
+    final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep();
 }

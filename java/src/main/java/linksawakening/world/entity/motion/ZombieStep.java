@@ -3,9 +3,9 @@ package linksawakening.world.entity.motion;
 import java.util.Objects;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
-/** Per-invocation scratch for ZombieMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for ZombieMotion.advance; values are assigned in source order. */
 final class ZombieStep {
-    private final ZombieMotion owner;
+    private ZombieMotion owner;
     private linksawakening.world.entity.motion.ZombieFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -29,10 +29,7 @@ final class ZombieStep {
     private int renderedVariant;
     private int variant;
 
-    ZombieStep(ZombieMotion owner, linksawakening.world.entity.motion.ZombieFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    ZombieStep() {}
 
     linksawakening.world.entity.motion.ZombieMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -201,5 +198,53 @@ final class ZombieStep {
         owner.selectedVariant[slot] = variant;
         updated = ZombieMotion.withVariant(updated, renderedVariant);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.ZombieMotion.Update run(
+            ZombieMotion owner, linksawakening.world.entity.motion.ZombieFrame inputs) {
+        if (inUse) {
+            return new ZombieStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        transitionCountdown = 0;
+        physicsFlags = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        randomByteSupplier = null;
+        objectQuery = null;
+        backgroundInteraction = null;
+        ignoreHitsCountdown = 0;
+        slot = 0;
+        countdown = 0;
+        nextPhysicsFlags = 0;
+        nextSpeedX = 0;
+        nextSpeedY = 0;
+        updated = null;
+        spawnRequest = null;
+        unloadRequested = false;
+        appliesBackgroundInteraction = false;
+        renderedVariant = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.objectQuery = null;
+            this.backgroundInteraction = null;
+            this.updated = null;
+            this.spawnRequest = null;
+            this.completedResult = null;
+        }
     }
 }

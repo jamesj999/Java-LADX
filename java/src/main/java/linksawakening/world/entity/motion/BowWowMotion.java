@@ -358,4 +358,6 @@ public final class BowWowMotion {
     public record TargetContact(int slot, int type) {}
 
     record Vector(int x, int y) {}
+
+    final BowWowStep bowWowStep = new BowWowStep();
 }

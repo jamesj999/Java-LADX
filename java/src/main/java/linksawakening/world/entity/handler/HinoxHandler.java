@@ -19,7 +19,8 @@ final class HinoxHandler {
     }
 
     private static boolean phase4Hinox(EntityFrameExecution state) {
-        return new HinoxHandlerFrameStep(state).run();
+        return state.scratch(HinoxHandlerFrameStep.class, HinoxHandlerFrameStep::new)
+                .run(state);
     }
 
     private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {

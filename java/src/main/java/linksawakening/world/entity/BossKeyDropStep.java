@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for BossKeyDropBehavior.advanceBossKeyDropProducer; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BossKeyDropBehavior.advanceBossKeyDropProducer; values are assigned in source order. */
 final class BossKeyDropStep {
     private linksawakening.world.entity.EntityBossRewards owner;
     private linksawakening.world.entity.RoomEntity source;
@@ -17,14 +17,7 @@ final class BossKeyDropStep {
     private int slot;
     private int state;
 
-    BossKeyDropStep(
-            linksawakening.world.entity.EntityBossRewards owner,
-            linksawakening.world.entity.RoomEntity source,
-            java.util.function.IntSupplier randomByteSupplier) {
-        this.owner = owner;
-        this.source = source;
-        this.randomByteSupplier = randomByteSupplier;
-    }
+    BossKeyDropStep() {}
 
     void run() {
         runtime = owner.runtime;
@@ -178,5 +171,33 @@ final class BossKeyDropStep {
                 .add(new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A));
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityBossRewards owner,
+            linksawakening.world.entity.RoomEntity source,
+            java.util.function.IntSupplier randomByteSupplier) {
+        if (inUse) {
+            new BossKeyDropStep().run(owner, source, randomByteSupplier);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        state = 0;
+        this.owner = owner;
+        this.source = source;
+        this.randomByteSupplier = randomByteSupplier;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.source = null;
+            this.randomByteSupplier = null;
+            this.runtime = null;
+        }
     }
 }

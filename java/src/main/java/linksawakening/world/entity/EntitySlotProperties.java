@@ -22,6 +22,7 @@ public final class EntitySlotProperties {
 
     EntitySlotProperties(EntitySlotPropertiesServices runtime) {
         this.runtime = runtime;
+        this.puzzleCountdown = runtime.physicsTables()::readEnemyTransitionCountdown;
     }
 
     void resolveThreeOfAKindPuzzle() {
@@ -72,11 +73,12 @@ public final class EntitySlotProperties {
     }
 
     void updatePincerBodyOam() {
-        List<PincerBodyOam.Entry> entries = new ArrayList<>();
+        List<PincerBodyOam.Entry> entries = null;
         for (RoomEntity entity : runtime.slots()) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
+            if (entries == null) entries = new ArrayList<>();
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
                     runtime.motions().get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
@@ -85,15 +87,16 @@ public final class EntitySlotProperties {
                     entity.y(),
                     runtime.motions().get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
         }
-        this.writePincerBodyOam(List.copyOf(entries));
+        this.writePincerBodyOam(entries == null ? List.of() : List.copyOf(entries));
     }
 
     void updateWingedOctorokOam() {
-        List<WingedOctorokOam.Entry> entries = new ArrayList<>();
+        List<WingedOctorokOam.Entry> entries = null;
         for (RoomEntity entity : runtime.slots()) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
+            if (entries == null) entries = new ArrayList<>();
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
                     runtime.motions()
@@ -103,7 +106,7 @@ public final class EntitySlotProperties {
                     entity.y(),
                     entity.z()));
         }
-        this.writeWingedOctorokOam(List.copyOf(entries));
+        this.writeWingedOctorokOam(entries == null ? List.of() : List.copyOf(entries));
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
@@ -196,5 +199,13 @@ public final class EntitySlotProperties {
 
     List<BowWowChain.Entry> writeBowWowChainOam(List<BowWowChain.Entry> value) {
         return bowWowChainOam = value;
+    }
+
+    final java.util.function.IntUnaryOperator puzzleCountdown;
+    private java.util.List<RoomEntity> puzzleEntities;
+
+    java.util.List<RoomEntity> puzzleEntities() {
+        if (puzzleEntities == null) puzzleEntities = java.util.Arrays.asList(runtime.slots());
+        return puzzleEntities;
     }
 }

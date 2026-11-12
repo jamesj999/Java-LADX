@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static linksawakening.world.entity.motion.HinoxMotion.*;
 
-/** Per-invocation scratch for HinoxBehavior.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for HinoxBehavior.advance; values are assigned in source order. */
 final class HinoxStep {
     private HinoxMotion owner;
     private HinoxFrame inputs;
@@ -34,10 +34,7 @@ final class HinoxStep {
     private HinoxMotion.BombSpawn bomb;
     private int spriteVariant;
 
-    HinoxStep(HinoxMotion owner, HinoxFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    HinoxStep() {}
 
     HinoxMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -326,5 +323,56 @@ final class HinoxStep {
                 heldWritten,
                 heldPose,
                 bomb));
+    }
+
+    private boolean inUse;
+
+    HinoxMotion.Update run(HinoxMotion owner, HinoxFrame inputs) {
+        if (inUse) {
+            return new HinoxStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        transitionCountdown = 0;
+        frameCounter = 0;
+        linkX = 0;
+        linkY = 0;
+        linkZ = 0;
+        linkMotionState = 0;
+        randomByteSupplier = null;
+        backgroundInteraction = null;
+        entityCollisionFlagsForFrame = 0;
+        flashCountdown = 0;
+        slot = 0;
+        linkMotionBlockedAtEntry = false;
+        x = 0;
+        y = 0;
+        transition = 0;
+        frame = 0;
+        linkSpeedX = 0;
+        linkSpeedY = 0;
+        linkVelocityZ = 0;
+        airborne = 0;
+        linkDamage = 0;
+        jingle = 0;
+        wave = 0;
+        dust = false;
+        bomb = null;
+        spriteVariant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.bomb = null;
+            this.completedResult = null;
+        }
     }
 }

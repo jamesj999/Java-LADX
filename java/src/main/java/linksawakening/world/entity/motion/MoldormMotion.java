@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -31,7 +30,7 @@ public final class MoldormMotion {
     private static final int HISTORY_LENGTH = 0x80;
     private static final int HISTORY_MASK = HISTORY_LENGTH - 1;
     private static final int[] HEAD_SPRITE_VARIANTS = {0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
-    private static final int[] TAIL_HISTORY_OFFSETS = {0x0C, 0x18, 0x24, 0x2E};
+    private final MoldormTailSnapshots tailSnapshots = new MoldormTailSnapshots();
     private static final int[] Y_SPEEDS = {
         0x00, 0x06, 0x0C, 0x0E, 0x10, 0x0E, 0x0C, 0x06,
         0x00, 0xFA, 0xF4, 0xF2, 0xF0, 0xF2, 0xF4, 0xFA
@@ -307,12 +306,7 @@ public final class MoldormMotion {
     }
 
     private List<MoldormSegmentPosition> tailSegments(int slot) {
-        List<MoldormSegmentPosition> segments = new ArrayList<>(TAIL_HISTORY_OFFSETS.length);
-        for (int offset : TAIL_HISTORY_OFFSETS) {
-            int index = (inertia[slot] - offset) & HISTORY_MASK;
-            segments.add(new MoldormSegmentPosition(historyX[slot][index], historyY[slot][index]));
-        }
-        return List.copyOf(segments);
+        return tailSnapshots.read(slot, inertia[slot], historyX[slot], historyY[slot], HISTORY_MASK);
     }
 
     private int probeBackgroundWithoutMovement(

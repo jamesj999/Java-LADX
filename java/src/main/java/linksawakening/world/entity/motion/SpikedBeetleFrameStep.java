@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for SpikedBeetleMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for SpikedBeetleMotion.advance; values are assigned in source order. */
 final class SpikedBeetleFrameStep {
-    private final SpikedBeetleMotion owner;
+    private SpikedBeetleMotion owner;
     private linksawakening.world.entity.motion.SpikedBeetleFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -29,10 +29,7 @@ final class SpikedBeetleFrameStep {
     private int nextVariant;
     private linksawakening.world.entity.RoomEntity updated;
 
-    SpikedBeetleFrameStep(SpikedBeetleMotion owner, linksawakening.world.entity.motion.SpikedBeetleFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    SpikedBeetleFrameStep() {}
 
     linksawakening.world.entity.motion.SpikedBeetleMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -201,5 +198,53 @@ final class SpikedBeetleFrameStep {
         owner.animationVariant[slot] = nextVariant;
         updated = EntitySnapshots.withMotion(entity, x, y, renderedVariant, entity.entityFlipAttribute(), z, -1, false);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.SpikedBeetleMotion.Update run(
+            SpikedBeetleMotion owner, linksawakening.world.entity.motion.SpikedBeetleFrame inputs) {
+        if (inUse) {
+            return new SpikedBeetleFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        transitionCountdown = 0;
+        ignoreHitsCountdown = 0;
+        slot = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        landed = false;
+        renderedVariant = 0;
+        moved = null;
+        collided = false;
+        flippedHandler = false;
+        walkAnimationRequested = false;
+        flippedAnimationRequested = false;
+        nextVariant = 0;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.moved = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

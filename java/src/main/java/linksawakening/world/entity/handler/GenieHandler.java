@@ -47,6 +47,7 @@ final class GenieHandler {
     }
 
     private static boolean phase4Genie(EntityFrameExecution state) {
-        return new GenieHandlerFrameStep(state).run();
+        return state.scratch(GenieHandlerFrameStep.class, GenieHandlerFrameStep::new)
+                .run(state);
     }
 }

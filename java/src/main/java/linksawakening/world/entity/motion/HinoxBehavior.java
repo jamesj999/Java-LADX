@@ -9,7 +9,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 /** Focused behavior using the state owned by HinoxMotion. */
 final class HinoxBehavior {
     static HinoxMotion.Update advance(HinoxMotion owner, HinoxFrame inputs) {
-        return new HinoxStep(owner, inputs).run();
+        return owner.hinoxStep.run(owner, inputs);
     }
 
     static HinoxMotion.Position move(

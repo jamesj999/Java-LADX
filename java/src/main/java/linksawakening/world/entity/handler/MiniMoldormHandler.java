@@ -46,8 +46,7 @@ final class MiniMoldormHandler {
             RoomEntityBackgroundInteraction miniBackgroundInteraction =
                     state.background().interaction();
             if (miniBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                miniBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                miniBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             int transitionForMotion = state.slot().transitionCountdown(slot);
             if (transitionForMotion != 0) {

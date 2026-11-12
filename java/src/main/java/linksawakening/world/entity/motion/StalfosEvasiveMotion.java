@@ -57,7 +57,7 @@ public final class StalfosEvasiveMotion {
     }
 
     public Update advance(StalfosEvasiveFrame inputs) {
-        return new StalfosEvasiveFrameStep(this, inputs).run();
+        return stalfosEvasiveFrameStep.run(this, inputs);
     }
 
     Update advanceAirborne(
@@ -256,4 +256,6 @@ public final class StalfosEvasiveMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep();
 }

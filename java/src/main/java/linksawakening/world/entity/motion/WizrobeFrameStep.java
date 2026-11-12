@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for WizrobeMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for WizrobeMotion.advance; values are assigned in source order. */
 final class WizrobeFrameStep {
-    private final WizrobeMotion owner;
+    private WizrobeMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int linkEntityX;
     private int linkEntityY;
@@ -19,22 +19,7 @@ final class WizrobeFrameStep {
     private linksawakening.world.entity.motion.WizrobeMotion.ProjectileSpawn projectileSpawn;
     private linksawakening.world.entity.RoomEntity updated;
 
-    WizrobeFrameStep(
-            WizrobeMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
-            int transitionCountdown,
-            int currentPhysicsFlags) {
-        this.owner = owner;
-        this.entity = entity;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-        this.transitionCountdown = transitionCountdown;
-        this.currentPhysicsFlags = currentPhysicsFlags;
-    }
+    WizrobeFrameStep() {}
 
     linksawakening.world.entity.motion.WizrobeMotion.Update run() {
         if ((entity.type() & 0xFF) != WizrobeMotion.ENTITY_WIZROBE) {
@@ -147,5 +132,55 @@ final class WizrobeFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.WizrobeMotion.Update run(
+            WizrobeMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            int transitionCountdown,
+            int currentPhysicsFlags) {
+        if (inUse) {
+            return new WizrobeFrameStep()
+                    .run(
+                            owner,
+                            entity,
+                            linkEntityX,
+                            linkEntityY,
+                            randomByteSupplier,
+                            transitionCountdown,
+                            currentPhysicsFlags);
+        }
+        inUse = true;
+        slot = 0;
+        renderedVariant = 0;
+        nextVariant = 0;
+        countdown = 0;
+        physicsFlags = 0;
+        projectileSpawn = null;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        this.transitionCountdown = transitionCountdown;
+        this.currentPhysicsFlags = currentPhysicsFlags;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.projectileSpawn = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

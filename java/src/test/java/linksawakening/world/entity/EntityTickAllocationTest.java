@@ -14,8 +14,9 @@ final class EntityTickAllocationTest {
         Mix mix = new Mix();
         double bytes = AllocationProbe.bytesPerIteration(4_000, 1_000, mix::tick);
         System.out.printf("Entity mix allocation bytes/tick: %.2f%n", bytes);
-        // Baseline budget, tightened after hot-path allocation removal.
-        assertTrue(bytes < 40_000, "Entity mix bytes/tick: " + bytes);
+        // Active mix baseline: 6398 bytes/tick EA on, 6566 EA off.
+        // EA-off optimized measurement: 874 bytes/tick; allow approximately 25% headroom.
+        assertTrue(bytes <= 1_100, "Entity mix bytes/tick: " + bytes);
         assertEquals(6, mix.runtime.inspection().snapshot().loadedEntities().size());
         assertTrue(mix.moldormAdvances >= 8_990, "Moldorm must run during measurement: " + mix.moldormAdvances);
         assertTrue(mix.checksum != 0, "Consume the tick and inspection results");
@@ -66,7 +67,7 @@ final class EntityTickAllocationTest {
             checksum += runtime.tick(frames[frame++ & 255]).size();
             if (moldorm.inertia(3) != previousInertia) moldormAdvances++;
             for (int read = 0; read < 3; read++) {
-                RoomEntitySnapshot snapshot = runtime.inspection().snapshot();
+                RoomEntitySnapshot snapshot = runtime.inspection().view();
                 checksum +=
                         snapshot.slots().get(0).x() + snapshot.loadedEntities().size();
             }

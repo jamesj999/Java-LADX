@@ -109,7 +109,7 @@ public final class BooBuddyMotion {
     }
 
     public linksawakening.world.entity.motion.BooBuddyMotion.Update advanceAfterTimers(BooBuddyFrame inputs) {
-        return new BooBuddyFrameStep(this, inputs).run();
+        return booBuddyFrameStep.run(this, inputs);
     }
 
     public void clear(int slot) {
@@ -263,4 +263,6 @@ public final class BooBuddyMotion {
     record Vector(int x, int y) {}
 
     public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded, int healthOverride) {}
+
+    final BooBuddyFrameStep booBuddyFrameStep = new BooBuddyFrameStep();
 }

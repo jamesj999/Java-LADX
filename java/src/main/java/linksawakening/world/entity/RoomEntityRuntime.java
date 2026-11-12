@@ -27,6 +27,7 @@ public final class RoomEntityRuntime
         implements EntityRuntimeEffects, EntityRuntimeCombat, EntityRuntimeSpawns, EntityRuntimePlayerCommands {
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
+    final EntityFrameExecution frameExecution = new EntityFrameExecution(this, null);
     /** Compatibility for world.room.RoomEntityBridge. */
     @Deprecated
     public static final int BOOMERANG_SFX_COUNTER_PERIOD = EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;

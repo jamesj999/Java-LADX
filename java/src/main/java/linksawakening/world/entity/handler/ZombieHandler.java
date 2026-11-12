@@ -51,8 +51,7 @@ final class ZombieHandler {
             RoomEntityBackgroundInteraction zombieBackgroundInteraction =
                     state.background().interaction();
             if (zombieBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                zombieBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                zombieBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             ZombieMotion.Update zombieUpdate = state.motion(ZombieMotion.class, ZombieMotion::new)
                     .advance(new ZombieFrame(

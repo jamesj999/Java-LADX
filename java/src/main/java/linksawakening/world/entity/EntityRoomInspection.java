@@ -18,9 +18,11 @@ import linksawakening.world.entity.motion.HookshotChainMotion;
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
 public final class EntityRoomInspection {
     private final EntityRoomInspectionServices runtime;
+    private final RoomEntitySnapshot liveView;
 
     EntityRoomInspection(EntityRoomInspectionServices runtime) {
         this.runtime = runtime;
+        this.liveView = RoomEntitySnapshot.liveView(runtime);
     }
 
     public LiftedEntityState liftedEntityState() {
@@ -396,5 +398,9 @@ public final class EntityRoomInspection {
 
     EntityRoomInspectionServices inspectionServices() {
         return runtime;
+    }
+    /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */
+    public RoomEntitySnapshot view() {
+        return liveView;
     }
 }

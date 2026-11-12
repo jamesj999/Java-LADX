@@ -12,7 +12,7 @@ import linksawakening.world.entity.motion.GenieMotion;
 /** Focused behavior using the state owned by GenieEntityController. */
 final class GenieJarBehavior {
     static void advanceGenieJar(GenieEntityController owner, RoomEntity jarEntity, int linkEntityY) {
-        new GenieJarStep(owner, jarEntity, linkEntityY).run();
+        owner.genieJarStep.run(owner, jarEntity, linkEntityY);
     }
 
     static RoomEntity registerGenieJarImpact(GenieEntityController owner, RoomEntity jar) {
