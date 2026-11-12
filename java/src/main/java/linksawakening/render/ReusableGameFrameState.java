@@ -9,7 +9,7 @@ import linksawakening.ui.InventoryController;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderView;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
@@ -21,7 +21,7 @@ public final class ReusableGameFrameState implements GameFrameInputs {
     private int[][] bgPalettes;
     private int[][] objPalettes;
     private CutsceneManager cutsceneManager;
-    private RoomRenderSnapshot room;
+    private RoomRenderView room;
     private ScrollController scrollController;
     private TransitionController transitionController;
     private Link link;
@@ -67,7 +67,7 @@ public final class ReusableGameFrameState implements GameFrameInputs {
     }
 
     @Override
-    public RoomRenderSnapshot room() {
+    public RoomRenderView room() {
         return room;
     }
 
@@ -151,7 +151,7 @@ public final class ReusableGameFrameState implements GameFrameInputs {
     }
 
     public ReusableGameFrameState withRoom(
-            RoomRenderSnapshot room, ScrollController scrollController, TransitionController transitionController) {
+            RoomRenderView room, ScrollController scrollController, TransitionController transitionController) {
         this.room = room;
         this.scrollController = scrollController;
         this.transitionController = transitionController;

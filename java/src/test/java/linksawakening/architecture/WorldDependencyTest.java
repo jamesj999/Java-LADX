@@ -75,6 +75,7 @@ class WorldDependencyTest {
             "room/RoomLoadListener",
             "room/RoomLoader",
             "room/RoomRenderSnapshot",
+            "room/RoomRenderView",
             "room/RoomSession",
             "room/LinkGroundFrame",
             "room/ShovelStartResult",

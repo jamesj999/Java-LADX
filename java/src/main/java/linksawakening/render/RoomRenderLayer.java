@@ -4,12 +4,14 @@ import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
 import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderView;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 /** Submits current and previous room backgrounds with scrolling and fade offsets. */
 final class RoomRenderLayer implements HardwareRenderLayer {
-    private RoomRenderSnapshot currentSnapshot;
+    private RoomRenderView currentSnapshot;
+    private final ReusableRoomInputs currentInputs = new ReusableRoomInputs();
     private int[] tileIds, tileAttrs;
     private int[][] roomPalettes;
     private ScrollController scrollController;
@@ -20,9 +22,7 @@ final class RoomRenderLayer implements HardwareRenderLayer {
     private final RoomOffsets reusableOffsets = new RoomOffsets(0, 0, 0, 0);
 
     public RoomRenderLayer(
-            RoomRenderSnapshot currentRoom,
-            ScrollController scrollController,
-            TransitionController transitionController) {
+            RoomRenderView currentRoom, ScrollController scrollController, TransitionController transitionController) {
         currentSnapshot = currentRoom;
         this.scrollController = scrollController;
         this.transitionController = transitionController;
@@ -43,9 +43,10 @@ final class RoomRenderLayer implements HardwareRenderLayer {
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (currentSnapshot != null) {
-            tileIds = currentSnapshot.tileIds();
-            tileAttrs = currentSnapshot.tileAttrs();
-            roomPalettes = currentSnapshot.palettes();
+            currentInputs.capture(currentSnapshot);
+            tileIds = currentInputs.tiles;
+            tileAttrs = currentInputs.attributes;
+            roomPalettes = currentInputs.palettes;
             currentSnapshot = null;
         }
         int shakeX = -scrollController.screenShakeHorizontal();
