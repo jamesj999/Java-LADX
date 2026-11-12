@@ -15,7 +15,7 @@ class StateDependencyTest {
         try (var files = Files.list(root)) {
             for (Path file : files.filter(p -> p.toString().endsWith(".java")).toList()) {
                 String source = Files.readString(file);
-                if (file.getFileName().toString().equals("PlayerState.java")) {
+                if (file.getFileName().toString().equals("PlayerResourceCompatibility.java")) {
                     String signature = "public linksawakening.gameplay.GameplaySoundEvent takeResourceSound()";
                     int start = source.indexOf(signature);
                     assertTrue(start >= 0, "Review compatibility exception if bridge is removed");

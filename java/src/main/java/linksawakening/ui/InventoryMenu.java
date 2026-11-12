@@ -260,10 +260,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                InventoryTilemapLoader.WIDTH,
-                InventoryTilemapLoader.HEIGHT,
-                0,
-                offsetY);
+                new TilemapRenderer.Region(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -276,10 +273,8 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    dungeonMapId,
-                    dungeonPosition,
-                    dungeonFrame,
-                    tilemapLoader.objectPalettes());
+                    new InventoryDungeonPanel.Presentation(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {
             instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
@@ -340,10 +335,7 @@ public final class InventoryMenu {
                 tilemap,
                 attrmap,
                 windowY() == 128 && roomPalettes != null ? roomPalettes : inventoryPalettes,
-                InventoryTilemapLoader.WIDTH,
-                InventoryTilemapLoader.HEIGHT,
-                0,
-                offsetY);
+                new TilemapRenderer.Region(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
 
         if (instrumentPanel != null && showInstruments && windowY() == 0) {
             instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
@@ -356,10 +348,8 @@ public final class InventoryMenu {
                     attrmap,
                     inventoryPalettes,
                     offsetY,
-                    dungeonMapId,
-                    dungeonPosition,
-                    dungeonFrame,
-                    tilemapLoader.objectPalettes());
+                    new InventoryDungeonPanel.Presentation(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
 
         if (instrumentPanel != null && isFullyOpen()) {
             instrumentPanel.submitNavigation(frameModel, tilemapLoader.objectPalettes(), instrumentPaletteFrame);

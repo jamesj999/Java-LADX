@@ -212,6 +212,10 @@ final class LinkSwimming {
             return;
         }
 
+        advanceSwimmingMotion(mask);
+    }
+
+    private void advanceSwimmingMotion(int mask) {
         if (linkMotion.get().forcedSpeedPending) {
             swimmingSpeedX = linkMotion.get().forcedSpeedX;
             swimmingSpeedY = linkMotion.get().forcedSpeedY;

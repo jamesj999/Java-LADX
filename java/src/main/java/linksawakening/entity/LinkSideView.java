@@ -104,6 +104,10 @@ final class LinkSideView {
             if ((mask & 15) == 4) linkAnimationState.get().direction = Direction.UP.javaIndex();
             if ((mask & 15) == 8) linkAnimationState.get().direction = Direction.DOWN.javaIndex();
         }
+        finishSideViewMotion(platformSpeedY, mask, recoiling, ladderFrame);
+    }
+
+    private void finishSideViewMotion(int platformSpeedY, int mask, boolean recoiling, boolean ladderFrame) {
         if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
         int oldX = linkMotion.get().subX, oldY = linkMotion.get().subY;
         moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);

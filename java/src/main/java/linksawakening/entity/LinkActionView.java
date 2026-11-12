@@ -42,7 +42,8 @@ abstract class LinkActionView extends LinkMovementView {
         linkEntityEffects.accessApplyHinoxGrabState(
                 romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState);
     }
-
+    /** @deprecated Use the Link.GrabFlags argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public void applyHinoxGrabState(
             int romPositionX,
             int romPositionY,
@@ -53,6 +54,28 @@ abstract class LinkActionView extends LinkMovementView {
             int airborneState,
             boolean motionBlocked,
             boolean applyHeldLinkPose) {
+        applyHinoxGrabState(
+                romPositionX,
+                romPositionY,
+                positionZ,
+                speedX,
+                speedY,
+                velocityZ,
+                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
+    }
+
+    public void applyHinoxGrabState(
+            int romPositionX,
+            int romPositionY,
+            int positionZ,
+            int speedX,
+            int speedY,
+            int velocityZ,
+            Link.GrabFlags arguments) {
+        int airborneState = arguments.airborneState();
+        boolean motionBlocked = arguments.motionBlocked();
+        boolean applyHeldLinkPose = arguments.applyHeldLinkPose();
+
         linkEntityEffects.accessApplyHinoxGrabState(
                 romPositionX,
                 romPositionY,
@@ -60,9 +83,7 @@ abstract class LinkActionView extends LinkMovementView {
                 speedX,
                 speedY,
                 velocityZ,
-                airborneState,
-                motionBlocked,
-                applyHeldLinkPose);
+                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
     }
 
     public void applyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {

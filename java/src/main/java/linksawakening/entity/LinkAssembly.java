@@ -21,6 +21,15 @@ final class LinkAssembly {
     final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence = new LinkComponentRef<>();
 
     LinkAssembly(LinkServices services) {
+        bindGroup0(services);
+        bindGroup1(services);
+        bindGroup2(services);
+        bindGroup3(services);
+        bindGroup4(services);
+    }
+
+    private void bindGroup0(LinkServices services) {
+
         LinkAnimator.Dependencies linkAnimatorDependencies = new LinkAnimator.Dependencies();
         linkAnimatorDependencies.dialogGotItemSequence = dialogGotItemSequence;
         linkAnimatorDependencies.linkAirborne = linkAirborne;
@@ -70,6 +79,9 @@ final class LinkAssembly {
         linkEquipmentDependencies.linkServices = linkServices;
         linkEquipmentDependencies.linkStateMachine = linkStateMachine;
         linkEquipment.bind(new LinkEquipment(linkEquipmentDependencies));
+    }
+
+    private void bindGroup1(LinkServices services) {
         LinkEntityEffects.Dependencies linkEntityEffectsDependencies = new LinkEntityEffects.Dependencies();
         linkEntityEffectsDependencies.linkAirborne = linkAirborne;
         linkEntityEffectsDependencies.linkAnimationState = linkAnimationState;
@@ -122,6 +134,9 @@ final class LinkAssembly {
         linkSwimmingDependencies.linkSignals = linkSignals;
         linkSwimmingDependencies.linkStateMachine = linkStateMachine;
         linkSwimming.bind(new LinkSwimming(linkSwimmingDependencies));
+    }
+
+    private void bindGroup2(LinkServices services) {
         LinkDamage.Dependencies linkDamageDependencies = new LinkDamage.Dependencies();
         linkDamageDependencies.linkAirborne = linkAirborne;
         linkDamageDependencies.linkAnimationState = linkAnimationState;
@@ -144,6 +159,9 @@ final class LinkAssembly {
         linkGroundMotionDependencies.linkSideView = linkSideView;
         linkGroundMotionDependencies.linkStateMachine = linkStateMachine;
         linkGroundMotion.bind(new LinkGroundMotion(linkGroundMotionDependencies));
+    }
+
+    private void bindGroup3(LinkServices services) {
         LinkSignals.Dependencies linkSignalsDependencies = new LinkSignals.Dependencies();
         linkSignalsDependencies.linkAirborne = linkAirborne;
         linkSignalsDependencies.linkStateMachine = linkStateMachine;
@@ -161,6 +179,9 @@ final class LinkAssembly {
         LinkControls.Dependencies linkControlsDependencies = new LinkControls.Dependencies();
         linkControlsDependencies.linkServices = linkServices;
         linkControls.bind(new LinkControls(linkControlsDependencies));
+    }
+
+    private void bindGroup4(LinkServices services) {
         dialogGotItemSequence.bind(new DialogGotItemSequence());
     }
 }

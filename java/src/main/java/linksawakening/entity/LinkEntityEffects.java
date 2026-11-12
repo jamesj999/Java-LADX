@@ -152,7 +152,13 @@ final class LinkEntityEffects {
             int velocityZ,
             int airborneState) {
         applyHinoxGrabState(
-                romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState, true, true);
+                romPositionX,
+                romPositionY,
+                positionZ,
+                speedX,
+                speedY,
+                velocityZ,
+                new Link.GrabFlags(airborneState, true, true));
     }
 
     void applyHinoxGrabState(
@@ -162,9 +168,11 @@ final class LinkEntityEffects {
             int speedX,
             int speedY,
             int velocityZ,
-            int airborneState,
-            boolean motionBlocked,
-            boolean applyHeldLinkPose) {
+            Link.GrabFlags arguments) {
+        int airborneState = arguments.airborneState();
+        boolean motionBlocked = arguments.motionBlocked();
+        boolean applyHeldLinkPose = arguments.applyHeldLinkPose();
+
         Link.validateRomByte(romPositionX, "Hinox Link X");
         Link.validateRomByte(romPositionY, "Hinox Link Y");
         Link.validateRomByte(positionZ, "Hinox Link Z");
@@ -307,9 +315,11 @@ final class LinkEntityEffects {
             int speedX,
             int speedY,
             int velocityZ,
-            int airborneState,
-            boolean motionBlocked,
-            boolean applyHeldLinkPose) {
+            Link.GrabFlags arguments) {
+        int airborneState = arguments.airborneState();
+        boolean motionBlocked = arguments.motionBlocked();
+        boolean applyHeldLinkPose = arguments.applyHeldLinkPose();
+
         this.applyHinoxGrabState(
                 romPositionX,
                 romPositionY,
@@ -317,9 +327,7 @@ final class LinkEntityEffects {
                 speedX,
                 speedY,
                 velocityZ,
-                airborneState,
-                motionBlocked,
-                applyHeldLinkPose);
+                new Link.GrabFlags(airborneState, motionBlocked, applyHeldLinkPose));
     }
 
     void accessApplyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {

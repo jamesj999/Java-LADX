@@ -23,7 +23,8 @@ public final class OverworldDialogInteraction {
         this.signpostDialogTable = Objects.requireNonNull(signpostDialogTable);
         this.dialogTextLoader = Objects.requireNonNull(dialogTextLoader);
     }
-
+    /** @deprecated Use the Interaction argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public boolean tryOpenSignpostDialog(
             int roomId,
             int mapCategory,
@@ -34,6 +35,28 @@ public final class OverworldDialogInteraction {
             boolean actionPressed,
             OverworldDialogBlockers blockers,
             DialogController dialogController) {
+        return tryOpenSignpostDialog(
+                roomId,
+                mapCategory,
+                roomObjectsArea,
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                new Interaction(actionPressed, blockers, dialogController));
+    }
+
+    public boolean tryOpenSignpostDialog(
+            int roomId,
+            int mapCategory,
+            int[] roomObjectsArea,
+            int linkPixelX,
+            int linkPixelY,
+            int linkDirection,
+            Interaction arguments) {
+        boolean actionPressed = arguments.actionPressed();
+        OverworldDialogBlockers blockers = arguments.blockers();
+        DialogController dialogController = arguments.dialogController();
+
         if (!actionPressed
                 || (blockers != null && blockers.blocksOpening())
                 || mapCategory != Warp.CATEGORY_OVERWORLD
@@ -68,4 +91,8 @@ public final class OverworldDialogInteraction {
         }
         return ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + col;
     }
+
+    /** Arguments shared by tryOpenSignpostDialog operations. */
+    public record Interaction(
+            boolean actionPressed, OverworldDialogBlockers blockers, DialogController dialogController) {}
 }

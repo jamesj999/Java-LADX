@@ -102,7 +102,8 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
                 soundSink,
                 LinkTunicPalette.greenCompatibility());
     }
-
+    /** @deprecated Use the Services argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public Link(
             InputState inputState,
             InputConfig inputConfig,
@@ -113,6 +114,27 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             ItemRegistry itemRegistry,
             GameplaySoundSink soundSink,
             LinkTunicPalette tunicPalette) {
+        this(
+                inputState,
+                inputConfig,
+                romTables,
+                collision,
+                spriteSheet,
+                new Services(playerState, itemRegistry, soundSink, tunicPalette));
+    }
+
+    public Link(
+            InputState inputState,
+            InputConfig inputConfig,
+            RomTables romTables,
+            OverworldCollision collision,
+            LinkSpriteSheet spriteSheet,
+            Services arguments) {
+        PlayerState playerState = arguments.playerState();
+        ItemRegistry itemRegistry = arguments.itemRegistry();
+        GameplaySoundSink soundSink = arguments.soundSink();
+        LinkTunicPalette tunicPalette = arguments.tunicPalette();
+
         LinkServices services = new LinkServices();
         services.inputState = inputState;
         services.inputConfig = inputConfig;
@@ -153,4 +175,14 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
     static int javaDirectionForRomDirection(int romDirection) {
         return Direction.fromRom(romDirection).javaIndex();
     }
+
+    /** Arguments shared by Link operations. */
+    public record Services(
+            PlayerState playerState,
+            ItemRegistry itemRegistry,
+            GameplaySoundSink soundSink,
+            LinkTunicPalette tunicPalette) {}
+
+    /** Held-Link grab flags, preserving the source write order. */
+    public record GrabFlags(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {}
 }

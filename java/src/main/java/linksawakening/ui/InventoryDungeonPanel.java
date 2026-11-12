@@ -105,21 +105,18 @@ final class InventoryDungeonPanel {
         if (items[4] != 0) attrs[5 * 20 + 18] = attrs[6 * 20 + 18] = 1;
     }
 
-    void render(
-            byte[] buffer,
-            int[] map,
-            int[] attrs,
-            int[][] palettes,
-            int offsetY,
-            int mapId,
-            int position,
-            int frame,
-            int[][] objectPalettes) {
+    void render(byte[] buffer, int[] map, int[] attrs, int[][] palettes, int offsetY, Presentation arguments) {
+        int mapId = arguments.mapId();
+        int position = arguments.position();
+        int frame = arguments.frame();
+        int[][] objectPalettes = arguments.objectPalettes();
+
         // Render only the right-hand panel using its own VRAM so gameplay tiles survive closing.
         for (int y = 3; y < 17; y++) {
             int[] row = Arrays.copyOfRange(map, y * 20 + 9, y * 20 + 20);
             int[] attributes = Arrays.copyOfRange(attrs, y * 20 + 9, y * 20 + 20);
-            TilemapRenderer.render(buffer, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
+            TilemapRenderer.render(
+                    buffer, tiles, row, attributes, palettes, new TilemapRenderer.Region(11, 1, 72, y * 8 + offsetY));
         }
         if (position < 0 || position >= 64) return;
         int layout = read(
@@ -162,15 +159,23 @@ final class InventoryDungeonPanel {
             int[] attrs,
             int[][] palettes,
             int offsetY,
-            int mapId,
-            int position,
-            int frame,
-            int[][] objectPalettes) {
+            Presentation arguments) {
+        int mapId = arguments.mapId();
+        int position = arguments.position();
+        int frame = arguments.frame();
+        int[][] objectPalettes = arguments.objectPalettes();
+
         // Render only the right-hand panel using its own VRAM so gameplay tiles survive closing.
         for (int y = 3; y < 17; y++) {
             int[] row = Arrays.copyOfRange(map, y * 20 + 9, y * 20 + 20);
             int[] attributes = Arrays.copyOfRange(attrs, y * 20 + 9, y * 20 + 20);
-            TilemapRenderer.submit(frameModel, tiles, row, attributes, palettes, 11, 1, 72, y * 8 + offsetY);
+            TilemapRenderer.submit(
+                    frameModel,
+                    tiles,
+                    row,
+                    attributes,
+                    palettes,
+                    new TilemapRenderer.Region(11, 1, 72, y * 8 + offsetY));
         }
         if (position < 0 || position >= 64) return;
         int layout = read(
@@ -180,4 +185,7 @@ final class InventoryDungeonPanel {
         int y = 64 + (position & 0x38) - ((layout & 0x20) != 0 && position < 32 ? 8 : 0);
         frameModel.sprite8x16(tiles, 0x3E, x, y + offsetY, false, false, objectPalettes[(frame & 8) == 0 ? 1 : 4]);
     }
+
+    /** Arguments shared by render operations. */
+    public record Presentation(int mapId, int position, int frame, int[][] objectPalettes) {}
 }

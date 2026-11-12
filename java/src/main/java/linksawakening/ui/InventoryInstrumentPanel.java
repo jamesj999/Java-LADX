@@ -84,10 +84,7 @@ final class InventoryInstrumentPanel {
                     tilemapForInstrument(i, flags[i]),
                     attrs,
                     palettes,
-                    2,
-                    2,
-                    col * 8,
-                    row * 8 + windowY);
+                    new TilemapRenderer.Region(2, 2, col * 8, row * 8 + windowY));
         }
     }
 
@@ -108,10 +105,7 @@ final class InventoryInstrumentPanel {
                     tilemapForInstrument(i, flags[i]),
                     attrs,
                     palettes,
-                    2,
-                    2,
-                    col * 8,
-                    row * 8 + windowY);
+                    new TilemapRenderer.Region(2, 2, col * 8, row * 8 + windowY));
         }
     }
 

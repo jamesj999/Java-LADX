@@ -7,7 +7,8 @@ import linksawakening.gpu.Tile;
 public final class TilemapRenderer {
 
     private TilemapRenderer() {}
-
+    /** @deprecated Use the Region argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public static void render(
             byte[] displayBuffer,
             GPU gpu,
@@ -18,6 +19,16 @@ public final class TilemapRenderer {
             int tileHeight,
             int offsetX,
             int offsetY) {
+        render(displayBuffer, gpu, tileIds, tileAttrs, palettes, new Region(tileWidth, tileHeight, offsetX, offsetY));
+    }
+
+    public static void render(
+            byte[] displayBuffer, GPU gpu, int[] tileIds, int[] tileAttrs, int[][] palettes, Region arguments) {
+        int tileWidth = arguments.tileWidth();
+        int tileHeight = arguments.tileHeight();
+        int offsetX = arguments.offsetX();
+        int offsetY = arguments.offsetY();
+
         for (int y = 0; y < tileHeight; y++) {
             for (int x = 0; x < tileWidth; x++) {
                 int mapIndex = y * tileWidth + x;
@@ -71,7 +82,8 @@ public final class TilemapRenderer {
     private static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
     }
-
+    /** @deprecated Use the Region argument bundle overload. */
+    @Deprecated(forRemoval = true)
     public static void submit(
             linksawakening.render.HardwareFrame frame,
             GPU gpu,
@@ -82,6 +94,21 @@ public final class TilemapRenderer {
             int height,
             int offsetX,
             int offsetY) {
+        submit(frame, gpu, tileIds, attrs, palettes, new Region(width, height, offsetX, offsetY));
+    }
+
+    public static void submit(
+            linksawakening.render.HardwareFrame frame,
+            GPU gpu,
+            int[] tileIds,
+            int[] attrs,
+            int[][] palettes,
+            Region arguments) {
+        int width = arguments.tileWidth();
+        int height = arguments.tileHeight();
+        int offsetX = arguments.offsetX();
+        int offsetY = arguments.offsetY();
+
         for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++) {
                 int at = y * width + x, tile = tileIds[at] & 255;
@@ -95,4 +122,7 @@ public final class TilemapRenderer {
                         palettes[Math.min(attr & 7, palettes.length - 1)]);
             }
     }
+
+    /** Arguments shared by render operations. */
+    public record Region(int tileWidth, int tileHeight, int offsetX, int offsetY) {}
 }

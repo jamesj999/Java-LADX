@@ -96,7 +96,13 @@ public interface LinkCommand {
             implements LinkCommand {
         public void applyTo(Link link) {
             link.applyHinoxGrabState(
-                    positionX, positionY, positionZ, speedX, speedY, velocityZ, airborneState, motionBlocked, heldPose);
+                    positionX,
+                    positionY,
+                    positionZ,
+                    speedX,
+                    speedY,
+                    velocityZ,
+                    new Link.GrabFlags(airborneState, motionBlocked, heldPose));
         }
     }
 
