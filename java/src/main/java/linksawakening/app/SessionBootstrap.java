@@ -778,7 +778,7 @@ public final class SessionBootstrap {
         }
 
         backgroundSceneLoader = new BackgroundSceneLoader(romData.unsafeBytes());
-        gpu.loadTitleScreenTiles(romData.unsafeBytes());
+        gpu.loadTitleScreenTiles(romData);
         BackgroundScene scene = backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE);
         currentTilemap = scene.tilemap();
         currentAttrmap = scene.attrmap();

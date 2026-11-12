@@ -42,7 +42,7 @@ final class GameOverPresentation {
         if (countdown > 0) countdown--;
         switch (stage) {
             case 1 -> {
-                context.gpu().loadSaveMenuTiles(context.rom().unsafeBytes()); // $00:2E5E
+                context.gpu().loadSaveMenuTiles(context.rom()); // $00:2E5E
                 stage = 2;
             }
             case 2 -> {

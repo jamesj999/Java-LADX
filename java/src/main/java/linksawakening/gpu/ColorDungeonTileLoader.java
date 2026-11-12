@@ -26,12 +26,12 @@ final class ColorDungeonTileLoader {
     private static final int COLOR_DUNGEON_BG_FLOOR_ADDR = RomSymbols.ColorDungeonTiles.address();
     private static final int COLOR_DUNGEON_BG_ITEMS_ADDR = RomSymbols.ColorDungeonTiles.address() + 0x100;
 
-    void loadBackground(byte[] romData, int roomId) {
+    void loadBackground(Rom romData, int roomId) {
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
             throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
         }
 
-        Rom rom = new Rom(romData);
+        Rom rom = romData;
         int roomTilesHighByte = rom.u8(RomSymbols.data_020_45EA.plus(roomId * 2));
         int roomTilesBank = rom.u8(RomSymbols.data_020_45EA.plus(roomId * 2 + 1));
         target.loadTilesFromROM(

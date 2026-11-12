@@ -13,11 +13,11 @@ class RomTileLoader extends Vram {
         return animatedTiles.animatedTilesFrameCount();
     }
 
-    public void loadAnimatedTilesGroup(byte[] rom, int group) {
+    public void loadAnimatedTilesGroup(Rom rom, int group) {
         animatedTiles.loadAnimatedTilesGroup(rom, group);
     }
 
-    public void tickAnimatedTiles(byte[] rom) {
+    public void tickAnimatedTiles(Rom rom) {
         animatedTiles.tickAnimatedTiles(rom);
     }
 
@@ -51,17 +51,17 @@ class RomTileLoader extends Vram {
     // Each room entry is [source address high byte, source bank], unlike the
     // standard bbtttttt selectors above.
 
-    public void loadTitleScreenTiles(byte[] romData) {
+    public void loadTitleScreenTiles(Rom romData) {
         new TitleIntroTileLoader(this).loadTitleScreenTiles(romData);
     }
 
-    public void loadIntroSequenceTiles(byte[] romData) {
+    public void loadIntroSequenceTiles(Rom romData) {
         new TitleIntroTileLoader(this).loadIntroSequenceTiles(romData);
     }
 
     boolean powderIconIsToadstool;
 
-    public void loadBaseOverworldTiles(byte[] romData) {
+    public void loadBaseOverworldTiles(Rom romData) {
         powderIconIsToadstool = false;
         animatedTiles.currentMapId = 0;
         // Match the game's LoadBaseTiles: copy 0x100 tiles from InventoryEquipmentItemsTiles
@@ -83,7 +83,7 @@ class RomTileLoader extends Vram {
     }
 
     /** Mirrors LoadBaseTiles (bank0.asm:$2BCF), used before entering an indoor room. */
-    public void loadBaseTiles(byte[] romData) {
+    public void loadBaseTiles(Rom romData) {
         powderIconIsToadstool = false;
         animatedTiles.currentMapId = 0;
         loadTilesFromROM(
@@ -107,12 +107,12 @@ class RomTileLoader extends Vram {
     }
 
     /** ROM $00:1E2B/$1E8D: the mushroom and powder share VRAM $88E0-$88FF. */
-    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
+    public void updatePowderInventoryTiles(Rom romData, boolean hasToadstool) {
         new InventoryTileLoader(this).updatePowderInventoryTiles(romData, hasToadstool);
     }
 
     /** Mirrors REPLACE_TILES_GOLDEN_LEAF ($09) at bank0:$1EA1. */
-    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
+    public void replaceSlimeKeyTilesByGoldenLeaf(Rom romData) {
         new InventoryTileLoader(this).replaceSlimeKeyTilesByGoldenLeaf(romData);
     }
 
@@ -120,12 +120,12 @@ class RomTileLoader extends Vram {
      * Load the base and file-menu tile sheets using the destinations in
      * LoadMenuTiles (bank0.asm:$2C03).
      */
-    public void loadMenuTiles(byte[] romData) {
+    public void loadMenuTiles(Rom romData) {
         new TitleIntroTileLoader(this).loadMenuTiles(romData);
     }
 
     /** Mirrors LoadSaveMenuTiles (bank0.asm:$2E5E). */
-    public void loadSaveMenuTiles(byte[] romData) {
+    public void loadSaveMenuTiles(Rom romData) {
         new TitleIntroTileLoader(this).loadSaveMenuTiles(romData);
     }
 
@@ -134,7 +134,7 @@ class RomTileLoader extends Vram {
      * Each selector is the ROM's {@code bbtttttt} value from
      * {@code wLoadedEntitySpritesheets}; {@code $FF} keeps that slot intact.
      */
-    public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
+    public void loadEntitySpriteSheets(Rom romData, int[] sheetValues) {
         new EntitySheetTileLoader(this).loadEntitySpriteSheets(romData, sheetValues);
     }
 
@@ -144,14 +144,14 @@ class RomTileLoader extends Vram {
      * an address high byte and bank, and a zero address high byte leaves that
      * fixed OAM slot unchanged.
      */
-    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
+    public void loadColorDungeonEntitySheets(Rom romData, int roomId) {
         new EntitySheetTileLoader(this).loadColorDungeonEntitySheets(romData, roomId);
     }
 
     // constants/tilesets.asm encodes HIGH(label)-$40. LoadRoomSpecificTiles
     // reconstructs the source from the bank base, not Overworld2Tiles.
 
-    public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
+    public void loadRoomSpecificTiles(Rom romData, int roomId, int tilesetId) {
         new RoomTileLoader(this).loadRoomSpecificTiles(romData, roomId, tilesetId);
     }
 
@@ -168,11 +168,11 @@ class RomTileLoader extends Vram {
      * <p>Skipped vs. the original: inventory-items tile patching, Link OAM
      * tiles (unchanged from overworld) and toadstool/golden-leaf dynamic swaps.
      */
-    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+    public final void loadIndoorTiles(Rom romData, int mapId, int roomId) {
         new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId);
     }
 
-    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
+    public final void loadIndoorTiles(Rom romData, int mapId, int roomId, boolean sideScrolling) {
         new RoomTileLoader(this).loadIndoorTiles(romData, mapId, roomId, sideScrolling);
     }
 
@@ -182,12 +182,12 @@ class RomTileLoader extends Vram {
     // Mirrors AnimateTiles in src/code/home/animated_tiles.asm.
 
     /** Copies one ROM switch-block frame into its gameplay VRAM slot. */
-    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
+    public void copySwitchBlockTiles(Rom romData, int sourceOffset, int destinationTile) {
         new RoomTileLoader(this).copySwitchBlockTiles(romData, sourceOffset, destinationTile);
     }
 
     /** Mirrors ReplaceTilesButtonPressed's four-tile copy to vTiles2 + $140. */
-    public void copyPressedFloorSwitchTiles(byte[] romData) {
+    public void copyPressedFloorSwitchTiles(Rom romData) {
         new RoomTileLoader(this).copyPressedFloorSwitchTiles(romData);
     }
 
@@ -196,31 +196,31 @@ class RomTileLoader extends Vram {
     // (0x0F), AnimateTilesMediumSpeed (0x07), and AnimateTilesFastSpeed (0x03).
 
     /** Executes the two meter uploads and two equipment-tile restorations from ROM. */
-    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
+    public void updateHeartPieceMeterTiles(Rom rom, int command) {
         new InventoryTileLoader(this).updateHeartPieceMeterTiles(rom, command);
     }
 
     /** ReplaceTradingItemTiles ($00:1E01), also restores tiles overwritten by the heart meter. */
-    public void updateTradingItemTiles(byte[] rom, int item) {
+    public void updateTradingItemTiles(Rom rom, int item) {
         new InventoryTileLoader(this).updateTradingItemTiles(rom, item);
     }
 
     /** Copies the three Ocarina popup chunks to vTiles0+$200/$240/$260. */
-    public void loadOcarinaSymbolsTiles(byte[] romData) {
+    public void loadOcarinaSymbolsTiles(Rom romData) {
         new InventoryTileLoader(this).loadOcarinaSymbolsTiles(romData);
     }
 
     /** Restores the shared VFX chunks displaced by the Ocarina popup. */
-    public void loadSharedVfxTiles(byte[] romData) {
+    public void loadSharedVfxTiles(Rom romData) {
         new InventoryTileLoader(this).loadSharedVfxTiles(romData);
     }
 
-    final void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {
-        int romOffset = linksawakening.rom.RomBank.romOffset(bank, address);
+    final void loadTilesFromROM(Rom romData, int bank, int address, int tileCount, int vramTileIndex) {
+        int romOffset = bank == 0 ? address : bank * 0x4000 + (address - 0x4000);
         int vramOffset = vramTileIndex * TILE_DATA_SIZE;
         int byteCount = tileCount * TILE_DATA_SIZE;
 
-        if (romOffset < 0 || romOffset + byteCount > romData.length) {
+        if (romOffset < 0 || romOffset + byteCount > romData.size()) {
             throw new IllegalArgumentException("Tile source exceeds ROM bounds");
         }
         if (vramOffset < 0 || vramOffset + byteCount > VRAM_SIZE) {
@@ -230,11 +230,121 @@ class RomTileLoader extends Vram {
         // The legacy selector's bank-zero row uses a flat ROM offset,
         // including addresses outside ROM0's CPU window. Preserve that API.
         byte[] source = bank == 0 && address >= 0x4000
-                ? new Rom(romData).slice(RomAddress.fromOffset(romOffset), byteCount)
-                : new Rom(romData).slice(new RomAddress(bank, address), byteCount);
+                ? romData.bytes(RomAddress.fromOffset(romOffset), byteCount)
+                : romData.bytes(new RomAddress(bank, address), byteCount);
         System.arraycopy(source, 0, vram, vramOffset, byteCount);
         for (int tile = 0; tile < tileCount; tile++) {
             updateTile(vramTileIndex + tile);
         }
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadAnimatedTilesGroup(byte[] rom, int group) {
+        loadAnimatedTilesGroup(rom == null ? null : new Rom(rom), group);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void tickAnimatedTiles(byte[] rom) {
+        tickAnimatedTiles(rom == null ? null : new Rom(rom));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadTitleScreenTiles(byte[] romData) {
+        loadTitleScreenTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadIntroSequenceTiles(byte[] romData) {
+        loadIntroSequenceTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadBaseOverworldTiles(byte[] romData) {
+        loadBaseOverworldTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadBaseTiles(byte[] romData) {
+        loadBaseTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
+        updatePowderInventoryTiles(romData == null ? null : new Rom(romData), hasToadstool);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
+        replaceSlimeKeyTilesByGoldenLeaf(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadMenuTiles(byte[] romData) {
+        loadMenuTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadSaveMenuTiles(byte[] romData) {
+        loadSaveMenuTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
+        loadEntitySpriteSheets(romData == null ? null : new Rom(romData), sheetValues);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
+        loadColorDungeonEntitySheets(romData == null ? null : new Rom(romData), roomId);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
+        loadRoomSpecificTiles(romData == null ? null : new Rom(romData), roomId, tilesetId);
+    }
+
+    @Deprecated(forRemoval = true)
+    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+        loadIndoorTiles(romData == null ? null : new Rom(romData), mapId, roomId);
+    }
+
+    @Deprecated(forRemoval = true)
+    public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
+        loadIndoorTiles(romData == null ? null : new Rom(romData), mapId, roomId, sideScrolling);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
+        copySwitchBlockTiles(romData == null ? null : new Rom(romData), sourceOffset, destinationTile);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void copyPressedFloorSwitchTiles(byte[] romData) {
+        copyPressedFloorSwitchTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
+        updateHeartPieceMeterTiles(rom == null ? null : new Rom(rom), command);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void updateTradingItemTiles(byte[] rom, int item) {
+        updateTradingItemTiles(rom == null ? null : new Rom(rom), item);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadOcarinaSymbolsTiles(byte[] romData) {
+        loadOcarinaSymbolsTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    public void loadSharedVfxTiles(byte[] romData) {
+        loadSharedVfxTiles(romData == null ? null : new Rom(romData));
+    }
+
+    @Deprecated(forRemoval = true)
+    final void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {
+        loadTilesFromROM(romData == null ? null : new Rom(romData), bank, address, tileCount, vramTileIndex);
     }
 }

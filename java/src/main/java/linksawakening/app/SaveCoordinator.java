@@ -111,7 +111,7 @@ public final class SaveCoordinator {
         roomSession().setTailKeyOwned(playerState().tailKeyCount() != 0);
         roomSession().setBowWowState(0);
         link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData().unsafeBytes());
+        gpu().loadBaseTiles(romData());
         roomSession().loadIndoor(profile.mapId(), profile.roomId());
         roomSession()
                 .setRespawnPoint(
@@ -153,7 +153,7 @@ public final class SaveCoordinator {
                         playerState().swordLevel(),
                         playerState().powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
-            gpu().loadBaseTiles(romData().unsafeBytes());
+            gpu().loadBaseTiles(romData());
             roomSession()
                     .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
             link().setDirection(Link.DIRECTION_UP);
@@ -198,7 +198,7 @@ public final class SaveCoordinator {
         } else {
             Warp spawn = roomSession().respawnPoint();
             if (spawn == null) throw new IllegalStateException("No game-over spawn point");
-            gpu().loadBaseTiles(romData().unsafeBytes());
+            gpu().loadBaseTiles(romData());
             if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
                 roomSession().loadInitialOverworld(spawn.destRoom());
                 link().setDirection(Link.DIRECTION_DOWN);
@@ -227,7 +227,7 @@ public final class SaveCoordinator {
 
     public void startFileSave() {
         enterFileSave().run();
-        gpu().loadSaveMenuTiles(romData().unsafeBytes());
+        gpu().loadSaveMenuTiles(romData());
         showFileSave().accept(new FileSaveController(fileMenuBackground()::apply));
         inputState().tickEdges();
     }

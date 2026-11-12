@@ -1,6 +1,7 @@
 package linksawakening.gpu;
 
 import linksawakening.rom.GbcBanks;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class InventoryTileLoader {
@@ -15,7 +16,7 @@ final class InventoryTileLoader {
     private static final int SHARED_VFX_TILES_BANK = GbcBanks.adjust(RomSymbols.CharacterVfxTiles.bank());
     private static final int SHARED_VFX_TILES_ADDR = RomSymbols.CharacterVfxTiles.address();
 
-    public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
+    public void updatePowderInventoryTiles(Rom romData, boolean hasToadstool) {
         if (target.powderIconIsToadstool == hasToadstool) return;
         target.loadTilesFromROM(
                 romData,
@@ -28,7 +29,7 @@ final class InventoryTileLoader {
         target.powderIconIsToadstool = hasToadstool;
     }
 
-    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
+    public void replaceSlimeKeyTilesByGoldenLeaf(Rom romData) {
         target.loadTilesFromROM(
                 romData,
                 GbcBanks.adjust(RomSymbols.SlimeKeyTiles.bank()),
@@ -37,7 +38,7 @@ final class InventoryTileLoader {
                 0x0CA);
     }
 
-    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
+    public void updateHeartPieceMeterTiles(Rom rom, int command) {
         int source, destination;
         switch (command) {
             case 3 -> {
@@ -61,7 +62,7 @@ final class InventoryTileLoader {
         target.loadTilesFromROM(rom, GbcBanks.adjust(RomSymbols.PieceOfHeartMeterTiles.bank()), source, 3, destination);
     }
 
-    public void updateTradingItemTiles(byte[] rom, int item) {
+    public void updateTradingItemTiles(Rom rom, int item) {
         if (item >= 2)
             target.loadTilesFromROM(
                     rom,
@@ -71,13 +72,13 @@ final class InventoryTileLoader {
                     0x9A);
     }
 
-    public void loadOcarinaSymbolsTiles(byte[] romData) {
+    public void loadOcarinaSymbolsTiles(Rom romData) {
         target.loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK, OCARINA_SYMBOLS_TILES_ADDR, 0x04, 0x20);
         target.loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK, OCARINA_SYMBOLS_TILES_ADDR + 0x40, 0x04, 0x24);
         target.loadTilesFromROM(romData, OCARINA_SYMBOLS_TILES_BANK, OCARINA_SYMBOLS_TILES_ADDR + 0x60, 0x04, 0x26);
     }
 
-    public void loadSharedVfxTiles(byte[] romData) {
+    public void loadSharedVfxTiles(Rom romData) {
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR, 0x04, 0x20);
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR + 0x40, 0x04, 0x24);
         target.loadTilesFromROM(romData, SHARED_VFX_TILES_BANK, SHARED_VFX_TILES_ADDR + 0x60, 0x04, 0x26);

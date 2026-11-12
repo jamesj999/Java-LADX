@@ -149,7 +149,7 @@ public final class ScreenRouter {
         clearFileSaveController().run();
         showScreen().accept(cutsceneScreen());
         musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
-        gpu().loadIntroSequenceTiles(romData().unsafeBytes());
+        gpu().loadIntroSequenceTiles(romData());
         cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
     }
 
@@ -171,7 +171,7 @@ public final class ScreenRouter {
     public void startFileSelection() {
         showScreen().accept(fileMenuScreen());
         clearFileSaveController().run();
-        gpu().loadMenuTiles(romData().unsafeBytes());
+        gpu().loadMenuTiles(romData());
         setFileMenu()
                 .accept(new FileMenuController(
                         new FileMenuRomData(romData().unsafeBytes()),
@@ -204,7 +204,7 @@ public final class ScreenRouter {
 
     public void setCutsceneScene(String sceneId) {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
-            gpu().loadTitleScreenTiles(romData().unsafeBytes());
+            gpu().loadTitleScreenTiles(romData());
         }
         if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && screen().get() == cutsceneScreen()) {
             musicDirector().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
@@ -244,7 +244,7 @@ public final class ScreenRouter {
         showScreen().accept(gameplayScreen());
         resetDebug().run();
         link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData().unsafeBytes());
+        gpu().loadBaseTiles(romData());
         loadOverworldScreen();
         DebugLog.log("Debug gameplay started (F3 toggles no-clip)");
     }

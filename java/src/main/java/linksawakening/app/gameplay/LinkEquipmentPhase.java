@@ -42,7 +42,7 @@ final class LinkEquipmentPhase {
                                         context.link().pixelY()));
             }
             if (context.link().presentedDialogGotItem() == 2) {
-                context.gpu().updatePowderInventoryTiles(context.rom().unsafeBytes(), true);
+                context.gpu().updatePowderInventoryTiles(context.rom(), true);
             }
         }
 
