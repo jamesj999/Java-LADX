@@ -11,8 +11,6 @@ import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.Tunic;
 
-/** ROM pose selection and sprite data for both rendering paths. */
-
 /** LinkSpriteRendering behavior on the shared LinkAnimator state. */
 abstract class LinkSpriteRendering extends LinkPoseState {
     protected LinkSpriteRendering(Dependencies dependencies) {

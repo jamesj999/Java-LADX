@@ -2,6 +2,7 @@ package linksawakening.ui;
 
 import static linksawakening.ui.FileMenuController.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +13,10 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Input/state model for the ROM-backed file-selection and New Game screens.
- */
-
 /** Shared state and dependency ownership for FileMenuController. */
 abstract class FileMenuState {
+    protected final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
+    protected final List<IntroSprite> spriteScratch = new ArrayList<>();
 
     protected static final int NAME_LENGTH = 5;
     protected static final int NAME_ENTRY_CHARACTER_COUNT = 0x40;

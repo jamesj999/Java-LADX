@@ -7,11 +7,6 @@ import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/**
- * ROM-backed display-list decoder plus the small handler-to-list mapping
- * required by the first entity rendering increment.
- */
-
 /** Shared state and dependency ownership for EntitySpriteHandlerCatalog. */
 abstract class EntitySpriteDecodeState {
 

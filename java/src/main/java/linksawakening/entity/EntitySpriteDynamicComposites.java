@@ -5,11 +5,6 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ROM-backed display-list decoder plus the small handler-to-list mapping
- * required by the first entity rendering increment.
- */
-
 /** EntitySpriteDynamicComposites behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteDynamicComposites extends EntitySpriteBossComposites {
     protected EntitySpriteDynamicComposites(byte[] romData) {

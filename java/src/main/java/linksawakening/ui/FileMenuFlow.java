@@ -8,10 +8,6 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Input/state model for the ROM-backed file-selection and New Game screens.
- */
-
 /** FileMenuFlow behavior on the shared FileMenuController state. */
 abstract class FileMenuFlow extends FileMenuState {
     protected FileMenuFlow(

@@ -4,8 +4,6 @@ import static linksawakening.state.PlayerState.*;
 
 import linksawakening.save.SaveSlotState;
 
-/** Aggregate of inventory, resources, progression and equipment state. */
-
 /** PlayerLifecycleCompatibility behavior on the shared PlayerState state. */
 abstract class PlayerLifecycleCompatibility extends PlayerInventoryCompatibility {
     PlayerLifecycleCompatibility() {

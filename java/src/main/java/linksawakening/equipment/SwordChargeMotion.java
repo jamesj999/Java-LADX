@@ -7,26 +7,6 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 
-/**
- * Port of the sword swing + charge logic from the LADX disassembly (see
- * {@code check_items_to_use.asm}, {@code bank2.asm:UpdateLinkAnimation},
- * and {@code bank0.asm:ApplyLinkMotionState}).
- *
- * <p>The swing runs NONE -> DRAW -> SWING_START -> SWING_MIDDLE, and if the
- * button is still held at the end, settles into HOLDING where a
- * charge meter builds up (matches {@code wSwordCharge} /
- * {@code MAX_SWORD_CHARGE = $28}). At max charge the blade flashes between
- * its normal palette and a brighter "charged" palette every 4 frames,
- * mirroring the attribute-bit-4 toggle gated by bit 2 of the frame counter
- * in {@code bank0.asm:17BF-17C5} (and the GBC palette-4 branch in
- * {@code func_020_4AB3}).
- *
- * <p>The blade position, per-frame orientation, and sprite-tile selection
- * all come from ROM tables loaded into {@link RomTables}: the same
- * {@code LinkDirectionToSwordDirection}, {@code LinkDirectionTo_wC13A/139/13B},
- * and {@code Data_020_4A93/4AA3} the original uses.
- */
-
 /** SwordChargeMotion behavior on the shared Sword state. */
 abstract class SwordChargeMotion extends SwordAttackMotion {
     protected SwordChargeMotion(RomTables romTables, SwordSpriteSheet spriteSheet) {
@@ -108,11 +88,6 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
         charge = 0;
     }
 
-    /**
-     * Mirrors the ROM's ResetSpinAttack helper (bank0.asm:$0CAF).  Entity
-     * collisions use it to cancel a charged or active spin before Link's next
-     * motion update.
-     */
     /** The room-load WRAM clear also discards any pre-death sword animation. */
     public void resetAfterGameOver() {
         resetSpinAttack();

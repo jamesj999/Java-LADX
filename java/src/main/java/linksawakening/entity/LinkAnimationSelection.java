@@ -9,8 +9,6 @@ import linksawakening.gpu.Tile;
 import linksawakening.state.Direction;
 import linksawakening.state.Tunic;
 
-/** ROM pose selection and sprite data for both rendering paths. */
-
 /** LinkAnimationSelection behavior on the shared LinkAnimator state. */
 abstract class LinkAnimationSelection extends LinkSpriteRendering {
     protected LinkAnimationSelection(Dependencies dependencies) {

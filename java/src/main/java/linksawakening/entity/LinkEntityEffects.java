@@ -57,7 +57,6 @@ final class LinkEntityEffects {
     /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
     boolean marinBedJumpMotionLocked;
 
-    /** Applies Like Like's hLinkPositionX/Y and hidden animation state. */
     /** Hiding and shield theft precede the ROM's default-motion position gate. */
     void applyLikeLikeCapture(int romEntityX, int romEntityY) {
         applyLikeLikeCapture(romEntityX, romEntityY, true);
@@ -141,7 +140,6 @@ final class LinkEntityEffects {
         linkMotion.get().applyRomSpeed(speedX, speedY);
     }
 
-    /** Applies Hinox's direct hLinkPosition/throw writes for the next motion frame. */
     /** Applies Hinox's held position; only the source's countdown sets blocking. */
     void applyHinoxGrabState(
             int romPositionX,

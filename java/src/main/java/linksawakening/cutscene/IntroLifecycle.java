@@ -8,15 +8,6 @@ import java.util.function.Function;
 import java.util.function.IntConsumer;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Domain-specific runtime for the shipped opening sequence.
- *
- * <p>This follows the intro handlers' state and timer boundaries without
- * pretending to execute the Game Boy CPU. ROM tables provide all entity
- * records and animation data; this class only models the state that affects
- * the frame renderer.</p>
- */
-
 /** IntroLifecycle behavior on the shared IntroSequence state. */
 abstract class IntroLifecycle extends IntroSequenceState {
     protected IntroLifecycle() {

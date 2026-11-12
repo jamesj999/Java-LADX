@@ -7,11 +7,6 @@ import java.util.List;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/**
- * ROM-backed display-list decoder plus the small handler-to-list mapping
- * required by the first entity rendering increment.
- */
-
 /** EntitySpriteBossComposites behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
     protected EntitySpriteBossComposites(byte[] romData) {

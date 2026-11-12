@@ -5,17 +5,9 @@ import static linksawakening.cutscene.IntroSequence.*;
 import java.util.function.Function;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Domain-specific runtime for the shipped opening sequence.
- *
- * <p>This follows the intro handlers' state and timer boundaries without
- * pretending to execute the Game Boy CPU. ROM tables provide all entity
- * records and animation data; this class only models the state that affects
- * the frame renderer.</p>
- */
-
 /** IntroBeachMotion behavior on the shared IntroSequence state. */
 abstract class IntroBeachMotion extends IntroSceneMotion {
+
     protected IntroBeachMotion() {
         super();
     }
@@ -168,33 +160,38 @@ abstract class IntroBeachMotion extends IntroSceneMotion {
             backgroundColors = solidPalettes(blank);
             objectColors = solidPalettes(blank);
         }
-        snapshot = new IntroFrameSnapshot(
-                sceneId(),
-                substate(),
-                frameCounter,
-                previousScene && stage == Stage.LINK_FACE
-                        ? (transitionFrame.scrollX() + sectionScrollOffsets[0]) & 255
-                        : previousScene ? transitionFrame.scrollX() : scrollX(),
-                previousScene ? transitionFrame.scrollY() : visibleScrollY,
-                previousScene && stage == Stage.LINK_FACE
-                        ? null
-                        : previousScene ? transitionFrame.lineScrollX() : lineScrollMap(),
-                verticalWaveOffset,
-                previousScene ? transitionFrame.tilemap() : visibleTilemap == null ? tilemap : visibleTilemap,
-                previousScene ? transitionFrame.attrmap() : visibleAttrmap == null ? attrmap : visibleAttrmap,
-                backgroundColors,
-                objectColors,
-                sprites,
-                titleRevealRows,
-                previousScene && stage == Stage.LINK_FACE
-                        ? null
-                        : previousScene ? transitionFrame.lineScrollY() : lineScrollYMap(),
-                skipped
-                        ? null
-                        : previousScene
-                                ? transitionFrame.animatedTiles()
-                                : visibleWave == null ? waveTiles : visibleWave,
-                previousScene ? transitionFrame.animatedTilesDestination() : waveDestination);
+        snapshot = snapshotBuilder
+                .sceneId(sceneId())
+                .substate(substate())
+                .frameCounter(frameCounter)
+                .scrollX(
+                        previousScene && stage == Stage.LINK_FACE
+                                ? (transitionFrame.scrollX() + sectionScrollOffsets[0]) & 255
+                                : previousScene ? transitionFrame.scrollX() : scrollX())
+                .scrollY(previousScene ? transitionFrame.scrollY() : visibleScrollY)
+                .lineScrollX(
+                        previousScene && stage == Stage.LINK_FACE
+                                ? null
+                                : previousScene ? transitionFrame.lineScrollX() : lineScrollMap())
+                .verticalWaveOffset(verticalWaveOffset)
+                .tilemap(previousScene ? transitionFrame.tilemap() : visibleTilemap == null ? tilemap : visibleTilemap)
+                .attrmap(previousScene ? transitionFrame.attrmap() : visibleAttrmap == null ? attrmap : visibleAttrmap)
+                .bgPalettes(backgroundColors)
+                .objPalettes(objectColors)
+                .sprites(sprites)
+                .titleRevealRows(titleRevealRows)
+                .lineScrollY(
+                        previousScene && stage == Stage.LINK_FACE
+                                ? null
+                                : previousScene ? transitionFrame.lineScrollY() : lineScrollYMap())
+                .animatedTiles(
+                        skipped
+                                ? null
+                                : previousScene
+                                        ? transitionFrame.animatedTiles()
+                                        : visibleWave == null ? waveTiles : visibleWave)
+                .animatedTilesDestination(previousScene ? transitionFrame.animatedTilesDestination() : waveDestination)
+                .build();
     }
 
     protected String substate() {

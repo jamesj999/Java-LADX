@@ -2,7 +2,6 @@ package linksawakening.ui;
 
 import static linksawakening.ui.FileMenuController.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -10,12 +9,9 @@ import linksawakening.cutscene.IntroSprite;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 
-/**
- * Input/state model for the ROM-backed file-selection and New Game screens.
- */
-
 /** FileMenuEditing behavior on the shared FileMenuController state. */
 abstract class FileMenuEditing extends FileMenuFlow {
+
     protected FileMenuEditing(
             FileMenuRomData romData,
             Function<String, BackgroundScene> sceneProvider,
@@ -93,23 +89,25 @@ abstract class FileMenuEditing extends FileMenuFlow {
             }
         }
 
-        snapshot = new FileMenuFrameSnapshot(
-                sceneId,
-                selectedSlot,
-                commandRowArrowShifted,
-                creation,
-                selectedCharacter,
-                namePosition,
-                visibleName,
-                tilemap,
-                attrmap,
-                scene.palettes(),
-                scene.objectPalettes(),
-                buildSprites());
+        snapshot = snapshotBuilder
+                .sceneId(sceneId)
+                .selectedSlot(selectedSlot)
+                .commandRowArrowShifted(commandRowArrowShifted)
+                .creation(creation)
+                .selectedCharacter(selectedCharacter)
+                .namePosition(namePosition)
+                .nameBytes(visibleName)
+                .tilemap(tilemap)
+                .attrmap(attrmap)
+                .bgPalettes(scene.palettes())
+                .objectPalettes(scene.objectPalettes())
+                .sprites(buildSprites())
+                .build();
     }
 
     protected List<IntroSprite> buildSprites() {
-        List<IntroSprite> sprites = new ArrayList<>();
+        List<IntroSprite> sprites = spriteScratch;
+        sprites.clear();
         if (mode == Mode.CREATE) {
             int oamX = nameCursorXPositions[selectedCharacter] + 0x04;
             int oamY = nameCursorYPositions[selectedCharacter] + 0x0B;

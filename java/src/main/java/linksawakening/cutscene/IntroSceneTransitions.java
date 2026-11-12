@@ -2,23 +2,14 @@ package linksawakening.cutscene;
 
 import static linksawakening.cutscene.IntroSequence.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Domain-specific runtime for the shipped opening sequence.
- *
- * <p>This follows the intro handlers' state and timer boundaries without
- * pretending to execute the Game Boy CPU. ROM tables provide all entity
- * records and animation data; this class only models the state that affects
- * the frame renderer.</p>
- */
-
 /** IntroSceneTransitions behavior on the shared IntroSequence state. */
 abstract class IntroSceneTransitions extends IntroBeachMotion {
+
     protected IntroSceneTransitions() {
         super();
     }
@@ -32,7 +23,8 @@ abstract class IntroSceneTransitions extends IntroBeachMotion {
     }
 
     protected List<IntroSprite> renderSprites() {
-        List<IntroSprite> rendered = new ArrayList<>();
+        List<IntroSprite> rendered = renderSpriteScratch;
+        rendered.clear();
         if (stage == Stage.SEA || stage == Stage.SEA_FADE) {
             renderShip(rendered);
             renderLightning(rendered);

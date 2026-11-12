@@ -8,8 +8,6 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 
-/** ROM pose selection and sprite data for both rendering paths. */
-
 /** Shared state and dependency ownership for LinkAnimator. */
 abstract class LinkPoseState {
 

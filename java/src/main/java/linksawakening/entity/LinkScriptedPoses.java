@@ -7,8 +7,6 @@ import static linksawakening.entity.LinkRomConstants.*;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.state.InventoryItem;
 
-/** ROM pose selection and sprite data for both rendering paths. */
-
 /** LinkScriptedPoses behavior on the shared LinkAnimator state. */
 abstract class LinkScriptedPoses extends LinkAnimationSelection {
     protected LinkScriptedPoses(Dependencies dependencies) {

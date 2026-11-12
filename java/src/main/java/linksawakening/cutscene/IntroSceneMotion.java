@@ -2,22 +2,13 @@ package linksawakening.cutscene;
 
 import static linksawakening.cutscene.IntroSequence.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import linksawakening.scene.BackgroundScene;
 
-/**
- * Domain-specific runtime for the shipped opening sequence.
- *
- * <p>This follows the intro handlers' state and timer boundaries without
- * pretending to execute the Game Boy CPU. ROM tables provide all entity
- * records and animation data; this class only models the state that affects
- * the frame renderer.</p>
- */
-
 /** IntroSceneMotion behavior on the shared IntroSequence state. */
 abstract class IntroSceneMotion extends IntroLifecycle {
+
     protected IntroSceneMotion() {
         super();
     }
@@ -75,7 +66,9 @@ abstract class IntroSceneMotion extends IntroLifecycle {
         if (stage != Stage.BEACH) return;
         tickSeaWaveSound();
         // Link's handler moves both entities vertically before Marin builds her OAM.
-        List<IntroSprite> corrected = new ArrayList<>(pendingSprites);
+        List<IntroSprite> corrected = correctionSpriteScratch;
+        corrected.clear();
+        corrected.addAll(pendingSprites);
         if (corrected.size() >= 2) {
             corrected.subList(corrected.size() - 2, corrected.size()).clear();
             addPair(corrected, marinVariants.get(marinVariant), marinX, marinY);

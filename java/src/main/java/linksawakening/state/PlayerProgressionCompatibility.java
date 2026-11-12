@@ -2,8 +2,6 @@ package linksawakening.state;
 
 import static linksawakening.state.PlayerState.*;
 
-/** Aggregate of inventory, resources, progression and equipment state. */
-
 /** PlayerProgressionCompatibility behavior on the shared PlayerState state. */
 abstract class PlayerProgressionCompatibility extends PlayerResourceCompatibility {
     PlayerProgressionCompatibility() {

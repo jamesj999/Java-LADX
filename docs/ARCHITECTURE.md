@@ -107,7 +107,8 @@ The intro retains one state instance and one RNG. Lifecycle, scene motion,
 beach motion, transitions and rendering are bounded implementation sections
 sharing that state through the internal class hierarchy. Public IntroSequence
 constructors and constants remain the entry points. Published frame snapshots
-retain their immutable copies.
+retain their immutable copies. Publishers reuse named snapshot builders; the
+record constructors remain deprecated compatibility entry points.
 
 ### `dialog`
 
@@ -216,6 +217,7 @@ Key types: StartupCoordinator, NewGameStartProfile, MarinWakeUpMotion, TarinShie
 
 Startup uses focused player initialization and equipment state operations while
 retaining the source-shaped opening-motion timers and presentation contracts.
+NewGameStartProfile also offers a named builder alongside its canonical constructor.
 
 ### `state`
 
@@ -246,7 +248,7 @@ FileMenuState, FileMenuFlow, FileMenuEditing, TilemapRenderer.
 File-menu implementation sections share one state instance. Inventory rendering
 retains row buffers and mutable call arguments consumed synchronously by the
 renderer. TilemapRenderer.Region groups geometry; legacy long signatures remain
-deprecated bridges. Public frame snapshots retain immutable ownership.
+deprecated bridges. Public frame snapshots retain immutable ownership and use retained builders.
 OcarinaSong defines the flag-to-selection-index mapping used by the song menu.
 
 ### `vfx`

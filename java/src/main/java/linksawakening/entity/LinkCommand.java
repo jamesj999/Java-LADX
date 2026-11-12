@@ -94,6 +94,30 @@ public interface LinkCommand {
             boolean motionBlocked,
             boolean heldPose)
             implements LinkCommand {
+        /** @deprecated Use the overload accepting Link.GrabFlags. */
+        @Deprecated(forRemoval = true)
+        public HinoxGrab {}
+
+        public HinoxGrab(
+                int positionX,
+                int positionY,
+                int positionZ,
+                int speedX,
+                int speedY,
+                int velocityZ,
+                Link.GrabFlags flags) {
+            this(
+                    positionX,
+                    positionY,
+                    positionZ,
+                    speedX,
+                    speedY,
+                    velocityZ,
+                    flags.airborneState(),
+                    flags.motionBlocked(),
+                    flags.applyHeldLinkPose());
+        }
+
         public void applyTo(Link link) {
             link.applyHinoxGrabState(
                     positionX,

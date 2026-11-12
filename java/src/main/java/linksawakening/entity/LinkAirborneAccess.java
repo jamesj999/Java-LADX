@@ -9,8 +9,6 @@ import linksawakening.state.GroundStatus;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
-/** ROM-faithful airborne collaborator for Link. */
-
 /** LinkAirborneAccess behavior on the shared LinkAirborne state. */
 abstract class LinkAirborneAccess extends LinkJumpMotion {
     protected LinkAirborneAccess(Dependencies dependencies) {

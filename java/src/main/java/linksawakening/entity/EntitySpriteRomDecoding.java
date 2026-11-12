@@ -6,11 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.EntityRoomLoader;
 
-/**
- * ROM-backed display-list decoder plus the small handler-to-list mapping
- * required by the first entity rendering increment.
- */
-
 /** EntitySpriteRomDecoding behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteRomDecoding extends EntitySpriteDynamicComposites {
     protected EntitySpriteRomDecoding(byte[] romData) {

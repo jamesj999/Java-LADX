@@ -200,7 +200,6 @@ final class LinkSideView {
         return physics == 0x60 || physics == 0x01;
     }
 
-    /** Applies the side-view platform handler's Link position and speed writes. */
     /** Applies a standing platform contact (the common side-view case). */
     void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY, boolean standing) {
         if (horizontalDelta < -0x80 || horizontalDelta > 0x7F) {

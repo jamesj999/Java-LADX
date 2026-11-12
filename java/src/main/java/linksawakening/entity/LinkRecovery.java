@@ -40,7 +40,7 @@ final class LinkRecovery {
     int gameOverCountdown;
 
     boolean accessIsPassingOut() {
-        return linkAirborne.get().accessRomMotionState() == LINK_MOTION_PASS_OUT;
+        return linkAirborne.get().accessRomMotionState() == LinkMotionState.PASS_OUT.romValue();
     }
 
     boolean accessGameOverScreenPending() {

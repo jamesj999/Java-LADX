@@ -17,17 +17,11 @@ import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.world.entity.RomRandomByteSource;
 
-/**
- * Domain-specific runtime for the shipped opening sequence.
- *
- * <p>This follows the intro handlers' state and timer boundaries without
- * pretending to execute the Game Boy CPU. ROM tables provide all entity
- * records and animation data; this class only models the state that affects
- * the frame renderer.</p>
- */
-
 /** Shared state and dependency ownership for IntroSequence. */
 abstract class IntroSequenceState {
+    protected final IntroFrameSnapshot.Builder snapshotBuilder = new IntroFrameSnapshot.Builder();
+    protected final List<IntroSprite> renderSpriteScratch = new ArrayList<>();
+    protected final List<IntroSprite> correctionSpriteScratch = new ArrayList<>();
 
     protected static final int INITIAL_SHIP_X = 0xC0;
     protected static final int INITIAL_SHIP_Y = 0x4E;

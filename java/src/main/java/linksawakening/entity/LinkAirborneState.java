@@ -5,8 +5,6 @@ import static linksawakening.entity.LinkAirborne.*;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.GroundStatus;
 
-/** ROM-faithful airborne collaborator for Link. */
-
 /** Shared state and dependency ownership for LinkAirborne. */
 abstract class LinkAirborneState {
 

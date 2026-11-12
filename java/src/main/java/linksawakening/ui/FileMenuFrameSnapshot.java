@@ -20,6 +20,8 @@ public record FileMenuFrameSnapshot(
         int[][] objectPalettes,
         List<IntroSprite> sprites) {
 
+    /** @deprecated Use {@link Builder} for named construction. */
+    @Deprecated(forRemoval = true)
     public FileMenuFrameSnapshot {
         nameBytes = nameBytes.clone();
         tilemap = tilemap.clone();
@@ -63,5 +65,97 @@ public record FileMenuFrameSnapshot(
             copy[index] = palettes[index] == null ? null : palettes[index].clone();
         }
         return copy;
+    }
+
+    /** Reusable named construction; build preserves the record's defensive copies. */
+    public static final class Builder {
+        private String sceneId;
+        private int selectedSlot;
+        private boolean commandRowArrowShifted;
+        private boolean creation;
+        private int selectedCharacter;
+        private int namePosition;
+        private int[] nameBytes;
+        private int[] tilemap;
+        private int[] attrmap;
+        private int[][] bgPalettes;
+        private int[][] objectPalettes;
+        private List<IntroSprite> sprites;
+
+        public Builder sceneId(String value) {
+            sceneId = value;
+            return this;
+        }
+
+        public Builder selectedSlot(int value) {
+            selectedSlot = value;
+            return this;
+        }
+
+        public Builder commandRowArrowShifted(boolean value) {
+            commandRowArrowShifted = value;
+            return this;
+        }
+
+        public Builder creation(boolean value) {
+            creation = value;
+            return this;
+        }
+
+        public Builder selectedCharacter(int value) {
+            selectedCharacter = value;
+            return this;
+        }
+
+        public Builder namePosition(int value) {
+            namePosition = value;
+            return this;
+        }
+
+        public Builder nameBytes(int[] value) {
+            nameBytes = value;
+            return this;
+        }
+
+        public Builder tilemap(int[] value) {
+            tilemap = value;
+            return this;
+        }
+
+        public Builder attrmap(int[] value) {
+            attrmap = value;
+            return this;
+        }
+
+        public Builder bgPalettes(int[][] value) {
+            bgPalettes = value;
+            return this;
+        }
+
+        public Builder objectPalettes(int[][] value) {
+            objectPalettes = value;
+            return this;
+        }
+
+        public Builder sprites(List<IntroSprite> value) {
+            sprites = value;
+            return this;
+        }
+
+        public FileMenuFrameSnapshot build() {
+            return new FileMenuFrameSnapshot(
+                    sceneId,
+                    selectedSlot,
+                    commandRowArrowShifted,
+                    creation,
+                    selectedCharacter,
+                    namePosition,
+                    nameBytes,
+                    tilemap,
+                    attrmap,
+                    bgPalettes,
+                    objectPalettes,
+                    sprites);
+        }
     }
 }
