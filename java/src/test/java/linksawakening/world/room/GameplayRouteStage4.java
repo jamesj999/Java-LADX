@@ -53,11 +53,11 @@ final class GameplayRouteStage4 {
         }
         assertTrue(route.instrumentOwlDialogOpened, route.instrumentOwlDialogs.toString());
         route.instrumentOwlExitDeadline = route.frame + 0x100;
-        while ((route.session.overworldRoomStatusForTest(0xD2) & 0x20) == 0
+        while ((route.session.context.roomSessionViews.overworldRoomStatusForTest(0xD2) & 0x20) == 0
                 && route.frame < route.instrumentOwlExitDeadline) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.overworldRoomStatusForTest(0xD2) & 0x20);
+        assertEquals(0x20, route.session.context.roomSessionViews.overworldRoomStatusForTest(0xD2) & 0x20);
 
         route.routeToKidnappingWarning =
                 new int[] {ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT, ScrollController.UP};
@@ -88,7 +88,7 @@ final class GameplayRouteStage4 {
                 .orElseThrow();
         route.session.tickEntities(route.frame++, 0x10, 0x10);
         route.session.tickEntities(route.frame++, 0x10, 0x10);
-        assertEquals(0x0E, route.session.consumePendingMusicTrack());
+        assertEquals(0x0E, route.session.context.entityBridge.outbox.consumePendingMusicTrack());
         route.session.tickEntities(route.frame++, route.warningKid.x(), route.warningKid.y());
         assertEquals(
                 0x220, route.session.consumeEntityDialogRequests().getFirst().globalDialogId());
@@ -169,11 +169,12 @@ final class GameplayRouteStage4 {
             }
         }
         route.guardDeadline = route.frame + 0x100;
-        while (route.session.activeRoomEventForTest() != 0 && route.frame < route.guardDeadline) {
+        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+                && route.frame < route.guardDeadline) {
             route.session.tickEntitiesWithProjectileEvents(
                     route.frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
         }
-        assertEquals(0, route.session.activeRoomEventForTest());
+        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x01);
 
         walkToAndCrossIndoorBoundary(
@@ -208,11 +209,12 @@ final class GameplayRouteStage4 {
             }
         }
         route.moblinRoomDeadline = route.frame + 0x200;
-        while (route.session.activeRoomEventForTest() != 0 && route.frame < route.moblinRoomDeadline) {
+        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+                && route.frame < route.moblinRoomDeadline) {
             route.session.tickEntitiesWithProjectileEvents(
                     route.frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
         }
-        assertEquals(0, route.session.activeRoomEventForTest());
+        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x08);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
@@ -278,7 +280,7 @@ final class GameplayRouteStage4 {
                 .slots()
                 .get(route.moblinKing.slot())
                 .loaded());
-        assertEquals(0x20, route.session.indoorRoomStatusForTest(0x15, 0xE1) & 0x20);
+        assertEquals(0x20, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x15, 0xE1) & 0x20);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
@@ -307,7 +309,7 @@ final class GameplayRouteStage4 {
                     0);
         }
         assertEquals(0x01, route.session.bowWowState());
-        assertEquals(0x10, route.session.consumePendingMusicTrack());
+        assertEquals(0x10, route.session.context.entityBridge.outbox.consumePendingMusicTrack());
         assertTrue(route.session.consumeEntityDialogRequests().stream()
                 .anyMatch(request -> request.globalDialogId() == 0x16C));
 
@@ -323,7 +325,7 @@ final class GameplayRouteStage4 {
         assertEquals(0xE0, route.session.currentRoomId());
         route.session.tickEntitiesWithProjectileEvents(
                 route.frame++, route.link.romEntityX(), route.link.romEntityY(), 0, 0, Link.DIRECTION_DOWN, false);
-        assertEquals(0, route.session.activeRoomEventForTest());
+        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0, route.session.activeRoom().shutterDoorMask() & 0x02);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
@@ -360,11 +362,11 @@ final class GameplayRouteStage4 {
         }
         assertTrue(route.swampOwlDialogOpened);
         route.swampOwlExitDeadline = route.frame + 0x100;
-        while ((route.session.overworldRoomStatusForTest(0x36) & 0x20) == 0
+        while ((route.session.context.roomSessionViews.overworldRoomStatusForTest(0x36) & 0x20) == 0
                 && route.frame < route.swampOwlExitDeadline) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.overworldRoomStatusForTest(0x36) & 0x20);
+        assertEquals(0x20, route.session.context.roomSessionViews.overworldRoomStatusForTest(0x36) & 0x20);
         route.swampOwlDepartureDeadline = route.frame + 0x100;
         while (route.session.activeRoom().entities().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x41)
                 && route.frame < route.swampOwlDepartureDeadline) {

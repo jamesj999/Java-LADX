@@ -147,7 +147,8 @@ final class RoomSessionViews {
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         if (session.context.entityBridge.entityRuntime == null) return List.of();
         var updates = session.context.entityBridge.entityRuntime.consumeHeartPieceUpdates();
-        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete)) session.markActiveRoomCompleted();
+        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete))
+            session.context.roomStoryState.markActiveRoomCompleted();
         return updates;
     }
 
@@ -245,7 +246,7 @@ final class RoomSessionViews {
             throw new IllegalArgumentException("Switch-block state must be an unsigned byte: " + value);
         }
         session.context.switchBlocksState = value;
-        session.synchronizeSwitchBlockCollisionState();
+        session.context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState();
     }
 
     void setSwitchableObjectAnimationStageForTest(int value) {

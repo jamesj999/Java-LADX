@@ -33,7 +33,7 @@ final class RoomSessionBoundariesTest {
 
         session.loadIndoor(0x01, 0x36);
 
-        assertNull(session.consumeClearedDungeonWarp());
+        assertNull(session.context.roomTransitionController.consumeClearedDungeonWarp());
     }
 
     @Test
@@ -81,7 +81,7 @@ final class RoomSessionBoundariesTest {
         assertFalse(session.ocarinaPlaying());
         assertEquals(
                 0x13,
-                session.consumeEntityEvents().stream()
+                session.context.entityBridge.outbox.consumeEntityEvents().stream()
                         .filter(event -> event.type() == 0x18)
                         .findFirst()
                         .orElseThrow()
@@ -122,7 +122,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x04
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE
                         && event.soundId() == 0x13));
@@ -150,7 +150,7 @@ final class RoomSessionBoundariesTest {
         assertEquals(0x04, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0x04, session.activeRoom().renderValues()[areaIndex]);
         assertEquals(1, vfx.activeCount());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event -> event.type() == 0x08
                         && event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE
                         && event.soundId() == 0x2F));
@@ -166,13 +166,17 @@ final class RoomSessionBoundariesTest {
                 .orElseThrow();
         fillActiveObjects(session, 0x01); // Indoors1 object $01 is normal pit.
 
-        session.setEntityIgnoreHitsCountdownForTest(entity.slot(), 1);
-        assertFalse(session.entityBackgroundCollisionResultForTest(
+        session.context.roomSessionViews.setEntityIgnoreHitsCountdownForTest(entity.slot(), 1);
+        assertFalse(session.context
+                .roomCollisionQueries
+                .entityBackgroundCollisionResultForTest(
                         entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())
                 .blocked());
 
-        session.setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
-        assertTrue(session.entityBackgroundCollisionResultForTest(
+        session.context.roomSessionViews.setEntityIgnoreHitsCountdownForTest(entity.slot(), 0);
+        assertTrue(session.context
+                .roomCollisionQueries
+                .entityBackgroundCollisionResultForTest(
                         entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y())
                 .blocked());
     }
@@ -193,15 +197,17 @@ final class RoomSessionBoundariesTest {
         // Indoors1 uses object $01 for the ordinary pit; $7B is the
         // overworld table's pit object and is shallow water indoors.
         fillActiveObjects(session, 0x01);
-        session.setEntityIgnoreHitsCountdownForTest(initial.slot(), 0x02);
+        session.context.roomSessionViews.setEntityIgnoreHitsCountdownForTest(initial.slot(), 0x02);
 
         session.tickEntities(0, 0, 0);
         session.tickEntities(1, 0, 0);
 
         RoomEntity falling = session.activeRoom().entities().slots().get(initial.slot());
         assertEquals(EntityStatus.FALLING, falling.status());
-        assertEquals((falling.x() - 1) & 0xF0, session.entityFallingTargetXForTest(initial.slot()) - 0x08 & 0xF0);
-        assertEquals(0x48, session.entityTransitionCountdownForTest(initial.slot()));
+        assertEquals(
+                (falling.x() - 1) & 0xF0,
+                session.context.roomSessionViews.entityFallingTargetXForTest(initial.slot()) - 0x08 & 0xF0);
+        assertEquals(0x48, session.context.roomSessionViews.entityTransitionCountdownForTest(initial.slot()));
     }
 
     @Test
@@ -210,8 +216,9 @@ final class RoomSessionBoundariesTest {
         session.loadInitialOverworld(0x92);
         session.loadIndoor(0x10, 0xA3, Warp.CATEGORY_SIDESCROLL);
 
-        session.setFollowingNpcState(
-                new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
+        session.story()
+                .setFollowingNpcState(
+                        new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
 
         assertTrue(session.activeRoom().entities().sideScrolling());
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
@@ -233,7 +240,7 @@ final class RoomSessionBoundariesTest {
         int objectIndex =
                 RoomConstants.ROOM_OBJECTS_BASE + ((shell.y() - 0x07) & 0xF0) + (((shell.x() - 0x01) & 0xF0) >>> 4);
         session.activeRoom().roomObjectsArea()[objectIndex - 1] = 0x00;
-        session.setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
+        session.context.roomSessionViews.setColorShellStateForTest(shell.slot(), 0x08, 1, 0, 0, 0);
 
         session.tickEntities(1);
 

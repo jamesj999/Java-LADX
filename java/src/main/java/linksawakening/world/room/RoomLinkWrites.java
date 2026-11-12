@@ -3,7 +3,6 @@ package linksawakening.world.room;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.world.entity.event.*;
-import linksawakening.world.room.RoomSession.LinkWrite;
 
 /** Stable head merges: preserve each stream's order and the source tie precedence. */
 final class RoomLinkWrites {

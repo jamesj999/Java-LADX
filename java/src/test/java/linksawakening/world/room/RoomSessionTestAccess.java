@@ -7,7 +7,7 @@ public final class RoomSessionTestAccess {
     private RoomSessionTestAccess() {}
 
     public static void replaceEntityRuntime(RoomSession session, RoomEntityRuntime runtime) {
-        session.replaceEntityRuntimeForTest(runtime);
+        session.context.roomSessionViews.replaceEntityRuntimeForTest(runtime);
     }
 
     public static int crackedFloorCounter(RoomSession session) {
@@ -15,6 +15,6 @@ public final class RoomSessionTestAccess {
     }
 
     public static int overworldStatus(RoomSession session, int roomId) {
-        return session.overworldRoomStatusForTest(roomId);
+        return session.context.roomSessionViews.overworldRoomStatusForTest(roomId);
     }
 }

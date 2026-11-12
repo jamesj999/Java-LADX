@@ -45,8 +45,8 @@ final class RoomSessionRewards1Test {
         byte[] completedOverworld = new byte[0x100];
         completedOverworld[0xF2] = 0x30;
         session.restoreRoomStatuses(completedOverworld, new byte[0x100], new byte[0x100], new byte[0x20]);
-        session.setEnemyDropCountersForTest(7, 9);
-        session.setSwitchButtonPressedForTest(0x60);
+        session.context.roomSessionViews.setEnemyDropCountersForTest(7, 9);
+        session.context.roomSessionViews.setSwitchButtonPressedForTest(0x60);
         session.loadInitialOverworld(0xF2);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
@@ -54,8 +54,9 @@ final class RoomSessionRewards1Test {
         session.initializeNewGameWorldState();
         session.loadInitialOverworld(0xF2);
 
-        assertEquals(new EnemyDropResolver.CounterState(0, 0), session.enemyDropCountersForTest());
-        assertEquals(0, session.switchButtonPressedForTest());
+        assertEquals(
+                new EnemyDropResolver.CounterState(0, 0), session.context.roomSessionViews.enemyDropCountersForTest());
+        assertEquals(0, session.context.roomSessionViews.switchButtonPressedForTest());
         assertArrayEquals(new byte[DungeonItemState.ITEM_FLAG_SIZE], session.currentDungeonItemFlagsSnapshot());
         assertTrue(session.activeRoom().entities().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x31));
         assertTrue(session.activeRoom().entities().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x41));
@@ -85,24 +86,24 @@ final class RoomSessionRewards1Test {
 
         tickInteractive(session, 0, 0x3F, 0x44);
         tickInteractive(session, 1, 0x40, 0x44);
-        assertEquals(0x22, session.consumePendingMusicTrack());
+        assertEquals(0x22, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         boolean owlDialogOpened = false;
         int frame = 2;
-        while ((session.overworldRoomStatusForTest(0xF2) & 0x20) == 0 && frame < 0x300) {
+        while ((session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x20) == 0 && frame < 0x300) {
             tickInteractive(session, frame++, 0x58, 0x60);
             owlDialogOpened |= session.consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x0D9);
         }
         assertTrue(owlDialogOpened);
-        assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
-        assertEquals(0, session.overworldRoomStatusForTest(0xF2) & 0x10);
+        assertEquals(0x20, session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x20);
+        assertEquals(0, session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x10);
 
         boolean owlMusicRestored = false;
         while (session.activeRoom().entities().loadedEntities().stream().anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x400) {
             tickInteractive(session, frame++, 0x58, 0x60);
-            owlMusicRestored |= session.consumePendingMusicTrack() == 0x1D;
+            owlMusicRestored |= session.context.entityBridge.outbox.consumePendingMusicTrack() == 0x1D;
         }
         assertTrue(owlMusicRestored);
 
@@ -113,7 +114,7 @@ final class RoomSessionRewards1Test {
         int pickupFrame = (frame & 0xFE) | ((sword.slot() ^ 1) & 1);
         EntityPickupEvent pickup = session.collectEntityIfNeeded(pickupFrame, sword.x(), sword.y(), false, true, 3, 0);
         assertNotNull(pickup);
-        assertEquals(0x0F, session.consumePendingMusicTrack());
+        assertEquals(0x0F, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         frame = pickupFrame + 1;
         while (playerState.swordLevel() == 0 && frame < pickupFrame + 0x300) {
@@ -123,11 +124,11 @@ final class RoomSessionRewards1Test {
         }
         assertEquals(1, playerState.swordLevel());
         assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
-        assertEquals(0x20, session.overworldRoomStatusForTest(0xF2) & 0x20);
-        assertEquals(0x10, session.overworldRoomStatusForTest(0xF2) & 0x10);
+        assertEquals(0x20, session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x20);
+        assertEquals(0x10, session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x10);
         // $03:5BCE-5BD7 requests MUSIC_OVERWORLD_INTRO; MUSIC_OVERWORLD is only
         // written to hDefaultMusicTrack/hNextDefaultMusicTrack.
-        assertEquals(0x31, session.consumePendingMusicTrack());
+        assertEquals(0x31, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         session.loadInitialOverworld(0xF2);
         assertFalse(session.activeRoom().entities().loadedEntities().stream()
@@ -160,16 +161,18 @@ final class RoomSessionRewards1Test {
                 .findFirst()
                 .orElseThrow();
         assertTrue(witch.spriteDefinition().supported());
-        assertEquals(0x04, session.indoorTorchPaletteEffectAddressForTest());
+        assertEquals(0x04, session.context.roomSessionViews.indoorTorchPaletteEffectAddressForTest());
 
         session.setToadstoolPlayerState(true, 0);
-        session.setEntityInventorySlots(0, 0x0C);
+        session.context.entityInputs.setEntityInventorySlots(0, 0x0C);
         session.setEntityActionButtonsHeld(false, true);
         session.setEntityDefaultMusicTrack(0x0C);
         tickInteractive(session, 0, witch);
         tickInteractive(session, 1, witch);
 
-        assertEquals(List.of(new WitchExchangeEvent(witch.slot(), 0)), session.consumeWitchExchangeEvents());
+        assertEquals(
+                List.of(new WitchExchangeEvent(witch.slot(), 0)),
+                session.context.entityBridge.outbox.consumeWitchExchangeEvents());
 
         session.setEntityActionButtonsHeld(false, false);
         int frame = 2;
@@ -177,7 +180,11 @@ final class RoomSessionRewards1Test {
         boolean brewingDialog = false;
         while (!brewingDialog && frame < 0x40) {
             tickInteractive(session, frame++, witch);
-            blocked |= !session.consumeLinkMotionBlockRequests().isEmpty();
+            blocked |= !session.context
+                    .entityBridge
+                    .outbox
+                    .consumeLinkMotionBlockRequests()
+                    .isEmpty();
             brewingDialog |= session.consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x009);
         }
@@ -189,7 +196,11 @@ final class RoomSessionRewards1Test {
         for (int tick = 0; tick < 300; tick++) {
             tickInteractive(session, frame++, witch);
             assertTrue(session.consumeEntityDialogRequests().isEmpty());
-            assertTrue(session.consumeWitchRewardEvents().isEmpty());
+            assertTrue(session.context
+                    .entityBridge
+                    .outbox
+                    .consumeWitchRewardEvents()
+                    .isEmpty());
         }
         session.setEntityDialogActive(false);
         for (int tick = 1; tick <= 0xC0; tick++) {
@@ -201,15 +212,17 @@ final class RoomSessionRewards1Test {
                 assertTrue(dialogs.stream().anyMatch(request -> request.globalDialogId() == 0x0FE));
             }
         }
-        assertEquals(0x0C, session.consumePendingMusicTrack());
+        assertEquals(0x0C, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         session.setEntityDialogActive(true);
         tickInteractive(session, frame++, witch);
         session.setEntityDialogActive(false);
         tickInteractive(session, frame++, witch);
-        assertEquals(List.of(new WitchRewardEvent(witch.slot())), session.consumeWitchRewardEvents());
+        assertEquals(
+                List.of(new WitchRewardEvent(witch.slot())),
+                session.context.entityBridge.outbox.consumeWitchRewardEvents());
         assertTrue(session.gotItemPresentationActive());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x01));
 
@@ -218,8 +231,16 @@ final class RoomSessionRewards1Test {
         boolean powderMotionBlocked = false;
         while (!powderDialog && frame < 0x420) {
             tickInteractive(session, frame++, witch);
-            powderHeldPose |= !session.consumeLinkHeldItemPoseRequests().isEmpty();
-            powderMotionBlocked |= !session.consumeLinkMotionBlockRequests().isEmpty();
+            powderHeldPose |= !session.context
+                    .entityBridge
+                    .outbox
+                    .consumeLinkHeldItemPoseRequests()
+                    .isEmpty();
+            powderMotionBlocked |= !session.context
+                    .entityBridge
+                    .outbox
+                    .consumeLinkMotionBlockRequests()
+                    .isEmpty();
             powderDialog |= session.consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x099);
         }
@@ -232,8 +253,8 @@ final class RoomSessionRewards1Test {
         session.setEntityDialogActive(false);
         tickInteractive(session, frame++, witch);
 
-        session.setRoomTriggerCountForTest(1);
-        session.igniteIndoorTorchPaletteForTest();
+        session.context.roomSessionViews.setRoomTriggerCountForTest(1);
+        session.context.roomSessionViews.igniteIndoorTorchPaletteForTest();
         // Two eleven-frame cycles, then a frame without a palette upload.
         for (int tick = 0; tick < 24; tick++) {
             tickInteractive(session, frame++, witch);
@@ -264,10 +285,10 @@ final class RoomSessionRewards1Test {
         assertEquals(
                 EntityStatus.DISABLED,
                 session.activeRoom().entities().slots().get(key.slot()).status());
-        assertEquals(0x10, session.indoorRoomStatusForTest(0x03, 0x7C) & 0x10);
+        assertEquals(0x10, session.context.roomSessionViews.indoorRoomStatusForTest(0x03, 0x7C) & 0x10);
         assertEquals(
                 List.of(new KeyRewardEvent(key.slot(), ChestContentsTable.CHEST_SMALL_KEY)),
-                session.consumeKeyRewardEvents());
+                session.context.entityBridge.outbox.consumeKeyRewardEvents());
     }
 
     @Test
@@ -275,10 +296,10 @@ final class RoomSessionRewards1Test {
         RoomSession session = newSession();
         session.loadIndoor(0x03, 0x65, Warp.CATEGORY_INDOOR);
 
-        session.markHeartContainerCollected();
+        session.context.roomStoryState.markHeartContainerCollected();
 
-        assertEquals(0x20, session.indoorRoomStatusForTest(0x03, 0x65) & 0x20);
-        assertEquals(0x20, session.indoorRoomStatusForTest(0x03, 0x66) & 0x20);
+        assertEquals(0x20, session.context.roomSessionViews.indoorRoomStatusForTest(0x03, 0x65) & 0x20);
+        assertEquals(0x20, session.context.roomSessionViews.indoorRoomStatusForTest(0x03, 0x66) & 0x20);
     }
 
     @Test
@@ -286,10 +307,10 @@ final class RoomSessionRewards1Test {
         RoomSession session = newSession();
         session.loadIndoor(0x06, 0x2F, Warp.CATEGORY_INDOOR);
 
-        session.markHeartContainerCollected();
+        session.context.roomStoryState.markHeartContainerCollected();
 
-        assertEquals(0x20, session.indoorRoomStatusForTest(0x06, 0x2F) & 0x20);
-        assertEquals(0x20, session.indoorRoomStatusForTest(0x06, 0x2E) & 0x20);
+        assertEquals(0x20, session.context.roomSessionViews.indoorRoomStatusForTest(0x06, 0x2F) & 0x20);
+        assertEquals(0x20, session.context.roomSessionViews.indoorRoomStatusForTest(0x06, 0x2E) & 0x20);
     }
 
     @Test
@@ -328,8 +349,8 @@ final class RoomSessionRewards1Test {
                 RoomEntity.disabled(15))));
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
-        session.replaceEntityRuntimeForTest(runtime);
-        session.setEntityGoldenLeavesCount(5);
+        session.context.roomSessionViews.replaceEntityRuntimeForTest(runtime);
+        session.context.entityInputs.setEntityGoldenLeavesCount(5);
 
         session.tickEntities(0, 0x20, 0x30);
         session.tickEntities(1, 0x20, 0x30);
@@ -337,7 +358,9 @@ final class RoomSessionRewards1Test {
                 runtime, 0, 0x11);
         session.tickEntities(2, 0x20, 0x30);
 
-        assertEquals(List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)), session.consumeSlimeKeyRewardEvents());
+        assertEquals(
+                List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
+                session.context.entityBridge.outbox.consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.overworldRoomStatusSnapshot()[0xC6] & 0x10);
         assertEquals(List.of(new DialogRequest(0, 0xA2)), session.consumeEntityDialogRequests());
     }
@@ -388,7 +411,7 @@ final class RoomSessionRewards1Test {
         assertTrue(result.opened());
         assertEquals(0xA1, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertTrue(session.activeRoom().renderValues() == null);
-        assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x20) & 0x10);
+        assertEquals(0x10, session.context.roomSessionViews.indoorRoomStatusForTest(0x00, 0x20) & 0x10);
         RoomEntity chest = session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM)
                 .findFirst()
@@ -410,18 +433,18 @@ final class RoomSessionRewards1Test {
         int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + chestLocation;
         int buttonIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x35;
 
-        assertEquals(0x63, session.activeRoomEventForTest());
+        assertEquals(0x63, session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0xAA, session.activeRoom().roomObjectsArea()[buttonIndex]);
         assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
         for (int frame = 0; frame < 23; frame++) {
             session.tickEntities(frame, 0x58, 0x40);
         }
         assertTrue(sounds.isEmpty());
-        assertEquals(0x63, session.activeRoomEventForTest());
+        assertEquals(0x63, session.context.roomSessionViews.activeRoomEventForTest());
 
         session.tickEntities(23, 0x58, 0x40);
 
-        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(List.of(GameplaySoundEvent.FLOOR_SWITCH, GameplaySoundEvent.PUZZLE_SOLVED), sounds);
         assertEquals(
                 TransientVfxType.CHEST_APPEARS, vfx.activeSlots().getFirst().type());
@@ -452,15 +475,15 @@ final class RoomSessionRewards1Test {
         List<GameplaySoundEvent> sounds = new ArrayList<>();
         session.setColorShellSoundSink(sounds::add);
         session.loadIndoor(0x01, 0x27);
-        session.replaceEntityRuntimeForTest(runtime);
+        session.context.roomSessionViews.replaceEntityRuntimeForTest(runtime);
         int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
-        assertEquals(0x66, session.activeRoomEventForTest());
+        assertEquals(0x66, session.context.roomSessionViews.activeRoomEventForTest());
         assertNotEquals(0xA0, session.activeRoom().roomObjectsArea()[chestIndex]);
 
         int frame = 0;
         session.tickEntities(frame++, 0x50, 0x60);
 
-        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED), sounds);
         assertEquals(
                 TransientVfxType.CHEST_APPEARS, vfx.activeSlots().getFirst().type());
@@ -476,9 +499,9 @@ final class RoomSessionRewards1Test {
     void openingCompassChestDoesNotCancelTheKillAllShutterEvent() {
         RoomSession session = newSession();
         session.loadIndoor(0, 0x15);
-        assertEquals(0x21, session.activeRoomEventForTest());
+        assertEquals(0x21, session.context.roomSessionViews.activeRoomEventForTest());
         assertTrue(session.tryOpenChest(48, 58, Link.DIRECTION_UP, true, 1).opened());
-        assertEquals(0x10, session.indoorRoomStatusForTest(0, 0x15) & 0x10);
+        assertEquals(0x10, session.context.roomSessionViews.indoorRoomStatusForTest(0, 0x15) & 0x10);
         session.tickEntities(0, 56, 74);
         assertNotEquals(0, session.activeRoom().shutterDoorMask());
         // Reloading the opened chest must not bypass the still-live enemies.
@@ -487,11 +510,12 @@ final class RoomSessionRewards1Test {
         var hazardsOnly = session.activeRoom().entities().slots().stream()
                 .map(entity -> entity.type() == 0x9B ? RoomEntity.disabled(entity.slot()) : entity)
                 .toList();
-        session.replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(hazardsOnly), true));
+        session.context.roomSessionViews.replaceEntityRuntimeForTest(
+                RoomEntityRuntime.from(new RoomEntitySnapshot(hazardsOnly), true));
         session.tickEntities(1, 56, 74);
-        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0, session.activeRoom().shutterDoorMask());
-        assertEquals(0x10, session.indoorRoomStatusForTest(0, 0x15) & 0x10);
+        assertEquals(0x10, session.context.roomSessionViews.indoorRoomStatusForTest(0, 0x15) & 0x10);
     }
 
     @Test
@@ -513,24 +537,24 @@ final class RoomSessionRewards1Test {
 
         assertNotNull(pickup);
         assertEquals(EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS, pickup.type());
-        assertFalse(session.hasDungeonInstrumentForTest(0x00));
-        assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
+        assertFalse(session.context.roomSessionViews.hasDungeonInstrumentForTest(0x00));
+        assertEquals(0, session.context.roomSessionViews.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
         assertTrue(session.consumeEntityDialogRequests().isEmpty());
-        assertEquals(0x1B, session.consumePendingMusicTrack());
+        assertEquals(0x1B, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         session.tickEntities(1, instrument.x(), instrument.y());
         assertEquals(4, transientVfx.activeCount());
 
         for (int frame = 2; frame < 88; frame++) {
             session.tickEntities(frame, 0x50, 0x60);
-            assertFalse(session.hasDungeonInstrumentForTest(0x00));
+            assertFalse(session.context.roomSessionViews.hasDungeonInstrumentForTest(0x00));
             assertTrue(session.consumeEntityDialogRequests().isEmpty());
         }
 
         session.tickEntities(88, 0x50, 0x60);
 
-        assertTrue(session.hasDungeonInstrumentForTest(0x00));
-        assertEquals(0x10, session.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
+        assertTrue(session.context.roomSessionViews.hasDungeonInstrumentForTest(0x00));
+        assertEquals(0x10, session.context.roomSessionViews.indoorRoomStatusForTest(0x00, 0x02) & 0x10);
         assertEquals(0x100, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         RoomEntity heldInstrument = session.activeRoom().entities().slots().get(instrument.slot());
         assertEquals(EntityStatus.ACTIVE, heldInstrument.status());
@@ -549,27 +573,27 @@ final class RoomSessionRewards1Test {
         session.tickEntities(0, instrument.x(), instrument.y());
         assertNotNull(session.collectEntityIfNeeded(
                 (instrument.slot() ^ 1) & 1, instrument.x(), instrument.y(), false, true));
-        assertEquals(0x1B, session.consumePendingMusicTrack());
+        assertEquals(0x1B, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         for (int frame = 1; frame <= 88; frame++) {
             session.tickEntities(frame, 0x50, 0x60);
         }
         assertEquals(0x100, session.consumeEntityDialogRequests().getFirst().globalDialogId());
 
-        session.setEntityMusicActive(true);
+        session.context.entityInputs.setEntityMusicActive(true);
         session.setEntityDialogActive(true);
         session.tickEntities(89, 0x50, 0x60);
-        assertEquals(-1, session.consumePendingMusicTrack());
+        assertEquals(-1, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         session.setEntityDialogActive(false);
         session.tickEntities(90, 0x50, 0x60);
-        assertEquals(-1, session.consumePendingMusicTrack());
+        assertEquals(-1, session.context.entityBridge.outbox.consumePendingMusicTrack());
 
-        session.setEntityMusicActive(false);
+        session.context.entityInputs.setEntityMusicActive(false);
         session.tickEntities(91, 0x50, 0x60);
 
-        assertEquals(0x20, session.consumePendingMusicTrack());
-        assertEquals(0xFF, session.entityTransitionCountdownForTest(instrument.slot()));
+        assertEquals(0x20, session.context.entityBridge.outbox.consumePendingMusicTrack());
+        assertEquals(0xFF, session.context.roomSessionViews.entityTransitionCountdownForTest(instrument.slot()));
     }
 
     @Test
@@ -585,10 +609,10 @@ final class RoomSessionRewards1Test {
         int pieces = 0;
         boolean completed = false, dialogOpened = false;
         for (int frame = 1; frame < 220 && !completed; frame++) {
-            session.setHeartPiecesCount(pieces);
+            session.context.roomSessionViews.setHeartPiecesCount(pieces);
             session.tickEntities(frame, 72, 80);
             assertFalse(session.liftedEntityState().active());
-            for (var update : session.consumeHeartPieceUpdates()) {
+            for (var update : session.context.roomSessionViews.consumeHeartPieceUpdates()) {
                 if (update.dialogId() == 0x4F) {
                     dialogOpened = true;
                     session.setEntityDialogActive(true);

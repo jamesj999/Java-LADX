@@ -19,7 +19,7 @@ final class RoomPlayerItemActions {
             return false;
         }
         boolean thrown = session.context.entityBridge.entityRuntime.throwLiftedEntity(
-                session.romDirectionForProjectileCollision(linkDirection));
+                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
             session.context.activeRoom.replaceEntities(
                     session.context.entityBridge.entityRuntime.inspection().snapshot());
@@ -118,7 +118,7 @@ final class RoomPlayerItemActions {
         if (session.context.activeRoom == null || linkAirborne || session.context.shovelUseState != 0) {
             return new ShovelStartResult(false, true, -1);
         }
-        ShovelProbe probe = session.probeShovel(linkEntityX, linkEntityY, romDirection);
+        ShovelProbe probe = session.context.roomPlayerItemActions.probeShovel(linkEntityX, linkEntityY, romDirection);
         session.context.shovelUseState = session.SHOVEL_STATE_ACTIVE;
         return new ShovelStartResult(true, !probe.valid(), probe.location());
     }
@@ -129,12 +129,13 @@ final class RoomPlayerItemActions {
         }
         int normalizedTimer = timer & 0xFF;
         if (normalizedTimer == session.SHOVEL_DIG_TIMER) {
-            ShovelProbe probe = session.probeShovel(linkEntityX, linkEntityY, romDirection);
+            ShovelProbe probe =
+                    session.context.roomPlayerItemActions.probeShovel(linkEntityX, linkEntityY, romDirection);
             if (!probe.valid()) {
                 return;
             }
             session.context.shovelUseState = session.SHOVEL_STATE_DUG;
-            session.writeShovelHole(probe);
+            session.context.roomPlayerItemActions.writeShovelHole(probe);
             session.context.pendingShovelDrop = new PendingShovelDrop(
                     probe.objectLeft(),
                     probe.objectTop(),
@@ -154,7 +155,7 @@ final class RoomPlayerItemActions {
 
     int shovelAnimationState(int javaDirection, int timer) {
         return session.context.romTables.shovelAnimationState(
-                timer, session.romDirectionForProjectileCollision(javaDirection));
+                timer, RoomInteractionGeometry.romDirectionForProjectileCollision(javaDirection));
     }
 
     ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
@@ -178,7 +179,7 @@ final class RoomPlayerItemActions {
         }
 
         int location = objectTop | cellX;
-        int objectId = session.objectAtRoomLocation(location);
+        int objectId = session.context.roomSessionViews.objectAtRoomLocation(location);
         int physicsTable = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? RomTables.PHYSICS_TABLE_OVERWORLD
                 : session.context.activeRoom.mapId() == 0xFF
@@ -218,9 +219,9 @@ final class RoomPlayerItemActions {
                     session.context.activeRoom.gbcOverlay(),
                     session.context.activeRoom.tileIds(),
                     session.context.activeRoom.tileAttrs());
-            session.refreshOverworldCollisionAfterObjectMutation();
+            session.context.roomObjectMutations.refreshOverworldCollisionAfterObjectMutation();
         } else {
-            session.refreshActiveRoomTilemap();
+            session.context.roomTileRedraw.refreshActiveRoomTilemap();
             session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         }
     }

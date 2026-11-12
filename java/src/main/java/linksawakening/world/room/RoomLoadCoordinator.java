@@ -20,7 +20,7 @@ final class RoomLoadCoordinator {
 
     void loadInitialOverworld(int roomId) {
         session.context.gpu.loadBaseOverworldTiles(session.context.romData);
-        session.loadRoomSpecificTilesIfNeeded(roomId);
+        session.context.roomLoadCoordinator.loadRoomSpecificTilesIfNeeded(roomId);
         session.loadOverworld(roomId);
     }
 
@@ -32,7 +32,7 @@ final class RoomLoadCoordinator {
         musicSelectionIsScroll = scrolling;
         session.context.roomLoadSerial++;
         session.context.indoorMapPosition = -1;
-        session.clearTransientRoomState();
+        session.context.roomTransientState.clearTransientRoomState();
         session.context.indoorTorchPaletteEffect.clear();
         session.context.recentRoomEntityClears.visit(roomId);
         LoadedRoom room = session.context.roomLoader.loadOverworld(
@@ -40,12 +40,12 @@ final class RoomLoadCoordinator {
                 session.context.recentRoomEntityClears.mask(roomId),
                 session.context.roomState.overworldRoomStatus);
         session.context.gpu.loadAnimatedTilesGroup(session.context.romData, room.animatedTilesGroup());
-        session.setActiveRoom(room);
-        session.updateWitchEnvironment();
+        session.context.roomLoadCoordinator.setActiveRoom(room);
+        session.context.roomStoryState.updateWitchEnvironment();
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(session.context.activeRoom.gbcOverlay());
         session.context.overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_OVERWORLD);
-        session.synchronizeSwitchBlockCollisionState();
+        session.context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState();
     }
 
     void loadIndoor(int mapId, int roomId) {
@@ -64,12 +64,13 @@ final class RoomLoadCoordinator {
     void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
         musicSelectionIsScroll = transitionDirection < 4;
         session.context.roomLoadSerial++;
-        session.context.indoorMapPosition = session.findIndoorMapPosition(mapId, roomId);
-        session.clearTransientRoomState();
+        session.context.indoorMapPosition = session.context.roomSessionViews.findIndoorMapPosition(mapId, roomId);
+        session.context.roomTransientState.clearTransientRoomState();
         session.context.recentRoomEntityClears.visit(roomId);
         session.context.roomState.dungeonItemState.loadForMap(mapId, true);
         // LoadRoom $00:3162: side-view passages do not mark the map visited.
-        if (mapCategory != Warp.CATEGORY_SIDESCROLL) session.indoorStatusTableForMap(mapId)[roomId] |= (byte) 0x80;
+        if (mapCategory != Warp.CATEGORY_SIDESCROLL)
+            session.context.roomSessionViews.indoorStatusTableForMap(mapId)[roomId] |= (byte) 0x80;
         session.context.activeRoomEvent = session.context.dungeonRoomEventTable.eventFor(mapId, roomId);
         session.context.gpu.loadIndoorTiles(
                 session.context.romData, mapId, roomId, mapCategory == Warp.CATEGORY_SIDESCROLL);
@@ -79,7 +80,7 @@ final class RoomLoadCoordinator {
                 session.context.activeRoom == null ? null : session.context.activeRoom.palettes(),
                 mapCategory,
                 session.context.recentRoomEntityClears.mask(roomId),
-                session.indoorStatusTableForMap(mapId),
+                session.context.roomSessionViews.indoorStatusTableForMap(mapId),
                 session.context.hasBirdKey,
                 session.context.tarinFlag,
                 session.context.playerShieldLevel);
@@ -95,23 +96,23 @@ final class RoomLoadCoordinator {
                 room.entities().spriteSelection().objectPalettes(),
                 session.context.activeRoom == null ? null : session.context.activeRoom.palettes(),
                 oldSelection == null ? null : oldSelection.objectPalettes());
-        session.setActiveRoom(room, palettes.objects());
+        session.context.roomLoadCoordinator.setActiveRoom(room, palettes.objects());
         for (int row = 0; row < 8; row++)
             System.arraycopy(
                     palettes.background()[row], 0, session.context.activeRoom.palettes()[row], 0, 4);
-        session.initializeSwitchBlockTiles();
+        session.context.roomLoadCoordinator.initializeSwitchBlockTiles();
         session.context.indoorTorchPaletteEffect.reset(
-                session.context.activeRoom.palettes(), session.countUnlitTorches());
-        session.copyIndoorTorchPalettesToActiveRoom();
-        session.updateWitchEnvironment();
+                session.context.activeRoom.palettes(), session.context.roomObjectMutations.countUnlitTorches());
+        session.context.roomObjectMutations.copyIndoorTorchPalettesToActiveRoom();
+        session.context.roomStoryState.updateWitchEnvironment();
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(null);
         session.context.overworldCollision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
-        session.synchronizeSwitchBlockCollisionState();
+        session.context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState();
     }
 
     void setActiveRoom(LoadedRoom room) {
-        session.setActiveRoom(room, null);
+        session.context.roomLoadCoordinator.setActiveRoom(room, null);
     }
 
     void setActiveRoom(LoadedRoom room, int[][] objectPalettes) {
@@ -142,23 +143,25 @@ final class RoomLoadCoordinator {
             boolean ordinaryEventPending = session.context.activeRoomEvent != 0
                     && ((session.context.activeRoomEvent & session.EVENT_EFFECT_MASK)
                                     == session.EVENT_EFFECT_OPEN_LOCKED_DOORS
-                            || (session.activeRoomStatusFlags() & session.ROOM_STATUS_EVENT_1) == 0);
+                            || (session.context.roomSessionViews.activeRoomStatusFlags() & session.ROOM_STATUS_EVENT_1)
+                                    == 0);
             if (ordinaryEventPending) {
                 // $02:5E7B keeps entry doors open until Link is inside the room.
                 session.context.pendingShutterCloseMask = session.context.activeRoom.shutterDoorMask();
             } else {
-                session.openActiveRoomShutterDoors();
+                session.context.roomPuzzleController.openActiveRoomShutterDoors();
             }
         }
-        session.configureStaircase(session.context.activeRoom.staircaseLocation());
+        session.context.roomTransitionController.configureStaircase(session.context.activeRoom.staircaseLocation());
         boolean minibossDefeated = session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && session.context.activeRoom.mapId() >= 0
                 && session.context.activeRoom.mapId() < session.context.roomState.dungeonProgressFlags.length
                 && ((session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] & 0x01) != 0
-                        || (session.activeRoomStatusFlags() & session.ROOM_STATUS_EVENT_2) != 0);
+                        || (session.context.roomSessionViews.activeRoomStatusFlags() & session.ROOM_STATUS_EVENT_2)
+                                != 0);
         if (minibossDefeated && session.context.activeRoomEvent == session.EVENT_CLEAR_MIDBOSS) {
             session.context.roomState.dungeonProgressFlags[session.context.activeRoom.mapId()] |= 0x01;
-            session.openActiveRoomShutterDoors();
+            session.context.roomPuzzleController.openActiveRoomShutterDoors();
             session.context.activeRoomEvent = 0;
         }
         session.context.entityBridge.entityRuntime = entities == null
@@ -212,18 +215,22 @@ final class RoomLoadCoordinator {
                     .entityBridge
                     .entityRuntime
                     .configuration()
-                    .setGroundInteraction(session::entityGroundInteraction);
+                    .setGroundInteraction(session.context.roomCollisionQueries::entityGroundInteraction);
             session.context
                     .entityBridge
                     .entityRuntime
                     .configuration()
                     .setBackgroundInteraction(session.context.entityBackgroundInteraction);
-            session.context.entityBridge.entityRuntime.configuration().setObjectQuery(session::entityObjectSample);
             session.context
                     .entityBridge
                     .entityRuntime
                     .configuration()
-                    .setObjectIntersectionQuery(session::entityObjectIntersectionSample);
+                    .setObjectQuery(session.context.roomCollisionQueries::entityObjectSample);
+            session.context
+                    .entityBridge
+                    .entityRuntime
+                    .configuration()
+                    .setObjectIntersectionQuery(session.context.roomCollisionQueries::entityObjectIntersectionSample);
             session.context
                     .entityBridge
                     .entityRuntime
@@ -274,7 +281,7 @@ final class RoomLoadCoordinator {
                     .entityBridge
                     .entityRuntime
                     .configuration()
-                    .setEntityRoomStatus(session.activeRoomStatusFlags());
+                    .setEntityRoomStatus(session.context.roomSessionViews.activeRoomStatusFlags());
             session.context
                     .entityBridge
                     .entityRuntime
@@ -302,10 +309,10 @@ final class RoomLoadCoordinator {
                                     session.context.entityInputs.secretSeashellPegasusCollisionActive,
                             session.context.entityInputs.secretSeashellPegasusCollisionX,
                                     session.context.entityInputs.secretSeashellPegasusCollisionY);
-            session.configureEnemyDropRuntime();
+            session.context.roomLoadCoordinator.configureEnemyDropRuntime();
         }
         session.context.followingNpcRoomNeedsSync = true;
-        session.synchronizeFollowingNpcEntitiesIfNeeded();
+        session.context.roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded();
         if (session.context.roomLoadListener != null) {
             session.context.roomLoadListener.roomLoaded(session.context.activeRoom);
         }

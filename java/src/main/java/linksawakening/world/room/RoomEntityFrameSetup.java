@@ -40,8 +40,8 @@ final class RoomEntityFrameSetup {
                 .setTorchPaletteTransitionState(
                         session.context.indoorTorchPaletteEffect.targetAddress(),
                         session.context.indoorTorchPaletteEffect.transitionActive());
-        session.copyIndoorTorchPalettesToActiveRoom();
-        session.tickOcarinaAnimationHandler();
+        session.context.roomObjectMutations.copyIndoorTorchPalettesToActiveRoom();
+        session.context.roomTransitionController.tickOcarinaAnimationHandler();
         session.context
                 .entityBridge
                 .entityRuntime
@@ -141,7 +141,7 @@ final class RoomEntityFrameSetup {
     }
 
     private void configureItems() {
-        session.updateWitchEnvironment();
+        session.context.roomStoryState.updateWitchEnvironment();
         session.context
                 .entityBridge
                 .entityRuntime

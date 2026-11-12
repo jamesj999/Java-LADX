@@ -37,7 +37,7 @@ final class RoomEntityBridge {
         session.context.enemyDropHealth = health;
         session.context.enemyDropLowHealth = null;
         session.context.enemyDropActivePowerUp = activePowerUp;
-        session.configureEnemyDropRuntime();
+        session.context.roomLoadCoordinator.configureEnemyDropRuntime();
     }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
@@ -313,8 +313,8 @@ final class RoomEntityBridge {
                 linkEntityY,
                 collisionType & 0xFF,
                 session.context.entityRandomByteSource,
-                session::entityBackgroundCollision,
-                session::pairoddProjectileObjectCollision,
+                session.context.roomCollisionQueries::entityBackgroundCollision,
+                session.context.roomCollisionQueries::pairoddProjectileObjectCollision,
                 session.context.followingLinkPositionHistory,
                 session.context.followingLinkZ,
                 linkAirborne,
@@ -325,7 +325,7 @@ final class RoomEntityBridge {
                         linkEntityY,
                         linkEntityZ,
                         linkMotionState,
-                        session.romDirectionForProjectileCollision(linkDirection),
+                        RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection),
                         usingShield,
                         shieldLevel,
                         invincibilityCounter),
@@ -367,7 +367,7 @@ final class RoomEntityBridge {
                     session.context.switchableObjectAnimationStage, session.context.switchBlocksState);
             session.context.switchBlocksState = step.switchBlocksState();
             session.context.switchableObjectAnimationStage = step.nextStage();
-            session.synchronizeSwitchBlockCollisionState();
+            session.context.roomLoadCoordinator.synchronizeSwitchBlockCollisionState();
             if (step.tileCopy() != null) {
                 session.context.gpu.copySwitchBlockTiles(
                         session.context.romData,

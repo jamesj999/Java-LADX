@@ -117,11 +117,12 @@ final class GameplayRouteStage1 {
                 route.playerState.powerBraceletLevel());
         tickInteractiveEntities(route.session, 0, 0x3F, 0x44);
         tickInteractiveEntities(route.session, 1, 0x40, 0x44);
-        assertEquals(0x22, route.session.consumePendingMusicTrack());
+        assertEquals(0x22, route.session.context.entityBridge.outbox.consumePendingMusicTrack());
 
         route.frame = 2;
         route.owlDialogOpened = false;
-        while ((route.session.overworldRoomStatusForTest(0xF2) & 0x20) == 0 && route.frame < 0x300) {
+        while ((route.session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x20) == 0
+                && route.frame < 0x300) {
             tickInteractiveEntities(route.session, route.frame++, 0x58, 0x60);
             route.owlDialogOpened |= route.session.consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x0D9);
@@ -144,7 +145,7 @@ final class GameplayRouteStage1 {
             BeachSwordRewardConsumer.consume(route.session, route.playerState);
         }
         assertEquals(1, route.playerState.swordLevel());
-        assertEquals(0x30, route.session.overworldRoomStatusForTest(0xF2) & 0x30);
+        assertEquals(0x30, route.session.context.roomSessionViews.overworldRoomStatusForTest(0xF2) & 0x30);
 
         route.session.loadInitialOverworld(0xF2);
         assertFalse(route.session.activeRoom().entities().loadedEntities().stream()
@@ -179,7 +180,7 @@ final class GameplayRouteStage1 {
 
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
-        assertEquals(0x22, route.session.consumePendingMusicTrack());
+        assertEquals(0x22, route.session.context.entityBridge.outbox.consumePendingMusicTrack());
         route.forestOwlDialogOpened = false;
         while (!route.forestOwlDialogOpened && route.frame < route.pickupFrame + 0x600) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
@@ -187,11 +188,11 @@ final class GameplayRouteStage1 {
                     .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(route.forestOwlDialogOpened);
-        while ((route.session.overworldRoomStatusForTest(0x80) & 0x20) == 0
+        while ((route.session.context.roomSessionViews.overworldRoomStatusForTest(0x80) & 0x20) == 0
                 && route.frame < route.pickupFrame + 0x700) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.overworldRoomStatusForTest(0x80) & 0x20);
+        assertEquals(0x20, route.session.context.roomSessionViews.overworldRoomStatusForTest(0x80) & 0x20);
 
         route.routeToToadstool = new int[] {
             ScrollController.UP, ScrollController.UP, ScrollController.RIGHT,
@@ -233,7 +234,7 @@ final class GameplayRouteStage1 {
         while (route.toadstoolRewards.isEmpty() && route.frame < route.pickupFrame + 0x900) {
             route.session.tickEntities(route.frame++, route.toadstool.x(), route.toadstool.y());
             route.session.consumeEntityDialogRequests();
-            route.toadstoolRewards = route.session.consumeToadstoolRewards();
+            route.toadstoolRewards = route.session.context.entityBridge.outbox.consumeToadstoolRewards();
         }
         assertEquals(List.of(new ToadstoolRewardEvent(route.toadstool.slot())), route.toadstoolRewards);
         // Mirrors Main's live event consumer; RoomSession owns the entity
@@ -284,11 +285,12 @@ final class GameplayRouteStage1 {
         route.playerState.swapItemAWithSubscreen(0);
         assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, route.playerState.itemA());
         route.session.setToadstoolPlayerState(true, 0);
-        route.session.setEntityInventorySlots(route.playerState.itemA(), route.playerState.itemB());
+        route.session.context.entityInputs.setEntityInventorySlots(
+                route.playerState.itemA(), route.playerState.itemB());
         route.session.setEntityActionButtonsHeld(true, false);
         route.session.tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
-        route.exchangeEvents = route.session.consumeWitchExchangeEvents();
+        route.exchangeEvents = route.session.context.entityBridge.outbox.consumeWitchExchangeEvents();
         assertEquals(1, route.exchangeEvents.size());
         route.playerState.beginWitchToadstoolExchange(
                 route.exchangeEvents.getFirst().inventorySlot());
@@ -317,7 +319,14 @@ final class GameplayRouteStage1 {
         route.session.tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.setEntityDialogActive(false);
         route.session.tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
-        assertEquals(1, route.session.consumeWitchRewardEvents().size());
+        assertEquals(
+                1,
+                route.session
+                        .context
+                        .entityBridge
+                        .outbox
+                        .consumeWitchRewardEvents()
+                        .size());
         route.playerState.applyWitchMagicPowderReward();
         assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, route.playerState.itemA());
         assertEquals(20, route.playerState.magicPowderCount());
@@ -349,21 +358,23 @@ final class GameplayRouteStage1 {
         assertTrue(route.session.activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3F));
 
-        route.session.setEntityInventorySlots(route.playerState.itemA(), route.playerState.itemB());
+        route.session.context.entityInputs.setEntityInventorySlots(
+                route.playerState.itemA(), route.playerState.itemB());
         route.session.setToadstoolPlayerState(false, route.playerState.magicPowderCount());
         route.session.tickEntitiesWithProjectileEvents(route.frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
         // ROM direction zero adds $0E to Link's entity X, placing the
         // sprinkle at Tarin's live $78 coordinate.
         assertTrue(route.session.sprinkleMagicPowder(0x6A, 0x40, 0, 0));
         route.transformedDialogOpened = false;
-        while ((!route.transformedDialogOpened || (route.session.overworldRoomStatusForTest(0x51) & 0x10) == 0)
+        while ((!route.transformedDialogOpened
+                        || (route.session.context.roomSessionViews.overworldRoomStatusForTest(0x51) & 0x10) == 0)
                 && route.frame < route.pickupFrame + 0xD00) {
             route.session.tickEntitiesWithProjectileEvents(
                     route.frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
             route.transformedDialogOpened |= route.session.consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x00A);
         }
-        assertEquals(0x10, route.session.overworldRoomStatusForTest(0x51) & 0x10);
+        assertEquals(0x10, route.session.context.roomSessionViews.overworldRoomStatusForTest(0x51) & 0x10);
         assertTrue(route.transformedDialogOpened);
         assertTrue(
                 route.session.activeRoom().entities().loadedEntities().stream()
@@ -380,8 +391,8 @@ final class GameplayRouteStage1 {
         walkToAndCrossOverworldBoundary(
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x41, route.session.currentRoomId());
-        assertEquals(0x40, route.session.overworldRoomStatusForTest(0x41) & 0x40);
-        assertTrue(route.session.consumeEntityEvents().stream()
+        assertEquals(0x40, route.session.context.roomSessionViews.overworldRoomStatusForTest(0x41) & 0x40);
+        assertTrue(route.session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
 
@@ -393,6 +404,9 @@ final class GameplayRouteStage1 {
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, route.tailKeyChest.itemType());
         route.session.tickEntities(route.frame++, 0x38, 0x31);
         route.session
+                .context
+                .entityBridge
+                .outbox
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.applyChestReward(reward.itemType()));
         assertEquals(1, route.playerState.tailKeyCount());

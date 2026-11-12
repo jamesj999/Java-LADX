@@ -25,11 +25,11 @@ final class RoomCollisionQueries {
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY) {
-        return session.boundaryState(linkX, linkY, false);
+        return session.context.roomCollisionQueries.boundaryState(linkX, linkY, false);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
-        return session.boundaryState(linkX, linkY, linkAirborne, 0);
+        return session.context.roomCollisionQueries.boundaryState(linkX, linkY, linkAirborne, 0);
     }
 
     RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
@@ -65,7 +65,9 @@ final class RoomCollisionQueries {
     }
 
     boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY)
+        return session.context
+                .roomCollisionQueries
+                .entityBackgroundCollisionResult(entity, direction, nextX, nextY)
                 .blocked();
     }
 
@@ -74,12 +76,14 @@ final class RoomCollisionQueries {
         int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
                 ? 0
                 : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+        return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
             RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
+        return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                entity, direction, nextX, nextY, ignoreHitsCountdown, 0);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResult(
@@ -122,7 +126,7 @@ final class RoomCollisionQueries {
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
             RoomEntity entity, int direction, int nextX, int nextY) {
-        return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY);
+        return session.context.roomCollisionQueries.entityBackgroundCollisionResult(entity, direction, nextX, nextY);
     }
 
     EntityBackgroundCollisionResult entityBackgroundCollisionResultForTest(
@@ -130,7 +134,7 @@ final class RoomCollisionQueries {
         int ignoreHitsCountdown = session.context.entityBridge.entityRuntime == null
                 ? 0
                 : session.context.entityBridge.entityRuntime.enemies().enemyIgnoreHitsCountdown(entity.slot());
-        return session.entityBackgroundCollisionResult(
+        return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
                 entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
     }
 
@@ -152,7 +156,7 @@ final class RoomCollisionQueries {
         OverworldCollision.GroundInteractionSample sample =
                 session.context.overworldCollision.groundInteractionSample(entity.x(), entity.y());
         int physicsFlag = sample.physicsFlag();
-        int groundStatus = session.groundStatusFor(sample);
+        int groundStatus = RoomInteractionGeometry.groundStatusFor(sample);
         boolean deepWaterOrLava = physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA;
         boolean retainsDeepWaterStatus = entity.type() == session.ENTITY_FISH
                 || entity.type() == session.ENTITY_PEAHAT
@@ -166,20 +170,21 @@ final class RoomCollisionQueries {
             return RoomEntityGroundInteraction.Result.unloaded(entity, 0x00, true);
         }
 
-        boolean splash = session.splashAllowed(options, previousGroundStatus, groundStatus, speedZ, sideScrolling);
+        boolean splash = RoomInteractionGeometry.splashAllowed(
+                options, previousGroundStatus, groundStatus, speedZ, sideScrolling);
         int movementIndex = physicsFlag - PhysicsFlags.CAT_CONVEYOR;
         RoomEntity updated = entity;
         if (movementIndex >= 0
                 && movementIndex < session.ENTITY_CONVEYOR_MOVEMENT_X.length
                 && (frameCounter & 0x03) == 0) {
-            updated = session.withEntityPosition(
+            updated = RoomInteractionGeometry.withEntityPosition(
                     entity,
                     entity.x() + session.ENTITY_CONVEYOR_MOVEMENT_X[movementIndex],
                     entity.y() + session.ENTITY_CONVEYOR_MOVEMENT_Y[movementIndex]);
         }
 
         RoomEntityGroundInteraction.PitTransition pit =
-                session.pitTransitionFor(entity, sample, session.context.currentLinkMotionState);
+                RoomInteractionGeometry.pitTransitionFor(entity, sample, session.context.currentLinkMotionState);
         return new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
     }
 

@@ -232,31 +232,33 @@ final class RoomSessionContext {
         entityBackgroundInteraction = new RoomEntityBackgroundInteraction() {
             @Override
             public EntityBackgroundCollisionResult probe(RoomEntity entity, int direction, int nextX, int nextY) {
-                return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, 0);
+                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                        entity, direction, nextX, nextY, 0);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown) {
-                return session.entityBackgroundCollisionResult(entity, direction, nextX, nextY, ignoreHitsCountdown);
+                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
+                        entity, direction, nextX, nextY, ignoreHitsCountdown);
             }
 
             @Override
             public EntityBackgroundCollisionResult probe(
                     RoomEntity entity, int direction, int nextX, int nextY, int ignoreHitsCountdown, int frameCounter) {
-                return session.entityBackgroundCollisionResult(
+                return session.context.roomCollisionQueries.entityBackgroundCollisionResult(
                         entity, direction, nextX, nextY, ignoreHitsCountdown, frameCounter);
             }
         };
         colorShellWorld = new ColorShellWorld() {
             @Override
             public int objectAt(RoomEntity entity, int relativeOffset) {
-                return session.colorShellObjectAt(entity, relativeOffset);
+                return session.context.roomObjectMutations.colorShellObjectAt(entity, relativeOffset);
             }
 
             @Override
             public void writeObject(RoomEntity entity, int objectId) {
-                session.writeColorShellObject(entity, objectId);
+                session.context.roomObjectMutations.writeColorShellObject(entity, objectId);
             }
 
             @Override

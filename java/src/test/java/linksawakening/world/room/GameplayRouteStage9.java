@@ -57,7 +57,10 @@ final class GameplayRouteStage9 {
         for (int dormantTick = 0; dormantTick < 4; dormantTick++) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
             route.coordinator.handleWarpAndIndoorBoundaries(route.link);
-            assertEquals(0, route.session.entityTransitionCountdownForTest(route.unresolvedHinoxWarp.slot()));
+            assertEquals(
+                    0,
+                    route.session.context.roomSessionViews.entityTransitionCountdownForTest(
+                            route.unresolvedHinoxWarp.slot()));
             assertFalse(route.transition.isActive(), "entity-$61 must remain gated before the Hinox clear");
         }
 
@@ -176,18 +179,19 @@ final class GameplayRouteStage9 {
                         .slots()
                         .get(route.hinoxSlot)
                         .status());
-        assertEquals(0x20, route.session.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        assertEquals(0x20, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
         assertEquals(route.hinoxSourceLoadOrder, route.hinox.sourceLoadOrder());
 
         route.clearEventDeadline = route.frame + 0x100;
-        while (route.session.activeRoomEventForTest() != 0 && route.frame < route.clearEventDeadline) {
+        while (route.session.context.roomSessionViews.activeRoomEventForTest() != 0
+                && route.frame < route.clearEventDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(0, route.session.activeRoomEventForTest());
-        assertEquals(0x20, route.session.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        assertEquals(0, route.session.context.roomSessionViews.activeRoomEventForTest());
+        assertEquals(0x20, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x28) & 0x20);
         assertEquals(
                 0x01,
-                route.session.indoorRoomStatusForTest(0x01, 0x28) & 0x01,
+                route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x28) & 0x01,
                 "clear-midboss must persist room $28's open right door");
 
         route.clearedWarp = route.session.activeRoom().entities().loadedEntities().stream()
@@ -239,7 +243,8 @@ final class GameplayRouteStage9 {
         // Contact can occur one or two pixels before the path's final target,
         // so some of the exact $50 countdown may already have elapsed. Wait
         // the remaining source countdown and require the fade only on zero.
-        route.warpCountdown = route.session.entityTransitionCountdownForTest(route.clearedWarp.slot());
+        route.warpCountdown =
+                route.session.context.roomSessionViews.entityTransitionCountdownForTest(route.clearedWarp.slot());
         assertTrue(
                 route.warpCountdown > 0 && route.warpCountdown <= 0x50,
                 "warp did not enter countdown at contact link="
@@ -260,13 +265,17 @@ final class GameplayRouteStage9 {
                 route.transition.isActive(),
                 "cleared entity-$61 should start a fade: room="
                         + String.format("%02X", route.session.currentRoomId())
-                        + " status=" + String.format("%02X", route.session.indoorRoomStatusForTest(0x01, 0x28))
+                        + " status="
+                        + String.format(
+                                "%02X", route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x28))
                         + " link="
                         + String.format(
                                 "%02X/%02X/%02X",
                                 route.link.romEntityX(), route.link.romEntityY(), route.link.romEntityZ())
                         + " progress=" + String.format("%02X", route.session.dungeonProgressFlagsSnapshot()[1])
-                        + " warpCountdown=" + route.session.entityTransitionCountdownForTest(route.clearedWarp.slot()));
+                        + " warpCountdown="
+                        + route.session.context.roomSessionViews.entityTransitionCountdownForTest(
+                                route.clearedWarp.slot()));
         while (route.transition.isActive()) {
             route.transition.tick();
         }
@@ -301,7 +310,7 @@ final class GameplayRouteStage9 {
             assertFalse(route.transition.isActive());
             assertFalse(route.scroll.isActive());
         }
-        assertEquals(0, route.session.entityTransitionCountdownForTest(route.room36WarpSlot));
+        assertEquals(0, route.session.context.roomSessionViews.entityTransitionCountdownForTest(route.room36WarpSlot));
 
         route.armedRoom36Warp = route.session.activeRoom().entities().slots().get(route.room36WarpSlot);
         route.room36WarpContactPath =
@@ -321,7 +330,8 @@ final class GameplayRouteStage9 {
             assertFalse(route.transition.isActive());
             assertFalse(route.scroll.isActive());
         }
-        route.room36WarpCountdown = route.session.entityTransitionCountdownForTest(route.room36WarpSlot);
+        route.room36WarpCountdown =
+                route.session.context.roomSessionViews.entityTransitionCountdownForTest(route.room36WarpSlot);
         assertTrue(
                 route.room36WarpCountdown > 0 && route.room36WarpCountdown <= 0x50,
                 "warp contact did not arm: link="
@@ -358,7 +368,7 @@ final class GameplayRouteStage9 {
         }
 
         assertEquals(0x21, route.session.currentRoomId());
-        assertEquals(0x00, route.session.activeRoomEventForTest());
+        assertEquals(0x00, route.session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0xA0, objectAt(route.session, 0x27));
         assertEquals(
                 ChestContentsTable.CHEST_RUPEES_20,
@@ -382,16 +392,16 @@ final class GameplayRouteStage9 {
         assertEquals(0, route.session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-            assertTrue(route.session.consumeWorldLinkMotionBlockRequest());
+            assertTrue(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
         }
         route.session.tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-        assertFalse(route.session.consumeWorldLinkMotionBlockRequest());
-        assertEquals(0x02, route.session.indoorRoomStatusForTest(0x01, 0x21) & 0x02);
-        assertEquals(0x01, route.session.indoorRoomStatusForTest(0x01, 0x20) & 0x01);
+        assertFalse(route.session.context.entityBridge.consumeWorldLinkMotionBlockRequest());
+        assertEquals(0x02, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x21) & 0x02);
+        assertEquals(0x01, route.session.context.roomSessionViews.indoorRoomStatusForTest(0x01, 0x20) & 0x01);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);
         assertEquals(0x20, route.session.currentRoomId());
-        assertEquals(0x61, route.session.activeRoomEventForTest());
+        assertEquals(0x61, route.session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(
                 2,
                 route.session.activeRoom().entities().loadedEntities().stream()
@@ -426,7 +436,7 @@ final class GameplayRouteStage9 {
             }
             assertEquals(0xAC, objectAt(route.session, torchLocation));
         }
-        assertEquals(2, route.session.roomTriggerCountForTest());
+        assertEquals(2, route.session.context.roomSessionViews.roomTriggerCountForTest());
 
         route.booSlots = route.session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE)

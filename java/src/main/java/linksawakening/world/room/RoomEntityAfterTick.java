@@ -59,7 +59,7 @@ final class RoomEntityAfterTick {
         if (session.context.ocarinaPlaybackCountdown > 0) {
             session.context.ocarinaPlaybackCountdown--;
             if (session.context.ocarinaPlaybackCountdown == 0) {
-                session.finishOcarinaPlayback();
+                session.context.roomTransitionController.finishOcarinaPlayback();
             }
         }
     }
@@ -78,20 +78,20 @@ final class RoomEntityAfterTick {
             }
         }
         session.context.entityBridge.outbox.pendingChestRewardEvents.addAll(chestRewards);
-        session.harvestKeyQuicksandEvents();
-        session.harvestKeyRewardEvents();
-        session.harvestSlimeKeyRewardEvents();
-        session.harvestThrownRoomEventCollisions();
-        session.harvestHeartContainerRewards();
+        session.context.roomEntityRewards.harvestKeyQuicksandEvents();
+        session.context.roomEntityRewards.harvestKeyRewardEvents();
+        session.context.roomEntityRewards.harvestSlimeKeyRewardEvents();
+        session.context.roomPuzzleController.harvestThrownRoomEventCollisions();
+        session.context.roomEntityRewards.harvestHeartContainerRewards();
         session.context.entityBridge.outbox.pendingMadamMeowMeowFullHealRequests.addAll(
                 session.context.entityBridge.entityRuntime.consumePendingMadamMeowMeowFullHealRequests());
-        session.harvestSwordPickupRewards();
-        session.harvestToadstoolRewards();
-        session.harvestInstrumentRewards();
-        session.harvestInstrumentCompletions();
-        session.harvestRichardProgressEvents();
-        session.harvestWitchEvents();
-        session.harvestOwlEventCompletions();
+        session.context.roomEntityRewards.harvestSwordPickupRewards();
+        session.context.roomEntityRewards.harvestToadstoolRewards();
+        session.context.roomEntityRewards.harvestInstrumentRewards();
+        session.context.roomEntityRewards.harvestInstrumentCompletions();
+        session.context.roomEntityRewards.harvestRichardProgressEvents();
+        session.context.roomEntityRewards.harvestWitchEvents();
+        session.context.roomEntityRewards.harvestOwlEventCompletions();
         return bombExplosionEvents;
     }
 
@@ -123,7 +123,8 @@ final class RoomEntityAfterTick {
         }
         int roomStatusMask = session.context.entityBridge.entityRuntime.consumePendingRoomStatusMask();
         if (roomStatusMask != 0 && session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            byte[] status = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
+            byte[] status =
+                    session.context.roomSessionViews.indoorStatusTableForMap(session.context.activeRoom.mapId());
             status[session.context.activeRoom.roomId()] |= (byte) roomStatusMask;
             session.context
                     .entityBridge
@@ -134,20 +135,20 @@ final class RoomEntityAfterTick {
     }
 
     private void applyObjects(List<BombExplosionEvent> bombExplosionEvents, int linkEntityX, int linkEntityY) {
-        session.applyHookshotBridgeUpdates(
+        session.context.roomTileRedraw.applyHookshotBridgeUpdates(
                 session.context.entityBridge.entityRuntime.inspection().hookshotBridgeUpdates());
         session.context.activeRoom.replaceEntities(
                 session.context.entityBridge.entityRuntime.inspection().snapshot());
-        session.applyBombObjectInteractions(bombExplosionEvents);
-        session.applyBoomerangObjectInteractions(
+        session.context.roomObjectMutations.applyBombObjectInteractions(bombExplosionEvents);
+        session.context.roomObjectMutations.applyBoomerangObjectInteractions(
                 session.context.entityBridge.entityRuntime.enemies().boomerangObjectRequests());
-        session.applyMagicRodObjectInteractions(
+        session.context.roomObjectMutations.applyMagicRodObjectInteractions(
                 session.context.entityBridge.entityRuntime.enemies().magicRodObjectRequests());
-        session.applyMagicPowderObjectInteractions(
+        session.context.roomObjectMutations.applyMagicPowderObjectInteractions(
                 session.context.entityBridge.entityRuntime.enemies().magicPowderObjectRequests());
         session.context.activeRoom.replaceEntities(
                 session.context.entityBridge.entityRuntime.inspection().snapshot());
-        session.tickPushedBlockMotion(linkEntityX, linkEntityY);
-        session.tickRoomEvent(linkEntityX, linkEntityY);
+        session.context.roomPuzzleController.tickPushedBlockMotion(linkEntityX, linkEntityY);
+        session.context.roomPuzzleController.tickRoomEvent(linkEntityX, linkEntityY);
     }
 }

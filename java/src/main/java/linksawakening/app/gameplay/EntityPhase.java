@@ -10,7 +10,7 @@ import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
-import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.*;
 
 final class EntityPhase {
     void tick(GameplaySimulation c, Sword.CollisionBox b) {
@@ -39,8 +39,8 @@ final class EntityPhase {
         }
     }
 
-    private RoomSession.EntityFrameInputs buildInputs(GameplaySimulation c, Sword.CollisionBox b) {
-        return new RoomSession.EntityFrameInputs(
+    private EntityFrameInputs buildInputs(GameplaySimulation c, Sword.CollisionBox b) {
+        return new EntityFrameInputs(
                 c.frameCounter(),
                 buildLinkInputs(c),
                 buildPlayerInputs(c),
@@ -54,7 +54,7 @@ final class EntityPhase {
         c.link().clearStandingOnSideViewEntity();
         for (var write : results.link().consumePositionWrites()) {
             switch (write) {
-                case RoomSession.LinkWrite.PlatformWrite value -> {
+                case LinkWrite.PlatformWrite value -> {
                     var request = value.request();
                     if (request.standing()) {
                         c.link().apply(LinkCommandAdapter.from(request));
@@ -66,11 +66,11 @@ final class EntityPhase {
                         }
                     }
                 }
-                case RoomSession.LinkWrite.FinalPositionWrite value -> {
+                case LinkWrite.FinalPositionWrite value -> {
                     var request = value.request();
                     c.link().apply(LinkCommandAdapter.from(request));
                 }
-                case RoomSession.LinkWrite.PotWrite value -> {
+                case LinkWrite.PotWrite value -> {
                     var request = value.request();
                     c.link().apply(LinkCommandAdapter.from(request));
                 }
@@ -99,11 +99,11 @@ final class EntityPhase {
         var results = c.roomSession().entityFrameResults();
         for (var write : results.link().consumeAttackWrites()) {
             switch (write) {
-                case RoomSession.LinkWrite.AttackClearWrite value -> {
+                case LinkWrite.AttackClearWrite value -> {
                     var request = value.request();
                     c.link().apply(LinkCommandAdapter.from(request));
                 }
-                case RoomSession.LinkWrite.AttackStepWrite value -> {
+                case LinkWrite.AttackStepWrite value -> {
                     var request = value.request();
                     c.link().apply(LinkCommandAdapter.from(request));
                 }
@@ -280,13 +280,12 @@ final class EntityPhase {
         c.lift().synchronizeLinkLiftedPresentation();
     }
 
-    private RoomSession.LinkInputs buildLinkInputs(GameplaySimulation c) {
+    private LinkInputs buildLinkInputs(GameplaySimulation c) {
         var l = c.link();
         var p = c.playerState();
-        return new RoomSession.LinkInputs(
-                new RoomSession.LinkPosition(
-                        l.romEntityX(), l.romEntityY(), l.romEntityZ(), l.direction(), l.romCollisionType()),
-                new RoomSession.LinkMotion(
+        return new LinkInputs(
+                new LinkPosition(l.romEntityX(), l.romEntityY(), l.romEntityZ(), l.direction(), l.romCollisionType()),
+                new LinkMotion(
                         l.isAirborne(),
                         l.romMotionState(),
                         l.isUsingShield(),
@@ -299,10 +298,10 @@ final class EntityPhase {
                 l.zVelocity());
     }
 
-    private RoomSession.PlayerInputs buildPlayerInputs(GameplaySimulation c) {
+    private PlayerInputs buildPlayerInputs(GameplaySimulation c) {
         var p = c.playerState();
-        return new RoomSession.PlayerInputs(
-                new RoomSession.ProgressInputs(
+        return new PlayerInputs(
+                new ProgressInputs(
                         p.heartPieces(),
                         p.birdKeyCount() != 0,
                         p.tailKeyCount() != 0,
@@ -310,24 +309,24 @@ final class EntityPhase {
                         p.hasToadstool(),
                         p.magicPowderCount(),
                         p.goldenLeavesCount()),
-                new RoomSession.InventoryInputs(
+                new InventoryInputs(
                         p.itemA(),
                         p.itemB(),
                         p.tunicType() == PlayerState.TUNIC_RED,
                         p.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER),
-                new RoomSession.PlayerLevels(p.shieldLevel(), p.swordLevel(), p.powerBraceletLevel()),
-                new RoomSession.PlayerHealth(
+                new PlayerLevels(p.shieldLevel(), p.swordLevel(), p.powerBraceletLevel()),
+                new PlayerHealth(
                         p.maxHearts(),
                         p.health(),
                         p.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE,
                         p.isOnLowHealth()));
     }
 
-    private RoomSession.UiInputs buildUiInputs(GameplaySimulation c) {
+    private UiInputs buildUiInputs(GameplaySimulation c) {
         var d = c.dialogController();
         var m = c.inventoryMenu();
         var p = c.musicPlayer();
-        return new RoomSession.UiInputs(
+        return new UiInputs(
                 d.isActive(),
                 m.inventoryAppearing(),
                 d.dialogCooldown(),
@@ -336,12 +335,12 @@ final class EntityPhase {
                 p.isMusicPlaying());
     }
 
-    private RoomSession.ButtonInputs buildButtonInputs(GameplaySimulation c) {
+    private ButtonInputs buildButtonInputs(GameplaySimulation c) {
         var i = c.inputState();
         var k = c.inputConfig();
         var l = c.link();
         var lift = c.lift();
-        return new RoomSession.ButtonInputs(
+        return new ButtonInputs(
                 i.isDown(k.aKey()),
                 i.isDown(k.bKey()),
                 (i.isDown(k.upKey())
@@ -357,8 +356,8 @@ final class EntityPhase {
                 lift.isBombButtonHeld());
     }
 
-    private RoomSession.SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
-        return new RoomSession.SwordBox(b.active(), b.x(), b.width(), b.y(), b.height());
+    private SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
+        return new SwordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 
     private void resetSword(GameplaySimulation c) {

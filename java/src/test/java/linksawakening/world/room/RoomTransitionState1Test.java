@@ -53,7 +53,8 @@ final class RoomTransitionState1Test {
         assertNotNull(potPath, collisionGrid(collision));
         for (int[] position : potPath) link.setPixelPosition(position[0], position[1]);
         for (int pull = 0; pull < 8; pull++) {
-            assertTrue(session.tryLiftIndoorObject(link.pixelX(), link.pixelY(), Link.DIRECTION_DOWN, true, 0x04));
+            assertTrue(
+                    session.doors().tryLiftIndoorObject(link.pixelX(), link.pixelY(), Link.DIRECTION_DOWN, true, 0x04));
         }
         for (int tick = 0; tick < 0x40 && session.liftedEntityState().carryState() != 1; tick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
@@ -67,13 +68,13 @@ final class RoomTransitionState1Test {
             session.tickEntities(frame++, link.romEntityX(), link.romEntityY(), 0, Link.DIRECTION_UP);
         }
         assertTrue(session.throwLiftedEntity(Link.DIRECTION_UP));
-        for (int tick = 0; tick < 0x40 && session.activeRoomEventForTest() != 0; tick++) {
+        for (int tick = 0; tick < 0x40 && session.context.roomSessionViews.activeRoomEventForTest() != 0; tick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         }
-        assertEquals(0, session.activeRoomEventForTest());
+        assertEquals(0, session.context.roomSessionViews.activeRoomEventForTest());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x51, session.currentRoomId());
-        assertEquals(0x61, session.activeRoomEventForTest());
+        assertEquals(0x61, session.context.roomSessionViews.activeRoomEventForTest());
         assertEquals(0x0D, objectAt(session, 0x28));
         tickInteractiveEntities(session, frame++, 0x48, 0x70);
         List<Integer> enemies = session.activeRoom().entities().loadedEntities().stream()
@@ -93,7 +94,7 @@ final class RoomTransitionState1Test {
         }
         assertEquals(
                 0,
-                session.activeRoomEventForTest(),
+                session.context.roomSessionViews.activeRoomEventForTest(),
                 session.activeRoom().entities().loadedEntities().toString());
         assertEquals(0xA0, objectAt(session, 0x28));
         List<int[]> chestPath = reachablePositionPath(
@@ -108,7 +109,7 @@ final class RoomTransitionState1Test {
         assertEquals(1, session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4F, session.currentRoomId());
-        assertEquals(0x21, session.activeRoomEventForTest());
+        assertEquals(0x21, session.context.roomSessionViews.activeRoomEventForTest());
         tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         List<Integer> hiddenZols = session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x9B)
@@ -129,7 +130,7 @@ final class RoomTransitionState1Test {
         }
         assertEquals(
                 0,
-                session.activeRoomEventForTest(),
+                session.context.roomSessionViews.activeRoomEventForTest(),
                 session.activeRoom().entities().loadedEntities().toString());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4E, session.currentRoomId());
@@ -168,8 +169,8 @@ final class RoomTransitionState1Test {
         assertEquals(0, session.currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x54, session.currentRoomId());
-        assertEquals(0x04, session.indoorRoomStatusForTest(0x02, 0x56) & 0x04);
-        assertEquals(0x08, session.indoorRoomStatusForTest(0x02, 0x54) & 0x08);
+        assertEquals(0x04, session.context.roomSessionViews.indoorRoomStatusForTest(0x02, 0x56) & 0x04);
+        assertEquals(0x08, session.context.roomSessionViews.indoorRoomStatusForTest(0x02, 0x54) & 0x08);
         session.loadIndoor(0x02, 0x51);
         assertEquals(0xA1, objectAt(session, 0x28));
         assertFalse(session.tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1).opened());

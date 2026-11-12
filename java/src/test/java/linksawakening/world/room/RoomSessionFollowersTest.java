@@ -26,7 +26,8 @@ final class RoomSessionFollowersTest {
     void MarinHearsTheRomOcarinaDialogOnlyWhenFollowingOutdoors() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
-        session.setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x40, 0x50, 0, 0, 0);
+        session.story()
+                .setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x40, 0x50, 0, 0, 0);
 
         assertTrue(session.startOcarina(0x01, 0x01, 0x00));
         session.tickEntities(0, 0x40, 0x50);
@@ -38,7 +39,8 @@ final class RoomSessionFollowersTest {
     void MarinDoesNotHearThatOcarinaDialogInside() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x25);
-        session.setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x40, 0x50, 0, 0, 0);
+        session.story()
+                .setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x40, 0x50, 0, 0, 0);
 
         assertTrue(session.startOcarina(0x01, 0x01, 0x00));
         session.tickEntities(0, 0x40, 0x50);
@@ -50,7 +52,8 @@ final class RoomSessionFollowersTest {
     void shovelRequestsMarinsSourceDialogAfterACompletedDig() {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
-        session.setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x44, 0x56, 0, 0, 0);
+        session.story()
+                .setFollowingNpcState(new FollowingNpcState(false, 0, true, false, 0, 0, false), 0x44, 0x56, 0, 0, 0);
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
@@ -71,21 +74,23 @@ final class RoomSessionFollowersTest {
         for (int type : new int[] {0x6D, 0xD5, 0x36}) {
             RoomEntity entity = syntheticEntity(type);
             assertNull(
-                    RoomSession.pitTransitionFor(entity, pit, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE),
+                    RoomInteractionGeometry.pitTransitionFor(
+                            entity, pit, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE),
                     "type=" + Integer.toHexString(type));
         }
 
         RoomEntity marin = syntheticEntity(0xC1);
         assertNull(
-                RoomSession.pitTransitionFor(marin, pit, RoomSession.LINK_MOTION_FALLING_DOWN),
+                RoomInteractionGeometry.pitTransitionFor(marin, pit, RoomSession.LINK_MOTION_FALLING_DOWN),
                 "Marin only falls through a well");
 
         OverworldCollision.GroundInteractionSample well =
                 new OverworldCollision.GroundInteractionSample(0x61, PhysicsFlags.SOLID, 0x40, 0x50);
-        assertNull(RoomSession.pitTransitionFor(marin, well, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE));
+        assertNull(RoomInteractionGeometry.pitTransitionFor(
+                marin, well, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE));
         assertEquals(
                 new RoomEntityGroundInteraction.PitTransition(0x48, 0x60),
-                RoomSession.pitTransitionFor(marin, well, RoomSession.LINK_MOTION_FALLING_DOWN));
+                RoomInteractionGeometry.pitTransitionFor(marin, well, RoomSession.LINK_MOTION_FALLING_DOWN));
     }
 
     @Test
@@ -93,8 +98,9 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.loadInitialOverworld(0x92);
 
-        session.setFollowingNpcState(
-                new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
+        session.story()
+                .setFollowingNpcState(
+                        new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
 
         RoomEntity rooster = session.activeRoom().entities().slots().get(15);
         assertEquals(0xD5, rooster.type());
@@ -119,7 +125,7 @@ final class RoomSessionFollowersTest {
         session.loadIndoor(0x10, 0xA3);
 
         session.tickEntitiesWithProjectileEvents(0, 0, 0, 0, 0, 0, false, 1, 0);
-        session.consumeLinkFinalPositionRequests();
+        session.context.entityBridge.outbox.consumeLinkFinalPositionRequests();
 
         int frame = 1;
         for (int type : new int[] {0x3E, 0x3F}) {
@@ -130,7 +136,7 @@ final class RoomSessionFollowersTest {
             session.tickEntitiesWithProjectileEvents(frame++, npc.x(), npc.y(), npc.z(), 0, 0, false, 1, 0);
 
             assertTrue(
-                    session.consumeLinkFinalPositionRequests().stream()
+                    session.context.entityBridge.outbox.consumeLinkFinalPositionRequests().stream()
                             .anyMatch(request -> request.sourceSlot() == npc.slot()),
                     "type=" + Integer.toHexString(type));
         }
@@ -181,7 +187,7 @@ final class RoomSessionFollowersTest {
 
         session.tickEntities(0, 0x10, 0x10);
         session.tickEntities(1, 0x10, 0x10);
-        assertEquals(0x0E, session.consumePendingMusicTrack());
+        assertEquals(0x0E, session.context.entityBridge.outbox.consumePendingMusicTrack());
         session.tickEntities(2, kid71.x(), kid71.y());
 
         assertEquals(0x220, session.consumeEntityDialogRequests().getFirst().globalDialogId());
@@ -243,8 +249,14 @@ final class RoomSessionFollowersTest {
         progress[1] = 0x02;
         session.restoreDungeonProgressFlags(progress);
         session.setBowWowState(0x01);
-        session.setFollowingNpcState(
-                new FollowingNpcState(false, 0, false, true, 0, 0, false), 0x50, 0x50, 0, 0, Link.DIRECTION_DOWN);
+        session.story()
+                .setFollowingNpcState(
+                        new FollowingNpcState(false, 0, false, true, 0, 0, false),
+                        0x50,
+                        0x50,
+                        0,
+                        0,
+                        Link.DIRECTION_DOWN);
         session.loadIndoor(0x10, 0xA7);
         RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
@@ -258,9 +270,13 @@ final class RoomSessionFollowersTest {
 
         assertEquals(0x12F, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(0, session.bowWowState());
-        assertFalse(session.followingNpcState().bowWowFollowing());
-        assertEquals(0x10, session.entityTransitionCountdownForTest(madam.slot()));
-        assertTrue(session.consumeMadamMeowMeowFullHealRequests().isEmpty());
+        assertFalse(session.story().followingNpcState().bowWowFollowing());
+        assertEquals(0x10, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.context
+                .entityBridge
+                .outbox
+                .consumeMadamMeowMeowFullHealRequests()
+                .isEmpty());
 
         session.setEntityActionButtonsHeld(false);
         for (int frame = 2; frame <= 16; frame++) {
@@ -269,16 +285,22 @@ final class RoomSessionFollowersTest {
 
         assertEquals(
                 List.of(new MadamMeowMeowFullHealRequest(madam.slot())),
-                session.consumeMadamMeowMeowFullHealRequests());
-        assertEquals(0, session.entityTransitionCountdownForTest(madam.slot()));
+                session.context.entityBridge.outbox.consumeMadamMeowMeowFullHealRequests());
+        assertEquals(0, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
     }
 
     @Test
     void followingBowWowStaysWithLinkUntilTheConchHornIsOwned() {
         RoomSession session = newSession();
         session.setBowWowState(0x01);
-        session.setFollowingNpcState(
-                new FollowingNpcState(false, 0, false, true, 0, 0, false), 0x50, 0x50, 0, 0, Link.DIRECTION_DOWN);
+        session.story()
+                .setFollowingNpcState(
+                        new FollowingNpcState(false, 0, false, true, 0, 0, false),
+                        0x50,
+                        0x50,
+                        0,
+                        0,
+                        Link.DIRECTION_DOWN);
         session.loadIndoor(0x10, 0xA7);
         RoomEntity madam = session.activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
@@ -292,9 +314,13 @@ final class RoomSessionFollowersTest {
 
         assertEquals(0x132, session.consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(1, session.bowWowState());
-        assertTrue(session.followingNpcState().bowWowFollowing());
-        assertEquals(0, session.entityTransitionCountdownForTest(madam.slot()));
-        assertTrue(session.consumeMadamMeowMeowFullHealRequests().isEmpty());
+        assertTrue(session.story().followingNpcState().bowWowFollowing());
+        assertEquals(0, session.context.roomSessionViews.entityTransitionCountdownForTest(madam.slot()));
+        assertTrue(session.context
+                .entityBridge
+                .outbox
+                .consumeMadamMeowMeowFullHealRequests()
+                .isEmpty());
     }
 
     @Test
@@ -314,7 +340,11 @@ final class RoomSessionFollowersTest {
         session.tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
 
         assertEquals(0x12D, session.consumeEntityDialogRequests().getFirst().globalDialogId());
-        assertTrue(session.consumeRichardProgressEvents().isEmpty());
+        assertTrue(session.context
+                .entityBridge
+                .outbox
+                .consumeRichardProgressEvents()
+                .isEmpty());
         assertEquals(0, session.indoorBRoomStatusSnapshot()[0xC7] & 0x10);
     }
 }

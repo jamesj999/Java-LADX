@@ -51,12 +51,12 @@ final class RoomSessionDoors3Test {
         var sounds = new java.util.ArrayList<GameplaySoundEvent>();
         session.setColorShellSoundSink(sounds::add);
         for (int tick = 0; tick < 63; tick++) {
-            session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+            session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
         }
         assertTrue(sounds.isEmpty());
-        session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
         assertEquals(java.util.List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
-        session.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
         assertEquals(1, sounds.size());
 
         RoomSession blocked = newSession();
@@ -64,7 +64,7 @@ final class RoomSessionDoors3Test {
         blocked.setColorShellSoundSink(sounds::add);
         blocked.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
         for (int tick = 0; tick < 64; tick++) {
-            blocked.tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+            blocked.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
         }
         assertEquals(1, sounds.size());
     }
@@ -84,7 +84,7 @@ final class RoomSessionDoors3Test {
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[index]);
         assertFalse(session.breakIndoorSwordCrystal(0x33));
         session.tickEntities(0, 8, 16);
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x09));
         assertTrue(session.activeRoom().entities().slots().stream()

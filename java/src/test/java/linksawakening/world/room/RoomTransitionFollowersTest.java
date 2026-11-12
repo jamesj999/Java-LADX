@@ -21,7 +21,7 @@ final class RoomTransitionFollowersTest {
         session.loadIndoor(0x15, 0xF0);
 
         ScrollController scroll = new ScrollController();
-        session.startAdjacentIndoorScroll(scroll, ScrollController.UP, 0x50, 0x00);
+        session.transitions().startAdjacentIndoorScroll(scroll, ScrollController.UP, 0x50, 0x00);
 
         assertEquals(0xE0, session.currentRoomId());
         assertEquals(

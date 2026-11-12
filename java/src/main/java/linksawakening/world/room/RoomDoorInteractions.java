@@ -39,7 +39,7 @@ final class RoomDoorInteractions {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         int location = (row << 4) | column;
-        if (session.objectAtRoomLocation(location) != 0xA0) {
+        if (session.context.roomSessionViews.objectAtRoomLocation(location) != 0xA0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
         int itemType = session.context.chestContentsTable.itemForSpawn(
@@ -52,15 +52,15 @@ final class RoomDoorInteractions {
             return new ChestOpenResult(false, -1, -1, location);
         }
 
-        session.writeBombPuzzleObject(location, 0xA1);
+        session.context.roomObjectMutations.writeBombPuzzleObject(location, 0xA1);
         byte[] status = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? session.context.roomState.overworldRoomStatus
-                : session.indoorStatusTableForMap(session.context.activeRoom.mapId());
+                : session.context.roomSessionViews.indoorStatusTableForMap(session.context.activeRoom.mapId());
         status[session.context.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_CHEST_OPEN;
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
         if (session.context.activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            session.refreshActiveRoomTilemap();
+            session.context.roomTileRedraw.refreshActiveRoomTilemap();
         }
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(
@@ -79,14 +79,14 @@ final class RoomDoorInteractions {
                 || session.context.indoorKeyDoorAnimationCountdown != 0) {
             return false;
         }
-        int doorDirection = session.keyDoorDirectionIndex(linkDirection);
-        if (doorDirection < 0 || (collisionType & session.keyDoorCollisionBit(doorDirection)) == 0) {
+        int doorDirection = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
+        if (doorDirection < 0 || (collisionType & RoomInteractionGeometry.keyDoorCollisionBit(doorDirection)) == 0) {
             return false;
         }
         int expectedPhysics = session.KEY_DOOR_PHYSICS_BASE + doorDirection;
         int touchedLocation = -1;
         boolean bossDoor = false;
-        for (int[] point : session.keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
+        for (int[] point : RoomInteractionGeometry.keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
             int physics = session.context.overworldCollision.objectPhysicsFlagAtPoint(point[0], point[1]);
             if (physics == expectedPhysics || (doorDirection == 0 && physics == 0x98)) {
                 int column = Math.floorDiv(point[0], 0x10);
@@ -99,12 +99,13 @@ final class RoomDoorInteractions {
         if (touchedLocation < 0) {
             return false;
         }
-        int touchedObject = session.objectAtRoomLocation(touchedLocation);
+        int touchedObject = session.context.roomSessionViews.objectAtRoomLocation(touchedLocation);
         if (bossDoor) {
             int objectOffset = touchedObject - 0xA4;
             if (objectOffset < 0
                     || objectOffset > 1
-                    || !session.alignedWithIndoorKeyDoor(touchedLocation - objectOffset, 0, linkPixelX, linkPixelY)) {
+                    || !RoomInteractionGeometry.alignedWithIndoorKeyDoor(
+                            touchedLocation - objectOffset, 0, linkPixelX, linkPixelY)) {
                 return false;
             }
             if (session.context.roomState.dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
@@ -121,9 +122,12 @@ final class RoomDoorInteractions {
         int objectOffset = touchedObject - session.KEY_DOOR_CLOSED_OBJECTS[doorDirection];
         if (objectOffset < 0 || objectOffset > 1) return false;
         int doorLocation = touchedLocation - (objectOffset == 0 ? 0 : doorDirection < 2 ? 1 : 0x10);
-        if (!session.alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
+        if (!RoomInteractionGeometry.alignedWithIndoorKeyDoor(doorLocation, doorDirection, linkPixelX, linkPixelY)
                 || !session.context.roomState.dungeonItemState.consumeSmallKey()) return false;
-        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |=
+        session.context
+                        .roomSessionViews
+                        .indoorStatusTableForMap(session.context.activeRoom.mapId())[
+                        session.context.activeRoom.roomId()] |=
                 (byte) session.INDOOR_ROOM_STATUS_EVENT_3;
         session.context.indoorKeyDoorDirection = doorDirection;
         session.context.indoorKeyDoorLocation = doorLocation;
@@ -140,18 +144,18 @@ final class RoomDoorInteractions {
             session.context.pushBlockContactTicks = 0;
             return false;
         }
-        int direction = session.keyDoorDirectionIndex(linkDirection);
-        if (direction < 0 || (collisionType & session.keyDoorCollisionBit(direction)) == 0) {
+        int direction = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
+        if (direction < 0 || (collisionType & RoomInteractionGeometry.keyDoorCollisionBit(direction)) == 0) {
             session.context.pushBlockContactTicks = 0;
             return false;
         }
         int touchedLocation = -1;
         boolean keyholeBlockContact = false;
-        for (int[] point : session.keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
+        for (int[] point : RoomInteractionGeometry.keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
             int column = Math.floorDiv(point[0], 0x10);
             int row = Math.floorDiv(point[1], 0x10);
             int location = (row << 4) | column;
-            int object = session.objectAtRoomLocation(location);
+            int object = session.context.roomSessionViews.objectAtRoomLocation(location);
             if (object == session.OBJECT_PUSHABLE_BLOCK) {
                 touchedLocation = location;
                 break;
@@ -200,7 +204,7 @@ final class RoomDoorInteractions {
         session.context.pushedBlockDirection = direction;
         session.context.pushedBlockMotionFrames = session.PUSHED_BLOCK_MOTION_FRAMES;
         session.context.pushedBlockEntitySlot = spawnedSlot;
-        session.refreshActiveRoomTilemap();
+        session.context.roomTileRedraw.refreshActiveRoomTilemap();
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(null);
         if (session.context.entityBridge.entityRuntime != null) {
@@ -294,7 +298,7 @@ final class RoomDoorInteractions {
         int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
         int objectTop = (linkPixelY + swordAreaY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
-        int touchedObject = session.objectAtRoomLocation(touchedLocation);
+        int touchedObject = session.context.roomSessionViews.objectAtRoomLocation(touchedLocation);
         boolean outdoor = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD;
         // Statue standing handler, $19:4076: asymmetric 32 by 48 contact window.
         linksawakening.world.entity.RoomEntity statue = null;
@@ -339,7 +343,7 @@ final class RoomDoorInteractions {
 
         if (statue != null) {
             session.context.entityBridge.entityRuntime.beginLift(
-                    statue.slot(), session.romDirectionForProjectileCollision(linkDirection));
+                    statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
             session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
                     new linksawakening.world.entity.event.EntityCombatEvent(
                             statue.slot(),
@@ -370,20 +374,23 @@ final class RoomDoorInteractions {
                                 ? 3
                                 : 4;
                 if (room == 0x52 || room == 0x04) replacement = 0xC6;
-                session.writeBombPuzzleObject(touchedLocation, replacement);
+                session.context.roomObjectMutations.writeBombPuzzleObject(touchedLocation, replacement);
             }
-            session.refreshOverworldCollisionAfterObjectMutation();
+            session.context.roomObjectMutations.refreshOverworldCollisionAfterObjectMutation();
         } else {
             session.context.activeRoom.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + touchedLocation] =
                     touchedObject == session.OBJECT_POT_WITH_SWITCH ? session.OBJECT_SWITCH_BUTTON : 0x0D;
-            session.refreshActiveRoomTilemap();
+            session.context.roomTileRedraw.refreshActiveRoomTilemap();
             session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
             session.context.overworldCollision.setGbcOverlay(null);
         }
         int x = linkPixelX + 0x08;
         int y = linkPixelY + 0x10;
         session.context.entityBridge.entityRuntime.spawnLiftedRoomObject(
-                x, y, session.romDirectionForProjectileCollision(linkDirection), touchedObject == 0x5C ? 1 : 0);
+                x,
+                y,
+                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection),
+                touchedObject == 0x5C ? 1 : 0);
         session.context.activeRoom.replaceEntities(
                 session.context.entityBridge.entityRuntime.inspection().snapshot());
         return true;
@@ -403,17 +410,17 @@ final class RoomDoorInteractions {
             session.context.pushBlockContactTicks = 0;
             return false;
         }
-        int direction = session.keyDoorDirectionIndex(linkDirection);
-        if (direction < 0 || (collisionType & session.keyDoorCollisionBit(direction)) == 0) {
+        int direction = RoomInteractionGeometry.keyDoorDirectionIndex(linkDirection);
+        if (direction < 0 || (collisionType & RoomInteractionGeometry.keyDoorCollisionBit(direction)) == 0) {
             session.context.pushBlockContactTicks = 0;
             return false;
         }
         int touchedLocation = -1;
-        for (int[] point : session.keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
+        for (int[] point : RoomInteractionGeometry.keyDoorCollisionPoints(linkPixelX, linkPixelY, direction)) {
             int column = Math.floorDiv(point[0], 0x10);
             int row = Math.floorDiv(point[1], 0x10);
             int location = (row << 4) | column;
-            if (session.objectAtRoomLocation(location) == session.OBJECT_KEYHOLE_BLOCK) {
+            if (session.context.roomSessionViews.objectAtRoomLocation(location) == session.OBJECT_KEYHOLE_BLOCK) {
                 touchedLocation = location;
                 break;
             }
@@ -434,11 +441,14 @@ final class RoomDoorInteractions {
         session.context.pushBlockContactTicks = 0;
         session.context.roomState.dungeonItemState.consumeSmallKey();
 
-        session.writeBombPuzzleObject(touchedLocation, session.OBJECT_FLOOR_OD);
-        session.indoorStatusTableForMap(session.context.activeRoom.mapId())[session.context.activeRoom.roomId()] |=
+        session.context.roomObjectMutations.writeBombPuzzleObject(touchedLocation, session.OBJECT_FLOOR_OD);
+        session.context
+                        .roomSessionViews
+                        .indoorStatusTableForMap(session.context.activeRoom.mapId())[
+                        session.context.activeRoom.roomId()] |=
                 (byte) session.INDOOR_ROOM_STATUS_EVENT_3;
         session.context.colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-        session.refreshActiveRoomTilemap();
+        session.context.roomTileRedraw.refreshActiveRoomTilemap();
         session.context.overworldCollision.setRoom(session.context.activeRoom.roomObjectsArea());
         session.context.overworldCollision.setGbcOverlay(null);
         return true;
@@ -446,7 +456,7 @@ final class RoomDoorInteractions {
 
     boolean tryUnlockTailCaveKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
-        return session.tryUnlockOverworldDungeonKeyhole(
+        return session.context.roomDoorInteractions.tryUnlockOverworldDungeonKeyhole(
                 linkPixelX,
                 linkPixelY,
                 linkDirection,
@@ -458,7 +468,7 @@ final class RoomDoorInteractions {
 
     boolean tryUnlockKeyCavernKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
-        return session.tryUnlockOverworldDungeonKeyhole(
+        return session.context.roomDoorInteractions.tryUnlockOverworldDungeonKeyhole(
                 linkPixelX,
                 linkPixelY,
                 linkDirection,
@@ -509,7 +519,7 @@ final class RoomDoorInteractions {
     }
 
     int tickTailCaveKeyholeSequence() {
-        session.tickNextWorldMusicTrackCountdown();
+        session.context.roomDoorInteractions.tickNextWorldMusicTrackCountdown();
         if (session.context.tailCaveKeyholeCountdown == 0) {
             session.context.tailCaveFinalMotionBlockPending = false;
             return 0;
@@ -523,7 +533,7 @@ final class RoomDoorInteractions {
             session.context.colorShellSoundSink.play(GameplaySoundEvent.OPEN_KEY_CAVERN);
         }
         if (countdown < 0x20 && (countdown & 0x0F) == 0x08) {
-            session.writeTailCaveGateAnimationFrame(countdown);
+            session.context.roomDoorInteractions.writeTailCaveGateAnimationFrame(countdown);
         }
         if (countdown == session.TAIL_CAVE_RUMBLE_GATE_FRAME) {
             int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + session.TAIL_CAVE_GATE_LOCATION;
@@ -536,7 +546,7 @@ final class RoomDoorInteractions {
                 session.context.activeRoom.gbcOverlay()[overlayIndex] = session.OBJECT_CAVE_DOOR;
                 session.context.activeRoom.renderValues()[gateIndex] = session.OBJECT_CAVE_DOOR;
                 // The source's draw command changes tile IDs only; keep attrs.
-                session.refreshOverworldCollisionAfterObjectMutation();
+                session.context.roomObjectMutations.refreshOverworldCollisionAfterObjectMutation();
             }
             session.context.colorShellSoundSink.play(GameplaySoundEvent.DUNGEON_OPENED);
         }

@@ -88,7 +88,7 @@ final class RoomStoryState {
         session.context.switchableObjectAnimationStage = 0;
         session.context.switchButtonPressed = 0;
         session.context.currentOverworldTilesetId = session.W_TILESET_NO_UPDATE;
-        session.clearTransientRoomState();
+        session.context.roomTransientState.clearTransientRoomState();
     }
 
     void restoreRoomStatuses(
@@ -100,7 +100,7 @@ final class RoomStoryState {
                     .entityBridge
                     .entityRuntime
                     .configuration()
-                    .setEntityRoomStatus(session.activeRoomStatusFlags());
+                    .setEntityRoomStatus(session.context.roomSessionViews.activeRoomStatusFlags());
             session.context.entityBridge.entityRuntime.configuration().setTailKeyOwned(session.context.hasTailKey);
         }
     }
@@ -141,7 +141,7 @@ final class RoomStoryState {
             session.context.followingNpcRoomNeedsSync = true;
         }
         session.context.followingNpcState = state;
-        session.synchronizeFollowingNpcEntitiesIfNeeded();
+        session.context.roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded();
     }
 
     FollowingNpcState followingNpcState() {
@@ -230,7 +230,7 @@ final class RoomStoryState {
             throw new IllegalArgumentException("Default music track must be an unsigned byte");
         }
         session.context.entityDefaultMusicTrack = trackId;
-        session.updateWitchEnvironment();
+        session.context.roomStoryState.updateWitchEnvironment();
     }
 
     void updateWitchEnvironment() {
@@ -314,18 +314,22 @@ final class RoomStoryState {
                 .entityBridge
                 .entityRuntime
                 .configuration()
-                .setGroundInteraction(session::entityGroundInteraction);
+                .setGroundInteraction(session.context.roomCollisionQueries::entityGroundInteraction);
         session.context
                 .entityBridge
                 .entityRuntime
                 .configuration()
                 .setBackgroundInteraction(session.context.entityBackgroundInteraction);
-        session.context.entityBridge.entityRuntime.configuration().setObjectQuery(session::entityObjectSample);
         session.context
                 .entityBridge
                 .entityRuntime
                 .configuration()
-                .setObjectIntersectionQuery(session::entityObjectIntersectionSample);
+                .setObjectQuery(session.context.roomCollisionQueries::entityObjectSample);
+        session.context
+                .entityBridge
+                .entityRuntime
+                .configuration()
+                .setObjectIntersectionQuery(session.context.roomCollisionQueries::entityObjectIntersectionSample);
         session.context
                 .entityBridge
                 .entityRuntime
@@ -371,7 +375,11 @@ final class RoomStoryState {
                 .entityRuntime
                 .configuration()
                 .setLiftedLinkC13B(session.context.followingEntityYOffset);
-        session.context.entityBridge.entityRuntime.configuration().setEntityRoomStatus(session.activeRoomStatusFlags());
+        session.context
+                .entityBridge
+                .entityRuntime
+                .configuration()
+                .setEntityRoomStatus(session.context.roomSessionViews.activeRoomStatusFlags());
         session.context
                 .entityBridge
                 .entityRuntime
@@ -405,14 +413,15 @@ final class RoomStoryState {
             session.context.activeRoom.replaceEntities(
                     session.context.entityBridge.entityRuntime.inspection().snapshot());
         }
-        session.configureEnemyDropRuntime();
+        session.context.roomLoadCoordinator.configureEnemyDropRuntime();
     }
 
     void markHeartContainerCollected() {
         if (session.context.activeRoom == null) {
             return;
         }
-        byte[] activeStatus = session.indoorStatusTableForMap(session.context.activeRoom.mapId());
+        byte[] activeStatus =
+                session.context.roomSessionViews.indoorStatusTableForMap(session.context.activeRoom.mapId());
         activeStatus[session.context.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_EVENT_2;
         if (session.context.activeRoom.mapId() == 0x06) {
             session.context.roomState.indoorBRoomStatus[0x2E] |= (byte) session.ROOM_STATUS_EVENT_2;
@@ -427,7 +436,7 @@ final class RoomStoryState {
         }
         byte[] status = session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? session.context.roomState.overworldRoomStatus
-                : session.indoorStatusTableForMap(session.context.activeRoom.mapId());
+                : session.context.roomSessionViews.indoorStatusTableForMap(session.context.activeRoom.mapId());
         status[session.context.activeRoom.roomId()] |= (byte) session.ROOM_STATUS_EVENT_1;
     }
 }

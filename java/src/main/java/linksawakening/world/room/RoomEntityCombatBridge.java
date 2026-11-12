@@ -221,12 +221,12 @@ final class RoomEntityCombatBridge {
         if (event.type() == session.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
-            session.markActiveRoomCompleted();
+            session.context.roomStoryState.markActiveRoomCompleted();
             session.context.entityBridge.outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
             session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
                     event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
-        session.harvestKeyRewardEvents();
+        session.context.roomEntityRewards.harvestKeyRewardEvents();
         session.context.activeRoom.replaceEntities(
                 session.context.entityBridge.entityRuntime.inspection().snapshot());
         return event;

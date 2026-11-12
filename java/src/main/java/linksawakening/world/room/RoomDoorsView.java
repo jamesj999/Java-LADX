@@ -2,7 +2,7 @@ package linksawakening.world.room;
 
 import linksawakening.world.room.RoomSession.*;
 
-final class RoomDoorsView implements RoomSession.Doors {
+final class RoomDoorsView implements RoomDoors {
     private final RoomDoorInteractions delegate;
 
     RoomDoorsView(RoomDoorInteractions delegate) {

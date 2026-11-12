@@ -28,11 +28,11 @@ final class RoomTileRedraw {
                         session.context.activeRoom.roomId(),
                         session.context.activeRoom.roomObjectsArea());
         session.context.activeRoom.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
-        session.applyHookshotBridgeTileOverrides();
-        session.applyBombedWallTileOverrides();
-        session.applyBombedBlockTileOverrides();
-        session.applyBombedCaveDoorTileOverrides();
-        session.applyRetainedTorchTiles();
+        session.context.roomTileRedraw.applyHookshotBridgeTileOverrides();
+        session.context.roomTileRedraw.applyBombedWallTileOverrides();
+        session.context.roomTileRedraw.applyBombedBlockTileOverrides();
+        session.context.roomTileRedraw.applyBombedCaveDoorTileOverrides();
+        session.context.roomObjectMutations.applyRetainedTorchTiles();
         session.context.shutterTileOverrides.forEach(
                 (index, tile) -> session.context.activeRoom.tileIds()[index] = tile);
     }
@@ -44,7 +44,7 @@ final class RoomTileRedraw {
         int[] objects = session.context.activeRoom.roomObjectsArea();
         boolean changed = false;
         for (HookshotBridgeUpdate update : updates) {
-            int areaIndex = session.hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
+            int areaIndex = RoomInteractionGeometry.hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
             if (areaIndex < 0 || areaIndex >= objects.length) {
                 continue;
             }
@@ -55,7 +55,7 @@ final class RoomTileRedraw {
             }
         }
         if (changed) {
-            session.refreshActiveRoomTilemap();
+            session.context.roomTileRedraw.refreshActiveRoomTilemap();
         }
     }
 

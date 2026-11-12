@@ -206,7 +206,7 @@ final class RoomTransitionBoundariesTest {
 
         assertEquals(0x63, session.currentRoomId());
         assertTrue(scroll.isActive());
-        assertTrue(session.consumeEntityEvents().stream()
+        assertTrue(session.context.entityBridge.outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x1E));
     }

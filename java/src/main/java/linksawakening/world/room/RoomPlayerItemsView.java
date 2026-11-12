@@ -2,7 +2,7 @@ package linksawakening.world.room;
 
 import linksawakening.world.room.RoomSession.*;
 
-final class RoomPlayerItemsView implements RoomSession.PlayerItems {
+final class RoomPlayerItemsView implements RoomPlayerItems {
     private final RoomPlayerItemActions delegate;
 
     RoomPlayerItemsView(RoomPlayerItemActions delegate) {
