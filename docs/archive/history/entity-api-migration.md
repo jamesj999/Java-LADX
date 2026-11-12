@@ -1,5 +1,11 @@
 # Entity API migration
 
+Round-5 status: the app/render integration and all owned deprecated caller
+migrations are complete. All former owned byte/enum/event delegates and
+`Rom.unsafeBytes()` are deleted. Historical tables below describe the earlier
+handoff; see [the integrated report](room-integration-round-5.md) for current
+lifetimes, budgets, warning counts and remaining immutable/off-limits costs.
+
 ## Done
 
 Round 4 migrated the room seam and removed every unused adapter from the entity

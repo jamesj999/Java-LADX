@@ -1,5 +1,11 @@
 # Room render views and typed wiring handoff
 
+Round-5 status: the app/render integration and all owned deprecated caller
+migrations are complete. All former owned byte/enum/event delegates and
+`Rom.unsafeBytes()` are deleted. Historical tables below describe the earlier
+handoff; see [the integrated report](room-integration-round-5.md) for current
+lifetimes, budgets, warning counts and remaining immutable/off-limits costs.
+
 Steps 10 and 11 follow the round-4 seam migration. All app, renderer and UI
 consumer sources are unchanged. Existing snapshot methods keep copying and
 ownership semantics, including the previous-room snapshots retained for scrolls.

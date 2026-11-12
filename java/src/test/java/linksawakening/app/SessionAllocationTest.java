@@ -42,7 +42,7 @@ final class SessionAllocationTest {
             long bytesPerFrame = measure(session);
             System.out.println("Active simulation allocation bytes/frame: " + bytesPerFrame);
             // Round 5 EA-off achieved about 673; +25% headroom.
-            // Remaining sampled sources are entity snapshots/outboxes and audio PCM;
+            // Remaining costs include changed immutable frame values and startup poses;
             // this total-step budget is not an app-only attribution claim.
             assertTrue(bytesPerFrame <= 842, "Active simulation bytes/frame: " + bytesPerFrame);
         } finally {

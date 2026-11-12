@@ -241,8 +241,9 @@ Nine narrow interfaces expose position, motion, animation, actions, status,
 equipment, airborne motion, side-view motion and controls. Their implementations
 receive components, never Link. LinkAssembly binds cyclic component references
 once before publication. Update delegates to the retained motion orchestration;
-the motion command role also coordinates aggregate debug reset. The remaining
-JumpTarget adapter is deprecated for the world-owned route fixture.
+the motion command role also coordinates aggregate debug reset. The world route
+fixture binds Roc's Feather to the airborne role directly; the remaining
+JumpTarget adapter stays within that component owner's scope.
 
 LinkStateMachine dispatches frame phases and composes LinkDash, LinkRoomPhysics
 and LinkDoorTraversal. They own charge/rebound/shake, room defaults and door
@@ -297,16 +298,13 @@ has no gameplay sound compatibility bridge. Signpost
 interaction uses its seven-argument entry point and `Interaction` bundle.
 `DamageConsequences` names the contact-hurt and power-up-ended effects requested
 by projectile consumption. Its app implementor is retained; the older callback
-parameter overloads remain for an off-limits audio test.
+parameter overloads remain for compatibility tests.
 
 `DialogTextLoader`, `SignpostDialogTable` and ROM-backed sound construction accept
-`Rom`. Dialog text retains its owned snapshot and bounds behavior. Only the dialog
-loader keeps a deprecated byte-array bridge, needed by `render/DialogEmulatorCapture`.
-App passes `Rom` wherever the callee supports it, including player/equipment,
-VFX, scene, UI and cutscene construction. Five byte-array bridges remain in
-`app.wiring.SubsystemWiring` and `WorldWiring` for the world-owned TransitionController,
-OverworldBushInteraction, RoomSessionConfig, RoomLoader and OverworldTilesetTable.
-Their packages own the remaining API migration.
+`Rom`. Dialog text retains its owned snapshot and bounds behavior; its unused
+byte-array bridge is deleted. App passes `Rom` through all construction paths,
+including the five former world wiring byte handoffs. Their deprecated overloads
+are deleted after migration of main and test clients.
 
 App/gameplay main and test callers use PlayerState's component APIs and Link's
 composed roles, including bound method references. Link construction uses
@@ -350,9 +348,9 @@ Key types: Rom, RomAddress, RomSymbols, GbcBanks.
 Rom construction uses validated `of` or explicitly alignment-unchecked
 `unchecked`; its constructor is private. Tests use `TestRoms.partial` for
 synthetic buffers. RomTables exposes themed table holders only: all deprecated
-aggregate methods and RomUtil delegates are removed. Five app wiring byte
-handoffs remain for the world entry-point migration; backing-array ownership
-and validation timing remain unchanged.
+aggregate methods and RomUtil delegates are removed. The five app wiring byte
+handoffs are migrated, and no backing-array escape hatch remains. Shared storage,
+partial-buffer validation timing and read bounds are unchanged.
 
 ### `save`
 
@@ -570,36 +568,54 @@ methods remain immutable for clients that retain results. The dialog boundary
 drains all requests before selecting the first one to open.
 
 After simulation, `FramePresentation` asks `RenderStateAssembler` for scene
-composition and then overlays the optional debug menu. The assembler supplies
-one `GameFrameState` value to scene construction, without chained intermediate copies. Indexed layers and OAM entries feed hardware composition.
+composition and then overlays the optional debug menu. The assembler refills
+one `ReusableGameFrameState` for scene construction, without intermediate copies. Indexed layers and OAM entries feed hardware composition.
 `FrameScene` composes RGBA, and the host presents the resulting pixels.
-Headless stepping composes the framebuffer without a native window.
-Package-private `GameSession.stepWithoutRender()` runs the same update,
-including audio and input completion, without assembling/composing pixels.
-`SessionAllocationTest` uses that path through `AllocationProbe` with 600 warm-up
-frames and five 120-frame measurement windows. Its limits are 5,248 B/frame for
-opening-dialog idle and 13,575 for active gameplay after the normal-button bed
-exit. With escape analysis disabled using a temporary JVM argument, round-three
-measurements changed from 4,069 to 4,037 idle and 11,508 to 10,860 active B/frame.
-These totals include audio/world work and vary slightly with JVM warm-up.
+Desktop pacing is owned by `FramePacer`, after update, composition and presentation.
+It carries the remainder of one billion nanoseconds divided by 60, parks until
+100 microseconds before the deadline, then uses a short spin. Each wakeup rereads
+the monotonic clock. Overruns retain pending deadlines, so elapsed simulation
+steps are caught up rather than discarded. Interruption exits pacing without
+clearing the interrupt. GLFW swap interval is zero: refresh-rate blocking must
+not establish a second cadence. Fake-clock tests cover drift, oversleep,
+spurious wakeups, catch-up, interruption and nanosecond-clock wraparound. Native
+presentation was not opened for this refactor. OpenAL retains its three-frame
+prefill, underrun recovery and queue-pressure rebuffering policy.
 
-Separate phase probes cover input, dialog/story, Link/equipment, combat, entity
-input/result application (without the world tick), animated tiles and music.
-Entity input assembly fell from 368 to 40 B/frame, with a 50-byte guard. Queued
-input measured zero. JFR samples during measurement identify
-`audio.music.FrameAudioPlayer.update`, `world.entity.EntityCombatPass.resolveCombat`,
-`world.entity.EntityRoomQueries.snapshot`, `RoomEntitySnapshot` construction,
-`world.room.RoomCollisionQueries.entityObjectSample` and shared entity sprite
-construction among remaining external allocation sources.
+Headless stepping is unpaced and composes the same framebuffer without a native
+window. `headlessFrame()` still returns an owned capture; the retained-output
+`headlessFrame(byte[])` overload runs the same full path and copies pixels into
+caller-owned storage. `WholeFrameAllocationTest` measures that full overload,
+including simulation, assembly, scene build and composition, after reaching
+opening-dialog idle, house walking with entities, and open inventory by ordinary
+input. This avoids counting the separate allocation required for a new owned
+capture buffer. Pixel tests compare both capture APIs and compare the running
+borrowed renderer with owned reference scenes through inventory transitions.
 
-`RenderStateAllocationTest` measures actual frame-state assembly plus scene
-building before GPU composition. With escape analysis disabled, this path fell
-from 17,840 to 16,960 B/frame and is guarded at 21,200 (+25%). Its app-owned state
-assembly contributes 88 bytes, guarded at 100; world snapshot construction costs
-8,768 and render scene building 8,104 bytes. The full path cannot meet 512 bytes
-without changes to those external owners. `RoomRenderSnapshot` clones tile maps
-and palettes both at construction and on access; this refactor preserves that
-ownership contract instead of retaining stale room state. Inputs remain immutable.
+`RenderStateAssembler` retains one `ReusableGameFrameState`, refills it from the
+same live collaborators and screen overrides, then uses the reusable scene
+builder. Its room is `rooms().renderView()`; indexed room planes are copied into
+retained renderer buffers without allocating. The common render contract is
+`RoomRenderView`, implemented by immutable `RoomRenderSnapshot` and live views.
+`currentGameFrameState()` remains the explicit owned room/capture path. The
+world's `dungeon().view().copyTo(...)` fills retained eight/five/64-byte inventory
+buffers; UI setters retain their original copying contracts. Historical scroll
+rooms continue to use owned snapshots.
+
+With escape analysis disabled, whole-frame allocation fell from approximately
+27,320 / 28,315 / 20,344 to 1,072 / 1,029 / 720 B/frame (idle / walking / inventory).
+Idle and inventory residuals are entirely in off-limits dialog/UI/startup
+producers; owned code contributes zero steady-state allocation in those samples.
+Walking includes changed immutable coordinate/tick inputs, preserving ownership,
+and is below the 2 KB whole-frame target. Reusable assembly and scene construction
+measure zero B/frame. `SessionAllocationTest` separately measures update-only
+work at 64 idle and approximately 673 active B/frame EA off (0 / 641 EA on),
+guarded at 80 and 842.
+The [round-5 report](archive/history/room-integration-round-5.md) records both EA
+modes, attribution, scope and budgets. The merged recording feature adds zero
+steady bytes/frame with recording disabled on the default reusable PCM host path;
+its capture lifecycle and tests are preserved. See [TESTING.md](TESTING.md#performance-budget)
+for every allocation guard. Stage guards are not whole-session parity claims.
 
 ```mermaid
 sequenceDiagram
@@ -713,10 +729,8 @@ effects without positional argument lists.
 Entity ROM readers accept `linksawakening.rom.Rom` and use typed addresses and
 reads. Collision and property queries use `CollisionTables` and
 `EntityPropertyTables`. All entity byte-array delegates and aggregate-table
-adapters have been removed. The sprite-handler catalog outside this package
-still requires a documented `unsafeBytes()` handoff; the room loader and wiring
-make equivalent handoffs to the stable sprite catalogs. They preserve shared
-storage. Room-status arrays are mutable RAM state, not ROM buffers.
+adapters have been removed. Room, entity and sprite catalogs share the typed
+session Rom directly. Room-status arrays are mutable RAM state, not ROM buffers.
 
 Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
@@ -727,8 +741,8 @@ entity family and behavior. Room consumers now use runtime/frame builders,
 are deleted. The room simulation reuses its builder but emits an immutable
 `EntityFrameContext`, so retained frame inputs cannot change. Its default
 handler collision gate is derived from the projectile Link motion state.
-Four deprecated combat/projectile event constructors remain for external
-consumer tests. Immutable record schemas retain their canonical constructors
+Combat/projectile consumer tests use named event builders; the four former
+constructor adapters are deleted. Immutable record schemas retain their canonical constructors
 and validation; value schemas are the exception to the normal eight-parameter
 method limit. See [Entity API migration](archive/history/entity-api-migration.md).
 
@@ -764,10 +778,12 @@ are top-level types. Construction takes `RoomSessionConfig`.
 All 26 former entity-test bridges, the legacy constructor and the private
 reflection alias have been deleted. `RoomSession` has no deprecated members.
 Tests use role views and test-side `RoomDebugFixture` / `RoomFrameTestAccess`
-for internal setup and queries. Remaining source compatibility lives at the
-specific role/value/ROM boundary used by external clients, never in a facade
-inheritance chain. The exact member-to-caller inventory is in
-[the round-4 report](archive/history/room-seam-round-4.md#remaining-deprecated-boundaries).
+for internal setup and queries. All deprecated members in world/render/gpu/audio/rom/app/gameplay have been
+removed after their callers migrated. Room wiring accepts `Rom` directly; no
+`unsafeBytes()` accessor or call remains. Bounded `RomSlice` reads let audio
+retain shared read-only storage without exposing the backing array or allocating
+an address per byte. Unaligned synthetic/legacy input uses the supported unchecked
+factory; validation, bounds and backing storage are preserved.
 View implementations receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
@@ -778,7 +794,10 @@ room references until the room is wired.
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
 Immediate room integration uses `EntityRoomInspection.view()` and the live
-`ActiveRoom.entityView()`. Public `ActiveRoom.entities()` and render snapshots
+`ActiveRoom.entityView()`. Per-frame rendering uses `RoomRenderView` and the
+cached room/dungeon views, with indexed read-only access. They are valid only
+until the next simulation tick, room change or world mutation on the same thread;
+never retain them as history or share them across threads. Public `ActiveRoom.entities()` and render snapshots
 retain owned immutable entity state; a bounded eight-presentation cache avoids
 copying recurring unchanged poses while preserving historical snapshots.
 
@@ -795,11 +814,8 @@ codes are a separate ROM domain from Link's `GroundStatus` (entity water is
 `RoomObjectParser` decodes objects, and `RoomTilemapBuilder` constructs tilemaps.
 `RoomPaletteLoader` owns palette decoding. Pointer tables and tileset tables
 retain bank/page selection rather than flattening ROM addressing. All internal
-ROM parameters, fields and reads use `Rom` and typed addresses. Six deprecated
-byte-array entry points remain solely for external clients: room config,
-room loader, tileset table, palette loader, bush interaction and transition ROM
-configuration. Their legacy `new Rom(bytes)` adaptation intentionally preserves
-partial-buffer validation timing; new callers pass the existing session `Rom`.
+ROM parameters, fields and reads use `Rom` and typed addresses. The five former app wiring byte entry points and the unused palette byte
+constructor are deleted; callers share the typed session `Rom`.
 See [ROM_FORMAT_NOTES.md](ROM_FORMAT_NOTES.md) for stream and macro details.
 
 `RoomTransitionCoordinator` and room transition collaborators connect room
@@ -822,7 +838,7 @@ ordered writes. Empty outbox drains and merges allocate zero bytes, guarded by
 `RoomLiveBoundaryTest`. Nonempty owned-list drains copy before clearing; reusable
 consumer drains retain their existing staged-clear and reentrancy behavior.
 
-The headless session allocation probe measured 3,312 idle and approximately
+At the end of round 4, the headless session allocation probe measured 3,312 idle and approximately
 7,457 active bytes/frame after this seam refactor, down from 3,979 and 11,080.
 `EntityTickAllocationTest` remains 874.43 bytes/tick for its six-entity mix.
 Immutable inputs and changed entities/events still allocate. A warmed JFR
@@ -830,6 +846,8 @@ allocation-site diagnostic attributes the five largest remaining idle sites to
 PCM audio arrays, screen/dialog iterators and startup Marin result records,
 all outside `world`. The [round-4 report](archive/history/room-seam-round-4.md)
 records scope, exact sites and the separate diagnostic rates.
+The integrated round-5 measurements and current attribution appear in the frame
+lifecycle section above; the round-4 figures describe its historical scope.
 Changing a visual tile alone is insufficient when collision or persistent room
 status also changes.
 
