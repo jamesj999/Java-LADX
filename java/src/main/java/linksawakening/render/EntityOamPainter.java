@@ -6,7 +6,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 
 /** Resolves entity OAM attributes, tile sources, and whole-entry dialog hiding. */
 class EntityOamPainter {
-    private final DialogController.BoxPosition dialogPosition;
+    DialogController.BoxPosition dialogPosition;
 
     EntityOamPainter(DialogController.BoxPosition dialogPosition) {
         this.dialogPosition = dialogPosition;
@@ -40,12 +40,32 @@ class EntityOamPainter {
             int screenX,
             int screenY,
             boolean interpretPaletteFlip) {
+        renderPackedOamSprite(
+                context,
+                palettes,
+                tiles,
+                oam.tile() | (oam.attributes() << 8),
+                entityFlipAttribute,
+                screenX,
+                screenY,
+                interpretPaletteFlip);
+    }
+
+    final void renderPackedOamSprite(
+            RenderContext context,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            int packed,
+            int entityFlipAttribute,
+            int screenX,
+            int screenY,
+            boolean interpretPaletteFlip) {
         // Pair rendering treats any tile whose low nibble is $F as the ROM's
         // hidden-sprite sentinel after applying hActiveEntityTilesOffset.
-        if ((oam.tile() & 0x0F) == 0x0F || hiddenUnderDialog(screenY)) {
+        if (((packed & 255) & 0x0F) == 0x0F || hiddenUnderDialog(screenY)) {
             return;
         }
-        int attributes = oam.attributes() ^ entityFlipAttribute;
+        int attributes = (packed >>> 8) ^ entityFlipAttribute;
         int paletteIndex = attributes & OAM_PALETTE_MASK;
         if (interpretPaletteFlip && (entityFlipAttribute & OAM_PALETTE_FLIP) != 0) {
             // UpdateEntityTimers writes OAMF_PAL1 while an entity is
@@ -60,11 +80,11 @@ class EntityOamPainter {
         // $40-$7F. Common item graphics (heart pieces, rupees, etc.) and
         // Link's shared tiles remain in gameplay VRAM outside that range.
         int base = EntitySpriteTileSnapshot.BASE_TILE_INDEX;
-        if (tiles == null || oam.tile() < base || oam.tile() >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
+        if (tiles == null || (packed & 255) < base || (packed & 255) >= base + EntitySpriteTileSnapshot.TILE_COUNT) {
             OamDrawing.draw8x16(
                     context,
                     context.gpu(),
-                    oam.tile(),
+                    packed & 255,
                     screenX,
                     screenY,
                     (attributes & OAM_XFLIP) != 0,
@@ -74,7 +94,7 @@ class EntityOamPainter {
             OamDrawing.draw8x16(
                     context,
                     tiles,
-                    oam.tile(),
+                    packed & 255,
                     screenX,
                     screenY,
                     (attributes & OAM_XFLIP) != 0,

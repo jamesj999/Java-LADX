@@ -82,62 +82,78 @@ final class StorySprites {
     }
 
     static HardwareRenderLayer linkGrass(Link link, int[][] palettes, ScrollController scroll, int paletteIndex) {
-        return (frame, gpu) -> {
-            frame.submittingLayer("LinkGrassRenderLayer");
-            if (!link.motion().grassGroundEffectActive()) return;
-            int offsetX = -scroll.screenShakeHorizontal(), offsetY = 0;
-            if (scroll.isActive()) {
-                offsetX += scroll.linkScreenX()
-                        + (link.position().pixelX() - scroll.linkScreenX()) * scroll.offset() / scroll.target()
-                        - link.position().pixelX();
-                offsetY = scroll.linkScreenY()
-                        + (link.position().pixelY() - scroll.linkScreenY()) * scroll.offset() / scroll.target()
-                        - link.position().pixelY();
-            }
-            int[] palette = palettes[paletteIndex];
-            boolean flip = link.animation().grassGroundEffectFlipX();
-            // $02:787D writes reserved OAM slots0/1 before body slots2/3.
-            // Appending after the body gives those overlays priority in the
-            // current painter-order compositor.
-            frame.append8x16(
-                    gpu.getTile(0x1A),
-                    gpu.getTile(0x1B),
-                    link.position().pixelX() - 1 + offsetX,
-                    link.position().pixelY() + 8 + offsetY,
-                    flip,
-                    false,
-                    palette,
-                    false);
-            frame.append8x16(
-                    gpu.getTile(0x1A),
-                    gpu.getTile(0x1B),
-                    link.position().pixelX() + 7 + offsetX,
-                    link.position().pixelY() + 8 + offsetY,
-                    !flip,
-                    false,
-                    palette,
-                    false);
-        };
+        return (frame, gpu) -> submitLinkGrass(link, palettes, scroll, paletteIndex, frame, gpu);
     }
 
     static HardwareRenderLayer linkShadow(Link link, int[] palette, ScrollController scroll, int frameNumber) {
-        return (frame, gpu) -> {
-            // Preserve OBJ source metadata used by dialog filtering and parity reports.
-            frame.submittingLayer("LinkShadowRenderLayer");
-            if (link.animation().romEntityZ() == 0
-                    || (frameNumber & 1) != 0
-                    || scroll.isActive()
-                    || link.position().romEntityY() + 0x0B >= 0x88) return;
-            // bank2.asm $759B-$75AF writes wLinkOAMBuffer ($C000), OAM slot 0.
-            frame.append8x16(
-                    gpu.getTile(0x26),
-                    gpu.getTile(0x27),
-                    link.position().pixelX() + 4 - scroll.screenShakeHorizontal(),
-                    link.position().pixelY() + 0x0B,
-                    false,
-                    false,
-                    palette,
-                    false);
-        };
+        return (frame, gpu) -> submitLinkShadow(link, palette, scroll, frameNumber, frame, gpu);
+    }
+
+    static void submitLinkShadow(
+            Link link,
+            int[] palette,
+            ScrollController scroll,
+            int frameNumber,
+            HardwareFrame frame,
+            linksawakening.gpu.GPU gpu) {
+        // Preserve OBJ source metadata used by dialog filtering and parity reports.
+        frame.submittingLayer("LinkShadowRenderLayer");
+        if (link.animation().romEntityZ() == 0
+                || (frameNumber & 1) != 0
+                || scroll.isActive()
+                || link.position().romEntityY() + 0x0B >= 0x88) return;
+        // bank2.asm $759B-$75AF writes wLinkOAMBuffer ($C000), OAM slot 0.
+        frame.append8x16(
+                gpu.getTile(0x26),
+                gpu.getTile(0x27),
+                link.position().pixelX() + 4 - scroll.screenShakeHorizontal(),
+                link.position().pixelY() + 0x0B,
+                false,
+                false,
+                palette,
+                false);
+    }
+
+    static void submitLinkGrass(
+            Link link,
+            int[][] palettes,
+            ScrollController scroll,
+            int paletteIndex,
+            HardwareFrame frame,
+            linksawakening.gpu.GPU gpu) {
+        frame.submittingLayer("LinkGrassRenderLayer");
+        if (!link.motion().grassGroundEffectActive()) return;
+        int offsetX = -scroll.screenShakeHorizontal(), offsetY = 0;
+        if (scroll.isActive()) {
+            offsetX += scroll.linkScreenX()
+                    + (link.position().pixelX() - scroll.linkScreenX()) * scroll.offset() / scroll.target()
+                    - link.position().pixelX();
+            offsetY = scroll.linkScreenY()
+                    + (link.position().pixelY() - scroll.linkScreenY()) * scroll.offset() / scroll.target()
+                    - link.position().pixelY();
+        }
+        int[] palette = palettes[paletteIndex];
+        boolean flip = link.animation().grassGroundEffectFlipX();
+        // $02:787D writes reserved OAM slots0/1 before body slots2/3.
+        // Appending after the body gives those overlays priority in the
+        // current painter-order compositor.
+        frame.append8x16(
+                gpu.getTile(0x1A),
+                gpu.getTile(0x1B),
+                link.position().pixelX() - 1 + offsetX,
+                link.position().pixelY() + 8 + offsetY,
+                flip,
+                false,
+                palette,
+                false);
+        frame.append8x16(
+                gpu.getTile(0x1A),
+                gpu.getTile(0x1B),
+                link.position().pixelX() + 7 + offsetX,
+                link.position().pixelY() + 8 + offsetY,
+                !flip,
+                false,
+                palette,
+                false);
     }
 }

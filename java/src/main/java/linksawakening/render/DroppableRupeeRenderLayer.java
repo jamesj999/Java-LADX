@@ -5,10 +5,15 @@ import linksawakening.world.transition.ScrollController;
 
 /** Submits visible dropped rupee entries using their world and height offsets. */
 public final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
-    private final DroppableRupeeSystem droppableRupeeSystem;
-    private final ScrollController scrollController;
+    private DroppableRupeeSystem droppableRupeeSystem;
+    private ScrollController scrollController;
 
     public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
+        this.droppableRupeeSystem = droppableRupeeSystem;
+        this.scrollController = scrollController;
+    }
+
+    void configure(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.scrollController = scrollController;
     }
