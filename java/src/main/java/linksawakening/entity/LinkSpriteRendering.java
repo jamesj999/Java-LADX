@@ -132,10 +132,10 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         if (swordAcquisitionAnimationState >= 0) {
             return swordAcquisitionAnimationState;
         }
-        if (linkAirborne.get().fallingIntoPit) {
+        if (linkAirborne.get().pit().fallingIntoPit()) {
             int frame = Math.min(
                     LinkAnimator.FALL_ANIMATION_STATE.length - 1,
-                    linkAirborne.get().fallingFrameCounter / LinkRomConstants.FALL_FRAME_TICKS);
+                    linkAirborne.get().pit().fallingFrameCounter() / LinkRomConstants.FALL_FRAME_TICKS);
             return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 
@@ -163,7 +163,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
     private int resolveNormalAnimation() {
         // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
         // while airborne, selecting the alternate normal pose after the flip.
-        int normalFrame = linkAirborne.get().airborne
+        int normalFrame = linkAirborne.get().elevation().airborne()
                         || (ledgeJumpRenderY != Integer.MIN_VALUE
                                 && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
                 ? 1
@@ -182,8 +182,8 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         if (override >= 0) {
             return override;
         }
-        if (linkAirborne.get().airborne
-                && !linkAirborne.get().spinningPitWarpArrival
+        if (linkAirborne.get().elevation().airborne()
+                && !linkAirborne.get().spinningPitWarpArrival()
                 && jumpAnimationFrame < 3
                 && !linkAirborne.get().swordSuppressesJumpAnimation()) {
             return LinkAnimator.JUMP_ANIMATION_STATE[

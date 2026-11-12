@@ -75,11 +75,11 @@ final class LinkEntityEffects {
         likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << Link.SUB_PIXEL_SHIFT;
         linkMotion.get().subX = likeLikeCaptureSubX;
         linkMotion.get().subY = likeLikeCaptureSubY;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().fallingIntoPit = false;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkSwimming.get().swimmingSpeedX = 0;
@@ -129,11 +129,11 @@ final class LinkEntityEffects {
                     "Rooster ROM linkAnimationState.get().direction must be between 0 and 3");
         }
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().zVelocity = velocityZ & 0xFF;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels((positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT);
+        linkAirborne.get().elevation().zVelocity(velocityZ & 0xFF);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         roosterCarryActive = true;
         linkAnimationState.get().direction = Direction.fromRom(romDirection);
@@ -185,10 +185,10 @@ final class LinkEntityEffects {
         }
         linkAnimationState.get().movingThisFrame = false;
         if (applyHeldLinkPose) {
-            linkAirborne.get().zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
+            linkAirborne.get().elevation().zSubPixels((positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT);
         }
-        linkAirborne.get().zVelocity = velocityZ & 0xFF;
-        linkAirborne.get().airborne = airborneState != 0;
+        linkAirborne.get().elevation().zVelocity(velocityZ & 0xFF);
+        linkAirborne.get().elevation().airborne(airborneState != 0);
         if (speedX != 0 || speedY != 0) {
             linkMotion.get().applyRomSpeed(speedX, speedY);
         }
@@ -205,11 +205,11 @@ final class LinkEntityEffects {
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkAnimationState.get().movingThisFrame = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().fallingIntoPit = false;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         if (immunityCountdown != 0) {
             linkDamage.get().collisionDamageImmune = true;
         }
@@ -229,11 +229,11 @@ final class LinkEntityEffects {
         linkAnimator.get().marinWakeUpBedVariant = 3;
         marinBedJumpMotionLocked = true;
         linkAnimationState.get().movingThisFrame = false;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = 1 << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().zVelocity = 0x12;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels(1 << Link.SUB_PIXEL_SHIFT);
+        linkAirborne.get().elevation().zVelocity(0x12);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
         linkAnimationState.get().direction = Direction.RIGHT;
         linkMotion.get().lastRomSpeedX = 0x0C;
         linkMotion.get().lastRomSpeedY = 0;
@@ -244,11 +244,11 @@ final class LinkEntityEffects {
     /** Ends Rooster's custom linkAirborne.airborne carry state when it is thrown or cleared. */
     void clearRoosterCarryState() {
         roosterCarryActive = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkMotion.get().forcedSpeedPending = false;

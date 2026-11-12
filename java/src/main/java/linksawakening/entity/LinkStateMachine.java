@@ -100,8 +100,8 @@ final class LinkStateMachine {
             return false;
         }
         linkAnimator.get().bedJumpRenderZ = -1;
-        linkAnimator.get().ledgeJumpRenderY = linkAirborne.get().overworldLedgeFallActive
-                        || linkAirborne.get().directionalLedgeJumpMotionLocked
+        linkAnimator.get().ledgeJumpRenderY = linkAirborne.get().overworldLedgeFallActive()
+                        || linkAirborne.get().directionalLedgeJumpMotionLocked()
                 ? linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels()
                 : Integer.MIN_VALUE;
         status.frameCounter((status.frameCounter() + 1) & 0xFF);
@@ -128,8 +128,10 @@ final class LinkStateMachine {
             linkAnimator.get().swordAcquisitionBaseRomDirection = -1;
             linkAnimator.get().swordAcquisitionAnimationState = -1;
         }
-        if (interactiveMotionBlocked && !(linkSideView.get().sideScrolling && linkAirborne.get().airborne)) {
-            linkAirborne.get().zVelocity = 0;
+        if (interactiveMotionBlocked
+                && !(linkSideView.get().sideScrolling
+                        && linkAirborne.get().elevation().airborne())) {
+            linkAirborne.get().elevation().zVelocity(0);
             linkAnimationState.get().movingThisFrame = false;
             linkAnimationState.get().walkTickCounter = 0;
             linkAnimationState.get().walkFrame = 0;
@@ -140,11 +142,11 @@ final class LinkStateMachine {
         // before the next normal motion update. Main keeps wC147 set through
         // this update and clears it only before the following entity tick.
         if (linkSideView.get().standingOnSideViewEntity && !linkSideView.get().sideScrolling) {
-            linkAirborne.get().airborne = false;
-            linkAirborne.get().zSubPixels = 0;
-            linkAirborne.get().zVelocity = 0;
-            linkAirborne.get().fallingIntoPit = false;
-            linkAirborne.get().groundStatus = GroundStatus.NORMAL;
+            linkAirborne.get().elevation().airborne(false);
+            linkAirborne.get().elevation().zSubPixels(0);
+            linkAirborne.get().elevation().zVelocity(0);
+            linkAirborne.get().pit().fallingIntoPit(false);
+            linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         }
 
         return true;
@@ -161,7 +163,7 @@ final class LinkStateMachine {
             return false;
         }
 
-        if (linkAirborne.get().spinningPitWarpArrival) {
+        if (linkAirborne.get().spinningPitWarpArrival()) {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
             linkAnimationState.get().direction = Direction.fromRom(
                     linkServices.get().linkMotionTables.pitWarpArrivalDirection(status.frameCounter()));
@@ -184,21 +186,21 @@ final class LinkStateMachine {
         if (linkEntityEffects.get().likeLikeCaptured && linkEntityEffects.get().likeLikeCapturePinsPosition) {
             linkMotion.get().subX = linkEntityEffects.get().likeLikeCaptureSubX;
             linkMotion.get().subY = linkEntityEffects.get().likeLikeCaptureSubY;
-            linkAirborne.get().airborne = false;
-            linkAirborne.get().zSubPixels = 0;
-            linkAirborne.get().zVelocity = 0;
+            linkAirborne.get().elevation().airborne(false);
+            linkAirborne.get().elevation().zSubPixels(0);
+            linkAirborne.get().elevation().zVelocity(0);
             linkAnimationState.get().movingThisFrame = false;
             return false;
         }
 
         if (linkSignals.get().pitWarpPending) return false;
 
-        if (linkAirborne.get().fallingIntoPit) {
-            linkAirborne.get().tickPitFall();
+        if (linkAirborne.get().pit().fallingIntoPit()) {
+            linkAirborne.get().pit().tickPitFall();
             return false;
         }
 
-        if (linkAirborne.get().overworldLedgeFallActive) {
+        if (linkAirborne.get().overworldLedgeFallActive()) {
             linkMotion.get().lastRomSpeedX = frame.carriedSpeedX & 0xFF;
             linkMotion.get().lastRomSpeedY = frame.carriedSpeedY & 0xFF;
             if (roomPhysics.physicsModifier() == 0) linkMotion.get().beginOverworldLedgeUnstuckingMotion();
@@ -232,25 +234,26 @@ final class LinkStateMachine {
         // $02:4406 skips facing selection while airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
         if (newDirection != -1
-                && (!linkAirborne.get().airborne || frame.featherLaunchFrame)
+                && (!linkAirborne.get().elevation().airborne() || frame.featherLaunchFrame)
                 && !linkEntityEffects.get().marinBedJumpMotionLocked
-                && !linkAirborne.get().directionalLedgeJumpMotionLocked
+                && !linkAirborne.get().directionalLedgeJumpMotionLocked()
                 && !linkEquipment.get().itemsLockFacing(true)
                 && !linkEntityEffects.get().accessIsLiftTransitionBlockingMotion()) {
             linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
         dash.updatePegasusBootsUse();
-        if (!linkAirborne.get().airborne && linkAirborne.get().groundStatus != GroundStatus.PIT) {
-            linkAirborne.get().refreshGroundStatus();
-            linkAirborne.get().updateLastSafePositionIfPossible();
+        if (!linkAirborne.get().elevation().airborne()
+                && linkAirborne.get().pit().groundStatus() != GroundStatus.PIT) {
+            linkAirborne.get().pit().refreshGroundStatus();
+            linkAirborne.get().pit().updateLastSafePositionIfPossible();
         }
 
-        if (linkAirborne.get().fallingIntoPit) return false;
-        if (linkAirborne.get().groundStatus == GroundStatus.PIT) {
+        if (linkAirborne.get().pit().fallingIntoPit()) return false;
+        if (linkAirborne.get().pit().groundStatus() == GroundStatus.PIT) {
             linkAnimationState.get().movingThisFrame = false;
             linkAnimationState.get().walkTickCounter = 0;
             linkAnimationState.get().walkFrame = 0;
-            linkAirborne.get().slipTowardPitCenter();
+            linkAirborne.get().pit().slipTowardPitCenter();
             return false;
         }
 
@@ -260,7 +263,8 @@ final class LinkStateMachine {
         // ROM still refreshes hLinkDirection from held single-axis input before
         // this early-out path, so direction update must happen above.
         // $02:43C3 bypasses the item motion gate while Link is above ground.
-        if (linkEquipment.get().itemsBlockMotion(true) && !linkAirborne.get().airborne) {
+        if (linkEquipment.get().itemsBlockMotion(true)
+                && !linkAirborne.get().elevation().airborne()) {
             linkAnimationState.get().movingThisFrame = false;
             linkAnimationState.get().walkTickCounter = 0;
             linkAnimationState.get().walkFrame = 0;
@@ -276,7 +280,7 @@ final class LinkStateMachine {
 
     private void resolveSpeeds() { // Source $43E6/$4440/$445F/$4503. The grass OAM flip depends on
         // this byte, including steps suppressed by slow ground or a wall.
-        if (linkAirborne.get().airborne) linkAnimationState.get().romConsecutiveStepsCount = 0xFF;
+        if (linkAirborne.get().elevation().airborne()) linkAnimationState.get().romConsecutiveStepsCount = 0xFF;
         else if (linkServices.get().playerState != null
                 && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())
             linkAnimationState.get().romConsecutiveStepsCount =
@@ -286,9 +290,9 @@ final class LinkStateMachine {
                     (linkAnimationState.get().romConsecutiveStepsCount + 1) & 0xFF;
         else if (dash.pegasusBootsChargeMeter() == 0) linkAnimationState.get().romConsecutiveStepsCount = 7;
 
-        if (linkAirborne.get().directionalLedgeJumpMotionLocked) {
-            frame.speedX = linkAirborne.get().directionalLedgeJumpSpeedX;
-            frame.speedY = linkAirborne.get().directionalLedgeJumpSpeedY;
+        if (linkAirborne.get().directionalLedgeJumpMotionLocked()) {
+            frame.speedX = linkAirborne.get().directionalLedgeJumpSpeedX();
+            frame.speedY = linkAirborne.get().directionalLedgeJumpSpeedY();
         } else if (linkEntityEffects.get().marinBedJumpMotionLocked) {
             frame.speedX = 0x0C;
             frame.speedY = 0;
@@ -303,7 +307,7 @@ final class LinkStateMachine {
                     : linkMotion.get().forcedSpeedY;
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
-        } else if (linkAirborne.get().airborne && !frame.featherLaunchFrame) {
+        } else if (linkAirborne.get().elevation().airborne() && !frame.featherLaunchFrame) {
             // $02:4402 skips the ground speed lookup while airborne.
             // ApplyLinkGroundMotion steers these retained speeds after XY.
             frame.speedX = frame.carriedSpeedX;
@@ -335,12 +339,17 @@ final class LinkStateMachine {
         linkAnimationState.get().movingThisFrame = (frame.speedX != 0 || frame.speedY != 0);
         boolean applyGroundMotion = status.gelClinging()
                 ? (status.gelMotionFrame() & 3) == 0
-                : linkAirborne.get().airborne || linkGroundMotion.get().accessShouldApplyGroundMotion();
+                : linkAirborne.get().elevation().airborne()
+                        || linkGroundMotion.get().accessShouldApplyGroundMotion();
 
-        if (applyGroundMotion && frame.speedX != 0 && (!bedJumpFrame || linkAirborne.get().airborne)) {
+        if (applyGroundMotion
+                && frame.speedX != 0
+                && (!bedJumpFrame || linkAirborne.get().elevation().airborne())) {
             linkMotion.get().tryMoveAxis(frame.speedX, true);
         }
-        if (applyGroundMotion && frame.speedY != 0 && (!bedJumpFrame || linkAirborne.get().airborne)) {
+        if (applyGroundMotion
+                && frame.speedY != 0
+                && (!bedJumpFrame || linkAirborne.get().elevation().airborne())) {
             linkMotion.get().tryMoveAxis(frame.speedY, false);
         }
 
@@ -351,9 +360,9 @@ final class LinkStateMachine {
         if (!bedJumpFrame) linkAirborne.get().tickJump();
         dash.handlePegasusBootsCollision();
 
-        if (!linkAirborne.get().airborne) {
+        if (!linkAirborne.get().elevation().airborne()) {
             if (!linkSwimming.get().enterSwimmingIfNeeded()) {
-                linkAirborne.get().updateLastSafePositionIfPossible();
+                linkAirborne.get().pit().updateLastSafePositionIfPossible();
             }
         }
 
@@ -412,11 +421,11 @@ final class LinkStateMachine {
     void setDebugNoClip(boolean enabled) {
         status.debugNoClip(enabled);
         if (enabled) {
-            linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-            linkAirborne.get().fallingIntoPit = false;
-            linkAirborne.get().airborne = false;
-            linkAirborne.get().zSubPixels = 0;
-            linkAirborne.get().zVelocity = 0;
+            linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+            linkAirborne.get().pit().fallingIntoPit(false);
+            linkAirborne.get().elevation().airborne(false);
+            linkAirborne.get().elevation().zSubPixels(0);
+            linkAirborne.get().elevation().zVelocity(0);
         }
     }
 
@@ -440,16 +449,16 @@ final class LinkStateMachine {
         linkEntityEffects.get().marinBedJumpMotionLocked = false;
         linkAnimator.get().bedJumpRenderZ = -1;
         linkAnimator.get().ledgeJumpRenderY = Integer.MIN_VALUE;
-        linkAirborne.get().directionalLedgeJumpMotionLocked = false;
-        linkAirborne.get().overworldLedgeFallActive = false;
+        linkAirborne.get().directionalLedgeJumpMotionLocked(false);
+        linkAirborne.get().overworldLedgeFallActive(false);
         linkEntityEffects.get().likeLikeCaptured = false;
         linkEntityEffects.get().likeLikeCapturePinsPosition = false;
-        linkAirborne.get().fallingIntoPit = false;
+        linkAirborne.get().pit().fallingIntoPit(false);
         linkEntityEffects.get().carryingLiftedObjectState = 0;
         linkAnimationState.get().topDownFeatherStarted = false;
         linkEntityEffects.get().roosterCarryActive = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         status.motionState(LinkMotionState.DEFAULT);
         door.revolvingDoorFrame(0);
         door.revolvingDoorTransitionPending(false);
@@ -463,9 +472,9 @@ final class LinkStateMachine {
         roomPhysics.physicsRoomMapId(-1);
         roomPhysics.physicsRoomId(-1);
         roomPhysics.physicsRoomCategory(-1);
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().spinningPitWarpArrival = false;
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().spinningPitWarpArrival(false);
         linkMotion.get().forcedSpeedPending = false;
         linkMotion.get().forcedSpeedXOnly = false;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;

@@ -114,9 +114,9 @@ final class LinkDash {
         }
         if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
                 || status.romInteractiveMotionBlocked()
-                || linkAirborne.get().airborne
+                || linkAirborne.get().elevation().airborne()
                 || linkAirborne.get().accessZPixels() != 0
-                || linkAirborne.get().groundStatus == GroundStatus.PIT
+                || linkAirborne.get().pit().groundStatus() == GroundStatus.PIT
                 || linkEntityEffects.get().accessIsCarryingLiftedObject()
                 || status.motionState() == LinkMotionState.SWIMMING) {
             return;
@@ -169,9 +169,9 @@ final class LinkDash {
         linkMotion.get().forcedSpeedPending = true;
         linkMotion.get().lastRomSpeedX = reflectedSpeedX & 0xFF;
         linkMotion.get().lastRomSpeedY = reflectedSpeedY & 0xFF;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z);
 
         int romDirection = linkAnimationState.get().direction.romIndex();
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};

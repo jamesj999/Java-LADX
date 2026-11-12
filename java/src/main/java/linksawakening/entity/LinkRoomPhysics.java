@@ -84,7 +84,7 @@ final class LinkRoomPhysics {
     void finishRoomScroll(boolean downward) {
         linkMotion.get().lastRomSpeedX = 0;
         linkMotion.get().lastRomSpeedY = 0;
-        linkAirborne.get().zVelocity = 0;
+        linkAirborne.get().elevation().zVelocity(0);
         if (!downward || status.debugNoClip() || linkServices.get().collision == null) {
             return;
         }
@@ -103,7 +103,7 @@ final class LinkRoomPhysics {
         // Switch blocks $DB/$DC are exempt from fallback unstucking.
         if (object != 0xDB
                 && object != 0xDC
-                && !linkAirborne.get().overworldLedgeFallActive
+                && !linkAirborne.get().overworldLedgeFallActive()
                 && (object == 0xE1 || blocked)) {
             // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
             // This transition fallback does not play the ledge jingle.
@@ -111,7 +111,7 @@ final class LinkRoomPhysics {
             linkMotion.get().subY -= 8 << Link.SUB_PIXEL_SHIFT;
             status.motionState(LinkMotionState.UNSTUCKING);
             this.physicsModifier(0);
-            linkAirborne.get().overworldLedgeFallActive = true;
+            linkAirborne.get().overworldLedgeFallActive(true);
             linkMotion.get().beginOverworldLedgeUnstuckingMotion();
         }
     }

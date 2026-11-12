@@ -43,8 +43,8 @@ final class LinkGroundMotion {
         // and scrolling reuse this result while ordinary Link updates pause.
         grassGroundEffectActive = linkServices.get().collision != null
                 && !linkSideView.get().sideScrolling
-                && !linkAirborne.get().airborne
-                && !linkAirborne.get().fallingIntoPit
+                && !linkAirborne.get().elevation().airborne()
+                && !linkAirborne.get().pit().fallingIntoPit()
                 && linkStateMachine.get().status().motionState() != LinkMotionState.UNSTUCKING
                 && linkMotion.get().accessRomEntityY() < 0x88
                 && linkServices

@@ -81,9 +81,9 @@ final class LinkSwimming {
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         swimmingFastCountdown = 0;
         divingCountdown = 0;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
         swimmingSpeedX = linkServices
                 .get()
                 .linkMotionTables

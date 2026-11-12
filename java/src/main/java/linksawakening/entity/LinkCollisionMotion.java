@@ -36,7 +36,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
         int probeMask = linkServices.get().collision != null
                         && !linkStateMachine.get().status().debugNoClip()
                         && !linkEntityEffects.get().marinBedJumpMotionLocked
-                        && !linkAirborne.get().directionalLedgeJumpMotionLocked
+                        && !linkAirborne.get().directionalLedgeJumpMotionLocked()
                 ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection)
                 : 0;
         if (probeMask != 0) {
@@ -97,8 +97,11 @@ abstract class LinkCollisionMotion extends LinkPosition {
                 linkStateMachine.get().door().revolvingDoorFrame(0);
                 linkStateMachine.get().door().revolvingDoorTransitionPending(false);
                 linkStateMachine.get().door().revolvingDoorPaletteVariant(-1);
-                linkAirborne.get().zSubPixels = linkAirborne.get().zVelocity = 0;
-                linkAirborne.get().airborne = false;
+                linkAirborne
+                        .get()
+                        .elevation()
+                        .zSubPixels(linkAirborne.get().elevation().zVelocity(0));
+                linkAirborne.get().elevation().airborne(false);
                 linkDamage.get().collisionIgnoreFramesRemaining = 0;
                 if (linkServices.get().playerState != null)
                     linkServices.get().playerState.vitals().setInvincibilityCounter(0);
@@ -122,7 +125,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
                 if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
-                    linkAirborne.get().directionalLedgeCollisionCounter = 0;
+                    linkAirborne.get().directionalLedgeCollisionCounter(0);
                     continue;
                 }
                 blocked |= applyDirectionalLedgeCollision(physicsFlag, dir);
@@ -148,7 +151,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
             } else {
                 // ApplyCollisionWithObject reaches label_002_7461 for an
                 // ordinary passable probe, which clears wC191.
-                linkAirborne.get().directionalLedgeCollisionCounter = 0;
+                linkAirborne.get().directionalLedgeCollisionCounter(0);
             }
             if (blocked) blockedMask |= 1 << i;
         }
@@ -158,41 +161,47 @@ abstract class LinkCollisionMotion extends LinkPosition {
     protected boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {
         int ledgeDirection =
                 Direction.fromRomOrUnknown(physicsFlag - PhysicsFlags.CAT_LEDGE).javaIndex();
-        if (linkAirborne.get().airborne
+        if (linkAirborne.get().elevation().airborne()
                 || linkAnimationState.get().direction.javaIndex() != ledgeDirection
                 || moveDirection != ledgeDirection
                 || (linkControls.get().accessBuildJoypadMask()
                                 & joypadBitForDirection(Direction.fromJavaOrUnknown(ledgeDirection)))
                         == 0) {
-            linkAirborne.get().directionalLedgeCollisionCounter = 0;
+            linkAirborne.get().directionalLedgeCollisionCounter(0);
             return true;
         }
 
         boolean pegasusRunning = linkServices.get().playerState != null
                 && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
-        linkAirborne.get().directionalLedgeCollisionCounter++;
-        if (!pegasusRunning && linkAirborne.get().directionalLedgeCollisionCounter < 0x0C) {
+        linkAirborne.get().directionalLedgeCollisionCounter(linkAirborne.get().directionalLedgeCollisionCounter() + 1);
+        if (!pegasusRunning && linkAirborne.get().directionalLedgeCollisionCounter() < 0x0C) {
             return true;
         }
 
         linkStateMachine.get().dash().resetPegasusBoots();
-        linkAirborne.get().directionalLedgeCollisionCounter = 0;
-        linkAirborne.get().directionalLedgeJumpMotionLocked = true;
-        linkAirborne.get().directionalLedgeJumpSpeedX = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
-            case RIGHT -> 0x10;
-            case LEFT -> -0x10;
-            default -> 0;
-        };
-        linkAirborne.get().directionalLedgeJumpSpeedY = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
-            case DOWN -> 0x10;
-            case UP -> -0x10;
-            default -> 0;
-        };
-        lastRomSpeedX = linkAirborne.get().directionalLedgeJumpSpeedX & 0xFF;
-        lastRomSpeedY = linkAirborne.get().directionalLedgeJumpSpeedY & 0xFF;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0x1C;
+        linkAirborne.get().directionalLedgeCollisionCounter(0);
+        linkAirborne.get().directionalLedgeJumpMotionLocked(true);
+        linkAirborne
+                .get()
+                .directionalLedgeJumpSpeedX(
+                        switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+                            case RIGHT -> 0x10;
+                            case LEFT -> -0x10;
+                            default -> 0;
+                        });
+        linkAirborne
+                .get()
+                .directionalLedgeJumpSpeedY(
+                        switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+                            case DOWN -> 0x10;
+                            case UP -> -0x10;
+                            default -> 0;
+                        });
+        lastRomSpeedX = linkAirborne.get().directionalLedgeJumpSpeedX() & 0xFF;
+        lastRomSpeedY = linkAirborne.get().directionalLedgeJumpSpeedY() & 0xFF;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0x1C);
         linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
         linkAnimator.get().jumpAnimationCounter = 0;
         linkAnimator.get().jumpAnimationFrame = 0;

@@ -62,14 +62,14 @@ final class LinkSideView {
         sideViewGrounded = false;
         sideViewFeatherPending = false;
         linkAnimationState.get().topDownFeatherStarted = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = linkAirborne.get().zVelocity = 0;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(linkAirborne.get().elevation().zVelocity(0));
     }
 
     /** $02:68B7–6C74: side-view speeds and single-point collision probes. */
     void updateSideViewMotion(int platformSpeedY) {
         int mask = linkControls.get().accessBuildJoypadMask();
-        if (!linkAirborne.get().airborne && linkEquipment.get().itemsBlockMotion()) return;
+        if (!linkAirborne.get().elevation().airborne() && linkEquipment.get().itemsBlockMotion()) return;
         boolean recoiling = linkDamage.get().collisionIgnoreFramesRemaining > 0;
         boolean ladderFrame = sideViewModifier == 1;
         if (linkMotion.get().forcedSpeedPending) {
@@ -80,22 +80,22 @@ final class LinkSideView {
         if (recoiling) {
             linkDamage.get().collisionIgnoreFramesRemaining--;
         } else if (sideViewModifier == 1) {
-            linkAirborne.get().airborne = false;
+            linkAirborne.get().elevation().airborne(false);
             sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
             sideViewSpeedY = (mask & 12) == 4 ? -16 : (mask & 12) == 8 ? 16 : 0;
             linkAnimationState.get().direction = Direction.UP;
         } else {
             int targetX = (mask & 3) == 1 ? 16 : (mask & 3) == 2 ? -16 : 0;
             if (sideViewGrounded || standingOnSideViewEntity) {
-                if (linkAirborne.get().airborne) {
+                if (linkAirborne.get().elevation().airborne()) {
                     linkServices.get().soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
                     if (linkServices.get().playerState != null)
                         linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
                 }
-                linkAirborne.get().airborne = false;
+                linkAirborne.get().elevation().airborne(false);
                 sideViewSpeedX = targetX;
             } else {
-                linkAirborne.get().airborne = true;
+                linkAirborne.get().elevation().airborne(true);
                 if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
             }
             if ((mask & 3) != 0 && !linkEquipment.get().itemsLockFacing())
@@ -141,14 +141,14 @@ final class LinkSideView {
         }
         if (sideViewFeatherPending) {
             sideViewFeatherPending = false;
-            linkAirborne.get().airborne = true;
+            linkAirborne.get().elevation().airborne(true);
             sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
             sideViewGrounded = false;
             moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
             linkAnimator.get().jumpAnimationCounter = linkAnimator.get().jumpAnimationFrame = 0;
             linkServices.get().soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
         }
-        linkAirborne.get().zSubPixels = linkAirborne.get().zVelocity = 0;
+        linkAirborne.get().elevation().zSubPixels(linkAirborne.get().elevation().zVelocity(0));
         linkMotion.get().lastRomSpeedX = sideViewSpeedX & 255;
         linkMotion.get().lastRomSpeedY = sideViewSpeedY & 255;
         linkAnimationState.get().movingThisFrame = linkMotion.get().subX != oldX || linkMotion.get().subY != oldY;

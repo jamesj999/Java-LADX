@@ -57,14 +57,14 @@ final class DialogGotItemSequenceTest {
     @Test
     void nonzeroZRejectsUseAndHeldPoseUsesRomFractionalZGravity() {
         var link = link();
-        link.linkAirborne.zSubPixels = 16;
+        link.linkAirborne.elevation().zSubPixels(16);
         link.animation().presentToadstool();
         assertFalse(link.animation().dialogGotItemActive());
-        link.linkAirborne.zSubPixels = 0;
-        link.linkAirborne.zVelocity = 0x12;
+        link.linkAirborne.elevation().zSubPixels(0);
+        link.linkAirborne.elevation().zVelocity(0x12);
         link.animation().presentToadstool();
         link.airborne().tickDialogGotItem(false);
-        assertEquals(0x12, link.linkAirborne.zSubPixels);
+        assertEquals(0x12, link.linkAirborne.elevation().zSubPixels());
         assertEquals(0x10, link.airborne().zVelocity());
         assertEquals(0, link.linkAnimator.bedJumpRenderZ);
         link.animation().clearDialogGotItem();

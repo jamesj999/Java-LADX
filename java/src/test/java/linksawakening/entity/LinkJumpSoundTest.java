@@ -160,9 +160,9 @@ final class LinkJumpSoundTest {
 
         void landAt(int x, int y) {
             link.position().setPixelPosition(x, y);
-            link.linkAirborne.airborne = true;
-            link.linkAirborne.zSubPixels = 16;
-            link.linkAirborne.zVelocity = -16;
+            link.linkAirborne.elevation().airborne(true);
+            link.linkAirborne.elevation().zSubPixels(16);
+            link.linkAirborne.elevation().zVelocity(-16);
             advance(1);
         }
     }

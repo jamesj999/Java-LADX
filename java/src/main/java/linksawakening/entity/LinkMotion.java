@@ -14,8 +14,8 @@ final class LinkMotion extends LinkCollisionMotion {
     }
 
     protected boolean applyOverworldLedgeCollision(int pointY) {
-        linkAirborne.get().directionalLedgeCollisionCounter = 0;
-        if (linkEntityEffects.get().roosterCarryActive || linkAirborne.get().overworldLedgeFallActive) {
+        linkAirborne.get().directionalLedgeCollisionCounter(0);
+        if (linkEntityEffects.get().roosterCarryActive || linkAirborne.get().overworldLedgeFallActive()) {
             return true;
         }
         if ((pointY & 0x0F) < 8) {
@@ -28,7 +28,7 @@ final class LinkMotion extends LinkCollisionMotion {
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
         linkStateMachine.get().status().motionState(LinkMotionState.UNSTUCKING);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
-        linkAirborne.get().overworldLedgeFallActive = true;
+        linkAirborne.get().overworldLedgeFallActive(true);
         // The collision changes wLinkMotionState only. The dispatcher runs
         // LinkMotionUnstuckingHandler on the following frame ($02:4960).
         linkServices.get().soundSink.play(GameplaySoundEvent.LEDGE_FALL);
@@ -40,18 +40,24 @@ final class LinkMotion extends LinkCollisionMotion {
         lastRomSpeedX = 0;
         lastRomSpeedY = 0xFF;
         subY += 16 << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
+        linkAirborne
+                .get()
+                .elevation()
+                .zSubPixels(linkAirborne.get().elevation().zSubPixels() + (16 << Link.SUB_PIXEL_SHIFT));
         for (int step = 0; step < 16; step++) {
             subY += 8 << Link.SUB_PIXEL_SHIFT;
-            linkAirborne.get().zSubPixels += 8 << Link.SUB_PIXEL_SHIFT;
+            linkAirborne
+                    .get()
+                    .elevation()
+                    .zSubPixels(linkAirborne.get().elevation().zSubPixels() + (8 << Link.SUB_PIXEL_SHIFT));
             if (!ledgeUnstuckingPositionBlocked()) {
                 break;
             }
         }
         linkStateMachine.get().roomPhysics().physicsModifier(1);
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zVelocity = 0;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zVelocity(0);
         linkAnimator.get().jumpAnimationCounter = 0;
         linkAnimator.get().jumpAnimationFrame = 0;
     }

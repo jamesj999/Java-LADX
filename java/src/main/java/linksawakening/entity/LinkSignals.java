@@ -23,7 +23,7 @@ final class LinkSignals {
 
     boolean accessRecoveryBlocksInput() {
         return linkStateMachine.get().status().recoveringInWater()
-                || linkAirborne.get().fallingIntoPit
+                || linkAirborne.get().pit().fallingIntoPit()
                 || pitWarpPending;
     }
 

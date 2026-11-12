@@ -223,10 +223,10 @@ final class LinkPitBehaviorTest extends LinkFixture {
             assertEquals(64, link.position().pixelY());
             assertEquals(0, link.position().romSpeedX());
             assertEquals(0, link.position().romSpeedY());
-            assertEquals(link.airborne().isAirborne(), link.linkAirborne.spinningPitWarpArrival);
+            assertEquals(link.airborne().isAirborne(), link.linkAirborne.spinningPitWarpArrival());
         }
         assertTrue(frame > 16 && frame < 128);
-        assertFalse(link.linkAirborne.spinningPitWarpArrival);
+        assertFalse(link.linkAirborne.spinningPitWarpArrival());
         assertEquals(0, link.animation().romEntityZ());
         int finalDirection = link.animation().direction();
         assertEquals(directions[(frame >>> 2) & 3], finalDirection);

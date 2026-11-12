@@ -387,3 +387,44 @@ Frame dispatch remains in LinkStateMachine. Pegasus charge/collision/shake state
 | `frame` | `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `prepareGroundMotion`, `resolveSpeeds`, `applyMotion`, `blockNextRomMotionFrame`, `consumePegasusScreenShakeRequest` |
 
 Result: depth 4 → 0; LinkStateMachine is a 489-line dispatcher. LinkDash owns charge/rebound/shake, LinkRoomPhysics owns room-identity defaults and scroll completion, LinkDoorTraversal owns door timing/palette/transition, and LinkMotionStatus holds explicit shared mode/recovery/frame gates. Every state field in these components is private; no component receives LinkStateMachine or Link. Assembly-only dependency wiring lives in LinkAssembly. Full suite: 2,891 tests, zero failures/errors, one skipped; one independent interaction-byte validation test added.
+
+## Link airborne motion
+
+Original chain: LinkAirborne → LinkJumpMotion → LinkAirborneState.
+
+Jump steering, gravity, landing and scripted jump commands are one responsibility in LinkAirborne. Pit probing/slip targets/fall duration/warp-or-damage decisions belong to LinkPitFall. LinkElevation is the small explicit airborne/Z/speed state shared by both; ledge steering stays private to LinkAirborne.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `dialogGotItemSequence` | `LinkAirborneState`, `accessTickDialogGotItem` |
+| `linkAnimationState` | `LinkAirborneState`, `startPitFall`, `accessUseRocsFeather`, `accessTickDialogGotItem` |
+| `linkAnimator` | `LinkAirborneState`, `tickJump`, `tickJumpAnimation`, `accessUseRocsFeather`, `accessTickDialogGotItem` |
+| `linkControls` | `LinkAirborneState`, `tickJump` |
+| `linkDamage` | `LinkAirborneState`, `tickPitFall`, `accessTickDialogGotItem` |
+| `linkEntityEffects` | `LinkAirborneState`, `tickJump` |
+| `linkItemState` | `LinkAirborneState`, `accessTickDialogGotItem` |
+| `linkMotion` | `LinkAirborneState`, `tickJump`, `playLandingSound`, `linkOverPit`, `refreshGroundStatus`, `enterPitGroundState`, `slipTowardPitCenter`, `startPitFall`, `tickPitFall`, `updateLastSafePositionIfPossible`, `accessTickDialogGotItem` |
+| `linkServices` | `LinkAirborneState`, `tickJump`, `playLandingSound`, `swordSuppressesJumpAnimation`, `linkOverPit`, `refreshGroundStatus`, `enterPitGroundState`, `startPitFall`, `tickPitFall`, `accessUseRocsFeather`, `accessTickDialogGotItem` |
+| `linkSideView` | `LinkAirborneState`, `tickJump`, `accessUseRocsFeather` |
+| `linkSignals` | `LinkAirborneState`, `tickPitFall` |
+| `linkStateMachine` | `LinkAirborneState`, `tickJump`, `tickOverworldLedgeFall`, `accessSetPitWarpArrival`, `accessRomMotionState`, `accessUseRocsFeather` |
+| `linkSwimming` | `LinkAirborneState`, `accessBounceFromGoomba` |
+| `airborne` | `tickJump`, `tickOverworldLedgeFall`, `startPitFall`, `updateLastSafePositionIfPossible`, `accessSetPitWarpArrival`, `accessIsAirborne`, `accessUseRocsFeather`, `accessBounceFromGoomba` |
+| `spinningPitWarpArrival` | `tickJump`, `accessSetPitWarpArrival` |
+| `zSubPixels` | `tickJump`, `startPitFall`, `accessSetPitWarpArrival`, `accessUseRocsFeather`, `accessZPixels`, `accessTickDialogGotItem` |
+| `zVelocity` | `tickJump`, `startPitFall`, `accessSetPitWarpArrival`, `accessZVelocity`, `accessUseRocsFeather`, `accessBounceFromGoomba`, `accessTickDialogGotItem` |
+| `fallingIntoPit` | `refreshGroundStatus`, `startPitFall`, `tickPitFall`, `updateLastSafePositionIfPossible`, `accessRomMotionState`, `accessIsFallingIntoPit`, `accessUseRocsFeather`, `accessBounceFromGoomba` |
+| `groundStatus` | `refreshGroundStatus`, `enterPitGroundState`, `slipTowardPitCenter`, `startPitFall`, `tickPitFall`, `updateLastSafePositionIfPossible`, `accessRomMotionState`, `accessUseRocsFeather`, `accessBounceFromGoomba` |
+| `pitSlippingCounter` | `enterPitGroundState`, `slipTowardPitCenter`, `tickPitFall` |
+| `fallingFrameCounter` | `startPitFall`, `tickPitFall` |
+| `pitSlipTargetTopLeftX` | `enterPitGroundState`, `slipTowardPitCenter` |
+| `pitSlipTargetTopLeftY` | `enterPitGroundState`, `slipTowardPitCenter` |
+| `pitSlipPhysicsFlag` | `refreshGroundStatus`, `enterPitGroundState`, `tickPitFall` |
+| `hasPitSlipTarget` | `refreshGroundStatus`, `enterPitGroundState`, `slipTowardPitCenter`, `tickPitFall` |
+| `overworldLedgeFallActive` | `tickJump`, `tickJumpAnimation` |
+| `directionalLedgeJumpMotionLocked` | `tickJump` |
+| `directionalLedgeJumpSpeedX` | `tickJump` |
+| `directionalLedgeJumpSpeedY` | `tickJump` |
+| `directionalLedgeCollisionCounter` |  |
+
+Result: depth 2 → 0; original three chain files (508 lines) → LinkAirborne (331), LinkPitFall (257), LinkElevation (34). State is private; pit and jump callers use their respective components, with the existing fall, jump, ledge and sound assertions unchanged. Full suite: 2,891 tests, zero failures/errors, one skipped.

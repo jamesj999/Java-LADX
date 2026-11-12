@@ -43,14 +43,14 @@ final class LinkDamage {
     void applySpikeGroundPhysics() {
         if (linkServices.get().collision == null
                 || linkStateMachine.get().status().accessDebugNoClip()
-                || linkAirborne.get().zSubPixels != 0
+                || linkAirborne.get().elevation().zSubPixels() != 0
                 || linkStateMachine.get().status().motionState() == LinkMotionState.UNSTUCKING) return;
         int x = linkMotion.get().accessPixelX() + 8;
         int y = linkMotion.get().accessPixelY() + 12;
         int object = linkServices.get().collision.objectIdAtPoint(x, y);
         boolean indoor = linkServices.get().collision.usesIndoorPhysicsTable();
         if (!indoor && object == 0x61) {
-            linkAirborne.get().enterPitGroundState();
+            linkAirborne.get().pit().enterPitGroundState();
             return;
         }
         if ((indoor && object == 0x4C && ((linkMotion.get().accessRomEntityY() - 1) & 15) >= 12)
@@ -65,10 +65,13 @@ final class LinkDamage {
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         linkMotion.get().lastRomSpeedX = (-linkMotion.get().lastRomSpeedX) & 0xFF;
         linkMotion.get().lastRomSpeedY = (-linkMotion.get().lastRomSpeedY) & 0xFF;
-        linkAirborne.get().airborne = true;
+        linkAirborne.get().elevation().airborne(true);
         if (!linkSideView.get().sideScrolling) {
-            linkAirborne.get().zVelocity = 0x10;
-            linkAirborne.get().zSubPixels += 2 << Link.SUB_PIXEL_SHIFT;
+            linkAirborne.get().elevation().zVelocity(0x10);
+            linkAirborne
+                    .get()
+                    .elevation()
+                    .zSubPixels(linkAirborne.get().elevation().zSubPixels() + (2 << Link.SUB_PIXEL_SHIFT));
         }
         linkMotion.get().forcedSpeedPending = false;
         linkMotion.get().forcedSpeedXOnly = false;

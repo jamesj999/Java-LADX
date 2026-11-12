@@ -25,9 +25,9 @@ final class LinkStateMachineTest {
         link.linkDamage.hurtBySpikes();
         assertEquals(0xEC, link.position().romSpeedX());
         assertEquals(0x0F, link.position().romSpeedY());
-        assertTrue(link.linkAirborne.airborne);
-        assertEquals(0x10, link.linkAirborne.zVelocity);
-        assertEquals(2 << Link.SUB_PIXEL_SHIFT, link.linkAirborne.zSubPixels);
+        assertTrue(link.linkAirborne.elevation().airborne());
+        assertEquals(0x10, link.linkAirborne.elevation().zVelocity());
+        assertEquals(2 << Link.SUB_PIXEL_SHIFT, link.linkAirborne.elevation().zSubPixels());
         assertEquals(0x10, link.linkDamage.collisionIgnoreFramesRemaining);
         assertEquals(0x30, player.vitals().invincibilityCounter());
         assertEquals(4, player.vitals().subtractHealthBuffer());
@@ -49,10 +49,10 @@ final class LinkStateMachineTest {
                 .items(null)
                 .build();
         link.linkSideView.sideScrolling = true;
-        link.linkAirborne.zVelocity = 7;
+        link.linkAirborne.elevation().zVelocity(7);
         link.linkDamage.hurtBySpikes();
-        assertEquals(7, link.linkAirborne.zVelocity);
-        assertEquals(0, link.linkAirborne.zSubPixels);
+        assertEquals(7, link.linkAirborne.elevation().zVelocity());
+        assertEquals(0, link.linkAirborne.elevation().zSubPixels());
         assertEquals(4, player.vitals().subtractHealthBuffer());
     }
 
