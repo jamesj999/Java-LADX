@@ -108,10 +108,10 @@ final class RoomSessionStoryTest {
                     .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(dialogOpened);
-        while ((session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20) == 0 && frame < 0x340) {
+        while ((RoomDebugFixture.of(session).overworldRoomStatusForTest(0x80) & 0x20) == 0 && frame < 0x340) {
             tickInteractive(session, frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x80) & 0x20);
 
         boolean restoredMusic = false;
         while (session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -184,7 +184,7 @@ final class RoomSessionStoryTest {
                 .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
-        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
+        RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
         session.components.entityInputs().setEntityGoldenLeavesCount(4);
 
         session.entities().tickEntities(0, 0x20, 0x30);

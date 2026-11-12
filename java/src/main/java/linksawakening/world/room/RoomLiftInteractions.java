@@ -7,6 +7,7 @@ import linksawakening.state.Direction;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
+/** Bracelet target probing and pull countdown, including statue lifting ($19:4076). */
 final class RoomLiftInteractions {
     private final Dependencies dependencies;
 
@@ -105,6 +106,18 @@ final class RoomLiftInteractions {
                 target);
     }
 
+    private void publishEntityView() {
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .view());
+    }
+
     record Dependencies(
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomFollowerState followers,
@@ -127,22 +140,22 @@ final class RoomLiftInteractions {
                     case RIGHT -> 0x02;
                     default -> 0;
                 };
-        int swordAreaX =
+        int probeOffsetX =
                 switch (linkDirection) {
                     case RIGHT -> 0x0C;
                     case LEFT -> 0x03;
                     case UP, DOWN -> 0x08;
                     default -> 0;
                 };
-        int swordAreaY =
+        int probeOffsetY =
                 switch (linkDirection) {
                     case RIGHT, LEFT -> 0x0A;
                     case UP -> 0x05;
                     case DOWN -> 0x10;
                     default -> 0;
                 };
-        int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
-        int objectTop = (linkPixelY + swordAreaY) & 0xF0;
+        int objectLeft = (linkPixelX + probeOffsetX) & 0xF0;
+        int objectTop = (linkPixelY + probeOffsetY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
         int touchedObject = dependencies.roomSessionViews().get().objectAtRoomLocation(touchedLocation);
         boolean outdoor = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD;
@@ -221,15 +234,7 @@ final class RoomLiftInteractions {
                         false,
                         linksawakening.world.entity.event.EntityCombatEvent.SoundChannel.WAVE,
                         2));
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+        publishEntityView();
     }
 
     private void replaceLiftedObject(LiftTarget target) {
@@ -281,15 +286,7 @@ final class RoomLiftInteractions {
                         y,
                         RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
                         target.touchedObject() == 0x5C ? 1 : 0);
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .view());
+        publishEntityView();
     }
 
     private record LiftTarget(

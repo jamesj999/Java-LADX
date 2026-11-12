@@ -9,7 +9,12 @@ import linksawakening.state.Direction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.transition.Warp;
 
+/** Key-door collision and EntityInitPushedBlock ($03:5198), before their animation ticks. */
 final class RoomIndoorDoorInteractions {
+    // Boss-door collision/object values used by the indoor door handlers.
+    private static final int BOSS_DOOR_PHYSICS = 0x98;
+    private static final int BOSS_DOOR_LEFT_OBJECT = 0xA4;
+
     private final Dependencies dependencies;
 
     RoomIndoorDoorInteractions(Dependencies dependencies) {
@@ -32,11 +37,11 @@ final class RoomIndoorDoorInteractions {
         boolean bossDoor = false;
         for (int[] point : RoomInteractionGeometry.keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
             int physics = dependencies.overworldCollision().objectPhysicsFlagAtPoint(point[0], point[1]);
-            if (physics == expectedPhysics || (doorDirection == 0 && physics == 0x98)) {
+            if (physics == expectedPhysics || (doorDirection == 0 && physics == BOSS_DOOR_PHYSICS)) {
                 int column = Math.floorDiv(point[0], 0x10);
                 int row = Math.floorDiv(point[1], 0x10);
                 touchedLocation = (row << 4) | column;
-                bossDoor = physics == 0x98;
+                bossDoor = physics == BOSS_DOOR_PHYSICS;
                 break;
             }
         }
@@ -45,7 +50,7 @@ final class RoomIndoorDoorInteractions {
         }
         int touchedObject = dependencies.roomSessionViews().get().objectAtRoomLocation(touchedLocation);
         if (bossDoor) {
-            int objectOffset = touchedObject - 0xA4;
+            int objectOffset = touchedObject - BOSS_DOOR_LEFT_OBJECT;
             if (objectOffset < 0
                     || objectOffset > 1
                     || !RoomInteractionGeometry.alignedWithIndoorKeyDoor(

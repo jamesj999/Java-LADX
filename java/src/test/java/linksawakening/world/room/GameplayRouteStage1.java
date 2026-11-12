@@ -123,7 +123,7 @@ final class GameplayRouteStage1 {
 
         route.frame = 2;
         route.owlDialogOpened = false;
-        while ((route.session.components.roomSessionViews().overworldRoomStatusForTest(0xF2) & 0x20) == 0
+        while ((RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xF2) & 0x20) == 0
                 && route.frame < 0x300) {
             tickInteractiveEntities(route.session, route.frame++, 0x58, 0x60);
             route.owlDialogOpened |= route.session.entityState().consumeEntityDialogRequests().stream()
@@ -149,7 +149,7 @@ final class GameplayRouteStage1 {
             BeachSwordRewardConsumer.consume(route.session, route.playerState);
         }
         assertEquals(1, route.playerState.swordLevel());
-        assertEquals(0x30, route.session.components.roomSessionViews().overworldRoomStatusForTest(0xF2) & 0x30);
+        assertEquals(0x30, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xF2) & 0x30);
 
         route.session.rooms().loadInitialOverworld(0xF2);
         assertFalse(route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -194,11 +194,11 @@ final class GameplayRouteStage1 {
                     .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(route.forestOwlDialogOpened);
-        while ((route.session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20) == 0
+        while ((RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x80) & 0x20) == 0
                 && route.frame < route.pickupFrame + 0x700) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x80) & 0x20);
 
         route.routeToToadstool = new int[] {
             ScrollController.UP, ScrollController.UP, ScrollController.RIGHT,
@@ -386,7 +386,7 @@ final class GameplayRouteStage1 {
         assertTrue(route.session.playerItems().sprinkleMagicPowder(0x6A, 0x40, 0, 0));
         route.transformedDialogOpened = false;
         while ((!route.transformedDialogOpened
-                        || (route.session.components.roomSessionViews().overworldRoomStatusForTest(0x51) & 0x10) == 0)
+                        || (RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x51) & 0x10) == 0)
                 && route.frame < route.pickupFrame + 0xD00) {
             route.session
                     .entities()
@@ -394,7 +394,7 @@ final class GameplayRouteStage1 {
             route.transformedDialogOpened |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x00A);
         }
-        assertEquals(0x10, route.session.components.roomSessionViews().overworldRoomStatusForTest(0x51) & 0x10);
+        assertEquals(0x10, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x51) & 0x10);
         assertTrue(route.transformedDialogOpened);
         assertTrue(
                 route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -413,7 +413,7 @@ final class GameplayRouteStage1 {
         walkToAndCrossOverworldBoundary(
                 route.session, route.coordinator, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x41, route.session.rooms().currentRoomId());
-        assertEquals(0x40, route.session.components.roomSessionViews().overworldRoomStatusForTest(0x41) & 0x40);
+        assertEquals(0x40, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x41) & 0x40);
         assertTrue(route.session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));

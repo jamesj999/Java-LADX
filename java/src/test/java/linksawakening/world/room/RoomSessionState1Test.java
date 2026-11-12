@@ -32,11 +32,11 @@ final class RoomSessionState1Test {
     void gameOverClearsOnlyPieceOfPowerDropCounter() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x92);
-        session.components.roomSessionViews().setEnemyDropCountersForTest(7, 9);
+        RoomDebugFixture.of(session).setEnemyDropCountersForTest(7, 9);
         session.progress().clearGameOverPowerCounter();
         assertEquals(
                 new EnemyDropResolver.CounterState(7, 0),
-                session.components.roomSessionViews().enemyDropCountersForTest());
+                RoomDebugFixture.of(session).enemyDropCountersForTest());
     }
 
     @Test
@@ -82,7 +82,7 @@ final class RoomSessionState1Test {
         RoomEntityRuntime runtime =
                 RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xCE);
-        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
+        RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
 
         session.entities().tickEntities(0);
 
@@ -99,7 +99,7 @@ final class RoomSessionState1Test {
         session.transitions().startAdjacentOverworldScroll(scrollController, ScrollController.UP, 0x50, 0x20);
 
         assertEquals(0x41, session.rooms().currentRoomId());
-        assertEquals(0x40, session.components.roomSessionViews().overworldRoomStatusForTest(0x41) & 0x40);
+        assertEquals(0x40, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x40);
         assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
@@ -235,14 +235,14 @@ final class RoomSessionState1Test {
         TransientVfxSystem vfx = new TransientVfxSystem(16);
         RoomSession session = newSession(vfx);
         session.rooms().loadIndoor(0x01, 0x27);
-        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
+        RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
         int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
 
         for (int frame = 0; frame < 0x20; frame++) {
             session.entities().tickEntities(frame, 0x50, 0x60);
         }
 
-        assertEquals(0x66, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x66, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertNotEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
         assertTrue(vfx.activeSlots().isEmpty());
     }
@@ -325,15 +325,15 @@ final class RoomSessionState1Test {
     void liveTorchPaletteFadeWaitsForDefaultLinkMotion() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x0E, 0xA2);
-        session.components.roomSessionViews().igniteIndoorTorchPaletteForTest();
+        RoomDebugFixture.of(session).igniteIndoorTorchPaletteForTest();
         for (int frame = 0; frame < 32; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 1, 0, false);
         }
-        assertEquals(4, session.components.roomSessionViews().indoorTorchPaletteEffectAddressForTest());
+        assertEquals(4, RoomDebugFixture.of(session).indoorTorchPaletteEffectAddressForTest());
         for (int frame = 32; frame < 42; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        assertEquals(2, session.components.roomSessionViews().indoorTorchPaletteEffectAddressForTest());
+        assertEquals(2, RoomDebugFixture.of(session).indoorTorchPaletteEffectAddressForTest());
     }
 
     @Test
@@ -356,7 +356,7 @@ final class RoomSessionState1Test {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
         assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(1, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(1, RoomDebugFixture.of(session).roomTriggerCountForTest());
         assertArrayEquals(litTiles, torchTiles(session, 0x22));
 
         session.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xAB;
@@ -383,7 +383,7 @@ final class RoomSessionState1Test {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
         assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(0, RoomDebugFixture.of(session).roomTriggerCountForTest());
     }
 
     @Test
@@ -399,7 +399,7 @@ final class RoomSessionState1Test {
         for (int frame = 0; frame < 16; frame++) {
             session.entities().tickEntitiesWithProjectileEvents(frame, 0x20, 0x20, 0, 0, 0, false);
         }
-        assertEquals(1, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(1, RoomDebugFixture.of(session).roomTriggerCountForTest());
 
         for (int frame = 16;
                 frame < 1024 && session.rooms().activeRoom().roomObjectsArea()[areaIndex] == 0xAC;
@@ -408,10 +408,10 @@ final class RoomSessionState1Test {
         }
 
         assertEquals(0xAB, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(0, RoomDebugFixture.of(session).roomTriggerCountForTest());
 
         session.rooms().loadIndoor(0x00, 0x00);
-        assertEquals(0, session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(0, RoomDebugFixture.of(session).roomTriggerCountForTest());
     }
 
     @Test
@@ -475,8 +475,8 @@ final class RoomSessionState1Test {
         assertEquals(0x58, drop.x());
         assertEquals(0x60, drop.y());
         assertEquals(0x02, drop.z());
-        assertEquals(0x20 - 0x02, session.components.roomSessionViews().entityDropSpeedZForTest(drop.slot()));
-        assertEquals(0x0C, session.components.roomSessionViews().entityDropSpeedXForTest(drop.slot()));
+        assertEquals(0x20 - 0x02, RoomDebugFixture.of(session).entityDropSpeedZForTest(drop.slot()));
+        assertEquals(0x0C, RoomDebugFixture.of(session).entityDropSpeedXForTest(drop.slot()));
     }
 
     @Test
@@ -519,7 +519,7 @@ final class RoomSessionState1Test {
 
         RoomEntity airborne = session.rooms().activeRoom().entities().slots().get(initial.slot());
         assertEquals(1, airborne.z());
-        assertEquals(0, session.components.roomSessionViews().entityGroundStatusForTest(initial.slot()));
+        assertEquals(0, RoomDebugFixture.of(session).entityGroundStatusForTest(initial.slot()));
     }
 
     @Test
@@ -632,7 +632,7 @@ final class RoomSessionState1Test {
         for (RoomEntity peaHat : peaHats) {
             RoomEntity current = session.rooms().activeRoom().entities().slots().get(peaHat.slot());
             assertEquals(EntityStatus.ACTIVE, current.status());
-            assertEquals(0x02, session.components.roomSessionViews().entityGroundStatusForTest(peaHat.slot()));
+            assertEquals(0x02, RoomDebugFixture.of(session).entityGroundStatusForTest(peaHat.slot()));
         }
         assertEquals(
                 0,

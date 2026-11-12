@@ -9,7 +9,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
-/** RoomTransitionController operations for the live room session. */
+/** Room replacement and scroll setup for GameplayWorldLoadRoomHandler ($01:442B). */
 final class RoomTransitionController {
     private final Dependencies dependencies;
 

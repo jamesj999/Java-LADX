@@ -22,7 +22,7 @@ import linksawakening.world.transition.Warp;
 final class GameplayRouteStage3 {
     static void run(GameplayRouteState route) throws Exception {
 
-        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x03) & 0x10);
+        assertEquals(0x10, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x03) & 0x10);
         route.session.rooms().loadIndoor(0x00, 0x03);
         assertEquals(0xBF, route.session.rooms().activeRoom().roomObjectsArea()[route.hiddenStairsIndex]);
 
@@ -285,14 +285,14 @@ final class GameplayRouteStage3 {
                         .get(route.rollingBones.slot())
                         .status());
         route.rollingBonesDeadline = route.frame + 0x200;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+        while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.rollingBonesDeadline) {
             route.session
                     .entities()
                     .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Link.DIRECTION_DOWN, false);
         }
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
-        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x11) & 0x20);
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
+        assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x11) & 0x20);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
@@ -308,7 +308,7 @@ final class GameplayRouteStage3 {
         }
         assertEquals(0x43, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x04]);
         assertEquals(0x44, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x05]);
-        assertEquals(0x04, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
+        assertEquals(0x04, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x0B) & 0x04);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
@@ -425,7 +425,7 @@ final class GameplayRouteStage3 {
                 .consumeHeartContainerRewards()
                 .forEach(reward -> route.playerState.applyHeartContainerReward());
         assertEquals(route.previousMaxHearts + 1, route.playerState.maxHearts());
-        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x06) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x06) & 0x20);
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask());
 
         walkToAndCrossIndoorBoundary(
@@ -455,7 +455,7 @@ final class GameplayRouteStage3 {
                     .entities()
                     .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
         }
-        assertTrue(route.session.components.roomSessionViews().hasDungeonInstrumentForTest(0x00));
+        assertTrue(RoomDebugFixture.of(route.session).hasDungeonInstrumentForTest(0x00));
         assertEquals(
                 0x100,
                 route.session

@@ -15,7 +15,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
-/** RoomLoadCoordinator operations for the live room session. */
+/** LoadRoom ($00:3162): load data, initialize the active room, then synchronize collision. */
 final class RoomLoadCoordinator {
     private final Dependencies dependencies;
     private final RoomActiveRoomInitializer roomActiveRoomInitializer;

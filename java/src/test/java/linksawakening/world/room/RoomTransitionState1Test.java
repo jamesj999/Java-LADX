@@ -73,13 +73,13 @@ final class RoomTransitionState1Test {
             session.entities().tickEntities(frame++, link.romEntityX(), link.romEntityY(), 0, Link.DIRECTION_UP);
         }
         assertTrue(session.playerItems().throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_UP)));
-        for (int tick = 0; tick < 0x40 && session.components.roomSessionViews().activeRoomEventForTest() != 0; tick++) {
+        for (int tick = 0; tick < 0x40 && RoomDebugFixture.of(session).activeRoomEventForTest() != 0; tick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         }
-        assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x51, session.rooms().currentRoomId());
-        assertEquals(0x61, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x61, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0x0D, objectAt(session, 0x28));
         tickInteractiveEntities(session, frame++, 0x48, 0x70);
         List<Integer> enemies = session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -108,7 +108,7 @@ final class RoomTransitionState1Test {
         }
         assertEquals(
                 0,
-                session.components.roomSessionViews().activeRoomEventForTest(),
+                RoomDebugFixture.of(session).activeRoomEventForTest(),
                 session.rooms().activeRoom().entities().loadedEntities().toString());
         assertEquals(0xA0, objectAt(session, 0x28));
         List<int[]> chestPath = reachablePositionPath(
@@ -128,7 +128,7 @@ final class RoomTransitionState1Test {
         assertEquals(1, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4F, session.rooms().currentRoomId());
-        assertEquals(0x21, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         List<Integer> hiddenZols = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x9B)
@@ -158,7 +158,7 @@ final class RoomTransitionState1Test {
         }
         assertEquals(
                 0,
-                session.components.roomSessionViews().activeRoomEventForTest(),
+                RoomDebugFixture.of(session).activeRoomEventForTest(),
                 session.rooms().activeRoom().entities().loadedEntities().toString());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4E, session.rooms().currentRoomId());
@@ -200,8 +200,8 @@ final class RoomTransitionState1Test {
         assertEquals(0, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x54, session.rooms().currentRoomId());
-        assertEquals(0x04, session.components.roomSessionViews().indoorRoomStatusForTest(0x02, 0x56) & 0x04);
-        assertEquals(0x08, session.components.roomSessionViews().indoorRoomStatusForTest(0x02, 0x54) & 0x08);
+        assertEquals(0x04, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x02, 0x56) & 0x04);
+        assertEquals(0x08, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x02, 0x54) & 0x08);
         session.rooms().loadIndoor(0x02, 0x51);
         assertEquals(0xA1, objectAt(session, 0x28));
         assertFalse(session.doors()

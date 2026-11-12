@@ -5,7 +5,16 @@ import static linksawakening.world.room.RoomObjectFormat.*;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 
+/** ConfigureRoomObjects door expansion and TreeMacroHandler ($24:759D) padded-buffer writes. */
 final class RoomObjectMacroDecoder {
+    // Door table groups in ConfigureRoomObjects: closed, shutters, open, then special entrances.
+    private static final int FIRST_SHUTTER_MACRO = 4;
+    private static final int FIRST_OPEN_DOOR_MACRO = 8;
+    private static final int BOSS_DOOR_MACRO = 12;
+    private static final int MACRO_END = 0xFF;
+    // Top, bottom, left, right use ROOM_STATUS_DOOR_OPEN_* rather than direction bit order.
+    private static final int[] DOOR_STATUS_BITS = {0x04, 0x08, 0x02, 0x01};
+
     private final Dependencies dependencies;
 
     RoomObjectMacroDecoder(Dependencies dependencies) {
@@ -13,46 +22,34 @@ final class RoomObjectMacroDecoder {
     }
 
     void expandIndoorDoorMacro(int type, int location) {
-        int idx = type - INDOOR_DOOR_MACRO_BASE;
-        if (idx < 0 || idx >= INDOOR_DOOR_MACRO_TABLES.length) {
+        int doorMacroIndex = type - INDOOR_DOOR_MACRO_BASE;
+        if (doorMacroIndex < 0 || doorMacroIndex >= INDOOR_DOOR_MACRO_TABLES.length) {
             return;
         }
         // ConfigureRoomObjects selects the matching open-door macro when the
         // directional status bit was synchronized by the adjacent room.
-        if (idx < 4) {
-            int statusBit =
-                    switch (idx) {
-                        case 0 -> 0x04;
-                        case 1 -> 0x08;
-                        case 2 -> 0x02;
-                        case 3 -> 0x01;
-                        default -> 0;
-                    };
+        if (doorMacroIndex < FIRST_SHUTTER_MACRO) {
+            int statusBit = DOOR_STATUS_BITS[doorMacroIndex];
             if ((dependencies.state().roomStatusFlags & statusBit) != 0) {
-                idx += 8;
+                doorMacroIndex += FIRST_OPEN_DOOR_MACRO;
             }
-        } else if (idx == 12 && (dependencies.state().roomStatusFlags & 0x04) != 0) {
+        } else if (doorMacroIndex == BOSS_DOOR_MACRO && (dependencies.state().roomStatusFlags & 0x04) != 0) {
             // OBJECT_BOSS_DOOR is top-facing and reloads as OpenDoorTop once
             // ROOM_STATUS_DOOR_OPEN_UP has been synchronized.
-            idx = 8;
+            doorMacroIndex = FIRST_OPEN_DOOR_MACRO;
         }
-        if (idx >= 4 && idx <= 7) {
+        if (doorMacroIndex >= FIRST_SHUTTER_MACRO && doorMacroIndex < FIRST_OPEN_DOOR_MACRO) {
             // wC18A/wC18B use top, bottom, left, right in bits 0..3.
-            dependencies.state().shutterDoorMask |= 1 << (idx - 4);
+            dependencies.state().shutterDoorMask |= 1 << (doorMacroIndex - FIRST_SHUTTER_MACRO);
         }
         // Closed shutters also call the open-door loaders ($00:365B..371E).
         // Those loaders persist the directional minimap bits through $00:36C4.
-        if (idx >= 4 && idx <= 11) {
-            dependencies.state().roomStatusFlags |= switch (idx & 3) {
-                case 0 -> 4;
-                case 1 -> 8;
-                case 2 -> 2;
-                default -> 1;
-            };
+        if (doorMacroIndex >= FIRST_SHUTTER_MACRO && doorMacroIndex < BOSS_DOOR_MACRO) {
+            dependencies.state().roomStatusFlags |= DOOR_STATUS_BITS[doorMacroIndex & 3];
         }
-        if (idx == 16) dependencies.state().roomStatusFlags |= 8; // Dungeon entrance, $00:37A2.
-        if (idx == 17) dependencies.state().roomStatusFlags |= 1; // Indoor entrance, $00:37CF.
-        int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
+        if (doorMacroIndex == 16) dependencies.state().roomStatusFlags |= 8; // Dungeon entrance, $00:37A2.
+        if (doorMacroIndex == 17) dependencies.state().roomStatusFlags |= 1; // Indoor entrance, $00:37CF.
+        int[] table = INDOOR_DOOR_MACRO_TABLES[doorMacroIndex];
         dependencies
                 .owner()
                 .get()
@@ -67,7 +64,7 @@ final class RoomObjectMacroDecoder {
         while (offsetsOffset < dependencies.romData().size()
                 && idsOffset < dependencies.romData().size()) {
             int offset = dependencies.owner().get().readRomByte(offsetsOffset++);
-            if (offset == 0xFF) {
+            if (offset == MACRO_END) {
                 break;
             }
             int objectId = dependencies.owner().get().readRomByte(idsOffset++);
@@ -193,7 +190,7 @@ final class RoomObjectMacroDecoder {
         while (offsetsOffset < dependencies.romData().size()
                 && idsOffset < dependencies.romData().size()) {
             int offset = dependencies.owner().get().readRomByte(offsetsOffset++);
-            if (offset == 0xFF) {
+            if (offset == MACRO_END) {
                 break;
             }
             int objectId = dependencies.owner().get().readRomByte(idsOffset++);

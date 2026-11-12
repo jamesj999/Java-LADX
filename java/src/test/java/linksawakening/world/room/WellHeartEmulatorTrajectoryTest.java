@@ -52,9 +52,7 @@ final class WellHeartEmulatorTrajectoryTest {
             assertEquals(48 + travel, actual.y(), "Y pass " + pass);
             int planarSpeed = pass < 34 ? 12 : pass < 53 ? 6 : pass < 65 ? 3 : 0;
             assertEquals(
-                    planarSpeed,
-                    session.components.roomSessionViews().entityDropSpeedXForTest(slot),
-                    "speed X pass " + pass);
+                    planarSpeed, RoomDebugFixture.of(session).entityDropSpeedXForTest(slot), "speed X pass " + pass);
             int zQ4;
             if (pass <= 34) zQ4 = 32 * pass - pass * (pass - 1);
             else if (pass <= 53) {

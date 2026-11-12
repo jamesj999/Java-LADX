@@ -5,6 +5,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
+/** LoadRoomPalettes and the IndoorSpritePaletteIndexData transition overrides ($21:5185). */
 public final class RoomPaletteLoader {
     private int readRomByte(int offset) {
         return romData.u8(RomAddress.fromOffset(offset));
@@ -37,6 +38,14 @@ public final class RoomPaletteLoader {
     private static final int OVERWORLD_PALETTE_TABLE_ADDR = RomSymbols.OverworldPalettes.address();
     private static final int OBJECT_PALETTES_ADDR = RomSymbols.ObjectPalettes.address();
     private static final int ROOM_OBJECT_PALETTES_OFFSET = 0x40;
+    private static final int PALETTE_BYTES = 8;
+    // IndoorSpritePaletteIndexData: 45 four-byte map/room/direction/selector rows.
+    private static final int TRANSITION_RECORD_COUNT = 0x2D;
+    private static final int TRANSITION_RECORD_BYTES = 4;
+    private static final int ENTERING_ROOM_SELECTOR = 4; // Loader selector, outside Direction's 0..3 domain.
+    private static final int TRANSITION_SELECTOR_VALID = 0x80;
+    private static final int TRANSITION_SELECTOR_OBJECTS = 0x40;
+    private static final int TRANSITION_PALETTE_INDEX_MASK = 0x3F;
     private static final int EAGLES_TOWER_PALETTE_ADDR = RomSymbols.Data_021_5548.address();
     private static final int ROOM_MABE_VILLAGE_SQUARE = 0x92;
     private static final int MABE_VILLAGE_SQUARE_COLORS_ADDR = RomSymbols.Data_021_56C8.address();
@@ -96,24 +105,25 @@ public final class RoomPaletteLoader {
             int[][] baseObjects,
             int[][] previousBackground,
             int[][] previousObjects) {
-        boolean entering = direction == 4;
+        boolean entering = direction == ENTERING_ROOM_SELECTOR;
         int[][] background = copyPalettes(entering || previousBackground == null ? baseBackground : previousBackground);
         int[][] objects = copyPalettes(entering || previousObjects == null ? baseObjects : previousObjects);
         int records = RomSymbols.IndoorSpritePaletteIndexData.offset();
-        for (int i = 0; i < 0x2D; i++) {
-            int record = records + i * 4;
+        for (int recordIndex = 0; recordIndex < TRANSITION_RECORD_COUNT; recordIndex++) {
+            int record = records + recordIndex * TRANSITION_RECORD_BYTES;
             if ((readRomByte(record)) != mapId
                     || (readRomByte(record + 1)) != roomId
                     || (readRomByte(record + 2)) != direction) continue;
             int selector = readRomByte(record + 3);
-            if ((selector & 0x80) == 0) break;
-            int pointer = readPointer(
-                    RomSymbols.TilemapPaletteTable.plus((selector & 0x3F) * 2).offset());
+            if ((selector & TRANSITION_SELECTOR_VALID) == 0) break;
+            int pointer =
+                    readPointer(RomSymbols.TilemapPaletteTable.plus((selector & TRANSITION_PALETTE_INDEX_MASK) * 2)
+                            .offset());
             int offset = RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), pointer);
-            if (entering || (selector & 0x40) == 0) background = loadPaletteBlock(offset);
-            if (entering || (selector & 0x40) != 0) {
-                objects[6] = loadPalette(offset + 0x40);
-                objects[7] = loadPalette(offset + 0x48);
+            if (entering || (selector & TRANSITION_SELECTOR_OBJECTS) == 0) background = loadPaletteBlock(offset);
+            if (entering || (selector & TRANSITION_SELECTOR_OBJECTS) != 0) {
+                objects[6] = loadPalette(offset + ROOM_OBJECT_PALETTES_OFFSET);
+                objects[7] = loadPalette(offset + ROOM_OBJECT_PALETTES_OFFSET + PALETTE_BYTES);
             }
             break;
         }
@@ -207,7 +217,7 @@ public final class RoomPaletteLoader {
         int[][] globals = loadGlobalObjectPalettes();
         System.arraycopy(globals, 0, palettes, 0, globals.length);
         palettes[6] = loadPalette(roomPaletteOffset + ROOM_OBJECT_PALETTES_OFFSET);
-        palettes[7] = loadPalette(roomPaletteOffset + ROOM_OBJECT_PALETTES_OFFSET + 8);
+        palettes[7] = loadPalette(roomPaletteOffset + ROOM_OBJECT_PALETTES_OFFSET + PALETTE_BYTES);
         return palettes;
     }
 
@@ -215,7 +225,7 @@ public final class RoomPaletteLoader {
         int[][] palettes = new int[6][];
         int offset = RomBank.romOffset(RomSymbols.OverworldPalettes.bank(), OBJECT_PALETTES_ADDR);
         for (int palette = 0; palette < palettes.length; palette++) {
-            palettes[palette] = loadPalette(offset + palette * 8);
+            palettes[palette] = loadPalette(offset + palette * PALETTE_BYTES);
         }
         return palettes;
     }

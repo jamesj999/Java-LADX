@@ -114,12 +114,7 @@ final class RoomSessionContext {
         values.roomSessionViews = new RoomSessionViews(new RoomSessionViews.Dependencies(
                 values.entityFrame,
                 values.location,
-                values.puzzles,
-                values.terrain,
                 () -> values.entityBridge,
-                values.indoorTorchPaletteEffect,
-                values.overworldCollision,
-                () -> values.roomLoadCoordinator,
                 values.roomState,
                 () -> values.roomStoryState,
                 values.scrollNavigation));
