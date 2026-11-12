@@ -204,15 +204,15 @@ final class SaveRoundTripTest {
     }
 
     private static void set(GameSession game, String name, Object value) throws Exception {
-        var field = GameSession.class.getDeclaredField(name);
+        var field = SessionTestAccess.field(game, name);
         field.setAccessible(true);
-        field.set(game, value);
+        field.set(SessionTestAccess.owner(game, name), value);
     }
 
     private static <T> T get(GameSession game, String name, Class<T> type) throws Exception {
-        var field = GameSession.class.getDeclaredField(name);
+        var field = SessionTestAccess.field(game, name);
         field.setAccessible(true);
-        return type.cast(field.get(game));
+        return type.cast(field.get(SessionTestAccess.owner(game, name)));
     }
 
     private static <T> T call(GameSession game, String name, Class<T> type) throws Exception {

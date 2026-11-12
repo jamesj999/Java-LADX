@@ -29,9 +29,9 @@ class GameOverOutcomeSessionTest {
         storeField.setAccessible(true);
         var store = (SaveRamStore) storeField.get(game);
         store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
-        var slot = GameSession.class.getDeclaredField("currentSaveSlot");
+        var slot = linksawakening.app.SessionTestAccess.field(game, "currentSaveSlot");
         slot.setAccessible(true);
-        slot.setInt(game, 0);
+        slot.setInt(linksawakening.app.SessionTestAccess.owner(game, "currentSaveSlot"), 0);
         var room = game.diagnostics().roomSession();
         room.loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
         room.loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.

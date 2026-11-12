@@ -134,9 +134,9 @@ final class MabeCollisionSweepTest {
     }
 
     private static <T> T field(GameSession game, String name, Class<T> type) throws Exception {
-        var field = GameSession.class.getDeclaredField(name);
+        var field = SessionTestAccess.field(game, name);
         field.setAccessible(true);
-        return type.cast(field.get(game));
+        return type.cast(field.get(SessionTestAccess.owner(game, name)));
     }
 
     private static boolean walkable(Rom rom, LoadedRoom room, int x, int y) {
