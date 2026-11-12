@@ -373,14 +373,4 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public InventoryMenu(
-            InventoryTilemapLoader tilemapLoader,
-            PlayerState playerState,
-            GameplaySoundSink soundSink,
-            byte[] romData) {
-        this(tilemapLoader, playerState, soundSink, romData == null ? null : Rom.unchecked(romData));
-    }
 }

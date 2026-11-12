@@ -15,13 +15,13 @@ final class InventoryInstrumentPanel {
     private int[][] paletteScratch;
     private final int[] cyclingPalette = new int[4];
     private final int[] positions = new int[8];
-    private final int[] numbers = new int[8];
-    private final int[] instruments = new int[8];
     private final int[][] cycleColors = new int[16][2];
     private final GPU tiles = new GPU();
 
     InventoryInstrumentPanel(Rom romData) {
         var data = romData;
+        int[] numbers = new int[8];
+        int[] instruments = new int[8];
         for (int i = 0; i < 8; i++) {
             positions[i] =
                     0x100 + data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BCF.offset() + i));

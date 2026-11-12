@@ -79,15 +79,6 @@ final class IntroWater {
         return value;
     }
 
-    int fractionD() {
-        return fractionD;
-    }
-
-    int fractionD(int value) {
-        fractionD = value;
-        return value;
-    }
-
     byte[] waveTiles() {
         return waveTiles;
     }

@@ -91,10 +91,4 @@ public final class FileMenuRomData {
         }
         return values;
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public FileMenuRomData(byte[] romData) {
-        this(romData == null ? null : Rom.unchecked(romData));
-    }
 }

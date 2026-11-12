@@ -6,29 +6,8 @@ import linksawakening.gpu.Tile;
 
 /** Java tile-plane adapter for InventoryTilemap and file-menu draw-command results. */
 public final class TilemapRenderer {
-    private static final ThreadLocal<Region> LEGACY_REGION = ThreadLocal.withInitial(() -> new Region(0, 0, 0, 0));
 
     private TilemapRenderer() {}
-    /** @deprecated Use the Region argument bundle overload. */
-    @Deprecated(forRemoval = true)
-    public static void render(
-            byte[] displayBuffer,
-            GPU gpu,
-            int[] tileIds,
-            int[] tileAttrs,
-            int[][] palettes,
-            int tileWidth,
-            int tileHeight,
-            int offsetX,
-            int offsetY) {
-        render(
-                displayBuffer,
-                gpu,
-                tileIds,
-                tileAttrs,
-                palettes,
-                LEGACY_REGION.get().set(tileWidth, tileHeight, offsetX, offsetY));
-    }
 
     public static void render(
             byte[] displayBuffer, GPU gpu, int[] tileIds, int[] tileAttrs, int[][] palettes, Region arguments) {
@@ -89,20 +68,6 @@ public final class TilemapRenderer {
 
     private static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
-    }
-    /** @deprecated Use the Region argument bundle overload. */
-    @Deprecated(forRemoval = true)
-    public static void submit(
-            linksawakening.render.HardwareFrame frame,
-            GPU gpu,
-            int[] tileIds,
-            int[] attrs,
-            int[][] palettes,
-            int width,
-            int height,
-            int offsetX,
-            int offsetY) {
-        submit(frame, gpu, tileIds, attrs, palettes, LEGACY_REGION.get().set(width, height, offsetX, offsetY));
     }
 
     public static void submit(

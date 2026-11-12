@@ -60,10 +60,4 @@ public final class SwordSpriteSheet {
     private static int romOffset(int bank, int address) {
         return new RomAddress(bank, address).offset();
     }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public static SwordSpriteSheet loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
-    }
 }

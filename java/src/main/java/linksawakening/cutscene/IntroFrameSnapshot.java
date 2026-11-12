@@ -21,40 +21,6 @@ public record IntroFrameSnapshot(
         int[] lineScrollY,
         byte[] animatedTiles,
         int animatedTilesDestination) {
-    /** @deprecated Use {@link Builder} for named construction. */
-    @Deprecated(forRemoval = true)
-    public IntroFrameSnapshot(
-            String sceneId,
-            String substate,
-            int frameCounter,
-            int scrollX,
-            int scrollY,
-            int[] lineScrollX,
-            int verticalWaveOffset,
-            int[] tilemap,
-            int[] attrmap,
-            int[][] bgPalettes,
-            int[][] objPalettes,
-            List<IntroSprite> sprites,
-            int titleRevealRows) {
-        this(
-                sceneId,
-                substate,
-                frameCounter,
-                scrollX,
-                scrollY,
-                lineScrollX,
-                verticalWaveOffset,
-                tilemap,
-                attrmap,
-                bgPalettes,
-                objPalettes,
-                sprites,
-                titleRevealRows,
-                null,
-                null,
-                0);
-    }
 
     /** @deprecated Use {@link Builder} for named construction. */
     @Deprecated(forRemoval = true)

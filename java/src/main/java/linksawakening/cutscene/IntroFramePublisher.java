@@ -251,22 +251,6 @@ final class IntroFramePublisher {
         return palettes;
     }
 
-    IntroFrameSnapshot.Builder snapshotBuilder() {
-        return snapshotBuilder;
-    }
-
-    Function<String, BackgroundScene> backgroundProvider() {
-        return backgroundProvider;
-    }
-
-    int[] colorModifiers() {
-        return colorModifiers;
-    }
-
-    IntroRomData.PaletteBlock dxFadeInPalette() {
-        return dxFadeInPalette;
-    }
-
     int[][] fadeBg() {
         return fadeBg;
     }
@@ -294,26 +278,14 @@ final class IntroFramePublisher {
         return value;
     }
 
-    int[][] visibleObj() {
-        return visibleObj;
-    }
-
     int[][] visibleObj(int[][] value) {
         visibleObj = value;
         return value;
     }
 
-    byte[] visibleWave() {
-        return visibleWave;
-    }
-
     byte[] visibleWave(byte[] value) {
         visibleWave = value;
         return value;
-    }
-
-    int visibleScrollY() {
-        return visibleScrollY;
     }
 
     int visibleScrollY(int value) {
@@ -330,10 +302,6 @@ final class IntroFramePublisher {
         return value;
     }
 
-    int[] visibleAttrmap() {
-        return visibleAttrmap;
-    }
-
     int[] visibleAttrmap(int[] value) {
         visibleAttrmap = value;
         return value;
@@ -343,22 +311,8 @@ final class IntroFramePublisher {
         return bgPalettes;
     }
 
-    int[][] bgPalettes(int[][] value) {
-        bgPalettes = value;
-        return value;
-    }
-
     int[][] objPalettes() {
         return objPalettes;
-    }
-
-    int[][] objPalettes(int[][] value) {
-        objPalettes = value;
-        return value;
-    }
-
-    List<IntroSprite> sprites() {
-        return sprites;
     }
 
     List<IntroSprite> sprites(List<IntroSprite> value) {
@@ -377,15 +331,6 @@ final class IntroFramePublisher {
 
     IntroFrameSnapshot snapshot() {
         return snapshot;
-    }
-
-    IntroFrameSnapshot snapshot(IntroFrameSnapshot value) {
-        snapshot = value;
-        return value;
-    }
-
-    IntroFrameSnapshot transitionFrame() {
-        return transitionFrame;
     }
 
     IntroFrameSnapshot transitionFrame(IntroFrameSnapshot value) {

@@ -69,9 +69,4 @@ public final class LinkTunicPalette {
         }
         return copy;
     }
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public static LinkTunicPalette loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
-    }
 }
