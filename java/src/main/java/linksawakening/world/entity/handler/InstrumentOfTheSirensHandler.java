@@ -1,6 +1,7 @@
 package linksawakening.world.entity.handler;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
@@ -8,36 +9,37 @@ import linksawakening.world.entity.EntityTickStage;
 /** ROM handler stages for InstrumentOfTheSirens. */
 final class InstrumentOfTheSirensHandler {
     static void install(EntityHandlerRegistration registry) {
-        for (int type = 0; type < 256; type++) {
-            if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
-                registry.registerTick(type, EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS, state -> {
-                    if (state.status == EntityStatus.ACTIVE
-                            && state.rewards().instrumentParticleKind(state.entity.slot()) == 1) {
-                        state.rewards().advanceInstrumentParticle(state.entity);
-                        return false;
-                    }
-                    return true;
-                });
-            }
+        registry.registerTick(
+                EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
+                EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS,
+                InstrumentOfTheSirensHandler::phase1InstrumentOfTheSirens);
+        registry.registerTick(
+                EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS,
+                EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2,
+                InstrumentOfTheSirensHandler::phase1InstrumentOfTheSirens2);
+    }
+
+    private static boolean phase1InstrumentOfTheSirens(EntityFrameExecution state) {
+        if (state.status == EntityStatus.ACTIVE && state.rewards().instrumentParticleKind(state.entity.slot()) == 1) {
+            state.rewards().advanceInstrumentParticle(state.entity);
+            return false;
         }
-        for (int type = 0; type < 256; type++) {
-            if ((type == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)) {
-                registry.registerTick(type, EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2, state -> {
-                    if (state.status == EntityStatus.ACTIVE
-                            && state.rewards().instrumentPickupSequenceActive(state.entity.slot())) {
-                        state.rewards()
-                                .advanceInstrumentPickup(
-                                        state.entity,
-                                        state.frame,
-                                        state.linkEntityX,
-                                        state.linkEntityY,
-                                        state.linkZ,
-                                        state.randomByteSupplier);
-                        return false;
-                    }
-                    return true;
-                });
-            }
+        return true;
+    }
+
+    private static boolean phase1InstrumentOfTheSirens2(EntityFrameExecution state) {
+        if (state.status == EntityStatus.ACTIVE
+                && state.rewards().instrumentPickupSequenceActive(state.entity.slot())) {
+            state.rewards()
+                    .advanceInstrumentPickup(
+                            state.entity,
+                            state.frame,
+                            state.linkEntityX,
+                            state.linkEntityY,
+                            state.linkZ,
+                            state.randomByteSupplier);
+            return false;
         }
+        return true;
     }
 }

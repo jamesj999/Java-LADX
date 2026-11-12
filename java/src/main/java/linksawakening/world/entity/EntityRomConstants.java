@@ -31,7 +31,7 @@ import linksawakening.world.entity.motion.ZoraMotion;
 public final class EntityRomConstants {
     private EntityRomConstants() {}
 
-    static final int ENTITY_PUSHED_BLOCK = 0x06;
+    public static final int ENTITY_PUSHED_BLOCK = 0x06;
 
     static final int[] INSTRUMENT_MUSIC_TRACKS = {0x20, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E};
 
@@ -39,11 +39,11 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_KEY_DROP_POINT = 0x30;
 
-    static final int ENTITY_MASTER_STALFOS = 0x5F;
+    public static final int ENTITY_MASTER_STALFOS = 0x5F;
 
     public static final int ENTITY_GENIE = 0x5C;
 
-    static final int ENTITY_DESERT_LANMOLA = 0x87;
+    public static final int ENTITY_DESERT_LANMOLA = 0x87;
 
     public static final int ENTITY_ARMOS_KNIGHT = 0x88;
 
@@ -55,11 +55,11 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_THREE_OF_A_KIND = EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
 
-    static final int ENTITY_PIECE_OF_POWER = 0x33;
+    public static final int ENTITY_PIECE_OF_POWER = 0x33;
 
     public static final int ENTITY_CRYSTAL_SWITCH = 0x66;
 
-    static final int ENTITY_BUTTERFLY = 0x6E;
+    public static final int ENTITY_BUTTERFLY = 0x6E;
 
     public static final int ENTITY_KID_71 = 0x71;
 
@@ -71,29 +71,29 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_OCTOROK = 0x09;
 
-    static final int ENTITY_OCTOROK_ROCK = 0x0A;
+    public static final int ENTITY_OCTOROK_ROCK = 0x0A;
 
     public static final int ENTITY_MOBLIN = 0x0B;
 
     public static final int ENTITY_IRON_MASK = 0x24;
 
-    static final int ENTITY_IRON_MASKS_MASK = 0x32;
+    public static final int ENTITY_IRON_MASKS_MASK = 0x32;
 
     public static final int ENTITY_MOBLIN_ARROW = 0x0C;
 
-    static final int ENTITY_TEKTITE = 0x0D;
+    public static final int ENTITY_TEKTITE = 0x0D;
 
     public static final int ENTITY_LEEVER = 0x0E;
 
-    static final int ENTITY_ANTI_FAIRY = 0x15;
+    public static final int ENTITY_ANTI_FAIRY = 0x15;
 
-    static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
+    public static final int ENTITY_SPARK_COUNTER_CLOCKWISE = 0x16;
 
-    static final int ENTITY_SPARK_CLOCKWISE = 0x17;
+    public static final int ENTITY_SPARK_CLOCKWISE = 0x17;
 
-    static final int ENTITY_ZOL = 0x1B;
+    public static final int ENTITY_ZOL = 0x1B;
 
-    static final int ENTITY_GEL = 0x1C;
+    public static final int ENTITY_GEL = 0x1C;
 
     public static final int ENTITY_HIDING_ZOL = 0x9B;
 
@@ -127,7 +127,7 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_CROW = CrowMotion.ENTITY_TYPE;
 
-    static final int ENTITY_KNIGHT = 0x51;
+    public static final int ENTITY_KNIGHT = 0x51;
 
     public static final int ENTITY_KANALET_BOMBABLE_WALL = 0x94;
 
@@ -135,15 +135,15 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_DROPPABLE_FAIRY = FairyMotion.ENTITY_TYPE;
 
-    static final int ENTITY_DROPPABLE_HEART = 0x2D;
+    public static final int ENTITY_DROPPABLE_HEART = 0x2D;
 
-    static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
+    public static final int ENTITY_DROPPABLE_RUPEE = 0x2E;
 
-    static final int ENTITY_DROPPABLE_ARROWS = 0x37;
+    public static final int ENTITY_DROPPABLE_ARROWS = 0x37;
 
-    static final int ENTITY_DROPPABLE_BOMBS = 0x38;
+    public static final int ENTITY_DROPPABLE_BOMBS = 0x38;
 
-    static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
+    public static final int ENTITY_DROPPABLE_MAGIC_POWDER = 0x3B;
 
     public static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
 
@@ -167,7 +167,7 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_STALFOS_EVASIVE = 0x1E;
 
-    static final int ENTITY_GIBDO = 0x1F;
+    public static final int ENTITY_GIBDO = 0x1F;
 
     public static final int ENTITY_LIKE_LIKE = 0x23;
 
@@ -175,15 +175,15 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_SNAKE = 0xA1;
 
-    static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
+    public static final int ENTITY_OPT1_NO_GROUND_INTERACTION = 0x10;
 
-    static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
+    public static final int ENTITY_OPT1_NO_WALL_COLLISION = 0x01;
 
-    static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
+    public static final int ENTITY_OPT1_SPLASH_IN_WATER = 0x08;
 
-    static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
+    public static final int ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL = 0x02;
 
-    static final int ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS = 0x20;
+    public static final int ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS = 0x20;
 
     static final int GENIE_OPTIONS1 = 0xD0;
 
@@ -192,9 +192,9 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_PHYSICS_HARMLESS = 0x80;
 
-    static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
+    public static final int ENTITY_PHYSICS_PROJECTILE_NOCLIP = 0x40;
 
-    static final int ENTITY_PHYSICS_SHADOW = 0x10;
+    public static final int ENTITY_PHYSICS_SHADOW = 0x10;
 
     static final int HITFLAGS_IGNORE_HITS = 0x80;
 
@@ -243,9 +243,9 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_ARMOS_STATUE = 0x0F;
 
-    static final int ENTITY_HIDING_GHINI = 0x10;
+    public static final int ENTITY_HIDING_GHINI = 0x10;
 
-    static final int ENTITY_GIANT_GHINI = 0x11;
+    public static final int ENTITY_GIANT_GHINI = 0x11;
 
     static final int ARMOS_INITIAL_PHYSICS_FLAGS = 0x92;
 
@@ -259,11 +259,11 @@ public final class EntityRomConstants {
 
     static final int LIKE_LIKE_INITIAL_PHYSICS_FLAGS = 0x92;
 
-    static final int ENTITY_GHINI = 0x12;
+    public static final int ENTITY_GHINI = 0x12;
 
     public static final int ENTITY_POLS_VOICE = PolsVoiceMotion.ENTITY_TYPE;
 
-    static final int ENTITY_KEESE = 0x19;
+    public static final int ENTITY_KEESE = 0x19;
 
     public static final int ENTITY_HARDHAT_BEETLE = 0x20;
 
@@ -273,11 +273,11 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
 
-    static final int ENTITY_GHOST = 0xD4;
+    public static final int ENTITY_GHOST = 0xD4;
 
     public static final int ENTITY_ROOSTER = 0xD5;
 
-    static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
+    public static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
 
     public static final int ENTITY_MARIN_INDOOR = 0x3E;
 
@@ -285,7 +285,7 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_BOW_WOW = 0x6D;
 
-    static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
+    public static final int ENTITY_KIKI_THE_MONKEY = 0xAD;
 
     public static final int ENTITY_DROPPABLE_SECRET_SEASHELL = 0x3D;
 
@@ -324,9 +324,9 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_MOBLIN_SWORD = 0x14;
 
-    static final int ENTITY_LASER = 0x2A;
+    public static final int ENTITY_LASER = 0x2A;
 
-    static final int ENTITY_LASER_BEAM = 0x2B;
+    public static final int ENTITY_LASER_BEAM = 0x2B;
 
     public static final int ENTITY_ARROW = 0x00;
 
@@ -358,7 +358,7 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_BOUNCING_BOMBITE = 0x55;
 
-    static final int ENTITY_TIMER_BOMBITE = 0x56;
+    public static final int ENTITY_TIMER_BOMBITE = 0x56;
 
     public static final int ENTITY_MAD_BOMBER = 0x93;
 
@@ -418,9 +418,9 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_LIFTABLE_ROCK = 0x05;
 
-    static final int ENTITY_LIFTABLE_STATUE = 0x9D;
+    public static final int ENTITY_LIFTABLE_STATUE = 0x9D;
 
-    static final int ENTITY_WRECKING_BALL = 0xA8;
+    public static final int ENTITY_WRECKING_BALL = 0xA8;
 
     public static final int ENTITY_SIDE_VIEW_POT = 0xD6;
 
@@ -450,9 +450,9 @@ public final class EntityRomConstants {
 
     public static final int ENTITY_WITCH_RAT = WitchRatMotion.ENTITY_TYPE;
 
-    static final int ENTITY_HORSE_PIECE = 0x98;
+    public static final int ENTITY_HORSE_PIECE = 0x98;
 
-    static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
+    public static final int ENTITY_PHYSICS_GRABBABLE = 0x20;
 
     static final int OBJECT_BUSH = 0x5C;
 
