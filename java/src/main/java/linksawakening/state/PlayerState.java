@@ -1,62 +1,7 @@
 package linksawakening.state;
 
 /** Aggregate of inventory, resources, progression and equipment state. */
-public final class PlayerState extends PlayerLifecycleCompatibility {
-
-    /** @deprecated Use {@link InventoryItem#EMPTY}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_EMPTY = 0x00;
-    /** @deprecated Use {@link InventoryItem#SWORD}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_SWORD = 0x01;
-    /** @deprecated Use {@link InventoryItem#BOMBS}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_BOMBS = 0x02;
-    /** @deprecated Use {@link InventoryItem#POWER_BRACELET}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_POWER_BRACELET = 0x03;
-    /** @deprecated Use {@link InventoryItem#SHIELD}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_SHIELD = 0x04;
-    /** @deprecated Use {@link InventoryItem#BOW}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_BOW = 0x05;
-    /** @deprecated Use {@link InventoryItem#HOOKSHOT}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_HOOKSHOT = 0x06;
-    /** @deprecated Use {@link InventoryItem#MAGIC_ROD}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_MAGIC_ROD = 0x07;
-
-    /** @deprecated Use {@link InventoryItem#OCARINA}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_OCARINA = 0x09;
-    /** @deprecated Use {@link InventoryItem#ROCS_FEATHER}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_ROCS_FEATHER = 0x0A;
-    /** @deprecated Use {@link InventoryItem#SHOVEL}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_SHOVEL = 0x0B;
-    /** @deprecated Use {@link InventoryItem#MAGIC_POWDER}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_MAGIC_POWDER = 0x0C;
-    /** @deprecated Use {@link InventoryItem#BOOMERANG}. */
-    @Deprecated(forRemoval = true)
-    public static final int INVENTORY_BOOMERANG = 0x0D;
-
-    /** @deprecated Use {@link Tunic#RED}. */
-    @Deprecated(forRemoval = true)
-    public static final int TUNIC_RED = 0x01;
-
-    /** @deprecated Use {@link PowerUp#NONE}. */
-    @Deprecated(forRemoval = true)
-    public static final int ACTIVE_POWER_UP_NONE = 0x00;
-    /** @deprecated Use {@link PowerUp#PIECE_OF_POWER}. */
-    @Deprecated(forRemoval = true)
-    public static final int ACTIVE_POWER_UP_PIECE_OF_POWER = 0x01;
-    /** @deprecated Use {@link PowerUp#GUARDIAN_ACORN}. */
-    @Deprecated(forRemoval = true)
-    public static final int ACTIVE_POWER_UP_GUARDIAN_ACORN = 0x02;
+public final class PlayerState {
 
     public static final int MAX_RUPEES = 999;
     public static final int MAX_HEARTS = 14;

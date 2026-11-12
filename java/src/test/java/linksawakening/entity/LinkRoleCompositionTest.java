@@ -30,15 +30,18 @@ class LinkRoleCompositionTest {
     }
 
     @Test
-    void legacyHierarchyContainsOnlyDeprecatedMethodContracts() {
+    void aggregatesHaveNoSuperclassAndOnlyTheExternalJumpTargetBridge() {
         for (Class<?> aggregate : new Class<?>[] {Link.class, PlayerState.class}) {
-            for (Class<?> layer = aggregate.getSuperclass(); layer != Object.class; layer = layer.getSuperclass()) {
-                assertEquals(0, layer.getDeclaredFields().length, layer.getName());
-                for (var method : layer.getDeclaredMethods()) {
-                    if (!method.isSynthetic())
-                        assertTrue(method.isAnnotationPresent(Deprecated.class), method.toString());
-                }
-            }
+            assertEquals(Object.class, aggregate.getSuperclass());
+            for (var method : aggregate.getDeclaredMethods())
+                assertEquals(
+                        aggregate == Link.class && method.getName().equals("useRocsFeather"),
+                        method.isAnnotationPresent(Deprecated.class),
+                        method.toString());
+            for (var field : aggregate.getDeclaredFields())
+                assertFalse(field.isAnnotationPresent(Deprecated.class), field.toString());
+            for (var constructor : aggregate.getDeclaredConstructors())
+                assertFalse(constructor.isAnnotationPresent(Deprecated.class), constructor.toString());
         }
     }
 }

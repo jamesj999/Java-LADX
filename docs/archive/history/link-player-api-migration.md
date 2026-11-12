@@ -641,3 +641,13 @@ external migration clients. The typed RoomPaletteLoader call is now used.
 | `linksawakening.state.PlayerResourceCompatibility.vitals()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
 | `linksawakening.state.PlayerResourceCompatibility.wallet()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
 | `linksawakening.ui.FileMenuFrameSnapshot.<init>(java.lang.String,int,boolean,boolean,int,int,int[],int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>)` | `java/src/main/java/linksawakening/ui/FileMenuFrameSnapshot.java`<br>`java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java` |
+
+## Round 5 aggregate flattening
+
+- Link: superclass depth 4 → 0; source lines 249 → 218; declared public methods 15 → 17.
+- PlayerState: superclass depth 4 → 0; source lines 139 → 84; declared public methods 12 → 12.
+- Deprecated aggregate bridge methods 205 → 1; constants 22 → 0; constructor 1 → 0.
+- Eight compatibility layer classes deleted. PlayerState has no deprecated members.
+- Link.useRocsFeather remains only for `java/src/test/java/linksawakening/world/room/GameplayRouteStage1.java`, which passes Link as JumpTarget. World must pass `link.airborne()` instead.
+- Link.update remains as genuine aggregate frame orchestration through its retained motion role.
+- Boundary tests now enforce direct Object inheritance and the exact single bridge exception; state has no gameplay dependency exemption.
