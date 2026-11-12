@@ -420,3 +420,10 @@ Data_004_4FAE
 Data_004_4FEE
 
 GrandmaUlrira1SpriteVariants
+FrameCounterToLinkDirection
+Data_002_7C40
+Data_002_7C48
+Data_002_68B1
+Data_002_44E7
+LinkRevolvingDoorAnimation
+

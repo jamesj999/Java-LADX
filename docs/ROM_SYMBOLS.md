@@ -7,7 +7,7 @@ Regenerate from a locally built RGBDS symbol file:
 
     python3 tools/rom/gen_symbols.py /path/to/LADX-Disassembly/azle.sym
 
-Use `--check` to verify without writing. Normal builds need no disassembly.
+Use `--check` to verify without writing (omit the .sym argument for structural validation only). Normal builds need no disassembly.
 `symbols.txt` is a curated allow-list of exact labels, one per line; blank lines
 and full-line `#` comments are permitted. Missing and duplicate labels fail.
 
@@ -24,7 +24,7 @@ the numeric pair. Report mismatches before changing behavior. Do not substitute
 an address merely because another label has a similar name.
 
 `RomAddress.fromOffset` bridges existing file-offset cursors to typed reads;
-`plus` advances in file order and `withGbcBank()` explicitly mirrors the original
+`plus` advances within its bank window and `withGbcBank()` explicitly mirrors the original
 GBC bank adjustment. Retain range checks at format boundaries for useful errors.
 
 Audio clients can use `FrameAudioPlayer` with the existing `PcmSoundOutput`
@@ -190,3 +190,79 @@ Validation: `./gradlew test romFreeTest --rerun-tasks` passed: 2,438 full tests
 and 936 ROM-free tests, zero failures/errors/skips. Generated symbols pass
 `--check`. Scene parity reports zero mismatches within its tested scope; no new
 emulator replay comparison was performed for this address-preserving refactor.
+
+## ROM access refactor baseline
+
+The starting API exposes four public Rom members (constructor and three reads).
+RomTables has 744 lines and 43 public methods. RomUtil/RomBank expose six
+byte-array helper overloads (two/four). The initial lexical count of 156
+`byte[] rom*` occurrences comprises 148 parameters/fields, 3 locals, and 5
+return declarations, as detailed in the migration inventory.
+
+## Reading the ROM
+
+New code accepts `Rom`, never `byte[]` ROM data. Create one `Rom.of(bytes)` at
+an input boundary; it validates that the length is a multiple of `$4000`.
+The deprecated constructor continues to accept partial buffers because existing
+loaders and ROM-free tests rely on them. Both APIs retain caller-owned storage:
+the owner must not mutate it. `unsafeBytes()` is a temporary migration escape
+hatch, not the API for new readers.
+
+- `u8` / `s8` return unsigned / signed bytes as integers; `u16le` reads a
+  little-endian word. Every read checks its complete range and reports the
+  bank:address, requested length, and ROM length on bounds failure.
+- `bytes(address, length)` copies; the deprecated `slice` delegates to it.
+  `view(address, length)` returns a zero-copy read-only `RomSlice` with bounded
+  relative `u8`, `s8`, `u16le`, `bytes`, and nested `view` operations.
+- `u8Table` / `s8Table` return owned `int[]` copies with explicit signedness.
+- `pointer(address, bank)` and `pointerTable(address, count, bank)` decode
+  little-endian CPU pointers. Pointers below `$4000` select bank zero; others
+  use the explicitly supplied bank. Invalid CPU windows fail; no GBC adjustment
+  is implicit. Call `GbcBanks.adjust` only where the original loader does.
+- `rom.cursor(address)` reads to the ROM end; `view.cursor()` is bounded to a
+  format region. `RomCursor` provides `u8`, `s8`, `u16le`, forward `skip`, and
+  `position()` as `RomAddress`. Failed reads/skips do not advance it.
+
+`RomAddress.plus` now rejects crossing either edge of a bank window. For a
+format intentionally contiguous in file order, explicitly use
+`RomAddress.fromOffset(address.offset() + displacement)`. Views and cursors
+already use file-order traversal. `RomBank.romOffset` preserves legacy permissive
+integer-pair conversion; new code uses validated `RomAddress` values.
+
+`RomTables.load(rom)` exposes `physicsTables()`, `entityPropertyTables()`,
+`collisionTables()`, `linkMotionTables()`, `swordTables()`, and `equipmentTables()`.
+Each immutable holder can also load independently with `load(rom)`. Existing
+aggregate methods delegate to the same named methods on those holders.
+
+Migration recipe (retain all format bounds, ownership, masks, and bank rules):
+
+```java
+// Before: byte[] romData parameter/field; manual unsigned index read.
+int offset = RomBank.romOffset(bank, address);
+int value = romData[offset + index] & 0xFF;
+
+// After: Rom rom parameter/field; verify the exact label against azle.sym.
+int value = rom.u8(RomSymbols.Options1ForEntity.plus(index));
+```
+
+For a signed read use `s8` rather than `u8`; for adjacent little-endian bytes
+use `u16le`. Replace `System.arraycopy`/copy slices with `bytes` only when the
+original owns its copy. Replace raw helper calls mechanically:
+
+```java
+// Before
+int[][] palettes = RomBank.loadPalettes(romData, bank, address, count);
+// After: source is the verified RomAddress, explicitly adjusted if required.
+int[][] palettes = RomBank.loadPalettes(rom, source, count);
+```
+
+Use a bounded view/cursor for stream decoding; preserve termination, input
+ordering and intentional offsets. No big-endian ROM reader was needed by the
+current callers. The coordinated migration work list is
+[rom-migration-inventory.md](archive/history/rom-migration-inventory.md).
+
+Symbol validation without a local `.sym` is now available with
+`python3 tools/rom/gen_symbols.py --check`. It checks exact labels, ordering,
+duplicates, and generated formatting using the checked-in addresses; it cannot
+independently validate those addresses. Continue to supply `azle.sym` to `--check`
+when verifying addresses against the disassembly.
