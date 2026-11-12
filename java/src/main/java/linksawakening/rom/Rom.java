@@ -74,11 +74,6 @@ public final class Rom {
         int offset = checkedOffset(address, length);
         return Arrays.copyOfRange(data, offset, offset + length);
     }
-    /** @deprecated Use {@link #bytes(RomAddress, int)} for an explicitly owned copy. */
-    @Deprecated(forRemoval = true)
-    public byte[] slice(RomAddress address, int length) {
-        return bytes(address, length);
-    }
 
     public RomSlice view(RomAddress address, int length) {
         checkedOffset(address, length);

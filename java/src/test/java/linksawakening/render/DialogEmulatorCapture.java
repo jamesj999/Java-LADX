@@ -89,7 +89,7 @@ public final class DialogEmulatorCapture {
         }
         GPU gpu = new GPU();
         gpu.loadBaseTiles(Rom.of(rom));
-        var tables = RomTables.loadFromRom(rom);
+        var tables = RomTables.load(Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
                 rom,
@@ -121,7 +121,12 @@ public final class DialogEmulatorCapture {
         link.animation().setRomDirection(0);
         if (heldShield)
             link.animation()
-                    .showTarinShieldPresentation(linksawakening.rom.RomBank.loadPalettes(rom, 0x05, 0x4C94, 1)[0]);
+                    .showTarinShieldPresentation(
+                            linksawakening.rom.RomBank.loadPalettes(
+                                    Rom.unchecked(rom),
+                                    linksawakening.rom.RomAddress.fromOffset(
+                                            linksawakening.rom.RomBank.romOffset(0x05, 0x4C94)),
+                                    1)[0]);
         if (receivedShield) {
             player.chestRewards().applyChestReward(ChestContentsTable.CHEST_SHIELD);
             link.animation().showStandingShieldDownPose();

@@ -7,6 +7,7 @@ import linksawakening.entity.LinkSpriteSheet;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
@@ -27,7 +28,7 @@ final class LinkScrollVisibilityTest {
         var link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),
-                RomTables.loadFromRom(rom),
+                RomTables.load(Rom.unchecked(rom)),
                 null,
                 sheet,
                 new PlayerState(),

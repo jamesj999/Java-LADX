@@ -53,7 +53,7 @@ final class RenderPipelineGpuUploadsTest {
     }
 
     private static void assertUpload(GPU gpu, byte[] bytes, RomAddress source) {
-        byte[] expected = TestRoms.partial(bytes).slice(source.inBank(GbcBanks.adjust(source.bank())), 32);
+        byte[] expected = TestRoms.partial(bytes).bytes(source.inBank(GbcBanks.adjust(source.bank())), 32);
         for (int i = 0; i < expected.length; i++) assertEquals(expected[i], gpu.readVRAM(0x8E0 + i));
     }
 }

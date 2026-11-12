@@ -79,9 +79,4 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     public void close() {
         stop();
     }
-
-    @Deprecated(forRemoval = true)
-    public FrameAudioPlayer(byte[] rom, int sampleRate, PcmSoundOutput output) {
-        this(Rom.unchecked(rom), sampleRate, output);
-    }
 }

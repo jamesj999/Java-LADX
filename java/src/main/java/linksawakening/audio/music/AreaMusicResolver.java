@@ -97,9 +97,4 @@ public final class AreaMusicResolver {
         }
         return romData.u8Table(RomAddress.fromOffset(offset), length);
     }
-
-    @Deprecated(forRemoval = true)
-    public static AreaMusicResolver fromRom(byte[] romData) {
-        return fromRom(Rom.unchecked(romData));
-    }
 }
