@@ -74,7 +74,8 @@ final class UrchinHandler {
                         urchinUpdate.jingleId()));
             }
             if (state.sprites() != null) {
-                EntitySpriteDefinition urchinDefinition = state.sprites().forUrchinState(frameInput.creditsGameplay());
+                EntitySpriteDefinition urchinDefinition =
+                        state.spriteViews().forUrchinState(frameInput.creditsGameplay());
                 slotState.updated(withDefinition(
                         slotState.updated(),
                         urchinDefinition,

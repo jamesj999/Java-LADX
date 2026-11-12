@@ -34,6 +34,8 @@ interface EntityRewardControllerServices {
 
     void initializeHealthGroup(int slot);
 
+    EntitySpriteViews spriteViews();
+
     static EntityRewardControllerServices bind(RoomEntityRuntime r) {
         return new Binding(() -> r);
     }
@@ -43,6 +45,10 @@ interface EntityRewardControllerServices {
 
         Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
             this.room = room;
+        }
+
+        public EntitySpriteViews spriteViews() {
+            return room.get().slotProperties.spriteViews();
         }
 
         public EntityMotionRegistry motions() {

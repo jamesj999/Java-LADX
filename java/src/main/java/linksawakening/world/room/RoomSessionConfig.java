@@ -8,6 +8,7 @@ import linksawakening.rom.Rom;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.RomRandomByteSource;
 
+/** Typed room wiring; all collaborators share the caller-owned Rom. */
 public record RoomSessionConfig(
         Rom romData,
         GPU gpu,
@@ -21,7 +22,7 @@ public record RoomSessionConfig(
             DroppableRupeeSystem droppableRupeeSystem,
             RoomLoadListener roomLoadListener) {}
 
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/WorldWiring.java:rooms; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public RoomSessionConfig(
             byte[] romData,

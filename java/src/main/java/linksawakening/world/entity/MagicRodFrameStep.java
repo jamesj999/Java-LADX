@@ -64,7 +64,7 @@ final class MagicRodFrameStep {
             }
             EntitySpriteDefinition fireDefinition = runtime.spriteHandlers() == null
                     ? entity.spriteDefinition()
-                    : runtime.spriteHandlers().forMagicRodFireState();
+                    : runtime.slotProperties().spriteViews().forMagicRodFireState();
             runtime.slots()[index] = withDefinition(entity, fireDefinition, variant);
             return false;
         }

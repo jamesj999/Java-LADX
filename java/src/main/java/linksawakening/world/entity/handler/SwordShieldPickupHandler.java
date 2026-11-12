@@ -26,7 +26,7 @@ final class SwordShieldPickupHandler {
             if (state.roomInspection().chestSwordLevel() == 0 && state.sprites() != null) {
                 slotState.entity(withDefinition(
                         slotState.entity(),
-                        state.sprites().forSwordShieldPickup(true),
+                        state.spriteViews().forSwordShieldPickup(true),
                         slotState.entity().spriteVariant()));
                 state.replaceEntity(slotState.entity());
             }

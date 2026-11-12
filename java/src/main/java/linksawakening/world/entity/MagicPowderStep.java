@@ -158,7 +158,7 @@ final class MagicPowderStep {
             RoomEntity torch = withPositionAndVariant(entity, objectLeft, objectTop, 0);
             EntitySpriteDefinition torchDefinition = runtime.spriteHandlers() == null
                     ? entity.spriteDefinition()
-                    : runtime.spriteHandlers().forMagicPowderTorchState(true);
+                    : runtime.slotProperties().spriteViews().forMagicPowderTorchState(true);
             runtime.slots()[index] = withDefinition(torch, torchDefinition, 0);
             runtime.events()
                     .magicPowderObjectRequests

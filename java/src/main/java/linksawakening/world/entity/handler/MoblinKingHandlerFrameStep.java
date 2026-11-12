@@ -102,7 +102,7 @@ final class MoblinKingHandlerFrameStep {
         if (state.sprites() != null) {
             slotState.updated(withDefinition(
                     slotState.updated(),
-                    state.sprites()
+                    state.spriteViews()
                             .forMoblinKingState(
                                     state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
                                             .bodyVariant(slotState.entity().slot()),

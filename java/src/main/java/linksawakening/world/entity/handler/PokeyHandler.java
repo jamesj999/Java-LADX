@@ -87,7 +87,7 @@ final class PokeyHandler {
                 if (state.sprites() != null) {
                     slotState.updated(withDefinition(
                             slotState.updated(),
-                            state.sprites().forPokeyState(pokeyUpdate.renderInertia()),
+                            state.spriteViews().forPokeyState(pokeyUpdate.renderInertia()),
                             slotState.updated().spriteVariant()));
                 }
             }

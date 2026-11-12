@@ -4,9 +4,16 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 final class RoomDungeonView implements RoomDungeon {
     private final Dependencies dependencies;
+    private final RoomDungeon.View view;
 
     RoomDungeonView(Dependencies dependencies) {
         this.dependencies = dependencies;
+        view = new RoomDungeonLiveView(
+                dependencies.roomState(), () -> dependencies.roomSessionViews().activeRoom());
+    }
+
+    public RoomDungeon.View view() {
+        return view;
     }
 
     public void setDungeonItemForDebug(int mapId, int index, int value) {

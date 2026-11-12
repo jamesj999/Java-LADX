@@ -26,6 +26,8 @@ interface EntityBackgroundMechanicsServices {
 
     RoomEntity[] slots();
 
+    EntitySpriteViews spriteViews();
+
     static EntityBackgroundMechanicsServices bind(RoomEntityRuntime r) {
         return new Binding(() -> r);
     }
@@ -35,6 +37,10 @@ interface EntityBackgroundMechanicsServices {
 
         Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
             this.room = room;
+        }
+
+        public EntitySpriteViews spriteViews() {
+            return room.get().slotProperties.spriteViews();
         }
 
         public int clearEntity(int slot) {

@@ -11,9 +11,13 @@ import linksawakening.world.transition.Warp;
 /** Live room queries and owned save/render projections of hMapRoom and the room status tables. */
 final class RoomSessionViews {
     private final Dependencies dependencies;
+    private final RoomRenderSnapshot.View renderView;
 
     RoomSessionViews(Dependencies dependencies) {
         this.dependencies = dependencies;
+        renderView = new RoomRenderLiveView(
+                () -> dependencies.location().activeRoom,
+                () -> dependencies.entityBridge().get().entityRuntime);
     }
 
     int entityHealth(int slot) {
@@ -138,6 +142,10 @@ final class RoomSessionViews {
         return dependencies.entityBridge().get().entityRuntime == null
                 ? "-1"
                 : dependencies.entityBridge().get().entityRuntime.inspection().moblinKingTrace();
+    }
+
+    RoomRenderSnapshot.View renderView() {
+        return dependencies.location().activeRoom == null ? null : renderView;
     }
 
     RoomRenderSnapshot renderSnapshot() {

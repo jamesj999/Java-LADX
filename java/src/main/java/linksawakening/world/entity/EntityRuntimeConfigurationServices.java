@@ -30,6 +30,8 @@ interface EntityRuntimeConfigurationServices {
 
     SlimeEyeController slimeEye();
 
+    EntitySpriteViews spriteViews();
+
     static EntityRuntimeConfigurationServices bind(RoomEntityRuntime r) {
         return new Binding(() -> r);
     }
@@ -39,6 +41,10 @@ interface EntityRuntimeConfigurationServices {
 
         Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
             this.room = room;
+        }
+
+        public EntitySpriteViews spriteViews() {
+            return room.get().slotProperties.spriteViews();
         }
 
         public linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers() {

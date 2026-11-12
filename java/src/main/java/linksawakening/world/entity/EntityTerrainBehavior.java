@@ -150,7 +150,7 @@ final class EntityTerrainBehavior {
         int y = runtime.physicsTables()
                 .advanceFallingY(entity.y(), runtime.physicsTables().readFallingSpeedY(slot), slot);
         if (runtime.spriteHandlers() != null) {
-            entity = withDefinition(entity, runtime.spriteHandlers().forFallingEntity(), phase);
+            entity = withDefinition(entity, runtime.spriteViews().forFallingEntity(), phase);
         }
         return withPositionAndVariant(entity, x, y, phase);
     }

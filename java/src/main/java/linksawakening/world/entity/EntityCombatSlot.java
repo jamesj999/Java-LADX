@@ -2,8 +2,8 @@ package linksawakening.world.entity;
 /** Scratch values for exactly one slot's ordered combat pass. */
 final class EntityCombatSlot {
     final EntityCombatResolverServices runtime;
-    final EnemyCombatFrame inputs;
-    final java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+    EnemyCombatFrame inputs;
+    java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
     linksawakening.world.entity.RoomEntity entity;
     boolean booBuddyAllowsLinkCollision;
     boolean booBuddyAllowsSwordCollision;
@@ -34,14 +34,44 @@ final class EntityCombatSlot {
     int swordDamage;
     boolean swordResultApplied;
 
-    EntityCombatSlot(
-            EntityCombatResolverServices runtime,
+    EntityCombatSlot(EntityCombatResolverServices runtime) {
+        this.runtime = runtime;
+    }
+
+    void reset(
             EnemyCombatFrame inputs,
             java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events,
             RoomEntity entity) {
-        this.runtime = runtime;
         this.inputs = inputs;
         this.events = events;
         this.entity = entity;
+        this.booBuddyAllowsLinkCollision = false;
+        this.booBuddyAllowsSwordCollision = false;
+        this.peaHatGrounded = false;
+        this.hidingZolSwordCollision = false;
+        this.hidingZolLinkCollision = false;
+        this.collisionFlashCountdown = 0;
+        this.goombaStomp = false;
+        this.linkCollision = false;
+        this.swordHit = false;
+        this.moldormTailSwordHit = false;
+        this.soundChannel = null;
+        this.soundId = 0;
+        this.secondarySoundChannel = null;
+        this.secondarySoundId = 0;
+        this.enemyDamage = 0;
+        this.enemySpecialAction = 0;
+        this.swordPokeVfx = null;
+        this.peaHatSwordClink = false;
+        this.spikedBeetleSwordClink = false;
+        this.maskedMimicSwordClink = false;
+        this.rollingBonesBarSwordClink = false;
+        this.moblinKingSwordClink = false;
+        this.linkDamage = 0;
+        this.linkCollisionResponse = null;
+        this.bodyRecoilBeforeSword = false;
+        this.swordResult = null;
+        this.swordDamage = 0;
+        this.swordResultApplied = false;
     }
 }
