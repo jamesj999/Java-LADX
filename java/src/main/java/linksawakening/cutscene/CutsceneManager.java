@@ -1,20 +1,23 @@
 package linksawakening.cutscene;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import linksawakening.dialog.DialogController;
 import linksawakening.scene.BackgroundScene;
 
+/** Cutscene manager behavior and state. */
 public final class CutsceneManager implements CutsceneContext {
 
     private final DialogController dialogController;
     private final Consumer<String> sceneLoader;
     private final CutsceneController controller;
     private IntroSequence introSequence;
-    private java.util.function.IntConsumer noiseSound = id -> {};
+    private IntConsumer noiseSound = id -> {};
 
-    public void setIntroNoiseSound(java.util.function.IntConsumer sink) {
+    public void setIntroNoiseSound(IntConsumer sink) {
         noiseSound = Objects.requireNonNull(sink);
         if (introSequence != null) introSequence.setNoiseSound(noiseSound);
     }
@@ -90,8 +93,8 @@ public final class CutsceneManager implements CutsceneContext {
         return frameSnapshot != null ? resizeLineScroll(frameSnapshot.lineScrollX(), height) : null;
     }
 
-    public java.util.List<IntroSprite> sprites() {
-        return frameSnapshot != null ? frameSnapshot.sprites() : java.util.List.of();
+    public List<IntroSprite> sprites() {
+        return frameSnapshot != null ? frameSnapshot.sprites() : List.of();
     }
 
     public int titleRevealRows() {

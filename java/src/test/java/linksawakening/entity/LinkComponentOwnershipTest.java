@@ -18,7 +18,9 @@ class LinkComponentOwnershipTest {
                 LinkSideView.class,
                 LinkEquipment.class,
                 LinkEntityEffects.class)) {
-            for (var field : component.getDeclaredFields()) assertNotEquals(Link.class, field.getType());
+            for (Class<?> owner = component; owner != Object.class; owner = owner.getSuperclass()) {
+                for (var field : owner.getDeclaredFields()) assertNotEquals(Link.class, field.getType());
+            }
             for (var constructor : component.getDeclaredConstructors()) {
                 for (Class<?> type : constructor.getParameterTypes()) assertNotEquals(Link.class, type);
             }

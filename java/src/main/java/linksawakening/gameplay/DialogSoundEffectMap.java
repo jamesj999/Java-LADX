@@ -9,6 +9,7 @@ import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.dialog.DialogController;
 
+/** Dialog sound effect map behavior and state. */
 public final class DialogSoundEffectMap {
     private final Map<DialogController.SoundEvent, SoundEffect> effects;
 

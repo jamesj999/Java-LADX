@@ -2,6 +2,7 @@ package linksawakening.ui;
 
 import linksawakening.state.PlayerState;
 
+/** Hud overlay behavior and state. */
 public final class HudOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;

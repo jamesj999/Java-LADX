@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.InputConfig;
 
+/** Gameplay dialog input behavior and state. */
 public final class GameplayDialogInput {
 
     private GameplayDialogInput() {}

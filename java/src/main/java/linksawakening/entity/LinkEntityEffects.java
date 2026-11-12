@@ -227,7 +227,7 @@ final class LinkEntityEffects {
         linkStateMachine.get().romInteractiveMotionBlocked = false;
         linkAnimator.get().romAnimationStateOverride = -1;
         // The entity handler has already drawn the bed on the launch frame.
-        // Ordinary Link rendering takes over at the next physics linkGroundMotion.get().accessUpdate.
+        // Ordinary Link rendering takes over at the next physics accessUpdate.
         linkAnimator.get().marinWakeUpBedVariant = 3;
         marinBedJumpMotionLocked = true;
         linkAnimationState.get().movingThisFrame = false;

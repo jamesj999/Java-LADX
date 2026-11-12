@@ -11,6 +11,7 @@ import linksawakening.entity.Link;
 import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
+/** Overworld dialog interaction behavior and state. */
 public final class OverworldDialogInteraction {
 
     private static final int OBJECT_OWL_STATUE = 0x6F;

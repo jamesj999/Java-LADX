@@ -2,6 +2,7 @@ package linksawakening.startup;
 
 import linksawakening.config.AppConfig;
 
+/** Startup coordinator behavior and state. */
 public final class StartupCoordinator {
 
     public static final int NEW_GAME_START_ROOM_ID = 0x92;

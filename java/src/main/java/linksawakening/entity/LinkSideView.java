@@ -155,7 +155,7 @@ final class LinkSideView {
         linkAnimationState.get().movingThisFrame = linkMotion.get().subX != oldX || linkMotion.get().subY != oldY;
         if (linkAnimationState.get().movingThisFrame) linkAnimationState.get().accessTickAnimation();
         else linkAnimationState.get().walkTickCounter = linkAnimationState.get().walkFrame = 0;
-        // Side-view falling uses the normal linkAirborne.get().airborne pose, not a Z-axis flip.
+        // Side-view falling uses the normal airborne pose, not a Z-axis flip.
         linkAnimator.get().jumpAnimationFrame = 3;
     }
 

@@ -8,7 +8,7 @@ import java.util.Objects;
  * this object only exposes the equipment-facing activation and motion gates.
  */
 public final class Hookshot implements EquipmentItem {
-
+    /** Contract for launch target. */
     public interface LaunchTarget {
         boolean fireHookshot();
 

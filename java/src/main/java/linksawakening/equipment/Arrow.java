@@ -10,7 +10,7 @@ import linksawakening.state.PlayerState;
 public final class Arrow implements EquipmentItem {
     private static final int MAX_ACTIVE_PROJECTILES = 0x02;
     private static final int SHOOTING_COUNTDOWN = 0x10;
-
+    /** Contract for shoot target. */
     public interface ShootTarget {
         boolean shootArrow();
 

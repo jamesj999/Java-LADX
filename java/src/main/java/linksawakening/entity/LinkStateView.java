@@ -5,26 +5,27 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 /** Source-compatible Link operations delegated to their state owners. */
 abstract class LinkStateView {
-    LinkAssembly assembly;
-    LinkAnimator linkAnimator;
-    LinkSideView linkSideView;
-    LinkStateMachine linkStateMachine;
-    LinkEquipment linkEquipment;
-    LinkEntityEffects linkEntityEffects;
-    LinkMotion linkMotion;
-    LinkAirborne linkAirborne;
-    LinkSwimming linkSwimming;
-    LinkDamage linkDamage;
-    LinkAnimationState linkAnimationState;
-    LinkItemState linkItemState;
-    LinkGroundMotion linkGroundMotion;
-    LinkSignals linkSignals;
-    LinkRecovery linkRecovery;
-    LinkServices linkServices;
-    LinkControls linkControls;
-    DialogGotItemSequence dialogGotItemSequence;
+    final LinkAssembly assembly;
+    final LinkAnimator linkAnimator;
+    final LinkSideView linkSideView;
+    final LinkStateMachine linkStateMachine;
+    final LinkEquipment linkEquipment;
+    final LinkEntityEffects linkEntityEffects;
+    final LinkMotion linkMotion;
+    final LinkAirborne linkAirborne;
+    final LinkSwimming linkSwimming;
+    final LinkDamage linkDamage;
+    final LinkAnimationState linkAnimationState;
+    final LinkItemState linkItemState;
+    final LinkGroundMotion linkGroundMotion;
+    final LinkSignals linkSignals;
+    final LinkRecovery linkRecovery;
+    final LinkServices linkServices;
+    final LinkControls linkControls;
+    final DialogGotItemSequence dialogGotItemSequence;
 
-    final void bindComponents() {
+    LinkStateView(LinkServices services) {
+        assembly = new LinkAssembly(services);
         linkAnimator = assembly.linkAnimator.get();
         linkSideView = assembly.linkSideView.get();
         linkStateMachine = assembly.linkStateMachine.get();

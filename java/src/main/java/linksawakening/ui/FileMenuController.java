@@ -7,7 +7,7 @@ import linksawakening.scene.BackgroundScene;
  * Input/state model for the ROM-backed file-selection and New Game screens.
  */
 public final class FileMenuController extends FileMenuEditing {
-
+    /** Named mode values. */
     public enum Mode {
         SELECT,
         CREATE,

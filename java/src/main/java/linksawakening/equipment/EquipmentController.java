@@ -4,6 +4,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
 
+/** Equipment controller behavior and state. */
 public final class EquipmentController {
 
     private final InputState inputState;

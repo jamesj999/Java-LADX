@@ -1,5 +1,5 @@
 package linksawakening.cutscene;
-
+/** Intro cutscene script behavior and state. */
 public final class IntroCutsceneScript {
 
     public static final String SCENE_SEA = "intro-sea";

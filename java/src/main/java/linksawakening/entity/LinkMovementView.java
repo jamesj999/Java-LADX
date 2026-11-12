@@ -5,6 +5,10 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 /** Source-compatible Link operations delegated to their state owners. */
 abstract class LinkMovementView extends LinkStateView {
+    LinkMovementView(LinkServices services) {
+        super(services);
+    }
+
     public int direction() {
         return linkAnimationState.accessDirection();
     }

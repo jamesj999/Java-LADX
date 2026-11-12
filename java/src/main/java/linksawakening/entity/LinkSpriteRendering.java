@@ -161,7 +161,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
 
     private int resolveNormalAnimation() {
         // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
-        // while linkAirborne.get().airborne, selecting the alternate normal pose after the flip.
+        // while airborne, selecting the alternate normal pose after the flip.
         int normalFrame = linkAirborne.get().airborne
                         || (ledgeJumpRenderY != Integer.MIN_VALUE
                                 && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)

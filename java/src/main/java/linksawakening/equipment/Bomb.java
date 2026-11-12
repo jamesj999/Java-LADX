@@ -12,7 +12,7 @@ import linksawakening.state.PlayerState;
  * ordering around the spawn request.
  */
 public final class Bomb implements EquipmentItem {
-
+    /** Contract for placement target. */
     public interface PlacementTarget {
         boolean placeBomb();
 

@@ -3,6 +3,7 @@ package linksawakening.gameplay;
 import linksawakening.rom.*;
 import linksawakening.rom.RomBank;
 
+/** Signpost dialog table behavior and state. */
 public final class SignpostDialogTable {
 
     private static final int SIGNPOST_DIALOG_TABLE_BANK = RomSymbols.SignpostDialogTable.bank();

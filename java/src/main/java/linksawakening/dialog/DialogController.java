@@ -1,7 +1,7 @@
 package linksawakening.dialog;
-
+/** Dialog controller behavior and state. */
 public final class DialogController extends DialogTextFormatting {
-
+    /** Named sound event values. */
     public enum SoundEvent {
         TEXT_PRINT(0x0F),
         DIALOG_BREAK(0x15),
@@ -17,7 +17,7 @@ public final class DialogController extends DialogTextFormatting {
             return code;
         }
     }
-
+    /** Named box position values. */
     public enum BoxPosition {
         TOP(8),
         // DialogOpenAnimationEnd writes rows $0A..$0E, above the HUD.

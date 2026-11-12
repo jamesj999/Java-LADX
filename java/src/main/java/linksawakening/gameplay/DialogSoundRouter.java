@@ -2,6 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.dialog.DialogController;
 
+/** Dialog sound router behavior and state. */
 public final class DialogSoundRouter {
 
     private DialogSoundRouter() {}

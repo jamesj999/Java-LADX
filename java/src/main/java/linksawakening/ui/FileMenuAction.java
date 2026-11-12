@@ -2,8 +2,9 @@ package linksawakening.ui;
 
 import java.util.Objects;
 
+/** Immutable file menu action values. */
 public record FileMenuAction(Type type, int selectedSlot, int targetSlot, int[] nameBytes) {
-
+    /** Named type values. */
     public enum Type {
         NONE,
         CREATE_FILE,

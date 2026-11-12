@@ -158,7 +158,7 @@ abstract class LinkPositionUpdates extends LinkCollisionMotion {
         Link.validateRomByte(speedX, "Link X speed");
         forcedSpeedX = (byte) speedX;
         // The pot handler leaves hLinkSpeedY untouched; Link computes its
-        // ordinary Y input on the next motion linkGroundMotion.get().accessUpdate.
+        // ordinary Y input on the next motion accessUpdate.
         forcedSpeedXOnly = true;
         forcedSpeedPending = true;
     }

@@ -11,7 +11,7 @@ import linksawakening.state.PlayerState;
  * the selected song state and hands the playback countdown to the room.
  */
 public final class Ocarina implements EquipmentItem {
-
+    /** Contract for playback target. */
     public interface PlaybackTarget {
         boolean startOcarina(int countdown, int songFlags, int selectedSong);
 

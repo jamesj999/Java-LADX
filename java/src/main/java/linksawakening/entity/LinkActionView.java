@@ -7,6 +7,10 @@ import java.util.function.BooleanSupplier;
 
 /** Source-compatible Link operations delegated to their state owners. */
 abstract class LinkActionView extends LinkMovementView {
+    LinkActionView(LinkServices services) {
+        super(services);
+    }
+
     public int romEntityY() {
         return linkMotion.accessRomEntityY();
     }

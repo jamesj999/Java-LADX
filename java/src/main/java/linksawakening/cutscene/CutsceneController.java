@@ -3,6 +3,7 @@ package linksawakening.cutscene;
 import java.util.List;
 import java.util.Objects;
 
+/** Cutscene controller behavior and state. */
 public final class CutsceneController {
 
     private static final int MAX_IMMEDIATE_STEPS_PER_TICK = 16;

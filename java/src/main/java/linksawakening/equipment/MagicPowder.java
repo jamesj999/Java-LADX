@@ -8,7 +8,7 @@ import linksawakening.state.PlayerState;
 
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
 public final class MagicPowder implements EquipmentItem {
-
+    /** Contract for sprinkle target. */
     public interface SprinkleTarget {
         /** Allocates the ROM's type-$08 sprinkle entity. */
         boolean sprinkleMagicPowder();

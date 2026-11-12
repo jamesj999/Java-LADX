@@ -130,27 +130,11 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             OverworldCollision collision,
             LinkSpriteSheet spriteSheet,
             Services arguments) {
-        PlayerState playerState = arguments.playerState();
-        ItemRegistry itemRegistry = arguments.itemRegistry();
-        GameplaySoundSink soundSink = arguments.soundSink();
-        LinkTunicPalette tunicPalette = arguments.tunicPalette();
-
-        LinkServices services = new LinkServices();
-        services.inputState = inputState;
-        services.inputConfig = inputConfig;
-        services.romTables = romTables;
-        services.collision = collision;
-        services.spriteSheet = spriteSheet;
-        services.playerState = playerState;
-        services.itemRegistry = itemRegistry;
-        services.soundSink = Objects.requireNonNull(soundSink, "soundSink");
-        services.tunicPalette = Objects.requireNonNull(tunicPalette, "tunicPalette");
-        assembly = new LinkAssembly(services);
-        bindComponents();
+        super(new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
     }
-
+    /** Immutable water splash values. */
     public record WaterSplash(int romX, int romY) {}
-
+    /** Immutable screen shake request values. */
     public record ScreenShakeRequest(int countdown, int phase) {}
 
     public void apply(LinkCommand command) {

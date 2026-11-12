@@ -5,6 +5,7 @@ import static linksawakening.cutscene.IntroSequence.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import linksawakening.scene.BackgroundScene;
 
 /**
@@ -30,7 +31,7 @@ abstract class IntroLifecycle extends IntroSequenceState {
         super(resources);
     }
 
-    public void setNoiseSound(java.util.function.IntConsumer sink) {
+    public void setNoiseSound(IntConsumer sink) {
         noiseSound = Objects.requireNonNull(sink);
     }
 

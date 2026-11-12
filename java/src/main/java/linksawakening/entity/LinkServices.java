@@ -3,6 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
+import java.util.Objects;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
@@ -11,15 +12,33 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.LinkPlayerState;
 
-/** LinkServices owns its Link state and operations. */
+/** Construction-time services shared by Link components; nullable test collaborators stay explicit. */
 final class LinkServices {
-    InputState inputState;
-    InputConfig inputConfig;
-    RomTables romTables;
-    OverworldCollision collision;
-    LinkSpriteSheet spriteSheet;
-    LinkPlayerState playerState;
-    ItemRegistry itemRegistry;
-    LinkTunicPalette tunicPalette;
-    GameplaySoundSink soundSink;
+    final InputState inputState;
+    final InputConfig inputConfig;
+    final RomTables romTables;
+    final OverworldCollision collision;
+    final LinkSpriteSheet spriteSheet;
+    final LinkPlayerState playerState;
+    final ItemRegistry itemRegistry;
+    final LinkTunicPalette tunicPalette;
+    final GameplaySoundSink soundSink;
+
+    LinkServices(
+            InputState inputState,
+            InputConfig inputConfig,
+            RomTables romTables,
+            OverworldCollision collision,
+            LinkSpriteSheet spriteSheet,
+            Link.Services arguments) {
+        this.inputState = inputState;
+        this.inputConfig = inputConfig;
+        this.romTables = romTables;
+        this.collision = collision;
+        this.spriteSheet = spriteSheet;
+        this.playerState = arguments.playerState();
+        this.itemRegistry = arguments.itemRegistry();
+        this.soundSink = Objects.requireNonNull(arguments.soundSink(), "soundSink");
+        this.tunicPalette = Objects.requireNonNull(arguments.tunicPalette(), "tunicPalette");
+    }
 }

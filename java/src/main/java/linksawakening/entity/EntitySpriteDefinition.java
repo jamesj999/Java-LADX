@@ -1,10 +1,11 @@
 package linksawakening.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** ROM-decoded OAM display list and handler metadata for one entity type. */
 public final class EntitySpriteDefinition {
-
+    /** Named shape values. */
     public enum Shape {
         PAIR,
         SINGLE,
@@ -12,7 +13,7 @@ public final class EntitySpriteDefinition {
         DYNAMIC,
         UNSUPPORTED
     }
-
+    /** Immutable oam attribute values. */
     public record OamAttribute(int tile, int attributes) {
         public OamAttribute {
             if ((tile & ~0xFF) != 0 || (attributes & ~0xFF) != 0) {
@@ -20,7 +21,7 @@ public final class EntitySpriteDefinition {
             }
         }
     }
-
+    /** Immutable variant values. */
     public record Variant(OamAttribute first, OamAttribute second) {
         public Variant {
             if (first == null) {
@@ -44,6 +45,7 @@ public final class EntitySpriteDefinition {
     /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
     public record DynamicSprite(
             int yOffset, int xOffset, OamAttribute oam, TileSource tileSource, boolean appliesEntityFlipAttribute) {
+        /** Named tile source values. */
         public enum TileSource {
             ENTITY_SHEETS,
             GPU
@@ -260,7 +262,7 @@ public final class EntitySpriteDefinition {
     }
 
     private static List<List<RectangleSprite>> copyRectangleVariants(List<List<RectangleSprite>> source) {
-        List<List<RectangleSprite>> copy = new java.util.ArrayList<>(source.size());
+        List<List<RectangleSprite>> copy = new ArrayList<>(source.size());
         for (List<RectangleSprite> variant : source) {
             copy.add(List.copyOf(variant));
         }
@@ -268,7 +270,7 @@ public final class EntitySpriteDefinition {
     }
 
     private static List<List<DynamicSprite>> copyDynamicVariants(List<List<DynamicSprite>> source) {
-        java.util.ArrayList<List<DynamicSprite>> copy = new java.util.ArrayList<>(source.size());
+        ArrayList<List<DynamicSprite>> copy = new ArrayList<>(source.size());
         for (List<DynamicSprite> variant : source) {
             copy.add(List.copyOf(variant));
         }

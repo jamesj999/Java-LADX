@@ -4,6 +4,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 
+/** Tilemap renderer behavior and state. */
 public final class TilemapRenderer {
     private static final ThreadLocal<Region> LEGACY_REGION = ThreadLocal.withInitial(() -> new Region(0, 0, 0, 0));
 

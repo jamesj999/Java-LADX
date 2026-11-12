@@ -3,6 +3,7 @@ package linksawakening.cutscene;
 import static linksawakening.cutscene.IntroSequence.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import linksawakening.scene.BackgroundScene;
@@ -144,17 +145,17 @@ abstract class IntroSceneTransitions extends IntroBeachMotion {
     protected int[] lineScrollMap() {
         if (beachScrollStoppedThisFrame) {
             int[] lines = new int[144];
-            java.util.Arrays.fill(lines, beachScrollX);
+            Arrays.fill(lines, beachScrollX);
             // The CGB handler's direct SCX write (01:774E) reaches the LCD on
             // scanline 9; the preceding scanlines retain the first section's SCX.
-            java.util.Arrays.fill(lines, 0, 9, topLineScroll);
+            Arrays.fill(lines, 0, 9, topLineScroll);
             return lines;
         }
         boolean sea = stage == Stage.SEA || stage == Stage.SEA_FADE;
         boolean beach = stage == Stage.BEACH_FADE || (stage == Stage.BEACH && marinState < 4);
         if (stage == Stage.TITLE_REVEAL || stage == Stage.TITLE_WAIT) {
             int[] lines = new int[144];
-            java.util.Arrays.fill(lines, scrollX());
+            Arrays.fill(lines, scrollX());
             return lines;
         }
         if (!sea && !beach) return null;

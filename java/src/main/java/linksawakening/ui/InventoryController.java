@@ -4,6 +4,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 
+/** Inventory controller behavior and state. */
 public final class InventoryController {
 
     private final InputState inputState;

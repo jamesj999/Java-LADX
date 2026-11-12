@@ -79,7 +79,7 @@ abstract class LinkBootsMotion extends LinkRoomMotion {
         if (!downward || debugNoClip || linkServices.get().collision == null) {
             return;
         }
-        // Run the ordinary downward linkServices.get().collision handler, including its ledge
+        // Run the ordinary downward collision handler, including its ledge
         // half-tile filters, before applying the source's fallback.
         int probeX = linkMotion.get().pixelX();
         int probeY = linkMotion.get().pixelY();

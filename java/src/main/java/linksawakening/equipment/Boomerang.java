@@ -5,7 +5,7 @@ import java.util.function.BooleanSupplier;
 
 /** Edge-triggered {@code UseBoomerang} equipment bridge. */
 public final class Boomerang implements EquipmentItem {
-
+    /** Contract for launch target. */
     public interface LaunchTarget {
         boolean fireBoomerang();
 

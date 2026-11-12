@@ -5,9 +5,11 @@ import static linksawakening.cutscene.IntroSequence.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import linksawakening.rom.RomBank;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -71,7 +73,7 @@ abstract class IntroSequenceState {
     protected Stage stage = Stage.SEA;
     protected int frameCounter;
     protected int seaWaveCounter;
-    protected java.util.function.IntConsumer noiseSound = id -> {};
+    protected IntConsumer noiseSound = id -> {};
 
     protected int stageFrame;
     // hFrameCounter is reset during the beach sequence and stalls during LCD-off loads.
@@ -161,7 +163,7 @@ abstract class IntroSequenceState {
 
     protected static int[][] solidPalettes(int color) {
         int[][] palettes = new int[8][4];
-        for (int[] palette : palettes) java.util.Arrays.fill(palette, color);
+        for (int[] palette : palettes) Arrays.fill(palette, color);
         return palettes;
     }
 
@@ -243,7 +245,7 @@ abstract class IntroSequenceState {
         }
     }
 
-    public abstract void setNoiseSound(java.util.function.IntConsumer sink);
+    public abstract void setNoiseSound(IntConsumer sink);
 
     protected abstract void tickSeaWaveSound();
 

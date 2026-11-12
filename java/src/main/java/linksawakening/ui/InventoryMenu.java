@@ -295,7 +295,7 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
-
+    /** Immutable closed window values. */
     public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
 
     public boolean canSubmitClosedWindow() {

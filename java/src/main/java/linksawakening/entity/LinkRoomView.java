@@ -5,6 +5,10 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 /** Source-compatible Link operations delegated to their state owners. */
 abstract class LinkRoomView extends LinkActionView {
+    LinkRoomView(LinkServices services) {
+        super(services);
+    }
+
     public void setRomPhysicsModifier(int modifier) {
         linkStateMachine.accessSetRomPhysicsModifier(modifier);
     }

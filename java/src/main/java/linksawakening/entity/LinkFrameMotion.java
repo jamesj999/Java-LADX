@@ -77,7 +77,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
             return false;
         }
 
-        // 6A94's side-view landing branch clears Link's linkAirborne.get().airborne presentation
+        // 6A94's side-view landing branch clears Link's airborne presentation
         // before the next normal motion update. Main keeps wC147 set through
         // this update and clears it only before the following entity tick.
         if (linkSideView.get().standingOnSideViewEntity && !linkSideView.get().sideScrolling) {
@@ -171,7 +171,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
         linkAnimator.get().cachePushingAnimation();
         frame.mask = linkControls.get().accessBuildJoypadMask();
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[frame.mask];
-        // $02:4406 skips facing selection while linkAirborne.get().airborne; the Feather
+        // $02:4406 skips facing selection while airborne; the Feather
         // launch still follows this frame's ordinary ground movement.
         if (newDirection != -1
                 && (!linkAirborne.get().airborne || frame.featherLaunchFrame)
@@ -200,7 +200,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
         // frames. Mirrors the disassembly's hLinkInteractiveMotionBlocked flag
         // set by UpdateLinkAnimation while wSwordAnimationState != NONE. The
         // ROM still refreshes hLinkDirection from held single-axis input before
-        // this early-out path, so linkAnimationState.get().direction update must happen above.
+        // this early-out path, so direction update must happen above.
         // $02:43C3 bypasses the item motion gate while Link is above ground.
         if (linkEquipment.get().itemsBlockMotion(true) && !linkAirborne.get().airborne) {
             linkAnimationState.get().movingThisFrame = false;
@@ -246,7 +246,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
         } else if (linkAirborne.get().airborne && !frame.featherLaunchFrame) {
-            // $02:4402 skips the ground speed lookup while linkAirborne.get().airborne.
+            // $02:4402 skips the ground speed lookup while airborne.
             // ApplyLinkGroundMotion steers these retained speeds after XY.
             frame.speedX = frame.carriedSpeedX;
             frame.speedY = frame.carriedSpeedY;
