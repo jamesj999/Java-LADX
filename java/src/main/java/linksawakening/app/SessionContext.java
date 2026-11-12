@@ -25,6 +25,7 @@ import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.rom.RomTables;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
@@ -37,6 +38,7 @@ import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileSaveController;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
+import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
@@ -608,5 +610,89 @@ public final class SessionContext {
         if (saves_fileMenuBackground == null)
             saves_fileMenuBackground = label -> session.router().loadFileMenuBackgroundScene(label);
         return saves_fileMenuBackground;
+    }
+
+    public GPU renderer_gpu() {
+        return session.gpu;
+    }
+
+    public GameFrameSceneBuilder renderer_frameSceneBuilder() {
+        return session.frameSceneBuilder;
+    }
+
+    public int[] renderer_currentTilemap() {
+        return session.scene.currentTilemap;
+    }
+
+    public int[] renderer_currentAttrmap() {
+        return session.scene.currentAttrmap;
+    }
+
+    public int[][] renderer_bgPalettes() {
+        return session.scene.bgPalettes;
+    }
+
+    public int[][] renderer_objPalettes() {
+        return session.scene.objPalettes;
+    }
+
+    public byte[] renderer_indexedDisplayBuffer() {
+        return session.services.indexedDisplayBuffer();
+    }
+
+    public RoomSession renderer_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public TransitionController renderer_transitionController() {
+        return session.transitionController;
+    }
+
+    public int renderer_frameCounter() {
+        return session.frameCounter;
+    }
+
+    public ScrollController renderer_scrollController() {
+        return session.scrollController;
+    }
+
+    public int[] renderer_GREEN_OBJECTS_SPRITE_PALETTE() {
+        return session.GREEN_OBJECTS_SPRITE_PALETTE;
+    }
+
+    public InventoryMenu renderer_inventoryMenu() {
+        return session.services.inventoryMenu();
+    }
+
+    public InventoryController renderer_inventoryController() {
+        return session.services.inventoryController();
+    }
+
+    public DialogController renderer_dialogController() {
+        return session.services.dialogController();
+    }
+
+    public CutsceneManager renderer_cutsceneManager() {
+        return session.services.cutsceneManager();
+    }
+
+    public TransientVfxSystem renderer_transientVfxSystem() {
+        return session.services.transientVfxSystem();
+    }
+
+    public DroppableRupeeSystem renderer_droppableRupeeSystem() {
+        return session.services.droppableRupeeSystem();
+    }
+
+    public CutLeavesEffectRenderer renderer_cutLeavesEffectRenderer() {
+        return session.services.cutLeavesEffectRenderer();
+    }
+
+    public Link renderer_link() {
+        return session.services.link();
+    }
+
+    public Screen renderer_currentScreen() {
+        return session.currentScreen;
     }
 }

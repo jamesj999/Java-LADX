@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    RenderStateAssembler rendererInstance;
     SaveCoordinator savesInstance;
     ScreenRouter routerInstance;
     InputRouter inputRouterInstance;
@@ -369,6 +370,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        rendererInstance = new RenderStateAssembler(context);
         savesInstance = new SaveCoordinator(context);
         routerInstance = new ScreenRouter(context);
         inputRouterInstance = new InputRouter(context);
@@ -443,28 +445,7 @@ public class GameSession {
     }
 
     RenderStateAssembler renderer() {
-        return new RenderStateAssembler(
-                gpu,
-                frameSceneBuilder,
-                scene.currentTilemap,
-                scene.currentAttrmap,
-                scene.bgPalettes,
-                scene.objPalettes,
-                services.indexedDisplayBuffer(),
-                services.roomSession(),
-                transitionController,
-                frameCounter,
-                scrollController,
-                GREEN_OBJECTS_SPRITE_PALETTE,
-                services.inventoryMenu(),
-                services.inventoryController(),
-                services.dialogController(),
-                services.cutsceneManager(),
-                services.transientVfxSystem(),
-                services.droppableRupeeSystem(),
-                services.cutLeavesEffectRenderer(),
-                services.link(),
-                currentScreen);
+        return rendererInstance;
     }
 
     InputRouter inputRouter() {
