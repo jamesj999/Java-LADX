@@ -693,3 +693,19 @@ After aggregate flattening, 35 non-framework inheritance relationships remain in
 | `Sword extends SwordChargeMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
 | `SwordAttackMotion extends SwordState` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
 | `SwordChargeMotion extends SwordAttackMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+
+## Round 5 ROM cleanup
+
+Deprecated ROM members 23 → 0: private Rom constructor; 20 RomTables delegates and two RomUtil delegates removed. RomBank already has no deprecated members. Compiler audit found no callers outside the constructor’s own factories. Typed/unchecked factories preserve validation policy.
+
+Remaining unsafeBytes call sites (including tests and off-limits code):
+
+- `java/src/main/java/linksawakening/audio/music/MusicDriver.java:47`: `romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();`
+- `java/src/main/java/linksawakening/audio/sfx/RomSoundEffectEngine.java:32`: `romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();`
+- `java/src/main/java/linksawakening/app/wiring/SubsystemWiring.java:45`: `transition.setRomData(rom.unsafeBytes());`
+- `java/src/main/java/linksawakening/app/wiring/SubsystemWiring.java:58`: `var bushes = new OverworldBushInteraction(rom.unsafeBytes(), tables);`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:53`: `romData.unsafeBytes(),`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:55`: `new RoomLoader(romData.unsafeBytes()),`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:56`: `new OverworldTilesetTable(romData.unsafeBytes()),`
+- `java/src/test/java/linksawakening/rom/RomReadTest.java:16`: `assertSame(data, rom.unsafeBytes());`
+- `java/src/test/java/linksawakening/rom/RomReadTest.java:36`: `assertSame(data, rom.unsafeBytes());`

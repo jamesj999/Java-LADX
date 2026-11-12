@@ -7,9 +7,7 @@ import java.util.Objects;
 public final class Rom {
     private final byte[] data;
 
-    /** @deprecated Use {@link #of(byte[])} for complete ROMs or {@link #unchecked(byte[])} for partial buffers. */
-    @Deprecated(forRemoval = true)
-    public Rom(byte[] data) {
+    private Rom(byte[] data) {
         this.data = Objects.requireNonNull(data, "data");
     }
 
