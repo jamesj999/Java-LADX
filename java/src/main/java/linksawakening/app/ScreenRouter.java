@@ -12,6 +12,7 @@ import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
 import linksawakening.save.SaveRamStore;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -35,7 +36,7 @@ public final class ScreenRouter {
         return context.gpu();
     }
 
-    public byte[] romData() {
+    public Rom romData() {
         return context.romData();
     }
 
@@ -148,8 +149,8 @@ public final class ScreenRouter {
         clearFileSaveController().run();
         showScreen().accept(cutsceneScreen());
         musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
-        gpu().loadIntroSequenceTiles(romData());
-        cutsceneManager().startIntro(romData(), this::loadIntroBackgroundScene);
+        gpu().loadIntroSequenceTiles(romData().unsafeBytes());
+        cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
     }
 
     public BackgroundScene loadIntroBackgroundScene(String sceneId) {
@@ -170,10 +171,10 @@ public final class ScreenRouter {
     public void startFileSelection() {
         showScreen().accept(fileMenuScreen());
         clearFileSaveController().run();
-        gpu().loadMenuTiles(romData());
+        gpu().loadMenuTiles(romData().unsafeBytes());
         setFileMenu()
                 .accept(new FileMenuController(
-                        new FileMenuRomData(romData()),
+                        new FileMenuRomData(romData().unsafeBytes()),
                         this::loadFileMenuBackgroundScene,
                         saveRamStore().saveFilesMask(),
                         saveRamStore().savedNames(),
@@ -203,7 +204,7 @@ public final class ScreenRouter {
 
     public void setCutsceneScene(String sceneId) {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
-            gpu().loadTitleScreenTiles(romData());
+            gpu().loadTitleScreenTiles(romData().unsafeBytes());
         }
         if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && screen().get() == cutsceneScreen()) {
             musicDirector().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
@@ -243,7 +244,7 @@ public final class ScreenRouter {
         showScreen().accept(gameplayScreen());
         resetDebug().run();
         link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData());
+        gpu().loadBaseTiles(romData().unsafeBytes());
         loadOverworldScreen();
         DebugLog.log("Debug gameplay started (F3 toggles no-clip)");
     }

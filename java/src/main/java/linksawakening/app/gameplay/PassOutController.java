@@ -2,7 +2,6 @@ package linksawakening.app.gameplay;
 
 import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.rom.Rom;
 import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** Bank 0 death dispatch and bank 1 animation; screen loading follows in a later stage. */
@@ -53,7 +52,7 @@ public final class PassOutController {
                 transition,
                 link.isPassingOut())) {
             handledFrame = true;
-            animation = new LinkPassOutAnimation(new Rom(context.romData()));
+            animation = new LinkPassOutAnimation(context.rom());
             link.beginPassOut();
             context.musicDirector().playDirectMusic(0);
             context.gameplaySoundSink().play(GameplaySoundEvent.LINK_DIES);

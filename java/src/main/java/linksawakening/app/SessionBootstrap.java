@@ -52,6 +52,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import linksawakening.save.SaveRamStore;
@@ -87,7 +88,7 @@ public final class SessionBootstrap {
         private final int[][] objPalettes;
         private final AppConfig appConfig;
         private final GPU gpu;
-        private final byte[] romData;
+        private final Rom romData;
         private final int[] currentTilemap;
         private final int[] currentAttrmap;
         private final byte[] indexedDisplayBuffer;
@@ -183,7 +184,7 @@ public final class SessionBootstrap {
             return gpu;
         }
 
-        public byte[] romData() {
+        public Rom romData() {
             return romData;
         }
 
@@ -326,7 +327,7 @@ public final class SessionBootstrap {
     private int[][] bgPalettes;
     private int[][] objPalettes;
     private AppConfig config;
-    private byte[] romData;
+    private Rom romData;
     private int[] currentTilemap;
     private int[] currentAttrmap;
     private byte[] indexedDisplayBuffer;
@@ -377,7 +378,7 @@ public final class SessionBootstrap {
 
     public Collaborators build(boolean headless) {
         loadROM();
-        transitionController.setRomData(romData);
+        transitionController.setRomData(romData.unsafeBytes());
         config = headless
                 ? AppConfig.parse("{\"itemProfile\":\"NEW_GAME\",\"debugEnabled\":false}")
                 : AppConfig.loadFromResources();
@@ -392,8 +393,8 @@ public final class SessionBootstrap {
                 throw new IllegalStateException("ROM not found in resources");
             }
 
-            romData = is.readAllBytes();
-            DebugLog.log("ROM loaded: " + romData.length + " bytes");
+            romData = Rom.of(is.readAllBytes());
+            DebugLog.log("ROM loaded: " + romData.size() + " bytes");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load ROM", e);
         }
@@ -415,47 +416,48 @@ public final class SessionBootstrap {
         dialogSoundOutput = host.createPcmOutput();
         initMusicSystem(headless);
         var audio = (FrameAudioPlayer) musicPlayer;
-        var catalog = new SoundEffectPlayer(new GameBoyApu(48_000), romData).catalog();
+        var catalog = new SoundEffectPlayer(new GameBoyApu(48_000), romData.unsafeBytes()).catalog();
         var dialogEffects = DialogSoundEffectMap.fromCatalog(catalog);
         var gameplayEffects = GameplaySoundEffectMap.fromCatalog(catalog);
         dialogSoundSink = event -> dialogEffects.resolve(event).ifPresent(audio::playSoundEffect);
         gameplaySoundSink = event -> gameplayEffects.resolve(event).ifPresent(audio::playSoundEffect);
-        InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
-        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
+        InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData.unsafeBytes());
+        inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData.unsafeBytes());
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         dialogController = DialogController.forGameplay();
-        dialogTextLoader = DialogTextLoader.loadFromRom(romData);
-        overworldDialogInteraction =
-                new OverworldDialogInteraction(SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
+        dialogTextLoader = DialogTextLoader.loadFromRom(romData.unsafeBytes());
+        overworldDialogInteraction = new OverworldDialogInteraction(
+                SignpostDialogTable.loadFromRom(romData.unsafeBytes()), dialogTextLoader);
         cutsceneManager = new CutsceneManager(dialogController, callbacks.cutsceneScene());
-        var introCatalog = SoundEffectCatalog.fromRom(romData);
+        var introCatalog = SoundEffectCatalog.fromRom(romData.unsafeBytes());
         cutsceneManager.setIntroNoiseSound(id -> introCatalog
                 .find(SoundEffectNamespace.NOISE, id)
                 .ifPresent(((FrameAudioPlayer) musicPlayer)::playSoundEffect));
-        romTables = RomTables.loadFromRom(romData);
-        newGameTarinShieldPalette = RomBank.loadPalettes(romData, 0x05, 0x4C94, 1)[0];
+        romTables = RomTables.load(romData);
+        newGameTarinShieldPalette =
+                RomBank.loadPalettes(romData, new linksawakening.rom.RomAddress(0x05, 0x4C94), 1)[0];
         overworldCollision = new OverworldCollision(romTables);
-        overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
-        linkSpriteSheet = LinkSpriteSheet.loadFromRom(romData);
-        SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData);
-        SwordPalette swordPalette = SwordPalette.loadFromRom(romData);
-        TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData);
+        overworldBushInteraction = new OverworldBushInteraction(romData.unsafeBytes(), romTables);
+        linkSpriteSheet = LinkSpriteSheet.loadFromRom(romData.unsafeBytes());
+        SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData.unsafeBytes());
+        SwordPalette swordPalette = SwordPalette.loadFromRom(romData.unsafeBytes());
+        TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData.unsafeBytes());
         transientVfxSystem = new TransientVfxSystem(16);
         droppableRupeeSystem = new DroppableRupeeSystem(16, random);
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
         itemRegistry = new ItemRegistry();
         roomSession = new RoomSession(
-                romData,
+                romData.unsafeBytes(),
                 gpu,
-                new RoomLoader(romData),
-                new OverworldTilesetTable(romData),
+                new RoomLoader(romData.unsafeBytes()),
+                new OverworldTilesetTable(romData.unsafeBytes()),
                 overworldCollision,
                 transientVfxSystem,
                 droppableRupeeSystem,
                 callbacks.roomMusic()::accept,
                 random);
         roomSession.setColorShellSoundSink(gameplaySoundSink);
-        LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData);
+        LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData.unsafeBytes());
         link = new Link(
                 inputState,
                 inputConfig,
@@ -761,22 +763,22 @@ public final class SessionBootstrap {
     }
 
     private void initMusicSystem(boolean headless) {
-        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        musicPlayer = new FrameAudioPlayer(romData, 48_000, dialogSoundOutput);
+        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData.unsafeBytes());
+        musicPlayer = new FrameAudioPlayer(romData.unsafeBytes(), 48_000, dialogSoundOutput);
         // ROM background tracks contain their own loop commands. Host-level
         // restarting would also loop finite fanfares such as $1B forever,
         // preventing wActiveMusicIndex-gated acquisition handlers advancing.
-        gameplayMusicController =
-                new GameplayMusicController(AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
+        gameplayMusicController = new GameplayMusicController(
+                AreaMusicResolver.fromRom(romData.unsafeBytes()), musicCatalog, musicPlayer);
     }
 
     private void loadGraphicsData() {
-        if (romData == null || romData.length < 0x8000) {
+        if (romData == null || romData.size() < 0x8000) {
             throw new IllegalStateException("ROM data is not available");
         }
 
-        backgroundSceneLoader = new BackgroundSceneLoader(romData);
-        gpu.loadTitleScreenTiles(romData);
+        backgroundSceneLoader = new BackgroundSceneLoader(romData.unsafeBytes());
+        gpu.loadTitleScreenTiles(romData.unsafeBytes());
         BackgroundScene scene = backgroundSceneLoader.load(BackgroundSceneCatalog.TITLE);
         currentTilemap = scene.tilemap();
         currentAttrmap = scene.attrmap();

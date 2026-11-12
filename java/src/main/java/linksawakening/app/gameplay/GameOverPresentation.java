@@ -2,7 +2,7 @@ package linksawakening.app.gameplay;
 
 import java.util.Arrays;
 import java.util.List;
-import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuFrameSnapshot;
@@ -21,7 +21,7 @@ final class GameOverPresentation {
     private final int[][] objects;
 
     GameOverPresentation(GameplaySimulation context) {
-        menu = new GameOverMenu(new Rom(context.romData()));
+        menu = new GameOverMenu(context.rom());
         var room = context.roomSession().renderSnapshot();
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
@@ -42,13 +42,13 @@ final class GameOverPresentation {
         if (countdown > 0) countdown--;
         switch (stage) {
             case 1 -> {
-                context.gpu().loadSaveMenuTiles(context.romData()); // $00:2E5E
+                context.gpu().loadSaveMenuTiles(context.rom().unsafeBytes()); // $00:2E5E
                 stage = 2;
             }
             case 2 -> {
                 // TilemapsPointersTable[$0A] points into bank $08; attrmaps are bank $24.
-                tiles = RomBank.decodeBackgroundMap(context.romData(), 0x08, 0x698F, tiles);
-                attributes = RomBank.decodeBackgroundMap(context.romData(), 0x24, 0x61E5, attributes);
+                tiles = RomBank.decodeBackgroundMap(context.rom(), new RomAddress(0x08, 0x698F), tiles);
+                attributes = RomBank.decodeBackgroundMap(context.rom(), new RomAddress(0x24, 0x61E5), attributes);
                 stage = 3;
             }
             case 3 -> {

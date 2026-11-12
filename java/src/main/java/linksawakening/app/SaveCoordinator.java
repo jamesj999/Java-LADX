@@ -45,7 +45,7 @@ public final class SaveCoordinator {
         return context.gpu();
     }
 
-    public byte[] romData() {
+    public Rom romData() {
         return context.romData();
     }
 
@@ -111,7 +111,7 @@ public final class SaveCoordinator {
         roomSession().setTailKeyOwned(playerState().tailKeyCount() != 0);
         roomSession().setBowWowState(0);
         link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData());
+        gpu().loadBaseTiles(romData().unsafeBytes());
         roomSession().loadIndoor(profile.mapId(), profile.roomId());
         roomSession()
                 .setRespawnPoint(
@@ -153,7 +153,7 @@ public final class SaveCoordinator {
                         playerState().swordLevel(),
                         playerState().powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
-            gpu().loadBaseTiles(romData());
+            gpu().loadBaseTiles(romData().unsafeBytes());
             roomSession()
                     .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
             link().setDirection(Link.DIRECTION_UP);
@@ -179,7 +179,7 @@ public final class SaveCoordinator {
     public void finishGameOver(int option) {
         if (playerState().health() == 0) {
             playerState()
-                    .setHealth(new Rom(romData())
+                    .setHealth(romData()
                             .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
@@ -198,7 +198,7 @@ public final class SaveCoordinator {
         } else {
             Warp spawn = roomSession().respawnPoint();
             if (spawn == null) throw new IllegalStateException("No game-over spawn point");
-            gpu().loadBaseTiles(romData());
+            gpu().loadBaseTiles(romData().unsafeBytes());
             if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
                 roomSession().loadInitialOverworld(spawn.destRoom());
                 link().setDirection(Link.DIRECTION_DOWN);
@@ -227,7 +227,7 @@ public final class SaveCoordinator {
 
     public void startFileSave() {
         enterFileSave().run();
-        gpu().loadSaveMenuTiles(romData());
+        gpu().loadSaveMenuTiles(romData().unsafeBytes());
         showFileSave().accept(new FileSaveController(fileMenuBackground()::apply));
         inputState().tickEdges();
     }
