@@ -6,19 +6,15 @@ import linksawakening.state.PowerUp;
 import linksawakening.state.Tunic;
 import linksawakening.world.room.ButtonInputs;
 import linksawakening.world.room.EntityFrameInputs;
-import linksawakening.world.room.InventoryInputs;
 import linksawakening.world.room.LinkInputs;
-import linksawakening.world.room.LinkMotion;
-import linksawakening.world.room.LinkPosition;
-import linksawakening.world.room.PlayerHealth;
 import linksawakening.world.room.PlayerInputs;
-import linksawakening.world.room.PlayerLevels;
-import linksawakening.world.room.ProgressInputs;
 import linksawakening.world.room.SwordBox;
 import linksawakening.world.room.UiInputs;
 
 final class EntityFrameInputsFactory {
-    static EntityFrameInputs create(GameplaySimulation c, Sword.CollisionBox b) {
+    private final EntityInputCache cache = new EntityInputCache();
+
+    EntityFrameInputs create(GameplaySimulation c, Sword.CollisionBox b) {
         return new EntityFrameInputs(
                 c.frameCounter(),
                 buildLinkInputs(c),
@@ -28,17 +24,17 @@ final class EntityFrameInputsFactory {
                 buildSwordBox(c, b));
     }
 
-    private static LinkInputs buildLinkInputs(GameplaySimulation c) {
+    private LinkInputs buildLinkInputs(GameplaySimulation c) {
         var l = c.link();
         var p = c.playerState();
-        return new LinkInputs(
-                new LinkPosition(
+        return cache.linkInputs(
+                cache.linkPosition(
                         l.position().romEntityX(),
                         l.position().romEntityY(),
                         l.animation().romEntityZ(),
                         l.animation().direction(),
                         l.position().romCollisionType()),
-                new LinkMotion(
+                cache.linkMotion(
                         l.airborne().isAirborne(),
                         l.airborne().romMotionState(),
                         l.equipment().isUsingShield(),
@@ -51,10 +47,10 @@ final class EntityFrameInputsFactory {
                 l.airborne().zVelocity());
     }
 
-    private static PlayerInputs buildPlayerInputs(GameplaySimulation c) {
+    private PlayerInputs buildPlayerInputs(GameplaySimulation c) {
         var p = c.playerState();
-        return new PlayerInputs(
-                new ProgressInputs(
+        return cache.playerInputs(
+                cache.progressInputs(
                         p.progression().heartPieces(),
                         p.progression().birdKeyCount() != 0,
                         p.progression().tailKeyCount() != 0,
@@ -62,27 +58,27 @@ final class EntityFrameInputsFactory {
                         p.ammunition().hasToadstool(),
                         p.ammunition().magicPowderCount(),
                         p.progression().goldenLeavesCount()),
-                new InventoryInputs(
+                cache.inventoryInputs(
                         p.inventory().itemA(),
                         p.inventory().itemB(),
                         p.equipmentLevels().tunicType() == Tunic.RED.romValue(),
                         p.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
-                new PlayerLevels(
+                cache.playerLevels(
                         p.equipmentLevels().shieldLevel(),
                         p.equipmentLevels().swordLevel(),
                         p.equipmentLevels().powerBraceletLevel()),
-                new PlayerHealth(
+                cache.playerHealth(
                         p.vitals().maxHearts(),
                         p.vitals().health(),
                         p.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue(),
                         p.vitals().isOnLowHealth()));
     }
 
-    private static UiInputs buildUiInputs(GameplaySimulation c) {
+    private UiInputs buildUiInputs(GameplaySimulation c) {
         var d = c.dialogController();
         var m = c.inventoryMenu();
         var p = c.musicPlayer();
-        return new UiInputs(
+        return cache.uiInputs(
                 d.isActive(),
                 m.inventoryAppearing(),
                 d.dialogCooldown(),
@@ -91,12 +87,12 @@ final class EntityFrameInputsFactory {
                 p.isMusicPlaying());
     }
 
-    private static ButtonInputs buildButtonInputs(GameplaySimulation c) {
+    private ButtonInputs buildButtonInputs(GameplaySimulation c) {
         var i = c.inputState();
         var k = c.inputConfig();
         var l = c.link();
         var lift = c.lift();
-        return new ButtonInputs(
+        return cache.buttonInputs(
                 i.isDown(k.aKey()),
                 i.isDown(k.bKey()),
                 (i.isDown(k.upKey())
@@ -112,7 +108,7 @@ final class EntityFrameInputsFactory {
                 lift.isBombButtonHeld());
     }
 
-    private static SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
-        return new SwordBox(b.active(), b.x(), b.width(), b.y(), b.height());
+    private SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
+        return cache.swordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 }

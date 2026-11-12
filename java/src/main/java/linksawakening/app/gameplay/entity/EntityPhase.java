@@ -18,6 +18,7 @@ import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.room.RoomSession;
 
 public final class EntityPhase {
+    private final EntityFrameInputsFactory inputs = new EntityFrameInputsFactory();
     private final EntityRewardApplier rewards = new EntityRewardApplier();
     private final GameplayCombatEvents combatEvents;
     private final LinkWriteApplier linkWrites = new LinkWriteApplier();
@@ -36,7 +37,7 @@ public final class EntityPhase {
 
     private final EntityFrameStages stages = new EntityFrameStages() {
         public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
-            return c.roomSession().tickEntities(EntityFrameInputsFactory.create(c, b));
+            return c.roomSession().tickEntities(inputs.create(c, b));
         }
 
         public void positions(GameplaySimulation c) {
@@ -96,6 +97,10 @@ public final class EntityPhase {
                 c.inventoryMenu().isTransitioning())) {
             stages.run(c, b);
         }
+    }
+
+    void applyResults(GameplaySimulation c, List<EntityProjectileEvent> events) {
+        stages.applyResults(c, events);
     }
 
     private void applyCombat(GameplaySimulation c, List<EntityProjectileEvent> projectileEvents) {

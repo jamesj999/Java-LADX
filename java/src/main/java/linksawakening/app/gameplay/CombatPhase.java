@@ -9,33 +9,37 @@ import linksawakening.state.Tunic;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.EntityCombatInputs;
-import linksawakening.world.room.SwordBox;
 import linksawakening.world.transition.Warp;
 
 final class CombatPhase {
+    private static final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+
     Sword.CollisionBox tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
-        Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();
+        Sword.CollisionBox swordBoxForEntityTick = NO_SWORD;
         if (!context.scrollController().isActive()
                 && !context.transitionController().isInputBlocked()
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
             Sword sword = context.equipmentController().activeSword();
             swordBoxForEntityTick = sword == null
-                    ? Sword.CollisionBox.inactive()
+                    ? NO_SWORD
                     : sword.enemyCollisionBox(
                             context.link().position().romEntityX(),
                             context.link().position().romSwordCollisionY(),
                             context.link().animation().direction(),
                             context.playerState().equipmentLevels().runningWithPegasusBoots());
-            EnemyAttackContext attackContext = new EnemyAttackContext(
-                    context.playerState().equipmentLevels().swordLevel(),
-                    context.playerState().equipmentLevels().tunicType() == Tunic.RED.romValue(),
-                    context.playerState().equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
-                    sword != null && sword.spinAttackActive(),
-                    context.playerState().equipmentLevels().runningWithPegasusBoots(),
-                    context.link().equipment().isUsingShield(),
-                    Direction.fromJava(context.link().animation().direction()).romIndex(),
-                    context.link().animation().romEntityZ());
+            EnemyAttackContext attackContext = context.frameInputs()
+                    .attack(
+                            context.playerState().equipmentLevels().swordLevel(),
+                            context.playerState().equipmentLevels().tunicType() == Tunic.RED.romValue(),
+                            context.playerState().equipmentLevels().activePowerUp()
+                                    == PowerUp.PIECE_OF_POWER.romValue(),
+                            sword != null && sword.spinAttackActive(),
+                            context.playerState().equipmentLevels().runningWithPegasusBoots(),
+                            context.link().equipment().isUsingShield(),
+                            Direction.fromJava(context.link().animation().direction())
+                                    .romIndex(),
+                            context.link().animation().romEntityZ());
             var combatEvents = context.roomSession()
                     .entities()
                     .resolveEntityCombat(new EntityCombatInputs(
@@ -47,12 +51,13 @@ final class CombatPhase {
                                     ? context.link().position().romSpeedY()
                                     : context.link().airborne().zVelocity(),
                             !context.debugNoClip(),
-                            new SwordBox(
-                                    swordBoxForEntityTick.active(),
-                                    swordBoxForEntityTick.x(),
-                                    swordBoxForEntityTick.width(),
-                                    swordBoxForEntityTick.y(),
-                                    swordBoxForEntityTick.height()),
+                            context.frameInputs()
+                                    .sword(
+                                            swordBoxForEntityTick.active(),
+                                            swordBoxForEntityTick.x(),
+                                            swordBoxForEntityTick.width(),
+                                            swordBoxForEntityTick.y(),
+                                            swordBoxForEntityTick.height()),
                             attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {

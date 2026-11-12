@@ -32,6 +32,10 @@ interface EntityFrameStages {
 
     default void run(GameplaySimulation c, Sword.CollisionBox b) {
         var events = tickEntities(c, b);
+        applyResults(c, events);
+    }
+
+    default void applyResults(GameplaySimulation c, List<EntityProjectileEvent> events) {
         positions(c);
         motion(c);
         attacks(c);

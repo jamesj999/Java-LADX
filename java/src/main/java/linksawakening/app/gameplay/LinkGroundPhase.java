@@ -27,16 +27,6 @@ final class LinkGroundPhase {
     }
 
     static LinkGroundFrame groundFrame(GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
-        return new LinkGroundFrame(
-                pixelX,
-                pixelY,
-                context.link().airborne().isAirborne(),
-                interactionBlocked,
-                context.dialogController().isActive(),
-                context.scrollController().isActive()
-                        || context.transitionController().isInputBlocked(),
-                context.link().airborne().romMotionState(),
-                context.link().motion().romSlowWalkingSpeed(),
-                context.link().motion().romItemUsageContext());
+        return context.frameInputs().ground(context, pixelX, pixelY, interactionBlocked);
     }
 }

@@ -1,7 +1,6 @@
 package linksawakening.app.screen;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
@@ -10,9 +9,10 @@ import linksawakening.render.RenderScreen;
 public final class GameplayScreen implements Screen {
     private final GameplayScreenDriver driver;
 
-    private record KeyEvent(int key, int action) {}
+    private int[] pendingKeys = new int[16];
+    private int[] reusableKeys = new int[16];
+    private int pendingCount;
 
-    private final List<KeyEvent> pendingKeys = new ArrayList<>();
     private boolean fileSaveRequested;
 
     public GameplayScreen(GameplayScreenDriver driver) {
@@ -24,18 +24,27 @@ public final class GameplayScreen implements Screen {
         // GLFW supplies separate events for a chord. The ROM checks the entire
         // held-button mask before dispatching gameplay ($00:0E46-0E82).
         if (driver.interceptFrameInput()) {
-            pendingKeys.clear();
+            pendingCount = 0;
             return;
         }
-        List<KeyEvent> events = List.copyOf(pendingKeys);
-        pendingKeys.clear();
-        for (KeyEvent event : events) driver.onKey(event.key(), event.action());
+        int[] events = pendingKeys;
+        int count = pendingCount;
+        pendingKeys = reusableKeys == null ? new int[16] : reusableKeys;
+        reusableKeys = null;
+        pendingCount = 0;
+        try {
+            for (int i = 0; i < count; i += 2) driver.onKey(events[i], events[i + 1]);
+        } finally {
+            reusableKeys = events;
+        }
         driver.tick();
     }
 
     @Override
     public void onKey(int key, int action) {
-        pendingKeys.add(new KeyEvent(key, action));
+        if (pendingCount + 2 > pendingKeys.length) pendingKeys = Arrays.copyOf(pendingKeys, pendingKeys.length * 2);
+        pendingKeys[pendingCount++] = key;
+        pendingKeys[pendingCount++] = action;
     }
 
     public void requestFileSave() {
@@ -49,7 +58,7 @@ public final class GameplayScreen implements Screen {
     }
 
     public void clearPendingInput() {
-        pendingKeys.clear();
+        pendingCount = 0;
         fileSaveRequested = false;
     }
 

@@ -31,7 +31,7 @@ public final class DialogBlockerPolicy implements DialogBlockers {
     }
 
     public OverworldDialogBlockers current() {
-        return new OverworldDialogBlockers(
+        return OverworldDialogBlockers.of(
                 inventory.shouldBlockOverworldInput(),
                 scroll.isActive(),
                 transition.isInputBlocked(),

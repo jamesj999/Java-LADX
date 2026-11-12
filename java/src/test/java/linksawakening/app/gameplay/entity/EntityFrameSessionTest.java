@@ -28,7 +28,7 @@ class EntityFrameSessionTest {
             c.link().position().captureRomFinalPosition();
             c.link().position().setPixelPosition(70, 80);
             var box = new Sword.CollisionBox(true, 1, 2, 3, 4);
-            var inputs = EntityFrameInputsFactory.create(c, box);
+            var inputs = new EntityFrameInputsFactory().create(c, box);
             assertEquals(58, inputs.link().finalX());
             assertEquals(78, inputs.link().position().x());
             assertEquals(c.dialogController().isActive(), inputs.ui().dialogActive());
@@ -113,6 +113,26 @@ class EntityFrameSessionTest {
             assertEquals(hearts + 1, c.playerState().vitals().maxHearts());
         } finally {
             SessionTestAccess.cleanup(game);
+        }
+    }
+
+    @Test
+    void cachedInputsRemainValueSnapshotsAcrossScriptedFrames() throws Exception {
+        try (var game = AllocationSessions.active()) {
+            var c = game.flows().simulation();
+            var cached = new EntityFrameInputsFactory();
+            var expected = new ArrayList<linksawakening.world.room.EntityFrameInputs>();
+            var actual = new ArrayList<linksawakening.world.room.EntityFrameInputs>();
+            var sword = Sword.CollisionBox.inactive();
+            for (int frame = 0; frame < 240; frame++) {
+                game.headlessButton("right", frame % 60 < 30);
+                game.headlessButton("down", frame % 60 >= 30);
+                SessionTestAccess.step(game);
+                expected.add(new EntityFrameInputsFactory().create(c, sword));
+                actual.add(cached.create(c, sword));
+            }
+            assertEquals(expected, actual, "Reused leaf values must never mutate earlier frames");
+            assertTrue(actual.stream().map(f -> f.link().position()).distinct().count() > 1);
         }
     }
 }

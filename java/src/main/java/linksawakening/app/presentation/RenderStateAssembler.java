@@ -57,30 +57,29 @@ public final class RenderStateAssembler {
     }
 
     public GameFrameState currentGameFrameState() {
+        var intro = ui.cutsceneManager().frameSnapshot();
         return state.screens()
                 .currentScreen
-                .renderState(GameFrameState.empty()
-                        .withScreen(currentRenderScreen())
-                        .withBackground(
-                                state.scene().currentTilemap,
-                                state.scene().currentAttrmap,
-                                state.scene().bgPalettes,
-                                state.scene().objPalettes)
-                        .withCutsceneManager(ui.cutsceneManager())
-                        .withIntroFrameSnapshot(ui.cutsceneManager().frameSnapshot())
-                        .withRoom(
-                                world.roomSession().rooms().renderSnapshot(),
-                                world.scrollController(),
-                                world.transitionController())
-                        .withLink(player.link())
-                        .withTransientVfx(
-                                visual.transientVfxSystem(),
-                                visual.cutLeavesEffectRenderer(),
-                                greenObjectsSpritePalette)
-                        .withDroppableRupees(visual.droppableRupeeSystem())
-                        .withInventoryController(ui.inventoryController())
-                        .withDialogController(ui.dialogController())
-                        .withFrameCounter(state.clock().value()));
+                .renderState(new GameFrameState(
+                        currentRenderScreen(),
+                        state.scene().currentTilemap,
+                        state.scene().currentAttrmap,
+                        state.scene().bgPalettes,
+                        state.scene().objPalettes,
+                        ui.cutsceneManager(),
+                        world.roomSession().rooms().renderSnapshot(),
+                        world.scrollController(),
+                        world.transitionController(),
+                        player.link(),
+                        visual.transientVfxSystem(),
+                        visual.cutLeavesEffectRenderer(),
+                        greenObjectsSpritePalette,
+                        visual.droppableRupeeSystem(),
+                        ui.inventoryController(),
+                        ui.dialogController(),
+                        state.clock().value(),
+                        intro,
+                        null));
     }
 
     public RenderScreen currentRenderScreen() {

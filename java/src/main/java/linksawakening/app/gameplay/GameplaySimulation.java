@@ -45,6 +45,12 @@ import linksawakening.world.transition.TransitionController;
 
 /** ROM-ordered simulation between transition advancement and input completion. */
 public final class GameplaySimulation implements GameplayFrame.Simulation {
+    private final FrameInputCache frameInputs = new FrameInputCache();
+
+    FrameInputCache frameInputs() {
+        return frameInputs;
+    }
+
     private final AnimatedTilesPhase animatedTilesPhase = new AnimatedTilesPhase();
     private final EntityPhase entityPhase;
     private final CombatPhase combatPhase = new CombatPhase();
