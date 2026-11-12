@@ -10,7 +10,10 @@ import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.world.room.ShovelStartResult;
 
-/** Registers tools and their room targets. Constructed only during session wiring. */
+/**
+ * Registers tools and their room targets. Constructed only during session wiring. Stateless factory used
+ * during session initialization.
+ */
 final class ToolEquipment {
     private ToolEquipment() {}
 

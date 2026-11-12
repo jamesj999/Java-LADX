@@ -9,7 +9,9 @@ import linksawakening.app.gameplay.recovery.GameOverActions;
 import linksawakening.app.gameplay.recovery.PassOutController;
 import linksawakening.app.services.AudioServices;
 
-/** Named flow ports required by simulation phases. */
+/**
+ * Named flow ports required by simulation phases. The immutable bundle is retained for the owning session.
+ */
 public record GameplayControl(
         AudioServices audio,
         MusicDirector music,

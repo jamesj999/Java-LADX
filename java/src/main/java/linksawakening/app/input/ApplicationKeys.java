@@ -1,5 +1,8 @@
 package linksawakening.app.input;
-/** Native-independent key codes for application and debug commands. */
+/**
+ * Native-independent key codes for application and debug commands. Stateless utility; no session state is
+ * retained.
+ */
 public final class ApplicationKeys {
     private ApplicationKeys() {}
 

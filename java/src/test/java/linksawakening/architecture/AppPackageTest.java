@@ -56,7 +56,7 @@ class AppPackageTest {
                 if (!call.owner().equals("linksawakening/rom/Rom")
                         || !call.name().equals("unsafeBytes")) continue;
                 assertTrue(
-                        List.of(APP + "wiring/SessionWiring", APP + "wiring/WorldWiring")
+                        List.of(APP + "wiring/SubsystemWiring", APP + "wiring/WorldWiring")
                                 .contains(type.name()),
                         type.name() + " exposes raw ROM bytes");
             }

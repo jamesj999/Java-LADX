@@ -8,7 +8,10 @@ import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 
-/** Synchronizes world-owned lifted-object state with Link presentation. */
+/**
+ * Synchronizes world-owned lifted-object state with Link presentation. One instance is retained for the
+ * owning session.
+ */
 public final class LiftInteraction {
     private final LiftButtons buttons;
     private final Link link;

@@ -37,7 +37,7 @@ class AppBoundaryTest {
                     || type.name().startsWith("linksawakening/app/gameplay/");
             for (var ref : type.references()) {
                 if (isolated) assertFalse(ref.startsWith("org/lwjgl/"), type.name() + " -> " + ref);
-                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/wiring/SessionAssembly"))
+                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/wiring/SessionWiring"))
                     assertFalse(ref.startsWith("linksawakening/audio/openal/"), type.name() + " -> " + ref);
             }
         }

@@ -2,7 +2,10 @@ package linksawakening.app.gameplay;
 
 import linksawakening.world.room.LinkGroundFrame;
 
-/** Ground sampling at the pre- and post-motion ROM positions. */
+/**
+ * Ground sampling at the pre- and post-motion ROM positions. Stateless utility; no session state is
+ * retained.
+ */
 final class LinkGroundPhase {
     private LinkGroundPhase() {}
 

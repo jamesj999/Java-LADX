@@ -6,7 +6,7 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 
-/** Applies raw enemy-combat sound writes at the gameplay/audio boundary. */
+/** Stateless application of raw enemy-combat sound and visual writes in source order. */
 public final class EnemyCombatEventConsumer {
     private static final int JINGLE_BUMP_ID = 0x09;
     private static final int JINGLE_TREASURE_FOUND_ID = 0x01;
@@ -69,53 +69,61 @@ public final class EnemyCombatEventConsumer {
             return;
         }
         if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
-            switch (id) {
-                    // UrchinEntityHandler, $15:7413-7415.
-                case 0x3E -> soundSink.play(GameplaySoundEvent.URCHIN_PUSH);
-                case 0x0B -> soundSink.play(GameplaySoundEvent.STRONG_BUMP);
-                case 0x20 -> soundSink.play(GameplaySoundEvent.ENEMY_BOUNCE);
-                case 0x24 -> soundSink.play(GameplaySoundEvent.ENEMY_JUMP);
-                case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
-                case JINGLE_TREASURE_FOUND_ID -> soundSink.play(GameplaySoundEvent.TREASURE_FOUND);
-                case JINGLE_PUZZLE_SOLVED_ID -> soundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
-                case JINGLE_ENEMY_HIT_ID -> soundSink.play(GameplaySoundEvent.ENEMY_HIT);
-                case JINGLE_SWORD_POKE_ID -> soundSink.play(GameplaySoundEvent.SWORD_POKE);
-                case JINGLE_WATER_SPLASH_ID -> soundSink.play(GameplaySoundEvent.WATER_SPLASH);
-                case JINGLE_ITEM_FALLING_ID -> soundSink.play(GameplaySoundEvent.ITEM_FALLING);
-                case JINGLE_ENEMY_BOMB_THROW_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BOMB_THROW);
-                case JINGLE_MAGIC_POWDER_ID -> soundSink.play(GameplaySoundEvent.MAGIC_POWDER);
-                case JINGLE_MAGIC_POWDER_POOF_ID -> soundSink.play(GameplaySoundEvent.MAGIC_POWDER_POOF);
-                case JINGLE_SWORD_BEAM_ID -> soundSink.play(GameplaySoundEvent.SWORD_BEAM);
-                case JINGLE_WRONG_ANSWER_ID -> soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
-                default -> {
-                    // Unknown ROM sound writes must not be guessed or routed
-                    // to an unrelated gameplay effect.
-                }
-            }
+            consumeJingle(id, soundSink);
         } else if (channel == EntityCombatEvent.SoundChannel.NOISE) {
-            switch (id) {
-                case 0x1A -> soundSink.play(GameplaySoundEvent.BOSS_EXPLOSION);
-                case NOISE_ENEMY_BURNING_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
-                case NOISE_ENEMY_DESTROYED_ID -> soundSink.play(GameplaySoundEvent.ENEMY_DESTROYED);
-                case NOISE_BEAMOS_LASER_ID -> soundSink.play(GameplaySoundEvent.BEAMOS_LASER);
-                case NOISE_SPIKE_TRAP_WHOOSH_ID -> soundSink.play(GameplaySoundEvent.SPIKE_TRAP_WHOOSH);
-                case NOISE_HOOKSHOT_ID -> soundSink.play(GameplaySoundEvent.HOOKSHOT);
-                case NOISE_BOOMERANG_ID -> soundSink.play(GameplaySoundEvent.BOOMERANG);
-                case NOISE_MAGIC_ROD_ID -> soundSink.play(GameplaySoundEvent.MAGIC_ROD);
-                case NOISE_SHOVEL_DIG_ID -> soundSink.play(GameplaySoundEvent.SHOVEL_DIG);
-                case NOISE_SHIELD_DRAW_ID -> soundSink.play(GameplaySoundEvent.SHIELD_DRAW);
-                case NOISE_BOMB_EXPLOSION_ID -> soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
-                case NOISE_DOOR_UNLOCKED_ID -> soundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-                default -> {
-                    // Unknown ROM sound writes must not be guessed or routed
-                    // to an unrelated gameplay effect.
-                }
-            }
+            consumeNoise(id, soundSink);
         } else if (channel == EntityCombatEvent.SoundChannel.WAVE) {
             if (id == WAVE_SWITCH_BLOCK_TOGGLE_ID) {
                 soundSink.play(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE);
             } else if (id == WAVE_SECRET_SEASHELL_ID) {
                 soundSink.play(GameplaySoundEvent.SECRET_SEASHELL);
+            }
+        }
+    }
+
+    private static void consumeJingle(int id, GameplaySoundSink soundSink) {
+        switch (id) {
+                // UrchinEntityHandler, $15:7413-7415.
+            case 0x3E -> soundSink.play(GameplaySoundEvent.URCHIN_PUSH);
+            case 0x0B -> soundSink.play(GameplaySoundEvent.STRONG_BUMP);
+            case 0x20 -> soundSink.play(GameplaySoundEvent.ENEMY_BOUNCE);
+            case 0x24 -> soundSink.play(GameplaySoundEvent.ENEMY_JUMP);
+            case JINGLE_BUMP_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BUMP);
+            case JINGLE_TREASURE_FOUND_ID -> soundSink.play(GameplaySoundEvent.TREASURE_FOUND);
+            case JINGLE_PUZZLE_SOLVED_ID -> soundSink.play(GameplaySoundEvent.PUZZLE_SOLVED);
+            case JINGLE_ENEMY_HIT_ID -> soundSink.play(GameplaySoundEvent.ENEMY_HIT);
+            case JINGLE_SWORD_POKE_ID -> soundSink.play(GameplaySoundEvent.SWORD_POKE);
+            case JINGLE_WATER_SPLASH_ID -> soundSink.play(GameplaySoundEvent.WATER_SPLASH);
+            case JINGLE_ITEM_FALLING_ID -> soundSink.play(GameplaySoundEvent.ITEM_FALLING);
+            case JINGLE_ENEMY_BOMB_THROW_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BOMB_THROW);
+            case JINGLE_MAGIC_POWDER_ID -> soundSink.play(GameplaySoundEvent.MAGIC_POWDER);
+            case JINGLE_MAGIC_POWDER_POOF_ID -> soundSink.play(GameplaySoundEvent.MAGIC_POWDER_POOF);
+            case JINGLE_SWORD_BEAM_ID -> soundSink.play(GameplaySoundEvent.SWORD_BEAM);
+            case JINGLE_WRONG_ANSWER_ID -> soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
+            default -> {
+                // Unknown ROM sound writes must not be guessed or routed
+                // to an unrelated gameplay effect.
+            }
+        }
+    }
+
+    private static void consumeNoise(int id, GameplaySoundSink soundSink) {
+        switch (id) {
+            case 0x1A -> soundSink.play(GameplaySoundEvent.BOSS_EXPLOSION);
+            case NOISE_ENEMY_BURNING_ID -> soundSink.play(GameplaySoundEvent.ENEMY_BURNING);
+            case NOISE_ENEMY_DESTROYED_ID -> soundSink.play(GameplaySoundEvent.ENEMY_DESTROYED);
+            case NOISE_BEAMOS_LASER_ID -> soundSink.play(GameplaySoundEvent.BEAMOS_LASER);
+            case NOISE_SPIKE_TRAP_WHOOSH_ID -> soundSink.play(GameplaySoundEvent.SPIKE_TRAP_WHOOSH);
+            case NOISE_HOOKSHOT_ID -> soundSink.play(GameplaySoundEvent.HOOKSHOT);
+            case NOISE_BOOMERANG_ID -> soundSink.play(GameplaySoundEvent.BOOMERANG);
+            case NOISE_MAGIC_ROD_ID -> soundSink.play(GameplaySoundEvent.MAGIC_ROD);
+            case NOISE_SHOVEL_DIG_ID -> soundSink.play(GameplaySoundEvent.SHOVEL_DIG);
+            case NOISE_SHIELD_DRAW_ID -> soundSink.play(GameplaySoundEvent.SHIELD_DRAW);
+            case NOISE_BOMB_EXPLOSION_ID -> soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
+            case NOISE_DOOR_UNLOCKED_ID -> soundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+            default -> {
+                // Unknown ROM sound writes must not be guessed or routed
+                // to an unrelated gameplay effect.
             }
         }
     }

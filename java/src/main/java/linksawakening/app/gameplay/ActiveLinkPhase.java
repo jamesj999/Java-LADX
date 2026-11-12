@@ -13,7 +13,10 @@ import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.room.EntityPickupInputs;
 import linksawakening.world.transition.Warp;
 
-/** Link's active-frame work in ROM order, between gating and transition checks. */
+/**
+ * Link's active-frame work in ROM order, between gating and transition checks. One instance is retained for
+ * the owning session.
+ */
 final class ActiveLinkPhase {
     private static final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
     private final LinkMotionDriver motion;

@@ -14,7 +14,10 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.room.RoomSession;
 
-/** Registers equipment in ROM order. Constructed only during session wiring. */
+/**
+ * Registers equipment in ROM order. Constructed only during session wiring. Stateless factory used during
+ * session initialization.
+ */
 final class EquipmentWiring {
     private EquipmentWiring() {}
 

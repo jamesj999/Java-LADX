@@ -13,7 +13,10 @@ import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 import linksawakening.world.transition.Warp;
 
-/** Assembles current scene and gameplay state for the shared renderer. */
+/**
+ * Assembles current scene and gameplay state for the shared renderer. One instance is retained for the
+ * owning session.
+ */
 public final class RenderStateAssembler {
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};

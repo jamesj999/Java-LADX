@@ -26,7 +26,10 @@ import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
-/** Routes host keys and queued gameplay edges to their screen and interaction owners. */
+/**
+ * Routes host keys and queued gameplay edges to their screen and interaction owners. One instance is
+ * retained for the owning session.
+ */
 public final class InputRouter implements DebugScroll {
     private final InputServices input;
     private final WorldServices world;
@@ -50,13 +53,9 @@ public final class InputRouter implements DebugScroll {
         this.actions = Objects.requireNonNull(actions);
     }
 
-    public int ROOM_PIXEL_WIDTH() {
-        return 160;
-    }
+    private static final int ROOM_PIXEL_WIDTH = 160;
 
-    public int ROOM_PIXEL_HEIGHT() {
-        return 128;
-    }
+    private static final int ROOM_PIXEL_HEIGHT = 128;
 
     public void onKeyEvent(int key, int action) {
         // Desktop shortcut only: Escape never enters the Game Boy button state.
@@ -205,14 +204,13 @@ public final class InputRouter implements DebugScroll {
                     .setPixelPosition(-1, player.link().position().pixelY());
             case ScrollController.RIGHT -> player.link()
                     .position()
-                    .setPixelPosition(
-                            ROOM_PIXEL_WIDTH(), player.link().position().pixelY());
+                    .setPixelPosition(ROOM_PIXEL_WIDTH, player.link().position().pixelY());
             case ScrollController.UP -> player.link()
                     .position()
                     .setPixelPosition(player.link().position().pixelX(), -1);
             case ScrollController.DOWN -> player.link()
                     .position()
-                    .setPixelPosition(player.link().position().pixelX(), ROOM_PIXEL_HEIGHT());
+                    .setPixelPosition(player.link().position().pixelX(), ROOM_PIXEL_HEIGHT);
             default -> {
                 return false;
             }

@@ -5,7 +5,10 @@ import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
 
-/** Long-lived visual services constructed before the first frame. */
+/**
+ * Long-lived visual services constructed before the first frame. The immutable bundle is retained for the
+ * owning session.
+ */
 public record VisualServices(
         TransientVfxSystem transientVfxSystem,
         DroppableRupeeSystem droppableRupeeSystem,

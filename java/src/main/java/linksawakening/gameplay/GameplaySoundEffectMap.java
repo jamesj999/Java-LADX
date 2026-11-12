@@ -8,7 +8,7 @@ import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 
-/** Gameplay sound effect map behavior and state. */
+/** Immutable ROM-decoded mapping from gameplay requests to effects, retained by a session audio sink. */
 public final class GameplaySoundEffectMap {
     private final Map<GameplaySoundEvent, SoundEffect> effects;
 

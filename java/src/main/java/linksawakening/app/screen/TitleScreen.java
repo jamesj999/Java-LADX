@@ -7,7 +7,10 @@ import linksawakening.cutscene.CutsceneManager;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
-/** Owns title-screen input edges and advances title presentation. */
+/**
+ * Owns title-screen input edges and advances title presentation. One instance is retained for the owning
+ * session.
+ */
 public final class TitleScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {

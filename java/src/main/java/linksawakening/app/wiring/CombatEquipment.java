@@ -10,7 +10,10 @@ import linksawakening.state.InventoryItem;
 import linksawakening.state.PowerUp;
 import linksawakening.world.room.ArrowShotResult;
 
-/** Registers combat items and their room targets. Constructed only during session wiring. */
+/**
+ * Registers combat items and their room targets. Constructed only during session wiring. Stateless factory
+ * used during session initialization.
+ */
 final class CombatEquipment {
     private CombatEquipment() {}
 

@@ -2,7 +2,10 @@ package linksawakening.app.state;
 
 import java.util.Objects;
 
-/** Mutable state shared by session owners; values are read at use time. */
+/**
+ * Mutable state shared by session owners; values are read at use time. The immutable bundle is retained for
+ * the owning session.
+ */
 public record SessionState(
         ScreenState screens,
         SceneState scene,

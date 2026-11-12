@@ -5,6 +5,10 @@ import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.equipment.Sword;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
+/**
+ * Defines world-tick and result-application order. Retained implementations also enable recording test
+ * doubles.
+ */
 interface EntityFrameStages {
     List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b);
 

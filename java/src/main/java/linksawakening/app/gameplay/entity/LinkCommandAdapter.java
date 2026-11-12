@@ -20,7 +20,10 @@ import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 
-/** The sole translation boundary between world requests and Link commands. */
+/**
+ * The sole translation boundary between world requests and Link commands. Stateless utility; no session
+ * state is retained.
+ */
 final class LinkCommandAdapter {
     private LinkCommandAdapter() {}
 

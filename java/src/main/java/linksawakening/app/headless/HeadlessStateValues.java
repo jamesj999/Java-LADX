@@ -3,7 +3,9 @@ package linksawakening.app.headless;
 import java.util.Objects;
 import linksawakening.app.HeadlessGameDriver;
 
-/** Stable checkpoint equality, hashing and text formatting. */
+/**
+ * Stable checkpoint equality, hashing and text formatting. Stateless utility; no session state is retained.
+ */
 final class HeadlessStateValues {
     private HeadlessStateValues() {}
 

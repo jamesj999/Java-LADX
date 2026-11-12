@@ -18,7 +18,10 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
 
-/** Runs Marin wake-up and Tarin shield state machines against live session state. */
+/**
+ * Runs Marin wake-up and Tarin shield state machines against live session state. One instance is retained
+ * for the owning session.
+ */
 public final class OpeningStory implements OpeningRestoration {
     private final PlayerServices player;
     private final WorldServices world;

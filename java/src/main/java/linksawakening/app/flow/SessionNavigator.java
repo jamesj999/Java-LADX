@@ -11,8 +11,11 @@ import linksawakening.scene.BackgroundScene;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomLoadListener;
 
-/** The sole two-phase cycle boundary. Construct before ROM/UI/world wiring; attach once
- * after screens and routes exist, before publishing the session or loading its first room. */
+/**
+ * The sole two-phase cycle boundary. Construct before ROM/UI/world wiring; attach once after screens and
+ * routes exist, before publishing the session or loading its first room. One instance is retained for the
+ * owning session.
+ */
 public final class SessionNavigator implements ScreenNavigator, RoomLoadListener {
     private final ScreenState state;
     private Targets targets;

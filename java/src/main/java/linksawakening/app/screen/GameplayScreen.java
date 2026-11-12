@@ -5,7 +5,10 @@ import java.util.Objects;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 
-/** Gameplay screen lifecycle. Callbacks belong to its owning session. */
+/**
+ * Owns queued key edges and gameplay dispatch for one session. One instance is retained for the owning
+ * session.
+ */
 public final class GameplayScreen implements Screen {
     private final GameplayScreenDriver driver;
 

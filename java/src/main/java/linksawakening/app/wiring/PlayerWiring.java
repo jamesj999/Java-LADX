@@ -21,7 +21,10 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.room.RoomSession;
 
-/** Creates Link and registers equipment in source order. */
+/**
+ * Creates Link and registers equipment in source order. Stateless factory used during session
+ * initialization.
+ */
 final class PlayerWiring {
     private PlayerWiring() {}
 

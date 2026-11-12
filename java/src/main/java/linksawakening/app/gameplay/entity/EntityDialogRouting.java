@@ -3,7 +3,10 @@ package linksawakening.app.gameplay.entity;
 import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.gameplay.GameplaySoundEvent;
 
-/** Side-effect ports for the ROM music/dialog/warp sequence. */
+/**
+ * Side-effect ports for the ROM music/dialog/warp sequence. Retained implementations support recording fakes
+ * for ordering tests.
+ */
 interface EntityDialogRouting {
     EntityDialogRouting DIRECT = new EntityDialogRouting() {
         public void music(GameplaySimulation c, int track) {

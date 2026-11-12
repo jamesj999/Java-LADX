@@ -43,7 +43,10 @@ import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** ROM-ordered simulation between transition advancement and input completion. */
+/**
+ * ROM-ordered simulation between transition advancement and input completion. One instance is retained for
+ * the owning session.
+ */
 public final class GameplaySimulation implements GameplayFrame.Simulation {
     private final FrameInputCache frameInputs = new FrameInputCache();
 
@@ -154,10 +157,6 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
 
     public int frameCounter() {
         return state.clock().value();
-    }
-
-    public int ROOM_PIXEL_HEIGHT() {
-        return 128;
     }
 
     public ScrollController scrollController() {

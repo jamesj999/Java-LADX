@@ -13,7 +13,10 @@ import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestOpenResult;
 
-/** Focused frame interactions using the current session collaborators. */
+/**
+ * Routes action-button interactions to signposts, chests, room dialogs and opening-story handlers. One
+ * instance is retained for the owning session.
+ */
 public final class DialogInteractions {
     private final InputServices input;
     private final WorldServices world;

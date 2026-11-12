@@ -6,7 +6,10 @@ import linksawakening.equipment.Bomb;
 import linksawakening.state.Direction;
 import linksawakening.world.room.RoomPlayerItems;
 
-/** Room-owned placement with Link's successful-placement animation writes. */
+/**
+ * Room-owned placement with Link's successful-placement animation writes. Retained with the session’s bomb
+ * equipment.
+ */
 final class RoomBombPlacement implements Bomb.PlacementTarget {
     private final Link link;
     private final RoomPlayerItems items;

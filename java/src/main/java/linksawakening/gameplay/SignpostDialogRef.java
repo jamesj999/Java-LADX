@@ -1,6 +1,6 @@
 package linksawakening.gameplay;
 
-/** Immutable signpost dialog ref values. */
+/** Immutable ROM dialog-table and entry identifier, safe to retain across frames. */
 public record SignpostDialogRef(int tableId, int dialogLowId) {
 
     public SignpostDialogRef {

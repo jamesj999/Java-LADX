@@ -10,7 +10,7 @@ import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 
-/** Loads the ROM and initial title presentation. */
+/** Loads the ROM and initial title presentation. Stateless factory used during session initialization. */
 final class RomWiring {
     private RomWiring() {}
 

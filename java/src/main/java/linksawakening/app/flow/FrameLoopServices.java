@@ -6,15 +6,18 @@ import linksawakening.app.presentation.FramePresentation;
 import linksawakening.app.screen.ScreenSet;
 import linksawakening.app.state.SaveState;
 
-/** Fully wired runtime entry points; contains no session callbacks. */
-public record SessionRuntime(
+/**
+ * Session-long entry points used by the frame loop: screens, presentation, key dispatch, shutdown,
+ * controllers and save storage.
+ */
+public record FrameLoopServices(
         ScreenSet screens,
         FramePresentation presentation,
         SessionInput input,
         SessionShutdown shutdown,
-        SessionFlows flows,
+        SessionControllers flows,
         SaveState saves) {
-    public SessionRuntime {
+    public FrameLoopServices {
         Objects.requireNonNull(screens);
         Objects.requireNonNull(presentation);
         Objects.requireNonNull(input);

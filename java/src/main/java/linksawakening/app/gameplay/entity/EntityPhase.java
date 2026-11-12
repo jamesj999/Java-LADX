@@ -17,6 +17,7 @@ import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.room.RoomSession;
 
+/** Ticks room entities and applies their results in source order. Retained for one simulation. */
 public final class EntityPhase {
     private final EntityFrameInputsFactory inputs = new EntityFrameInputsFactory();
     private final EntityRewardApplier rewards = new EntityRewardApplier();

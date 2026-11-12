@@ -23,7 +23,10 @@ import linksawakening.world.transition.RoomBoundaryController;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Constructs the room runtime and its presentation collaborators. */
+/**
+ * Constructs the room runtime and its presentation collaborators. Stateless factory used during session
+ * initialization.
+ */
 final class WorldWiring {
     private WorldWiring() {}
 

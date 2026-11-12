@@ -5,8 +5,8 @@ import linksawakening.app.headless.HeadlessState;
 import linksawakening.app.headless.SessionDiagnostics;
 
 /**
- * Owns an isolated, window-free game session for input replay and capture.
- * Frames use the same input, simulation and composition paths as the desktop.
+ * Owns an isolated, window-free game session for input replay and capture. Frames use the same input,
+ * simulation and composition paths as the desktop. One instance is retained for the owning session.
  */
 public final class HeadlessGameDriver {
     private final GameSession session = new GameSession();

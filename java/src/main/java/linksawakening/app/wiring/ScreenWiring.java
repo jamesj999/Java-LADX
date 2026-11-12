@@ -18,7 +18,10 @@ import linksawakening.app.state.SaveState;
 import linksawakening.app.state.ScreenState;
 import linksawakening.app.story.MusicRequests;
 
-/** Builds the five screens after their concrete collaborators have been constructed. */
+/**
+ * Builds the five screens after their concrete collaborators have been constructed. Stateless factory used
+ * during session initialization.
+ */
 final class ScreenWiring {
     private ScreenWiring() {}
 

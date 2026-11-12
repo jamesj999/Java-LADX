@@ -5,8 +5,11 @@ import linksawakening.app.debug.DebugLog;
 import linksawakening.app.state.DebugState;
 import linksawakening.entity.Link;
 
-/** Keeps the session debug flag and Link's motion gate synchronized. */
-public final class NoClipControl implements DebugActions {
+/**
+ * Keeps the session debug flag and Link's motion gate synchronized. One instance is retained for the owning
+ * session.
+ */
+public final class NoClipControl {
     private final DebugState state;
     private final Link link;
 

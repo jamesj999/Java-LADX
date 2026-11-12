@@ -16,7 +16,10 @@ import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Live diagnostic views plus the captured frame number for replay tools. */
+/**
+ * Live diagnostic views plus the captured frame number for replay tools. Created on demand for one
+ * diagnostic capture.
+ */
 public abstract class SessionDiagnostics {
     private final GPU gpu;
     private final RoomSession roomSession;

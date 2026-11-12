@@ -6,7 +6,10 @@ import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomLoadListener;
 import linksawakening.world.room.RoomSession;
 
-/** Adapts room loading to music selection after the world is assembled. */
+/**
+ * Adapts room loading to music selection after the world is assembled. One instance is retained for the
+ * owning session.
+ */
 public final class RoomMusicSelection implements RoomLoadListener {
     private final MusicDirector music;
     private final PlayerState player;

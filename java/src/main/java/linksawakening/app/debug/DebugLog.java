@@ -1,6 +1,9 @@
 package linksawakening.app.debug;
 
-/** Small shared destination for application diagnostic messages. */
+/**
+ * Small shared destination for application diagnostic messages. Stateless utility; no session state is
+ * retained.
+ */
 public final class DebugLog {
     private static final System.Logger LOGGER = System.getLogger("linksawakening.app");
 

@@ -20,7 +20,10 @@ import linksawakening.app.state.RunState;
 import linksawakening.app.state.SaveState;
 import linksawakening.app.state.SessionState;
 
-/** Connects persistence, navigation, input and simulation to their actual dependencies. */
+/**
+ * Connects persistence, navigation, input and simulation to their actual dependencies. Stateless factory
+ * used during session initialization.
+ */
 final class FlowWiring {
     private FlowWiring() {}
 
@@ -43,7 +46,6 @@ final class FlowWiring {
             GameplayWiring.PreparedGameplay prepared) {
         var music = prepared.music();
         var story = prepared.interactions().story();
-        var dialogs = prepared.interactions().dialogs();
         var interactions = prepared.interactions();
         var blockers = prepared.blockers();
         var dialogSounds = prepared.dialogSounds();
@@ -65,7 +67,27 @@ final class FlowWiring {
                 s.input(),
                 state,
                 new ScreenActions(navigator, saves, saveState, music));
-        var input = new InputRouter(
+        var input = input(s, state, navigator, lifecycle, saves, prepared);
+        var simulation = new GameplaySimulation(
+                s.rom(),
+                s.world(),
+                s.player(),
+                s.ui(),
+                s.input(),
+                s.visual(),
+                state,
+                new GameplayControl(s.audio(), music, interactions, passOut, gameOver, blockers, input, dialogSounds));
+        return new Flows(saves, router, input, renderer, simulation, interactions, music, passOut);
+    }
+
+    private static InputRouter input(
+            SessionServices s,
+            SessionState state,
+            SessionNavigator navigator,
+            RunState lifecycle,
+            SaveCoordinator saves,
+            GameplayWiring.PreparedGameplay prepared) {
+        return new InputRouter(
                 s.input(),
                 s.world(),
                 s.player(),
@@ -77,17 +99,7 @@ final class FlowWiring {
                         lifecycle,
                         new NoClipControl(state.debug(), s.player().link()),
                         saves,
-                        story,
-                        dialogs));
-        var simulation = new GameplaySimulation(
-                s.rom(),
-                s.world(),
-                s.player(),
-                s.ui(),
-                s.input(),
-                s.visual(),
-                state,
-                new GameplayControl(s.audio(), music, interactions, passOut, gameOver, blockers, input, dialogSounds));
-        return new Flows(saves, router, input, renderer, simulation, interactions, music, passOut);
+                        prepared.interactions().story(),
+                        prepared.interactions().dialogs()));
     }
 }

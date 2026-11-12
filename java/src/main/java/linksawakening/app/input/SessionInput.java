@@ -9,7 +9,10 @@ import linksawakening.app.services.PlayerServices;
 import linksawakening.app.services.WorldServices;
 import linksawakening.app.state.SessionState;
 
-/** Routes debug-menu input before ordinary screen input, preserving edge ownership. */
+/**
+ * Routes debug-menu input before ordinary screen input, preserving edge ownership. One instance is retained
+ * for the owning session.
+ */
 public final class SessionInput {
     private final SessionState state;
     private final InputServices input;

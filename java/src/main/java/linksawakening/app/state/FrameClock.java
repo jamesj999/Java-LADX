@@ -1,6 +1,9 @@
 package linksawakening.app.state;
 
-/** Byte-sized simulation frame clock, explicitly seedable by headless callers. */
+/**
+ * Byte-sized simulation frame clock, explicitly seedable by headless callers. One instance is retained for
+ * the owning session.
+ */
 public final class FrameClock {
     private int value;
 

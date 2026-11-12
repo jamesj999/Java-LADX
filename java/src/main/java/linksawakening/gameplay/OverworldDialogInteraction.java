@@ -11,7 +11,7 @@ import linksawakening.entity.Link;
 import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
-/** Overworld dialog interaction behavior and state. */
+/** Session-owned signpost interaction service that combines ROM lookup with live dialog gates. */
 public final class OverworldDialogInteraction {
 
     private static final int OBJECT_OWL_STATUE = 0x6F;

@@ -8,7 +8,10 @@ import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Long-lived world services constructed before the first frame. */
+/**
+ * Long-lived world services constructed before the first frame. The immutable bundle is retained for the
+ * owning session.
+ */
 public record WorldServices(
         RoomSession roomSession,
         RoomTransitionCoordinator roomTransitionCoordinator,

@@ -21,7 +21,10 @@ import linksawakening.ui.FileSaveController;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.transition.Warp;
 
-/** Persistence and room-entry orchestration, using the current session snapshot. */
+/**
+ * Persistence and room-entry orchestration, using the current session snapshot. One instance is retained for
+ * the owning session.
+ */
 public final class SaveCoordinator implements SaveActions {
     private final RomServices rom;
     private final WorldServices world;
@@ -130,16 +133,7 @@ public final class SaveCoordinator implements SaveActions {
                         player.playerState().equipmentLevels().shieldLevel(),
                         player.playerState().equipmentLevels().swordLevel(),
                         player.playerState().equipmentLevels().powerBraceletLevel());
-        if (saved.spawnIsIndoor() != 0) {
-            rom.gpu().loadBaseTiles(rom.romData());
-            world.roomSession()
-                    .rooms()
-                    .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
-            player.link().animation().setDirection(Direction.UP.javaIndex());
-        } else {
-            world.roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
-            player.link().animation().setDirection(Direction.DOWN.javaIndex());
-        }
+        loadSavedRoom(saved);
         player.link().position().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
         world.roomSession()
                 .progress()
@@ -153,6 +147,19 @@ public final class SaveCoordinator implements SaveActions {
                                 -1),
                         saved.spawnIndoorRoom());
         storyActions.story().restoreNewGameHouseRuntimeIfNeeded(saved);
+    }
+
+    private void loadSavedRoom(SaveSlotState saved) {
+        if (saved.spawnIsIndoor() != 0) {
+            rom.gpu().loadBaseTiles(rom.romData());
+            world.roomSession()
+                    .rooms()
+                    .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
+            player.link().animation().setDirection(Direction.UP.javaIndex());
+        } else {
+            world.roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
+            player.link().animation().setDirection(Direction.DOWN.javaIndex());
+        }
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */

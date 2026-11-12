@@ -11,6 +11,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.EntityCombatInputs;
 import linksawakening.world.transition.Warp;
 
+/** Applies sword, shield and contact combat before entity ticks. Retained for one simulation. */
 final class CombatPhase {
     private static final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
 
@@ -42,23 +43,7 @@ final class CombatPhase {
                             context.link().animation().romEntityZ());
             var combatEvents = context.roomSession()
                     .entities()
-                    .resolveEntityCombat(new EntityCombatInputs(
-                            context.frameCounter(),
-                            context.link().position().romEntityX(),
-                            context.link().position().romEntityY(),
-                            context.link().airborne().isAirborne(),
-                            context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
-                                    ? context.link().position().romSpeedY()
-                                    : context.link().airborne().zVelocity(),
-                            !context.debugNoClip(),
-                            context.frameInputs()
-                                    .sword(
-                                            swordBoxForEntityTick.active(),
-                                            swordBoxForEntityTick.x(),
-                                            swordBoxForEntityTick.width(),
-                                            swordBoxForEntityTick.y(),
-                                            swordBoxForEntityTick.height()),
-                            attackContext));
+                    .resolveEntityCombat(combatInputs(context, swordBoxForEntityTick, attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
                 EntityCombatEvent event = combatEvents.get(eventIndex);
@@ -68,6 +53,27 @@ final class CombatPhase {
         }
 
         return swordBoxForEntityTick;
+    }
+
+    private static EntityCombatInputs combatInputs(
+            GameplaySimulation context, Sword.CollisionBox swordBoxForEntityTick, EnemyAttackContext attackContext) {
+        return new EntityCombatInputs(
+                context.frameCounter(),
+                context.link().position().romEntityX(),
+                context.link().position().romEntityY(),
+                context.link().airborne().isAirborne(),
+                context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                        ? context.link().position().romSpeedY()
+                        : context.link().airborne().zVelocity(),
+                !context.debugNoClip(),
+                context.frameInputs()
+                        .sword(
+                                swordBoxForEntityTick.active(),
+                                swordBoxForEntityTick.x(),
+                                swordBoxForEntityTick.width(),
+                                swordBoxForEntityTick.y(),
+                                swordBoxForEntityTick.height()),
+                attackContext);
     }
 
     private static void applyEvent(GameplaySimulation context, EntityCombatEvent event) {

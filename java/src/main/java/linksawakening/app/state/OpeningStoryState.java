@@ -3,7 +3,10 @@ package linksawakening.app.state;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
 
-/** Mutable wake-up and shield motions shared by story, loading and debug entry. */
+/**
+ * Mutable wake-up and shield motions shared by story, loading and debug entry. One instance is retained for
+ * the owning session.
+ */
 public final class OpeningStoryState {
     private MarinWakeUpMotion wakeUp;
     private TarinShieldMotion shield;

@@ -3,7 +3,10 @@ package linksawakening.app.state;
 import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundSink;
 
-/** Replaceable application effect sink for headless recording and gameplay routing. */
+/**
+ * Replaceable application effect sink for headless recording and gameplay routing. One instance is retained
+ * for the owning session.
+ */
 public final class GameplaySounds {
     private GameplaySoundSink sink = GameplaySoundSink.none();
 

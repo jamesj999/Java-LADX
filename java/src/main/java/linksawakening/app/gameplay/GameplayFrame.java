@@ -4,8 +4,8 @@ import java.util.List;
 import linksawakening.app.screen.InputCompletion;
 
 /**
- * Ordered gameplay frame. Simulation includes its dialog/story gates; completion
- * still runs when a gate ends simulation early. Exceptions do not advance input.
+ * Ordered gameplay frame. Simulation includes its dialog/story gates; completion still runs when a gate ends
+ * simulation early. Exceptions do not advance input. One instance is retained for the owning session.
  */
 public final class GameplayFrame {
     /** Transition advancement performed before simulation. */

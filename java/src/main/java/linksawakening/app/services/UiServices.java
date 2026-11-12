@@ -8,7 +8,10 @@ import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 
-/** Long-lived ui services constructed before the first frame. */
+/**
+ * Long-lived ui services constructed before the first frame. The immutable bundle is retained for the owning
+ * session.
+ */
 public record UiServices(
         InventoryMenu inventoryMenu,
         InventoryController inventoryController,

@@ -8,12 +8,15 @@ import linksawakening.app.screen.SessionLifecycle;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.rom.RomTables;
 
-/** Input-routing destinations, separate from live input state. */
+/**
+ * Input-routing destinations, separate from live input state. The immutable bundle is retained for the
+ * owning session.
+ */
 public record InputActions(
         RomTables tables,
         ScreenNavigator navigator,
         SessionLifecycle lifecycle,
-        DebugActions debug,
+        NoClipControl debug,
         SaveActions saves,
         OpeningStory story,
         DialogInteractions dialogs) {

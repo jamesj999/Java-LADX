@@ -24,6 +24,10 @@ import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.room.LinkWriteSink;
 
+/**
+ * Applies entity-produced Link writes in source order. One instance retains the position-write adapter per
+ * session. One instance is retained for the owning session.
+ */
 final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.Attacks {
     private GameplaySimulation current;
 

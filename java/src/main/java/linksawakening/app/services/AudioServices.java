@@ -7,7 +7,10 @@ import linksawakening.gameplay.DialogSoundSink;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.PcmSoundOutput;
 
-/** Long-lived audio services constructed before the first frame. */
+/**
+ * Long-lived audio services constructed before the first frame. The immutable bundle is retained for the
+ * owning session.
+ */
 public record AudioServices(
         FrameMusicPlayer musicPlayer,
         GameplayMusicController gameplayMusicController,

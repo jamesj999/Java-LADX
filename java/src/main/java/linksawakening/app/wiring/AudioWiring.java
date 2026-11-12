@@ -16,7 +16,10 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.rom.Rom;
 
-/** Connects ROM music and effect catalogs to the host PCM output. */
+/**
+ * Connects ROM music and effect catalogs to the host PCM output. Stateless factory used during session
+ * initialization.
+ */
 final class AudioWiring {
     private AudioWiring() {}
 

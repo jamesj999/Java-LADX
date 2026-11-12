@@ -4,7 +4,10 @@ import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 
-/** Bank 1 LinkPassOutHandler's countdown-driven presentation, before screen loading. */
+/**
+ * Bank 1 LinkPassOutHandler's countdown-driven presentation, before screen loading. Created for one pass-out
+ * sequence and discarded on recovery.
+ */
 final class LinkPassOutAnimation {
     // Exact unadjusted bank-1 labels in src/code/game_over.asm.
     private static final RomAddress ANIMATION = new RomAddress(1, 0x41CF);

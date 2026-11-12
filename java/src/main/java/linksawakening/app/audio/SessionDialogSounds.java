@@ -6,7 +6,7 @@ import linksawakening.dialog.DialogController;
 import linksawakening.gameplay.DialogSoundRouter;
 import linksawakening.gameplay.DialogSoundSink;
 
-/** Adapts dialog requests to the session's audio sink. */
+/** Adapts dialog requests to the session's audio sink. One instance is retained for the owning session. */
 public final class SessionDialogSounds implements DialogSoundRouting {
     private final DialogController dialog;
     private final DialogSoundSink sink;

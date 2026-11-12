@@ -11,6 +11,7 @@ import linksawakening.world.room.PlayerInputs;
 import linksawakening.world.room.SwordBox;
 import linksawakening.world.room.UiInputs;
 
+/** Captures current entity-frame inputs, retaining unchanged immutable leaf values for one session. */
 final class EntityFrameInputsFactory {
     private final EntityInputCache cache = new EntityInputCache();
 

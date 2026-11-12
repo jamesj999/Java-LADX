@@ -16,7 +16,10 @@ import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.room.RoomFrameDrain;
 
-/** Synchronous reward batches; immutable snapshots stay available to retaining clients. */
+/**
+ * Synchronous reward batches; immutable snapshots stay available to retaining clients. One instance is
+ * retained for the owning session.
+ */
 final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> {
     private GameplaySimulation current;
 

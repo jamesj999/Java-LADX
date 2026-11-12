@@ -13,7 +13,10 @@ import linksawakening.app.state.SessionState;
 import linksawakening.app.story.OpeningActions;
 import linksawakening.app.story.OpeningStory;
 
-/** Builds dialog policy and gameplay interactions before navigation flows. */
+/**
+ * Builds dialog policy and gameplay interactions before navigation flows. Stateless factory used during
+ * session initialization.
+ */
 final class GameplayWiring {
     private GameplayWiring() {}
 

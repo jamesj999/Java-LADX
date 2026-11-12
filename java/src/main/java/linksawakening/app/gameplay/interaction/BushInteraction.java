@@ -13,7 +13,10 @@ import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.transition.Warp;
 
-/** Focused frame interactions using the current session collaborators. */
+/**
+ * Applies sword cuts, terrain changes and their sound/visual rewards in source order. One instance is
+ * retained for the owning session.
+ */
 public final class BushInteraction {
     private final WorldServices world;
     private final PlayerServices player;
@@ -62,7 +65,6 @@ public final class BushInteraction {
             return;
         }
         int originalObjectId = room.roomObjectsArea()[areaIndex];
-
         OverworldBushInteraction.CutResult cutResult = world.overworldBushInteraction()
                 .cutObjectAtLocation(
                         location,

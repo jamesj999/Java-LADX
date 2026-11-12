@@ -12,11 +12,14 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
-/** Game-thread-only editor. No save I/O; changes use the ordinary save path. */
+/**
+ * Game-thread-only editor. No save I/O; changes use the ordinary save path. One instance is retained for the
+ * owning session.
+ */
 public final class DebugMenu {
     private static final String[] PAGES = {"TELEPORT", "INVENTORY", "RESOURCES", "QUEST", "DUNGEONS"};
     private final List<List<Entry>> pages = new ArrayList<>();
-    private final TeleportTarget teleport;
+    private final DebugTeleporter teleport;
     private boolean open, shift;
     private int page, selected, category, map, room, x, y, dungeon;
     private String message = "";
@@ -33,7 +36,7 @@ public final class DebugMenu {
         }
     }
 
-    public DebugMenu(PlayerState p, RoomSession world, TeleportTarget teleport) {
+    public DebugMenu(PlayerState p, RoomSession world, DebugTeleporter teleport) {
         this.teleport = teleport;
         for (String ignored : PAGES) pages.add(new ArrayList<>());
         add(0, "Type", () -> category, v -> category = v, 0, 2, v -> new String[] {"Overworld", "Indoor", "Side view"}

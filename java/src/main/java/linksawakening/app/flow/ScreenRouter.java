@@ -25,7 +25,10 @@ import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
 
-/** Loads screen presentations and starts configured, debug, or file-selected gameplay. */
+/**
+ * Loads screen presentations and starts configured, debug, or file-selected gameplay. One instance is
+ * retained for the owning session.
+ */
 public final class ScreenRouter {
     private final RomServices rom;
     private final WorldServices world;
@@ -52,13 +55,9 @@ public final class ScreenRouter {
         this.actions = Objects.requireNonNull(actions);
     }
 
-    public int ROOM_PIXEL_WIDTH() {
-        return 160;
-    }
+    private static final int ROOM_PIXEL_WIDTH = 160;
 
-    public int ROOM_PIXEL_HEIGHT() {
-        return 128;
-    }
+    private static final int ROOM_PIXEL_HEIGHT = 128;
 
     private void setFileMenuController(FileMenuController controller) {
         state.screens().fileMenuController = controller;
@@ -188,8 +187,8 @@ public final class ScreenRouter {
                         StartupCoordinator.gameplayStartRoomId(state.options().config()));
         // Center of Mabe Village Square has the statue (solid). Spawn Link two
         // tiles to the left of the room center so he lands on walkable ground.
-        int startX = ROOM_PIXEL_WIDTH() / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;
-        int startY = ROOM_PIXEL_HEIGHT() / 2 - Link.SPRITE_SIZE / 2 - 10;
+        int startX = ROOM_PIXEL_WIDTH / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;
+        int startY = ROOM_PIXEL_HEIGHT / 2 - Link.SPRITE_SIZE / 2 - 10;
         player.link().position().setRoomEntryPixelPosition(startX, startY);
     }
 

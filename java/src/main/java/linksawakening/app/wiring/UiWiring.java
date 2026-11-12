@@ -18,7 +18,10 @@ import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
 
-/** Creates inventory, dialog, and cutscene presentation before world entry. */
+/**
+ * Creates inventory, dialog, and cutscene presentation before world entry. Stateless factory used during
+ * session initialization.
+ */
 final class UiWiring {
     private UiWiring() {}
 

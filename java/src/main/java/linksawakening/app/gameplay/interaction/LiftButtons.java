@@ -6,7 +6,10 @@ import linksawakening.input.InputState;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
-/** Frame-edge and B-slot priority policy for lifting and throwing. */
+/**
+ * Frame-edge and B-slot priority policy for lifting and throwing. One instance is retained for the owning
+ * session.
+ */
 final class LiftButtons {
     private final InputState inputState;
     private final InputConfig inputConfig;

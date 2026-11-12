@@ -8,8 +8,11 @@ import linksawakening.app.gameplay.interaction.GameplayInteractions;
 import linksawakening.app.input.InputRouter;
 import linksawakening.app.presentation.RenderStateAssembler;
 
-/** Retained application flows, available to headless diagnostics and setup. */
-public record SessionFlows(
+/**
+ * Session-long domain controllers exposed for delegation and headless setup; contains no mutable state of
+ * its own.
+ */
+public record SessionControllers(
         SaveCoordinator saves,
         ScreenRouter router,
         InputRouter inputRouter,
@@ -18,7 +21,7 @@ public record SessionFlows(
         GameplayInteractions interactions,
         DebugTeleporter teleporter,
         MusicDirector music) {
-    public SessionFlows {
+    public SessionControllers {
         Objects.requireNonNull(saves);
         Objects.requireNonNull(router);
         Objects.requireNonNull(inputRouter);

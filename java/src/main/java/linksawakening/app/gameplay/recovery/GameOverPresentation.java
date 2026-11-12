@@ -9,7 +9,10 @@ import linksawakening.state.PowerUp;
 import linksawakening.ui.FileMenuFrameSnapshot;
 import linksawakening.ui.GameOverMenu;
 
-/** $01:420F-42D8. Cursor and interactive choices are deliberately a separate stage. */
+/**
+ * $01:420F-42D8. Cursor and interactive choices are deliberately a separate stage. Created for one pass-out
+ * sequence and discarded on recovery.
+ */
 final class GameOverPresentation {
     private final GameOverMenu menu;
     private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();

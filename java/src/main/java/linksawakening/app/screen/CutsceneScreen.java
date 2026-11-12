@@ -12,7 +12,10 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
-/** Ticks intro dialogs and cutscenes before completing the input frame. */
+/**
+ * Ticks intro dialogs and cutscenes before completing the input frame. One instance is retained for the
+ * owning session.
+ */
 public final class CutsceneScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(

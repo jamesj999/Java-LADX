@@ -9,7 +9,10 @@ import linksawakening.ui.InventoryController;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Computes the source-shaped dialog gates from current state. */
+/**
+ * Computes the source-shaped dialog gates from current state. One instance is retained for the owning
+ * session.
+ */
 public final class DialogBlockerPolicy implements DialogBlockers {
     private final InventoryController inventory;
     private final DialogController dialog;

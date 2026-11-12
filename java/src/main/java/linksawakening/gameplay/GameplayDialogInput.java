@@ -6,7 +6,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.InputConfig;
 
-/** Gameplay dialog input behavior and state. */
+/** Stateless rules for button priority and dialog blocking at gameplay input boundaries. */
 public final class GameplayDialogInput {
 
     private GameplayDialogInput() {}

@@ -6,7 +6,10 @@ import linksawakening.equipment.EquipmentController;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.room.DroppableRupeeSystem;
 
-/** Owns the source-ordered game-over resets around save/respawn selection. */
+/**
+ * Owns the source-ordered game-over resets around save/respawn selection. One instance is retained for the
+ * owning session.
+ */
 public final class GameOverFlow implements GameOverActions {
     private final EquipmentController equipment;
     private final PassOutController passOut;

@@ -11,8 +11,11 @@ import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
-/** Resets only the source-defined debug-entry state after loading a destination. */
-public final class DebugTeleporter implements TeleportTarget {
+/**
+ * Resets only the source-defined debug-entry state after loading a destination. One instance is retained for
+ * the owning session.
+ */
+public final class DebugTeleporter {
     private final RoomSession rooms;
     private final Link link;
     private final OpeningStoryState opening;

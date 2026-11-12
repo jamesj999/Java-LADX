@@ -2,7 +2,10 @@ package linksawakening.app.headless;
 
 import linksawakening.world.entity.EntityStatus;
 
-/** Immutable replay checkpoint values; the driver exposes the compatibility State name. */
+/**
+ * Immutable replay checkpoint values; the driver exposes the compatibility State name. Created on demand for
+ * one diagnostic capture.
+ */
 public abstract class HeadlessState {
     private final int frame;
     private final int map;

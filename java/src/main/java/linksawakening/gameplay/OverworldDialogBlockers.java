@@ -1,6 +1,6 @@
 package linksawakening.gameplay;
 
-/** Immutable overworld dialog blockers values. */
+/** Immutable values for five independent dialog gates; canonical combinations are shared across frames. */
 public record OverworldDialogBlockers(
         boolean inventoryBlocking,
         boolean scrolling,

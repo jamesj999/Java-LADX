@@ -12,7 +12,10 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.system.MemoryStack;
 
-/** Owns native window, key callback and presentation resources. */
+/**
+ * Owns native window, key callback and presentation resources. One instance is retained for the owning
+ * session.
+ */
 public final class DesktopHost implements Host {
     @Override
     public PcmSoundOutput createPcmOutput() {

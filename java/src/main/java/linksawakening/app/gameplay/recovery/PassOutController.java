@@ -5,7 +5,10 @@ import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.ui.FileMenuFrameSnapshot;
 
-/** Bank 0 death dispatch and bank 1 animation; screen loading follows in a later stage. */
+/**
+ * Bank 0 death dispatch and bank 1 animation; screen loading follows in a later stage. One instance is
+ * retained for the owning session.
+ */
 public final class PassOutController {
     private Link owner;
     private LinkPassOutAnimation animation;

@@ -7,7 +7,10 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.scene.BackgroundSceneLoader;
 
-/** Long-lived rom services constructed before the first frame. */
+/**
+ * Long-lived rom services constructed before the first frame. The immutable bundle is retained for the
+ * owning session.
+ */
 public record RomServices(
         Rom romData, RomTables romTables, AppConfig appConfig, GPU gpu, BackgroundSceneLoader backgroundSceneLoader) {
     public RomServices {

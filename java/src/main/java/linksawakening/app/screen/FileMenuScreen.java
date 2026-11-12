@@ -10,7 +10,10 @@ import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuAction;
 
-/** Ticks the file-selection controller and dispatches its save actions. */
+/**
+ * Ticks the file-selection controller and dispatches its save actions. One instance is retained for the
+ * owning session.
+ */
 public final class FileMenuScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(

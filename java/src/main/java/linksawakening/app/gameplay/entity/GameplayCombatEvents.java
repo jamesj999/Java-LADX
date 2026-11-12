@@ -12,7 +12,10 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.RoomFrameDrain;
 import linksawakening.world.room.RoomSession;
 
-/** Applies enemy damage outcomes and drains combat effects without session back-calls. */
+/**
+ * Applies enemy damage outcomes and drains combat effects without session back-calls. One instance is
+ * retained for the owning session.
+ */
 final class GameplayCombatEvents implements DamageConsequences, RoomFrameDrain<EntityCombatEvent> {
     private final RoomSession rooms;
     private final Link link;

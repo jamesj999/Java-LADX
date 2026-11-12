@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import linksawakening.gameplay.PcmSoundOutput;
 
-/** Window-free host used by replay sessions. */
+/** Window-free host used by replay sessions. One instance is retained for the owning session. */
 public final class HeadlessHost implements Host {
     private final PcmSoundOutput output;
 
