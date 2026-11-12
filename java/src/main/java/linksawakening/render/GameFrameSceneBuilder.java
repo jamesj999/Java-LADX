@@ -33,7 +33,6 @@ public final class GameFrameSceneBuilder {
 
     /** Refills a borrowed scene, valid until this builder's next build. Capture callers use immutable build(GameFrameState). */
     public FrameScene build(ReusableGameFrameState state) {
-        if (!reusable.supports(state)) return build(state.snapshot());
         reusable.fill(state, dialogWindowPainter);
         return reusableScene.observedBy(observer);
     }

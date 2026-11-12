@@ -72,3 +72,35 @@ constructors for RoomLoader, OverworldTilesetTable and RoomSessionConfig. A clea
 compile with temporary -Xlint:deprecation,removal reports zero warnings in owned
 main and test roots; remaining warnings originate only in off-limits app/gameplay
 callers. No build configuration was changed.
+
+## Reusable special presentation
+
+The former fallback list was title/cutscene/intro and file-menu backgrounds,
+inventory entry/open/exit fades, pass-out palette frames, instrument warp/swirl/
+fullscreen, heart-piece presentation, Marin's bed, Tarin's shield and got-item
+poses. Scrolling and ordinary room transitions already used the retained room
+layer. Every screen now stays on the reusable scene entry point; there is no
+owned-scene fallback. Owned build(GameFrameState) remains explicitly available.
+
+ReusableBackgroundLayers owns immutable snapshot extraction and retained plane/
+upload/sprite nodes, consuming IntroSprite values directly without conversion.
+ReusablePaletteLayer owns cached synchronous callbacks and nested fade scopes.
+HardwareFrame pools transform composition, retaining copied scratch transform
+chains so scratch reuse cannot alter submitted colors. ReusableWarpLayers and
+ReusableStoryLayer own their independent special-presentation metadata/poses.
+All original OAM order, palette scope nesting and whole-entry hiding rules remain.
+
+ROM-free EA-off baselines: intro build+draw 11,400 bytes/frame; fully open inventory
+12,952. Both now measure 0.0; construction and draw are included. A zero baseline
+uses the probe's <16-byte noise floor (positive baselines use achieved +25%).
+The ordinary representative guard remains 328 bytes/frame with EA off. Eleven
+special-path parity cases cover 80 changing phases each, including inventory
+entry/exit, pass-out, room scroll, warp/fullscreen, story and heart poses.
+
+New immutable IntroFrameSnapshot/FileMenuFrameSnapshot instances still require
+one defensive extraction on first use. Their own construction and ROM/world
+snapshot production remain upstream ownership costs; repeated draw/build of a
+published snapshot reuses that extraction. The raw CutsceneManager compatibility
+path must still obtain its public live sprites/line-scroll values; snapshot-based
+presentation avoids that boundary's repeated production costs. No private fields
+of off-limits packages are accessed.

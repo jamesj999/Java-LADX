@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
@@ -20,6 +21,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private int paletteTransform;
     private final int[] bgTransforms = new int[WIDTH * HEIGHT];
     private final ArrayList<IntUnaryOperator> transforms = new ArrayList<>();
+    private final ArrayList<ComposedTransform> transformPool = new ArrayList<>();
+    private int nextTransform;
     private int[] copiedTransforms = new int[16];
     private IntUnaryOperator objectPaletteTransform = IDENTITY;
     private String submittingLayer = "unknown";
@@ -64,6 +67,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         Arrays.fill(objectOrder, Integer.MAX_VALUE);
         Arrays.fill(objectBehind, false);
         Arrays.fill(objects, 0);
+        nextTransform = 0;
         transforms.clear();
         transforms.add(IDENTITY);
         paletteTransform = 0;
@@ -168,8 +172,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         var previousBg = paletteTransform;
         var previousObj = objectPaletteTransform;
         paletteTransform = transforms.size();
-        transforms.add(background.andThen(transforms.get(previousBg)));
-        objectPaletteTransform = object.andThen(previousObj);
+        transforms.add(combined(background, transforms.get(previousBg)));
+        objectPaletteTransform = combined(object, previousObj);
         try {
             submission.run();
         } finally {
@@ -178,13 +182,38 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
+    private IntUnaryOperator combined(IntUnaryOperator first, IntUnaryOperator second) {
+        Objects.requireNonNull(first);
+        Objects.requireNonNull(second);
+        if (nextTransform == transformPool.size()) transformPool.add(new ComposedTransform());
+        ComposedTransform result = transformPool.get(nextTransform++);
+        result.first = first;
+        result.second = second;
+        return result;
+    }
+
+    private static final class ComposedTransform implements IntUnaryOperator {
+        private IntUnaryOperator first, second;
+
+        @Override
+        public int applyAsInt(int value) {
+            return second.applyAsInt(first.applyAsInt(value));
+        }
+    }
+
+    private IntUnaryOperator retainTransform(IntUnaryOperator transform) {
+        if (transform instanceof ComposedTransform composed)
+            return combined(retainTransform(composed.first), retainTransform(composed.second));
+        return transform;
+    }
+
     public void copyBackgroundRows(HardwareFrame source, int rows) {
         if (rows < 0 || rows > HEIGHT) throw new IllegalArgumentException("Background row count");
         if (copiedTransforms.length < source.transforms.size()) copiedTransforms = new int[source.transforms.size()];
         int sourceTransformCount = source.transforms.size();
         for (int i = 0; i < sourceTransformCount; i++) {
             copiedTransforms[i] = transforms.size();
-            transforms.add(source.transforms.get(i).andThen(transforms.get(paletteTransform)));
+            transforms.add(combined(retainTransform(source.transforms.get(i)), transforms.get(paletteTransform)));
         }
         for (int pixel = 0; pixel < rows * WIDTH; pixel++) {
             backgroundPalettes[pixel] = source.backgroundPalettes[pixel];
