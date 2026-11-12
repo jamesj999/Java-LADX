@@ -2,6 +2,7 @@ package linksawakening.save;
 
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.save.SaveSlotComponents.*;
 import linksawakening.state.PlayerState;
 
 /** Encodes modeled player fields and decodes source-shaped SRAM slots. */
@@ -69,48 +70,55 @@ final class SaveSlotCodec {
             subscreen[index] = unsigned(bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]);
         }
         byte[] rawSlot = Arrays.copyOfRange(bytes, slotOffset, slotOffset + SaveRamLayout.SLOT_SIZE);
-        return new SaveSlotState(
-                slot,
-                nameBytes,
-                unsigned(bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET]),
-                decodeRupees(
-                        bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET],
-                        bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
-                subscreen,
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
-                decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
-                unsigned(bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_Y_OFFSET]),
-                unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET]),
-                rawSlot);
+        return SaveSlotState.builder(slot, nameBytes, rawSlot)
+                .resources(new Resources(
+                        unsigned(bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET]),
+                        decodeRupees(
+                                bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET],
+                                bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET])))
+                .inventory(new Inventory(
+                        unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
+                        subscreen,
+                        unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET])))
+                .ammunition(new Ammunition(
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
+                        decodeBcd(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET])))
+                .progression(new Progression(
+                        new Quest(
+                                unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
+                                unsigned(bytes[
+                                        slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET])),
+                        new Keys(
+                                unsigned(bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET])),
+                        new Songs(
+                                unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]))))
+                .spawn(new Spawn(
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_Y_OFFSET]),
+                        unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET])))
+                .build();
     }
 
     private static int decodeBcd(byte value) {
