@@ -380,11 +380,14 @@ final class RoomSessionRewards1Test {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x41);
         // Real replay: entity (72,80), then approach to the source boundary (72,74).
-        assertFalse(
-                session.doors().tryOpenChest(64, 64, Link.DIRECTION_UP, true, 1).opened());
-        assertFalse(
-                session.doors().tryOpenChest(64, 59, Link.DIRECTION_UP, true, 1).opened());
-        var opened = session.doors().tryOpenChest(64, 58, Link.DIRECTION_UP, true, 1);
+        assertFalse(session.doors()
+                .tryOpenChest(64, 64, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .opened());
+        assertFalse(session.doors()
+                .tryOpenChest(64, 59, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .opened());
+        var opened = session.doors()
+                .tryOpenChest(64, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1);
         assertTrue(opened.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, opened.itemType());
         assertEquals(0x34, opened.location());
@@ -403,8 +406,9 @@ final class RoomSessionRewards1Test {
         }
         session.rooms().loadInitialOverworld(0x51);
         session.rooms().loadInitialOverworld(0x41);
-        assertFalse(
-                session.doors().tryOpenChest(64, 58, Link.DIRECTION_UP, true, 1).opened());
+        assertFalse(session.doors()
+                .tryOpenChest(64, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .opened());
         for (int i = 0; i < 4; i++) {
             assertEquals(rom[source + i] & 0xFF, session.rooms().activeRoom().tileIds()[positions[i]]);
         }
@@ -418,8 +422,13 @@ final class RoomSessionRewards1Test {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
         session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xA0;
 
-        ChestOpenResult result =
-                session.doors().tryOpenChest(0x18, 0x21, linksawakening.entity.Link.DIRECTION_UP, true, 1);
+        ChestOpenResult result = session.doors()
+                .tryOpenChest(
+                        0x18,
+                        0x21,
+                        linksawakening.state.Direction.fromJavaOrUnknown(linksawakening.entity.Link.DIRECTION_UP),
+                        true,
+                        1);
 
         assertTrue(result.opened());
         assertEquals(0xA1, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
@@ -469,7 +478,8 @@ final class RoomSessionRewards1Test {
         }
 
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
-        ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors()
+                .tryOpenChest(0x78, 0x21, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
     }
@@ -515,8 +525,9 @@ final class RoomSessionRewards1Test {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 0x15);
         assertEquals(0x21, session.components.roomSessionViews().activeRoomEventForTest());
-        assertTrue(
-                session.doors().tryOpenChest(48, 58, Link.DIRECTION_UP, true, 1).opened());
+        assertTrue(session.doors()
+                .tryOpenChest(48, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .opened());
         assertEquals(0x10, session.components.roomSessionViews().indoorRoomStatusForTest(0, 0x15) & 0x10);
         session.entities().tickEntities(0, 56, 74);
         assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());

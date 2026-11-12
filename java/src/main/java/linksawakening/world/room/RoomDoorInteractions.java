@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
+import linksawakening.state.Direction;
 import linksawakening.world.object.OverworldBushInteraction;
 
 /** RoomDoorInteractions operations for the live room session. */
@@ -63,20 +64,24 @@ final class RoomDoorInteractions {
     }
 
     ChestOpenResult tryOpenChest(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
         return roomChestInteractions.tryOpenChest(linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
     }
 
-    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return roomIndoorDoorInteractions.tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
-    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return roomIndoorDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     boolean tryLiftIndoorObject(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
         return roomLiftInteractions.tryLiftIndoorObject(
                 linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
     }
@@ -84,7 +89,7 @@ final class RoomDoorInteractions {
     boolean tryLiftIndoorObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
@@ -95,7 +100,7 @@ final class RoomDoorInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -113,7 +118,7 @@ final class RoomDoorInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -130,24 +135,24 @@ final class RoomDoorInteractions {
                 anyPowerUpActive);
     }
 
-    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return roomIndoorDoorInteractions.tryInteractWithIndoorBlock(
                 linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
-    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return roomIndoorDoorInteractions.tryUnlockIndoorKeyholeBlock(
                 linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     boolean tryUnlockTailCaveKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
         return roomDungeonKeyholes.tryUnlockTailCaveKeyhole(
                 linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
     }
 
     boolean tryUnlockKeyCavernKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
         return roomDungeonKeyholes.tryUnlockKeyCavernKeyhole(
                 linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
     }
@@ -155,7 +160,7 @@ final class RoomDoorInteractions {
     boolean tryUnlockOverworldDungeonKeyhole(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             int collisionType,
             int roomId,
             boolean hasKey,

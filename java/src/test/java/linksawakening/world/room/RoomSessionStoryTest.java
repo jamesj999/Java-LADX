@@ -311,7 +311,14 @@ final class RoomSessionStoryTest {
                     .orElseThrow();
             for (int frame = 0; frame < 8; frame++) {
                 assertTrue(session.doors()
-                        .tryLiftObject(statue.x() - 8, statue.y() - 8, Link.DIRECTION_UP, true, 8, false, level));
+                        .tryLiftObject(
+                                statue.x() - 8,
+                                statue.y() - 8,
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                true,
+                                8,
+                                false,
+                                level));
             }
             assertEquals(level == 2, session.rooms().liftedEntityState().active());
         }

@@ -167,7 +167,7 @@ final class GameplayRouteStage7 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.stoneBeakChest.opened());
@@ -436,7 +436,7 @@ final class GameplayRouteStage7 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.room38Chest.opened());

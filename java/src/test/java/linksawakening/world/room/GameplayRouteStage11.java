@@ -121,7 +121,7 @@ final class GameplayRouteStage11 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.room27Chest.opened());
@@ -257,7 +257,11 @@ final class GameplayRouteStage11 {
                         == 0x93);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        0x08));
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
@@ -303,7 +307,7 @@ final class GameplayRouteStage11 {
                         .tryLiftIndoorObject(
                                 route.link.pixelX(),
                                 route.link.pixelY(),
-                                Link.DIRECTION_UP,
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                                 route.playerState.powerBraceletLevel() != 0,
                                 0x08));
             }
@@ -328,7 +332,9 @@ final class GameplayRouteStage11 {
                             Link.DIRECTION_RIGHT,
                             false);
             polsVoice = route.session.rooms().activeRoom().entities().slots().get(polsVoice.slot());
-            assertTrue(route.session.playerItems().throwLiftedEntity(Link.DIRECTION_RIGHT));
+            assertTrue(route.session
+                    .playerItems()
+                    .throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT)));
             while (((route.frame ^ polsVoice.slot()) & 1) != 0) {
                 route.frame++;
             }

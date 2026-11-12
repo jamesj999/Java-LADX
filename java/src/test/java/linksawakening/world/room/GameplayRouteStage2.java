@@ -68,7 +68,12 @@ final class GameplayRouteStage2 {
         route.session.entityState().setColorShellSoundSink(route.tailCaveSounds::add);
         assertTrue(route.session
                 .doors()
-                .tryUnlockTailCaveKeyhole(0x5A, 0x4A, Link.DIRECTION_UP, 0x01, route.playerState.tailKeyCount() != 0));
+                .tryUnlockTailCaveKeyhole(
+                        0x5A,
+                        0x4A,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        0x01,
+                        route.playerState.tailKeyCount() != 0));
         assertEquals(0x10, route.session.components.roomSessionViews().overworldRoomStatusForTest(0xD3) & 0x10);
         assertEquals(0xDF, route.session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
         route.rumbleTicks = 0;
@@ -218,8 +223,14 @@ final class GameplayRouteStage2 {
         }
         assertEquals(0xA0, route.session.rooms().activeRoom().roomObjectsArea()[route.chestIndex]);
 
-        route.firstSmallKeyChest =
-                route.session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.firstSmallKeyChest = route.session
+                .doors()
+                .tryOpenChest(
+                        0x78,
+                        0x21,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.firstSmallKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, route.firstSmallKeyChest.itemType());
         route.session.entities().tickEntities(route.frame++, 0x78, 0x21);
@@ -245,7 +256,10 @@ final class GameplayRouteStage2 {
         assertTrue(route.session
                 .doors()
                 .tryUnlockIndoorKeyDoor(
-                        route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_RIGHT, route.rightCollisionBit));
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        route.rightCollisionBit));
         assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
@@ -290,8 +304,14 @@ final class GameplayRouteStage2 {
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);
         assertEquals(0x0E, route.session.rooms().currentRoomId());
 
-        route.secondSmallKeyChest =
-                route.session.doors().tryOpenChest(0x38, 0x21, Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.secondSmallKeyChest = route.session
+                .doors()
+                .tryOpenChest(
+                        0x38,
+                        0x21,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.secondSmallKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, route.secondSmallKeyChest.itemType());
         route.session
@@ -309,7 +329,11 @@ final class GameplayRouteStage2 {
         route.link.setPixelPosition(0x48, 0x05);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, 0x01));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        0x01));
         for (int tick = 0; tick <= 8; tick++) {
             route.session
                     .entities()
@@ -324,7 +348,10 @@ final class GameplayRouteStage2 {
         route.movableBlockIndex = ROOM_OBJECTS_BASE + 0x32;
         assertEquals(0xA7, route.session.rooms().activeRoom().roomObjectsArea()[route.movableBlockIndex]);
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(route.session.doors().tryInteractWithIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(route.session
+                    .doors()
+                    .tryInteractWithIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         for (int tick = 0; tick < 33; tick++) {
             route.session.entities().tickEntities(route.frame++, 0x15, 0x28);

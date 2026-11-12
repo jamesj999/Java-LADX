@@ -205,7 +205,7 @@ final class RoomTransitionController {
 
     void finishOcarinaPlayback() {
         if (dependencies.followers().followingNpcState.marinFollowing()) {
-            if (dependencies.items().selectedSongIndex == 0x01) {
+            if (dependencies.items().selectedSong() == linksawakening.state.OcarinaSong.MANBO_MAMBO) {
                 dependencies.items().pendingManboTransition = true;
             } else if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 dependencies
@@ -224,7 +224,7 @@ final class RoomTransitionController {
                     .outbox
                     .pendingRoomDialogRequests
                     .add(new DialogRequest(OCARINA_NO_SONG_DIALOG_TABLE, OCARINA_NO_SONG_DIALOG_ID));
-        } else if (dependencies.items().selectedSongIndex == 0x01) {
+        } else if (dependencies.items().selectedSong() == linksawakening.state.OcarinaSong.MANBO_MAMBO) {
             dependencies.items().pendingManboTransition = true;
         }
     }

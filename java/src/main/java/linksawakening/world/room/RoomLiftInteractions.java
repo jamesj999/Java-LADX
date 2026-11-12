@@ -2,8 +2,8 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.state.Direction;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
@@ -15,7 +15,11 @@ final class RoomLiftInteractions {
     }
 
     boolean tryLiftIndoorObject(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
         return dependencies
                 .roomDoorInteractions()
                 .get()
@@ -26,7 +30,7 @@ final class RoomLiftInteractions {
     boolean tryLiftIndoorObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
@@ -46,7 +50,7 @@ final class RoomLiftInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -68,7 +72,7 @@ final class RoomLiftInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -114,27 +118,27 @@ final class RoomLiftInteractions {
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomDoorInteractions> owner) {}
 
-    private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, int linkDirection) {
+    private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, Direction linkDirection) {
         int oppositeButton =
                 switch (linkDirection) {
-                    case Link.DIRECTION_UP -> 0x08;
-                    case Link.DIRECTION_DOWN -> 0x04;
-                    case Link.DIRECTION_LEFT -> 0x01;
-                    case Link.DIRECTION_RIGHT -> 0x02;
+                    case UP -> 0x08;
+                    case DOWN -> 0x04;
+                    case LEFT -> 0x01;
+                    case RIGHT -> 0x02;
                     default -> 0;
                 };
         int swordAreaX =
                 switch (linkDirection) {
-                    case Link.DIRECTION_RIGHT -> 0x0C;
-                    case Link.DIRECTION_LEFT -> 0x03;
-                    case Link.DIRECTION_UP, Link.DIRECTION_DOWN -> 0x08;
+                    case RIGHT -> 0x0C;
+                    case LEFT -> 0x03;
+                    case UP, DOWN -> 0x08;
                     default -> 0;
                 };
         int swordAreaY =
                 switch (linkDirection) {
-                    case Link.DIRECTION_RIGHT, Link.DIRECTION_LEFT -> 0x0A;
-                    case Link.DIRECTION_UP -> 0x05;
-                    case Link.DIRECTION_DOWN -> 0x10;
+                    case RIGHT, LEFT -> 0x0A;
+                    case UP -> 0x05;
+                    case DOWN -> 0x10;
                     default -> 0;
                 };
         int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
@@ -179,7 +183,7 @@ final class RoomLiftInteractions {
             dependencies.puzzles().indoorPotPullFrames = 0;
             return true;
         }
-        dependencies.followers().followingEntityYOffset = request.linkDirection() == Link.DIRECTION_UP ? 4 : 0;
+        dependencies.followers().followingEntityYOffset = request.linkDirection() == Direction.UP ? 4 : 0;
         dependencies.puzzles().indoorPotPullFrames++;
         int pullFrames = (target.statue() != null ? request.anyPowerUpActive() : request.pieceOfPowerActive())
                 ? 0x03
@@ -198,7 +202,7 @@ final class RoomLiftInteractions {
         return true;
     }
 
-    private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, int linkDirection) {
+    private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
         dependencies
                 .entityBridge()
@@ -298,7 +302,7 @@ final class RoomLiftInteractions {
     private record LiftRequest(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
             int braceletLevel,

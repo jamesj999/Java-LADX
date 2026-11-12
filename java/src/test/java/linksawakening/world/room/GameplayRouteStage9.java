@@ -408,7 +408,11 @@ final class GameplayRouteStage9 {
         route.link.setPixelPosition(route.link.pixelX() - 1, route.link.pixelY());
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT),
+                        0x04));
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());

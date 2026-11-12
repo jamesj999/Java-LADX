@@ -62,7 +62,7 @@ final class RoomShovelActions {
         }
     }
 
-    int shovelAnimationState(int javaDirection, int timer) {
+    int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return dependencies
                 .romTables()
                 .equipmentTables()

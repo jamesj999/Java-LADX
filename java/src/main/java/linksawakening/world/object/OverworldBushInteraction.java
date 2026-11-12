@@ -1,6 +1,5 @@
 package linksawakening.world.object;
 
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -102,7 +101,8 @@ public final class OverworldBushInteraction {
      * Returns {@code -1} when static-object sword collision is inactive or the
      * hit point falls outside the active 10x8 room area.
      */
-    public int swordHitRoomObjectLocation(boolean swordActive, int javaDirection, int linkPixelX, int linkPixelY) {
+    public int swordHitRoomObjectLocation(
+            boolean swordActive, linksawakening.state.Direction javaDirection, int linkPixelX, int linkPixelY) {
         return swordHitRoomObjectLocationForCollisionIndex(
                 swordActive, toRomDirection(javaDirection), linkPixelX, linkPixelY);
     }
@@ -139,7 +139,7 @@ public final class OverworldBushInteraction {
      */
     public boolean cutBush(BushCutInputs inputs) {
         boolean swordActive = inputs.sword().active();
-        int javaDirection = inputs.sword().direction();
+        linksawakening.state.Direction javaDirection = inputs.sword().direction();
         int linkPixelX = inputs.sword().x();
         int linkPixelY = inputs.sword().y();
         int roomId = inputs.roomId();
@@ -366,15 +366,15 @@ public final class OverworldBushInteraction {
         return roomRevealsStairs(roomId) ? OBJECT_GROUND_STAIRS : OBJECT_PIT;
     }
 
-    private static int toRomDirection(int javaDirection) {
+    private static int toRomDirection(linksawakening.state.Direction javaDirection) {
         switch (javaDirection) {
-            case Link.DIRECTION_RIGHT:
+            case RIGHT:
                 return 0;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 return 1;
-            case Link.DIRECTION_UP:
+            case UP:
                 return 2;
-            case Link.DIRECTION_DOWN:
+            case DOWN:
             default:
                 return 3;
         }

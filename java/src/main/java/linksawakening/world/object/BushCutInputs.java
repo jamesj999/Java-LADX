@@ -9,5 +9,5 @@ public record BushCutInputs(
         int[] fallbackOverlay,
         int[] roomTileIds,
         int[] roomTileAttrs) {
-    public record SwordProbe(boolean active, int direction, int x, int y) {}
+    public record SwordProbe(boolean active, linksawakening.state.Direction direction, int x, int y) {}
 }

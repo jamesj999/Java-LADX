@@ -65,8 +65,14 @@ final class GameplayRouteStage3 {
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x1D, route.session.rooms().currentRoomId());
 
-        route.featherChest =
-                route.session.doors().tryOpenChest(0x38, 0x21, Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.featherChest = route.session
+                .doors()
+                .tryOpenChest(
+                        0x38,
+                        0x21,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.featherChest.opened());
         assertEquals(ChestContentsTable.CHEST_FEATHER, route.featherChest.itemType());
         route.session
@@ -164,7 +170,10 @@ final class GameplayRouteStage3 {
         // Hold against bank 2's interactive keyhole block for its source
         // $20-frame threshold. This spends room $16's third key.
         for (int tick = 0; tick < 0x20; tick++) {
-            assertTrue(route.session.doors().tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+            assertTrue(route.session
+                    .doors()
+                    .tryInteractWithIndoorBlock(
+                            0x20, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         }
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(0x0D, route.session.rooms().activeRoom().roomObjectsArea()[ROOM_OBJECTS_BASE + 0x52]);
@@ -178,7 +187,7 @@ final class GameplayRouteStage3 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.nightmareKeyChest.opened());
@@ -288,7 +297,10 @@ final class GameplayRouteStage3 {
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
         assertEquals(0x0B, route.session.rooms().currentRoomId());
-        assertTrue(route.session.doors().tryUnlockIndoorKeyDoor(0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertTrue(route.session
+                .doors()
+                .tryUnlockIndoorKeyDoor(
+                        0x48, 0x00, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         for (int tick = 0; tick < 8; tick++) {
             route.session
                     .entities()

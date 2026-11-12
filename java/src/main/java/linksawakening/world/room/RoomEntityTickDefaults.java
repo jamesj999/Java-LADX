@@ -77,8 +77,21 @@ final class RoomEntityTickDefaults {
                 .get()
                 .tickEntities(new EntityTickInputs(
                         frameCounter,
-                        new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                        new LinkMotion(false, linkMotionState, usingShield, 0, 0, 0),
+                        new LinkPosition(
+                                linkEntityX,
+                                linkEntityY,
+                                linkEntityZ,
+                                linksawakening.state.Direction.fromJavaOrUnknown(linkDirection),
+                                0,
+                                linkDirection),
+                        new LinkMotion(
+                                false,
+                                linksawakening.world.room.LinkMotion.stateForRomByte(linkMotionState),
+                                usingShield,
+                                0,
+                                0,
+                                0,
+                                linkMotionState),
                         1,
                         new SwordBox(false, 0, 0, 0, 0)));
     }
@@ -97,8 +110,21 @@ final class RoomEntityTickDefaults {
                 .get()
                 .tickEntities(new EntityTickInputs(
                         frameCounter,
-                        new LinkPosition(linkEntityX, linkEntityY, linkEntityZ, linkDirection, 0),
-                        new LinkMotion(linkAirborne, linkMotionState, usingShield, 0, 0, 0),
+                        new LinkPosition(
+                                linkEntityX,
+                                linkEntityY,
+                                linkEntityZ,
+                                linksawakening.state.Direction.fromJavaOrUnknown(linkDirection),
+                                0,
+                                linkDirection),
+                        new LinkMotion(
+                                linkAirborne,
+                                linksawakening.world.room.LinkMotion.stateForRomByte(linkMotionState),
+                                usingShield,
+                                0,
+                                0,
+                                0,
+                                linkMotionState),
                         1,
                         new SwordBox(false, 0, 0, 0, 0)));
     }

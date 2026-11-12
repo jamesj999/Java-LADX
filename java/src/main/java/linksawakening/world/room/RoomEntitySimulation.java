@@ -25,8 +25,8 @@ final class RoomEntitySimulation {
         int linkEntityY = inputs.position().y();
         int linkEntityZ = inputs.position().z();
         boolean linkAirborne = inputs.motion().airborne();
-        int linkMotionState = inputs.motion().state();
-        int linkDirection = inputs.position().direction();
+        int linkMotionState = inputs.motion().rawState();
+        int linkDirection = inputs.position().rawDirection();
         int collisionType = inputs.position().collisionType();
         boolean usingShield = inputs.motion().shield();
         int shieldLevel = inputs.shieldLevel();

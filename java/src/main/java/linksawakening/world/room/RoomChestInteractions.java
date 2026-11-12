@@ -4,9 +4,9 @@ import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
+import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
 final class RoomChestInteractions {
@@ -17,9 +17,9 @@ final class RoomChestInteractions {
     }
 
     ChestOpenResult tryOpenChest(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
         if (!actionPressed
-                || linkDirection != Link.DIRECTION_UP
+                || linkDirection != Direction.UP
                 || dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return new ChestOpenResult(false, -1, -1, -1);

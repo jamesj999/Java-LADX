@@ -18,6 +18,10 @@ public interface RoomTransitions {
 
     boolean startOcarina(int countdown, int songFlags, int selectedSong);
 
+    default boolean startOcarina(int countdown, int songFlags, linksawakening.state.OcarinaSong song) {
+        return startOcarina(countdown, songFlags, song.selectionIndex());
+    }
+
     boolean ocarinaPlaying();
 
     int ocarinaAnimationState();

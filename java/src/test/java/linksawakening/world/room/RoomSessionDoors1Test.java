@@ -108,26 +108,39 @@ final class RoomSessionDoors1Test {
         assertEquals(0xA7, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
 
         for (int tick = 0; tick < 32; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
-        assertFalse(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x00));
+        assertFalse(session.doors()
+                .tryPushIndoorBlock(
+                        0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x00));
         for (int tick = 0; tick < 32; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0xA7, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
 
         for (int tick = 32; tick < 63; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0xA7, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
 
-        assertTrue(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+        assertTrue(session.doors()
+                .tryPushIndoorBlock(
+                        0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         assertEquals(0x0D, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
 
         RoomSession liveDispatch = newSession();
         liveDispatch.rooms().loadIndoor(0x00, 0x04);
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(liveDispatch.doors().tryInteractWithIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(liveDispatch
+                    .doors()
+                    .tryInteractWithIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0x0D, liveDispatch.rooms().activeRoom().roomObjectsArea()[blockIndex]);
     }
@@ -150,7 +163,9 @@ final class RoomSessionDoors1Test {
         assertEquals(0x0D, session.rooms().activeRoom().roomObjectsArea()[stairsIndex]);
 
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x25, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x25, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0xA7, session.components.roomSessionViews().activeRoomEventForTest());
         for (int frame = 0; frame < 33; frame++) {
@@ -161,7 +176,9 @@ final class RoomSessionDoors1Test {
         assertEquals(0xA7, session.components.roomSessionViews().activeRoomEventForTest());
 
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x5C, 0x28, Link.DIRECTION_LEFT, 0x04));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x5C, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT), 0x04));
         }
         assertEquals(0xA7, session.components.roomSessionViews().activeRoomEventForTest());
         for (int frame = 33; frame < 66; frame++) {
@@ -187,7 +204,10 @@ final class RoomSessionDoors1Test {
         RoomSession oppositeSide = newSession();
         oppositeSide.rooms().loadIndoor(0x01, 0x2F);
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(oppositeSide.doors().tryPushIndoorBlock(0x25, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(oppositeSide
+                    .doors()
+                    .tryPushIndoorBlock(
+                            0x25, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         // Arrange an opposite-side settled neighbor while the real block is
         // in motion; the settlement branch must still inspect only its facing
@@ -204,7 +224,9 @@ final class RoomSessionDoors1Test {
         RoomSession vertical = newSession();
         vertical.rooms().loadIndoor(0x01, 0x2F);
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(vertical.doors().tryPushIndoorBlock(0x2A, 0x38, Link.DIRECTION_UP, 0x01));
+            assertTrue(vertical.doors()
+                    .tryPushIndoorBlock(
+                            0x2A, 0x38, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         }
         for (int frame = 0; frame < 33; frame++) {
             vertical.entities().tickEntities(frame, 0x2A, 0x38);
@@ -219,7 +241,9 @@ final class RoomSessionDoors1Test {
     void tailCaveKeyholeBlockRequiresThirtyTwoContactTicksAndConsumesAKey() {
         RoomSession noKey = newSession();
         noKey.rooms().loadIndoor(0x00, 0x09);
-        assertTrue(noKey.doors().tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+        assertTrue(noKey.doors()
+                .tryInteractWithIndoorBlock(
+                        0x20, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         assertEquals(
                 0x8C,
                 noKey.entityState().consumeEntityDialogRequests().getFirst().dialogLowId());
@@ -236,10 +260,14 @@ final class RoomSessionDoors1Test {
         assertEquals(0xDE, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
 
         for (int tick = 0; tick < 31; tick++) {
-            assertTrue(session.doors().tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+            assertTrue(session.doors()
+                    .tryInteractWithIndoorBlock(
+                            0x20, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         }
         assertEquals(0xDE, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
-        assertTrue(session.doors().tryInteractWithIndoorBlock(0x20, 0x4A, Link.DIRECTION_UP, 0x01));
+        assertTrue(session.doors()
+                .tryInteractWithIndoorBlock(
+                        0x20, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
 
         assertEquals(0x0D, session.rooms().activeRoom().roomObjectsArea()[blockIndex]);
         assertEquals(0, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
@@ -254,7 +282,9 @@ final class RoomSessionDoors1Test {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 4);
         for (int tick = 0; tick < 64; tick++) {
-            session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+            session.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08);
         }
         session.entities().tickEntitiesWithProjectileEvents(0, 0x1B, 0x40, 12, 0, Link.DIRECTION_RIGHT, false);
         var requests = session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
@@ -290,7 +320,9 @@ final class RoomSessionDoors1Test {
         assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());
 
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(session.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         session.entityState().setEntityDialogActive(true);
         for (int frame = 0; frame < 8; frame++) {
@@ -344,7 +376,9 @@ final class RoomSessionDoors1Test {
         int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
         blocked.rooms().activeRoom().roomObjectsArea()[destinationIndex] = 0xA6;
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(blocked.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(blocked.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0xA7, blocked.rooms().activeRoom().roomObjectsArea()[sourceIndex]);
         assertFalse(blocked.rooms().activeRoom().entities().loadedEntities().stream()
@@ -375,7 +409,9 @@ final class RoomSessionDoors1Test {
                         .indoorRoom(true)
                         .build());
         for (int tick = 0; tick < 64; tick++) {
-            assertTrue(full.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
+            assertTrue(full.doors()
+                    .tryPushIndoorBlock(
+                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         }
         assertEquals(0xA7, full.rooms().activeRoom().roomObjectsArea()[sourceIndex]);
     }
@@ -424,7 +460,8 @@ final class RoomSessionDoors1Test {
         }
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
 
-        ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors()
+                .tryOpenChest(0x78, 0x21, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_STONE_BEAK, chest.itemType());
         session.entities().tickEntitiesWithProjectileEvents(frame, 0x78, 0x21, 0, 0, Link.DIRECTION_DOWN, false);
@@ -575,7 +612,12 @@ final class RoomSessionDoors1Test {
             boolean aligned = romY >= 68 && romY <= 75;
             assertEquals(
                     aligned,
-                    session.doors().tryUnlockIndoorKeyDoor(0x85, romY - 16, Link.DIRECTION_RIGHT, 8),
+                    session.doors()
+                            .tryUnlockIndoorKeyDoor(
+                                    0x85,
+                                    romY - 16,
+                                    linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                                    8),
                     "ROM Y=" + romY);
             assertEquals(
                     aligned ? 0 : 1,
@@ -593,7 +635,12 @@ final class RoomSessionDoors1Test {
             boolean aligned = romX >= 76 && romX <= 83;
             assertEquals(
                     aligned,
-                    session.doors().tryUnlockIndoorKeyDoor(romX - 8, 0, Link.DIRECTION_UP, 1),
+                    session.doors()
+                            .tryUnlockIndoorKeyDoor(
+                                    romX - 8,
+                                    0,
+                                    linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                    1),
                     "ROM X=" + romX);
             assertEquals(
                     aligned ? 1 : 0,
@@ -616,7 +663,9 @@ final class RoomSessionDoors1Test {
 
         assertEquals(0x33, session.rooms().activeRoom().roomObjectsArea()[upperDoorIndex]);
         assertEquals(0x34, session.rooms().activeRoom().roomObjectsArea()[lowerDoorIndex]);
-        assertTrue(session.doors().tryUnlockIndoorKeyDoor(0x85, 0x38, Link.DIRECTION_RIGHT, 0x08));
+        assertTrue(session.doors()
+                .tryUnlockIndoorKeyDoor(
+                        0x85, 0x38, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08));
         assertEquals(0, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(0x40, session.components.roomSessionViews().indoorRoomStatusForTest(0x00, 0x0F) & 0x40);
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
@@ -647,7 +696,9 @@ final class RoomSessionDoors1Test {
 
         assertEquals(0xA4, session.rooms().activeRoom().roomObjectsArea()[leftDoorIndex]);
         assertEquals(0xA5, session.rooms().activeRoom().roomObjectsArea()[rightDoorIndex]);
-        assertTrue(session.doors().tryUnlockIndoorKeyDoor(0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertTrue(session.doors()
+                .tryUnlockIndoorKeyDoor(
+                        0x48, 0x00, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         assertEquals(
                 0x07,
                 session.entityState().consumeEntityDialogRequests().getFirst().dialogLowId());
@@ -659,7 +710,9 @@ final class RoomSessionDoors1Test {
                 .restoreDungeonItemFlags(dungeonFlags, new byte[DungeonItemState.COLOR_DUNGEON_ITEM_FLAGS_SIZE]);
         session.rooms().loadIndoor(0x00, 0x0B);
 
-        assertTrue(session.doors().tryUnlockIndoorKeyDoor(0x48, 0x00, Link.DIRECTION_UP, 0x01));
+        assertTrue(session.doors()
+                .tryUnlockIndoorKeyDoor(
+                        0x48, 0x00, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01));
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
         for (int frame = 0; frame < 8; frame++) {
             session.entities().tickEntities(frame, 0x48, 0x00);

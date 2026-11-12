@@ -139,7 +139,7 @@ public final class DroppableRupeeSystem {
             }
 
             if (slot.pickupDelay == 0 && intersectsLink(slot, linkPixelX, linkPixelY)) {
-                playerState.setRupees(playerState.rupees() + 1);
+                playerState.wallet().setRupees(playerState.wallet().rupees() + 1);
                 slots[i] = null;
                 continue;
             }

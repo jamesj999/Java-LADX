@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.transition.Warp;
 
@@ -15,7 +16,7 @@ final class RoomIndoorDoorInteractions {
         this.dependencies = dependencies;
     }
 
-    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
@@ -86,7 +87,7 @@ final class RoomIndoorDoorInteractions {
         return true;
     }
 
-    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
@@ -163,7 +164,7 @@ final class RoomIndoorDoorInteractions {
         return true;
     }
 
-    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies
                 .roomDoorInteractions()
                 .get()
@@ -176,7 +177,7 @@ final class RoomIndoorDoorInteractions {
                 .tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
-    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {

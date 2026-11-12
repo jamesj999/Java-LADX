@@ -103,7 +103,7 @@ final class GameplayRouteStage10 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.braceletChest.opened());
@@ -184,7 +184,7 @@ final class GameplayRouteStage10 {
                                 .tryLiftIndoorObject(
                                         route.link.pixelX(),
                                         route.link.pixelY(),
-                                        lift[2],
+                                        linksawakening.state.Direction.fromJavaOrUnknown(lift[2]),
                                         route.playerState.powerBraceletLevel() != 0,
                                         lift[4]),
                         "pot $" + Integer.toHexString(lift[5]) + " pull " + pullFrame);
@@ -195,7 +195,9 @@ final class GameplayRouteStage10 {
                 tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
             }
             assertEquals(0x01, route.session.rooms().liftedEntityState().carryState());
-            assertTrue(route.session.playerItems().throwLiftedEntity(route.link.direction()));
+            assertTrue(route.session
+                    .playerItems()
+                    .throwLiftedEntity(linksawakening.state.Direction.fromJava(route.link.direction())));
         }
 
         route.room21EastDoorPath = reachablePositionPath(
@@ -324,7 +326,7 @@ final class GameplayRouteStage10 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.room22Chest.opened());
@@ -407,7 +409,7 @@ final class GameplayRouteStage10 {
                     .tryLiftIndoorObject(
                             route.link.pixelX(),
                             route.link.pixelY(),
-                            Link.DIRECTION_UP,
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                             route.playerState.powerBraceletLevel() != 0,
                             0x08));
         }
@@ -455,7 +457,9 @@ final class GameplayRouteStage10 {
                         + String.format(
                                 "%02X/%02X/%02X",
                                 route.room27PolsVoice.x(), route.room27PolsVoice.y(), route.room27PolsVoice.z()));
-        assertTrue(route.session.playerItems().throwLiftedEntity(Link.DIRECTION_RIGHT));
+        assertTrue(route.session
+                .playerItems()
+                .throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT)));
         while (((route.frame ^ route.room27PolsVoice.slot()) & 1) != 0) {
             route.frame++;
         }

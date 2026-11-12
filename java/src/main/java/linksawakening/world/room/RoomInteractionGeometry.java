@@ -2,7 +2,6 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.world.entity.RoomEntity;
@@ -10,6 +9,10 @@ import linksawakening.world.entity.RoomEntityGroundInteraction;
 
 /** Pure coordinate, direction, and collision conversions. */
 final class RoomInteractionGeometry {
+    static int romDirectionForProjectileCollision(linksawakening.state.Direction direction) {
+        return linksawakening.state.Direction.fromJava(direction.javaIndex()).romIndex();
+    }
+
     static int romDirectionForProjectileCollision(int linkDirection) {
         if (linkDirection < 0 || linkDirection > 3) {
             throw new IllegalArgumentException("Link direction out of range: " + linkDirection);
@@ -30,12 +33,12 @@ final class RoomInteractionGeometry {
         return (offset & 0xFF) < 8;
     }
 
-    static int keyDoorDirectionIndex(int linkDirection) {
+    static int keyDoorDirectionIndex(linksawakening.state.Direction linkDirection) {
         return switch (linkDirection) {
-            case Link.DIRECTION_UP -> 0;
-            case Link.DIRECTION_DOWN -> 1;
-            case Link.DIRECTION_LEFT -> 2;
-            case Link.DIRECTION_RIGHT -> 3;
+            case UP -> 0;
+            case DOWN -> 1;
+            case LEFT -> 2;
+            case RIGHT -> 3;
             default -> -1;
         };
     }
@@ -102,12 +105,14 @@ final class RoomInteractionGeometry {
             return null;
         }
         if (entity.type() == ENTITY_MARIN_AT_THE_SHORE
-                && (linkMotionState != LINK_MOTION_FALLING_DOWN || sample.objectId() != OBJECT_WELL)) {
+                && (linkMotionState != linksawakening.state.LinkMotionState.FALLING_DOWN.romValue()
+                        || sample.objectId() != OBJECT_WELL)) {
             return null;
         }
         return new RoomEntityGroundInteraction.PitTransition(sample.objectLeft() + 0x08, sample.objectTop() + 0x10);
     }
 
+    /** Entity ground codes include water at $02; these are distinct from Link GroundStatus. */
     static int groundStatusFor(OverworldCollision.GroundInteractionSample sample) {
         int physicsFlag = sample.physicsFlag();
         if (physicsFlag == PhysicsFlags.DEEP_WATER || physicsFlag == PhysicsFlags.LAVA) {

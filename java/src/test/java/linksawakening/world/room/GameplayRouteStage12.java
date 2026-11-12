@@ -91,7 +91,9 @@ final class GameplayRouteStage12 {
             tickLiveRoom3B(route.session, route.link, route.coordinator, route.transition, route.scroll, route.frame++);
         }
         assertEquals(0x01, route.session.rooms().liftedEntityState().carryState());
-        assertTrue(route.session.playerItems().throwLiftedEntity(Link.DIRECTION_RIGHT));
+        assertTrue(route.session
+                .playerItems()
+                .throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT)));
         assertEquals(
                 EntityStatus.ACTIVE,
                 route.session
@@ -208,7 +210,11 @@ final class GameplayRouteStage12 {
         assertTrue(
                 route.session
                         .doors()
-                        .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, 0x01),
+                        .tryUnlockIndoorKeyDoor(
+                                route.link.pixelX(),
+                                route.link.pixelY(),
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                0x01),
                 "room2D boss-door leading-edge probes did not contact A4/A5");
         // Source bank2 checks wHasDungeonBossKey but does not decrement it
         // (only the $90-$93 small-key branch consumes a key).

@@ -53,8 +53,13 @@ final class RoomTransitionState1Test {
         assertNotNull(potPath, collisionGrid(collision));
         for (int[] position : potPath) link.setPixelPosition(position[0], position[1]);
         for (int pull = 0; pull < 8; pull++) {
-            assertTrue(
-                    session.doors().tryLiftIndoorObject(link.pixelX(), link.pixelY(), Link.DIRECTION_DOWN, true, 0x04));
+            assertTrue(session.doors()
+                    .tryLiftIndoorObject(
+                            link.pixelX(),
+                            link.pixelY(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_DOWN),
+                            true,
+                            0x04));
         }
         for (int tick = 0; tick < 0x40 && session.rooms().liftedEntityState().carryState() != 1; tick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
@@ -67,7 +72,7 @@ final class RoomTransitionState1Test {
             link.setPixelPosition(position[0], position[1]);
             session.entities().tickEntities(frame++, link.romEntityX(), link.romEntityY(), 0, Link.DIRECTION_UP);
         }
-        assertTrue(session.playerItems().throwLiftedEntity(Link.DIRECTION_UP));
+        assertTrue(session.playerItems().throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_UP)));
         for (int tick = 0; tick < 0x40 && session.components.roomSessionViews().activeRoomEventForTest() != 0; tick++) {
             tickInteractiveEntities(session, frame++, link.romEntityX(), link.romEntityY());
         }
@@ -110,7 +115,13 @@ final class RoomTransitionState1Test {
                 collision, link.pixelX(), link.pixelY(), (x, y) -> (x + 8) / 16 == 8 && (y + 5) / 16 == 2);
         assertNotNull(chestPath, collisionGrid(collision));
         for (int[] position : chestPath) link.setPixelPosition(position[0], position[1]);
-        ChestOpenResult chest = session.doors().tryOpenChest(link.pixelX(), link.pixelY(), Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors()
+                .tryOpenChest(
+                        link.pixelX(),
+                        link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
         session.entities().tickEntities(frame++, link.romEntityX(), link.romEntityY());
@@ -179,8 +190,10 @@ final class RoomTransitionState1Test {
         assertEquals(0x0A, link.pixelY());
         assertTrue(session.doors()
                 .tryUnlockIndoorKeyDoor(
-                        link.romCollisionProbePixelX(), link.romCollisionProbePixelY(),
-                        link.direction(), link.romCollisionType()));
+                        link.romCollisionProbePixelX(),
+                        link.romCollisionProbePixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(link.direction()),
+                        link.romCollisionType()));
         for (int tick = 0; tick < 9; tick++) {
             tickInteractiveEntities(session, frame++, 0x48, 0x19);
         }
@@ -192,7 +205,7 @@ final class RoomTransitionState1Test {
         session.rooms().loadIndoor(0x02, 0x51);
         assertEquals(0xA1, objectAt(session, 0x28));
         assertFalse(session.doors()
-                .tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1)
+                .tryOpenChest(0x78, 0x21, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
                 .opened());
         assertEquals(0, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
     }

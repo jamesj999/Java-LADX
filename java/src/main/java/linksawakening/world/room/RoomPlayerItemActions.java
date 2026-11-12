@@ -27,7 +27,7 @@ final class RoomPlayerItemActions {
                 dependencies.roomTileRedraw()));
     }
 
-    boolean throwLiftedEntity(int linkDirection) {
+    boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
         if (dependencies.entityBridge().get().entityRuntime == null) {
             return false;
         }
@@ -199,7 +199,7 @@ final class RoomPlayerItemActions {
         roomShovelActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
     }
 
-    int shovelAnimationState(int javaDirection, int timer) {
+    int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return roomShovelActions.shovelAnimationState(javaDirection, timer);
     }
 

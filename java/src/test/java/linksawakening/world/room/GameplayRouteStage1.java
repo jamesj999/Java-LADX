@@ -420,8 +420,14 @@ final class GameplayRouteStage1 {
 
         // Exercise the same action/facing bridge that Main calls after input
         // has positioned Link at the chest.
-        route.tailKeyChest =
-                route.session.doors().tryOpenChest(0x38, 0x31, Link.DIRECTION_UP, true, route.playerState.swordLevel());
+        route.tailKeyChest = route.session
+                .doors()
+                .tryOpenChest(
+                        0x38,
+                        0x31,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        route.playerState.swordLevel());
         assertTrue(route.tailKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, route.tailKeyChest.itemType());
         route.session.entities().tickEntities(route.frame++, 0x38, 0x31);

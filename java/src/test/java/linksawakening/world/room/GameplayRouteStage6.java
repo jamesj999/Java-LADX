@@ -147,7 +147,11 @@ final class GameplayRouteStage6 {
                         == 0x91);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_DOWN, 0x02));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_DOWN),
+                        0x02));
         assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
@@ -303,7 +307,7 @@ final class GameplayRouteStage6 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.compassChest.opened());
@@ -376,7 +380,11 @@ final class GameplayRouteStage6 {
                         == 0x92);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT),
+                        0x04));
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());

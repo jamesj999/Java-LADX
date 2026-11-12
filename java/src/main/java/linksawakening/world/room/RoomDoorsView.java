@@ -1,5 +1,6 @@
 package linksawakening.world.room;
 
+import linksawakening.state.Direction;
 import linksawakening.world.room.RoomSession.*;
 
 final class RoomDoorsView implements RoomDoors {
@@ -11,34 +12,46 @@ final class RoomDoorsView implements RoomDoors {
 
     @Override
     public ChestOpenResult tryOpenChest(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
         return delegate.tryOpenChest(linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
     }
 
     @Override
-    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return delegate.tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     @Override
-    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return delegate.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     @Override
     public boolean tryLiftObject(
-            int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp) {
+            int x,
+            int y,
+            Direction direction,
+            boolean held,
+            int buttons,
+            boolean power,
+            int level,
+            boolean anyPowerUp) {
         return delegate.tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
     }
 
     @Override
-    public boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level) {
+    public boolean tryLiftObject(
+            int x, int y, Direction direction, boolean held, int buttons, boolean power, int level) {
         return delegate.tryLiftObject(x, y, direction, held, buttons, power, level);
     }
 
     @Override
     public boolean tryLiftIndoorObject(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
         return delegate.tryLiftIndoorObject(
                 linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
     }
@@ -47,7 +60,7 @@ final class RoomDoorsView implements RoomDoors {
     public boolean tryLiftIndoorObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
@@ -56,24 +69,26 @@ final class RoomDoorsView implements RoomDoors {
     }
 
     @Override
-    public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    public boolean tryInteractWithIndoorBlock(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return delegate.tryInteractWithIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     @Override
-    public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    public boolean tryUnlockIndoorKeyholeBlock(
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         return delegate.tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     @Override
     public boolean tryUnlockTailCaveKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
         return delegate.tryUnlockTailCaveKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
     }
 
     @Override
     public boolean tryUnlockKeyCavernKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
         return delegate.tryUnlockKeyCavernKeyhole(
                 linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
     }

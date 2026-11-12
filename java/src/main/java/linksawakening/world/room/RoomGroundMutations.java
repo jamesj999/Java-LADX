@@ -28,7 +28,7 @@ final class RoomGroundMutations {
         }
         dependencies.terrain().linkGroundFinalRoomPosition = dependencies.terrain().linkGroundRoomPosition;
         // $02:7590-7593 and $75B6-75BB bypass ground physics.
-        if (frame.airborne() || frame.motionState() == 0x02) return false;
+        if (frame.airborne() || frame.motionState() == linksawakening.state.LinkMotionState.UNSTUCKING) return false;
         return dependencies.owner().get().applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
     }
     /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */

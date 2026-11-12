@@ -140,7 +140,13 @@ final class RoomEntityCombatBridge {
         return collectEntityIfNeeded(new EntityPickupInputs(
                 frameCounter,
                 new EntityPickupInputs.Link(
-                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkInteractive,
+                        linksawakening.state.Direction.fromJavaOrUnknown(linkDirection),
+                        linkZ,
+                        linkDirection),
                 new SwordBox(false, 0, 0, 0, 0)));
     }
 
@@ -150,7 +156,7 @@ final class RoomEntityCombatBridge {
         int linkEntityY = inputs.link().y();
         boolean linkAirborne = inputs.link().airborne();
         boolean linkInteractive = inputs.link().interactive();
-        int linkDirection = inputs.link().direction();
+        int linkDirection = inputs.link().rawDirection();
         int linkZ = inputs.link().z();
         boolean swordActive = inputs.sword().active();
         int swordX = inputs.sword().x();

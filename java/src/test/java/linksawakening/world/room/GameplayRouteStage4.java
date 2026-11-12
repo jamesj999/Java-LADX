@@ -327,8 +327,14 @@ final class GameplayRouteStage4 {
         while (route.session.story().bowWowState() != 0x01 && route.frame < route.bowWowRescueDeadline) {
             route.session.tickEntities(new EntityTickInputs(
                     route.frame++,
-                    new LinkPosition(route.kidnappedBowWow.x(), route.kidnappedBowWow.y(), 0, Link.DIRECTION_RIGHT, 1),
-                    new LinkMotion(false, 0, false, 0, 0, 0),
+                    new LinkPosition(
+                            route.kidnappedBowWow.x(),
+                            route.kidnappedBowWow.y(),
+                            0,
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                            1,
+                            Link.DIRECTION_RIGHT),
+                    new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
         }

@@ -64,7 +64,7 @@ final class GameplayRouteStage8 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.room39Chest.opened());
@@ -121,7 +121,11 @@ final class GameplayRouteStage8 {
         route.link.setPixelPosition(0x75, 0x05);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, 0x01));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        0x01));
         assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         assertEquals(0x40, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x35) & 0x40);
         for (int tick = 0; tick < 8; tick++) {
@@ -167,7 +171,11 @@ final class GameplayRouteStage8 {
         for (int tick = 0; tick < 64; tick++) {
             assertTrue(route.session
                     .doors()
-                    .tryInteractWithIndoorBlock(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
+                    .tryInteractWithIndoorBlock(
+                            route.link.pixelX(),
+                            route.link.pixelY(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                            0x08));
         }
         assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         for (int tick = 0; tick < 33; tick++) {
@@ -180,7 +188,11 @@ final class GameplayRouteStage8 {
         for (int tick = 0; tick < 64; tick++) {
             assertTrue(route.session
                     .doors()
-                    .tryInteractWithIndoorBlock(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+                    .tryInteractWithIndoorBlock(
+                            route.link.pixelX(),
+                            route.link.pixelY(),
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT),
+                            0x04));
         }
         assertEquals(0xA7, route.session.components.roomSessionViews().activeRoomEventForTest());
         for (int tick = 0; tick < 33; tick++) {
