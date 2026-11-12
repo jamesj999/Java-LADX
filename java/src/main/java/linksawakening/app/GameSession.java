@@ -51,7 +51,7 @@ public class GameSession implements AutoCloseable {
     public byte[] headlessFrame() {
         update();
         context.composeFrameBuffer();
-        return context.services.indexedDisplayBuffer().clone();
+        return context.services.visual().indexedDisplayBuffer().clone();
     }
 
     void stepWithoutRender() {
@@ -77,7 +77,7 @@ public class GameSession implements AutoCloseable {
             context.host.pollEvents();
             update();
             context.composeFrameBuffer();
-            context.host.present(context.services.indexedDisplayBuffer());
+            context.host.present(context.services.visual().indexedDisplayBuffer());
 
             nextFrameNs += frameDurationNs;
             long sleepNs = nextFrameNs - System.nanoTime();
@@ -136,11 +136,11 @@ public class GameSession implements AutoCloseable {
 
     void cleanup() {
         context.host.releasePresentation();
-        if (context.services.dialogSoundOutput() != null) {
-            context.services.dialogSoundOutput().close();
+        if (context.services.audio().dialogSoundOutput() != null) {
+            context.services.audio().dialogSoundOutput().close();
         }
-        if (context.services.musicPlayer() != null) {
-            context.services.musicPlayer().close();
+        if (context.services.audio().musicPlayer() != null) {
+            context.services.audio().musicPlayer().close();
         }
 
         context.host.close();
@@ -149,7 +149,7 @@ public class GameSession implements AutoCloseable {
     public void initializeHeadlessNewGame() {
         if (context != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
-        context.services.dialogController().setPlayerName("A");
+        context.services.ui().dialogController().setPlayerName("A");
         context.saves().startNewGame();
     }
 

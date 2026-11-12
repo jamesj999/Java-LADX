@@ -33,6 +33,15 @@ public final class SessionTestAccess {
                 } catch (NoSuchFieldException absent) {
                 }
             }
+            SessionServices s = session.context.services;
+            for (Object value :
+                    new Object[] {s.rom(), s.audio(), s.input(), s.world(), s.player(), s.ui(), s.visual()}) {
+                try {
+                    value.getClass().getDeclaredField(name);
+                    return value;
+                } catch (NoSuchFieldException absent) {
+                }
+            }
             throw new NoSuchFieldException(name);
         }
     }

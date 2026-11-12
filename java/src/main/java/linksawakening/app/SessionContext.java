@@ -53,7 +53,7 @@ import linksawakening.world.transition.Warp;
 
 /** Builds and retains session services, screens and orchestration. Accessors read live mutable state. */
 public final class SessionContext {
-    SessionBootstrap.Collaborators services() {
+    SessionServices services() {
         return services;
     }
 
@@ -78,33 +78,26 @@ public final class SessionContext {
                 ? (session.headlessPcm == null ? new HeadlessHost() : new HeadlessHost(session.headlessPcm))
                 : new DesktopHost();
         gpu = new GPU();
-        var built = new SessionBootstrap(
-                        session.random,
-                        gpu,
-                        transitionController,
-                        scrollController,
-                        new SessionBootstrap.Callbacks(navigator, navigator),
-                        host)
-                .build(headless);
-        services = built;
-        session.gameplaySounds().replace(built.gameplaySoundSink());
-        scene.bgPalettes = built.bgPalettes();
-        scene.objPalettes = built.objPalettes();
-        appConfig = built.appConfig();
-        scene.currentTilemap = built.currentTilemap();
-        scene.currentAttrmap = built.currentAttrmap();
-        musicDirector = new MusicDirector(services().musicPlayer(), services().gameplayMusicController());
-        dialogSoundRouting = new SessionDialogSounds(built.dialogController(), built.dialogSoundSink());
+        var built = SessionWiring.build(
+                session.random, gpu, transitionController, scrollController, navigator, host, headless);
+        services = built.services();
+        session.gameplaySounds().replace(services.audio().gameplaySoundSink());
+        scene = built.scene();
+        appConfig = services.rom().appConfig();
+        musicDirector = new MusicDirector(
+                services().audio().musicPlayer(), services().audio().gameplayMusicController());
+        dialogSoundRouting = new SessionDialogSounds(
+                services.ui().dialogController(), services.audio().dialogSoundSink());
         dialogPolicy = new linksawakening.app.gameplay.DialogBlockerPolicy(
-                built.inventoryController(),
-                built.dialogController(),
+                services.ui().inventoryController(),
+                services.ui().dialogController(),
                 scrollController,
                 transitionController,
                 gameplayInput);
-        inputCompletion = new FrameInputCompletion(built.inputState(), gameplayInput);
+        inputCompletion = new FrameInputCompletion(services.input().inputState(), gameplayInput);
 
-        saveState = new SaveState(built.saveRamStore());
-        newGameTarinShieldPalette = built.newGameTarinShieldPalette();
+        saveState = built.saves();
+        newGameTarinShieldPalette = services.visual().newGameTarinShieldPalette();
 
         liftingInstance = new LiftInteraction(this);
         dialogsInstance = new DialogInteractions(this);
@@ -113,18 +106,21 @@ public final class SessionContext {
         rendererInstance = new RenderStateAssembler(this);
         savesInstance = new SaveCoordinator(this);
         gameOverFlow = new linksawakening.app.gameplay.GameOverFlow(
-                services().equipmentController(),
+                services().player().equipmentController(),
                 passOutController,
                 savesInstance,
-                services().transientVfxSystem(),
-                services().droppableRupeeSystem());
+                services().visual().transientVfxSystem(),
+                services().visual().droppableRupeeSystem());
         routerInstance = new ScreenRouter(this);
-        noClip = new NoClipControl(debug, services().link());
+        noClip = new NoClipControl(debug, services().player().link());
         inputRouterInstance = new InputRouter(this);
         simulationInstance = new GameplaySimulation(this);
         gameplayFrame = new GameplayFrame(
                 new TransitionPhase(
-                        scrollController, transitionController, services().link(), scrollSpeed),
+                        scrollController,
+                        transitionController,
+                        services().player().link(),
+                        scrollSpeed),
                 simulationInstance,
                 inputCompletion);
         screenSet = ScreenWiring.build(
@@ -137,16 +133,18 @@ public final class SessionContext {
                 screenSet,
                 routerInstance,
                 new RoomMusicSelection(
-                        musicDirector, services().playerState(), services().roomSession()));
+                        musicDirector,
+                        services().player().playerState(),
+                        services().world().roomSession()));
         screens.currentScreen = screenSet.title();
         teleporter = new DebugTeleporter(
-                services().roomSession(),
-                services().link(),
+                services().world().roomSession(),
+                services().player().link(),
                 session.openingState(),
                 debug,
-                services().transientVfxSystem(),
-                services().droppableRupeeSystem(),
-                services().inputState(),
+                services().visual().transientVfxSystem(),
+                services().visual().droppableRupeeSystem(),
+                services().input().inputState(),
                 screenSet.gameplay());
     }
 
@@ -165,11 +163,11 @@ public final class SessionContext {
     }
 
     public Rom romData() {
-        return services().romData();
+        return services().rom().romData();
     }
 
     public RoomSession roomSession() {
-        return services().roomSession();
+        return services().world().roomSession();
     }
 
     public TransitionController transitionController() {
@@ -177,7 +175,7 @@ public final class SessionContext {
     }
 
     public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return services().roomTransitionCoordinator();
+        return services().world().roomTransitionCoordinator();
     }
 
     public boolean debugNoClip() {
@@ -197,31 +195,31 @@ public final class SessionContext {
     }
 
     public InputConfig inputConfig() {
-        return services().inputConfig();
+        return services().input().inputConfig();
     }
 
     public InputState inputState() {
-        return services().inputState();
+        return services().input().inputState();
     }
 
     public PlayerState playerState() {
-        return services().playerState();
+        return services().player().playerState();
     }
 
     public InventoryMenu inventoryMenu() {
-        return services().inventoryMenu();
+        return services().ui().inventoryMenu();
     }
 
     public InventoryController inventoryController() {
-        return services().inventoryController();
+        return services().ui().inventoryController();
     }
 
     public DialogController dialogController() {
-        return services().dialogController();
+        return services().ui().dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return services().dialogTextLoader();
+        return services().ui().dialogTextLoader();
     }
 
     public GameplaySoundSink gameplaySoundSink() {
@@ -229,11 +227,11 @@ public final class SessionContext {
     }
 
     public FrameMusicPlayer musicPlayer() {
-        return services().musicPlayer();
+        return services().audio().musicPlayer();
     }
 
     public GameplayMusicController gameplayMusicController() {
-        return services().gameplayMusicController();
+        return services().audio().gameplayMusicController();
     }
 
     public MusicDirector musicDirector() {
@@ -241,23 +239,23 @@ public final class SessionContext {
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return services().transientVfxSystem();
+        return services().visual().transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return services().droppableRupeeSystem();
+        return services().visual().droppableRupeeSystem();
     }
 
     public ItemRegistry itemRegistry() {
-        return services().itemRegistry();
+        return services().player().itemRegistry();
     }
 
     public EquipmentController equipmentController() {
-        return services().equipmentController();
+        return services().player().equipmentController();
     }
 
     public Link link() {
-        return services().link();
+        return services().player().link();
     }
 
     public OpeningStory story() {
@@ -293,7 +291,7 @@ public final class SessionContext {
     }
 
     public RomTables romTables() {
-        return services().romTables();
+        return services().rom().romTables();
     }
 
     public AppConfig config() {
@@ -309,11 +307,11 @@ public final class SessionContext {
     }
 
     public BackgroundSceneLoader backgroundSceneLoader() {
-        return services().backgroundSceneLoader();
+        return services().rom().backgroundSceneLoader();
     }
 
     public CutsceneManager cutsceneManager() {
-        return services().cutsceneManager();
+        return services().ui().cutsceneManager();
     }
 
     public SaveRamStore saveRamStore() {
@@ -361,7 +359,7 @@ public final class SessionContext {
     }
 
     public byte[] indexedDisplayBuffer() {
-        return services().indexedDisplayBuffer();
+        return services().visual().indexedDisplayBuffer();
     }
 
     public int[] greenObjectsSpritePalette() {
@@ -369,7 +367,7 @@ public final class SessionContext {
     }
 
     public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
-        return services().cutLeavesEffectRenderer();
+        return services().visual().cutLeavesEffectRenderer();
     }
 
     public Screen currentScreen() {
@@ -401,11 +399,11 @@ public final class SessionContext {
     }
 
     public OverworldBushInteraction overworldBushInteraction() {
-        return services().overworldBushInteraction();
+        return services().world().overworldBushInteraction();
     }
 
     public OverworldDialogInteraction overworldDialogInteraction() {
-        return services().overworldDialogInteraction();
+        return services().ui().overworldDialogInteraction();
     }
 
     public linksawakening.app.gameplay.DialogBlockers dialogsBlockers() {
@@ -424,9 +422,9 @@ public final class SessionContext {
     final GameplaySimulation simulationInstance;
     final ScreenState screens = new ScreenState();
     final DebugState debug = new DebugState();
-    final SceneState scene = new SceneState();
+    final SceneState scene;
 
-    final SessionBootstrap.Collaborators services;
+    final SessionServices services;
 
     Host host = new HeadlessHost();
     GPU gpu;
@@ -461,31 +459,33 @@ public final class SessionContext {
         renderer().composeFrameBuffer();
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
             if (debug.debugMenuOverlay == null) debug.debugMenuOverlay = new DebugMenuOverlay();
-            debug.debugMenuOverlay.render(debug.debugMenu, services().indexedDisplayBuffer());
+            debug.debugMenuOverlay.render(debug.debugMenu, services().visual().indexedDisplayBuffer());
         }
     }
 
     void onKeyEvent(int key, int action) {
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
             debug.debugMenu.key(key, action);
-            services().inputState().clear();
+            services().input().inputState().clear();
             screenSet.gameplay().clearPendingInput();
             return;
         }
         if (currentAppConfig().debugEnabled() && DebugMenu.isToggle(key, action)) {
             if (screens.currentScreen == screenSet.gameplay()
                     && inputRouter().canPresentFileSave()
-                    && !services().roomSession().doors().tailCaveKeyholeSequenceActive()) {
+                    && !services().world().roomSession().doors().tailCaveKeyholeSequenceActive()) {
                 if (debug.debugMenu == null)
-                    debug.debugMenu =
-                            new DebugMenu(services().playerState(), services().roomSession(), teleporter);
+                    debug.debugMenu = new DebugMenu(
+                            services().player().playerState(),
+                            services().world().roomSession(),
+                            teleporter);
                 debug.debugMenu.open(
-                        services().roomSession().rooms().mapCategory(),
-                        services().roomSession().rooms().mapId(),
-                        services().roomSession().rooms().currentRoomId(),
-                        services().link().pixelX(),
-                        services().link().pixelY());
-                services().inputState().clear();
+                        services().world().roomSession().rooms().mapCategory(),
+                        services().world().roomSession().rooms().mapId(),
+                        services().world().roomSession().rooms().currentRoomId(),
+                        services().player().link().pixelX(),
+                        services().player().link().pixelY());
+                services().input().inputState().clear();
                 screenSet.gameplay().clearPendingInput();
             }
             return;
