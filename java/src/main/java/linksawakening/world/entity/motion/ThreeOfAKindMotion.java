@@ -88,10 +88,6 @@ public final class ThreeOfAKindMotion {
         return new Update(withPositionAndVariant(entity, x, y, variant), transitionCountdown);
     }
 
-    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, int[] transitionCountdowns) {
-        return resolvePuzzle(entities, slot -> transitionCountdowns[slot]);
-    }
-
     public PuzzleResult resolvePuzzle(List<RoomEntity> entities, java.util.function.IntUnaryOperator countdown) {
         List<RoomEntity> cards = entities.stream()
                 .filter(entity -> entity.status() == EntityStatus.ACTIVE && entity.type() == ENTITY_TYPE)

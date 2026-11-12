@@ -35,7 +35,7 @@ public final class FollowingNpcEntitySpawner {
         this.spriteHandlers = spriteHandlers;
     }
 
-    /** Compatibility for existing world.room callers. */
+    /** Compatibility for world.room.RoomStoryState; use FollowingNpcSpawn. */
     @Deprecated
     public Result synchronize(
             RoomEntitySnapshot initial,

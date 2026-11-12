@@ -23,7 +23,7 @@ public record EntityCombatEvent(
         return new EntityCombatEventBuilder(slot, type);
     }
 
-    /** @deprecated External caller: app.audio.EnemyCombatEventConsumerTest; use builder. */
+    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
     @Deprecated
     public EntityCombatEvent(
             int slot,
@@ -115,8 +115,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that provide both raw sounds. */
-    /** @deprecated External caller: app.audio.EnemyCombatEventConsumerTest; use builder. */
+    /** @deprecated External caller: gameplay.EnemyCombatEventConsumerTest; use builder. */
     @Deprecated
     public EntityCombatEvent(
             int slot,

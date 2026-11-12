@@ -32,7 +32,7 @@ final class ThreeOfAKindMotionTest {
         MotionTestFixture.setSettledForTest(motion, 1, 1);
         MotionTestFixture.setSettledForTest(motion, 2, 2);
 
-        assertEquals(ThreeOfAKindMotion.PuzzleResult.MISMATCH, motion.resolvePuzzle(cards, countdowns));
+        assertEquals(ThreeOfAKindMotion.PuzzleResult.MISMATCH, motion.resolvePuzzle(cards, slot -> countdowns[slot]));
         assertEquals(0, motion.state(0));
         assertEquals(0, motion.state(1));
         assertEquals(0, motion.state(2));
@@ -40,7 +40,7 @@ final class ThreeOfAKindMotionTest {
         MotionTestFixture.setSettledForTest(motion, 0, 0);
         MotionTestFixture.setSettledForTest(motion, 1, 0);
         MotionTestFixture.setSettledForTest(motion, 2, 0);
-        assertEquals(ThreeOfAKindMotion.PuzzleResult.MATCH, motion.resolvePuzzle(cards, countdowns));
+        assertEquals(ThreeOfAKindMotion.PuzzleResult.MATCH, motion.resolvePuzzle(cards, slot -> countdowns[slot]));
         assertEquals(0x2D, motion.matchedDrop(0));
         assertEquals(0x02, motion.matchedJingle(0));
 
