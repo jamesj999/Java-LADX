@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
 import linksawakening.gpu.Framebuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
@@ -18,6 +19,7 @@ import org.lwjgl.system.MemoryStack;
 
 /** Owns OpenGL resources that present the composed RGBA framebuffer. */
 public final class OpenGlFramePresenter {
+    private final ResourceScope resources;
     private final long window;
     private final int vao;
     private final int vbo;
@@ -25,7 +27,8 @@ public final class OpenGlFramePresenter {
     private final int texture;
     private final ByteBuffer textureUploadBuffer;
 
-    private OpenGlFramePresenter(long window, int vao, int vbo, GlShader shader, int texture) {
+    private OpenGlFramePresenter(long window, int vao, int vbo, GlShader shader, int texture, ResourceScope resources) {
+        this.resources = resources;
         this.window = window;
         this.vao = vao;
         this.vbo = vbo;
@@ -38,37 +41,47 @@ public final class OpenGlFramePresenter {
         GL.createCapabilities();
         updateFramebufferViewport(window);
 
-        GlShader shader = new GlShader();
+        ResourceScope resources = new ResourceScope();
+        try {
+            GlShader shader = new GlShader();
+            resources.add(shader::cleanup);
 
-        float[] vertices = {
-            -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f
-        };
+            float[] vertices = {
+                -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f
+            };
 
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        vertexBuffer.put(vertices).flip();
+            FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
+            vertexBuffer.put(vertices).flip();
 
-        int vao = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(vao);
+            int vao = GL30.glGenVertexArrays();
+            resources.add(() -> GL30.glDeleteVertexArrays(vao));
+            GL30.glBindVertexArray(vao);
 
-        int vbo = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
+            int vbo = GL15.glGenBuffers();
+            resources.add(() -> GL15.glDeleteBuffers(vbo));
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
 
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
+            GL20.glEnableVertexAttribArray(0);
+            GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
+            GL20.glEnableVertexAttribArray(1);
+            GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
 
-        GL30.glBindVertexArray(0);
+            GL30.glBindVertexArray(0);
 
-        int texture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+            int texture = GL11.glGenTextures();
+            resources.add(() -> GL11.glDeleteTextures(texture));
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 
-        return new OpenGlFramePresenter(window, vao, vbo, shader, texture);
+            return new OpenGlFramePresenter(window, vao, vbo, shader, texture, resources);
+        } catch (RuntimeException | Error failure) {
+            resources.closeAfterFailure(failure);
+            throw failure;
+        }
     }
 
     public void present(byte[] indexedDisplayBuffer) {
@@ -105,10 +118,7 @@ public final class OpenGlFramePresenter {
     }
 
     public void cleanup() {
-        GL30.glDeleteVertexArrays(vao);
-        GL15.glDeleteBuffers(vbo);
-        shader.cleanup();
-        GL11.glDeleteTextures(texture);
+        resources.close();
     }
 
     private void uploadTexture(byte[] indexedDisplayBuffer) {
@@ -132,8 +142,14 @@ public final class OpenGlFramePresenter {
     static final class GlShader {
 
         private int program;
+        private final ShaderApi api;
 
         public GlShader() {
+            this(new LwjglShaderApi());
+        }
+
+        GlShader(ShaderApi api) {
+            this.api = api;
             createShaders();
         }
 
@@ -153,40 +169,36 @@ public final class OpenGlFramePresenter {
                     + "    fragColor = texture(uTexture, vTexCoord);\n"
                     + "}\n";
 
-            int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
-            GL20.glShaderSource(vertexShader, vertexSource);
-            GL20.glCompileShader(vertexShader);
-
-            if (GL20.glGetShaderi(vertexShader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
-                String log = GL20.glGetShaderInfoLog(vertexShader);
-                GL20.glDeleteShader(vertexShader);
-                throw new IllegalStateException("Vertex shader compile error: " + log);
+            ResourceScope shaders = new ResourceScope();
+            try {
+                int vertexShader = compileShader(GL20.GL_VERTEX_SHADER, vertexSource, "Vertex", shaders);
+                int fragmentShader = compileShader(GL20.GL_FRAGMENT_SHADER, fragmentSource, "Fragment", shaders);
+                program = api.createProgram();
+                api.attach(program, vertexShader);
+                api.attach(program, fragmentShader);
+                api.link(program);
+                if (!api.linked(program))
+                    throw new IllegalStateException("GlShader program link error: " + api.programLog(program));
+                shaders.close();
+            } catch (RuntimeException | Error failure) {
+                shaders.closeAfterFailure(failure);
+                try {
+                    cleanup();
+                } catch (RuntimeException | Error cleanup) {
+                    if (cleanup != failure) failure.addSuppressed(cleanup);
+                }
+                throw failure;
             }
+        }
 
-            int fragmentShader = GL20.glCreateShader(GL20.GL_FRAGMENT_SHADER);
-            GL20.glShaderSource(fragmentShader, fragmentSource);
-            GL20.glCompileShader(fragmentShader);
-
-            if (GL20.glGetShaderi(fragmentShader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
-                String log = GL20.glGetShaderInfoLog(fragmentShader);
-                GL20.glDeleteShader(vertexShader);
-                GL20.glDeleteShader(fragmentShader);
-                throw new IllegalStateException("Fragment shader compile error: " + log);
-            }
-
-            program = GL20.glCreateProgram();
-            GL20.glAttachShader(program, vertexShader);
-            GL20.glAttachShader(program, fragmentShader);
-            GL20.glLinkProgram(program);
-
-            GL20.glDeleteShader(vertexShader);
-            GL20.glDeleteShader(fragmentShader);
-
-            if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL20.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
-                cleanup();
-                throw new IllegalStateException("GlShader program link error: " + log);
-            }
+        private int compileShader(int kind, String source, String stage, ResourceScope shaders) {
+            int shader = api.createShader(kind);
+            shaders.add(() -> api.deleteShader(shader));
+            api.source(shader, source);
+            api.compile(shader);
+            if (!api.compiled(shader))
+                throw new IllegalStateException(stage + " shader compile error: " + api.shaderLog(shader));
+            return shader;
         }
 
         public void use() {
@@ -212,7 +224,117 @@ public final class OpenGlFramePresenter {
         }
 
         public void cleanup() {
+            int owned = program;
+            program = 0;
+            if (owned != 0) api.deleteProgram(owned);
+        }
+    }
+
+    interface ShaderApi {
+        int createShader(int kind);
+
+        void source(int shader, String source);
+
+        void compile(int shader);
+
+        boolean compiled(int shader);
+
+        String shaderLog(int shader);
+
+        void deleteShader(int shader);
+
+        int createProgram();
+
+        void attach(int program, int shader);
+
+        void link(int program);
+
+        boolean linked(int program);
+
+        String programLog(int program);
+
+        void deleteProgram(int program);
+    }
+
+    private static final class LwjglShaderApi implements ShaderApi {
+        public int createShader(int kind) {
+            return GL20.glCreateShader(kind);
+        }
+
+        public void source(int shader, String source) {
+            GL20.glShaderSource(shader, source);
+        }
+
+        public void compile(int shader) {
+            GL20.glCompileShader(shader);
+        }
+
+        public boolean compiled(int shader) {
+            return GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) != GL20.GL_FALSE;
+        }
+
+        public String shaderLog(int shader) {
+            return GL20.glGetShaderInfoLog(shader);
+        }
+
+        public void deleteShader(int shader) {
+            GL20.glDeleteShader(shader);
+        }
+
+        public int createProgram() {
+            return GL20.glCreateProgram();
+        }
+
+        public void attach(int program, int shader) {
+            GL20.glAttachShader(program, shader);
+        }
+
+        public void link(int program) {
+            GL20.glLinkProgram(program);
+        }
+
+        public boolean linked(int program) {
+            return GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) != GL20.GL_FALSE;
+        }
+
+        public String programLog(int program) {
+            return GL20.glGetProgramInfoLog(program);
+        }
+
+        public void deleteProgram(int program) {
             GL20.glDeleteProgram(program);
+        }
+    }
+
+    static final class ResourceScope implements AutoCloseable {
+        private final ArrayDeque<Runnable> actions = new ArrayDeque<>();
+        private boolean closed;
+
+        void add(Runnable action) {
+            actions.addFirst(action);
+        }
+
+        void closeAfterFailure(Throwable failure) {
+            try {
+                close();
+            } catch (RuntimeException | Error cleanup) {
+                if (cleanup != failure) failure.addSuppressed(cleanup);
+            }
+        }
+
+        public void close() {
+            if (closed) return;
+            closed = true;
+            Throwable first = null;
+            while (!actions.isEmpty())
+                try {
+                    actions.removeFirst().run();
+                } catch (RuntimeException | Error failure) {
+                    if (first == null) first = failure;
+                    else if (first != failure) first.addSuppressed(failure);
+                }
+            if (first instanceof Error error) throw error;
+            if (first != null) throw (RuntimeException) first;
         }
     }
 }

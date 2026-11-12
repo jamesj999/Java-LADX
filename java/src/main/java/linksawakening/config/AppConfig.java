@@ -98,7 +98,11 @@ public final class AppConfig {
     }
 
     public static AppConfig loadFromResources() {
-        try (InputStream stream = AppConfig.class.getClassLoader().getResourceAsStream(RESOURCE_PATH)) {
+        return loadFromResources(AppConfig.class.getClassLoader());
+    }
+
+    static AppConfig loadFromResources(ClassLoader loader) {
+        try (InputStream stream = loader.getResourceAsStream(RESOURCE_PATH)) {
             if (stream == null) {
                 System.err.println("App config not found at " + RESOURCE_PATH + "; using defaults");
                 return defaults();

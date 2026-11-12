@@ -20,6 +20,7 @@ public final class DesktopHost implements Host {
     }
 
     private long window;
+    private HostResources resources;
 
     /** Native handle for the package-local viewport check. */
     long windowHandle() {
@@ -32,7 +33,29 @@ public final class DesktopHost implements Host {
 
     @Override
     public void open(BiConsumer<Integer, Integer> keys) {
-        errorCallback = GLFWErrorCallback.createPrint(System.err).set();
+        if (resources != null) throw new IllegalStateException("Desktop host is already open");
+        resources = new HostResources();
+        try {
+            resources.initialize(() -> openWindow(keys));
+        } catch (RuntimeException | Error failure) {
+            resources = null;
+            throw failure;
+        }
+    }
+
+    private void openWindow(BiConsumer<Integer, Integer> keys) {
+        errorCallback = GLFWErrorCallback.createPrint(System.err);
+        resources.add(() -> {
+            var callback = errorCallback;
+            errorCallback = null;
+            try {
+                glfwSetErrorCallback(null);
+            } finally {
+                callback.free();
+            }
+        });
+        errorCallback.set();
+        resources.add(() -> glfwTerminate());
 
         if (!glfwInit()) {
             throw new IllegalStateException("Failed to initialize GLFW");
@@ -57,10 +80,16 @@ public final class DesktopHost implements Host {
             throw new IllegalStateException("Failed to create window");
         }
 
+        resources.add(() -> {
+            long handle = window;
+            window = 0;
+            glfwDestroyWindow(handle);
+        });
         centerWindowOnPrimaryMonitor();
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1);
         framePresenter = OpenGlFramePresenter.initialize(window);
+        resources.add(this::releasePresentation);
 
         keyCallback = new GLFWKeyCallback() {
             @Override
@@ -76,6 +105,11 @@ public final class DesktopHost implements Host {
                 keys.accept(key, engineAction);
             }
         };
+        resources.add(() -> {
+            var callback = keyCallback;
+            keyCallback = null;
+            callback.free();
+        });
         glfwSetKeyCallback(window, keyCallback);
         glfwShowWindow(window);
         glfwPollEvents();
@@ -120,21 +154,16 @@ public final class DesktopHost implements Host {
     @Override
     public void releasePresentation() {
         if (framePresenter != null) {
-            framePresenter.cleanup();
+            var presenter = framePresenter;
             framePresenter = null;
+            presenter.cleanup();
         }
     }
 
     @Override
     public void close() {
-        releasePresentation();
-        if (keyCallback != null) keyCallback.free();
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        if (errorCallback != null) {
-            glfwSetErrorCallback(null);
-            errorCallback.free();
-            errorCallback = null;
-        }
+        var owned = resources;
+        resources = null;
+        if (owned != null) owned.close();
     }
 }
