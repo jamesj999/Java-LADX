@@ -10,7 +10,8 @@ final class DungeonRoomEventTableTest {
 
     @Test
     void readsTheTailCaveOpeningEventsFromTheRomTable() throws IOException {
-        DungeonRoomEventTable table = new DungeonRoomEventTable(loadRom());
+        DungeonRoomEventTable table = new DungeonRoomEventTable(
+                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
 
         assertEquals(0x63, table.eventFor(0x00, 0x13));
         assertEquals(0x21, table.eventFor(0x00, 0x12));

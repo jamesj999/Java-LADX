@@ -12,7 +12,8 @@ final class ManboTransitionWaveTest {
     @Test
     void followsTheRomPhaseTableAndOddFrameComplement() {
         byte[] rom = loadRom();
-        ManboTransitionWave wave = new ManboTransitionWave(rom);
+        ManboTransitionWave wave = new ManboTransitionWave(
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
 
         assertEquals(1, wave.offsetFor(0x20, 0));
         assertEquals(-1, wave.offsetFor(0x21, 0));

@@ -4,7 +4,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
 /** Inputs for SecretSeashellMotion.advance. */
-public record SecretSeashellWorldFrame(
+record SecretSeashellWorldFrame(
         RoomEntity entity,
         int roomId,
         int frameCounter,

@@ -9,17 +9,17 @@ public final class ManboTransitionWave {
 
     private final int[] signedOffsets;
 
-    public ManboTransitionWave(byte[] romData) {
+    public ManboTransitionWave(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         signedOffsets = new int[WAVE_TABLE_SIZE];
         int source = RomSymbols.Data_014_4EE8.offset();
-        if (source < 0 || source > romData.length - WAVE_TABLE_SIZE) {
+        if (source < 0 || source > romData.size() - WAVE_TABLE_SIZE) {
             throw new IllegalArgumentException("Manbo transition wave table exceeds ROM bounds");
         }
         for (int index = 0; index < signedOffsets.length; index++) {
-            signedOffsets[index] = (byte) new Rom(romData).u8(RomSymbols.Data_014_4EE8.plus(index));
+            signedOffsets[index] = (byte) romData.u8(RomSymbols.Data_014_4EE8.plus(index));
         }
     }
 

@@ -8,17 +8,17 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
-public final class RoomObjectParser {
+final class RoomObjectParser {
     private final Dependencies dependencies;
     private final RoomObjectMacroDecoder roomObjectMacroDecoder;
     private final RoomObjectStreamDecoder roomObjectStreamDecoder;
     private final RoomObjectStatusPatches roomObjectStatusPatches;
 
     int readRomByte(int offset) {
-        return new Rom(dependencies.romData()).u8(RomAddress.fromOffset(offset));
+        return dependencies.romData().u8(RomAddress.fromOffset(offset));
     }
 
-    public RoomObjectParser(byte[] romData) {
+    public RoomObjectParser(Rom romData) {
         this.dependencies = new Dependencies(romData, new RoomObjectDecodeState());
         roomObjectMacroDecoder = new RoomObjectMacroDecoder(
                 new RoomObjectMacroDecoder.Dependencies(dependencies.romData(), dependencies.state(), () -> this));
@@ -246,5 +246,5 @@ public final class RoomObjectParser {
                 : objectId == OBJECT_DOOR_C5 || objectId == OBJECT_GROUND_STAIRS;
     }
 
-    record Dependencies(byte[] romData, RoomObjectDecodeState state) {}
+    record Dependencies(Rom romData, RoomObjectDecodeState state) {}
 }

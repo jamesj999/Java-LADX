@@ -35,7 +35,7 @@ final class GameplayRouteStage11 {
                 .slots()
                 .get(route.room27PolsVoice.slot())
                 .loaded());
-        assertEquals(0x66, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x66, RoomDebugFixture.of(route.session).activeRoomEventForTest());
 
         for (RoomEntity orderedEnemy : new RoomEntity[] {route.room27Keese, route.room27Moblin}) {
             int enemySlot = orderedEnemy.slot();
@@ -106,7 +106,7 @@ final class GameplayRouteStage11 {
         }
 
         route.room27ChestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         route.room27ChestRevealDeadline = route.frame + 0x40;
         while (route.session.rooms().activeRoom().roomObjectsArea()[route.room27ChestIndex] != 0xA0
                 && route.frame < route.room27ChestRevealDeadline) {
@@ -121,14 +121,15 @@ final class GameplayRouteStage11 {
                 .tryOpenChest(
                         route.link.pixelX(),
                         route.link.pixelY(),
-                        Link.DIRECTION_UP,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                         true,
                         route.playerState.swordLevel());
         assertTrue(route.room27Chest.opened());
         assertEquals(ChestContentsTable.CHEST_NIGHTMARE_KEY, route.room27Chest.itemType());
         assertEquals(0x28, route.room27Chest.location());
         route.room27ChestSlot = route.room27Chest.entitySlot();
-        route.room27DialogId = new ChestContentsTable(route.rom)
+        route.room27DialogId = new ChestContentsTable(
+                        (route.rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(route.rom)))
                 .dialogLowIdFor(
                         ChestContentsTable.CHEST_NIGHTMARE_KEY,
                         route.playerState.shieldLevel(),
@@ -161,7 +162,7 @@ final class GameplayRouteStage11 {
         assertEquals(
                 1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.NIGHTMARE_KEY_INDEX]);
         assertEquals(0xA1, objectAt(route.session, 0x28));
-        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x27) & 0x10);
+        assertEquals(0x10, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x27) & 0x10);
 
         route.collision.refreshLinkGroundInteraction(route.link.pixelX(), route.link.pixelY());
         walkToAndCrossIndoorBoundary(
@@ -175,7 +176,7 @@ final class GameplayRouteStage11 {
         assertEquals(0xA1, objectAt(route.session, 0x28));
         assertEquals(
                 0x66,
-                route.session.components.roomSessionViews().activeRoomEventForTest(),
+                RoomDebugFixture.of(route.session).activeRoomEventForTest(),
                 "the source event byte reloads but status $10 keeps it inert");
         assertFalse(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() <= 2));
@@ -241,10 +242,10 @@ final class GameplayRouteStage11 {
         assertTrue(route.room24SwitchHit.stream()
                 .anyMatch(event -> event.slot() == route.room24CrystalSwitch.slot() && event.swordHit()));
         tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
-        while (route.session.components.roomSessionViews().switchableObjectAnimationStageForTest() != 0) {
+        while (RoomDebugFixture.of(route.session).switchableObjectAnimationStageForTest() != 0) {
             route.session.entityState().tickGameplayVBlank();
         }
-        assertEquals(0x00, route.session.components.roomSessionViews().entitySwitchBlocksStateForTest());
+        assertEquals(0x00, RoomDebugFixture.of(route.session).entitySwitchBlocksStateForTest());
         route.room24SwitchReachablePosition = route.room24SwitchApproach.path().getLast();
         route.link.setPixelPosition(route.room24SwitchReachablePosition[0], route.room24SwitchReachablePosition[1]);
         route.collision.refreshLinkGroundInteraction(route.link.pixelX(), route.link.pixelY());
@@ -256,7 +257,11 @@ final class GameplayRouteStage11 {
                         == 0x93);
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_RIGHT, 0x08));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        0x08));
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
@@ -264,13 +269,13 @@ final class GameplayRouteStage11 {
         }
         route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
         assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
-        assertEquals(0x01, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x24) & 0x01);
-        assertEquals(0x02, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x25) & 0x02);
+        assertEquals(0x01, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x24) & 0x01);
+        assertEquals(0x02, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x25) & 0x02);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
         assertEquals(0x25, route.session.rooms().currentRoomId());
-        assertEquals(0xA1, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0xA1, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(
                 2,
                 route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -302,7 +307,7 @@ final class GameplayRouteStage11 {
                         .tryLiftIndoorObject(
                                 route.link.pixelX(),
                                 route.link.pixelY(),
-                                Link.DIRECTION_UP,
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
                                 route.playerState.powerBraceletLevel() != 0,
                                 0x08));
             }
@@ -327,7 +332,9 @@ final class GameplayRouteStage11 {
                             Link.DIRECTION_RIGHT,
                             false);
             polsVoice = route.session.rooms().activeRoom().entities().slots().get(polsVoice.slot());
-            assertTrue(route.session.playerItems().throwLiftedEntity(Link.DIRECTION_RIGHT));
+            assertTrue(route.session
+                    .playerItems()
+                    .throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT)));
             while (((route.frame ^ polsVoice.slot()) & 1) != 0) {
                 route.frame++;
             }
@@ -368,7 +375,7 @@ final class GameplayRouteStage11 {
                     .slots()
                     .get(polsVoice.slot())
                     .loaded());
-            assertEquals(0xA1, route.session.components.roomSessionViews().activeRoomEventForTest());
+            assertEquals(0xA1, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         }
 
         route.room25Zol = route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -465,16 +472,16 @@ final class GameplayRouteStage11 {
         }
 
         route.room25StairRevealDeadline = route.frame + 0x40;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+        while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.room25StairRevealDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         while (objectAt(route.session, 0x18) != 0xBE && route.frame < route.room25StairRevealDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
         assertEquals(0xBE, objectAt(route.session, 0x18));
-        assertEquals(0x10, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x25) & 0x10);
+        assertEquals(0x10, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x25) & 0x10);
 
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertFalse(route.transition.isActive());

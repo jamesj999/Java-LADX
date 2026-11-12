@@ -11,7 +11,9 @@ final class RoomObjectParserTest {
     void fillsOnlyActiveRoomCellsInsidePaddedRoomObjectsArea() {
         byte[] rom = new byte[] {(byte) 0xFE};
 
-        RoomObjectParseResult result = new RoomObjectParser(rom).parseOverworld(0, 0xE5, 0);
+        RoomObjectParseResult result = new RoomObjectParser(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .parseOverworld(0, 0xE5, 0);
 
         assertEquals(0x100, result.roomObjectsArea().length);
         assertEquals(0xFF, result.roomObjectsArea()[0x00]);
@@ -24,7 +26,9 @@ final class RoomObjectParserTest {
     void parsesOverworldOrdinaryObjectsStripsAndWarpRecords() {
         byte[] rom = new byte[] {0x23, 0x44, (byte) 0x82, 0x30, 0x55, (byte) 0xE1, 0x10, 0x77, 0x28, 0x48, (byte) 0xFE};
 
-        RoomObjectParseResult result = new RoomObjectParser(rom).parseOverworld(0, 0x00, 0);
+        RoomObjectParseResult result = new RoomObjectParser(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .parseOverworld(0, 0x00, 0);
 
         assertEquals(0x44, result.objectAtLocation(0x23));
         assertEquals(0x55, result.objectAtLocation(0x30));
@@ -42,24 +46,41 @@ final class RoomObjectParserTest {
     void replacesClosedChestsWithOpenChestsWhenTheRoomStatusBitIsSet() {
         byte[] rom = new byte[] {0x20, (byte) 0xA0, (byte) 0xFE};
 
-        assertEquals(0xA0, new RoomObjectParser(rom).parseOverworld(0, 0x00, 0).objectAtLocation(0x20));
         assertEquals(
-                0xA1, new RoomObjectParser(rom).parseOverworld(0, 0x00, 0x10).objectAtLocation(0x20));
+                0xA0,
+                new RoomObjectParser((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .parseOverworld(0, 0x00, 0)
+                        .objectAtLocation(0x20));
+        assertEquals(
+                0xA1,
+                new RoomObjectParser((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .parseOverworld(0, 0x00, 0x10)
+                        .objectAtLocation(0x20));
     }
 
     @Test
     void hidesSourceOpenChestMarkerWithRoomFloorUntilEventStatusIsSet() {
         byte[] rom = new byte[] {0x28, (byte) 0xA1, (byte) 0xFE};
 
-        assertEquals(0x0D, new RoomObjectParser(rom).parseIndoor(0, 0x0D, 0).objectAtLocation(0x28));
-        assertEquals(0xA1, new RoomObjectParser(rom).parseIndoor(0, 0x0D, 0x10).objectAtLocation(0x28));
+        assertEquals(
+                0x0D,
+                new RoomObjectParser((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .parseIndoor(0, 0x0D, 0)
+                        .objectAtLocation(0x28));
+        assertEquals(
+                0xA1,
+                new RoomObjectParser((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                        .parseIndoor(0, 0x0D, 0x10)
+                        .objectAtLocation(0x28));
     }
 
     @Test
     void recordsTheLastVisibleIndoorStaircaseInObjectStreamOrder() {
         byte[] rom = new byte[] {0x12, (byte) 0xBE, 0x34, (byte) 0xCB, 0x56, (byte) 0xC6, (byte) 0xFE};
 
-        RoomObjectParseResult result = new RoomObjectParser(rom).parseIndoor(0, 0x00, 0x10);
+        RoomObjectParseResult result = new RoomObjectParser(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .parseIndoor(0, 0x00, 0x10);
 
         assertEquals(0x34, result.staircaseLocation());
     }
@@ -68,7 +89,9 @@ final class RoomObjectParserTest {
     void recordsTheLastStaircaseCellProducedByAnIndoorStrip() {
         byte[] rom = new byte[] {(byte) 0x83, 0x21, (byte) 0xCB, (byte) 0xFE};
 
-        RoomObjectParseResult result = new RoomObjectParser(rom).parseIndoor(0, 0x00, 0);
+        RoomObjectParseResult result = new RoomObjectParser(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .parseIndoor(0, 0x00, 0);
 
         assertEquals(0x21, result.staircaseLocation());
     }
@@ -77,7 +100,9 @@ final class RoomObjectParserTest {
     void concealedHiddenStairsDoNotConfigureTheRoomStaircase() {
         byte[] rom = new byte[] {0x18, (byte) 0xBF, (byte) 0xFE};
 
-        RoomObjectParseResult result = new RoomObjectParser(rom).parseIndoor(0, 0x00, 0);
+        RoomObjectParseResult result = new RoomObjectParser(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                .parseIndoor(0, 0x00, 0);
 
         assertEquals(-1, result.staircaseLocation());
         assertEquals(0x00, result.objectAtLocation(0x18));
@@ -88,9 +113,21 @@ final class RoomObjectParserTest {
         byte[] indoorRom = new byte[] {0x12, (byte) 0xC5, 0x34, (byte) 0xC6, (byte) 0xFE};
         byte[] overworldRom = new byte[] {0x12, (byte) 0xBE, 0x34, (byte) 0xC5, 0x56, (byte) 0xC6, (byte) 0xFE};
 
-        assertEquals(-1, new RoomObjectParser(indoorRom).parseIndoor(0, 0x00, 0).staircaseLocation());
+        assertEquals(
+                -1,
+                new RoomObjectParser(
+                                (indoorRom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(indoorRom)))
+                        .parseIndoor(0, 0x00, 0)
+                        .staircaseLocation());
         assertEquals(
                 0x56,
-                new RoomObjectParser(overworldRom).parseOverworld(0, 0x00, 0).staircaseLocation());
+                new RoomObjectParser(
+                                (overworldRom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(overworldRom)))
+                        .parseOverworld(0, 0x00, 0)
+                        .staircaseLocation());
     }
 }

@@ -31,7 +31,8 @@ final class OpeningHouseRegressionTest {
     @Test
     void roomsContainingMobileBlocksStillLoadBothBlockGraphics() throws Exception {
         byte[] rom = rom();
-        RoomLoader loader = new RoomLoader(rom);
+        RoomLoader loader =
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         int blockRoom = -1;
         for (int room = 0; room < 256 && blockRoom < 0; room++) {
             for (int object : loader.loadIndoor(0, room, new int[8][4]).roomObjectsArea()) {
@@ -69,10 +70,11 @@ final class OpeningHouseRegressionTest {
 
     private static RoomSession session(byte[] rom, GPU gpu) {
         return new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 gpu,
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(RomTables.loadFromRom(rom)),
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));

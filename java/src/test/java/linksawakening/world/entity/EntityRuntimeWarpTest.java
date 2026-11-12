@@ -25,7 +25,8 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .romTables(linksawakening.rom.RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();

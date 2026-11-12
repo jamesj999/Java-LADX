@@ -18,8 +18,9 @@ final class RoomBombWallMutations {
 
     void applyOutdoorBombableCaveDoorCandidate(BombObjectInteraction.Candidate candidate, int sourceSlot) {
         int objectId = dependencies.roomSessionViews().get().objectAtRoomLocation(candidate.location());
-        int doorIndex = dependencies.romTables().objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
-                - BOMBABLE_WALL_PHYSICS_BASE;
+        int doorIndex =
+                dependencies.romTables().physicsTables().objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
+                        - BOMBABLE_WALL_PHYSICS_BASE;
         if (objectId != OBJECT_BOMBABLE_CAVE_DOOR || doorIndex < 0 || doorIndex >= 4) {
             return;
         }
@@ -81,7 +82,8 @@ final class RoomBombWallMutations {
         int physicsTable = dependencies.location().activeRoom.mapId() == 0xFF
                 ? RomTables.PHYSICS_TABLE_INDOORS2
                 : RomTables.PHYSICS_TABLE_INDOORS1;
-        int wallIndex = dependencies.romTables().objectPhysicsFlag(physicsTable, objectId) - BOMBABLE_WALL_PHYSICS_BASE;
+        int wallIndex = dependencies.romTables().physicsTables().objectPhysicsFlag(physicsTable, objectId)
+                - BOMBABLE_WALL_PHYSICS_BASE;
         if (wallIndex < 0 || wallIndex >= 4) {
             return;
         }

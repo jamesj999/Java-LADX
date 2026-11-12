@@ -40,6 +40,7 @@ public record RoomRenderSnapshot(
         tileIds = tileIds.clone();
         tileAttrs = tileAttrs.clone();
         palettes = clonePalettes(palettes);
+        entities = entities == null ? null : entities.ownedCopy();
     }
 
     @Override

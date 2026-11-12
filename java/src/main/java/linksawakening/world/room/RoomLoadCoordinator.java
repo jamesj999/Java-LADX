@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -14,7 +15,7 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.object.SwitchBlockAnimation;
 import linksawakening.world.transition.Warp;
 
-/** RoomLoadCoordinator operations for the live room session. */
+/** LoadRoom ($00:3162): load data, initialize the active room, then synchronize collision. */
 final class RoomLoadCoordinator {
     private final Dependencies dependencies;
     private final RoomActiveRoomInitializer roomActiveRoomInitializer;
@@ -130,9 +131,9 @@ final class RoomLoadCoordinator {
                                 dependencies.followers().tarinFlag, dependencies.followers().playerShieldLevel)));
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         var oldSelection = dependencies.location().activeRoom == null
-                        || dependencies.location().activeRoom.entities() == null
+                        || dependencies.location().activeRoom.entityView() == null
                 ? null
-                : dependencies.location().activeRoom.entities().spriteSelection();
+                : dependencies.location().activeRoom.entityView().spriteSelection();
         var palettes = dependencies
                 .roomPaletteLoader()
                 .indoorTransition(
@@ -282,7 +283,7 @@ final class RoomLoadCoordinator {
             OverworldCollision overworldCollision,
             OverworldTilesetTable overworldTilesetTable,
             OwlEventDialogResolver owlEventDialogResolver,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

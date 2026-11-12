@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Link-relative input, cached motion, and interaction gates. */
-public final class EntityLinkState {
+final class EntityLinkState {
     int followingLinkZ;
     int followingLinkDirection;
     int lastRomLinkDirection;

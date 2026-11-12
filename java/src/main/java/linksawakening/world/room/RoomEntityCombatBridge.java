@@ -38,7 +38,7 @@ final class RoomEntityCombatBridge {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .resolveCombat(
+                .resolveCombat(new linksawakening.world.entity.EnemyCombatFrame(
                         frameCounter,
                         linkEntityX,
                         linkEntityY,
@@ -50,7 +50,7 @@ final class RoomEntityCombatBridge {
                         swordWidth,
                         swordY,
                         swordHeight,
-                        attackContext);
+                        attackContext));
         dependencies
                 .location()
                 .activeRoom
@@ -59,7 +59,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return events;
     }
 
@@ -88,7 +88,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return mask;
     }
 
@@ -140,7 +140,13 @@ final class RoomEntityCombatBridge {
         return collectEntityIfNeeded(new EntityPickupInputs(
                 frameCounter,
                 new EntityPickupInputs.Link(
-                        linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ),
+                        linkEntityX,
+                        linkEntityY,
+                        linkAirborne,
+                        linkInteractive,
+                        linksawakening.state.Direction.fromJavaOrUnknown(linkDirection),
+                        linkZ,
+                        linkDirection),
                 new SwordBox(false, 0, 0, 0, 0)));
     }
 
@@ -150,7 +156,7 @@ final class RoomEntityCombatBridge {
         int linkEntityY = inputs.link().y();
         boolean linkAirborne = inputs.link().airborne();
         boolean linkInteractive = inputs.link().interactive();
-        int linkDirection = inputs.link().direction();
+        int linkDirection = inputs.link().rawDirection();
         int linkZ = inputs.link().z();
         boolean swordActive = inputs.sword().active();
         int swordX = inputs.sword().x();
@@ -168,7 +174,7 @@ final class RoomEntityCombatBridge {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .collectIfNeeded(
+                .collectIfNeeded(new linksawakening.world.entity.EntityPickupFrame(
                         frameCounter,
                         linkEntityX,
                         linkEntityY,
@@ -180,7 +186,7 @@ final class RoomEntityCombatBridge {
                         swordX,
                         swordWidth,
                         swordY,
-                        swordHeight);
+                        swordHeight));
         if (event == null) {
             return null;
         }
@@ -219,7 +225,7 @@ final class RoomEntityCombatBridge {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return event;
     }
 

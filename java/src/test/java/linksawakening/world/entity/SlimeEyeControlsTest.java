@@ -42,7 +42,7 @@ final class SlimeEyeControlsTest {
             link.setRoomEntryRomPosition(72, 80);
             link.setDirection(Direction.UP.javaIndex());
             d.scrollController().startScreenShake(7, 0);
-            var runtime = (RoomEntityRuntime) get(get(get(room, "context"), "entityBridge"), "entityRuntime");
+            var runtime = linksawakening.world.room.RoomFrameTestAccess.runtime(room);
             // All setup writes end here. Below this point only headlessButton/headlessFrame mutate gameplay.
             Set<String> pressed = new HashSet<>();
             boolean split = false, firstDeath = false, dead = false, reward = false, body = false;
@@ -193,12 +193,6 @@ final class SlimeEyeControlsTest {
 
     private int romDirection(int direction) {
         return Direction.fromJavaOrDown(direction).romIndex();
-    }
-
-    private Object get(Object object, String name) throws Exception {
-        var field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(object);
     }
 
     private void set(Object object, String name, Object value) throws Exception {

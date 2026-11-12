@@ -31,7 +31,7 @@ final class EntityInputCache {
                 || linkPosition.x() != x
                 || linkPosition.y() != y
                 || linkPosition.z() != z
-                || linkPosition.direction() != direction
+                || linkPosition.rawDirection() != direction
                 || linkPosition.collisionType() != collisionType) {
             linkPosition = new LinkPosition(x, y, z, direction, collisionType);
         }
@@ -41,7 +41,7 @@ final class EntityInputCache {
     LinkMotion linkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {
         if (linkMotion == null
                 || linkMotion.airborne() != airborne
-                || linkMotion.state() != state
+                || linkMotion.rawState() != state
                 || linkMotion.shield() != shield
                 || linkMotion.invincibility() != invincibility
                 || linkMotion.speedX() != speedX

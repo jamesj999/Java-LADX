@@ -148,23 +148,24 @@ final class RoomSessionRewards2Test {
     void bottleGrottoBossClearOpensTheInstrumentRoomAndAwardsTheConchHorn() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x01, 0x2B);
-        assertEquals(0x21, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());
 
         List<RoomEntity> emptySlots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             emptySlots.add(RoomEntity.disabled(slot));
         }
-        session.components
-                .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+        RoomDebugFixture.of(session)
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                        .indoorRoom(true)
+                        .build());
         session.entities().tickEntities(0, 0x50, 0x50);
 
-        assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0, session.rooms().activeRoom().shutterDoorMask());
 
         session.rooms().loadIndoor(0x01, 0x2A);
-        assertEquals(0x21, session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         RoomEntity instrument = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
@@ -185,8 +186,8 @@ final class RoomSessionRewards2Test {
         }
         session.entities().tickEntities(89, 0x50, 0x60);
 
-        assertTrue(session.components.roomSessionViews().hasDungeonInstrumentForTest(0x01));
-        assertEquals(0x10, session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2A) & 0x10);
+        assertTrue(RoomDebugFixture.of(session).hasDungeonInstrumentForTest(0x01));
+        assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x01, 0x2A) & 0x10);
         assertEquals(
                 0x101,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
@@ -224,9 +225,11 @@ final class RoomSessionRewards2Test {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             dyingBossSlots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(dyingBossSlots), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(dyingBossSlots))
+                .indoorRoom(true)
+                .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setGeniePrivateState1ForTest(runtime, 0, 1);
-        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
+        RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
 
         session.entities().tickEntities(0, 0x50, 0x50);
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionCountdownForTest(runtime, 0, 1);
@@ -247,7 +250,7 @@ final class RoomSessionRewards2Test {
             session.entities().tickEntities(frame, 0x50, 0x50);
         }
 
-        assertEquals(0x20, session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2B) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x01, 0x2B) & 0x20);
         assertEquals(
                 List.of(new HeartContainerRewardEvent(heart.slot())),
                 session.components.entityBridge().outbox.consumeHeartContainerRewards());
@@ -262,14 +265,18 @@ final class RoomSessionRewards2Test {
         int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x16;
 
         assertEquals(0xC2, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
-        assertTrue(session.doors().tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Link.DIRECTION_UP, 0x01, 5));
+        assertTrue(session.doors()
+                .tryUnlockKeyCavernKeyhole(
+                        0x5A, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01, 5));
         assertEquals(
                 0x231,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
-        assertEquals(0, session.components.roomSessionViews().overworldRoomStatusForTest(0xB5) & 0x10);
+        assertEquals(0, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xB5) & 0x10);
 
-        assertTrue(session.doors().tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Link.DIRECTION_UP, 0x01, 6));
-        assertEquals(0x10, session.components.roomSessionViews().overworldRoomStatusForTest(0xB5) & 0x10);
+        assertTrue(session.doors()
+                .tryUnlockKeyCavernKeyhole(
+                        0x5A, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01, 6));
+        assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xB5) & 0x10);
         assertEquals(0xDF, session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
         int gateTopLeft = 2 * RoomConstants.ROOM_TILE_WIDTH + 12;
         while (session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest() > 0xD8) {
@@ -307,8 +314,13 @@ final class RoomSessionRewards2Test {
         PlayerState playerState = new PlayerState();
         session.rooms().loadInitialOverworld(0x41);
 
-        ChestOpenResult chest =
-                session.doors().tryOpenChest(0x38, 0x31, Link.DIRECTION_UP, true, playerState.swordLevel());
+        ChestOpenResult chest = session.doors()
+                .tryOpenChest(
+                        0x38,
+                        0x31,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        true,
+                        playerState.swordLevel());
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, chest.itemType());
         session.entities().tickEntities(0, 0x40, 0x40);
@@ -328,20 +340,25 @@ final class RoomSessionRewards2Test {
                     .anyMatch(request -> request.globalDialogId() == 0x0C1);
         }
         assertTrue(owlDialogOpened);
-        while ((session.components.roomSessionViews().overworldRoomStatusForTest(0x41) & 0x20) == 0 && frame < 0x340) {
+        while ((RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x20) == 0 && frame < 0x340) {
             tickInteractive(session, frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, session.components.roomSessionViews().overworldRoomStatusForTest(0x41) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x20);
 
         session.rooms().loadInitialOverworld(0x41);
-        assertEquals(0x20, session.components.roomSessionViews().overworldRoomStatusForTest(0x41) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x20);
         assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x41));
 
         session.rooms().loadInitialOverworld(0xD3);
         assertTrue(session.doors()
-                .tryUnlockTailCaveKeyhole(0x5A, 0x4A, Link.DIRECTION_UP, 0x01, playerState.tailKeyCount() != 0));
-        assertEquals(0x10, session.components.roomSessionViews().overworldRoomStatusForTest(0xD3) & 0x10);
+                .tryUnlockTailCaveKeyhole(
+                        0x5A,
+                        0x4A,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        0x01,
+                        playerState.tailKeyCount() != 0));
+        assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xD3) & 0x10);
     }
 
     @Test
@@ -354,7 +371,7 @@ final class RoomSessionRewards2Test {
                 .orElseThrow();
 
         fillActiveObjects(session, 0xDB);
-        session.components.roomSessionViews().setEntitySwitchBlocksStateForTest(0x00);
+        RoomDebugFixture.of(session).setEntitySwitchBlocksStateForTest(0x00);
         EntityBackgroundCollisionResult lower = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
@@ -370,7 +387,7 @@ final class RoomSessionRewards2Test {
                         entity, EntityBackgroundCollisionResult.RIGHT, entity.x(), entity.y());
         assertTrue(raisedStateZero.blocked());
 
-        session.components.roomSessionViews().setEntitySwitchBlocksStateForTest(0x02);
+        RoomDebugFixture.of(session).setEntitySwitchBlocksStateForTest(0x02);
         EntityBackgroundCollisionResult raisedStateTwo = session.components
                 .roomCollisionQueries()
                 .entityBackgroundCollisionResultForTest(
@@ -381,19 +398,19 @@ final class RoomSessionRewards2Test {
     @Test
     void gameplayVblankAdvancesTheRoomOwnedSwitchStageBeforeOrdinaryAnimations() {
         RoomSession session = newSession();
-        session.components.roomSessionViews().setEntitySwitchBlocksStateForTest(0x00);
-        session.components.roomSessionViews().setSwitchableObjectAnimationStageForTest(0x02);
+        RoomDebugFixture.of(session).setEntitySwitchBlocksStateForTest(0x00);
+        RoomDebugFixture.of(session).setSwitchableObjectAnimationStageForTest(0x02);
 
         session.entityState().tickGameplayVBlank();
 
-        assertEquals(0x03, session.components.roomSessionViews().switchableObjectAnimationStageForTest());
-        assertEquals(0x02, session.components.roomSessionViews().entitySwitchBlocksStateForTest());
+        assertEquals(0x03, RoomDebugFixture.of(session).switchableObjectAnimationStageForTest());
+        assertEquals(0x02, RoomDebugFixture.of(session).entitySwitchBlocksStateForTest());
 
-        session.components.roomSessionViews().setSwitchableObjectAnimationStageForTest(0x09);
+        RoomDebugFixture.of(session).setSwitchableObjectAnimationStageForTest(0x09);
         session.entityState().tickGameplayVBlank();
 
-        assertEquals(0x00, session.components.roomSessionViews().switchableObjectAnimationStageForTest());
-        assertEquals(0x02, session.components.roomSessionViews().entitySwitchBlocksStateForTest());
+        assertEquals(0x00, RoomDebugFixture.of(session).switchableObjectAnimationStageForTest());
+        assertEquals(0x02, RoomDebugFixture.of(session).entitySwitchBlocksStateForTest());
     }
 
     @Test
@@ -421,7 +438,7 @@ final class RoomSessionRewards2Test {
         assertEquals(0x66, hit.get(0).type());
         session.entities().tickEntities(1, 0, 0);
 
-        assertEquals(0x01, session.components.roomSessionViews().switchableObjectAnimationStageForTest());
+        assertEquals(0x01, RoomDebugFixture.of(session).switchableObjectAnimationStageForTest());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         crystal.slot(), 0x66, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
@@ -466,7 +483,7 @@ final class RoomSessionRewards2Test {
                         .slots()
                         .get(pickup.slot())
                         .status());
-        assertEquals(0x10, session.components.roomSessionViews().overworldRoomStatusForTest(0xA4) & 0x10);
+        assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xA4) & 0x10);
         assertTrue(session.entityState().consumeEntityDialogRequests().contains(new DialogRequest(0, 0xEF)));
         assertTrue(session.components.entityBridge().outbox.consumeEntityEvents().stream()
                 .anyMatch(soundEvent -> soundEvent.type() == 0x3D

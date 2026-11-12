@@ -55,11 +55,11 @@ final class GameplayRouteStage4 {
         }
         assertTrue(route.instrumentOwlDialogOpened, route.instrumentOwlDialogs.toString());
         route.instrumentOwlExitDeadline = route.frame + 0x100;
-        while ((route.session.components.roomSessionViews().overworldRoomStatusForTest(0xD2) & 0x20) == 0
+        while ((RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xD2) & 0x20) == 0
                 && route.frame < route.instrumentOwlExitDeadline) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.components.roomSessionViews().overworldRoomStatusForTest(0xD2) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xD2) & 0x20);
 
         route.routeToKidnappingWarning =
                 new int[] {ScrollController.UP, ScrollController.LEFT, ScrollController.LEFT, ScrollController.UP};
@@ -182,13 +182,12 @@ final class GameplayRouteStage4 {
             }
         }
         route.guardDeadline = route.frame + 0x100;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
-                && route.frame < route.guardDeadline) {
+        while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0 && route.frame < route.guardDeadline) {
             route.session
                     .entities()
                     .tickEntitiesWithProjectileEvents(route.frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
         }
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x01);
 
         walkToAndCrossIndoorBoundary(
@@ -237,13 +236,13 @@ final class GameplayRouteStage4 {
             }
         }
         route.moblinRoomDeadline = route.frame + 0x200;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+        while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.moblinRoomDeadline) {
             route.session
                     .entities()
                     .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
         }
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x08);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
@@ -314,7 +313,7 @@ final class GameplayRouteStage4 {
                 .slots()
                 .get(route.moblinKing.slot())
                 .loaded());
-        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x15, 0xE1) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x15, 0xE1) & 0x20);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.RIGHT);
@@ -327,8 +326,14 @@ final class GameplayRouteStage4 {
         while (route.session.story().bowWowState() != 0x01 && route.frame < route.bowWowRescueDeadline) {
             route.session.tickEntities(new EntityTickInputs(
                     route.frame++,
-                    new LinkPosition(route.kidnappedBowWow.x(), route.kidnappedBowWow.y(), 0, Link.DIRECTION_RIGHT, 1),
-                    new LinkMotion(false, 0, false, 0, 0, 0),
+                    new LinkPosition(
+                            route.kidnappedBowWow.x(),
+                            route.kidnappedBowWow.y(),
+                            0,
+                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                            1,
+                            Link.DIRECTION_RIGHT),
+                    new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
         }
@@ -365,7 +370,7 @@ final class GameplayRouteStage4 {
                         0,
                         Link.DIRECTION_DOWN,
                         false);
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x02);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.DOWN);
@@ -410,11 +415,11 @@ final class GameplayRouteStage4 {
         }
         assertTrue(route.swampOwlDialogOpened);
         route.swampOwlExitDeadline = route.frame + 0x100;
-        while ((route.session.components.roomSessionViews().overworldRoomStatusForTest(0x36) & 0x20) == 0
+        while ((RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x36) & 0x20) == 0
                 && route.frame < route.swampOwlExitDeadline) {
             tickInteractiveEntities(route.session, route.frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, route.session.components.roomSessionViews().overworldRoomStatusForTest(0x36) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0x36) & 0x20);
         route.swampOwlDepartureDeadline = route.frame + 0x100;
         while (route.session.rooms().activeRoom().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x41)

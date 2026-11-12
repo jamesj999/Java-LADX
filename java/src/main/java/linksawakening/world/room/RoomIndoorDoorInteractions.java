@@ -5,17 +5,23 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.transition.Warp;
 
+/** Key-door collision and EntityInitPushedBlock ($03:5198), before their animation ticks. */
 final class RoomIndoorDoorInteractions {
+    // Boss-door collision/object values used by the indoor door handlers.
+    private static final int BOSS_DOOR_PHYSICS = 0x98;
+    private static final int BOSS_DOOR_LEFT_OBJECT = 0xA4;
+
     private final Dependencies dependencies;
 
     RoomIndoorDoorInteractions(Dependencies dependencies) {
         this.dependencies = dependencies;
     }
 
-    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
@@ -31,11 +37,11 @@ final class RoomIndoorDoorInteractions {
         boolean bossDoor = false;
         for (int[] point : RoomInteractionGeometry.keyDoorCollisionPoints(linkPixelX, linkPixelY, doorDirection)) {
             int physics = dependencies.overworldCollision().objectPhysicsFlagAtPoint(point[0], point[1]);
-            if (physics == expectedPhysics || (doorDirection == 0 && physics == 0x98)) {
+            if (physics == expectedPhysics || (doorDirection == 0 && physics == BOSS_DOOR_PHYSICS)) {
                 int column = Math.floorDiv(point[0], 0x10);
                 int row = Math.floorDiv(point[1], 0x10);
                 touchedLocation = (row << 4) | column;
-                bossDoor = physics == 0x98;
+                bossDoor = physics == BOSS_DOOR_PHYSICS;
                 break;
             }
         }
@@ -44,7 +50,7 @@ final class RoomIndoorDoorInteractions {
         }
         int touchedObject = dependencies.roomSessionViews().get().objectAtRoomLocation(touchedLocation);
         if (bossDoor) {
-            int objectOffset = touchedObject - 0xA4;
+            int objectOffset = touchedObject - BOSS_DOOR_LEFT_OBJECT;
             if (objectOffset < 0
                     || objectOffset > 1
                     || !RoomInteractionGeometry.alignedWithIndoorKeyDoor(
@@ -86,7 +92,7 @@ final class RoomIndoorDoorInteractions {
         return true;
     }
 
-    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL
@@ -158,12 +164,12 @@ final class RoomIndoorDoorInteractions {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         return true;
     }
 
-    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies
                 .roomDoorInteractions()
                 .get()
@@ -176,7 +182,7 @@ final class RoomIndoorDoorInteractions {
                 .tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
-    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType) {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_SIDESCROLL) {

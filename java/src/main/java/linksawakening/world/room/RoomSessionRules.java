@@ -109,7 +109,6 @@ final class RoomSessionRules {
     static final int OBJECT_BOMBED_PASSAGE_HORIZONTAL = 0x3E;
     static final int BOMBABLE_WALL_PHYSICS_BASE = 0x99;
     static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
-    static final int LINK_MOTION_FALLING_DOWN = 0x06;
     static final int OBJECT_WELL = 0x61;
     static final int OBJECT_WATER_LADDER_SIDESCROLL = 0x67;
     static final int[] ENTITY_CONVEYOR_MOVEMENT_X = {0, 0, -1, 1, 1, -1, 1, -1};

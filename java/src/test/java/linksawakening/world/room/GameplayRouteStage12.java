@@ -91,7 +91,9 @@ final class GameplayRouteStage12 {
             tickLiveRoom3B(route.session, route.link, route.coordinator, route.transition, route.scroll, route.frame++);
         }
         assertEquals(0x01, route.session.rooms().liftedEntityState().carryState());
-        assertTrue(route.session.playerItems().throwLiftedEntity(Link.DIRECTION_RIGHT));
+        assertTrue(route.session
+                .playerItems()
+                .throwLiftedEntity(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT)));
         assertEquals(
                 EntityStatus.ACTIVE,
                 route.session
@@ -208,7 +210,11 @@ final class GameplayRouteStage12 {
         assertTrue(
                 route.session
                         .doors()
-                        .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_UP, 0x01),
+                        .tryUnlockIndoorKeyDoor(
+                                route.link.pixelX(),
+                                route.link.pixelY(),
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                0x01),
                 "room2D boss-door leading-edge probes did not contact A4/A5");
         // Source bank2 checks wHasDungeonBossKey but does not decrement it
         // (only the $90-$93 small-key branch consumes a key).
@@ -222,7 +228,7 @@ final class GameplayRouteStage12 {
         assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
         assertEquals(0x43, objectAt(route.session, 0x04));
         assertEquals(0x44, objectAt(route.session, 0x05));
-        assertEquals(0x04, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x2D) & 0x04);
+        assertEquals(0x04, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x2D) & 0x04);
 
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.UP);
@@ -244,13 +250,12 @@ final class GameplayRouteStage12 {
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             route.clearedBossSlots.add(RoomEntity.disabled(slot));
         }
-        route.session
-                .components
-                .roomSessionViews()
-                .replaceEntityRuntimeForTest(
-                        RoomEntityRuntime.from(new RoomEntitySnapshot(route.clearedBossSlots), true));
+        RoomDebugFixture.of(route.session)
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(route.clearedBossSlots))
+                        .indoorRoom(true)
+                        .build());
         route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         route.link.setPixelPosition(0x50, 0x50);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);

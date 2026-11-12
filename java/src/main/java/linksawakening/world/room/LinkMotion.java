@@ -1,5 +1,31 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSessionRules.*;
+import linksawakening.state.LinkMotionState;
 
-public record LinkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {}
+/** Known Link motion dispatch states plus an unmodified raw byte for unknown ROM gates. */
+public record LinkMotion(
+        boolean airborne,
+        LinkMotionState state,
+        boolean shield,
+        int invincibility,
+        int speedX,
+        int speedY,
+        int rawState) {
+    public LinkMotion {
+        state = stateForRomByte(rawState);
+    }
+
+    public LinkMotion(
+            boolean airborne, LinkMotionState state, boolean shield, int invincibility, int speedX, int speedY) {
+        this(airborne, state, shield, invincibility, speedX, speedY, state.romValue());
+    }
+    /** @deprecated Pass LinkMotionState; retained for app/gameplay/EntityFrameInputsFactory.java. */
+    @Deprecated(forRemoval = true)
+    public LinkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {
+        this(airborne, stateForRomByte(state), shield, invincibility, speedX, speedY, state);
+    }
+    /** Unknown raw dispatch bytes retain their numeric gating behavior without inventing an enum. */
+    public static LinkMotionState stateForRomByte(int raw) {
+        return raw >= 0 && raw <= LinkMotionState.UNKNOWN_0A.romValue() ? LinkMotionState.fromRom(raw) : null;
+    }
+}

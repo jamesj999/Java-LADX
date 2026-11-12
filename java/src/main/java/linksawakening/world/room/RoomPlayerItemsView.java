@@ -10,7 +10,7 @@ final class RoomPlayerItemsView implements RoomPlayerItems {
     }
 
     @Override
-    public boolean throwLiftedEntity(int linkDirection) {
+    public boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
         return delegate.throwLiftedEntity(linkDirection);
     }
 
@@ -63,7 +63,7 @@ final class RoomPlayerItemsView implements RoomPlayerItems {
     }
 
     @Override
-    public int shovelAnimationState(int javaDirection, int timer) {
+    public int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return delegate.shovelAnimationState(javaDirection, timer);
     }
 

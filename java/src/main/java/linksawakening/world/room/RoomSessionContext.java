@@ -58,15 +58,17 @@ final class RoomSessionContext {
         values.droppableRupeeSystem = droppableRupeeSystem;
         values.roomLoadListener = roomLoadListener;
         values.roomTilemapBuilder = new RoomTilemapBuilder(romData);
-        values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
+        values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData.unsafeBytes());
         values.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(values.entitySpriteHandlerCatalog);
         values.enemyCombatTables = new RomEnemyCombatTables(romData);
         values.chestContentsTable = new ChestContentsTable(romData);
         values.dungeonRoomEventTable = new DungeonRoomEventTable(romData);
-        values.romTables = RomTables.loadFromRom(romData);
-        values.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(values.romTables);
+        values.romTables = RomTables.load(romData);
+        values.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(
+                values.romTables.collisionTables(), values.romTables.entityPropertyTables());
         values.enemyDropResolver = new EnemyDropResolver(romData);
-        values.entityCollisionPointProbe = new EntityCollisionPointProbe(values.romTables);
+        values.entityCollisionPointProbe = new EntityCollisionPointProbe(
+                values.romTables.collisionTables(), values.romTables.entityPropertyTables());
         values.overworldBushInteraction = new OverworldBushInteraction(romData, values.romTables);
     }
 
@@ -112,12 +114,7 @@ final class RoomSessionContext {
         values.roomSessionViews = new RoomSessionViews(new RoomSessionViews.Dependencies(
                 values.entityFrame,
                 values.location,
-                values.puzzles,
-                values.terrain,
                 () -> values.entityBridge,
-                values.indoorTorchPaletteEffect,
-                values.overworldCollision,
-                () -> values.roomLoadCoordinator,
                 values.roomState,
                 () -> values.roomStoryState,
                 values.scrollNavigation));

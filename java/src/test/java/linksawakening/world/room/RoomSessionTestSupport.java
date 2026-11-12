@@ -65,10 +65,11 @@ final class RoomSessionTestSupport {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
         return new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(romTables),
                 new RoomSessionConfig.Presentation(transientVfxSystem, null, roomLoadListener),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -147,16 +148,21 @@ final class RoomSessionTestSupport {
                             -1,
                             false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom == null ? null : new linksawakening.rom.Rom(rom)))
+                .build();
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(rom == null ? null : new linksawakening.rom.Rom(rom)));
         int frame = 0;
         for (int sourceOrder : killOrder) {
             int slot = entitySlots[sourceOrder];
             RoomEntity target = runtime.inspection().snapshot().slots().get(slot);
             linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
-            List<EntityCombatEvent> hit =
-                    runtime.resolveCombat(frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10);
+            List<EntityCombatEvent> hit = runtime.resolveCombat(new linksawakening.world.entity.EntitySwordContactFrame(
+                    frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10));
             assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
             int deathDeadline = frame + 0x80;
             while (runtime.inspection().snapshot().slots().get(slot).loaded() && frame < deathDeadline) {

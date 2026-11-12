@@ -28,7 +28,7 @@ final class RoomGroundMutations {
         }
         dependencies.terrain().linkGroundFinalRoomPosition = dependencies.terrain().linkGroundRoomPosition;
         // $02:7590-7593 and $75B6-75BB bypass ground physics.
-        if (frame.airborne() || frame.motionState() == 0x02) return false;
+        if (frame.airborne() || frame.motionState() == linksawakening.state.LinkMotionState.UNSTUCKING) return false;
         return dependencies.owner().get().applyCrackedFloorGroundPhysics(frame, dialogGotItemActive);
     }
     /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */
@@ -114,12 +114,9 @@ final class RoomGroundMutations {
                     .entityRuntime
                     .spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
             // Link runs before the entity tick, which clears its frame outbox.
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .outbox
-                    .pendingRoomEntityEvents
-                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingEntityEvents());
+            RoomEntityOutbox.append(
+                    dependencies.entityBridge().get().outbox.pendingRoomEntityEvents,
+                    dependencies.entityBridge().get().entityRuntime.consumePendingEntityEvents());
         }
         return true;
     }

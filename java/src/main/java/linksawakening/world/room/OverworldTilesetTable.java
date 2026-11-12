@@ -12,8 +12,8 @@ public final class OverworldTilesetTable {
 
     private final Rom rom;
 
-    public OverworldTilesetTable(byte[] romData) {
-        this.rom = new Rom(romData);
+    public OverworldTilesetTable(Rom romData) {
+        this.rom = java.util.Objects.requireNonNull(romData, "data");
     }
 
     public int tilesetIdForRoom(int roomId) {
@@ -32,5 +32,11 @@ public final class OverworldTilesetTable {
             return false;
         }
         return currentTilesetId != tilesetId;
+    }
+
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
+    @Deprecated(forRemoval = true)
+    public OverworldTilesetTable(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

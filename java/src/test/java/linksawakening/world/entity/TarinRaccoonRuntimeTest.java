@@ -476,7 +476,8 @@ final class TarinRaccoonRuntimeTest {
 
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        RoomPaletteLoader palettes =
+                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 2), session.rooms().palettes());
         assertArrayEquals(
@@ -492,7 +493,8 @@ final class TarinRaccoonRuntimeTest {
 
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        RoomPaletteLoader palettes =
+                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.rooms().palettes());
         assertArrayEquals(
@@ -509,7 +511,8 @@ final class TarinRaccoonRuntimeTest {
         session.story().initializeNewGameWorldState();
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes = new RoomPaletteLoader(rom);
+        RoomPaletteLoader palettes =
+                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.rooms().palettes());
         assertArrayEquals(
@@ -631,14 +634,15 @@ final class TarinRaccoonRuntimeTest {
     private static RoomSession newSession() {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
-        return new RoomSession(
-                rom,
+        return new RoomSession(new linksawakening.world.room.RoomSessionConfig(
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(romTables),
-                new TransientVfxSystem(16),
-                null);
+                new linksawakening.world.room.RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
     private static RoomEntityRuntime raccoonRuntime(boolean indoor) {
@@ -674,7 +678,8 @@ final class TarinRaccoonRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
     }
 

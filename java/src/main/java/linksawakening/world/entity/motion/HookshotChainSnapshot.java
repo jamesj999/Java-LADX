@@ -1,7 +1,7 @@
 package linksawakening.world.entity.motion;
 
 /** Inputs for HookshotChainMotion.copy. */
-public record HookshotChainSnapshot(
+record HookshotChainSnapshot(
         HookshotChainMotion.State state,
         int x,
         int y,

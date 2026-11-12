@@ -19,10 +19,11 @@ final class WellHeartEmulatorTrajectoryTest {
             rom = input.readAllBytes();
         }
         var session = new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(RomTables.loadFromRom(rom)),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -51,9 +52,7 @@ final class WellHeartEmulatorTrajectoryTest {
             assertEquals(48 + travel, actual.y(), "Y pass " + pass);
             int planarSpeed = pass < 34 ? 12 : pass < 53 ? 6 : pass < 65 ? 3 : 0;
             assertEquals(
-                    planarSpeed,
-                    session.components.roomSessionViews().entityDropSpeedXForTest(slot),
-                    "speed X pass " + pass);
+                    planarSpeed, RoomDebugFixture.of(session).entityDropSpeedXForTest(slot), "speed X pass " + pass);
             int zQ4;
             if (pass <= 34) zQ4 = 32 * pass - pass * (pass - 1);
             else if (pass <= 53) {

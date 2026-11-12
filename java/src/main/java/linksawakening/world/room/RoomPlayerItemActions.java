@@ -6,7 +6,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.world.object.OverworldBushInteraction;
 
-/** RoomPlayerItemActions operations for the live room session. */
+/** Player item entry points (PlaceBomb/ShootArrow) and publication of their entity presentation. */
 final class RoomPlayerItemActions {
     private final Dependencies dependencies;
     private final RoomShovelActions roomShovelActions;
@@ -27,7 +27,7 @@ final class RoomPlayerItemActions {
                 dependencies.roomTileRedraw()));
     }
 
-    boolean throwLiftedEntity(int linkDirection) {
+    boolean throwLiftedEntity(linksawakening.state.Direction linkDirection) {
         if (dependencies.entityBridge().get().entityRuntime == null) {
             return false;
         }
@@ -37,15 +37,7 @@ final class RoomPlayerItemActions {
                 .entityRuntime
                 .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
-            dependencies
-                    .location()
-                    .activeRoom
-                    .replaceEntities(dependencies
-                            .entityBridge()
-                            .get()
-                            .entityRuntime
-                            .inspection()
-                            .snapshot());
+            publishEntityView();
         }
         return thrown;
     }
@@ -71,15 +63,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -96,15 +80,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -121,15 +97,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -154,15 +122,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -179,15 +139,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -199,7 +151,7 @@ final class RoomPlayerItemActions {
         roomShovelActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
     }
 
-    int shovelAnimationState(int javaDirection, int timer) {
+    int shovelAnimationState(linksawakening.state.Direction javaDirection, int timer) {
         return roomShovelActions.shovelAnimationState(javaDirection, timer);
     }
 
@@ -224,15 +176,7 @@ final class RoomPlayerItemActions {
         if (slot < 0) {
             return false;
         }
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return true;
     }
 
@@ -272,15 +216,7 @@ final class RoomPlayerItemActions {
         }
         boolean playWhoosh =
                 dependencies.entityBridge().get().entityRuntime.inspection().lastArrowShotPlayedWhoosh();
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
         return new ArrowShotResult(true, playWhoosh);
     }
 
@@ -303,6 +239,18 @@ final class RoomPlayerItemActions {
     boolean boomerangActive() {
         return dependencies.entityBridge().get().entityRuntime != null
                 && dependencies.entityBridge().get().entityRuntime.inspection().boomerangActive();
+    }
+
+    private void publishEntityView() {
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .view());
     }
 
     record Dependencies(

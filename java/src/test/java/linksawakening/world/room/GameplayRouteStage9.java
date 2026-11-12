@@ -59,9 +59,7 @@ final class GameplayRouteStage9 {
             route.coordinator.handleWarpAndIndoorBoundaries(route.link);
             assertEquals(
                     0,
-                    route.session
-                            .components
-                            .roomSessionViews()
+                    RoomDebugFixture.of(route.session)
                             .entityTransitionCountdownForTest(route.unresolvedHinoxWarp.slot()));
             assertFalse(route.transition.isActive(), "entity-$61 must remain gated before the Hinox clear");
         }
@@ -188,19 +186,19 @@ final class GameplayRouteStage9 {
                         .slots()
                         .get(route.hinoxSlot)
                         .status());
-        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x20);
         assertEquals(route.hinoxSourceLoadOrder, route.hinox.sourceLoadOrder());
 
         route.clearEventDeadline = route.frame + 0x100;
-        while (route.session.components.roomSessionViews().activeRoomEventForTest() != 0
+        while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0
                 && route.frame < route.clearEventDeadline) {
             tickInteractiveEntities(route.session, route.frame++, route.link.romEntityX(), route.link.romEntityY());
         }
-        assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
-        assertEquals(0x20, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
+        assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x20);
         assertEquals(
                 0x01,
-                route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x28) & 0x01,
+                RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x01,
                 "clear-midboss must persist room $28's open right door");
 
         route.clearedWarp = route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -253,7 +251,7 @@ final class GameplayRouteStage9 {
         // so some of the exact $50 countdown may already have elapsed. Wait
         // the remaining source countdown and require the fade only on zero.
         route.warpCountdown =
-                route.session.components.roomSessionViews().entityTransitionCountdownForTest(route.clearedWarp.slot());
+                RoomDebugFixture.of(route.session).entityTransitionCountdownForTest(route.clearedWarp.slot());
         assertTrue(
                 route.warpCountdown > 0 && route.warpCountdown <= 0x50,
                 "warp did not enter countdown at contact link="
@@ -276,8 +274,7 @@ final class GameplayRouteStage9 {
                         + String.format("%02X", route.session.rooms().currentRoomId())
                         + " status="
                         + String.format(
-                                "%02X",
-                                route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x28))
+                                "%02X", RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28))
                         + " link="
                         + String.format(
                                 "%02X/%02X/%02X",
@@ -285,9 +282,7 @@ final class GameplayRouteStage9 {
                         + " progress="
                         + String.format("%02X", route.session.dungeon().dungeonProgressFlagsSnapshot()[1])
                         + " warpCountdown="
-                        + route.session
-                                .components
-                                .roomSessionViews()
+                        + RoomDebugFixture.of(route.session)
                                 .entityTransitionCountdownForTest(route.clearedWarp.slot()));
         while (route.transition.isActive()) {
             route.transition.tick();
@@ -323,8 +318,7 @@ final class GameplayRouteStage9 {
             assertFalse(route.transition.isActive());
             assertFalse(route.scroll.isActive());
         }
-        assertEquals(
-                0, route.session.components.roomSessionViews().entityTransitionCountdownForTest(route.room36WarpSlot));
+        assertEquals(0, RoomDebugFixture.of(route.session).entityTransitionCountdownForTest(route.room36WarpSlot));
 
         route.armedRoom36Warp =
                 route.session.rooms().activeRoom().entities().slots().get(route.room36WarpSlot);
@@ -346,7 +340,7 @@ final class GameplayRouteStage9 {
             assertFalse(route.scroll.isActive());
         }
         route.room36WarpCountdown =
-                route.session.components.roomSessionViews().entityTransitionCountdownForTest(route.room36WarpSlot);
+                RoomDebugFixture.of(route.session).entityTransitionCountdownForTest(route.room36WarpSlot);
         assertTrue(
                 route.room36WarpCountdown > 0 && route.room36WarpCountdown <= 0x50,
                 "warp contact did not arm: link="
@@ -383,11 +377,15 @@ final class GameplayRouteStage9 {
         }
 
         assertEquals(0x21, route.session.rooms().currentRoomId());
-        assertEquals(0x00, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x00, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0xA0, objectAt(route.session, 0x27));
         assertEquals(
                 ChestContentsTable.CHEST_RUPEES_20,
-                new ChestContentsTable(route.rom).itemForSpawn(0x01, 0x21, route.playerState.swordLevel(), true));
+                new ChestContentsTable(
+                                (route.rom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(route.rom)))
+                        .itemForSpawn(0x01, 0x21, route.playerState.swordLevel(), true));
         assertEquals(1, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
 
         route.braceletDoorPath = reachablePositionPath(
@@ -404,7 +402,11 @@ final class GameplayRouteStage9 {
         route.link.setPixelPosition(route.link.pixelX() - 1, route.link.pixelY());
         assertTrue(route.session
                 .doors()
-                .tryUnlockIndoorKeyDoor(route.link.pixelX(), route.link.pixelY(), Link.DIRECTION_LEFT, 0x04));
+                .tryUnlockIndoorKeyDoor(
+                        route.link.pixelX(),
+                        route.link.pixelY(),
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT),
+                        0x04));
         assertEquals(0, route.session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
         for (int tick = 0; tick < 8; tick++) {
             route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
@@ -412,12 +414,12 @@ final class GameplayRouteStage9 {
         }
         route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
         assertFalse(route.session.components.entityBridge().consumeWorldLinkMotionBlockRequest());
-        assertEquals(0x02, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x21) & 0x02);
-        assertEquals(0x01, route.session.components.roomSessionViews().indoorRoomStatusForTest(0x01, 0x20) & 0x01);
+        assertEquals(0x02, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x21) & 0x02);
+        assertEquals(0x01, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x20) & 0x01);
         walkToAndCrossIndoorBoundary(
                 route.coordinator, route.transition, route.scroll, route.collision, route.link, ScrollController.LEFT);
         assertEquals(0x20, route.session.rooms().currentRoomId());
-        assertEquals(0x61, route.session.components.roomSessionViews().activeRoomEventForTest());
+        assertEquals(0x61, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(
                 2,
                 route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -430,7 +432,11 @@ final class GameplayRouteStage9 {
         assertEquals(0x07, objectAt(route.session, 0x28));
         assertEquals(
                 ChestContentsTable.CHEST_POWER_BRACELET,
-                new ChestContentsTable(route.rom).itemForSpawn(0x01, 0x20, route.playerState.swordLevel(), true));
+                new ChestContentsTable(
+                                (route.rom == null
+                                        ? (linksawakening.rom.Rom) null
+                                        : new linksawakening.rom.Rom(route.rom)))
+                        .itemForSpawn(0x01, 0x20, route.playerState.swordLevel(), true));
 
         assertEquals(0xAB, objectAt(route.session, 0x22));
         assertEquals(0xAB, objectAt(route.session, 0x65));
@@ -454,7 +460,7 @@ final class GameplayRouteStage9 {
             }
             assertEquals(0xAC, objectAt(route.session, torchLocation));
         }
-        assertEquals(2, route.session.components.roomSessionViews().roomTriggerCountForTest());
+        assertEquals(2, RoomDebugFixture.of(route.session).roomTriggerCountForTest());
 
         route.booSlots = route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE)

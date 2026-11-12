@@ -22,7 +22,8 @@ class EntityBossBattleFlagTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(rom))
+                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .romTables(linksawakening.rom.RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();

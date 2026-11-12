@@ -108,10 +108,10 @@ final class RoomSessionStoryTest {
                     .anyMatch(request -> request.globalDialogId() == 0x0C0);
         }
         assertTrue(dialogOpened);
-        while ((session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20) == 0 && frame < 0x340) {
+        while ((RoomDebugFixture.of(session).overworldRoomStatusForTest(0x80) & 0x20) == 0 && frame < 0x340) {
             tickInteractive(session, frame++, 0x50, 0x50);
         }
-        assertEquals(0x20, session.components.roomSessionViews().overworldRoomStatusForTest(0x80) & 0x20);
+        assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x80) & 0x20);
 
         boolean restoredMusic = false;
         while (session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -151,39 +151,40 @@ final class RoomSessionStoryTest {
     void fifthKanaletLeafPublishesFinalLeafDialogAndCompletesItsSourceRoom() {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0x58);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(List.of(
-                new RoomEntity(
-                        0,
-                        0xFF,
-                        0x3C,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        EntitySpriteDefinition.unsupported(0x3C),
-                        -1,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false),
-                RoomEntity.disabled(1),
-                RoomEntity.disabled(2),
-                RoomEntity.disabled(3),
-                RoomEntity.disabled(4),
-                RoomEntity.disabled(5),
-                RoomEntity.disabled(6),
-                RoomEntity.disabled(7),
-                RoomEntity.disabled(8),
-                RoomEntity.disabled(9),
-                RoomEntity.disabled(10),
-                RoomEntity.disabled(11),
-                RoomEntity.disabled(12),
-                RoomEntity.disabled(13),
-                RoomEntity.disabled(14),
-                RoomEntity.disabled(15))));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(List.of(
+                        new RoomEntity(
+                                0,
+                                0xFF,
+                                0x3C,
+                                0x40,
+                                0x50,
+                                EntityStatus.INIT,
+                                EntitySpriteDefinition.unsupported(0x3C),
+                                -1,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        RoomEntity.disabled(1),
+                        RoomEntity.disabled(2),
+                        RoomEntity.disabled(3),
+                        RoomEntity.disabled(4),
+                        RoomEntity.disabled(5),
+                        RoomEntity.disabled(6),
+                        RoomEntity.disabled(7),
+                        RoomEntity.disabled(8),
+                        RoomEntity.disabled(9),
+                        RoomEntity.disabled(10),
+                        RoomEntity.disabled(11),
+                        RoomEntity.disabled(12),
+                        RoomEntity.disabled(13),
+                        RoomEntity.disabled(14),
+                        RoomEntity.disabled(15))))
+                .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x58);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
-        session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
+        RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
         session.components.entityInputs().setEntityGoldenLeavesCount(4);
 
         session.entities().tickEntities(0, 0x20, 0x30);
@@ -310,7 +311,14 @@ final class RoomSessionStoryTest {
                     .orElseThrow();
             for (int frame = 0; frame < 8; frame++) {
                 assertTrue(session.doors()
-                        .tryLiftObject(statue.x() - 8, statue.y() - 8, Link.DIRECTION_UP, true, 8, false, level));
+                        .tryLiftObject(
+                                statue.x() - 8,
+                                statue.y() - 8,
+                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                true,
+                                8,
+                                false,
+                                level));
             }
             assertEquals(level == 2, session.rooms().liftedEntityState().active());
         }

@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-public record RoomTilemap(int[] tileIds, int[] tileAttrs, int[] gbcOverlay, int[] renderValues) {
+record RoomTilemap(int[] tileIds, int[] tileAttrs, int[] gbcOverlay, int[] renderValues) {
 
     public RoomTilemap {
         tileIds = tileIds.clone();

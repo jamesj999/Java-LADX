@@ -156,12 +156,6 @@ public final class EntityRoomInspection {
         return runtime.story().readShouldGetLostInMysteriousWoods();
     }
 
-    /** Compatibility for world.room.RoomSessionViews. */
-    @Deprecated
-    public int warpTransitionCountdownForTest(int slot) {
-        return warpTransitionCountdown(slot);
-    }
-
     public int warpTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.warpState().readWarpTransitionCountdown(slot) & 0xFF;

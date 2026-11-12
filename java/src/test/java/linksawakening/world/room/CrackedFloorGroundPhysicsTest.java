@@ -19,10 +19,11 @@ class CrackedFloorGroundPhysicsTest {
             rom = input.readAllBytes();
         }
         var session = new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new OverworldTilesetTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
                 new OverworldCollision(RomTables.loadFromRom(rom)),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -32,7 +33,17 @@ class CrackedFloorGroundPhysicsTest {
 
     private static LinkGroundFrame frame(
             int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
-        return new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
+        return new LinkGroundFrame(
+                x,
+                y,
+                airborne,
+                blocked,
+                dialog,
+                transition,
+                linksawakening.world.room.LinkMotion.stateForRomByte(0),
+                0,
+                0,
+                0);
     }
 
     private static LinkGroundFrame standing() {

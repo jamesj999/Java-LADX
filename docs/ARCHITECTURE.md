@@ -441,7 +441,14 @@ reads symbolic constant-pool references, including descriptors, generic
 signatures and field references. `WorldDependencyTest` uses this shared reader.
 It rejects world-to-app references, handler-to-room references and external
 use of motion/handlers, and checks the explicit app/world facade surface.
-Event dependencies must be event contracts or record/enum values.
+Event dependencies must be event contracts or record/enum values. The app
+allow-list names the used role views, boundary records and construction/resource
+facades. A second rule applies the same boundary to every non-world main client,
+with seven explicit stable sprite/OAM/physics contracts. A visibility check scans
+main and test constant pools: a public top-level world type needs a cross-package
+client or an explicit public-contract entry. Other implementation types stay
+package-private; Java subpackages still require public cross-package entity
+services. The reader accepts both main and test class roots.
 `AppBoundaryTest` checks entry-point/session ownership, screen lifecycle types,
 native dependency restrictions and the canonical bomb-placement role API. It also
 rejects session/composition references from domain collaborators and guards the
@@ -569,8 +576,8 @@ sequenceDiagram
 composition has nine references, including four cohesive stores:
 `EntityPhysicsTables`, `EntityCombatTables`, `EntityRoomVariables` and
 `EntityPresentationState`. Their fields are private and accessed through slot
-or room methods. `EntityRomConstants` is a final, non-instantiable holder; the
-one deprecated facade alias remains for `RoomEntityBridge`.
+or room methods. `EntityRomConstants` is a final, non-instantiable holder; callers
+use it directly instead of facade aliases.
 
 Per-type state belongs to its motion or controller: for example Iron Mask,
 Moldorm, Rolling Bones and Moblin King retain their own slot latches, Genie
@@ -646,22 +653,25 @@ effects without positional argument lists.
 
 Entity ROM readers accept `linksawakening.rom.Rom` and use typed addresses and
 reads. Collision and property queries use `CollisionTables` and
-`EntityPropertyTables`, not deprecated aggregate accessors. Five deprecated
-byte-array boundary delegates remain for external compatibility; their legacy
-partial-buffer validation is intentional. The sprite-handler catalog outside
-this package still requires one documented raw-byte handoff. Room-status
-arrays are mutable RAM state, not ROM buffers.
+`EntityPropertyTables`. All entity byte-array delegates and aggregate-table
+adapters have been removed. The sprite-handler catalog outside this package
+still requires a documented `unsafeBytes()` handoff; the room loader and wiring
+make equivalent handoffs to the stable sprite catalogs. They preserve shared
+storage. Room-status arrays are mutable RAM state, not ROM buffers.
 
 Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
 setup and queries without production test hooks. Runtime tests are split by
-entity family and behavior. Three deprecated `ForTest` delegates remain only
-for `world.room.RoomSessionViews`; the externally used `from` overloads, frame
-constructor and combat/follower adapters also remain deprecated. Immutable
-record schemas retain their canonical constructor signatures and validation
-for source compatibility; these value schemas are the exception to the
-normal eight-parameter method limit. Exact replacements and current external
-callers are listed in [Entity API migration](archive/history/entity-api-migration.md).
+entity family and behavior. Room consumers now use runtime/frame builders,
+`EntityPickupFrame`, `EnemyCombatFrame`, `EntitySwordContactFrame` and
+`FollowingNpcSpawn`; the old `from`, `ForTest`, frame and wide operation adapters
+are deleted. The room simulation reuses its builder but emits an immutable
+`EntityFrameContext`, so retained frame inputs cannot change. Its default
+handler collision gate is derived from the projectile Link motion state.
+Four deprecated combat/projectile event constructors remain for external
+consumer tests. Immutable record schemas retain their canonical constructors
+and validation; value schemas are the exception to the normal eight-parameter
+method limit. See [Entity API migration](archive/history/entity-api-migration.md).
 
 To add an entity type:
 
@@ -692,11 +702,13 @@ interfaces; roles and frame adapters are composed. Boundary records, including
 `LinkGroundFrame`, `ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`,
 are top-level types. Construction takes `RoomSessionConfig`.
 
-The only deprecated methods are 26 direct bridges in one marked section for
-four off-limits entity test files. A seven-argument constructor and the private
-`context` reflection alias remain for those tests as well. No owned caller uses
-them. The exact member-to-caller and replacement inventory is in
-[room-facade-migration.md](archive/history/room-facade-migration.md).
+All 26 former entity-test bridges, the legacy constructor and the private
+reflection alias have been deleted. `RoomSession` has no deprecated members.
+Tests use role views and test-side `RoomDebugFixture` / `RoomFrameTestAccess`
+for internal setup and queries. Remaining source compatibility lives at the
+specific role/value/ROM boundary used by external clients, never in a facade
+inheritance chain. The exact member-to-caller inventory is in
+[the round-4 report](archive/history/room-seam-round-4.md#remaining-deprecated-boundaries).
 View implementations receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
@@ -706,11 +718,29 @@ room references until the room is wired.
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
+Immediate room integration uses `EntityRoomInspection.view()` and the live
+`ActiveRoom.entityView()`. Public `ActiveRoom.entities()` and render snapshots
+retain owned immutable entity state; a bounded eight-presentation cache avoids
+copying recurring unchanged poses while preserving historical snapshots.
+
+`EntityFrameInputs` composes Link, player, UI, button and sword values. Link
+facings and motion dispatch use `Direction` and `LinkMotionState`. Raw values
+are retained alongside classifications where ROM gates accept unknown bytes.
+Inventory construction accepts `InventoryItem`, `Tunic` and `PowerUp`, retaining
+saved raw item bytes and the original flag-only inputs. Known ocarina selectors
+use `OcarinaSong`; unknown selections and song flags remain bytes. Entity ground
+codes are a separate ROM domain from Link's `GroundStatus` (entity water is
+`$02`), so they must not be converted by matching integer values.
 
 `RoomLoadCoordinator` coordinates room loading; `RoomLoader` reads room streams,
 `RoomObjectParser` decodes objects, and `RoomTilemapBuilder` constructs tilemaps.
 `RoomPaletteLoader` owns palette decoding. Pointer tables and tileset tables
-retain bank/page selection rather than flattening ROM addressing.
+retain bank/page selection rather than flattening ROM addressing. All internal
+ROM parameters, fields and reads use `Rom` and typed addresses. Six deprecated
+byte-array entry points remain solely for external clients: room config,
+room loader, tileset table, palette loader, bush interaction and transition ROM
+configuration. Their legacy `new Rom(bytes)` adaptation intentionally preserves
+partial-buffer validation timing; new callers pass the existing session `Rom`.
 See [ROM_FORMAT_NOTES.md](ROM_FORMAT_NOTES.md) for stream and macro details.
 
 `RoomTransitionCoordinator` and room transition collaborators connect room
@@ -726,7 +756,21 @@ Entity integration passes through room bridges, inputs and reward handling.
 the runtime, `RoomEntityAfterTick` applies ordered room effects,
 `RoomEntityCombatBridge` handles combat/pickup integration and
 `RoomEntityOutbox` owns queued outputs. The outbox uses a runtime supplier
-because loading a room replaces the runtime.
+because loading a room replaces the runtime. Results expose grouped Link,
+reward and presentation consumers. Link writes merge by descending source slot
+with the established cross-stream tie precedence; the application applies the
+ordered writes. Empty outbox drains and merges allocate zero bytes, guarded by
+`RoomLiveBoundaryTest`. Nonempty owned-list drains copy before clearing; reusable
+consumer drains retain their existing staged-clear and reentrancy behavior.
+
+The headless session allocation probe measured 3,312 idle and approximately
+7,457 active bytes/frame after this seam refactor, down from 3,979 and 11,080.
+`EntityTickAllocationTest` remains 874.43 bytes/tick for its six-entity mix.
+Immutable inputs and changed entities/events still allocate. A warmed JFR
+allocation-site diagnostic attributes the five largest remaining idle sites to
+PCM audio arrays, screen/dialog iterators and startup Marin result records,
+all outside `world`. The [round-4 report](archive/history/room-seam-round-4.md)
+records scope, exact sites and the separate diagnostic rates.
 Changing a visual tile alone is insufficient when collision or persistent room
 status also changes.
 

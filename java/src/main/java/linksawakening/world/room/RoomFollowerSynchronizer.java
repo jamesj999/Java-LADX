@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
@@ -24,7 +25,7 @@ final class RoomFollowerSynchronizer {
         if (!dependencies.followers().followingNpcRoomNeedsSync
                 || dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null
-                || dependencies.location().activeRoom.entities() == null) {
+                || dependencies.location().activeRoom.entityView() == null) {
             return;
         }
         FollowingNpcRoomContext room = new FollowingNpcRoomContext(
@@ -34,8 +35,8 @@ final class RoomFollowerSynchronizer {
                 dependencies.location().activeRoom.roomId());
         FollowingNpcEntitySpawner.Result result = dependencies
                 .followingNpcEntitySpawner()
-                .synchronize(
-                        dependencies.location().activeRoom.entities(),
+                .synchronize(new linksawakening.world.entity.FollowingNpcSpawn(
+                        dependencies.location().activeRoom.entityView().ownedCopy(),
                         room,
                         dependencies.followers().followingNpcState,
                         dependencies.followers().followingLinkX,
@@ -43,19 +44,19 @@ final class RoomFollowerSynchronizer {
                         dependencies.followers().followingLinkZ,
                         dependencies.followers().followingEntityYOffset,
                         dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingLinkPositionHistory);
+                        dependencies.followers().followingLinkPositionHistory));
         dependencies.followers().followingNpcState = result.state();
         dependencies.followers().followingNpcRoomNeedsSync = false;
         dependencies.location().activeRoom.replaceEntities(result.snapshot());
-        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.from(
-                result.snapshot(),
-                dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                dependencies.entityRandomByteSource(),
-                dependencies.entitySpriteHandlerCatalog(),
-                dependencies.enemyCombatTables(),
-                dependencies.chestContentsTable(),
-                dependencies.romTables(),
-                dependencies.romData());
+        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.builder(result.snapshot())
+                .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
+                .randomByteSupplier(dependencies.entityRandomByteSource())
+                .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
+                .enemyCombatTables(dependencies.enemyCombatTables())
+                .chestContentsTable(dependencies.chestContentsTable())
+                .romTables(dependencies.romTables())
+                .rom(dependencies.romData())
+                .build();
         configureFollowerWorld();
         configureFollowerCollision();
         configureFollowerInputs();
@@ -81,7 +82,7 @@ final class RoomFollowerSynchronizer {
                             .get()
                             .entityRuntime
                             .inspection()
-                            .snapshot());
+                            .view());
         }
         dependencies.roomLoadCoordinator().get().configureEnemyDropRuntime();
     }
@@ -99,7 +100,7 @@ final class RoomFollowerSynchronizer {
             FollowingNpcEntitySpawner followingNpcEntitySpawner,
             RoomLocationState location,
             OwlEventDialogResolver owlEventDialogResolver,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

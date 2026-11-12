@@ -43,6 +43,35 @@ public final class RoomEntitySnapshot {
         this.visualYOffsetBySlot = null;
     }
 
+    /** Compares presentation without allocating iterator or array snapshots. */
+    public boolean samePresentationAs(RoomEntitySnapshot other) {
+        if (other == this) return true;
+        if (other == null
+                || spriteSelection() != other.spriteSelection()
+                || spriteTiles() != other.spriteTiles()
+                || sideScrolling() != other.sideScrolling()) return false;
+        if (!sameValues(slots(), other.slots())
+                || !sameValues(hookshotChainOam(), other.hookshotChainOam())
+                || !sameValues(pincerBodyOam(), other.pincerBodyOam())
+                || !sameValues(wingedOctorokOam(), other.wingedOctorokOam())
+                || !sameValues(bowWowChainOam(), other.bowWowChainOam())) return false;
+        for (int slot = 0; slot < RoomEntity.SLOT_COUNT; slot++)
+            if (visualYOffset(slot) != other.visualYOffset(slot)) return false;
+        return true;
+    }
+
+    private static boolean sameValues(List<?> first, List<?> second) {
+        if (first == second) return true;
+        if (first.size() != second.size()) return false;
+        for (int i = 0; i < first.size(); i++) if (!java.util.Objects.equals(first.get(i), second.get(i))) return false;
+        return true;
+    }
+
+    /** Returns an owned immutable value; already-owned snapshots retain their identity. */
+    public RoomEntitySnapshot ownedCopy() {
+        return liveSource == null ? this : EntityRoomQueries.snapshot(liveSource);
+    }
+
     public RoomEntitySnapshot(List<RoomEntity> slots) {
         this(slots, null, null);
     }

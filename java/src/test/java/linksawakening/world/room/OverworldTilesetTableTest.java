@@ -15,7 +15,8 @@ final class OverworldTilesetTableTest {
         int table = RomBank.romOffset(0x20, 0x6E73);
         rom[table + 0x20] = 0x12;
 
-        OverworldTilesetTable tilesets = new OverworldTilesetTable(rom);
+        OverworldTilesetTable tilesets = new OverworldTilesetTable(
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
 
         assertEquals(0x12, tilesets.tilesetIdForRoom(0x90));
         assertEquals(0x12, tilesets.tilesetIdForRoom(0x91));
@@ -28,7 +29,8 @@ final class OverworldTilesetTableTest {
         rom[table + 0x21] = 0x26;
         rom[table + 0x24] = 0x0F;
 
-        OverworldTilesetTable tilesets = new OverworldTilesetTable(rom);
+        OverworldTilesetTable tilesets = new OverworldTilesetTable(
+                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
 
         assertEquals(0x26, tilesets.tilesetIdForRoom(0x92));
         assertEquals(0x26, tilesets.tilesetIdForRoom(0x93));

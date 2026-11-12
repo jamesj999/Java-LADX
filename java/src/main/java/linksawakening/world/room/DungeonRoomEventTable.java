@@ -6,14 +6,14 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 /** ROM-backed view of {@code DungeonEventsTable} and {@code ColorDungeonEventsTable}. */
-public final class DungeonRoomEventTable {
+final class DungeonRoomEventTable {
 
     private static final int ROOM_TABLE_SIZE = 0x100;
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x20;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public DungeonRoomEventTable(byte[] romData) {
+    public DungeonRoomEventTable(Rom romData) {
         this.romData = Objects.requireNonNull(romData, "romData");
     }
 
@@ -32,11 +32,11 @@ public final class DungeonRoomEventTable {
             address = RomSymbols.DungeonEventsTable.plus(tablePage + roomId);
         }
         int offset = address.offset();
-        if (offset < 0 || offset >= romData.length) {
+        if (offset < 0 || offset >= romData.size()) {
             throw new IllegalArgumentException(
                     "Dungeon event table is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
-        return new Rom(romData).u8(address);
+        return romData.u8(address);
     }
 
     private static void requireByte(int value, String label) {

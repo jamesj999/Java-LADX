@@ -50,12 +50,6 @@ public final class EntityRoomLoader {
     private final Rom romData;
     private final EntitySpriteHandlerCatalog spriteHandlers;
 
-    /** @deprecated External callers: world.room.RoomLoader; pass a Rom to the typed constructor. */
-    @Deprecated(forRemoval = true)
-    public EntityRoomLoader(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
-    }
-
     public EntityRoomLoader(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");

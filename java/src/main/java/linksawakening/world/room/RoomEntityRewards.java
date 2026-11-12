@@ -48,7 +48,7 @@ final class RoomEntityRewards {
             }
             dependencies.roomStoryState().get().markActiveRoomCompleted();
         }
-        dependencies.entityBridge().get().outbox.pendingKeyRewardEvents.addAll(rewards);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingKeyRewardEvents, rewards);
     }
 
     void harvestHeartContainerRewards() {
@@ -61,7 +61,7 @@ final class RoomEntityRewards {
             return;
         }
         dependencies.roomStoryState().get().markHeartContainerCollected();
-        dependencies.entityBridge().get().outbox.pendingHeartContainerRewards.addAll(rewards);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingHeartContainerRewards, rewards);
     }
 
     void harvestSwordPickupRewards() {
@@ -74,17 +74,14 @@ final class RoomEntityRewards {
             return;
         }
         dependencies.roomStoryState().get().markActiveRoomCompleted();
-        dependencies.entityBridge().get().outbox.pendingSwordPickupRewards.addAll(rewards);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingSwordPickupRewards, rewards);
     }
 
     void harvestToadstoolRewards() {
         if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .outbox
-                    .pendingToadstoolRewards
-                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingToadstoolRewards());
+            RoomEntityOutbox.append(
+                    dependencies.entityBridge().get().outbox.pendingToadstoolRewards,
+                    dependencies.entityBridge().get().entityRuntime.consumePendingToadstoolRewards());
         }
     }
 
@@ -154,23 +151,17 @@ final class RoomEntityRewards {
                 dependencies.entityInputs().get().entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
-        dependencies.entityBridge().get().outbox.pendingRichardProgressEvents.addAll(events);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingRichardProgressEvents, events);
     }
 
     void harvestWitchEvents() {
         if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .outbox
-                    .pendingWitchExchangeEvents
-                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingWitchExchangeEvents());
-            dependencies
-                    .entityBridge()
-                    .get()
-                    .outbox
-                    .pendingWitchRewardEvents
-                    .addAll(dependencies.entityBridge().get().entityRuntime.consumePendingWitchRewardEvents());
+            RoomEntityOutbox.append(
+                    dependencies.entityBridge().get().outbox.pendingWitchExchangeEvents,
+                    dependencies.entityBridge().get().entityRuntime.consumePendingWitchExchangeEvents());
+            RoomEntityOutbox.append(
+                    dependencies.entityBridge().get().outbox.pendingWitchRewardEvents,
+                    dependencies.entityBridge().get().entityRuntime.consumePendingWitchRewardEvents());
         }
     }
 
@@ -202,7 +193,7 @@ final class RoomEntityRewards {
             dependencies.entityInputs().get().entityGoldenLeavesCount = reward.goldenLeavesCount();
             dependencies.roomStoryState().get().markActiveRoomCompleted();
         }
-        dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents.addAll(rewards);
+        RoomEntityOutbox.append(dependencies.entityBridge().get().outbox.pendingSlimeKeyRewardEvents, rewards);
     }
 
     record Dependencies(

@@ -316,7 +316,11 @@ final class BeachOpeningRuntimeTest {
         RoomEntityRuntime armed = owlRuntime(catalog, rom);
         armed.configuration().setEntityRoomId(0x80);
         armed.configuration().setChestPlayerLevels(0, 1, 0);
-        armed.configuration().setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
+        armed.configuration()
+                .setOwlDialogResolver(
+                        new OwlEventDialogResolver(
+                                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                                ::globalDialogId);
 
         armed.tick(EntityTestFrames.frame(armed, 0, 0x50, 0x50, () -> 0));
         assertEquals(1, EntityRuntimeFixture.inspection(armed).owlEventStateForTest(0));
@@ -385,10 +389,15 @@ final class BeachOpeningRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(rom))
+                .chestContentsTable(new ChestContentsTable(
+                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
                 .build();
         runtime.configuration().setEntityRoomId(0x41);
-        runtime.configuration().setOwlDialogResolver(new OwlEventDialogResolver(rom)::globalDialogId);
+        runtime.configuration()
+                .setOwlDialogResolver(
+                        new OwlEventDialogResolver(
+                                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                                ::globalDialogId);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));

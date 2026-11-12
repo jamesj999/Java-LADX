@@ -1,6 +1,5 @@
 package linksawakening.world.object;
 
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
@@ -18,7 +17,7 @@ import linksawakening.rom.RomTables;
  */
 public final class OverworldBushInteraction {
     private int readRomByte(int offset) {
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     private static final int BANK_SIZE = 0x4000;
@@ -44,7 +43,7 @@ public final class OverworldBushInteraction {
     private static final int OVERWORLD_OBJ_ATTR_PTRS_BANK = RomSymbols.BGAttributesPointers_Overworld.bank();
     private static final int OVERWORLD_OBJ_ATTR_PTRS_ADDR = RomSymbols.BGAttributesPointers_Overworld.address();
 
-    private final byte[] romData;
+    private final Rom romData;
     private final RomTables romTables;
 
     public record CutResult(
@@ -92,7 +91,7 @@ public final class OverworldBushInteraction {
         new StaticObjectRule(OBJECT_TALL_GRASS, true, OverworldBushInteraction::revealGroundAfterCut),
     };
 
-    public OverworldBushInteraction(byte[] romData, RomTables romTables) {
+    public OverworldBushInteraction(Rom romData, RomTables romTables) {
         this.romData = romData;
         this.romTables = romTables;
     }
@@ -102,7 +101,8 @@ public final class OverworldBushInteraction {
      * Returns {@code -1} when static-object sword collision is inactive or the
      * hit point falls outside the active 10x8 room area.
      */
-    public int swordHitRoomObjectLocation(boolean swordActive, int javaDirection, int linkPixelX, int linkPixelY) {
+    public int swordHitRoomObjectLocation(
+            boolean swordActive, linksawakening.state.Direction javaDirection, int linkPixelX, int linkPixelY) {
         return swordHitRoomObjectLocationForCollisionIndex(
                 swordActive, toRomDirection(javaDirection), linkPixelX, linkPixelY);
     }
@@ -123,8 +123,8 @@ public final class OverworldBushInteraction {
         // - hLinkPositionY is Link's sprite-bottom Y  => Java top + 16
         // The ROM then subtracts 8 / 16 respectively, so in Java top-left
         // space the net expression is just pixel + tableOffset.
-        int hitLeft = (linkPixelX + romTables.staticSwordCollisionOffsetX(collisionIndex)) & 0xF0;
-        int hitTop = (linkPixelY + romTables.staticSwordCollisionOffsetY(collisionIndex)) & 0xF0;
+        int hitLeft = (linkPixelX + romTables.swordTables().staticSwordCollisionOffsetX(collisionIndex)) & 0xF0;
+        int hitTop = (linkPixelY + romTables.swordTables().staticSwordCollisionOffsetY(collisionIndex)) & 0xF0;
         int cellX = hitLeft >> 4;
         int cellY = hitTop >> 4;
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
@@ -139,7 +139,7 @@ public final class OverworldBushInteraction {
      */
     public boolean cutBush(BushCutInputs inputs) {
         boolean swordActive = inputs.sword().active();
-        int javaDirection = inputs.sword().direction();
+        linksawakening.state.Direction javaDirection = inputs.sword().direction();
         int linkPixelX = inputs.sword().x();
         int linkPixelY = inputs.sword().y();
         int roomId = inputs.roomId();
@@ -366,15 +366,15 @@ public final class OverworldBushInteraction {
         return roomRevealsStairs(roomId) ? OBJECT_GROUND_STAIRS : OBJECT_PIT;
     }
 
-    private static int toRomDirection(int javaDirection) {
+    private static int toRomDirection(linksawakening.state.Direction javaDirection) {
         switch (javaDirection) {
-            case Link.DIRECTION_RIGHT:
+            case RIGHT:
                 return 0;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 return 1;
-            case Link.DIRECTION_UP:
+            case UP:
                 return 2;
-            case Link.DIRECTION_DOWN:
+            case DOWN:
             default:
                 return 3;
         }
@@ -385,5 +385,11 @@ public final class OverworldBushInteraction {
             return address;
         }
         return bank * BANK_SIZE + (address - 0x4000);
+    }
+
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
+    @Deprecated(forRemoval = true)
+    public OverworldBushInteraction(byte[] romData, RomTables romTables) {
+        this(romData == null ? null : new Rom(romData), romTables);
     }
 }

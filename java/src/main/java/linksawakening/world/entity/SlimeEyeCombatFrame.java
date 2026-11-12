@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Inputs for SlimeEyeController.resolveCombat. */
-public record SlimeEyeCombatFrame(
+record SlimeEyeCombatFrame(
         RoomEntity e,
         int frame,
         int lx,

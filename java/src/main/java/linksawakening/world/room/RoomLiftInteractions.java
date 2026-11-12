@@ -2,11 +2,12 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.state.Direction;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.transition.Warp;
 
+/** Bracelet target probing and pull countdown, including statue lifting ($19:4076). */
 final class RoomLiftInteractions {
     private final Dependencies dependencies;
 
@@ -15,7 +16,11 @@ final class RoomLiftInteractions {
     }
 
     boolean tryLiftIndoorObject(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
+            int linkPixelX,
+            int linkPixelY,
+            Direction linkDirection,
+            boolean braceletButtonHeld,
+            int pressedButtonsMask) {
         return dependencies
                 .roomDoorInteractions()
                 .get()
@@ -26,7 +31,7 @@ final class RoomLiftInteractions {
     boolean tryLiftIndoorObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
@@ -46,7 +51,7 @@ final class RoomLiftInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -68,7 +73,7 @@ final class RoomLiftInteractions {
     boolean tryLiftObject(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
@@ -101,6 +106,18 @@ final class RoomLiftInteractions {
                 target);
     }
 
+    private void publishEntityView() {
+        dependencies
+                .location()
+                .activeRoom
+                .replaceEntities(dependencies
+                        .entityBridge()
+                        .get()
+                        .entityRuntime
+                        .inspection()
+                        .view());
+    }
+
     record Dependencies(
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomFollowerState followers,
@@ -114,31 +131,31 @@ final class RoomLiftInteractions {
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomDoorInteractions> owner) {}
 
-    private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, int linkDirection) {
+    private LiftTarget probeLiftTarget(int linkPixelX, int linkPixelY, Direction linkDirection) {
         int oppositeButton =
                 switch (linkDirection) {
-                    case Link.DIRECTION_UP -> 0x08;
-                    case Link.DIRECTION_DOWN -> 0x04;
-                    case Link.DIRECTION_LEFT -> 0x01;
-                    case Link.DIRECTION_RIGHT -> 0x02;
+                    case UP -> 0x08;
+                    case DOWN -> 0x04;
+                    case LEFT -> 0x01;
+                    case RIGHT -> 0x02;
                     default -> 0;
                 };
-        int swordAreaX =
+        int probeOffsetX =
                 switch (linkDirection) {
-                    case Link.DIRECTION_RIGHT -> 0x0C;
-                    case Link.DIRECTION_LEFT -> 0x03;
-                    case Link.DIRECTION_UP, Link.DIRECTION_DOWN -> 0x08;
+                    case RIGHT -> 0x0C;
+                    case LEFT -> 0x03;
+                    case UP, DOWN -> 0x08;
                     default -> 0;
                 };
-        int swordAreaY =
+        int probeOffsetY =
                 switch (linkDirection) {
-                    case Link.DIRECTION_RIGHT, Link.DIRECTION_LEFT -> 0x0A;
-                    case Link.DIRECTION_UP -> 0x05;
-                    case Link.DIRECTION_DOWN -> 0x10;
+                    case RIGHT, LEFT -> 0x0A;
+                    case UP -> 0x05;
+                    case DOWN -> 0x10;
                     default -> 0;
                 };
-        int objectLeft = (linkPixelX + swordAreaX) & 0xF0;
-        int objectTop = (linkPixelY + swordAreaY) & 0xF0;
+        int objectLeft = (linkPixelX + probeOffsetX) & 0xF0;
+        int objectTop = (linkPixelY + probeOffsetY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
         int touchedObject = dependencies.roomSessionViews().get().objectAtRoomLocation(touchedLocation);
         boolean outdoor = dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD;
@@ -150,7 +167,7 @@ final class RoomLiftInteractions {
                     .get()
                     .entityRuntime
                     .inspection()
-                    .snapshot()
+                    .view()
                     .loadedEntities()) {
                 if (entity.type() == 0x9D
                         && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE
@@ -179,7 +196,7 @@ final class RoomLiftInteractions {
             dependencies.puzzles().indoorPotPullFrames = 0;
             return true;
         }
-        dependencies.followers().followingEntityYOffset = request.linkDirection() == Link.DIRECTION_UP ? 4 : 0;
+        dependencies.followers().followingEntityYOffset = request.linkDirection() == Direction.UP ? 4 : 0;
         dependencies.puzzles().indoorPotPullFrames++;
         int pullFrames = (target.statue() != null ? request.anyPowerUpActive() : request.pieceOfPowerActive())
                 ? 0x03
@@ -198,7 +215,7 @@ final class RoomLiftInteractions {
         return true;
     }
 
-    private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, int linkDirection) {
+    private void completeStatueLift(linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
         dependencies
                 .entityBridge()
@@ -217,15 +234,7 @@ final class RoomLiftInteractions {
                         false,
                         linksawakening.world.entity.event.EntityCombatEvent.SoundChannel.WAVE,
                         2));
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
     }
 
     private void replaceLiftedObject(LiftTarget target) {
@@ -277,15 +286,7 @@ final class RoomLiftInteractions {
                         y,
                         RoomInteractionGeometry.romDirectionForProjectileCollision(request.linkDirection()),
                         target.touchedObject() == 0x5C ? 1 : 0);
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        publishEntityView();
     }
 
     private record LiftTarget(
@@ -298,7 +299,7 @@ final class RoomLiftInteractions {
     private record LiftRequest(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
             int braceletLevel,

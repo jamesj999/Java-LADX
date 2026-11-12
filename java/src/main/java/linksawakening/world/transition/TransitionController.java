@@ -1,5 +1,7 @@
 package linksawakening.world.transition;
 
+import linksawakening.rom.Rom;
+
 /**
  * Room-to-room fade transition state machine, ported from the LADX disassembly's
  * {@code ApplyMapFadeOutTransition} path (bank0.asm:866) and its per-frame
@@ -51,12 +53,12 @@ public final class TransitionController {
 
     public TransitionController() {}
 
-    public TransitionController(byte[] romData) {
+    public TransitionController(Rom romData) {
         setRomData(romData);
     }
 
     /** Supplies the ROM-backed wave table used by Manbo's non-interactive effect. */
-    public void setRomData(byte[] romData) {
+    public void setRomData(Rom romData) {
         manboTransitionWave = romData == null ? null : new ManboTransitionWave(romData);
     }
 
@@ -205,5 +207,11 @@ public final class TransitionController {
         g = g + (0xFF - g) * num / den;
         b = b + (0xFF - b) * num / den;
         return (r << 16) | (g << 8) | b;
+    }
+
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
+    @Deprecated(forRemoval = true)
+    public void setRomData(byte[] romData) {
+        setRomData(romData == null ? null : new Rom(romData));
     }
 }

@@ -37,7 +37,8 @@ final class OverworldBushInteractionTest {
 
     private static final byte[] ROM = loadRom();
     private static final RomTables ROM_TABLES = RomTables.loadFromRom(ROM);
-    private static final OverworldBushInteraction INTERACTION = new OverworldBushInteraction(ROM, ROM_TABLES);
+    private static final OverworldBushInteraction INTERACTION = new OverworldBushInteraction(
+            (ROM == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(ROM)), ROM_TABLES);
 
     @Test
     void plainBushRevealsShortGrassInNormalRoom() {
@@ -74,7 +75,11 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_TALL_GRASS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -148,7 +153,11 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_SHORT_GRASS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -164,24 +173,55 @@ final class OverworldBushInteractionTest {
     @Test
     void inactiveSwordDoesNotReportAHitLocation() {
         assertEquals(
-                -1, INTERACTION.swordHitRoomObjectLocation(false, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+                -1,
+                INTERACTION.swordHitRoomObjectLocation(
+                        false,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y));
     }
 
     @Test
     void swordHitLocationMatchesStaticSwordCollisionMapInAllDirections() {
         assertEquals(
-                0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+                0x54,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y));
         assertEquals(
-                0x53, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_LEFT, TARGET_LINK_X, TARGET_LINK_Y));
+                0x53,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_LEFT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y));
         assertEquals(
-                0x43, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_UP, TARGET_LINK_X, TARGET_LINK_Y));
+                0x43,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y));
         assertEquals(
-                0x63, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_DOWN, TARGET_LINK_X, TARGET_LINK_Y));
+                0x63,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_DOWN),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y));
     }
 
     @Test
     void rightFacingUsesStaticBushReachNotGroundItemReach() {
-        assertEquals(0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, 0x2A, TARGET_LINK_Y));
+        assertEquals(
+                0x54,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        0x2A,
+                        TARGET_LINK_Y));
     }
 
     @Test
@@ -211,7 +251,11 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -240,7 +284,11 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -276,7 +324,11 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -310,7 +362,11 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH_GROUND_STAIRS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true,
+                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                        TARGET_LINK_X,
+                        TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -330,7 +386,8 @@ final class OverworldBushInteractionTest {
     }
 
     private static int hitLocation(int direction, int linkPixelX, int linkPixelY) {
-        int hitLocation = INTERACTION.swordHitRoomObjectLocation(true, direction, linkPixelX, linkPixelY);
+        int hitLocation = INTERACTION.swordHitRoomObjectLocation(
+                true, linksawakening.state.Direction.fromJavaOrUnknown(direction), linkPixelX, linkPixelY);
         assertEquals(TARGET_LOCATION, hitLocation);
         return hitLocation;
     }

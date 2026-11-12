@@ -96,12 +96,6 @@ public final class RoomEntityRuntimeBuilder {
         return this;
     }
 
-    /** @deprecated External callers: world.room.RoomActiveRoomInitializer and RoomFollowerSynchronizer. Use rom(Rom). */
-    @Deprecated(forRemoval = true)
-    public RoomEntityRuntimeBuilder romData(byte[] value) {
-        return rom(value == null ? null : new Rom(value));
-    }
-
     public RoomEntityRuntime build() {
         if (romTablesSupplied || romDataSupplied) {
             if (initial == null

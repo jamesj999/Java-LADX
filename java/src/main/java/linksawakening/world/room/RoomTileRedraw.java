@@ -177,11 +177,12 @@ final class RoomTileRedraw {
 
             RomAddress tileTable = RomSymbols.BombedCaveDoorTilesIndexesGBC;
             int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
-            tileIds[topLeft] = new Rom(dependencies.romData()).u8(tileTable);
-            tileIds[topLeft + 1] = new Rom(dependencies.romData()).u8(tileTable.plus(1));
-            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] = new Rom(dependencies.romData()).u8(tileTable.plus(2));
+            tileIds[topLeft] = dependencies.romData().u8(tileTable);
+            tileIds[topLeft + 1] = dependencies.romData().u8(tileTable.plus(1));
+            tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH] =
+                    dependencies.romData().u8(tileTable.plus(2));
             tileIds[topLeft + RoomConstants.ROOM_TILE_WIDTH + 1] =
-                    new Rom(dependencies.romData()).u8(tileTable.plus(3));
+                    dependencies.romData().u8(tileTable.plus(3));
         }
     }
 
@@ -189,7 +190,7 @@ final class RoomTileRedraw {
             RoomLocationState location,
             RoomPuzzleState puzzles,
             RoomTerrainState terrain,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             RoomTilemapBuilder roomTilemapBuilder) {}

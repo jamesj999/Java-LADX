@@ -4,12 +4,13 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import linksawakening.world.entity.EnemyProjectileCollision;
-import linksawakening.world.entity.EntityFrameContext;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
 final class RoomEntitySimulation {
     private final Dependencies dependencies;
+    private final linksawakening.world.entity.EntityFrameContextBuilder frameInputs =
+            linksawakening.world.entity.EntityFrameContext.builder();
     private final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
     private final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
 
@@ -26,8 +27,8 @@ final class RoomEntitySimulation {
         int linkEntityY = inputs.position().y();
         int linkEntityZ = inputs.position().z();
         boolean linkAirborne = inputs.motion().airborne();
-        int linkMotionState = inputs.motion().state();
-        int linkDirection = inputs.position().direction();
+        int linkMotionState = inputs.motion().rawState();
+        int linkDirection = inputs.position().rawDirection();
         int collisionType = inputs.position().collisionType();
         boolean usingShield = inputs.motion().shield();
         int shieldLevel = inputs.shieldLevel();
@@ -59,20 +60,20 @@ final class RoomEntitySimulation {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .tick(new EntityFrameContext(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        collisionType & 0xFF,
-                        dependencies.entityRandomByteSource(),
-                        backgroundCollision,
-                        objectCollision,
-                        dependencies.followers().followingLinkPositionHistory,
-                        dependencies.followers().followingLinkZ,
-                        linkAirborne,
-                        dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingEntityYOffset,
-                        new EnemyProjectileCollision.LinkState(
+                .tick(frameInputs
+                        .frameCounter(frameCounter)
+                        .linkEntityX(linkEntityX)
+                        .linkEntityY(linkEntityY)
+                        .collisionType(collisionType & 0xFF)
+                        .randomByteSupplier(dependencies.entityRandomByteSource())
+                        .backgroundCollision(backgroundCollision)
+                        .objectCollision(objectCollision)
+                        .linkPositionHistory(dependencies.followers().followingLinkPositionHistory)
+                        .linkZ(dependencies.followers().followingLinkZ)
+                        .linkAirborne(linkAirborne)
+                        .linkDirection(dependencies.followers().followingLinkDirection)
+                        .entityYOffset(dependencies.followers().followingEntityYOffset)
+                        .projectileLinkState(new EnemyProjectileCollision.LinkState(
                                 linkEntityX,
                                 linkEntityY,
                                 linkEntityZ,
@@ -80,14 +81,15 @@ final class RoomEntitySimulation {
                                 RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection),
                                 usingShield,
                                 shieldLevel,
-                                invincibilityCounter),
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        linkSpeedX,
-                        linkSpeedY));
+                                invincibilityCounter))
+                        .swordCollisionActive(swordCollisionActive)
+                        .swordX(swordX)
+                        .swordWidth(swordWidth)
+                        .swordY(swordY)
+                        .swordHeight(swordHeight)
+                        .linkSpeedX(linkSpeedX)
+                        .linkSpeedY(linkSpeedY)
+                        .build());
         dependencies.owner().get().afterTick.complete(linkEntityX, linkEntityY);
         return events;
     }

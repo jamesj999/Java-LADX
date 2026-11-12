@@ -11,7 +11,8 @@ final class ManboWarpResolverTest {
 
     @Test
     void loadsTheIndoorManboDestinationRecordsFromBankFourteen() {
-        ManboWarpResolver resolver = new ManboWarpResolver(loadRom());
+        ManboWarpResolver resolver = new ManboWarpResolver(
+                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
 
         Warp destination = resolver.resolve(Warp.CATEGORY_INDOOR, 0x00);
 
@@ -25,7 +26,8 @@ final class ManboWarpResolverTest {
 
     @Test
     void fallsBackToTheRomOverworldPondWarpForOutdoorAndUnsupportedMaps() {
-        ManboWarpResolver resolver = new ManboWarpResolver(loadRom());
+        ManboWarpResolver resolver = new ManboWarpResolver(
+                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
 
         Warp outdoor = resolver.resolve(Warp.CATEGORY_OVERWORLD, 0x92);
         Warp unsupportedIndoor = resolver.resolve(Warp.CATEGORY_INDOOR, 0x0A);
@@ -38,7 +40,8 @@ final class ManboWarpResolverTest {
     void keepsTheColorDungeonLowNibbleSelectionUsedByTeleportToManboPond() {
         byte[] rom = loadRom();
         int source = RomBank.romOffset(0x14, 0x4DF1 + 0x0F * 5);
-        ManboWarpResolver resolver = new ManboWarpResolver(rom);
+        ManboWarpResolver resolver =
+                new ManboWarpResolver((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
 
         Warp destination = resolver.resolve(Warp.CATEGORY_INDOOR, 0xFF);
 

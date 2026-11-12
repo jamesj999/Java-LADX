@@ -1,5 +1,7 @@
 package linksawakening.world.room;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
 /**
@@ -8,7 +10,7 @@ import linksawakening.rom.RomBank;
  */
 final class IndoorTorchPaletteEffect {
     private static final int TRANSITION_COUNTDOWN = 0x0B;
-    private final byte[] romData;
+    private final Rom romData;
 
     private int[][] basePalettes = new int[0][0];
     private int[][] palettes = new int[0][0];
@@ -19,7 +21,7 @@ final class IndoorTorchPaletteEffect {
     private int transitionEffect;
     private int paletteDataFlags;
 
-    IndoorTorchPaletteEffect(byte[] romData) {
+    IndoorTorchPaletteEffect(Rom romData) {
         this.romData = romData;
     }
 
@@ -147,7 +149,7 @@ final class IndoorTorchPaletteEffect {
         int factorsAddress = effectAddress == 0x02 ? 0x53DB : effectAddress == 0x08 ? 0x53EB : 0x53E3;
         int factorsOffset = RomBank.romOffset(0x21, factorsAddress);
         for (int palette = 0; palette < pendingPalettes.length; palette++) {
-            int factor = Byte.toUnsignedInt(romData[factorsOffset + palette]);
+            int factor = romData.u8(RomAddress.fromOffset(factorsOffset + palette));
             for (int color = 0; color < pendingPalettes[palette].length; color++) {
                 pendingPalettes[palette][color] = scaleRgb555(pendingPalettes[palette][color], factor);
             }
