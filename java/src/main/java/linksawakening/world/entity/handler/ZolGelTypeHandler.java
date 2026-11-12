@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ZolGelFrame;
 import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ROM handler stages for ZolGelType. */
@@ -52,7 +53,7 @@ final class ZolGelTypeHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             ZolGelMotion.Update zolGelUpdate = state.motion(ZolGelMotion.class, ZolGelMotion::new)
-                    .advance(
+                    .advance(new ZolGelFrame(
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
@@ -61,7 +62,7 @@ final class ZolGelTypeHandler {
                             zolGelBackgroundInteraction,
                             frameInput.frame(),
                             state.slot().ignoreHits(slotState.entity().slot()),
-                            state.link().joypadHeld() || state.link().actionButtonsHeld());
+                            state.link().joypadHeld() || state.link().actionButtonsHeld()));
             slotState.updated(zolGelUpdate.entity());
             state.lifecycle().recordGelClinging(zolGelUpdate.clinging());
             if (zolGelUpdate.split() != null) {

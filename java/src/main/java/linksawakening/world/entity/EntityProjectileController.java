@@ -54,16 +54,16 @@ public final class EntityProjectileController {
         }
     }
 
-    public void advanceBoomerangEntity(
-            int index,
-            RoomEntity entity,
-            int frame,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkMotionState,
-            boolean handlerInteractive,
-            boolean timersInteractive) {
+    public void advanceBoomerangEntity(BoomerangFrame inputs) {
+        int index = inputs.index();
+        RoomEntity entity = inputs.entity();
+        int frame = inputs.frame();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        int linkMotionState = inputs.linkMotionState();
+        boolean handlerInteractive = inputs.handlerInteractive();
+        boolean timersInteractive = inputs.timersInteractive();
         int slot = entity.slot();
         if (timersInteractive) {
             runtime.motions().get(BoomerangMotion.class, BoomerangMotion::new).decrementTransitionCountdown(slot);

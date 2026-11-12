@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class GhiniDeathCascadeTest {
     private static RoomEntity entity(int slot, int type, EntityStatus status) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(type)

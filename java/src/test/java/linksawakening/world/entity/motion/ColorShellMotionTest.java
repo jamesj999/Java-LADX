@@ -10,6 +10,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class ColorShellMotionTest {
@@ -44,7 +45,7 @@ final class ColorShellMotionTest {
     void stateOneUsesRomDirectionSpeedsAndSignedFixedPointAccumulation() {
         ColorShellMotion motion = new ColorShellMotion();
         RoomEntity entity = entity(0x40, 0x40);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0x20, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 1, 0x20, 0, 0, 0);
 
         ColorShellMotion.Update update = new ColorShellMotion.Update(entity);
         for (int frame = 0; frame < 6; frame++) {
@@ -62,14 +63,14 @@ final class ColorShellMotionTest {
     void stateThreeClampsBothAxesToTheBankThirtySixBounds() {
         ColorShellMotion motion = new ColorShellMotion();
         RoomEntity entity = entity(0x16, 0x1E);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 0, 0xF0, 0xF0);
+        MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 0, 0xF0, 0xF0);
 
         ColorShellMotion.Update update = motion.advance(entity, 0, 0, 0, () -> 0, null);
 
         assertEquals(0x16, update.entity().x());
         assertEquals(0x1E, update.entity().y());
 
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 0, 0x10, 0x10);
+        MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 0, 0x10, 0x10);
         update = motion.advance(entity(0x89, 0x72), 1, 0, 0, () -> 0, null);
 
         assertEquals(0x89, update.entity().x());
@@ -79,7 +80,7 @@ final class ColorShellMotionTest {
     @Test
     void walkingStateChargesAtTheTighterLinkProximityWindow() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0);
 
         ColorShellMotion.Update update = motion.advance(entity(0x40, 0x40), 0, 0x4F, 0x4F, () -> 0, null);
 
@@ -91,7 +92,7 @@ final class ColorShellMotionTest {
     @Test
     void stateTwoStartsLandingLoopAndTogglesOnlyOnEvenFrames() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 0, 2, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 2, 0, 2, 0, 0);
 
         ColorShellMotion.Update odd = motion.advance(entity(0x40, 0x40), 1, 0, 0, () -> 0, null);
         assertEquals(3, motion.state(0));
@@ -105,7 +106,7 @@ final class ColorShellMotionTest {
     @Test
     void stateThreeRestartsWalkingWithZeroSpeedAtCountdownBoundary() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 0, 1, 0x10, 0xF0);
+        MotionTestFixture.setStateForTest(motion, 0, 3, 0, 1, 0x10, 0xF0);
 
         ColorShellMotion.Update update = motion.advance(entity(0x40, 0x40), 0, 0, 0, () -> 0, null);
 
@@ -117,7 +118,7 @@ final class ColorShellMotionTest {
     @Test
     void statesFourAndFiveHoldHarmlessUntilTheRomStatusAllowsWalking() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 1, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 2, 1, 0, 0, 0);
 
         RoomEntity active = entity(0x40, 0x40);
         ColorShellMotion.Update update = motion.advance(active, 0, 0, 0, () -> 0, null, 1);
@@ -133,8 +134,8 @@ final class ColorShellMotionTest {
         assertEquals(1, motion.state(0));
         assertEquals(0, motion.physicsFlags(0) & 0x80);
 
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 5, 0, 0, 0, 0);
-        RoomEntity stunned = new linksawakening.world.entity.RoomEntityBuilder()
+        MotionTestFixture.setStateForTest(motion, 0, 5, 0, 0, 0, 0);
+        RoomEntity stunned = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE9)
                 .at(0x40, 0x40)
@@ -149,7 +150,7 @@ final class ColorShellMotionTest {
     @Test
     void statesSixAndSevenUseTheRomCornerAndSignedZLanding() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 6, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 6, 0, 0, 0, 0);
 
         ColorShellMotion.Update update = motion.advance(entityWithZ(0x60, 0x50, 0), 0, 0, 0, () -> 0, null, 0);
         assertEquals(0x78, update.entity().x());
@@ -169,11 +170,11 @@ final class ColorShellMotionTest {
     @Test
     void stateEightWritesTheSolvedMarkerAndUnlockNoiseForTheMatchingColor() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 8, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 8, 0, 0, 0, 0);
         RecordingWorld world = new RecordingWorld(0x5E);
 
-        ColorShellMotion.Update update =
-                motion.advance(entity(0x40, 0x40), 0, 0, 0, () -> 0, null, 0, world, List.of(entity(0x40, 0x40)));
+        ColorShellMotion.Update update = motion.advance(
+                new ColorShellFrame(entity(0x40, 0x40), 0, 0, 0, () -> 0, null, 0, world, List.of(entity(0x40, 0x40))));
 
         assertEquals(0x0C, motion.state(0));
         assertEquals(List.of(0x67), world.objectWrites);
@@ -185,10 +186,11 @@ final class ColorShellMotionTest {
     @Test
     void stateEightLaunchesTheFailedAnswerArcAndWrongJingle() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 8, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 8, 0, 0, 0, 0);
         RecordingWorld world = new RecordingWorld(0x00);
 
-        motion.advance(entity(0x40, 0x40), 0, 0, 0, () -> 0, null, 0, world, List.of(entity(0x40, 0x40)));
+        motion.advance(
+                new ColorShellFrame(entity(0x40, 0x40), 0, 0, 0, () -> 0, null, 0, world, List.of(entity(0x40, 0x40))));
 
         assertEquals(9, motion.state(0));
         assertEquals(0x18, motion.transitionCountdown(0));
@@ -200,10 +202,10 @@ final class ColorShellMotionTest {
     @Test
     void stateCWaitsForEveryOtherColorShellBeforeStartingCompletion() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0x0C, 0, 0, 0, 0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 1, 1, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 0x0C, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 1, 1, 0, 0, 0, 0);
         RoomEntity first = entity(0x40, 0x40);
-        RoomEntity other = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity other = new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(1)
                 .type(0xEA)
@@ -213,12 +215,12 @@ final class ColorShellMotionTest {
                 .build();
         RecordingWorld world = new RecordingWorld(0x00);
 
-        motion.advance(first, 0, 0, 0, () -> 0, null, 0, world, List.of(first, other));
+        motion.advance(new ColorShellFrame(first, 0, 0, 0, () -> 0, null, 0, world, List.of(first, other)));
         assertEquals(0x0C, motion.state(0));
         assertEquals(0, motion.transitionCountdown(0));
 
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 1, 0x0C, 0, 0, 0, 0);
-        motion.advance(first, 1, 0, 0, () -> 0, null, 0, world, List.of(first, other));
+        MotionTestFixture.setStateForTest(motion, 1, 0x0C, 0, 0, 0, 0);
+        motion.advance(new ColorShellFrame(first, 1, 0, 0, () -> 0, null, 0, world, List.of(first, other)));
         assertEquals(0x0D, motion.state(0));
         assertEquals(0x18, motion.transitionCountdown(0));
         assertEquals(List.of(0x67), world.objectWrites);
@@ -227,11 +229,11 @@ final class ColorShellMotionTest {
     @Test
     void stateDWritesFinalObjectSpawnsPoofAndRequestsUnload() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0x0D, 0, 0, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 0x0D, 0, 0, 0, 0);
         RecordingWorld world = new RecordingWorld(0x00);
 
-        ColorShellMotion.Update update = motion.advance(
-                entityWithZ(0x40, 0x48, 3), 0, 0, 0, () -> 0, null, 0, world, List.of(entityWithZ(0x40, 0x48, 3)));
+        ColorShellMotion.Update update = motion.advance(new ColorShellFrame(
+                entityWithZ(0x40, 0x48, 3), 0, 0, 0, () -> 0, null, 0, world, List.of(entityWithZ(0x40, 0x48, 3))));
 
         assertEquals(List.of(0x5F), world.objectWrites);
         assertEquals(1, world.poofs.size());
@@ -242,7 +244,7 @@ final class ColorShellMotionTest {
     @Test
     void clearResetsEveryStateOneField() {
         ColorShellMotion motion = new ColorShellMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 2, 0x10, 0xF0);
+        MotionTestFixture.setStateForTest(motion, 0, 3, 0x20, 2, 0x10, 0xF0);
         motion.clear(0);
 
         assertEquals(0, motion.state(0));
@@ -255,7 +257,7 @@ final class ColorShellMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE9)
                 .at(x, y)
@@ -265,7 +267,7 @@ final class ColorShellMotionTest {
     }
 
     private static RoomEntity entityWithZ(int x, int y, int z) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE9)
                 .at(x, y)

@@ -27,22 +27,21 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         assertEquals(0x7DF5, definition.address());
         assertEquals(2, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshotWithSlots(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x55)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(definition)
-                                .z(0x00)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x55)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(definition)
+                        .z(0x00)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+        List<EntityCombatEvent> events = runtime.resolveCombat(new EntityVerticalContactFrame(
+                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
 
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
@@ -63,14 +62,14 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         assertTrue(definition.supported());
 
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x55)
                                 .at(0x50, 0x50)
                                 .spriteDefinition(definition)
                                 .z(0x00)
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(1)
                                 .sourceLoadOrder(1)
                                 .type(0x55)
@@ -84,8 +83,8 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> swordEvents = runtime.resolveCombat(
-                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard());
+        List<EntityCombatEvent> swordEvents = runtime.resolveCombat(new EntityVerticalContactFrame(
+                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
                 swordEvents);
@@ -170,7 +169,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     void bombExplosionUsesNonlethalRomDamageBeforeTheTargetRecoilHandler() throws IOException {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity ghini = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity ghini = new RoomEntityBuilder()
                 .slot(14)
                 .sourceLoadOrder(14)
                 .type(0x12)

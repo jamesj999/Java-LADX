@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class ArmosKnightMotionTest {
@@ -14,31 +15,33 @@ final class ArmosKnightMotionTest {
         ArmosKnightMotion motion = new ArmosKnightMotion();
         RoomEntity entity = entity(0x50, 0x60, 0x08);
 
-        ArmosKnightMotion.Update initial = motion.advance(entity, 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x0C);
+        ArmosKnightMotion.Update initial =
+                motion.advance(new ArmosKnightFrame(entity, 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x0C));
         assertNull(initial.rubbleRequest());
 
-        ArmosKnightMotion.Update upperBand = motion.advance(initial.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x07);
+        ArmosKnightMotion.Update upperBand =
+                motion.advance(new ArmosKnightFrame(initial.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x07));
         assertEquals(new ArmosKnightMotion.RubbleRequest(0x57, 0x48), upperBand.rubbleRequest());
         assertEquals(1, motion.inertia(0));
 
         ArmosKnightMotion.Update repeatedUpperBand =
-                motion.advance(upperBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x06);
+                motion.advance(new ArmosKnightFrame(upperBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x06));
         assertNull(repeatedUpperBand.rubbleRequest());
         assertEquals(1, motion.inertia(0));
 
         ArmosKnightMotion.Update lowerBand =
-                motion.advance(repeatedUpperBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x03);
+                motion.advance(new ArmosKnightFrame(repeatedUpperBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x03));
         assertEquals(new ArmosKnightMotion.RubbleRequest(0x4F, 0x48), lowerBand.rubbleRequest());
         assertEquals(2, motion.inertia(0));
 
         ArmosKnightMotion.Update repeatedLowerBand =
-                motion.advance(lowerBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x02);
+                motion.advance(new ArmosKnightFrame(lowerBand.entity(), 0x50, 0x60, 0, 0, 0, 0, 0xC4, 0x02));
         assertNull(repeatedLowerBand.rubbleRequest());
         assertEquals(2, motion.inertia(0));
     }
 
     private static RoomEntity entity(int x, int y, int z) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x88)
                 .at(x, y)

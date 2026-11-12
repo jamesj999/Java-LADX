@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.Arrays;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.MotionTestFixture;
 
 final class EntityDebugConfigurationFixture {
     private final RoomEntityRuntime runtime;
@@ -45,7 +46,7 @@ final class EntityDebugConfigurationFixture {
         if (!runtime.roomInspection.isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_BOW_WOW)) {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionCountdownForTest(
+        MotionTestFixture.setTransitionCountdownForTest(
                 runtime.entityState.motions.get(BowWowMotion.class, BowWowMotion::new), slot, value);
     }
 
@@ -57,7 +58,7 @@ final class EntityDebugConfigurationFixture {
     void setMoblinKingStateForTest(
             int slot, int state, int direction, int speedX, int speedY, int speedZ, int transitionCountdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+        MotionTestFixture.setStateForTest(
                 runtime.entityState.motions.get(MoblinKingMotion.class, MoblinKingMotion::new),
                 slot,
                 state,
@@ -140,7 +141,7 @@ final class EntityDebugConfigurationFixture {
 
     void setThreeOfAKindSettledForTest(int slot, int face) {
         EntitySlotValidation.validateEntitySlot(slot);
-        linksawakening.world.entity.motion.MotionTestFixture.setSettledForTest(
+        MotionTestFixture.setSettledForTest(
                 runtime.entityState.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new), slot, face);
         runtime.entityState.physicsTables.writeEnemyTransitionCountdown(slot, 0);
     }
@@ -150,7 +151,7 @@ final class EntityDebugConfigurationFixture {
         if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+        MotionTestFixture.setStateForTest(
                 runtime.entityState.motions.get(HinoxMotion.class, HinoxMotion::new), slot, state, 0, 0);
     }
 
@@ -159,7 +160,7 @@ final class EntityDebugConfigurationFixture {
         if (runtime.slots[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(
+        MotionTestFixture.setSpeedForTest(
                 runtime.entityState.motions.get(HinoxMotion.class, HinoxMotion::new), slot, speedX, speedY);
     }
 
@@ -173,7 +174,7 @@ final class EntityDebugConfigurationFixture {
             int privateState3,
             boolean nearLinkLatch) {
         EntitySlotValidation.validateEntitySlot(slot);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+        MotionTestFixture.setStateForTest(
                 runtime.entityState.motions.get(TarinRaccoonMotion.class, TarinRaccoonMotion::new),
                 slot,
                 state,
@@ -239,7 +240,7 @@ final class EntityDebugConfigurationFixture {
     }
 
     void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
-        linksawakening.world.entity.motion.MotionTestFixture.setParentForTest(
+        MotionTestFixture.setParentForTest(
                 runtime.entityState.motions.get(LaserMotion.class, LaserMotion::new),
                 slot,
                 countdown,
@@ -248,7 +249,7 @@ final class EntityDebugConfigurationFixture {
     }
 
     void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        linksawakening.world.entity.motion.MotionTestFixture.setForTest(
+        MotionTestFixture.setForTest(
                 runtime.entityState.motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new),
                 slot,
                 newSpeedX,
@@ -257,7 +258,7 @@ final class EntityDebugConfigurationFixture {
     }
 
     void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        linksawakening.world.entity.motion.MotionTestFixture.setBeamForTest(
+        MotionTestFixture.setBeamForTest(
                 runtime.entityState.motions.get(LaserMotion.class, LaserMotion::new),
                 slot,
                 newSpeedX,
@@ -267,17 +268,17 @@ final class EntityDebugConfigurationFixture {
 
     void setZolPrivateCountdown1ForTest(int slot, int value) {
         EntitySlotValidation.validateByte(value, "Zol/Gel private countdown 1");
-        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdown1ForTest(
+        MotionTestFixture.setPrivateCountdown1ForTest(
                 runtime.entityState.motions.get(ZolGelMotion.class, ZolGelMotion::new), slot, value);
     }
 
     void setEvasivePrivateCountdown1ForTest(int slot, int value) {
-        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdown1ForTest(
+        MotionTestFixture.setPrivateCountdown1ForTest(
                 runtime.entityState.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new), slot, value);
     }
 
     void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
-        linksawakening.world.entity.motion.MotionTestFixture.setFleeingForTest(
+        MotionTestFixture.setFleeingForTest(
                 runtime.entityState.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new),
                 slot,
                 newSpeedX,
@@ -288,7 +289,7 @@ final class EntityDebugConfigurationFixture {
             int slot, int state, int transitionCountdown, int privateState1, int privateCountdown1, int direction) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
-        linksawakening.world.entity.motion.MotionTestFixture.setForTest(
+        MotionTestFixture.setForTest(
                 runtime.entityState.motions.get(WizrobeMotion.class, WizrobeMotion::new),
                 slot,
                 state,
@@ -302,7 +303,7 @@ final class EntityDebugConfigurationFixture {
     }
 
     void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        linksawakening.world.entity.motion.MotionTestFixture.setForTest(
+        MotionTestFixture.setForTest(
                 runtime.entityState.motions.get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new),
                 slot,
                 newSpeedX,
@@ -415,7 +416,7 @@ final class EntityDebugConfigurationFixture {
 
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(
+        MotionTestFixture.setStateForTest(
                 runtime.entityState.motions.get(ColorShellMotion.class, ColorShellMotion::new),
                 slot,
                 state,

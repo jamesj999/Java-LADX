@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -37,20 +36,20 @@ public final class LikeLikeMotion {
         walkMotion.clear(slot);
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            int linkMotionState,
-            boolean actionButtonsHeld,
-            int linkItemA,
-            int linkItemB,
-            int shieldLevel,
-            int slowTransitionCountdown,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(LikeLikeFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkZ = inputs.linkZ();
+        int linkMotionState = inputs.linkMotionState();
+        boolean actionButtonsHeld = inputs.actionButtonsHeld();
+        int linkItemA = inputs.linkItemA();
+        int linkItemB = inputs.linkItemB();
+        int shieldLevel = inputs.shieldLevel();
+        int slowTransitionCountdown = inputs.slowTransitionCountdown();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);

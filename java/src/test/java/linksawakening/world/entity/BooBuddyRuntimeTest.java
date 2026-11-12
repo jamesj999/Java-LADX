@@ -19,13 +19,12 @@ final class BooBuddyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(BooBuddyMotion.ENTITY_TYPE)
-                                .at(0x30, 0x40)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(BooBuddyMotion.ENTITY_TYPE)
+                        .at(0x30, 0x40)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -48,14 +47,13 @@ final class BooBuddyRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(BooBuddyMotion.ENTITY_TYPE)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(BooBuddyMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -81,10 +79,11 @@ final class BooBuddyRuntimeTest {
         assertEquals(4, runtime.flyingEnemies().booBuddySpeedX(0));
         assertEquals(
                 0x08,
-                runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0)
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0))
                         .getFirst()
                         .linkDamage());
-        assertTrue(runtime.resolveCombat(1, 0x40, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10)
+        assertTrue(runtime.resolveCombat(
+                        new EntitySwordContactFrame(1, 0x40, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10))
                 .isEmpty());
 
         EntityRuntimeFixture.debug(runtime).setBooBuddyTriggerCountForTest(1);
@@ -92,7 +91,7 @@ final class BooBuddyRuntimeTest {
         assertEquals(1, runtime.flyingEnemies().booBuddyState(0));
         assertEquals(
                 0x08,
-                runtime.resolveCombat(3, 0x40, 0x50, false, true, false, 0, 0, 0, 0)
+                runtime.resolveCombat(new EntitySwordContactFrame(3, 0x40, 0x50, false, true, false, 0, 0, 0, 0))
                         .getFirst()
                         .linkDamage());
 
@@ -101,7 +100,7 @@ final class BooBuddyRuntimeTest {
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(
                 0x08,
-                runtime.resolveCombat(5, 0x40, 0x50, false, true, false, 0, 0, 0, 0)
+                runtime.resolveCombat(new EntitySwordContactFrame(5, 0x40, 0x50, false, true, false, 0, 0, 0, 0))
                         .getFirst()
                         .linkDamage());
     }

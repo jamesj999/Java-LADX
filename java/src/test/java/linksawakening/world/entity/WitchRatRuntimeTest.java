@@ -48,14 +48,12 @@ final class WitchRatRuntimeTest {
     void exposesWitchRatRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_WITCH_RAT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_WITCH_RAT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -152,14 +150,12 @@ final class WitchRatRuntimeTest {
     void runtimeWiresWitchRatStateAndRomPresentation() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_WITCH_RAT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_WITCH_RAT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -199,7 +195,7 @@ final class WitchRatRuntimeTest {
     private static RoomEntity witchRat(byte[] rom) {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
                 .forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B);
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_WITCH_RAT)
                 .at(0x40, 0x40)

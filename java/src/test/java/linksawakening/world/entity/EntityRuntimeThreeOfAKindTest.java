@@ -47,7 +47,8 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime, 1, 0, 0, () -> 0, null, new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
-        List<EntityCombatEvent> hit = runtime.resolveCombat(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> hit =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10));
         assertTrue(hit.getFirst().swordHit());
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -63,8 +64,9 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
                 .build();
         EntityRuntimeFixture.debug(runtime).setThreeOfAKindSettledForTest(0, 0);
 
-        assertTrue(runtime.resolveCombat(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10)
-                .isEmpty());
+        assertTrue(
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10))
+                        .isEmpty());
     }
 
     @Test

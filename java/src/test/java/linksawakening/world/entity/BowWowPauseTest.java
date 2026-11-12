@@ -93,7 +93,7 @@ final class BowWowPauseTest {
         }
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .type(0x6D)
                         .at(0x40, 0x50)
                         .spriteDefinition(catalog.forFollowerEntityType(0x6D))

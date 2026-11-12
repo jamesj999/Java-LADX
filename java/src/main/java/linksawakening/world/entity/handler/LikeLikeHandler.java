@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.LikeLikeFrame;
 import linksawakening.world.entity.motion.LikeLikeMotion;
 
 /** ROM handler stages for LikeLike. */
@@ -24,7 +25,7 @@ final class LikeLikeHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             LikeLikeMotion.Update likeLikeUpdate = state.motion(LikeLikeMotion.class, LikeLikeMotion::new)
-                    .advance(
+                    .advance(new LikeLikeFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -38,7 +39,7 @@ final class LikeLikeHandler {
                             state.slot()
                                     .slowTransitionCountdown(slotState.entity().slot()),
                             frameInput.randomByteSupplier(),
-                            frameInput.backgroundCollision());
+                            frameInput.backgroundCollision()));
             slotState.updated(likeLikeUpdate.entity());
             state.slot()
                     .setSlowTransitionCountdown(slotState.entity().slot(), likeLikeUpdate.slowTransitionCountdown());

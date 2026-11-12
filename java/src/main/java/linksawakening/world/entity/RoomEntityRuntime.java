@@ -6,9 +6,7 @@ import static linksawakening.world.entity.EntitySlotValidation.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
@@ -310,264 +308,7 @@ public final class RoomEntityRuntime {
 
     /** Source-ordered frame gates and descending slot dispatch. */
     private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {
-        EntityFrameExecution state = new EntityFrameExecution(this, context);
-
-        state.inputs().frameCounter(state.context().frameCounter());
-        state.inputs().linkEntityX(state.context().linkEntityX());
-        state.inputs().linkEntityY(state.context().linkEntityY());
-        state.inputs().collisionType(state.context().collisionType());
-        state.inputs().randomByteSupplier(state.context().randomByteSupplier());
-        state.inputs().backgroundCollision(state.context().backgroundCollision());
-        state.inputs().objectCollision(state.context().objectCollision());
-        state.inputs().linkPositionHistory(state.context().linkPositionHistory());
-        state.inputs().linkZ(state.context().linkZ());
-        state.inputs().linkAirborne(state.context().linkAirborne());
-        state.inputs().linkDirection(state.context().linkDirection());
-        state.inputs().entityYOffset(state.context().entityYOffset());
-        state.inputs().projectileLinkState(state.context().projectileLinkState());
-        state.inputs().creditsGameplay(state.context().creditsGameplay());
-        state.inputs().swordCollisionActive(state.context().swordCollisionActive());
-        state.inputs().swordX(state.context().swordX());
-        state.inputs().swordWidth(state.context().swordWidth());
-        state.inputs().swordY(state.context().swordY());
-        state.inputs().swordHeight(state.context().swordHeight());
-        state.gates().handlerLinkCollisionEnabled(state.context().handlerLinkCollisionEnabled());
-        Objects.requireNonNull(state.inputs().randomByteSupplier(), "randomByteSupplier");
-        Objects.requireNonNull(state.inputs().projectileLinkState(), "projectileLinkState");
-        state.runtime()
-                .entityState
-                .motions
-                .get(ZolGelMotion.class, ZolGelMotion::new)
-                .writeGelClingingToLink(false); // AnimateEntities clears wIsGelClingingToLink each pass.
-        state.gates()
-                .countdownBlocksInteraction(
-                        state.runtime().entityState.roomVariables.readEntityInteractionCountdown() != 0);
-        if (!state.runtime().entityState.linkState.dialogActive
-                && state.runtime().entityState.roomVariables.readEntityInteractionCountdown() > 0)
-            state.runtime().entityState.roomVariables.postEntityInteractionCountdown(-1);
-        state.gates()
-                .handlerLinkCollisionEnabled(state.gates().handlerLinkCollisionEnabled()
-                        && !state.runtime().entityState.linkState.inventoryAppearing
-                        && !state.gates().countdownBlocksInteraction());
-        state.gates()
-                .threeOfAKindInteractive(state.gates().handlerLinkCollisionEnabled()
-                        && state.runtime().backgroundMechanics.entityTimersInteractive());
-        state.gates()
-                .handlerInteractive(state.runtime()
-                        .backgroundMechanics
-                        .entityHandlerInteractive(state.inputs().creditsGameplay()));
-        state.gates()
-                .bowWowHandlerInteractive(
-                        state.runtime().entityState.roomVariables.readTransitionSequenceCounter() == 0x04
-                                && !state.runtime().entityState.roomVariables.readRoomTransitionActive()
-                                && !state.runtime().entityState.linkState.dialogActive
-                                && !state.runtime().entityState.linkState.inventoryAppearing
-                                && !state.runtime().inspection().witchGotItemPresentationActive());
-        state.gates()
-                .projectileTimersInteractive(state.runtime()
-                        .backgroundMechanics
-                        .gameplayEntityTimersInteractive(state.inputs().creditsGameplay()));
-        state.gates().sideViewPotInteractive(state.gates().handlerInteractive());
-        state.gates()
-                .sideViewPotLinkCollisionInteractive(state.gates().sideViewPotInteractive()
-                        && state.gates().handlerLinkCollisionEnabled()
-                        && state.inputs().projectileLinkState().motionState()
-                                < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
-        state.runtime().story.writeShouldGetLostInMysteriousWoods(false);
-        state.runtime().bombInteractions.finalizePendingBombPresentations();
-        state.inputs().frame(state.inputs().frameCounter() & 0xFF);
-        state.inputs().romCollisionType(state.inputs().collisionType() & 0xFF);
-        // WorldHandler runs $14:4B21 before AnimateEntities, even when no
-        // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.runtime().projectiles.readBoomerangSoundClockProvided()
-                && state.runtime().entityState.roomVariables.readGameplayWorld()
-                && !state.inputs().creditsGameplay()) {
-            state.runtime()
-                    .projectiles
-                    .writeBoomerangSfxCounter((state.runtime().projectiles.readBoomerangSfxCounter() + 1)
-                            % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
-        }
-        state.runtime().projectiles.writeBoomerangSoundClockProvided(false);
-        if (state.runtime()
-                        .entityState
-                        .motions
-                        .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                        .readSwordMoblinAlertingSoundCounter()
-                > 0) {
-            state.runtime()
-                    .entityState
-                    .motions
-                    .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                    .postSwordMoblinAlertingSoundCounter(-1);
-        }
-        if (state.runtime().bombInteractions.readBombArrowCooldown() > 0) {
-            state.runtime().bombInteractions.postBombArrowCooldown(-1);
-        }
-        if (state.runtime().entityState.physicsTables.readBackgroundInteraction() != null) {
-            state.inputs().backgroundCollision((entity, direction, nextX, nextY) -> {
-                EntityBackgroundCollisionResult result = state.runtime()
-                        .entityState
-                        .physicsTables
-                        .readBackgroundInteraction()
-                        .probe(
-                                entity,
-                                direction,
-                                nextX,
-                                nextY,
-                                state.runtime().entityState.combatTables.readEnemyIgnoreHitsCountdown(entity.slot()),
-                                state.inputs().frame());
-                if (result.blocked()
-                        && entity.status() == EntityStatus.THROWN
-                        && checksThrownRoomEventTriggers(entity.type())) {
-                    state.runtime()
-                            .entityState
-                            .events
-                            .pendingThrownBackgroundCollisions
-                            .add(new ThrownBackgroundCollisionEvent(
-                                    entity.slot(), entity.type(), direction, result.objectId()));
-                }
-                return result.blocked();
-            });
-        }
-        state.inputs()
-                .hinoxBackgroundInteraction(
-                        state.runtime().entityState.physicsTables.readBackgroundInteraction());
-        if (state.inputs().hinoxBackgroundInteraction() == null
-                && state.inputs().backgroundCollision() != null) {
-            state.inputs()
-                    .hinoxBackgroundInteraction(RoomEntityBackgroundInteraction.fromBoolean(
-                            state.inputs().backgroundCollision()));
-        }
-        state.runtime().entityState.events.projectileLaunchRequests.clear();
-        state.runtime().entityState.physicsTables.clearEnemyProjectileSpawnedThisFrame();
-        state.runtime().entityState.physicsTables.clearDynamicEntitySpawnedThisFrame();
-        state.runtime().genie.beginFrame();
-        Arrays.fill(state.runtime().slotProperties.storageWingedSwordAttackThisFrame(), false);
-        Arrays.fill(state.runtime().slotProperties.storageWingedStateTwoThisFrame(), false);
-        state.runtime().entityState.events.transientVfxRequests.clear();
-        state.runtime().entityState.events.pendingLinkFinalPositionRequests.clear();
-        state.runtime().entityState.events.pendingRoosterLinkStateRequests.clear();
-        state.runtime().entityState.events.pendingLinkMotionBlockRequests.clear();
-        state.runtime().entityState.events.pendingSideViewPlatformLinkRequests.clear();
-        state.runtime().entityState.events.pendingSideViewPotLinkRequests.clear();
-        state.runtime().entityState.events.pendingHinoxLinkEffectRequests.clear();
-        state.runtime().entityState.events.pendingLinkFallenPoseRequests.clear();
-        state.runtime().entityState.events.pendingLinkFacingRequests.clear();
-        state.runtime().entityState.events.pendingLinkAttackStepRequests.clear();
-        state.runtime()
-                .entityState
-                .events
-                .pendingLinkAttackStepRequests
-                .addAll(state.runtime().entityState.events.pendingPreTickLinkAttackStepRequests);
-        state.runtime().entityState.events.pendingPreTickLinkAttackStepRequests.clear();
-        state.runtime().entityState.events.pendingLinkAttackClearRequests.clear();
-        state.runtime().entityState.events.pendingRoomStatusPersistenceRequests.clear();
-        state.runtime().entityState.events.pendingLinkHeldItemPoseRequests.clear();
-        state.runtime().entityState.events.pendingLinkSwordSpinPoseRequests.clear();
-        state.runtime().entityState.events.pendingLinkSwordFinalPoseRequests.clear();
-        state.runtime().entityState.events.pendingScreenShakeRequests.clear();
-        state.runtime().entityState.events.boomerangObjectRequests.clear();
-        state.runtime().entityState.events.magicRodObjectRequests.clear();
-        state.runtime().entityState.events.magicPowderObjectRequests.clear();
-        state.runtime().entityState.events.pendingDialogRequests.clear();
-        state.runtime().entityState.events.pendingEntityEvents.clear();
-        state.runtime().entityState.events.pendingThrownBackgroundCollisions.clear();
-        state.runtime()
-                .entityState
-                .events
-                .pendingEntityEvents
-                .addAll(state.runtime().entityState.events.pendingPreTickEntityEvents);
-        state.runtime().entityState.events.pendingPreTickEntityEvents.clear();
-        state.runtime().entityState.events.pendingWarpLinkStateRequests.clear();
-        state.runtime().entityState.events.pendingChestRewardEvents.clear();
-        state.runtime().entityState.events.pendingHeartContainerRewards.clear();
-        state.runtime().entityState.events.pendingMadamMeowMeowFullHealRequests.clear();
-        state.runtime().entityState.events.pendingSwordPickupRewards.clear();
-        state.runtime().entityState.events.pendingToadstoolRewards.clear();
-        state.runtime().entityState.events.pendingInstrumentRewards.clear();
-        state.runtime().entityState.events.pendingInstrumentCompletions.clear();
-        state.runtime().entityState.events.pendingRichardProgressEvents.clear();
-        if (state.runtime().bossRewards.readBossAgonySfxCountdown() > 0) {
-            state.runtime().bossRewards.postBossAgonySfxCountdown(-1);
-            if (state.runtime().bossRewards.readBossAgonySfxCountdown() == 0) {
-                state.runtime()
-                        .entityState
-                        .events
-                        .pendingEntityEvents
-                        .add(new EntityCombatEvent(
-                                state.runtime().bossRewards.readBossAgonySourceSlot(),
-                                EntityRomConstants.ENTITY_GENIE,
-                                0,
-                                false,
-                                EntityCombatEvent.SoundChannel.WAVE,
-                                0x10));
-            }
-        }
-        state.runtime().entityState.events.pendingWitchExchangeEvents.clear();
-        state.runtime().entityState.events.pendingWitchRewardEvents.clear();
-        state.runtime().entityState.events.pendingOwlEventCompletions.clear();
-        state.runtime().entityState.events.pendingSlimeKeyRewardEvents.clear();
-        state.runtime().entityState.events.pendingKeyQuicksandEvents.clear();
-        state.runtime().entityState.events.pendingLikeLikeEvents.clear();
-        state.runtime().entityState.events.pendingBombExplosionEvents.clear();
-        state.runtime().entityState.events.hookshotBridgeUpdates.clear();
-        state.runtime().entityState.roomVariables.writePendingSwitchBlockAnimationRequest(false);
-        if (state.runtime().entityState.linkState.linkPlayingOcarinaCountdown >= 0x10
-                && state.runtime().entityState.linkState.ocarinaAnimationCounter == 0x14) {
-            state.runtime()
-                    .entityPlayerSpawns
-                    .spawnMusicalNote(
-                            state.inputs().linkEntityX(),
-                            state.inputs().linkEntityY(),
-                            state.runtime().entityState.linkState.ocarinaAnimationPhase);
-        }
-        state.inputs()
-                .projectileEvents(state.runtime()
-                        .entityState
-                        .events
-                        .outbox
-                        .channel(EntityProjectileEvent.class, "projectileEvents"));
-        state.inputs().projectileEvents().clear();
-        if (state.inputs().linkPositionHistory() != null) {
-            state.runtime()
-                    .entityState
-                    .motions
-                    .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                    .writeFollowingLinkPositionHistory(state.inputs().linkPositionHistory());
-        }
-        state.runtime().entityState.linkState.followingLinkZ = state.inputs().linkZ() & 0xFF;
-        state.runtime().entityState.linkState.followingLinkDirection =
-                state.inputs().linkDirection() & 0xFF;
-        state.runtime().entityState.linkState.followingEntityYOffset =
-                state.inputs().entityYOffset() & 0xFF;
-        state.slotFrame()
-                .carryingEntity(state.runtime().inspection().liftedEntityState().carryState() != 0);
-        state.inputs()
-                .romLinkDirection(romDirectionForJavaDirection(state.inputs().linkDirection()));
-        state.runtime().entityState.linkState.lastRomLinkDirection =
-                state.inputs().romLinkDirection();
-        for (state.slotFrame().index(state.runtime().slots.length - 1);
-                state.slotFrame().index() >= 0;
-                state.slotFrame().postIndex(-1)) {
-            if (!EntitySlotPhase1.run(state)) continue;
-            if (!EntitySlotPhase2.run(state)) continue;
-            if (!EntitySlotPhase3.run(state)) continue;
-            if (!EntitySlotPhase4.run(state)) continue;
-            if (!EntitySlotPhase5.run(state)) continue;
-        }
-        if (state.gates().threeOfAKindInteractive()) {
-            state.runtime().slotProperties.resolveThreeOfAKindPuzzle();
-        }
-        state.runtime()
-                .slotProperties
-                .updateHookshotChainOam(
-                        state.inputs().linkEntityX(),
-                        state.inputs().linkEntityY(),
-                        state.inputs().frame());
-        state.runtime().slotProperties.updatePincerBodyOam();
-        state.runtime().slotProperties.updateWingedOctorokOam();
-        state.runtime().slotProperties.updateBowWowChain(state.inputs().frame());
-        return state.runtime().entityState.events.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
+        return EntitySlotOrchestrator.advanceFrame(this, context);
     }
 
     /**
@@ -605,6 +346,8 @@ public final class RoomEntityRuntime {
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
+    /** Compatibility for existing world.room callers. */
+    @Deprecated
     public EntityPickupEvent collectIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -618,7 +361,7 @@ public final class RoomEntityRuntime {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return this.lifecycle.collectIfNeeded(
+        return collectIfNeeded(new EntityPickupFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -630,7 +373,35 @@ public final class RoomEntityRuntime {
                 swordX,
                 swordWidth,
                 swordY,
-                swordHeight);
+                swordHeight));
+    }
+
+    public EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        int linkDirection = inputs.linkDirection();
+        int linkZ = inputs.linkZ();
+        boolean swordActive = inputs.swordActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return this.lifecycle.collectIfNeeded(new EntityPickupFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkInteractive,
+                linkDirection,
+                linkZ,
+                swordActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight));
     }
 
     /**
@@ -659,19 +430,19 @@ public final class RoomEntityRuntime {
      * ROM's wC140..wC143 rectangle; non-positive width/height disables sword
      * collision for this pass.
      */
-    public List<EntityCombatEvent> resolveCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return resolveCombat(
+    public List<EntityCombatEvent> resolveCombat(EntityAttackContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -683,9 +454,11 @@ public final class RoomEntityRuntime {
                 swordWidth,
                 swordY,
                 swordHeight,
-                EnemyAttackContext.standard());
+                EnemyAttackContext.standard()));
     }
 
+    /** Compatibility for existing world.room callers. */
+    @Deprecated
     public List<EntityCombatEvent> resolveCombat(
             int frameCounter,
             int linkEntityX,
@@ -697,7 +470,31 @@ public final class RoomEntityRuntime {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return resolveCombat(
+        return resolveCombat(new EntitySwordContactFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -709,22 +506,22 @@ public final class RoomEntityRuntime {
                 swordWidth,
                 swordY,
                 swordHeight,
-                EnemyAttackContext.standard());
+                EnemyAttackContext.standard()));
     }
 
-    public List<EntityCombatEvent> resolveCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
-        return resolveCombat(
+    public List<EntityCombatEvent> resolveCombat(EntityVerticalContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        return resolveCombat(new EnemyCombatFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -736,9 +533,11 @@ public final class RoomEntityRuntime {
                 swordWidth,
                 swordY,
                 swordHeight,
-                attackContext);
+                attackContext));
     }
 
+    /** Compatibility for existing world.room callers. */
+    @Deprecated
     public List<EntityCombatEvent> resolveCombat(
             int frameCounter,
             int linkEntityX,
@@ -752,7 +551,7 @@ public final class RoomEntityRuntime {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return combat.resolveCombat(
+        return resolveCombat(new EnemyCombatFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -764,7 +563,35 @@ public final class RoomEntityRuntime {
                 swordWidth,
                 swordY,
                 swordHeight,
-                attackContext);
+                attackContext));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EnemyCombatFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        return combat.resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkVerticalVelocity,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                attackContext));
     }
 
     /** Supplies the persistent world clock before this frame's entity pass. */
@@ -954,17 +781,17 @@ public final class RoomEntityRuntime {
                 entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ);
     }
 
-    public int spawnEnemyBomb(
-            int entityX,
-            int entityY,
-            int entityZ,
-            int transitionCountdown,
-            int speedX,
-            int speedY,
-            int speedZ,
-            boolean initializeMotion,
-            int privateState4) {
-        return this.entityEnemySpawns.spawnEnemyBomb(
+    public int spawnEnemyBomb(EnemyBombSpawn inputs) {
+        int entityX = inputs.entityX();
+        int entityY = inputs.entityY();
+        int entityZ = inputs.entityZ();
+        int transitionCountdown = inputs.transitionCountdown();
+        int speedX = inputs.speedX();
+        int speedY = inputs.speedY();
+        int speedZ = inputs.speedZ();
+        boolean initializeMotion = inputs.initializeMotion();
+        int privateState4 = inputs.privateState4();
+        return this.entityEnemySpawns.spawnEnemyBomb(new EnemyBombSpawn(
                 entityX,
                 entityY,
                 entityZ,
@@ -973,7 +800,7 @@ public final class RoomEntityRuntime {
                 speedY,
                 speedZ,
                 initializeMotion,
-                privateState4);
+                privateState4));
     }
 
     /** Mirrors the state-$00 return gate reached after Genie's BossIntro call. */

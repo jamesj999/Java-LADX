@@ -186,7 +186,7 @@ final class BooBuddyPauseTest {
         }
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(BooBuddyMotion.ENTITY_TYPE)
                         .at(0x40, 0x50)

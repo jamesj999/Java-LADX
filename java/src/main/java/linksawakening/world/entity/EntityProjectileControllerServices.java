@@ -10,29 +10,29 @@ interface EntityProjectileControllerServices {
 
     linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers();
 
-    linksawakening.world.entity.EntityBombInteractions bombInteractions();
+    EntityBombInteractions bombInteractions();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityEventChannels events();
+    EntityEventChannels events();
 
-    linksawakening.world.entity.EntityLiftThrowController liftThrow();
+    EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityPlayerSpawns entityPlayerSpawns();
+    EntityPlayerSpawns entityPlayerSpawns();
 
-    linksawakening.world.entity.EntityRoomVariables roomVariables();
+    EntityRoomVariables roomVariables();
 
-    linksawakening.world.entity.EntitySlotLifecycle lifecycle();
+    EntitySlotLifecycle lifecycle();
 
-    linksawakening.world.entity.EntitySlotProperties slotProperties();
+    EntitySlotProperties slotProperties();
 
-    linksawakening.world.entity.RomEnemyCombatTables enemyCombatTables();
+    RomEnemyCombatTables enemyCombatTables();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
     static EntityProjectileControllerServices bind(RoomEntityRuntime r) {
         return new EntityProjectileControllerServices() {
@@ -48,51 +48,51 @@ interface EntityProjectileControllerServices {
                 return r.spriteHandlers;
             }
 
-            public linksawakening.world.entity.EntityBombInteractions bombInteractions() {
+            public EntityBombInteractions bombInteractions() {
                 return r.bombInteractions;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityEventChannels events() {
+            public EntityEventChannels events() {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityLiftThrowController liftThrow() {
+            public EntityLiftThrowController liftThrow() {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityPlayerSpawns entityPlayerSpawns() {
+            public EntityPlayerSpawns entityPlayerSpawns() {
                 return r.entityPlayerSpawns;
             }
 
-            public linksawakening.world.entity.EntityRoomVariables roomVariables() {
+            public EntityRoomVariables roomVariables() {
                 return r.entityState.roomVariables;
             }
 
-            public linksawakening.world.entity.EntitySlotLifecycle lifecycle() {
+            public EntitySlotLifecycle lifecycle() {
                 return r.lifecycle;
             }
 
-            public linksawakening.world.entity.EntitySlotProperties slotProperties() {
+            public EntitySlotProperties slotProperties() {
                 return r.slotProperties;
             }
 
-            public linksawakening.world.entity.RomEnemyCombatTables enemyCombatTables() {
+            public RomEnemyCombatTables enemyCombatTables() {
                 return r.enemyCombatTables;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
         };

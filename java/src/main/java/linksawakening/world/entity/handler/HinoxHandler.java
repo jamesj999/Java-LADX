@@ -15,6 +15,7 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
+import linksawakening.world.entity.motion.HinoxFrame;
 import linksawakening.world.entity.motion.HinoxMotion;
 
 /** ROM handler stages for Hinox. */
@@ -49,7 +50,7 @@ final class HinoxHandler {
                 state.emit(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             HinoxMotion.Update hinoxUpdate = state.motion(HinoxMotion.class, HinoxMotion::new)
-                    .advance(
+                    .advance(new HinoxFrame(
                             slotState.entity(),
                             state.slot().transitionCountdown(slot),
                             frameInput.frame(),
@@ -60,7 +61,7 @@ final class HinoxHandler {
                             frameInput.randomByteSupplier(),
                             frameInput.hinoxBackgroundInteraction(),
                             state.motion(HinoxMotion.class, HinoxMotion::new).collisionFlags(slot),
-                            state.slot().flashCountdown(slot));
+                            state.slot().flashCountdown(slot)));
             slotState.updated(hinoxUpdate.entity());
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             presentationFlags.preserveHinoxPresentation(true);

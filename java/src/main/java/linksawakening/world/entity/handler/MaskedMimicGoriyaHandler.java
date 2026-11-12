@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.MaskedMimicFrame;
 import linksawakening.world.entity.motion.MaskedMimicMotion;
 
 /** ROM handler stages for MaskedMimicGoriya. */
@@ -36,7 +37,7 @@ final class MaskedMimicGoriyaHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             MaskedMimicMotion.Update maskedMimicUpdate = state.motion(MaskedMimicMotion.class, MaskedMimicMotion::new)
-                    .advance(
+                    .advance(new MaskedMimicFrame(
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
@@ -45,7 +46,7 @@ final class MaskedMimicGoriyaHandler {
                             frameInput.romCollisionType(),
                             maskedMimicBackgroundInteraction,
                             state.slot().ignoreHits(slot),
-                            frameInput.frame());
+                            frameInput.frame()));
             slotState.updated(maskedMimicUpdate.entity());
             state.slot().setOptions1Override(slot, maskedMimicUpdate.options1());
             presentationFlags.preserveMaskedMimicPresentation(true);

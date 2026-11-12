@@ -294,7 +294,7 @@ final class MagicPowderRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .type(0x15)
                         .at(x, y)
                         .spriteDefinition(catalog.forEntityType(0x15, EntityRoomLoader.RoomTable.OVERWORLD, -1))

@@ -18,12 +18,11 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void enemyArrowAndRockPlayThePokeJingleOnceWhenHittingAWall() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                            snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                    .type(type)
-                                    .at(0x40, 0x50)
-                                    .spriteDefinition(pairDefinition(type, 4))
-                                    .build()))
+            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                            .type(type)
+                            .at(0x40, 0x50)
+                            .spriteDefinition(pairDefinition(type, 4))
+                            .build()))
                     .build();
             RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 0;
             runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0, wall));
@@ -39,12 +38,11 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void shieldBlockedEnemyArrowAndRockKeepTheTingWithoutAddingAPokeJingle() {
         for (int type : new int[] {0x0A, 0x0C}) {
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                            snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                    .type(type)
-                                    .at(0x40, 0x50)
-                                    .spriteDefinition(pairDefinition(type, 4))
-                                    .build()))
+            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                            .type(type)
+                            .at(0x40, 0x50)
+                            .spriteDefinition(pairDefinition(type, 4))
+                            .build()))
                     .build();
             List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                     runtime,
@@ -68,12 +66,11 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition arrowDefinition = catalog.forEntityType(0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x0C)
-                                .at(0x20, 0x20)
-                                .spriteDefinition(arrowDefinition)
-                                .build()))
+        RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x0C)
+                        .at(0x20, 0x20)
+                        .spriteDefinition(arrowDefinition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -94,12 +91,11 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         assertEquals(3, arrowRuntime.inspection().snapshot().slots().get(0).spriteVariant());
 
         EntitySpriteDefinition rockDefinition = catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime rockRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x0A)
-                                .at(0x20, 0x20)
-                                .spriteDefinition(rockDefinition)
-                                .build()))
+        RoomEntityRuntime rockRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x0A)
+                        .at(0x20, 0x20)
+                        .spriteDefinition(rockDefinition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -165,7 +161,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition octorokDefinition = pairDefinition(0x09, 8);
-        RoomEntity octorok = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity octorok = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(15)
                 .type(0x09)
@@ -218,7 +214,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void reboundingPlayerArrowDoesNotRunTheEnemyDamagePass() throws IOException {
-        RoomEntity target = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity target = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(15)
                 .type(0x09)

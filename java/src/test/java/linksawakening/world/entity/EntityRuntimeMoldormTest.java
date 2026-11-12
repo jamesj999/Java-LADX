@@ -27,13 +27,12 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
         };
         for (int type : new int[] {0x81, EntitySpriteHandlerCatalog.ENTITY_MOLDORM}) {
             for (int[] point : cases) {
-                RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                                snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                        .sourceLoadOrder(0)
-                                        .type(type)
-                                        .at(0x70, 0x40)
-                                        .spriteDefinition(EntitySpriteDefinition.unsupported(type))
-                                        .build()))
+                RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                                .sourceLoadOrder(0)
+                                .type(type)
+                                .at(0x70, 0x40)
+                                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                                .build()))
                         .indoorRoom(true)
                         .build();
                 runtime.tick(EntityTestFrames.frame(runtime, 0, point[0], point[1], () -> 0));
@@ -58,14 +57,14 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
 
     @Test
     void moldormContactUsesTheLargerLinkRecoilMagnitude() {
-        var enemy = new linksawakening.world.entity.RoomEntityBuilder()
+        var enemy = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x59)
                 .at(0x40, 0x50)
                 .spriteDefinition(pairDefinition(0x59, 2))
                 .build();
         var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
-        var events = runtime.resolveCombat(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0);
+        var events = runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0));
         assertEquals(1, events.size());
         assertEquals(
                 new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),
@@ -78,7 +77,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntity initialEntity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity initialEntity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM)
                 .at(0x50, 0x60)

@@ -35,16 +35,16 @@ public final class WarpMotion {
         this.romData = Arrays.copyOf(romData, romData.length);
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int state,
-            int countdown,
-            int mapId,
-            int roomId,
-            boolean minibossReady,
-            int linkX,
-            int linkY,
-            int linkZ) {
+    public Update advance(WarpFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int state = inputs.state();
+        int countdown = inputs.countdown();
+        int mapId = inputs.mapId();
+        int roomId = inputs.roomId();
+        boolean minibossReady = inputs.minibossReady();
+        int linkX = inputs.linkX();
+        int linkY = inputs.linkY();
+        int linkZ = inputs.linkZ();
         if (entity == null || entity.type() != ENTITY_TYPE) {
             throw new IllegalArgumentException("WarpMotion requires entity-$61");
         }

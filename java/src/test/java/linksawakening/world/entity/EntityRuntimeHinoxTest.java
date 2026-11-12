@@ -15,7 +15,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxSkipsItsInteractiveHandlerAndTimersDuringNonInteractiveFrames() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
@@ -45,7 +45,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxSkipsItsHandlerAndTimersOutsideTheRomTransitionSequence() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
@@ -76,7 +76,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxInactiveDeathUsesSharedArmosCountdownsAndRoomStatus() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
@@ -117,7 +117,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxRunsBossIntroWhenInteractive() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
@@ -136,7 +136,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxStateFourSkipsGenericSwordAndContactCombat() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
@@ -146,9 +146,10 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, HinoxMotion.STATE_GRAB);
         EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 1);
 
-        assertTrue(runtime.resolveCombat(0, 0x40, 0x40, false, true, false, 0, 0, 0, 0)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
-        assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true, true, 0x40, 0x10, 0x40, 0x10)
+        assertTrue(runtime.resolveCombat(
+                        new EntitySwordContactFrame(1, 0x40, 0x40, false, true, true, 0x40, 0x10, 0x40, 0x10))
                 .isEmpty());
         assertEquals(
                 EntityStatus.ACTIVE,
@@ -158,7 +159,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxUsesBooleanBackgroundCollisionWhenRichProbeIsAbsent() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
@@ -183,7 +184,7 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
 
     @Test
     void hinoxGrowlAndBounceUseTheirRomAudioChannels() {
-        RoomEntity hinox = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity hinox = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(HinoxMotion.ENTITY_TYPE)
                 .at(0x50, 0x40)

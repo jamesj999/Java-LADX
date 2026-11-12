@@ -10,33 +10,33 @@ interface EntityCombatResolverServices {
 
     linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers();
 
-    linksawakening.world.entity.EntityBackgroundMechanics backgroundMechanics();
+    EntityBackgroundMechanics backgroundMechanics();
 
-    linksawakening.world.entity.EntityBombInteractions bombInteractions();
+    EntityBombInteractions bombInteractions();
 
-    linksawakening.world.entity.EntityBossRewards bossRewards();
+    EntityBossRewards bossRewards();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityEventChannels events();
+    EntityEventChannels events();
 
-    linksawakening.world.entity.EntityFrameContext frameContext(int frameCounter);
+    EntityFrameContext frameContext(int frameCounter);
 
-    linksawakening.world.entity.EntityLinkState linkState();
+    EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityRoomInspection roomInspection();
+    EntityRoomInspection roomInspection();
 
-    linksawakening.world.entity.EntitySlotProperties slotProperties();
+    EntitySlotProperties slotProperties();
 
-    linksawakening.world.entity.RomEnemyCombatTables enemyCombatTables();
+    RomEnemyCombatTables enemyCombatTables();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
-    linksawakening.world.entity.SlimeEyeController slimeEye();
+    SlimeEyeController slimeEye();
 
     static EntityCombatResolverServices bind(RoomEntityRuntime r) {
         return new EntityCombatResolverServices() {
@@ -52,59 +52,59 @@ interface EntityCombatResolverServices {
                 return r.spriteHandlers;
             }
 
-            public linksawakening.world.entity.EntityBackgroundMechanics backgroundMechanics() {
+            public EntityBackgroundMechanics backgroundMechanics() {
                 return r.backgroundMechanics;
             }
 
-            public linksawakening.world.entity.EntityBombInteractions bombInteractions() {
+            public EntityBombInteractions bombInteractions() {
                 return r.bombInteractions;
             }
 
-            public linksawakening.world.entity.EntityBossRewards bossRewards() {
+            public EntityBossRewards bossRewards() {
                 return r.bossRewards;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityEventChannels events() {
+            public EntityEventChannels events() {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityFrameContext frameContext(int frameCounter) {
+            public EntityFrameContext frameContext(int frameCounter) {
                 return r.frameContext(frameCounter);
             }
 
-            public linksawakening.world.entity.EntityLinkState linkState() {
+            public EntityLinkState linkState() {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityRoomInspection roomInspection() {
+            public EntityRoomInspection roomInspection() {
                 return r.roomInspection;
             }
 
-            public linksawakening.world.entity.EntitySlotProperties slotProperties() {
+            public EntitySlotProperties slotProperties() {
                 return r.slotProperties;
             }
 
-            public linksawakening.world.entity.RomEnemyCombatTables enemyCombatTables() {
+            public RomEnemyCombatTables enemyCombatTables() {
                 return r.enemyCombatTables;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
 
-            public linksawakening.world.entity.SlimeEyeController slimeEye() {
+            public SlimeEyeController slimeEye() {
                 return r.slimeEye;
             }
         };

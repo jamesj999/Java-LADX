@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class SideViewPotMotionTest {
@@ -82,7 +83,7 @@ final class SideViewPotMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xD6)
                 .at(x, y)

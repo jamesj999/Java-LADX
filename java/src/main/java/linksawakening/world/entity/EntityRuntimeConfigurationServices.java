@@ -6,29 +6,29 @@ import linksawakening.world.entity.motion.*;
 interface EntityRuntimeConfigurationServices {
     linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers();
 
-    linksawakening.world.entity.EntityBossRewards bossRewards();
+    EntityBossRewards bossRewards();
 
-    linksawakening.world.entity.EntityLiftThrowController liftThrow();
+    EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityLinkState linkState();
+    EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityPickupController pickups();
+    EntityPickupController pickups();
 
-    linksawakening.world.entity.EntityPresentationState presentationState();
+    EntityPresentationState presentationState();
 
-    linksawakening.world.entity.EntityProjectileController projectiles();
+    EntityProjectileController projectiles();
 
-    linksawakening.world.entity.EntityRoomVariables roomVariables();
+    EntityRoomVariables roomVariables();
 
-    linksawakening.world.entity.EntityStoryController story();
+    EntityStoryController story();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
-    linksawakening.world.entity.SlimeEyeController slimeEye();
+    SlimeEyeController slimeEye();
 
     static EntityRuntimeConfigurationServices bind(RoomEntityRuntime r) {
         return new EntityRuntimeConfigurationServices() {
@@ -36,51 +36,51 @@ interface EntityRuntimeConfigurationServices {
                 return r.spriteHandlers;
             }
 
-            public linksawakening.world.entity.EntityBossRewards bossRewards() {
+            public EntityBossRewards bossRewards() {
                 return r.bossRewards;
             }
 
-            public linksawakening.world.entity.EntityLiftThrowController liftThrow() {
+            public EntityLiftThrowController liftThrow() {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityLinkState linkState() {
+            public EntityLinkState linkState() {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityPickupController pickups() {
+            public EntityPickupController pickups() {
                 return r.pickups;
             }
 
-            public linksawakening.world.entity.EntityPresentationState presentationState() {
+            public EntityPresentationState presentationState() {
                 return r.entityState.presentationState;
             }
 
-            public linksawakening.world.entity.EntityProjectileController projectiles() {
+            public EntityProjectileController projectiles() {
                 return r.projectiles;
             }
 
-            public linksawakening.world.entity.EntityRoomVariables roomVariables() {
+            public EntityRoomVariables roomVariables() {
                 return r.entityState.roomVariables;
             }
 
-            public linksawakening.world.entity.EntityStoryController story() {
+            public EntityStoryController story() {
                 return r.story;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
 
-            public linksawakening.world.entity.SlimeEyeController slimeEye() {
+            public SlimeEyeController slimeEye() {
                 return r.slimeEye;
             }
         };

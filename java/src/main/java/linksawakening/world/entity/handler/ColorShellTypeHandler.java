@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ColorShellFrame;
 import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** ROM handler stages for ColorShellType. */
@@ -60,7 +61,7 @@ final class ColorShellTypeHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             ColorShellMotion.Update shellUpdate = state.motion(ColorShellMotion.class, ColorShellMotion::new)
-                    .advance(
+                    .advance(new ColorShellFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -69,7 +70,7 @@ final class ColorShellTypeHandler {
                             frameInput.backgroundCollision(),
                             state.slot().ignoreHits(slotState.entity().slot()),
                             state.roomInspection().colorShellWorld(),
-                            state.entities());
+                            state.entities()));
             slotState.updated(shellUpdate.entity());
             state.slot().setIgnoreHits(slotState.entity().slot(), shellUpdate.nextIgnoreHitsCountdown());
             if (shellUpdate.unloadRequested()) {

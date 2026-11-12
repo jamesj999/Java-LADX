@@ -12,6 +12,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.UrchinFrame;
 import linksawakening.world.entity.motion.UrchinMotion;
 
 /** ROM handler stages for Urchin. */
@@ -38,7 +39,7 @@ final class UrchinHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             UrchinMotion.Update urchinUpdate = state.motion(UrchinMotion.class, UrchinMotion::new)
-                    .advance(
+                    .advance(new UrchinFrame(
                             slotState.updated(),
                             frameInput.frame(),
                             state.slot().physicsFlags(slot),
@@ -48,7 +49,7 @@ final class UrchinHandler {
                             frameInput.projectileLinkState().usingShield(),
                             frameInput.swordCollisionActive(),
                             timerGates.handlerLinkCollisionEnabled(),
-                            urchinBackgroundInteraction);
+                            urchinBackgroundInteraction));
             slotState.updated(urchinUpdate.entity());
             state.slot().setPhysicsFlags(slot, urchinUpdate.physicsFlags());
             if (urchinUpdate.pushed()) {

@@ -13,6 +13,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BombiteFrame;
 import linksawakening.world.entity.motion.BombiteMotion;
 
 /** ROM handler stages for BombiteType. */
@@ -54,7 +55,7 @@ final class BombiteTypeHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             BombiteMotion.Update bombiteUpdate = state.motion(BombiteMotion.class, BombiteMotion::new)
-                    .advance(
+                    .advance(new BombiteFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -67,7 +68,7 @@ final class BombiteTypeHandler {
                             state.slot().ignoreHits(slotState.entity().slot()),
                             state.link().runningWithPegasusBoots(),
                             frameInput.randomByteSupplier(),
-                            frameInput.backgroundCollision());
+                            frameInput.backgroundCollision()));
             slotState.updated(withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant()));
             presentationFlags.preserveBombitePresentation(true);
             state.slot().setTransitionCountdown(slotState.entity().slot(), bombiteUpdate.transitionCountdown());

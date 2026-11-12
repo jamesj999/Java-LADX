@@ -168,7 +168,7 @@ final class ArrowPauseTest {
         if (type != 0) {
             slots.set(
                     0,
-                    new linksawakening.world.entity.RoomEntityBuilder()
+                    new RoomEntityBuilder()
                             .type(type)
                             .at(0x40, 0x50)
                             .spriteDefinition(catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1))

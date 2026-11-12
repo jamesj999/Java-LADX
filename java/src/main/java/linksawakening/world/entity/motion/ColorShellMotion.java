@@ -71,7 +71,7 @@ public final class ColorShellMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(
+        return advance(new ColorShellFrame(
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -80,7 +80,7 @@ public final class ColorShellMotion {
                 backgroundCollision,
                 0,
                 ColorShellWorld.none(),
-                List.of(entity));
+                List.of(entity)));
     }
 
     public Update advance(
@@ -91,7 +91,7 @@ public final class ColorShellMotion {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int ignoreHitsCountdown) {
-        return advance(
+        return advance(new ColorShellFrame(
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -100,19 +100,19 @@ public final class ColorShellMotion {
                 backgroundCollision,
                 ignoreHitsCountdown,
                 ColorShellWorld.none(),
-                List.of(entity));
+                List.of(entity)));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            int ignoreHitsCountdown,
-            ColorShellWorld world,
-            List<RoomEntity> allEntities) {
+    public Update advance(ColorShellFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        ColorShellWorld world = inputs.world();
+        java.util.List<RoomEntity> allEntities = inputs.allEntities();
         if (entity == null || randomByteSupplier == null) {
             throw new IllegalArgumentException("Color Shell motion inputs cannot be null");
         }

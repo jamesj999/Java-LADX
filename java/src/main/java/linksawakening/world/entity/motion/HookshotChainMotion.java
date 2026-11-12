@@ -122,7 +122,7 @@ public final class HookshotChainMotion {
 
     public static State enterPulling(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -134,12 +134,12 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 PULLING_STATE,
-                false);
+                false));
     }
 
     public static State deferWallPoke(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -151,12 +151,12 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                true);
+                true));
     }
 
     public static State completeWallPoke(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -168,14 +168,14 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                false);
+                false));
     }
 
     public static State rollbackTo(State state, int x, int y) {
         requireState(state);
         validateByte(x, "x");
         validateByte(y, "y");
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 x,
                 y,
@@ -187,7 +187,7 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                state.wallCollisionPending());
+                state.wallCollisionPending()));
     }
 
     public static int speedXForDirection(int direction) {
@@ -225,7 +225,7 @@ public final class HookshotChainMotion {
 
     public static State decrementTransitionCountdown(State state) {
         requireState(state);
-        return copy(
+        return copy(new HookshotChainSnapshot(
                 state,
                 state.x(),
                 state.y(),
@@ -237,7 +237,7 @@ public final class HookshotChainMotion {
                 state.speedXAccumulator(),
                 state.speedYAccumulator(),
                 state.entityState(),
-                state.wallCollisionPending());
+                state.wallCollisionPending()));
     }
 
     public static Step advance(State state, int linkX, int linkY, boolean blocked, boolean tickCountdown) {
@@ -416,19 +416,19 @@ public final class HookshotChainMotion {
         }
     }
 
-    private static State copy(
-            State state,
-            int x,
-            int y,
-            int z,
-            int direction,
-            int speedX,
-            int speedY,
-            int transitionCountdown,
-            int speedXAccumulator,
-            int speedYAccumulator,
-            int entityState,
-            boolean wallCollisionPending) {
+    private static State copy(HookshotChainSnapshot inputs) {
+        HookshotChainMotion.State state = inputs.state();
+        int x = inputs.x();
+        int y = inputs.y();
+        int z = inputs.z();
+        int direction = inputs.direction();
+        int speedX = inputs.speedX();
+        int speedY = inputs.speedY();
+        int transitionCountdown = inputs.transitionCountdown();
+        int speedXAccumulator = inputs.speedXAccumulator();
+        int speedYAccumulator = inputs.speedYAccumulator();
+        int entityState = inputs.entityState();
+        boolean wallCollisionPending = inputs.wallCollisionPending();
         return new State(
                 x,
                 y,

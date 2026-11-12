@@ -61,14 +61,12 @@ final class ZoraRuntimeTest {
     void usesZorasRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_ZORA)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_ZORA)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -88,7 +86,7 @@ final class ZoraRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity zora = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZORA)
                 .at(0x40, 0x40)
@@ -118,7 +116,7 @@ final class ZoraRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity zora = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZORA)
                 .at(0x40, 0x40)
@@ -198,7 +196,7 @@ final class ZoraRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
-        RoomEntity zora = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity zora = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZORA)
                 .at(0x40, 0x40)
@@ -224,7 +222,7 @@ final class ZoraRuntimeTest {
     void roomRuntimeSpawnsZoraProjectileInHighestFreeSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity zora = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity zora = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZORA)
                 .at(0x40, 0x40)

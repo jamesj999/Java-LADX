@@ -17,14 +17,13 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
     void hidingZolRequestsTheRomJumpJingleForEachLaunchedLeap() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
@@ -64,14 +63,13 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
     void hidingZolRestoresHarmlessPhysicsWhenItsFinalLeapHides() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
@@ -91,7 +89,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
     @Test
     void combatUsesTheEntityVisualYWhenHidingZolIsAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0x9B, 4);
-        RoomEntity airborne = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity airborne = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x9B)
                 .at(64, 64)
@@ -101,7 +99,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
 
         assertTrue(RoomEntityCombatRules.overlapsLink(airborne, 64, 48));
         assertFalse(RoomEntityCombatRules.overlapsLink(airborne, 64, 64));
-        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(airborne, 72, 1, 56, 1));
-        assertFalse(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(airborne, 72, 1, 72, 1));
+        assertTrue(EntityCombatTestAccess.overlapsSword(airborne, 72, 1, 56, 1));
+        assertFalse(EntityCombatTestAccess.overlapsSword(airborne, 72, 1, 72, 1));
     }
 }

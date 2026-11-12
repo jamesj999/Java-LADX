@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class MimicMotionTest {
@@ -48,7 +49,7 @@ final class MimicMotionTest {
         RoomEntity entity = entity(0x40, 0x50, 4);
         MimicMotion motion = new MimicMotion();
         motion.initialize(entity.slot());
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0xF0, 0x00);
+        MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0xF0, 0x00);
 
         MimicMotion.Update update = motion.advance(entity, 0x00, 0x02, 0x01, null);
 
@@ -64,7 +65,7 @@ final class MimicMotionTest {
         RoomEntity entity = entity(0x40, 0x50, 4);
         MimicMotion motion = new MimicMotion();
         motion.initialize(entity.slot());
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0x10, 0x00);
+        MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0x10, 0x00);
 
         MimicMotion.Update update = motion.advance(
                 entity,
@@ -82,7 +83,7 @@ final class MimicMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x28)
                 .at(x, y)

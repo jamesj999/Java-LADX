@@ -130,6 +130,7 @@ import linksawakening.world.entity.motion.PokeyMotion;
 import linksawakening.world.entity.motion.RoosterMotion;
 import linksawakening.world.entity.motion.SandCrabMotion;
 import linksawakening.world.entity.motion.UrchinMotion;
+import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.entity.motion.WitchRatMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
@@ -394,6 +395,6 @@ public final class EntityTypeRules {
     }
 
     public static boolean isDungeonWarpType(int type) {
-        return type == linksawakening.world.entity.motion.WarpMotion.ENTITY_TYPE;
+        return type == WarpMotion.ENTITY_TYPE;
     }
 }

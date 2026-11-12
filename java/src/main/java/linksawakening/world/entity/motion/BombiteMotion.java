@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -41,18 +40,18 @@ public final class BombiteMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int transitionCountdown,
-            int slowTransitionCountdown,
-            int privateCountdown1,
-            int enemyIgnoreHitsCountdown,
-            boolean runningWithPegasusBoots,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advance(BombiteFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int transitionCountdown = inputs.transitionCountdown();
+        int slowTransitionCountdown = inputs.slowTransitionCountdown();
+        int privateCountdown1 = inputs.privateCountdown1();
+        int enemyIgnoreHitsCountdown = inputs.enemyIgnoreHitsCountdown();
+        boolean runningWithPegasusBoots = inputs.runningWithPegasusBoots();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);

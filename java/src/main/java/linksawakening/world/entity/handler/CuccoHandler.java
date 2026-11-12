@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.CuccoInteractionFrame;
 import linksawakening.world.entity.motion.CuccoMotion;
 
 /** ROM handler stages for Cucco. */
@@ -28,7 +29,7 @@ final class CuccoHandler {
                 && timerGates.handlerLinkCollisionEnabled()) {
 
             CuccoMotion.Update cuccoUpdate = state.motion(CuccoMotion.class, CuccoMotion::new)
-                    .advance(
+                    .advance(new CuccoInteractionFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             state.slot().transitionCountdown(slotState.entity().slot()),
@@ -44,7 +45,7 @@ final class CuccoHandler {
                             state.roomInspection().indoorRoom(),
                             state.story().followingNpcState().marinFollowing(),
                             state.lifecycle().transitionSequenceCounter(),
-                            state.enemySpawns().canSpawnCuccoAngry());
+                            state.enemySpawns().canSpawnCuccoAngry()));
             slotState.updated(cuccoUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), cuccoUpdate.transitionCountdown());
             state.slot().setFlashCountdown(slotState.entity().slot(), cuccoUpdate.flashCountdown());

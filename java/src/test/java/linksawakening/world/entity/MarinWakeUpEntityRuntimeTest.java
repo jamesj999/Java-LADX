@@ -19,7 +19,7 @@ final class MarinWakeUpEntityRuntimeTest {
         for (int slot = 0; slot < 16; slot++) slots.add(RoomEntity.disabled(slot));
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x3E)
                         .at(80, 56)
@@ -74,7 +74,7 @@ final class MarinWakeUpEntityRuntimeTest {
                 0x3E, 5, 0x4E0A, EntitySpriteDefinition.Shape.PAIR, 6, Collections.nCopies(8, variant));
         slots.set(
                 3,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(3)
                         .sourceLoadOrder(0)
                         .type(0x3E)

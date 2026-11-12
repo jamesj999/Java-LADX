@@ -338,7 +338,7 @@ final class MagicRodRuntimeTest {
         List<RoomEntity> slots = new ArrayList<>(emptySnapshot().slots());
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .type(type)
                         .at(x, y)
                         .spriteDefinition(catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1))

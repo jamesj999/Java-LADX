@@ -13,7 +13,7 @@ final class RoamingSimultaneousContactTest {
     void bodyContactRetainsRecoilWhenTheSameFrameAlsoDamagesTheEnemy() {
         for (int type : new int[] {0x09, 0x0B}) {
             var runtime = enemy(type);
-            var event = runtime.resolveCombat(135, 51, 88, false, true, true, 66, 5, 90, 5)
+            var event = runtime.resolveCombat(new EntitySwordContactFrame(135, 51, 88, false, true, true, 66, 5, 90, 5))
                     .getFirst();
 
             assertTrue(event.swordHit());
@@ -28,7 +28,7 @@ final class RoamingSimultaneousContactTest {
     void swordHitOnTheOtherCollisionParityDoesNotInventBodyRecoil() {
         for (int type : new int[] {0x09, 0x0B}) {
             var runtime = enemy(type);
-            var event = runtime.resolveCombat(134, 51, 88, false, true, true, 66, 5, 90, 5)
+            var event = runtime.resolveCombat(new EntitySwordContactFrame(134, 51, 88, false, true, true, 66, 5, 90, 5))
                     .getFirst();
 
             assertTrue(event.swordHit());
@@ -54,7 +54,7 @@ final class RoamingSimultaneousContactTest {
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
         slots.set(
                 2,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(2)
                         .sourceLoadOrder(0)
                         .type(type)

@@ -20,13 +20,12 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_MIMIC, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_MIMIC)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_MIMIC)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -45,7 +44,8 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
         assertEquals(0x08, runtime.options1(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x18, contact.get(0).linkDamage());
     }
@@ -57,13 +57,12 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -82,7 +81,8 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         assertEquals(0x3E, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(0x08, runtime.options1(0));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x3E, 0x50, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
     }
@@ -94,13 +94,12 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -111,8 +110,8 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0, null, null, 0, 3, 0));
         assertEquals(0x48, runtime.options1(0));
 
-        List<EntityCombatEvent> swordHit =
-                runtime.resolveCombat(1, 0x50, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
+                new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x40, 0x10, 0x50, 0x10));
 
         assertEquals(1, swordHit.size());
         assertEquals(0, swordHit.get(0).enemyDamage());
@@ -129,13 +128,12 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_MASKED_MIMIC_GORIYA)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -148,8 +146,8 @@ final class EntityRuntimeMimicTest extends EntityRuntimeTestSupport {
         assertEquals(0x08, runtime.options1(0));
 
         RoomEntity maskedMimic = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> swordHit = runtime.resolveCombat(
-                2, 0x40, 0x70, false, true, true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08);
+        List<EntityCombatEvent> swordHit = runtime.resolveCombat(new EntitySwordContactFrame(
+                2, 0x40, 0x70, false, true, true, maskedMimic.x() + 0x08, 0x08, maskedMimic.y() + 0x08, 0x08));
 
         assertEquals(1, swordHit.size());
         assertEquals(1, swordHit.get(0).enemyDamage());

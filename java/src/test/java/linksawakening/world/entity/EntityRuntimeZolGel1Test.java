@@ -10,6 +10,8 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.MotionTestFixture;
+import linksawakening.world.entity.motion.ZolGelFrame;
 import linksawakening.world.entity.motion.ZolGelMotion;
 import org.junit.jupiter.api.Test;
 
@@ -26,20 +28,20 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             // level-zero context keeps the one-health entity active so the
             // following handler tick can observe that recoil step.
             EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                            snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                    .sourceLoadOrder(0)
-                                    .type(type)
-                                    .at(64, 64)
-                                    .spriteDefinition(definition)
-                                    .build()))
+            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                            .sourceLoadOrder(0)
+                            .type(type)
+                            .at(64, 64)
+                            .spriteDefinition(definition)
+                            .build()))
                     .indoorRoom(false)
                     .randomByteSupplier(sequence(0x01))
                     .spriteHandlers(null)
                     .enemyCombatTables(tables)
                     .build();
 
-            runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+            runtime.resolveCombat(
+                    new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
             assertEquals(61, runtime.inspection().snapshot().slots().get(0).x(), "type=" + Integer.toHexString(type));
@@ -55,20 +57,20 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         for (int type : types) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
             EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-            RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                            snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                    .sourceLoadOrder(0)
-                                    .type(type)
-                                    .at(64, 64)
-                                    .spriteDefinition(definition)
-                                    .build()))
+            RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                            .sourceLoadOrder(0)
+                            .type(type)
+                            .at(64, 64)
+                            .spriteDefinition(definition)
+                            .build()))
                     .indoorRoom(false)
                     .randomByteSupplier(sequence(0x01))
                     .spriteHandlers(null)
                     .enemyCombatTables(tables)
                     .build();
 
-            runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+            runtime.resolveCombat(
+                    new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
             RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
@@ -83,13 +85,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolGelPhysicsUsesRomTemporaryIgnoreHitsForRichBackgroundProbes() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1B)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1B)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         List<Integer> observedIgnoreHits = new ArrayList<>();
         runtime.configuration().setBackgroundInteraction(new RoomEntityBackgroundInteraction() {
@@ -120,14 +121,14 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolGelPhysicsSkipsRichBackgroundProbeWhilePrivateCountdownOneIsActive() {
         ZolGelMotion motion = new ZolGelMotion();
-        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity entity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x1B)
                 .at(64, 64)
                 .spriteDefinition(pairDefinition(0x1B, 2))
                 .build();
         motion.prepareChestSpawn(entity.slot());
-        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdown1ForTest(motion, entity.slot(), 2);
+        MotionTestFixture.setPrivateCountdown1ForTest(motion, entity.slot(), 2);
         List<Integer> observedIgnoreHits = new ArrayList<>();
         RoomEntityBackgroundInteraction background = new RoomEntityBackgroundInteraction() {
             @Override
@@ -143,11 +144,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             }
         };
 
-        ZolGelMotion.Update first = motion.advance(entity, 80, 64, 0, () -> 0, background, 0, 0, false);
+        ZolGelMotion.Update first =
+                motion.advance(new ZolGelFrame(entity, 80, 64, 0, () -> 0, background, 0, 0, false));
         assertTrue(observedIgnoreHits.isEmpty());
         assertEquals(1, motion.privateCountdown1(entity.slot()));
 
-        motion.advance(first.entity(), 80, 64, 0, () -> 0, background, 1, 0, false);
+        motion.advance(new ZolGelFrame(first.entity(), 80, 64, 0, () -> 0, background, 1, 0, false));
         assertEquals(List.of(0x02), observedIgnoreHits);
         assertEquals(0, motion.privateCountdown1(entity.slot()));
     }
@@ -155,7 +157,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void gelClingingStateRunsTheRomBackgroundProbeAfterLinkRelativePlacement() {
         ZolGelMotion motion = new ZolGelMotion();
-        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity entity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x1C)
                 .at(64, 64)
@@ -182,7 +184,7 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
             }
         };
 
-        motion.advance(entity, 80, 64, 0, () -> 0, background, 0, 0x09, false);
+        motion.advance(new ZolGelFrame(entity, 80, 64, 0, () -> 0, background, 0, 0x09, false));
 
         assertEquals(List.of(0), observedDirections);
         assertEquals(List.of(0x09), observedIgnoreHits);
@@ -191,14 +193,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolUsesTheRomInchingAndLeapStateLoop() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .build();
@@ -225,14 +226,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         RomEnemyCombatTables combatTables = new RomEnemyCombatTables(rom);
         assertEquals(1, combatTables.initialHealth(0x1B));
         EntitySpriteDefinition definition = catalog.forEntityType(0x1B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .spriteHandlers(catalog)
@@ -241,7 +241,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemies().enemyHealth(0));
-        List<EntityCombatEvent> sword = runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -283,13 +284,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolStateOneNonLeapBranchClearsStateRatherThanCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1B)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1B)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .build();
@@ -319,13 +319,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void zolStateTwoSetsItsSpeedBeforeTheRomPhysicsStep() {
         EntitySpriteDefinition definition = pairDefinition(0x1B, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1B)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1B)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
@@ -347,38 +346,37 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void gelUsesTheRomSmallEnemyHitboxAndClingingCollisionState() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1C)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1C)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
-        assertTrue(
-                runtime.resolveCombat(1, 72, 64, false, true, false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 64, false, true, false, 0, 0, 0, 0))
+                .isEmpty());
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).linkDamage());
         assertFalse(contact.get(0).linkCollisionResponse().active());
         assertEquals(4, runtime.enemies().zolState(0));
-        assertTrue(
-                runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0).isEmpty());
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
+                .isEmpty());
     }
 
     @Test
     void gelExportsClingFlagOnlyWhileItsInteractiveHandlerIsAttached() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1C)
-                                .at(64, 64)
-                                .spriteDefinition(pairDefinition(0x1C, 2))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1C)
+                        .at(64, 64)
+                        .spriteDefinition(pairDefinition(0x1C, 2))
+                        .build()))
                 .build();
-        runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
         assertFalse(runtime.gelClingingToLink());
         runtime.configuration().setJoypadHeld(true);
         for (int frame = 0; frame < 43; frame++) {
@@ -396,18 +394,18 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     @Test
     void gelReleasesClingingStateAfterRomJoypadCountdownDecrementsThreeTimesPerFrame() {
         EntitySpriteDefinition definition = pairDefinition(0x1C, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x1C)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1C)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         assertEquals(
                 1,
-                runtime.resolveCombat(1, 68, 64, false, true, false, 0, 0, 0, 0).size());
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
+                        .size());
         assertEquals(4, runtime.enemies().zolState(0));
         assertEquals(0x80, runtime.enemies().zolTransitionCountdown(0));
 
@@ -432,14 +430,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheRomProximityRevealAndRisePhases() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x02))
                 .build();
@@ -477,20 +474,19 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheRomSwordAndLinkCollisionPhases() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
-        assertTrue(runtime.resolveCombat(1, 72, 72, false, true, true, 72, 1, 72, 1)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         int frame = 1;
@@ -504,12 +500,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         // frame before checking state-3 collision behavior.
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         RoomEntity hidingZol = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(1, hidingZol.x() + 4, hidingZol.y() + 4, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+                new EntitySwordContactFrame(1, hidingZol.x() + 4, hidingZol.y() + 4, false, true, false, 0, 0, 0, 0));
         assertTrue(contact.isEmpty());
 
-        List<EntityCombatEvent> sword =
-                runtime.resolveCombat(1, 120, 120, false, true, true, hidingZol.x() + 8, 1, hidingZol.y() + 8, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(new EntitySwordContactFrame(
+                1, 120, 120, false, true, true, hidingZol.x() + 8, 1, hidingZol.y() + 8, 1));
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(
@@ -521,13 +517,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolUsesTheBankSevenRecoilStepBeforeItsHandler() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(0, 80, 80, 0x30);
@@ -546,13 +541,12 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolPreservesBankSevenRecoilWhenTheBackgroundBlocksIt() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         runtime.configuration()
                 .setBackgroundInteraction((entity, direction, nextX, nextY) ->
@@ -573,14 +567,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolStateThreeMovesWithoutTheLaterBackgroundHelper() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
@@ -618,14 +611,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolFlyingBackgroundHelperForcesTheRomIgnoreHitsValue() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();
@@ -665,14 +657,13 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
     void hidingZolRequestsTheRomJumpJingleWhenItLeavesTheGround() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x9B)
-                                .at(64, 64)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x9B)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x00))
                 .build();

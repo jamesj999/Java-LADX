@@ -18,7 +18,7 @@ class EntityHealthGroupTest {
         }
         var slots = IntStream.range(0, 16)
                 .mapToObj(slot -> slot == 0
-                        ? new linksawakening.world.entity.RoomEntityBuilder()
+                        ? new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x09)
                                 .at(64, 80)
@@ -43,7 +43,7 @@ class EntityHealthGroupTest {
         runtime.entityState.slotView.setHealthGroup(0, 12);
         runtime.lifecycle.disableEntityWithoutPersistence(0);
         assertEquals(0, runtime.entityState.slotView.healthGroup(0));
-        runtime.slots[0] = new linksawakening.world.entity.RoomEntityBuilder()
+        runtime.slots[0] = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x18)
                 .at(64, 80)
@@ -57,7 +57,7 @@ class EntityHealthGroupTest {
     void gibdoTransformationReinitializesGroupFromTheNewType() throws IOException {
         var runtime = runtime();
         var old = runtime.slots[0];
-        runtime.slots[0] = new linksawakening.world.entity.RoomEntityBuilder()
+        runtime.slots[0] = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x1F)
                 .at(old.x(), old.y())
@@ -87,7 +87,7 @@ class EntityHealthGroupTest {
                 .orElseThrow();
         runtime.entityState.slotView.setHealthGroup(0, group);
         runtime.entityState.combatTables.writeEnemyHealth(0, 100);
-        var events = runtime.resolveCombat(1, 100, 100, false, true, true, 48, 32, 64, 32);
+        var events = runtime.resolveCombat(new EntitySwordContactFrame(1, 100, 100, false, true, true, 48, 32, 64, 32));
         assertEquals(1, events.size());
         assertEquals(
                 runtime.enemyCombatTables.resolveSwordDamage(9, group, attack).numericDamage(),

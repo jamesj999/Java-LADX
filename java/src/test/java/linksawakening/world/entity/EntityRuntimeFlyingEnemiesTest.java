@@ -17,7 +17,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void keeseSleepsOutsideTheRomWakeWindowAndWakesInsideIt() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x19)
                 .at(64, 64)
@@ -41,7 +41,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void keeseRetunesItsAngleAndLoadsTheRomSpeedTablesEveryTenFlightFrames() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x19)
                 .at(64, 64)
@@ -65,7 +65,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void keeseUsesTheRomEnemyHitboxCadenceAndContactDamage() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x19)
                 .at(64, 64)
@@ -73,28 +73,30 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> skipped = runtime.resolveCombat(0, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> skipped =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 64, 64, false, true, false, 0, 0, 0, 0));
         assertTrue(skipped.isEmpty());
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).slot());
         assertEquals(0x19, contact.get(0).type());
         assertEquals(4, contact.get(0).linkDamage());
         assertFalse(contact.get(0).swordHit());
 
-        assertTrue(
-                runtime.resolveCombat(1, 73, 64, false, true, false, 0, 0, 0, 0).isEmpty());
-        assertTrue(
-                runtime.resolveCombat(1, 64, 64, true, true, false, 0, 0, 0, 0).isEmpty());
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, false, false, 0, 0, 0, 0)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 73, 64, false, true, false, 0, 0, 0, 0))
+                .isEmpty());
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, true, true, false, 0, 0, 0, 0))
+                .isEmpty());
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, false, false, 0, 0, 0, 0))
                 .isEmpty());
     }
 
     @Test
     void aBasicSwordHitPutsKeeseIntoTheRomDyingState() {
         EntitySpriteDefinition definition = keeseDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x19)
                 .at(64, 64)
@@ -102,7 +104,8 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
@@ -136,7 +139,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatRunsTheRomRestTakeoffAndHeightAnimationStates() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xA0)
                 .at(64, 64)
@@ -170,7 +173,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatUsesTheRomPhaseTablesAfterReachingItsMaximumHeight() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xA0)
                 .at(64, 64)
@@ -201,7 +204,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatIsCombatVulnerableOnlyWhileGrounded() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xA0)
                 .at(64, 64)
@@ -209,12 +212,14 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> grounded = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> grounded =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, grounded.size());
         assertEquals(0x04, grounded.get(0).linkDamage());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
-        List<EntityCombatEvent> airborne = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> airborne =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertTrue(airborne.isEmpty());
     }
 
@@ -222,21 +227,20 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     void peaHatSwordHitConfiguresBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xA0)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xA0)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .spriteHandlers(null)
                 .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+                new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
 
         assertEquals(1, events.size());
         assertEquals(
@@ -259,20 +263,20 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     void peaHatKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xA0)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xA0)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(sequence(0x01))
                 .spriteHandlers(null)
                 .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
                 .build();
 
-        runtime.resolveCombat(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging);
+        runtime.resolveCombat(
+                new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
@@ -286,7 +290,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatRestoresItsPositionWhenTheRomBackgroundHelperBlocksRightwardMotion() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xA0)
                 .at(64, 64)
@@ -324,19 +328,19 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
     @Test
     void peaHatUsesTheRomSwordClinkPathWhileAirborne() {
         EntitySpriteDefinition definition = pairDefinition(0xA0, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xA0)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xA0)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(1, runtime.enemies().peaHatState(0));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(1, 120, 120, false, false, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, false, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.get(0);

@@ -118,17 +118,17 @@ public final class SecretSeashellMotion {
      * Advances the exact hidden/reveal branch and the common top-down
      * bouncing physics used after a shell has become visible.
      */
-    public Update advance(
-            RoomEntity entity,
-            int roomId,
-            int frameCounter,
-            boolean roomTransitionActive,
-            boolean screenShakeActive,
-            boolean pegasusCollisionActive,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(
+    public Update advance(SecretSeashellFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int roomId = inputs.roomId();
+        int frameCounter = inputs.frameCounter();
+        boolean roomTransitionActive = inputs.roomTransitionActive();
+        boolean screenShakeActive = inputs.screenShakeActive();
+        boolean pegasusCollisionActive = inputs.pegasusCollisionActive();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        return advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,
                 frameCounter,
@@ -140,7 +140,7 @@ public final class SecretSeashellMotion {
                 entity.y() + 0x08,
                 linkEntityX,
                 linkEntityY,
-                objectUnderEntity);
+                objectUnderEntity));
     }
 
     /**
@@ -148,19 +148,19 @@ public final class SecretSeashellMotion {
      * The ROM compares the shell centre against each byte using unsigned
      * wraparound, accepting a half-open $20-byte window on both axes.
      */
-    public Update advance(
-            RoomEntity entity,
-            int roomId,
-            int frameCounter,
-            boolean roomTransitionActive,
-            boolean screenShakeActive,
-            boolean pegasusCollisionActive,
-            int pegasusCollisionX,
-            int pegasusCollisionY,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(
+    public Update advance(SecretSeashellWorldFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int roomId = inputs.roomId();
+        int frameCounter = inputs.frameCounter();
+        boolean roomTransitionActive = inputs.roomTransitionActive();
+        boolean screenShakeActive = inputs.screenShakeActive();
+        boolean pegasusCollisionActive = inputs.pegasusCollisionActive();
+        int pegasusCollisionX = inputs.pegasusCollisionX();
+        int pegasusCollisionY = inputs.pegasusCollisionY();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        return advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,
                 frameCounter,
@@ -172,23 +172,23 @@ public final class SecretSeashellMotion {
                 pegasusCollisionY,
                 linkEntityX,
                 linkEntityY,
-                objectUnderEntity);
+                objectUnderEntity));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int roomId,
-            int frameCounter,
-            boolean roomTransitionActive,
-            boolean screenShakeActive,
-            boolean pegasusCollisionActive,
-            boolean pegasusCollisionCoordinatesKnown,
-            int pegasusCollisionX,
-            int pegasusCollisionY,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
-        return advanceInternal(
+    public Update advance(SecretSeashellInteractionFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int roomId = inputs.roomId();
+        int frameCounter = inputs.frameCounter();
+        boolean roomTransitionActive = inputs.roomTransitionActive();
+        boolean screenShakeActive = inputs.screenShakeActive();
+        boolean pegasusCollisionActive = inputs.pegasusCollisionActive();
+        boolean pegasusCollisionCoordinatesKnown = inputs.pegasusCollisionCoordinatesKnown();
+        int pegasusCollisionX = inputs.pegasusCollisionX();
+        int pegasusCollisionY = inputs.pegasusCollisionY();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
+        return advanceInternal(new SecretSeashellInteractionFrame(
                 entity,
                 roomId,
                 frameCounter,
@@ -200,22 +200,22 @@ public final class SecretSeashellMotion {
                 pegasusCollisionY,
                 linkEntityX,
                 linkEntityY,
-                objectUnderEntity);
+                objectUnderEntity));
     }
 
-    private Update advanceInternal(
-            RoomEntity entity,
-            int roomId,
-            int frameCounter,
-            boolean roomTransitionActive,
-            boolean screenShakeActive,
-            boolean pegasusCollisionActive,
-            boolean pegasusCollisionCoordinatesKnown,
-            int pegasusCollisionX,
-            int pegasusCollisionY,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityObjectSample objectUnderEntity) {
+    private Update advanceInternal(SecretSeashellInteractionFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int roomId = inputs.roomId();
+        int frameCounter = inputs.frameCounter();
+        boolean roomTransitionActive = inputs.roomTransitionActive();
+        boolean screenShakeActive = inputs.screenShakeActive();
+        boolean pegasusCollisionActive = inputs.pegasusCollisionActive();
+        boolean pegasusCollisionCoordinatesKnown = inputs.pegasusCollisionCoordinatesKnown();
+        int pegasusCollisionX = inputs.pegasusCollisionX();
+        int pegasusCollisionY = inputs.pegasusCollisionY();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityObjectSample objectUnderEntity = inputs.objectUnderEntity();
         if (entity == null) {
             throw new IllegalArgumentException("Secret seashell entity cannot be null");
         }

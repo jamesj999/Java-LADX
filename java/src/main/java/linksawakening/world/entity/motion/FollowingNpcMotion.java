@@ -65,19 +65,20 @@ public final class FollowingNpcMotion {
             int linkEntityX,
             int linkEntityY,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision);
+        return advance(new FollowingNpcFrame(
+                entity, frameCounter, linkEntityX, linkEntityY, 0, 0, 0, null, backgroundCollision));
     }
 
-    public RoomEntity advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            int linkDirection,
-            int entityYOffset,
-            LinkPositionHistory linkPositionHistory,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public RoomEntity advance(FollowingNpcFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        int linkDirection = inputs.linkDirection();
+        int entityYOffset = inputs.entityYOffset();
+        LinkPositionHistory linkPositionHistory = inputs.linkPositionHistory();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         return switch (entity.type()) {
             case ENTITY_GHOST -> advanceGhost(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
             case ENTITY_ROOSTER -> advanceRooster(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);

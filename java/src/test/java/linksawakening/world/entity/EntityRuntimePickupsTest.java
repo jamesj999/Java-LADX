@@ -25,7 +25,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     void secretSeashellRemainsHiddenUntilItsRomObjectRevealConditionIsMet() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
                 .at(0x40, 0x50)
@@ -64,7 +64,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     void secretSeashellExceptionsExposePrivateStateFourWithoutRevealing() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
                 .at(0x40, 0x50)
@@ -90,7 +90,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     void secretSeashellTreeRoomsUsePegasusCollisionInsteadOfGrassReveal() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
                 .at(0x40, 0x50)
@@ -126,7 +126,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     void secretSeashellHandlerUnloadsForSwordUpgradeOrCompletedRoomWithoutPersistence() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity shell = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
                 .at(0x40, 0x50)
@@ -149,7 +149,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0, runtime.consumePendingClearedEntityMask());
 
-        shell = new linksawakening.world.entity.RoomEntityBuilder()
+        shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
                 .at(0x40, 0x50)
@@ -176,7 +176,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void collectionUsesThePickupHitboxEdgesFromHitboxPositions() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x2D)
                 .at(24, 32)
@@ -199,13 +199,12 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void keyDropPointNormalVariantImmediatelyAwardsASmallKeyAndClears() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x30)
-                                .at(24, 32)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x30)
+                        .at(24, 32)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         assertEquals(0xB1, runtime.enemies().physicsFlags(0));
@@ -227,14 +226,13 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void keyDropPointDungeonVariantStartsTheHeldRewardTransitionAndUsesRomDialog() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x30)
-                                .at(24, 32)
-                                .spriteDefinition(definition)
-                                .spriteVariant(2)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x30)
+                        .at(24, 32)
+                        .spriteDefinition(definition)
+                        .spriteVariant(2)
+                        .build()))
                 .build();
 
         EntityPickupEvent pickup = runtime.collectIfNeeded(1, 24, 34, false, true);
@@ -261,12 +259,11 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void keyDropPointAtYarnaQuicksandCenterStartsTheRomFallingHandoff() {
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x30)
-                                .at(0x50, 0x48)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x30)
+                        .at(0x50, 0x48)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xCE);
 
@@ -286,7 +283,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void indoorDroppablesRemainHiddenWhenTheirInitTimerExpires() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x37)
                 .at(24, 32)
@@ -319,14 +316,13 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void outdoorDroppableStaysHiddenUntilTheRomPegasusCollisionRevealsIt() {
         EntitySpriteDefinition definition = pairDefinition(0x37, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x37)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x37)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
@@ -364,14 +360,13 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void hidingSlimeKeyUsesTheBuriedRevealPathAndCannotBeCollectedFromGrass() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x3C)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x3C)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x50));
@@ -399,14 +394,13 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void hidingSlimeKeyRunsItsLeafRewardAtTransitionCountdownTen() {
         EntitySpriteDefinition definition = pairDefinition(0x3C, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x3C)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x3C)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomIdForTest(0xC6);
         EntityRuntimeFixture.debug(runtime).setGoldenLeavesCountForTest(5);
@@ -429,14 +423,13 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
 
     @Test
     void completedRoomUnloadsAnInitializingHidingSlimeKeyWithoutPersistence() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x3C)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(pairDefinition(0x3C, 1))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x3C)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(pairDefinition(0x3C, 1))
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityRoomStatusForTest(0x10);
 
@@ -451,13 +444,12 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void revealedDroppableUsesTheRomBlinkSentinelBeforeUnloading() {
         EntitySpriteDefinition definition = pairDefinition(0x2E, 1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x2E)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x2E)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setDroppableRevealedForTest(0, 0x1A);
 

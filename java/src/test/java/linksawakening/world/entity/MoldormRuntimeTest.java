@@ -27,7 +27,7 @@ final class MoldormRuntimeTest {
     void introWaitsThroughTransitionsAndInventoryThenFreezesMoldormForDialogue() throws Exception {
         byte[] rom = loadRom();
         var catalog = new EntitySpriteHandlerCatalog(rom);
-        var boss = new linksawakening.world.entity.RoomEntityBuilder()
+        var boss = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_MOLDORM)
                 .at(64, 64)
@@ -244,14 +244,12 @@ final class MoldormRuntimeTest {
     void exposesMoldormRomCombatAndBossMetadataInLiveRuntime() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_MOLDORM)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_MOLDORM)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -271,14 +269,12 @@ final class MoldormRuntimeTest {
     void liveTickPublishesMoldormDynamicPresentationAndMotionState() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_MOLDORM)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_MOLDORM)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -346,14 +342,12 @@ final class MoldormRuntimeTest {
     void onlyTheFinalTailSegmentTakesSwordDamageAndStartsHitAcceleration() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_MOLDORM)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_MOLDORM)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -368,12 +362,14 @@ final class MoldormRuntimeTest {
                 null,
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
 
-        List<EntityCombatEvent> headClink = runtime.resolveCombat(1, 0x20, 0x20, false, true, true, 0x40, 8, 0x40, 8);
+        List<EntityCombatEvent> headClink =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x20, 0x20, false, true, true, 0x40, 8, 0x40, 8));
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
         assertTrue(headClink.get(0).swordPokeVfx() != null);
 
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
-        List<EntityCombatEvent> tailHit = runtime.resolveCombat(1, 0x20, 0x20, false, true, true, 0, 8, 0, 8);
+        List<EntityCombatEvent> tailHit =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x20, 0x20, false, true, true, 0, 8, 0, 8));
 
         assertEquals(1, tailHit.size());
         assertTrue(tailHit.get(0).swordHit());
@@ -385,12 +381,13 @@ final class MoldormRuntimeTest {
 
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
         List<EntityCombatEvent> flashingHeadClink =
-                runtime.resolveCombat(2, 0x20, 0x20, false, true, true, 0x40, 8, 0x40, 8);
+                runtime.resolveCombat(new EntitySwordContactFrame(2, 0x20, 0x20, false, true, true, 0x40, 8, 0x40, 8));
         assertEquals(1, flashingHeadClink.size());
         assertTrue(flashingHeadClink.get(0).swordPokeVfx() != null);
 
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
-        List<EntityCombatEvent> flashingTailHit = runtime.resolveCombat(2, 0x20, 0x20, false, true, true, 0, 8, 0, 8);
+        List<EntityCombatEvent> flashingTailHit =
+                runtime.resolveCombat(new EntitySwordContactFrame(2, 0x20, 0x20, false, true, true, 0, 8, 0, 8));
         assertTrue(flashingTailHit.isEmpty());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
     }
@@ -399,14 +396,12 @@ final class MoldormRuntimeTest {
     void lethalTailHitRunsRomBossDestructionAndDropsClampedHeartContainer() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_MOLDORM)
-                                .at(0x05, 0x90)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_MOLDORM)
+                        .at(0x05, 0x90)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -422,7 +417,8 @@ final class MoldormRuntimeTest {
                 new EnemyProjectileCollision.LinkState(0x20, 0x20, 0, 0, 0, false)));
         EntityRuntimeFixture.debug(runtime).setEnemyHealthForTest(0, 1);
 
-        List<EntityCombatEvent> lethalHit = runtime.resolveCombat(1, 0x20, 0x20, false, true, true, 0, 8, 0, 8);
+        List<EntityCombatEvent> lethalHit =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x20, 0x20, false, true, true, 0, 8, 0, 8));
 
         assertEquals(1, lethalHit.getFirst().enemyDamage());
         assertEquals(
@@ -520,14 +516,12 @@ final class MoldormRuntimeTest {
     void linkMotionStateDoesNotFreezeMoldormHandler() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_MOLDORM)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_MOLDORM)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -550,7 +544,7 @@ final class MoldormRuntimeTest {
     private static RoomEntity moldorm(byte[] rom) {
         EntitySpriteDefinition definition =
                 new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A);
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_MOLDORM)
                 .at(0x40, 0x40)

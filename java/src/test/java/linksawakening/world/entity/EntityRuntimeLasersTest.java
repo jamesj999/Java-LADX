@@ -19,13 +19,12 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserParentRotatesEveryEightFramesAndSpawnsAnInvisibleRomSensor() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x2A)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x2A)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         for (int frame = 0; frame < 8; frame++) {
@@ -47,13 +46,12 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserParentSpawnsBeamAtRomCountdownTenWithCopiedSpeed() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x2A)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x2A)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setLaserParentForTest(0, 0x10, 0x20, 0xF0);
 
@@ -78,14 +76,14 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserParentDoesNotEmitFiringNoiseWhenTheBeamSlotIsUnavailable() {
         List<RoomEntity> entities = new ArrayList<>();
-        entities.add(new linksawakening.world.entity.RoomEntityBuilder()
+        entities.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x2A)
                 .at(0x40, 0x50)
                 .spriteDefinition(pairDefinition(0x2A, 8))
                 .build());
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            entities.add(new linksawakening.world.entity.RoomEntityBuilder()
+            entities.add(new RoomEntityBuilder()
                     .slot(slot)
                     .sourceLoadOrder(slot)
                     .type(0xFF)
@@ -109,13 +107,12 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
     @Test
     void laserSensorClearsAndArmsItsParentWhenLinkEntersTheRomWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x2A, 8);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x2A)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x2A)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         for (int frame = 0; frame < 8; frame++) {
@@ -138,13 +135,12 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
     @Test
     void laserBeamUsesRomFixedPointMovementAndEmitsTheTransientBeamVfx() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x2B)
-                                .at(0x20, 0x30)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))
-                                .spriteVariant(-1)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x2B)
+                        .at(0x20, 0x30)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))
+                        .spriteVariant(-1)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setLaserBeamForTest(0, 0x10, 0, 0);
 
@@ -163,13 +159,12 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
 
     @Test
     void laserBeamMirrorShieldReflectionReversesTheRomAxisBeforeMovement() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x2B)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))
-                                .spriteVariant(-1)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x2B)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x2B))
+                        .spriteVariant(-1)
+                        .build()))
                 .build();
         EntityRuntimeFixture.debug(runtime).setLaserBeamForTest(0, 0x10, 0, 2);
         EnemyProjectileCollision.LinkState link =

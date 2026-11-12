@@ -16,13 +16,12 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
 
     @Test
     void kanaletKnightAndMadBomberUseNonPersistentGoldenLeafDrops() {
-        RoomEntityRuntime knightRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(3)
-                                .type(0x51)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x51))
-                                .build()))
+        RoomEntityRuntime knightRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(3)
+                        .type(0x51)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x51))
+                        .build()))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(knightRuntime).setEntityMapIdForTest(0x14);
@@ -30,13 +29,12 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
         assertEquals(0xFF, knightRuntime.inspection().snapshot().slots().get(0).sourceLoadOrder());
         assertEquals(0x3C, EntityRuntimeFixture.inspection(knightRuntime).droppedItemForTest(0));
 
-        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(2)
-                                .type(0x93)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x93))
-                                .build()))
+        RoomEntityRuntime bomberRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(2)
+                        .type(0x93)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x93))
+                        .build()))
                 .indoorRoom(false)
                 .build();
         bomberRuntime.tick(EntityTestFrames.frame(bomberRuntime, 0, 0, 0, () -> 0));
@@ -65,7 +63,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity knight = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity knight = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(3)
                 .type(0x51)
@@ -96,14 +94,14 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void bothKanaletBombableWallsSpawnSwordMoblinsCarryingGoldenLeaves() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x94)
                                 .at(0x28, 0x40)
                                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x94))
                                 .spriteVariant(-1)
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(1)
                                 .sourceLoadOrder(1)
                                 .type(0x94)
@@ -139,14 +137,13 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
 
     @Test
     void completedKanaletWallRoomUnloadsWallsWithoutSpawningMoblins() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x94)
-                                .at(0x28, 0x40)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x94))
-                                .spriteVariant(-1)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x94)
+                        .at(0x28, 0x40)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x94))
+                        .spriteVariant(-1)
+                        .build()))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
@@ -165,7 +162,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void kanaletWallWaitsForAFreeSlotBeforeBreaking() {
         List<RoomEntity> entities = new ArrayList<>();
-        entities.add(new linksawakening.world.entity.RoomEntityBuilder()
+        entities.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x94)
                 .at(0x28, 0x40)
@@ -173,7 +170,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .spriteVariant(-1)
                 .build());
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            entities.add(new linksawakening.world.entity.RoomEntityBuilder()
+            entities.add(new RoomEntityBuilder()
                     .slot(slot)
                     .sourceLoadOrder(slot)
                     .type(0xFF)
@@ -202,7 +199,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity wall = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity wall = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x94)
                 .at(0x48, 0x4F)

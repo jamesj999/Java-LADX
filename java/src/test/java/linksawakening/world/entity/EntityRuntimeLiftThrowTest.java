@@ -22,7 +22,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     void villageChildrenThrowABallAndRetireItsSlot() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity kid = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity kid = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x72)
                 .at(0x70, 0x40)
@@ -51,7 +51,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     void powerUpPickupUsesAFinitePresentationRatherThanTheCarryState() {
         for (int type : new int[] {0x33, 0x34}) {
             EntitySpriteDefinition definition = pairDefinition(type, 2);
-            RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+            RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                     .sourceLoadOrder(0)
                     .type(type)
                     .at(24, 32)

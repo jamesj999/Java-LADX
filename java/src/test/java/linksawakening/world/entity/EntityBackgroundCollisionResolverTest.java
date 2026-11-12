@@ -317,7 +317,7 @@ final class EntityBackgroundCollisionResolverTest {
     }
 
     private static RoomEntity entity(int type, int z) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(type)
                 .at(0x40, 0x40)

@@ -62,19 +62,19 @@ final class EntityCombatResolver {
                         new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
     }
 
-    List<EntityCombatEvent> resolveCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
+    List<EntityCombatEvent> resolveCombat(EnemyCombatFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
         EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
         clearDeferredContactRecoil();
         if (attackContext == null) {
@@ -87,7 +87,7 @@ final class EntityCombatResolver {
             RoomEntity entity = runtime.slots()[index];
             if (entity.loaded() && entity.type() == 0x5B) {
                 runtime.slimeEye()
-                        .resolveCombat(
+                        .resolveCombat(new SlimeEyeCombatFrame(
                                 entity,
                                 frameCounter,
                                 linkEntityX,
@@ -100,7 +100,7 @@ final class EntityCombatResolver {
                                 swordY,
                                 swordHeight,
                                 attackContext,
-                                events);
+                                events));
                 continue;
             }
             if (!entity.loaded()

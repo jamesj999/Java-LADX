@@ -12,7 +12,7 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
     @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xD4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(0xD4)
                 .at(0x40, 0x40)
                 .spriteDefinition(definition)
@@ -35,7 +35,7 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
     @Test
     void dynamicMarinRuntimeConsumesTheSharedLinkHistory() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(0xC1)
                 .at(0x10, 0x20)
                 .spriteDefinition(definition)

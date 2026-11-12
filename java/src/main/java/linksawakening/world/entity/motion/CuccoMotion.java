@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -79,23 +78,23 @@ public final class CuccoMotion {
      * the bytes after the shared entity-loop decrement, matching the source
      * call order in AnimateEntities.
      */
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int transitionCountdown,
-            int flashCountdown,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            boolean linkInteractive,
-            boolean powerBraceletHeld,
-            boolean linkAttackStepActive,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            boolean indoorRoom,
-            boolean marinFollowing,
-            int transitionSequenceCounter) {
-        return advance(
+    public Update advance(CuccoFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int transitionCountdown = inputs.transitionCountdown();
+        int flashCountdown = inputs.flashCountdown();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkZ = inputs.linkZ();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean powerBraceletHeld = inputs.powerBraceletHeld();
+        boolean linkAttackStepActive = inputs.linkAttackStepActive();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        boolean indoorRoom = inputs.indoorRoom();
+        boolean marinFollowing = inputs.marinFollowing();
+        int transitionSequenceCounter = inputs.transitionSequenceCounter();
+        return advance(new CuccoInteractionFrame(
                 entity,
                 frameCounter,
                 transitionCountdown,
@@ -111,26 +110,26 @@ public final class CuccoMotion {
                 indoorRoom,
                 marinFollowing,
                 transitionSequenceCounter,
-                true);
+                true));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int transitionCountdown,
-            int flashCountdown,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            boolean linkInteractive,
-            boolean powerBraceletHeld,
-            boolean linkAttackStepActive,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            boolean indoorRoom,
-            boolean marinFollowing,
-            int transitionSequenceCounter,
-            boolean angrySpawnSlotAvailable) {
+    public Update advance(CuccoInteractionFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int transitionCountdown = inputs.transitionCountdown();
+        int flashCountdown = inputs.flashCountdown();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkZ = inputs.linkZ();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean powerBraceletHeld = inputs.powerBraceletHeld();
+        boolean linkAttackStepActive = inputs.linkAttackStepActive();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        boolean indoorRoom = inputs.indoorRoom();
+        boolean marinFollowing = inputs.marinFollowing();
+        int transitionSequenceCounter = inputs.transitionSequenceCounter();
+        boolean angrySpawnSlotAvailable = inputs.angrySpawnSlotAvailable();
         if (entity == null || (entity.type() & 0xFF) != ENTITY_TYPE) {
             throw new IllegalArgumentException("Unsupported Cucco motion entity");
         }

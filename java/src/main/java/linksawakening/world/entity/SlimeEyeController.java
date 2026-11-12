@@ -2,13 +2,13 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntitySnapshots.*;
 
-import java.util.List;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.event.*;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.SlimeEyeHalfMotion;
 
 /** Source-ordered Slime Eye handler (04:496F–504B), including child slot ownership. */
@@ -517,20 +517,20 @@ public final class SlimeEyeController {
                 .add(new EntityCombatEvent(s, 0x5B, 0, false, EntityCombatEvent.SoundChannel.NOISE, id));
     }
 
-    void resolveCombat(
-            RoomEntity e,
-            int frame,
-            int lx,
-            int ly,
-            boolean airborne,
-            boolean interactive,
-            boolean sword,
-            int sx,
-            int sw,
-            int sy,
-            int sh,
-            EnemyAttackContext attack,
-            List<EntityCombatEvent> events) {
+    void resolveCombat(SlimeEyeCombatFrame inputs) {
+        RoomEntity e = inputs.e();
+        int frame = inputs.frame();
+        int lx = inputs.lx();
+        int ly = inputs.ly();
+        boolean airborne = inputs.airborne();
+        boolean interactive = inputs.interactive();
+        boolean sword = inputs.sword();
+        int sx = inputs.sx();
+        int sw = inputs.sw();
+        int sy = inputs.sy();
+        int sh = inputs.sh();
+        EnemyAttackContext attack = inputs.attack();
+        java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events = inputs.events();
         int s = e.slot();
         if (!interactive
                 || e.status() != EntityStatus.ACTIVE
@@ -591,7 +591,7 @@ public final class SlimeEyeController {
             // strike takes the ordinary damage branch without this push.
             EntityCombatEvent.LinkCollisionResponse response = EntityCombatEvent.LinkCollisionResponse.NONE;
             if (isHalf || stretch[s] != 4) {
-                var vector = linksawakening.world.entity.motion.EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
+                var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                         e.x(), e.y(), e.z(), lx, ly, attack.pegasusBoots() ? 0x14 : 0x10);
                 response = new EntityCombatEvent.LinkCollisionResponse(
                         vector.x() & 255, vector.y() & 255, attack.pegasusBoots() ? 0x10 : 4);
@@ -617,8 +617,7 @@ public final class SlimeEyeController {
                     ? 4
                     : runtime.enemyCombatTables()
                             .contactDamageForGroup(runtime.combatTables().readEnemyHealthGroup(s));
-            var vector = linksawakening.world.entity.motion.EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
-                    e.x(), e.y(), e.z(), lx, ly, 0x14);
+            var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(e.x(), e.y(), e.z(), lx, ly, 0x14);
             events.add(new EntityCombatEvent(
                     s,
                     0x5B,

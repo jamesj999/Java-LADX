@@ -56,16 +56,16 @@ public final class ArmosKnightMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            int transitionCountdown,
-            int physicsFlags,
-            int hitboxFlags,
-            int options1,
-            int health) {
+    public Update advance(ArmosKnightFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkZ = inputs.linkZ();
+        int transitionCountdown = inputs.transitionCountdown();
+        int physicsFlags = inputs.physicsFlags();
+        int hitboxFlags = inputs.hitboxFlags();
+        int options1 = inputs.options1();
+        int health = inputs.health();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);

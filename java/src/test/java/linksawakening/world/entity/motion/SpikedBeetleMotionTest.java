@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class SpikedBeetleMotionTest {
     @Test
     void flippedBeetleShakesThenRecoversAndResumesWalking() {
         SpikedBeetleMotion motion = new SpikedBeetleMotion();
-        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity entity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x2C)
                 .at(64, 64)

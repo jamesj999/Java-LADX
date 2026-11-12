@@ -4,77 +4,77 @@ import linksawakening.world.entity.motion.*;
 
 /** Dependencies used by EntityEnemyInspection; resolved lazily to preserve initialization order. */
 interface EntityEnemyInspectionServices {
-    linksawakening.world.entity.EntityBossRewards bossRewards();
+    EntityBossRewards bossRewards();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityEventChannels events();
+    EntityEventChannels events();
 
-    linksawakening.world.entity.EntityLiftThrowController liftThrow();
+    EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityLinkState linkState();
+    EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityRoomInspection inspection();
+    EntityRoomInspection inspection();
 
-    linksawakening.world.entity.EntityRoomInspection roomInspection();
+    EntityRoomInspection roomInspection();
 
-    linksawakening.world.entity.EntityRoomVariables roomVariables();
+    EntityRoomVariables roomVariables();
 
-    linksawakening.world.entity.EntitySlotProperties slotProperties();
+    EntitySlotProperties slotProperties();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
     static EntityEnemyInspectionServices bind(RoomEntityRuntime r) {
         return new EntityEnemyInspectionServices() {
-            public linksawakening.world.entity.EntityBossRewards bossRewards() {
+            public EntityBossRewards bossRewards() {
                 return r.bossRewards;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityEventChannels events() {
+            public EntityEventChannels events() {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityLiftThrowController liftThrow() {
+            public EntityLiftThrowController liftThrow() {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityLinkState linkState() {
+            public EntityLinkState linkState() {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityRoomInspection inspection() {
+            public EntityRoomInspection inspection() {
                 return r.inspection();
             }
 
-            public linksawakening.world.entity.EntityRoomInspection roomInspection() {
+            public EntityRoomInspection roomInspection() {
                 return r.roomInspection;
             }
 
-            public linksawakening.world.entity.EntityRoomVariables roomVariables() {
+            public EntityRoomVariables roomVariables() {
                 return r.entityState.roomVariables;
             }
 
-            public linksawakening.world.entity.EntitySlotProperties slotProperties() {
+            public EntitySlotProperties slotProperties() {
                 return r.slotProperties;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
         };

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -59,7 +60,7 @@ final class BoomerangMotionTest {
     @Test
     void returningVectorUsesTheBoomerangHeight() {
         BoomerangMotion motion = new BoomerangMotion();
-        RoomEntity airborne = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity airborne = new RoomEntityBuilder()
                 .type(BoomerangMotion.ENTITY_TYPE)
                 .at(0x40, 0x40)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE))
@@ -122,7 +123,7 @@ final class BoomerangMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .type(BoomerangMotion.ENTITY_TYPE)
                 .at(x, y)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(BoomerangMotion.ENTITY_TYPE))

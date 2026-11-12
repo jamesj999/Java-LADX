@@ -12,29 +12,29 @@ interface EntityRoomInitializationServices {
 
     int initialHealth(int type);
 
-    linksawakening.world.entity.EntityBombInteractions bombInteractions();
+    EntityBombInteractions bombInteractions();
 
-    linksawakening.world.entity.EntityBossRewards bossRewards();
+    EntityBossRewards bossRewards();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityLiftThrowController liftThrow();
+    EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityPickupController pickups();
+    EntityPickupController pickups();
 
-    linksawakening.world.entity.EntityRewardController rewards();
+    EntityRewardController rewards();
 
-    linksawakening.world.entity.EntitySlotProperties slotProperties();
+    EntitySlotProperties slotProperties();
 
-    linksawakening.world.entity.EntityStoryController story();
+    EntityStoryController story();
 
-    linksawakening.world.entity.GenieEntityController genie();
+    GenieEntityController genie();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
     void initializeHealthGroup(int slot);
 
@@ -56,51 +56,51 @@ interface EntityRoomInitializationServices {
                 return r.initialHealth(type);
             }
 
-            public linksawakening.world.entity.EntityBombInteractions bombInteractions() {
+            public EntityBombInteractions bombInteractions() {
                 return r.bombInteractions;
             }
 
-            public linksawakening.world.entity.EntityBossRewards bossRewards() {
+            public EntityBossRewards bossRewards() {
                 return r.bossRewards;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityLiftThrowController liftThrow() {
+            public EntityLiftThrowController liftThrow() {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityPickupController pickups() {
+            public EntityPickupController pickups() {
                 return r.pickups;
             }
 
-            public linksawakening.world.entity.EntityRewardController rewards() {
+            public EntityRewardController rewards() {
                 return r.rewards;
             }
 
-            public linksawakening.world.entity.EntitySlotProperties slotProperties() {
+            public EntitySlotProperties slotProperties() {
                 return r.slotProperties;
             }
 
-            public linksawakening.world.entity.EntityStoryController story() {
+            public EntityStoryController story() {
                 return r.story;
             }
 
-            public linksawakening.world.entity.GenieEntityController genie() {
+            public GenieEntityController genie() {
                 return r.genie;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
 

@@ -19,7 +19,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void dynamicBowWowRunsItsRomSetupThenFollowerSpeedPhase() {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
                 .forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
                 .at(0x40, 0x50)
                 .spriteDefinition(definition)
@@ -45,7 +45,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
     @Test
     void touchingKidnappedBowWowInTheHideoutStartsFollowingAndItemMusic() {
-        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
                 .at(0x88, 0x40)
@@ -68,7 +68,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void rescuedSourceBowWowImmediatelyUsesTheFollowingSpriteTable() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
                 .at(0x88, 0x40)
@@ -93,7 +93,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     void kidnappedBowWowUsesFollowingTilesBeforeRescueEvenDuringDialog() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
                 .at(0x88, 0x40)
@@ -133,7 +133,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
     @Test
     void kidnappedBowWowWarningStartsAutomaticallyAndDoesNotRepeatWhileIdle() {
-        RoomEntity kid = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity kid = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x71)
                 .at(0x40, 0x40)
@@ -154,7 +154,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
     @Test
     void kidnappedBowWowDoesNotReleaseFromAnUnrelatedRoomCollision() {
-        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
                 .at(0x88, 0x40)
@@ -175,7 +175,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
     @Test
     void kidnappedBowWowDoesNotReleaseWithoutTheSourceCollisionByte() {
-        RoomEntity bowWow = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
                 .at(0x88, 0x40)
@@ -202,13 +202,13 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
         EntitySpriteDefinition targetDefinition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
                                 .at(0x20, 0x20)
                                 .spriteDefinition(bowWowDefinition)
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(10)
                                 .sourceLoadOrder(0)
                                 .type(0x09)
@@ -234,14 +234,14 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
                                 .at(0x40, 0x50)
                                 .spriteDefinition(
                                         catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(6)
                                 .sourceLoadOrder(0)
                                 .type(0x09)
@@ -282,14 +282,14 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
                                 .at(0x40, 0x50)
                                 .spriteDefinition(
                                         catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(6)
                                 .sourceLoadOrder(0)
                                 .type(0xAD)
@@ -330,14 +330,14 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(5)
                                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
                                 .at(0x40, 0x50)
                                 .spriteDefinition(
                                         catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(6)
                                 .sourceLoadOrder(0)
                                 .type(0x3D)

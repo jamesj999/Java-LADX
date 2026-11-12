@@ -79,7 +79,7 @@ public final class ZolGelMotion {
             int linkEntityZ,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advance(
+        return advance(new ZolGelFrame(
                 entity,
                 linkEntityX,
                 linkEntityY,
@@ -88,19 +88,19 @@ public final class ZolGelMotion {
                 backgroundCollision == null ? null : RoomEntityBackgroundInteraction.fromBoolean(backgroundCollision),
                 0,
                 0,
-                false);
+                false));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int frameCounter,
-            int ignoreHitsCountdown,
-            boolean joypadHeld) {
+    public Update advance(ZolGelFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int frameCounter = inputs.frameCounter();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        boolean joypadHeld = inputs.joypadHeld();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type(), randomByteSupplier);

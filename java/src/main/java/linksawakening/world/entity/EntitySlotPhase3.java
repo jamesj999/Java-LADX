@@ -15,31 +15,30 @@ import linksawakening.world.entity.motion.LaserMotion;
 /** Ordered slot dispatch phase 3; false preserves the ROM handler early return. */
 final class EntitySlotPhase3 {
     static boolean run(EntityFrameExecution state) {
-        var slotState = state.slotFrame();
-        var frameInput = state.inputs();
 
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_3_BEFORE_LASER, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_3_BEFORE_LASER, state)) return false;
+        if (!advanceLaserParent(state)) return false;
+        if (!advanceLaserSensor(state)) return false;
+        if (!advanceLaserBeam(state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_3_AFTER_LASER, state)) return false;
+        return true;
+    }
+
+    private static boolean advanceLaserParent(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                && state.motion(LaserMotion.class, LaserMotion::new)
                         .isParent(slotState.entity().slot())) {
-            LaserMotion.ParentUpdate laserUpdate = state.runtime()
-                    .entityState
-                    .motions
-                    .get(LaserMotion.class, LaserMotion::new)
-                    .advanceParent(slotState.entity());
+            LaserMotion.ParentUpdate laserUpdate =
+                    state.motion(LaserMotion.class, LaserMotion::new).advanceParent(slotState.entity());
             slotState.updated(laserUpdate.entity());
             if (laserUpdate.spawnSensor()) {
-                state.runtime().entityEnemySpawns.spawnLaserSensor(slotState.entity());
+                state.enemySpawns().spawnLaserSensor(slotState.entity());
             }
             if (laserUpdate.spawnBeam()) {
-                if (state.runtime().entityEnemySpawns.spawnLaserBeam(slotState.entity())) {
-                    state.runtime()
-                            .entityState
-                            .events
+                if (state.enemySpawns().spawnLaserBeam(slotState.entity())) {
+                    state.events()
                             .pendingEntityEvents
                             .add(new EntityCombatEvent(
                                     slotState.entity().slot(),
@@ -51,25 +50,22 @@ final class EntitySlotPhase3 {
                 }
             }
         }
+        return true;
+    }
+
+    private static boolean advanceLaserSensor(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                && state.motion(LaserMotion.class, LaserMotion::new)
                         .isSensor(slotState.entity().slot())) {
-            int ownerSlot = state.runtime()
-                    .entityState
-                    .motions
-                    .get(LaserMotion.class, LaserMotion::new)
+            int ownerSlot = state.motion(LaserMotion.class, LaserMotion::new)
                     .parentSlot(slotState.entity().slot());
             RoomEntity owner = ownerSlot >= 0 && ownerSlot < state.runtime().slots.length
                     ? state.runtime().slots[ownerSlot]
                     : null;
-            LaserMotion.SensorUpdate sensorUpdate = state.runtime()
-                    .entityState
-                    .motions
-                    .get(LaserMotion.class, LaserMotion::new)
+            LaserMotion.SensorUpdate sensorUpdate = state.motion(LaserMotion.class, LaserMotion::new)
                     .advanceSensor(
                             slotState.entity(),
                             owner,
@@ -79,66 +75,55 @@ final class EntitySlotPhase3 {
             if (sensorUpdate.triggeredParent() && ownerSlot >= 0 && ownerSlot < state.runtime().slots.length) {
                 // LaserLinkSensorHandler starts the parent's visible
                 // pre-fire flash at the same time as its $20 countdown.
-                state.runtime().entityState.combatTables.writeEnemyFlashCountdown(ownerSlot, 0x10);
+                state.combatTables().writeEnemyFlashCountdown(ownerSlot, 0x10);
             }
             if (sensorUpdate.unloaded()) {
-                state.runtime()
-                        .lifecycle
+                state.lifecycle()
                         .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
             slotState.updated(sensorUpdate.entity());
         }
+        return true;
+    }
+
+    private static boolean advanceLaserBeam(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                && state.motion(LaserMotion.class, LaserMotion::new)
                         .isBeam(slotState.entity().slot())) {
             var collisionEvent = EnemyProjectileCollision.check(
                     slotState.entity(),
-                    state.runtime()
-                            .entityState
-                            .motions
-                            .get(LaserMotion.class, LaserMotion::new)
+                    state.motion(LaserMotion.class, LaserMotion::new)
                             .direction(slotState.entity().slot()),
                     frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
                 EntityProjectileEvent event = collisionEvent.orElseThrow();
                 frameInput.projectileEvents().add(event);
                 if (event.remove()) {
-                    state.runtime()
-                            .lifecycle
+                    state.lifecycle()
                             .disableEntityWithoutPersistence(slotState.entity().slot());
                     return false;
                 }
                 // Bank-$15 moves the beam before consuming the collision
                 // byte.  A reflected beam therefore advances once in
                 // this frame, then reverses the selected speed axis.
-                LaserMotion.BeamUpdate beamUpdate = state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                LaserMotion.BeamUpdate beamUpdate = state.motion(LaserMotion.class, LaserMotion::new)
                         .advanceBeam(slotState.entity(), frameInput.backgroundCollision());
                 if (beamUpdate.unloaded()) {
-                    state.runtime()
-                            .lifecycle
+                    state.lifecycle()
                             .disableEntityWithoutPersistence(slotState.entity().slot());
                     return false;
                 }
                 slotState.updated(beamUpdate.entity());
-                state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                state.motion(LaserMotion.class, LaserMotion::new)
                         .reflectBeam(
                                 slotState.entity().slot(),
                                 frameInput.projectileLinkState().direction());
                 if (event.swordPokeVfx()) {
-                    state.runtime()
-                            .entityState
-                            .events
+                    state.events()
                             .transientVfxRequests
                             .add(new TransientVfxRequest(
                                     TransientVfxType.SWORD_POKE,
@@ -146,21 +131,15 @@ final class EntitySlotPhase3 {
                                     slotState.updated().y()));
                 }
             } else {
-                LaserMotion.BeamUpdate beamUpdate = state.runtime()
-                        .entityState
-                        .motions
-                        .get(LaserMotion.class, LaserMotion::new)
+                LaserMotion.BeamUpdate beamUpdate = state.motion(LaserMotion.class, LaserMotion::new)
                         .advanceBeam(slotState.entity(), frameInput.backgroundCollision());
                 if (beamUpdate.unloaded()) {
-                    state.runtime()
-                            .lifecycle
+                    state.lifecycle()
                             .disableEntityWithoutPersistence(slotState.entity().slot());
                     return false;
                 }
                 slotState.updated(beamUpdate.entity());
-                state.runtime()
-                        .entityState
-                        .events
+                state.events()
                         .transientVfxRequests
                         .add(new TransientVfxRequest(
                                 TransientVfxType.LASER_BEAM,
@@ -168,7 +147,6 @@ final class EntitySlotPhase3 {
                                 slotState.updated().y()));
             }
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_3_AFTER_LASER, state)) return false;
         return true;
     }
 }

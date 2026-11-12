@@ -6,6 +6,7 @@ import java.util.List;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
+import linksawakening.world.entity.motion.CrowMotion;
 import org.junit.jupiter.api.Test;
 
 class EntityInfrastructureTest {
@@ -68,10 +69,8 @@ class EntityInfrastructureTest {
     @Test
     void motionRegistryRetainsTheFirstInstanceForEachType() {
         EntityMotionRegistry registry = new EntityMotionRegistry();
-        var motion = registry.get(
-                linksawakening.world.entity.motion.CrowMotion.class,
-                linksawakening.world.entity.motion.CrowMotion::new);
-        assertSame(motion, registry.get(linksawakening.world.entity.motion.CrowMotion.class, () -> {
+        var motion = registry.get(CrowMotion.class, CrowMotion::new);
+        assertSame(motion, registry.get(CrowMotion.class, () -> {
             throw new AssertionError("A motion must not be recreated");
         }));
     }
@@ -81,12 +80,7 @@ class EntityInfrastructureTest {
         EntityMotionRegistry firstRoom = new EntityMotionRegistry();
         EntityMotionRegistry secondRoom = new EntityMotionRegistry();
         assertNotSame(
-                firstRoom.get(
-                        linksawakening.world.entity.motion.CrowMotion.class,
-                        linksawakening.world.entity.motion.CrowMotion::new),
-                secondRoom.get(
-                        linksawakening.world.entity.motion.CrowMotion.class,
-                        linksawakening.world.entity.motion.CrowMotion::new));
+                firstRoom.get(CrowMotion.class, CrowMotion::new), secondRoom.get(CrowMotion.class, CrowMotion::new));
     }
 
     @Test

@@ -24,13 +24,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void armosStatueRunsItsPostMovementRomBackgroundCollisionPass() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0F)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0F)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
@@ -53,13 +52,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void armosStatueDoesNotWakeForNonInteractiveLiveLinkMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0F)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0F)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -78,24 +76,23 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void armosUsesRomActivationFlagsAndOnlyTheActiveStateJoinsCombat() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0F)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0F)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, true, true, 72, 1, 72, 1)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 64, 64, sequence(0x00)));
         assertEquals(1, runtime.enemies().armosState(0));
         assertEquals(0x18, runtime.enemies().enemyFlashCountdown(0));
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertTrue(runtime.resolveCombat(1, 64, 64, false, true, true, 72, 1, 72, 1)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         for (int frame = 1; frame <= 0x30; frame++) {
@@ -106,13 +103,13 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
 
         RoomEntity active = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(1, active.x(), active.y(), false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact = runtime.resolveCombat(
+                new EntitySwordContactFrame(1, active.x(), active.y(), false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x10, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword =
-                runtime.resolveCombat(0, 0, 0, true, true, true, active.x() + 8, 1, active.y() + 8, 1);
+        List<EntityCombatEvent> sword = runtime.resolveCombat(
+                new EntitySwordContactFrame(0, 0, 0, true, true, true, active.x() + 8, 1, active.y() + 8, 1));
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(1, sword.get(0).enemyDamage());
@@ -128,7 +125,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void armosStateTwoLoadsItsContiguousRomSpeedTables() {
         EntitySpriteDefinition definition = pairDefinition(0x0F, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0F)
                 .at(64, 64)
@@ -153,13 +150,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x88)
-                                .at(0x50, 0x60)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x88)
+                        .at(0x50, 0x60)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -200,13 +196,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x88)
-                                .at(0x50, 0x60)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x88)
+                        .at(0x50, 0x60)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -242,13 +237,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x88)
-                                .at(0x50, 0x60)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x88)
+                        .at(0x50, 0x60)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -272,8 +266,8 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
             EntityRuntimeFixture.debug(runtime).setEnemyFlashCountdownForTest(0, 0);
             RoomEntity armos = runtime.inspection().snapshot().slots().get(0);
             int frame = 0xB2 + hit;
-            List<EntityCombatEvent> hitEvents = runtime.resolveCombat(
-                    frame, 0, 0, true, true, true, armos.x() + 8, 1, armos.y() + 8, 1, levelTwoSword);
+            List<EntityCombatEvent> hitEvents = runtime.resolveCombat(new EntityVerticalContactFrame(
+                    frame, 0, 0, true, true, true, armos.x() + 8, 1, armos.y() + 8, 1, levelTwoSword));
             assertEquals(1, hitEvents.size());
             assertEquals(2, hitEvents.get(0).enemyDamage());
             assertEquals(0x0A - (hit * 2), runtime.enemies().enemyHealth(0));
@@ -308,13 +302,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x88, EntityRoomLoader.RoomTable.INDOORS_B);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x88)
-                                .at(0x50, 0x60)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x88)
+                        .at(0x50, 0x60)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -370,7 +363,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteLandsWithTheRomCountdownThenStartsItsNextJump() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0D)
                 .at(64, 64)
@@ -407,14 +400,13 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteReversesAndHalvesSpeedXAfterHorizontalWallCollision() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0D)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .z(0x80)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0D)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .z(0x80)
+                        .build()))
                 .build();
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
@@ -437,14 +429,13 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteVerticalWallCollisionUsesTheRomXSpeedHelper() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0D)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .z(0x80)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0D)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .z(0x80)
+                        .build()))
                 .build();
         IntSupplier randomBytes = sequence(0x00, 0x00, 0x00, 0x00);
 
@@ -463,7 +454,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteAddsTheRomLandingTimerBaseAfterMaskingRandomness() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0D)
                 .at(64, 64)
@@ -480,7 +471,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteCanReplaceItsRandomJumpDirectionWithTheRomLinkVector() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0D)
                 .at(64, 64)
@@ -504,7 +495,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void tektiteUsesTheHealthGroupOneContactAndSwordValues() {
         EntitySpriteDefinition definition = pairDefinition(0x0D, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0D)
                 .at(64, 64)
@@ -512,11 +503,13 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -527,7 +520,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void leeverUsesTheRomHideEmergeAndChaseStateBoundaries() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0E)
                 .at(64, 64)
@@ -561,7 +554,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void leeverInitializationAppliesTheRomHiddenSpriteVariantBeforeItsFirstHandlerPass() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0E)
                 .at(64, 64)
@@ -583,7 +576,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void leeverBurrowsAfterItsChaseTimerAndStartsTheRomHidingWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0E)
                 .at(64, 64)
@@ -616,7 +609,7 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void leeverOnlyUsesItsHealthGroupOneCombatValuesWhileChasing() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x0E)
                 .at(64, 64)
@@ -625,17 +618,20 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
         IntSupplier randomBytes = sequence(0x00);
 
-        List<EntityCombatEvent> hiddenContact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> hiddenContact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertTrue(hiddenContact.isEmpty());
 
         for (int frame = 0; frame <= 31; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> sword =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
     }
@@ -643,13 +639,12 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
     @Test
     void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x0E)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0E)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .build();
 
         for (int frame = 0; frame <= 31; frame++) {
@@ -657,7 +652,8 @@ final class EntityRuntimeGroundEnemies2Test extends EntityRuntimeTestSupport {
         }
         assertEquals(2, runtime.enemies().leeverState(0));
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());

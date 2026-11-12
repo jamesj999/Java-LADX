@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -50,19 +49,19 @@ public final class BushCrawlerMotion {
         privateState1[slot] = 2;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            int transitionCountdown,
-            boolean linkCollision,
-            boolean actionButtonAHeld,
-            boolean actionButtonBHeld,
-            int linkItemA,
-            int linkItemB) {
+    public Update advance(BushCrawlerFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int transitionCountdown = inputs.transitionCountdown();
+        boolean linkCollision = inputs.linkCollision();
+        boolean actionButtonAHeld = inputs.actionButtonAHeld();
+        boolean actionButtonBHeld = inputs.actionButtonBHeld();
+        int linkItemA = inputs.linkItemA();
+        int linkItemB = inputs.linkItemB();
         if ((entity.type() & 0xFF) != ENTITY_BUSH_CRAWLER) {
             throw new IllegalArgumentException(
                     "Unsupported Bush Crawler motion entity type: 0x" + Integer.toHexString(entity.type()));

@@ -46,7 +46,7 @@ final class SideViewPlatformRuntimeTest {
         RoomEntityRuntime runtime = runtime(
                 0x20,
                 platform(),
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(1)
                         .sourceLoadOrder(1)
                         .type(0x05)
@@ -323,7 +323,7 @@ final class SideViewPlatformRuntimeTest {
     }
 
     private static RoomEntity platform(EntityStatus status) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(SideViewPlatformMotion.ENTITY_TYPE)
                 .at(0x40, 0x50)

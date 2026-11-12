@@ -10,88 +10,87 @@ import linksawakening.world.entity.motion.*;
 /** Ordered slot dispatch phase 1; false preserves the ROM handler early return. */
 final class EntitySlotPhase1 {
     static boolean run(EntityFrameExecution state) {
+
+        if (!prepareSlot(state)) return false;
+        if (!freezeTimers(state)) return false;
+        if (!advanceTimersAndBossIntro(state)) return false;
+        if (!resetPresentation(state)) return false;
+        if (!advancePickupSequence(state)) return false;
+        return true;
+    }
+
+    private static boolean prepareSlot(EntityFrameExecution state) {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
-        var presentationFlags = state.presentation();
-
         slotState.entity(state.runtime().slots[slotState.index()]);
-        if (state.runtime().liftThrow.advanceStatueRubble(slotState.entity(), timerGates.sideViewPotInteractive()))
+        if (state.liftThrow().advanceStatueRubble(slotState.entity(), timerGates.sideViewPotInteractive()))
             return false;
         slotState.moldormIntroOpenedThisFrame(false);
         slotState.rollingBonesHitThisFrame(slotState.entity().type() == EntityRomConstants.ENTITY_ROLLING_BONES
-                && state.runtime()
-                                .entityState
-                                .motions
-                                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                && state.motion(RollingBonesMotion.class, RollingBonesMotion::new)
                                 .swordHitFrame(slotState.index())
                         == frameInput.frame() + 1);
-        state.runtime()
-                .entityState
-                .motions
-                .get(RollingBonesMotion.class, RollingBonesMotion::new)
-                .setSwordHitFrame(slotState.index(), 0);
+        state.motion(RollingBonesMotion.class, RollingBonesMotion::new).setSwordHitFrame(slotState.index(), 0);
         if (!slotState.entity().loaded()) {
             return false;
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_ENTRY, state)) return false;
-        if (state.runtime()
-                        .entityState
-                        .physicsTables
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_ENTRY, state)) return false;
+        if (state.physicsTables()
                         .readEnemyProjectileSpawnedThisFrame(slotState.entity().slot())
-                || state.runtime()
-                        .entityState
-                        .physicsTables
+                || state.physicsTables()
                         .readDynamicEntitySpawnedThisFrame(slotState.entity().slot())) {
             return false;
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
         slotState.kanaletLeafProducer(slotState.entity().type() == EntityRomConstants.ENTITY_CROW
                         && !state.runtime().indoorRoom
-                        && state.runtime().entityState.roomVariables.readEntityRoomId() == 0x58
+                        && state.roomVariables().readEntityRoomId() == 0x58
                 || slotState.entity().type() == EntityRomConstants.ENTITY_MAD_BOMBER
                 || slotState.entity().type() == EntityRomConstants.ENTITY_KNIGHT
-                        && state.runtime().entityState.roomVariables.readEntityMapId() >= 0x14);
+                        && state.roomVariables().readEntityMapId() >= 0x14);
         if (slotState.kanaletLeafProducer()) {
-            if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_LEAF_PRODUCER, state)) return false;
-            if ((state.runtime().entityState.roomVariables.readEntityRoomStatus() & 0x10) != 0) {
-                state.runtime()
-                        .lifecycle
+            if (!state.handlers().tick(EntityTickStage.PHASE_1_LEAF_PRODUCER, state)) return false;
+            if ((state.roomVariables().readEntityRoomStatus() & 0x10) != 0) {
+                state.lifecycle()
                         .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            state.runtime()
-                    .bossRewards
+            state.bossRewards()
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
                 state.runtime().slots[slotState.index()] = slotState.entity();
             }
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, state)) return false;
         slotState.originalEntity(slotState.entity());
         slotState.initialStatus(slotState.entity().status());
         slotState.wasInitializing(slotState.initialStatus() == EntityStatus.INIT);
+        return true;
+    }
+
+    private static boolean freezeTimers(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
         timerGates.freezeTarinTimers(!state.runtime().indoorRoom
                 && slotState.entity().type() == EntityRomConstants.ENTITY_TARIN
-                && state.runtime()
-                                .entityState
-                                .motions
-                                .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
+                && state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                                 .state(slotState.entity().slot())
                         != 0
-                && !state.runtime().roomInspection.tarinTransformationTimersInteractive());
+                && !state.roomInspection().tarinTransformationTimersInteractive());
         timerGates.freezeThreeOfAKindTimers(slotState.entity().type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND
                 && !timerGates.threeOfAKindInteractive());
         timerGates.freezeHinoxTimers(slotState.entity().type() == EntityRomConstants.ENTITY_HINOX
                 && slotState.initialStatus() == EntityStatus.ACTIVE
                 && (frameInput.creditsGameplay()
                         || !timerGates.handlerLinkCollisionEnabled()
-                        || !state.runtime().backgroundMechanics.entityTimersInteractive()
-                        || state.runtime().entityState.roomVariables.readTransitionSequenceCounter() != 0x04));
+                        || !state.background().entityTimersInteractive()
+                        || state.roomVariables().readTransitionSequenceCounter() != 0x04));
         timerGates.freezeGenieTimers(slotState.entity().type() == EntityRomConstants.ENTITY_GENIE
-                && (!state.runtime().backgroundMechanics.gameplayEntityTimersInteractive(frameInput.creditsGameplay())
-                        || state.runtime().inspection().witchGotItemPresentationActive()));
+                && (!state.background().gameplayEntityTimersInteractive(frameInput.creditsGameplay())
+                        || state.roomInspection().witchGotItemPresentationActive()));
         timerGates.freezeWitchTimers(slotState.entity().type() == EntityRomConstants.ENTITY_WITCH
                 && !timerGates.projectileTimersInteractive());
         timerGates.freezePowderTimers(slotState.entity().type() == EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE
@@ -102,6 +101,12 @@ final class EntitySlotPhase1 {
                 && !timerGates.projectileTimersInteractive());
         timerGates.freezeMoblinKingTimers(slotState.entity().type() == EntityRomConstants.ENTITY_MOBLIN_KING
                 && !timerGates.projectileTimersInteractive());
+        return true;
+    }
+
+    private static boolean advanceTimersAndBossIntro(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var timerGates = state.gates();
         timerGates.ignoreHitsDecrementedBeforeHandler(!timerGates.freezeTarinTimers()
                 && !timerGates.freezeThreeOfAKindTimers()
                 && !timerGates.freezeHinoxTimers()
@@ -112,8 +117,7 @@ final class EntitySlotPhase1 {
                 && !timerGates.freezeBowWowTimers()
                 && !timerGates.freezeMoblinKingTimers()
                 && !slotState.rollingBonesHitThisFrame()
-                && state.runtime()
-                        .lifecycle
+                && state.lifecycle()
                         .decrementEnemyCombatCountdowns(
                                 slotState.entity().slot(),
                                 !slotState.wasInitializing()
@@ -129,12 +133,10 @@ final class EntitySlotPhase1 {
                 && !timerGates.freezeBowWowTimers()
                 && !timerGates.freezeWitchTimers()
                 && !timerGates.freezeMoblinKingTimers()) {
-            state.runtime()
-                    .lifecycle
-                    .decrementEnemyStatusCountdowns(slotState.entity().slot());
-            if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, state)) return false;
+            state.lifecycle().decrementEnemyStatusCountdowns(slotState.entity().slot());
+            if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, state)) return false;
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, state)) return false;
         if (slotState.entity().sourceLoadOrder() == -1
                 && state.runtime()
                         .enemyInspection
@@ -146,12 +148,18 @@ final class EntitySlotPhase1 {
         // label_394D -> $14:54AC runs before these bosses' interaction
         // guards, including during their death handlers. It directly
         // nudges Link into the arena, then blocks his next input frame.
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_BOSS_DOORWAY, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_BOSS_DOORWAY, state)) return false;
 
         // Moldorm calls BossIntro before dispatching active/death states ($04:56C0).
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_BOSS_INTRO, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_BOSS_INTRO, state)) return false;
 
         slotState.status(slotState.entity().status());
+        return true;
+    }
+
+    private static boolean resetPresentation(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
         presentationFlags.preserveGhiniPresentation(false);
         presentationFlags.preserveMadBomberPresentation(false);
         presentationFlags.preserveBombitePresentation(false);
@@ -200,17 +208,19 @@ final class EntitySlotPhase1 {
                 && slotState.entity().type() != EntityRomConstants.ENTITY_SAND_CRAB
                 && slotState.entity().type() != EntityRomConstants.ENTITY_DOG
                 && slotState.entity().type() != EntityRomConstants.ENTITY_URCHIN);
+        return true;
+    }
+
+    private static boolean advancePickupSequence(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE) {
-            state.runtime().pickups.decrementEnemyDropCountdowns(slotState.entity());
+            state.pickups().decrementEnemyDropCountdowns(slotState.entity());
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, state)) return false;
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.runtime()
-                                .rewards
-                                .readPowerUpPickupCountdown(slotState.entity().slot())
-                        != 0) {
-            state.runtime()
-                    .rewards
+                && state.rewards().readPowerUpPickupCountdown(slotState.entity().slot()) != 0) {
+            state.rewards()
                     .advancePowerUpPickup(
                             slotState.entity(),
                             frameInput.frame(),
@@ -219,7 +229,7 @@ final class EntitySlotPhase1 {
                             frameInput.linkZ());
             return false;
         }
-        if (!state.runtime().entityHandlers.tick(EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP, state)) return false;
+        if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_INSTRUMENT_PICKUP, state)) return false;
         return true;
     }
 }

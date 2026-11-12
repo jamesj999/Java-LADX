@@ -19,7 +19,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void ghiniUsesItsRomTargetTimersAccelerationAndZCorrection() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x12)
                 .at(64, 64)
@@ -45,7 +45,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void ghiniUsesTheRomNormalEnemyContactAndHealthValues() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x12)
                 .at(64, 64)
@@ -53,11 +53,13 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 64, 64, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> firstHit =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -68,7 +70,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void ghiniTakesEachTargetDirectionFromTheSameRandomByteAsItsTimer() {
         EntitySpriteDefinition definition = pairDefinition(0x12, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x12)
                 .at(64, 64)
@@ -104,8 +106,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         RoomEntity giant = ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE);
         assertFalse(RoomEntityCombatRules.overlapsLink(normal, 0x5D, 0x50));
         assertTrue(RoomEntityCombatRules.overlapsLink(giant, 0x5D, 0x50));
-        assertFalse(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(normal, 0x62, 1, 0x58, 1));
-        assertTrue(linksawakening.world.entity.EntityCombatTestAccess.overlapsSword(giant, 0x62, 1, 0x58, 1));
+        assertFalse(EntityCombatTestAccess.overlapsSword(normal, 0x62, 1, 0x58, 1));
+        assertTrue(EntityCombatTestAccess.overlapsSword(giant, 0x62, 1, 0x58, 1));
     }
 
     @Test
@@ -134,7 +136,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
             assertEquals(EntityStatus.ACTIVE, afterInit.status());
             assertEquals(-1, afterInit.spriteVariant(), "type=0x" + Integer.toHexString(type));
             assertTrue(groundCalls.isEmpty());
-            assertTrue(runtime.resolveCombat(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1)
+            assertTrue(runtime.resolveCombat(
+                            new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1))
                     .isEmpty());
         }
     }
@@ -192,8 +195,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
             RoomEntity current = runtime.inspection().snapshot().slots().get(0);
             int linkX = (current.x() + 0x08) & 0xFF;
             int linkY = (current.y() - current.z() + 0x08) & 0xFF;
-            List<EntityCombatEvent> events =
-                    runtime.resolveCombat(0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging);
+            List<EntityCombatEvent> events = runtime.resolveCombat(new EntityVerticalContactFrame(
+                    0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging));
             assertEquals(1, events.size(), "type=0x" + Integer.toHexString(type));
             assertTrue(runtime.enemies().enemyRecoilActive(0), "type=0x" + Integer.toHexString(type));
             assertEquals(0xD0, runtime.enemies().enemyRecoilSpeedX(0), "type=0x" + Integer.toHexString(type));

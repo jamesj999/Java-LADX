@@ -17,7 +17,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     void colorShellDyingRefreshPreservesDeathPresentationMetadata() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition body = pairDefinition(0xE9, 2);
-        RoomEntity initialEntity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity initialEntity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE9)
                 .at(64, 64)
@@ -30,8 +30,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        runtime.resolveCombat(
-                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false));
+        runtime.resolveCombat(new EntityVerticalContactFrame(
+                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false)));
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
@@ -56,20 +56,20 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     void colorShellsAreAdmittedAsRomCombatTargets() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0xE9)
                                 .at(64, 64)
                                 .spriteDefinition(pairDefinition(0xE9, 2))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(1)
                                 .sourceLoadOrder(1)
                                 .type(0xEA)
                                 .at(96, 64)
                                 .spriteDefinition(pairDefinition(0xEA, 2))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(2)
                                 .sourceLoadOrder(2)
                                 .type(0xEB)
@@ -95,14 +95,13 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xE9)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0xE9))
-                                .spriteVariant(-1)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xE9)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0xE9))
+                        .spriteVariant(-1)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0x00)
                 .spriteHandlers(catalog)
@@ -124,14 +123,13 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     @Test
     void colorShellCompletionUnloadsAndPublishesItsRoomPersistenceMask() {
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xE9)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0xE9))
-                                .spriteVariant(-1)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xE9)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0xE9))
+                        .spriteVariant(-1)
+                        .build()))
                 .build();
         runtime.configuration().setColorShellWorld(world);
         EntityRuntimeFixture.debug(runtime).setColorShellStateForTest(0, 0x0D, 1, 0, 0, 0);
@@ -149,20 +147,20 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     @Test
     void romStunStatusUsesColorShellsRawSpecialDamageValueAndRecovers() throws IOException {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xE9)
-                                .at(64, 64)
-                                .spriteDefinition(pairDefinition(0xE9, 2))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xE9)
+                        .at(64, 64)
+                        .spriteDefinition(pairDefinition(0xE9, 2))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(null)
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertEquals(0xFF, events.get(0).enemySpecialAction());
@@ -176,7 +174,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         assertEquals(0x03, events.get(0).soundId());
         assertEquals(EntityCombatEvent.SoundChannel.NONE, events.get(0).secondarySoundChannel());
         assertEquals(-1, events.get(0).secondarySoundId());
-        assertTrue(runtime.resolveCombat(1, 120, 120, false, true, true, 72, 1, 72, 1)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         for (int frame = 0; frame < 0xFF; frame++) {

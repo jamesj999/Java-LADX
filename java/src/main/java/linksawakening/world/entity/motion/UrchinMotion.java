@@ -44,17 +44,17 @@ public final class UrchinMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int physicsFlags,
-            int linkEntityX,
-            int linkEntityY,
-            int linkDirection,
-            boolean usingShield,
-            boolean swordCollisionActive,
-            boolean linkInteractive,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(UrchinFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int physicsFlags = inputs.physicsFlags();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkDirection = inputs.linkDirection();
+        boolean usingShield = inputs.usingShield();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        boolean linkInteractive = inputs.linkInteractive();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
         checkType(entity);
         validateByte(frameCounter, "Urchin frame counter");
         validateByte(physicsFlags, "Urchin physics flags");

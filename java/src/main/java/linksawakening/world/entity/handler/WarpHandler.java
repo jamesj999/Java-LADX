@@ -10,6 +10,7 @@ import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
+import linksawakening.world.entity.motion.WarpFrame;
 import linksawakening.world.entity.motion.WarpMotion;
 
 /** ROM handler stages for Warp. */
@@ -33,7 +34,7 @@ final class WarpHandler {
                     slotState.entity().y(),
                     state.roomInspection().dungeonMinibossReady() ? (frameInput.frame() >> 3) & 7 : -1));
             WarpMotion.Update warpUpdate = state.warpMotion()
-                    .advance(
+                    .advance(new WarpFrame(
                             slotState.entity(),
                             state.lifecycle().warpState(slot),
                             state.lifecycle().warpTransitionCountdown(slot),
@@ -42,7 +43,7 @@ final class WarpHandler {
                             state.roomInspection().dungeonMinibossReady(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
-                            frameInput.linkZ());
+                            frameInput.linkZ()));
             state.lifecycle().setWarpState(slot, warpUpdate.state());
             state.lifecycle().setWarpTransitionCountdown(slot, warpUpdate.countdown());
             if (warpUpdate.musicTrack() >= 0) {

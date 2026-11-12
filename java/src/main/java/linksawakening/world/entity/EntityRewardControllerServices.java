@@ -12,30 +12,25 @@ interface EntityRewardControllerServices {
 
     linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityEventChannels events();
+    EntityEventChannels events();
 
-    linksawakening.world.entity.EntityLinkState linkState();
+    EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityPresentationState presentationState();
+    EntityPresentationState presentationState();
 
-    linksawakening.world.entity.EntityRoomVariables roomVariables();
+    EntityRoomVariables roomVariables();
 
-    linksawakening.world.entity.EntitySlotLifecycle lifecycle();
+    EntitySlotLifecycle lifecycle();
 
-    linksawakening.world.entity.EntityStoryController story();
+    EntityStoryController story();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
-    void holdSwordAboveLink(
-            linksawakening.world.entity.RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            boolean finalPose);
+    void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose);
 
     void initializeHealthGroup(int slot);
 
@@ -57,48 +52,44 @@ interface EntityRewardControllerServices {
                 return r.spriteHandlers;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityEventChannels events() {
+            public EntityEventChannels events() {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityLinkState linkState() {
+            public EntityLinkState linkState() {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityPresentationState presentationState() {
+            public EntityPresentationState presentationState() {
                 return r.entityState.presentationState;
             }
 
-            public linksawakening.world.entity.EntityRoomVariables roomVariables() {
+            public EntityRoomVariables roomVariables() {
                 return r.entityState.roomVariables;
             }
 
-            public linksawakening.world.entity.EntitySlotLifecycle lifecycle() {
+            public EntitySlotLifecycle lifecycle() {
                 return r.lifecycle;
             }
 
-            public linksawakening.world.entity.EntityStoryController story() {
+            public EntityStoryController story() {
                 return r.story;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
 
             public void holdSwordAboveLink(
-                    linksawakening.world.entity.RoomEntity entity,
-                    int linkEntityX,
-                    int linkEntityY,
-                    int linkZ,
-                    boolean finalPose) {
+                    RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
                 r.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, finalPose);
             }
 

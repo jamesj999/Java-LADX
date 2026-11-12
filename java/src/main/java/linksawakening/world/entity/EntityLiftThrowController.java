@@ -10,6 +10,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
+import linksawakening.world.entity.motion.LiftedEntityFrame;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
@@ -45,7 +46,7 @@ public final class EntityLiftThrowController {
             runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x02);
         }
 
-        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
+        LiftedEntityMotion.Update update = LiftedEntityMotion.advance(new LiftedEntityFrame(
                 this.readLiftedPhase(slot),
                 runtime.physicsTables().readEnemyTransitionCountdown(slot),
                 this.readLiftedSourceDirection(slot),
@@ -57,7 +58,7 @@ public final class EntityLiftThrowController {
                 entity.type(),
                 runtime.physicsTables().readGroundInteractionSideScrolling(),
                 runtime.pickups().readChestPowerBraceletLevel() >= 2 || runtime.linkState().fastLiftTransition,
-                entity.z());
+                entity.z()));
         this.writeLiftedPhase(slot, update.phase());
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, update.transitionCountdown());
         this.writeLiftedCarryState(update.carryState());

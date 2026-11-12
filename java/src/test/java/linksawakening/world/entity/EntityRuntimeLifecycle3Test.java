@@ -24,7 +24,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         int sourceX = 0x44;
         int sourceY = 0x58;
         int sourceZ = 0x07;
-        RoomEntity source = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
                 .type(0x09)
@@ -97,7 +97,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity source = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
                 .type(0x0B)
@@ -140,7 +140,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
-            entities.add(new linksawakening.world.entity.RoomEntityBuilder()
+            entities.add(new RoomEntityBuilder()
                     .slot(slot)
                     .sourceLoadOrder(slot + 1)
                     .type(0xFF)
@@ -149,7 +149,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                     .spriteVariant(-1)
                     .build());
         }
-        RoomEntity source = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
                 .type(0x09)

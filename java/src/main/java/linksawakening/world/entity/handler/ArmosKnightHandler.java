@@ -15,6 +15,7 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ArmosKnightFrame;
 import linksawakening.world.entity.motion.ArmosKnightMotion;
 import linksawakening.world.entity.motion.BossIntroMotion;
 
@@ -50,7 +51,7 @@ final class ArmosKnightHandler {
                             frameInput.linkEntityY(),
                             frameInput.projectileLinkState().motionState());
             ArmosKnightMotion.Update armosKnightUpdate = state.motion(ArmosKnightMotion.class, ArmosKnightMotion::new)
-                    .advance(
+                    .advance(new ArmosKnightFrame(
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
@@ -59,7 +60,7 @@ final class ArmosKnightHandler {
                             state.slot().physicsFlags(slotState.entity().slot()),
                             state.slot().hitboxFlags(slotState.entity().slot()),
                             state.slotProperties().options1(slotState.entity().slot()),
-                            state.slot().health(slotState.entity().slot()));
+                            state.slot().health(slotState.entity().slot())));
             slotState.updated(armosKnightUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), armosKnightUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slotState.entity().slot(), armosKnightUpdate.physicsFlags());

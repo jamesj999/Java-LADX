@@ -55,17 +55,17 @@ public final class StalfosEvasiveMotion {
         speedZAccumulator[slot] = 0;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean actionButtonsHeld,
-            int transitionCountdown,
-            int ignoreHitsCountdown,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            int mapId) {
+    public Update advance(StalfosEvasiveFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean actionButtonsHeld = inputs.actionButtonsHeld();
+        int transitionCountdown = inputs.transitionCountdown();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int mapId = inputs.mapId();
         int slot = entity.slot();
         if (!initialized[slot]) {
             // A Gibdo burn conversion calls ConfigureNewEntity.attributes and

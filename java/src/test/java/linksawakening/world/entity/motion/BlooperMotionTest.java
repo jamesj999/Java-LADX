@@ -3,7 +3,9 @@ package linksawakening.world.entity.motion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.EntityGroundTestAccess;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class BlooperMotionTest {
@@ -12,15 +14,11 @@ final class BlooperMotionTest {
     void stateZeroAcceleratesTowardSwimmingUpAndZeroHorizontalSpeed() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0x05, 0, 0xF0, 0x02);
+        MotionTestFixture.setStateForTest(motion, 0, 0, 0x05, 0, 0xF0, 0x02);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
-        BlooperMotion.Update update = motion.finish(
-                movement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
-                0,
-                0x80,
-                0x80);
+        BlooperMotion.Update update =
+                motion.finish(movement, EntityGroundTestAccess.unchanged(movement.entity(), 0x01), 0, 0x80, 0x80);
 
         assertEquals(0xF1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
@@ -33,15 +31,11 @@ final class BlooperMotionTest {
     void stateZeroStartsTheRomChaseOnlyWhenLinkIsAbove() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 0, 0, 0x08, 0xF8);
+        MotionTestFixture.setStateForTest(motion, 0, 0, 0, 0, 0x08, 0xF8);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
-        BlooperMotion.Update update = motion.finish(
-                movement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0x01),
-                0,
-                48,
-                40);
+        BlooperMotion.Update update =
+                motion.finish(movement, EntityGroundTestAccess.unchanged(movement.entity(), 0x01), 0, 48, 40);
 
         assertEquals(1, motion.state(0));
         assertEquals(0x25, motion.transitionCountdown(0));
@@ -55,26 +49,18 @@ final class BlooperMotionTest {
     void stateOneChangesSpeedOnlyOnEvenFramesAndUsesHorizontalDirection() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0x03, 0, 0, 0x04);
+        MotionTestFixture.setStateForTest(motion, 0, 1, 0x03, 0, 0, 0x04);
 
         BlooperMotion.Movement evenMovement = motion.move(entity(64, 64), 2, null, 0);
-        BlooperMotion.Update even = motion.finish(
-                evenMovement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(evenMovement.entity(), 1),
-                2,
-                80,
-                80);
+        BlooperMotion.Update even =
+                motion.finish(evenMovement, EntityGroundTestAccess.unchanged(evenMovement.entity(), 1), 2, 80, 80);
         assertEquals(1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
         assertEquals(1, even.entity().spriteVariant());
 
         BlooperMotion.Movement oddMovement = motion.move(even.entity(), 3, null, 0);
-        BlooperMotion.Update odd = motion.finish(
-                oddMovement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(oddMovement.entity(), 1),
-                3,
-                80,
-                80);
+        BlooperMotion.Update odd =
+                motion.finish(oddMovement, EntityGroundTestAccess.unchanged(oddMovement.entity(), 1), 3, 80, 80);
         assertEquals(1, motion.speedX(0));
         assertEquals(0x03, motion.speedY(0));
         assertEquals(1, odd.entity().spriteVariant());
@@ -84,15 +70,11 @@ final class BlooperMotionTest {
     void stateOneReturnsToStateZeroAtTheRomCountdownBoundary() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 1, 0, 1, 0, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 1, 0, 1, 0, 0);
 
         BlooperMotion.Movement movement = motion.move(entity(64, 64), 0, null, 0);
-        BlooperMotion.Update update = motion.finish(
-                movement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 1),
-                0,
-                64,
-                64);
+        BlooperMotion.Update update =
+                motion.finish(movement, EntityGroundTestAccess.unchanged(movement.entity(), 1), 0, 64, 64);
 
         assertEquals(0, motion.state(0));
         assertEquals(0x40, motion.transitionCountdown(0));
@@ -103,18 +85,14 @@ final class BlooperMotionTest {
     void zeroGroundStatusRestoresThePreMovePositionAndStartsTheRomCooldown() {
         BlooperMotion motion = new BlooperMotion();
         motion.initialize(0);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 0, 1, 0, 0x10, 0);
+        MotionTestFixture.setStateForTest(motion, 0, 0, 1, 0, 0x10, 0);
 
         RoomEntity initial = entity(64, 64);
         BlooperMotion.Movement movement = motion.move(initial, 0, null, 0);
         assertEquals(65, movement.entity().x());
 
-        BlooperMotion.Update update = motion.finish(
-                movement,
-                linksawakening.world.entity.EntityGroundTestAccess.unchanged(movement.entity(), 0),
-                0,
-                64,
-                64);
+        BlooperMotion.Update update =
+                motion.finish(movement, EntityGroundTestAccess.unchanged(movement.entity(), 0), 0, 64, 64);
 
         assertEquals(64, update.entity().x());
         assertEquals(64, update.entity().y());
@@ -122,7 +100,7 @@ final class BlooperMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xA9)
                 .at(x, y)

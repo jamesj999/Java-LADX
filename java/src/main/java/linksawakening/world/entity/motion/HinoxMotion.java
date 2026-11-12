@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -83,18 +82,18 @@ public final class HinoxMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int transitionCountdown,
-            int frameCounter,
-            int linkX,
-            int linkY,
-            int linkZ,
-            int linkMotionState,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int entityCollisionFlagsForFrame,
-            int flashCountdown) {
+    public Update advance(HinoxFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int transitionCountdown = inputs.transitionCountdown();
+        int frameCounter = inputs.frameCounter();
+        int linkX = inputs.linkX();
+        int linkY = inputs.linkY();
+        int linkZ = inputs.linkZ();
+        int linkMotionState = inputs.linkMotionState();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int entityCollisionFlagsForFrame = inputs.entityCollisionFlagsForFrame();
+        int flashCountdown = inputs.flashCountdown();
         validateSlot(entity.slot());
         if (!initialized[entity.slot()]) {
             initialize(entity.slot());
@@ -125,7 +124,7 @@ public final class HinoxMotion {
         if (state[slot] < STATE_GRAB && (flashCountdown & 0xFF) == 0x03) {
             state[slot] = STATE_BOMB;
             transition = 0x20;
-            return update(
+            return update(new HinoxResult(
                     entity,
                     x,
                     y,
@@ -145,7 +144,7 @@ public final class HinoxMotion {
                     dust,
                     false,
                     false,
-                    bomb);
+                    bomb));
         }
 
         switch (state[slot]) {
@@ -234,7 +233,7 @@ public final class HinoxMotion {
                 if (transition == 0) {
                     state[slot] = STATE_INITIAL;
                     transition = 0;
-                    return update(
+                    return update(new HinoxResult(
                             entity,
                             x,
                             y,
@@ -254,7 +253,7 @@ public final class HinoxMotion {
                             dust,
                             false,
                             false,
-                            bomb);
+                            bomb));
                 } else if (transition == 0x20) {
                     linkSpeedY = 0x20;
                     linkSpeedX = (linkX & 0xFF) >= 0x50 ? 0xE0 : 0x20;
@@ -265,7 +264,7 @@ public final class HinoxMotion {
                     linkX = x;
                     linkY = y;
                     privateCountdown1[slot] = 0x50;
-                    return update(
+                    return update(new HinoxResult(
                             entity,
                             x,
                             y,
@@ -285,7 +284,7 @@ public final class HinoxMotion {
                             dust,
                             true,
                             false,
-                            bomb);
+                            bomb));
                 }
                 boolean blocked = linkMotionBlockedAtEntry;
                 int heldX = linkX;
@@ -304,7 +303,7 @@ public final class HinoxMotion {
                     applyHeldLinkPose = true;
                 }
                 spriteVariant = GRAB_BODY_VARIANT[Math.min(transition >>> 3, GRAB_BODY_VARIANT.length - 1)];
-                return update(
+                return update(new HinoxResult(
                         entity,
                         x,
                         y,
@@ -324,7 +323,7 @@ public final class HinoxMotion {
                         dust,
                         heldPositionWritten,
                         applyHeldLinkPose,
-                        bomb);
+                        bomb));
             }
             case STATE_BOMB -> {
                 if (transition == 0) {
@@ -346,7 +345,7 @@ public final class HinoxMotion {
                 spriteVariant = 0;
             }
         }
-        return update(
+        return update(new HinoxResult(
                 entity,
                 x,
                 y,
@@ -366,30 +365,30 @@ public final class HinoxMotion {
                 dust,
                 false,
                 false,
-                bomb);
+                bomb));
     }
 
-    private Update update(
-            RoomEntity entity,
-            int x,
-            int y,
-            int transition,
-            int spriteVariant,
-            boolean blocked,
-            int heldX,
-            int heldY,
-            int heldZ,
-            int linkSpeedX,
-            int linkSpeedY,
-            int linkVelocityZ,
-            int airborne,
-            int linkDamage,
-            int jingle,
-            int wave,
-            boolean dust,
-            boolean heldLinkPositionWritten,
-            boolean applyHeldLinkPose,
-            BombSpawn bomb) {
+    private Update update(HinoxResult inputs) {
+        RoomEntity entity = inputs.entity();
+        int x = inputs.x();
+        int y = inputs.y();
+        int transition = inputs.transition();
+        int spriteVariant = inputs.spriteVariant();
+        boolean blocked = inputs.blocked();
+        int heldX = inputs.heldX();
+        int heldY = inputs.heldY();
+        int heldZ = inputs.heldZ();
+        int linkSpeedX = inputs.linkSpeedX();
+        int linkSpeedY = inputs.linkSpeedY();
+        int linkVelocityZ = inputs.linkVelocityZ();
+        int airborne = inputs.airborne();
+        int linkDamage = inputs.linkDamage();
+        int jingle = inputs.jingle();
+        int wave = inputs.wave();
+        boolean dust = inputs.dust();
+        boolean heldLinkPositionWritten = inputs.heldLinkPositionWritten();
+        boolean applyHeldLinkPose = inputs.applyHeldLinkPose();
+        HinoxMotion.BombSpawn bomb = inputs.bomb();
         RoomEntity updated = new RoomEntity(
                 entity.slot(),
                 entity.sourceLoadOrder(),

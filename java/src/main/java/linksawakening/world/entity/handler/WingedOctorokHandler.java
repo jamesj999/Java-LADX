@@ -8,6 +8,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.WingedOctorokInteractionFrame;
 import linksawakening.world.entity.motion.WingedOctorokMotion;
 
 /** ROM handler stages for WingedOctorok. */
@@ -31,7 +32,7 @@ final class WingedOctorokHandler {
                 && timerGates.handlerLinkCollisionEnabled()) {
 
             WingedOctorokMotion.Update wingedUpdate = state.motion(WingedOctorokMotion.class, WingedOctorokMotion::new)
-                    .advance(
+                    .advance(new WingedOctorokInteractionFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -43,7 +44,7 @@ final class WingedOctorokHandler {
                             state.link().actionButtonAHeld(),
                             state.link().actionButtonBHeld(),
                             state.link().linkItemA(),
-                            state.link().linkItemB());
+                            state.link().linkItemB()));
             slotState.updated(wingedUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), wingedUpdate.transitionCountdown());
             presentationFlags.preserveWingedOctorokPresentation(true);

@@ -36,13 +36,12 @@ final class CuccoRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -68,13 +67,12 @@ final class CuccoRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(EntitySpriteHandlerCatalog.ENTITY_CUCCO)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -82,7 +80,8 @@ final class CuccoRuntimeTest {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x00, () -> 0));
-        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x50, false, true, false, 0, 0, 0, 0));
 
         assertFalse(events.isEmpty());
         assertEquals(0, events.getFirst().linkDamage());

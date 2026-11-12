@@ -228,7 +228,7 @@ final class PlayerProjectileEnemyCollisionTest {
         }
         slots.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .type(targetType)
                         .at(0x40 + dx, (projectileType == 0xDF ? 0x50 : 0x4F) + dy)
                         .spriteDefinition(catalog.forEntityType(targetType, EntityRoomLoader.RoomTable.OVERWORLD, -1))

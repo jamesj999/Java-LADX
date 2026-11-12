@@ -15,7 +15,7 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
 
     @Test
     void witchOverridesTheNpcHitboxWithHerSourceCauldronFootprint() {
-        RoomEntity witch = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity witch = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x40)
                 .at(0x40, 0x40)
@@ -31,20 +31,20 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x66)
-                                .at(64, 64)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x66)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> hit = runtime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        List<EntityCombatEvent> hit =
+                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, hit.size());
         assertTrue(hit.get(0).swordHit());
@@ -72,13 +72,12 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x66)
-                                .at(64, 64)
-                                .spriteDefinition(catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x66)
+                        .at(64, 64)
+                        .spriteDefinition(catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)

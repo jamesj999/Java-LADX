@@ -1,15 +1,14 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
+
 /** Reused view of ROM slot state, preserving array indexing and values. */
 public final class EntitySlotView {
     private final EntityCombatTables combat;
     private final EntityPhysicsTables physics;
-    private final linksawakening.world.entity.motion.UnmaskedIronMaskMotion ironMask;
+    private final UnmaskedIronMaskMotion ironMask;
 
-    EntitySlotView(
-            EntityCombatTables combat,
-            EntityPhysicsTables physics,
-            linksawakening.world.entity.motion.UnmaskedIronMaskMotion ironMask) {
+    EntitySlotView(EntityCombatTables combat, EntityPhysicsTables physics, UnmaskedIronMaskMotion ironMask) {
         this.combat = combat;
         this.physics = physics;
         this.ironMask = ironMask;

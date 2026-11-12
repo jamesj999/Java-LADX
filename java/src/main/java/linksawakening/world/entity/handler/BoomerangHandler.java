@@ -2,6 +2,7 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOOMERANG;
 
+import linksawakening.world.entity.BoomerangFrame;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -21,7 +22,7 @@ final class BoomerangHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE) {
             state.projectiles()
-                    .advanceBoomerangEntity(
+                    .advanceBoomerangEntity(new BoomerangFrame(
                             slotState.index(),
                             slotState.entity(),
                             frameInput.frame(),
@@ -30,7 +31,7 @@ final class BoomerangHandler {
                             frameInput.linkZ(),
                             frameInput.projectileLinkState().motionState(),
                             timerGates.handlerInteractive(),
-                            timerGates.projectileTimersInteractive());
+                            timerGates.projectileTimersInteractive()));
             return false;
         }
         return true;

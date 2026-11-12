@@ -27,6 +27,8 @@ import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
+import linksawakening.world.entity.motion.WarpMotion;
 
 /** Mutable execution locals for one immutable entity frame input. */
 public final class EntityFrameExecution {
@@ -239,7 +241,7 @@ public final class EntityFrameExecution {
         return runtime.enemyInspection;
     }
 
-    public linksawakening.world.entity.motion.WarpMotion warpMotion() {
+    public WarpMotion warpMotion() {
         return runtime.warpMotion;
     }
 
@@ -251,11 +253,35 @@ public final class EntityFrameExecution {
         runtime.entityState.events.hookshotBridgeUpdates.add(update);
     }
 
-    public void emit(linksawakening.world.entity.motion.RoamingEnemyMotion.LaunchRequest request) {
+    public void emit(RoamingEnemyMotion.LaunchRequest request) {
         runtime.entityState.events.projectileLaunchRequests.add(request);
     }
 
     public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
         return runtime.entityState.motions.get(type, factory);
+    }
+
+    EntityCombatTables combatTables() {
+        return runtime.entityState.combatTables;
+    }
+
+    EntityPhysicsTables physicsTables() {
+        return runtime.entityState.physicsTables;
+    }
+
+    EntityRoomVariables roomVariables() {
+        return runtime.entityState.roomVariables;
+    }
+
+    EntityLinkState linkState() {
+        return runtime.entityState.linkState;
+    }
+
+    EntityEventChannels events() {
+        return runtime.entityState.events;
+    }
+
+    EntityHandlerRegistry handlers() {
+        return runtime.entityHandlers;
     }
 }

@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
 
 /** ROM handler stages for Dog. */
@@ -46,7 +47,7 @@ final class DogHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             DogMotion.Update dogUpdate = state.motion(DogMotion.class, DogMotion::new)
-                    .advance(
+                    .advance(new DogFrame(
                             slotState.updated(),
                             frameInput.frame(),
                             state.slot().transitionCountdown(slot),
@@ -57,7 +58,7 @@ final class DogHandler {
                             state.link().actionButtonAHeld(),
                             state.link().dialogActive(),
                             frameInput.randomByteSupplier(),
-                            dogBackgroundInteraction);
+                            dogBackgroundInteraction));
             slotState.updated(dogUpdate.entity());
             state.slot().setTransitionCountdown(slot, dogUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, dogUpdate.physicsFlags());

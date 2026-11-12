@@ -87,7 +87,7 @@ final class SideViewPotContactTest {
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xD6)
                 .at(x, y)

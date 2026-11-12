@@ -12,6 +12,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.StalfosEvasiveFrame;
 import linksawakening.world.entity.motion.StalfosEvasiveMotion;
 
 /** ROM handler stages for StalfosEvasive. */
@@ -31,7 +32,7 @@ final class StalfosEvasiveHandler {
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             StalfosEvasiveMotion.Update evasiveUpdate = state.motion(
                             StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                    .advance(
+                    .advance(new StalfosEvasiveFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -41,7 +42,7 @@ final class StalfosEvasiveHandler {
                             state.slot().ignoreHits(slotState.entity().slot()),
                             frameInput.randomByteSupplier(),
                             frameInput.backgroundCollision(),
-                            state.roomInspection().entityMapId());
+                            state.roomInspection().entityMapId()));
             slotState.updated(evasiveUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {

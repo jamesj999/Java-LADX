@@ -20,7 +20,7 @@ abstract class EntityRuntimeTestSupport {
     static RoomEntity ghiniEntity(EntitySpriteHandlerCatalog catalog, int slot, int type, EntityStatus status) {
         EntitySpriteDefinition definition = catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD);
         int initialZ = type == 0x12 ? 0x10 : 0;
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(type)
@@ -81,7 +81,7 @@ abstract class EntityRuntimeTestSupport {
 
     static RoomEntity dyingEntity(int slot, int sourceLoadOrder, int type, EntitySpriteHandlerCatalog catalog) {
         EntitySpriteDefinition definition = catalog.forEntityType(type, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(sourceLoadOrder)
                 .type(type)
@@ -189,7 +189,7 @@ abstract class EntityRuntimeTestSupport {
     }
 
     static RoomEntity threeOfAKind(int slot, int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(MotionTestAccess.ThreeOfAKindMotion_ENTITY_TYPE)

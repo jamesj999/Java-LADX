@@ -10,27 +10,27 @@ interface EntityBossRewardsServices {
 
     linksawakening.entity.EntitySpriteHandlerCatalog spriteHandlers();
 
-    linksawakening.world.entity.EntityBackgroundMechanics backgroundMechanics();
+    EntityBackgroundMechanics backgroundMechanics();
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityEventChannels events();
+    EntityEventChannels events();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
-    linksawakening.world.entity.EntityPickupController pickups();
+    EntityPickupController pickups();
 
-    linksawakening.world.entity.EntityRoomInspection roomInspection();
+    EntityRoomInspection roomInspection();
 
-    linksawakening.world.entity.EntityRoomVariables roomVariables();
+    EntityRoomVariables roomVariables();
 
-    linksawakening.world.entity.EntitySlotLifecycle lifecycle();
+    EntitySlotLifecycle lifecycle();
 
-    linksawakening.world.entity.EntitySlotProperties slotProperties();
+    EntitySlotProperties slotProperties();
 
-    linksawakening.world.entity.RoomEntity[] slots();
+    RoomEntity[] slots();
 
     void initializeHealthGroup(int slot);
 
@@ -48,47 +48,47 @@ interface EntityBossRewardsServices {
                 return r.spriteHandlers;
             }
 
-            public linksawakening.world.entity.EntityBackgroundMechanics backgroundMechanics() {
+            public EntityBackgroundMechanics backgroundMechanics() {
                 return r.backgroundMechanics;
             }
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityEventChannels events() {
+            public EntityEventChannels events() {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
 
-            public linksawakening.world.entity.EntityPickupController pickups() {
+            public EntityPickupController pickups() {
                 return r.pickups;
             }
 
-            public linksawakening.world.entity.EntityRoomInspection roomInspection() {
+            public EntityRoomInspection roomInspection() {
                 return r.roomInspection;
             }
 
-            public linksawakening.world.entity.EntityRoomVariables roomVariables() {
+            public EntityRoomVariables roomVariables() {
                 return r.entityState.roomVariables;
             }
 
-            public linksawakening.world.entity.EntitySlotLifecycle lifecycle() {
+            public EntitySlotLifecycle lifecycle() {
                 return r.lifecycle;
             }
 
-            public linksawakening.world.entity.EntitySlotProperties slotProperties() {
+            public EntitySlotProperties slotProperties() {
                 return r.slotProperties;
             }
 
-            public linksawakening.world.entity.RoomEntity[] slots() {
+            public RoomEntity[] slots() {
                 return r.slots;
             }
 

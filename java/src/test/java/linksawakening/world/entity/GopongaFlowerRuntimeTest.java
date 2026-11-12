@@ -41,14 +41,13 @@ final class GopongaFlowerRuntimeTest {
     void alternatesOpenAndClosedFlowersOnTheRomFrameMask() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_GOPONGA_FLOWER)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_GOPONGA_FLOWER)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -72,14 +71,13 @@ final class GopongaFlowerRuntimeTest {
     void usesRomPhysicsOptionsHealthAndContactDamage() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_GOPONGA_FLOWER)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_GOPONGA_FLOWER)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -92,7 +90,8 @@ final class GopongaFlowerRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_GOPONGA_FLOWER));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_GOPONGA_FLOWER));
 
-        List<EntityCombatEvent> contact = runtime.resolveCombat(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> contact =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
     }
@@ -101,14 +100,13 @@ final class GopongaFlowerRuntimeTest {
     void requestsLinkFinalPositionEvenWhenLinkIsInTheAir() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_GOPONGA_FLOWER)
-                                .at(0x38, 0x40)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_GOPONGA_FLOWER)
+                        .at(0x38, 0x40)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

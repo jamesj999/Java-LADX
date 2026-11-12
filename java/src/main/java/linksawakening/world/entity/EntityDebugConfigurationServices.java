@@ -5,18 +5,18 @@ import linksawakening.world.entity.motion.*;
 /** Dependencies used by EntityDebugConfiguration; resolved lazily to preserve initialization order. */
 interface EntityDebugConfigurationServices {
 
-    linksawakening.world.entity.EntityCombatTables combatTables();
+    EntityCombatTables combatTables();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
     static EntityDebugConfigurationServices bind(RoomEntityRuntime r) {
         return new EntityDebugConfigurationServices() {
 
-            public linksawakening.world.entity.EntityCombatTables combatTables() {
+            public EntityCombatTables combatTables() {
                 return r.entityState.combatTables;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
         };

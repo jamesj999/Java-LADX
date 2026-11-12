@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.SecretSeashellInteractionFrame;
 import linksawakening.world.entity.motion.SecretSeashellMotion;
 
 /** ROM handler stages for DroppableSecretSeashell. */
@@ -44,7 +45,7 @@ final class DroppableSecretSeashellHandler {
                     : state.background().objectQuery().sample(slotState.entity());
             SecretSeashellMotion.Update shellUpdate = state.motion(
                             SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .advance(
+                    .advance(new SecretSeashellInteractionFrame(
                             slotState.entity(),
                             state.roomInspection().entityRoomId(),
                             frameInput.frame(),
@@ -56,7 +57,7 @@ final class DroppableSecretSeashellHandler {
                             state.rewards().secretSeashellPegasusCollisionY(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
-                            objectUnderEntity);
+                            objectUnderEntity));
             slotState.updated(shellUpdate.entity());
             state.slot()
                     .setOptions1Override(

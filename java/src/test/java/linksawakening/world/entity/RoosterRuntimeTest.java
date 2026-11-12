@@ -15,12 +15,11 @@ final class RoosterRuntimeTest {
 
     @Test
     void activeFollowingRoosterUsesItsDedicatedPowerBraceletLiftBranch() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(MotionTestAccess.RoosterMotion_ENTITY_TYPE)
-                                .at(0x40, 0x50)
-                                .spriteDefinition(definition())
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(MotionTestAccess.RoosterMotion_ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .spriteDefinition(definition())
+                        .build()))
                 .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(true, 0, false, false, 0, 0, false));
         runtime.configuration().setActionButtonsHeld(false, true);

@@ -339,7 +339,7 @@ final class EnemyProjectileCollisionTest {
     }
 
     private static RoomEntity projectile(int type, int x, int y, int z) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .type(type)
                 .at(x, y)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(type))

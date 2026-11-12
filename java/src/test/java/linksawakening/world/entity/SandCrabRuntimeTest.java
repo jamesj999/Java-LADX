@@ -44,14 +44,12 @@ final class SandCrabRuntimeTest {
     void usesSandCrabsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_SAND_CRAB)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_SAND_CRAB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -71,7 +69,7 @@ final class SandCrabRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
-        RoomEntity crab = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity crab = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_SAND_CRAB)
                 .at(0x40, 0x40)
@@ -97,7 +95,7 @@ final class SandCrabRuntimeTest {
         EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
                 .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
-        RoomEntity crab = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity crab = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_SAND_CRAB)
                 .at(0x40, 0x40)
@@ -125,14 +123,12 @@ final class SandCrabRuntimeTest {
     void nonInteractiveLinkMotionSkipsSandCrabTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_SAND_CRAB)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(
-                                        catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_SAND_CRAB)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(catalog.forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

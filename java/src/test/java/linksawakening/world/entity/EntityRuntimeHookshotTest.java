@@ -21,13 +21,12 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition ironMaskDefinition =
                 catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x24)
-                                .at(0x4D, 0x50)
-                                .spriteDefinition(ironMaskDefinition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x24)
+                        .at(0x4D, 0x50)
+                        .spriteDefinition(ironMaskDefinition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -66,12 +65,11 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
     void keyDropPointMasterStalfosRoomUsesHookshotPresentationAndReward() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = keyDropDefinition();
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .type(0x30)
-                                .at(24, 32)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .type(0x30)
+                        .at(24, 32)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

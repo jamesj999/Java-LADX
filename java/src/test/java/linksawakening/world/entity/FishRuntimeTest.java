@@ -22,14 +22,13 @@ final class FishRuntimeTest {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition definition =
                 catalog.forEntityType(FishMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.OVERWORLD);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(FishMotion.ENTITY_TYPE)
-                                .at(0x40, 0x50)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(FishMotion.ENTITY_TYPE)
+                        .at(0x40, 0x50)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
@@ -63,8 +62,8 @@ final class FishRuntimeTest {
                         events);
 
                 int combatFrame = (frame & 0x01) == 0 ? frame + 1 : frame;
-                List<EntityCombatEvent> contact =
-                        runtime.resolveCombat(combatFrame & 0xFF, fish.x(), fish.y(), false, true, false, 0, 0, 0, 0);
+                List<EntityCombatEvent> contact = runtime.resolveCombat(new EntitySwordContactFrame(
+                        combatFrame & 0xFF, fish.x(), fish.y(), false, true, false, 0, 0, 0, 0));
                 assertEquals(1, contact.size());
                 assertEquals(0x04, contact.get(0).linkDamage());
                 assertFalse(contact.get(0).swordHit());

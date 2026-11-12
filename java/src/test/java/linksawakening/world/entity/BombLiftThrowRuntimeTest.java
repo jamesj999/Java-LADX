@@ -372,7 +372,7 @@ final class BombLiftThrowRuntimeTest {
     @Test
     void preexistingStaticBombWithUnsupportedDirectionDoesNotStartMotion() {
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .type(0x02)
                 .at(0x40, 0x50)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x02))
@@ -442,7 +442,7 @@ final class BombLiftThrowRuntimeTest {
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
                         new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x05)
                 .at(0x20, 0x30)

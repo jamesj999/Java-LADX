@@ -371,4 +371,48 @@ public final class EntityPresentationFlags {
     public boolean preserveTarinPresentation(boolean value) {
         return preserveTarinPresentation = value;
     }
+
+    boolean preservesHandlerPresentation() {
+        return preserveGhiniPresentation()
+                || preserveMadBomberPresentation()
+                || preserveBombitePresentation()
+                || preserveIronMaskPresentation()
+                || preserveSnakePresentation()
+                || preserveStarPresentation()
+                || preserveBlooperPresentation()
+                || preserveWingedOctorokPresentation()
+                || preservePincerPresentation()
+                || preserveBushCrawlerPresentation()
+                || preserveMimicPresentation()
+                || preserveMaskedMimicPresentation()
+                || preserveMiniMoldormPresentation()
+                || preserveMoldormPresentation()
+                || preserveCuccoPresentation()
+                || preserveGopongaFlowerPresentation()
+                || preserveGiantGopongaPresentation()
+                || preserveGopongaProjectilePresentation()
+                || preservePokeyPresentation()
+                || preservePiranhaPresentation()
+                || preserveZoraPresentation()
+                || preserveZombiePresentation()
+                || preserveBuzzBlobPresentation()
+                || preserveSandCrabPresentation()
+                || preserveDogPresentation()
+                || preserveUrchinPresentation()
+                || preserveWitchRatPresentation()
+                || preserveWitchPresentation()
+                || preserveRoosterPresentation()
+                || preserveWizrobePresentation()
+                || preserveWizrobeProjectilePresentation()
+                || preservePolsVoicePresentation()
+                || preserveSpikedBeetlePresentation()
+                || preserveArmosKnightPresentation()
+                || preserveHinoxPresentation()
+                || preserveRollingBonesPresentation()
+                || preserveThreeOfAKindPresentation()
+                || preserveMoblinKingPresentation()
+                || preserveSecretSeashellPresentation()
+                || preserveDroppablePresentation()
+                || preserveTarinPresentation();
+    }
 }

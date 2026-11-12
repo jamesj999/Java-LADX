@@ -8,6 +8,7 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class FishMotionTest {
@@ -70,7 +71,7 @@ final class FishMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int variant) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(FishMotion.ENTITY_TYPE)
                 .at(x, y)

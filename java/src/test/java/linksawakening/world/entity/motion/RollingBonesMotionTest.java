@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class RollingBonesMotionTest {
@@ -128,7 +129,7 @@ final class RollingBonesMotionTest {
     }
 
     private static RoomEntity entity(int slot, int type, int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(type)
@@ -138,7 +139,7 @@ final class RollingBonesMotionTest {
     }
 
     private static RoomEntity withX(RoomEntity entity, int x) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(entity.slot())
                 .sourceLoadOrder(entity.sourceLoadOrder())
                 .type(entity.type())

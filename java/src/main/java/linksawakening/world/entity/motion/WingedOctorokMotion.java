@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -51,19 +50,19 @@ public final class WingedOctorokMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            int transitionCountdown,
-            int ignoreHitsCountdown,
-            boolean actionButtonsHeld,
-            int linkItemA,
-            int linkItemB) {
-        return advance(
+    public Update advance(WingedOctorokFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int transitionCountdown = inputs.transitionCountdown();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        boolean actionButtonsHeld = inputs.actionButtonsHeld();
+        int linkItemA = inputs.linkItemA();
+        int linkItemB = inputs.linkItemB();
+        return advance(new WingedOctorokInteractionFrame(
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -75,22 +74,22 @@ public final class WingedOctorokMotion {
                 actionButtonsHeld,
                 actionButtonsHeld,
                 linkItemA,
-                linkItemB);
+                linkItemB));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            int transitionCountdown,
-            int ignoreHitsCountdown,
-            boolean actionButtonAHeld,
-            boolean actionButtonBHeld,
-            int linkItemA,
-            int linkItemB) {
+    public Update advance(WingedOctorokInteractionFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        int transitionCountdown = inputs.transitionCountdown();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        boolean actionButtonAHeld = inputs.actionButtonAHeld();
+        boolean actionButtonBHeld = inputs.actionButtonBHeld();
+        int linkItemA = inputs.linkItemA();
+        int linkItemB = inputs.linkItemB();
         if ((entity.type() & 0xFF) != ENTITY_WINGED_OCTOROK) {
             throw new IllegalArgumentException(
                     "Unsupported Winged Octorok motion entity type: 0x" + Integer.toHexString(entity.type()));

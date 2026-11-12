@@ -12,7 +12,7 @@ final class LeeverContactRecoilTest {
     @Test
     void acceptedContactKeepsCachedHitboxButUsesMovedPositionForRecoil() {
         var runtime = chasingLeever(110, 40);
-        var contact = runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0)
+        var contact = runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0))
                 .getFirst();
         assertEquals(4, contact.linkDamage());
         assertTrue(runtime.deferContactRecoil(contact.slot(), 109, 39));
@@ -27,7 +27,7 @@ final class LeeverContactRecoilTest {
     @Test
     void backgroundRestorationKeepsTheOriginalRecoilVector() {
         var runtime = chasingLeever(64, 65);
-        runtime.resolveCombat(35, 63, 64, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 63, 64, false, true, false, 0, 0, 0, 0));
         assertTrue(runtime.deferContactRecoil(2, 63, 64));
 
         runtime.tick(EntityTestFrames.frame(runtime, 35, 63, 64, () -> 0, (entity, direction, x, y) -> true));
@@ -39,7 +39,7 @@ final class LeeverContactRecoilTest {
     @Test
     void contactsRejectedByThePlayerDamageGateDoNotWriteRecoil() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
         assertTrue(runtime.consumePendingEntityEvents().isEmpty());
     }
@@ -47,7 +47,7 @@ final class LeeverContactRecoilTest {
     @Test
     void skippedHandlerDoesNotLeaveAResponseForTheFollowingFrame() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(35, 109, 39, false, true, false, 0, 0, 0, 0);
+        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
         runtime.deferContactRecoil(2, 109, 39);
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
@@ -80,7 +80,7 @@ final class LeeverContactRecoilTest {
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
         slots.set(
                 2,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(2)
                         .sourceLoadOrder(0)
                         .type(0x0E)

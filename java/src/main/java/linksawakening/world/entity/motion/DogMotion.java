@@ -1,7 +1,6 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -48,18 +47,18 @@ public final class DogMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int transitionCountdown,
-            int physicsFlags,
-            int linkEntityX,
-            int linkEntityY,
-            int linkDirection,
-            boolean actionButtonAHeld,
-            boolean dialogActive,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
+    public Update advance(DogFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int transitionCountdown = inputs.transitionCountdown();
+        int physicsFlags = inputs.physicsFlags();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkDirection = inputs.linkDirection();
+        boolean actionButtonAHeld = inputs.actionButtonAHeld();
+        boolean dialogActive = inputs.dialogActive();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
         checkType(entity);
         validateByte(frameCounter, "Dog frame counter");
         validateByte(transitionCountdown, "Dog transition countdown");

@@ -657,7 +657,7 @@ final class TarinRaccoonRuntimeTest {
         }
         slots.set(
                 tarinSlot,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(tarinSlot)
                         .sourceLoadOrder(0)
                         .type(ENTITY_TARIN)

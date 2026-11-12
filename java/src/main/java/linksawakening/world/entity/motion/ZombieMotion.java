@@ -1,7 +1,6 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -55,17 +54,17 @@ public final class ZombieMotion {
         initialized[slot] = true;
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int frameCounter,
-            int transitionCountdown,
-            int physicsFlags,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityObjectQuery objectQuery,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown) {
+    public Update advance(ZombieFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int transitionCountdown = inputs.transitionCountdown();
+        int physicsFlags = inputs.physicsFlags();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityObjectQuery objectQuery = inputs.objectQuery();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
         checkType(entity);
         Objects.requireNonNull(randomByteSupplier, "Zombie random-byte supplier");
         validateByte(transitionCountdown, "Zombie transition countdown");

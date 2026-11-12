@@ -10,6 +10,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.MoblinSwordFrame;
 import linksawakening.world.entity.motion.MoblinSwordMotion;
 
 /** ROM handler stages for MoblinSword. */
@@ -52,7 +53,7 @@ final class MoblinSwordHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             MoblinSwordMotion.Update moblinSwordUpdate = state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                    .advance(
+                    .advance(new MoblinSwordFrame(
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
@@ -61,7 +62,7 @@ final class MoblinSwordHandler {
                             state.projectiles().swordMoblinAlertingSoundCounter(),
                             state.roomInspection().entityMapId(),
                             state.lifecycle().transitionSequenceCounter(),
-                            frameInput.frame());
+                            frameInput.frame()));
             slotState.updated(moblinSwordUpdate.entity());
             if (moblinSwordUpdate.dialogRequested()) {
                 state.emit(new DialogRequest(1, DIALOG_MOBLIN));

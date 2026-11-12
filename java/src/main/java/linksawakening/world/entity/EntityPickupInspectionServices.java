@@ -4,23 +4,23 @@ import linksawakening.world.entity.motion.*;
 
 /** Dependencies used by EntityPickupInspection; resolved lazily to preserve initialization order. */
 interface EntityPickupInspectionServices {
-    linksawakening.world.entity.EntityBombInteractions bombInteractions();
+    EntityBombInteractions bombInteractions();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
     static EntityPickupInspectionServices bind(RoomEntityRuntime r) {
         return new EntityPickupInspectionServices() {
-            public linksawakening.world.entity.EntityBombInteractions bombInteractions() {
+            public EntityBombInteractions bombInteractions() {
                 return r.bombInteractions;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
         };

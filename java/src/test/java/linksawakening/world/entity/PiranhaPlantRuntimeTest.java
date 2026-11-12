@@ -46,14 +46,13 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_PIRANHA_PLANT));
 
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x60)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -69,14 +68,13 @@ final class PiranhaPlantRuntimeTest {
     void clearsSharedSwordRecoilBeforeRunningItsStateMachine() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -85,7 +83,8 @@ final class PiranhaPlantRuntimeTest {
 
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x78, () -> 0));
-        assertTrue(runtime.resolveCombat(1, 0x78, 0x78, false, true, true, 0x48, 1, 0x48, 1, nonDamaging)
+        assertTrue(runtime.resolveCombat(
+                        new EntityVerticalContactFrame(1, 0x78, 0x78, false, true, true, 0x48, 1, 0x48, 1, nonDamaging))
                 .get(0)
                 .swordHit());
 
@@ -102,13 +101,12 @@ final class PiranhaPlantRuntimeTest {
         EntitySpriteDefinition definition =
                 catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
-        RoomEntityRuntime creditsRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime creditsRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -118,13 +116,12 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0, creditsRuntime.enemies().transitionCountdown(0));
         assertEquals(0x40, creditsRuntime.inspection().snapshot().slots().get(0).y());
 
-        RoomEntityRuntime transitionRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime transitionRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -141,36 +138,34 @@ final class PiranhaPlantRuntimeTest {
     void hiddenPipeStateDoesNotRunEnemyDamageCollision() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x40)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(rom))
                 .build();
 
-        assertTrue(runtime.resolveCombat(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0)
+        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
     }
 
     @Test
     void waitsUntilLinkLeavesItsPipeColumnBeforeStartingRise() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x60)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x60)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -197,15 +192,14 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void risesThroughRomFramesThenReturnsToHiddenPosition() throws IOException {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_PIRANHA_PLANT)
-                                .at(0x40, 0x60)
-                                .status(EntityStatus.INIT)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_PIRANHA_PLANT)
+                        .at(0x40, 0x60)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A))
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

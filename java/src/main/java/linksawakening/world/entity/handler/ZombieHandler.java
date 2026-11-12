@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.ZombieFrame;
 import linksawakening.world.entity.motion.ZombieMotion;
 
 /** ROM handler stages for Zombie. */
@@ -50,7 +51,7 @@ final class ZombieHandler {
                         RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
             }
             ZombieMotion.Update zombieUpdate = state.motion(ZombieMotion.class, ZombieMotion::new)
-                    .advance(
+                    .advance(new ZombieFrame(
                             slotState.updated(),
                             frameInput.frame(),
                             state.slot().transitionCountdown(slot),
@@ -60,7 +61,7 @@ final class ZombieHandler {
                             frameInput.randomByteSupplier(),
                             state.background().objectQuery(),
                             zombieBackgroundInteraction,
-                            state.slot().ignoreHits(slot));
+                            state.slot().ignoreHits(slot)));
             slotState.updated(zombieUpdate.entity());
             state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
             state.slot().setPhysicsFlags(slot, zombieUpdate.physicsFlags());

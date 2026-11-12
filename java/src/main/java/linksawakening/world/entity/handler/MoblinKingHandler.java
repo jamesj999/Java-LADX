@@ -14,6 +14,7 @@ import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.MoblinKingFrame;
 import linksawakening.world.entity.motion.MoblinKingMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
@@ -61,7 +62,7 @@ final class MoblinKingHandler {
                     return false;
                 }
                 MoblinKingMotion.Update kingUpdate = state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                        .advance(
+                        .advance(new MoblinKingFrame(
                                 slotState.entity(),
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
@@ -80,7 +81,7 @@ final class MoblinKingHandler {
                                         && RoomEntityCombatRules.overlapsLink(
                                                 slotState.entity(),
                                                 frameInput.linkEntityX(),
-                                                frameInput.linkEntityY()));
+                                                frameInput.linkEntityY())));
                 slotState.updated(kingUpdate.entity());
                 state.slot().setTransitionCountdown(slotState.entity().slot(), kingUpdate.transitionCountdown());
                 state.slot()

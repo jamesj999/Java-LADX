@@ -31,7 +31,7 @@ class EntityBossBattleFlagTest {
     }
 
     private RoomEntity entity(int slot, int type) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(type)

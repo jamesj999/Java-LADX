@@ -19,7 +19,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition moblinDefinition = pairDefinition(0x0B, 8);
-        RoomEntity moblin = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity moblin = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(15)
                 .type(0x0B)

@@ -14,7 +14,7 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
     void dungeonWarpStaysHiddenUntilMinibossDefeatThenCyclesAllEightPhases() throws IOException {
         byte[] rom = loadRom();
         var catalog = new EntitySpriteHandlerCatalog(rom);
-        var warp = new linksawakening.world.entity.RoomEntityBuilder()
+        var warp = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x61)
                 .at(80, 72)

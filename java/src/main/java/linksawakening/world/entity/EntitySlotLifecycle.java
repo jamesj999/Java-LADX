@@ -55,7 +55,7 @@ public final class EntitySlotLifecycle {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return collectIfNeeded(
+        return collectIfNeeded(new EntityPickupFrame(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -67,22 +67,22 @@ public final class EntitySlotLifecycle {
                 0,
                 0,
                 0,
-                0);
+                0));
     }
 
-    EntityPickupEvent collectIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection,
-            int linkZ,
-            boolean swordActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
+    EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        int linkDirection = inputs.linkDirection();
+        int linkZ = inputs.linkZ();
+        boolean swordActive = inputs.swordActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
         if (!linkInteractive) {
             return null;
         }

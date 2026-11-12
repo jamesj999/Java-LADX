@@ -11,13 +11,13 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
 
     @Test
     void helperEntitiesUseTheirRomPillarAndSideViewHitboxes() {
-        RoomEntity pillar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity pillar = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x9D)
                 .at(0x50, 0x60)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x9D))
                 .build();
-        RoomEntity thwomp = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity thwomp = new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(0)
                 .type(0xD8)
@@ -31,7 +31,7 @@ final class EntityRuntimeSideViewTest extends EntityRuntimeTestSupport {
 
     @Test
     void enemyProjectileReboundUsesTheSideViewRoomGravity() {
-        RoomEntity projectile = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity projectile = new RoomEntityBuilder()
                 .type(0x0C)
                 .at(0x40, 0x50)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x0C))

@@ -12,13 +12,12 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieBossIntroDelayPausesForInventoryAndRoomTransitions() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x5C)
-                                .at(0x50, 0x68)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x5C)
+                        .at(0x50, 0x68)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
+                        .build()))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x01);
@@ -46,13 +45,12 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void genieJarThresholdSpawnsBodyAndRockThenUnloadsTheJar() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x5C)
-                                .at(0x50, 0x68)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x5C)
+                        .at(0x50, 0x68)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
+                        .build()))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(runtime).setGeniePrivateState4ForTest(0, 0x03);
@@ -86,14 +84,13 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void thrownGenieJarCollisionCountsAnImpactAndEmitsBossHurtWave() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x5C)
-                                .at(0x50, 0x68)
-                                .status(EntityStatus.THROWN)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x5C)
+                        .at(0x50, 0x68)
+                        .status(EntityStatus.THROWN)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
+                        .build()))
                 .indoorRoom(true)
                 .build();
 
@@ -111,14 +108,13 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
 
     @Test
     void thirdThrownGenieJarCollisionRestoresActiveThresholdState() {
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x5C)
-                                .at(0x50, 0x68)
-                                .status(EntityStatus.THROWN)
-                                .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x5C)
+                        .at(0x50, 0x68)
+                        .status(EntityStatus.THROWN)
+                        .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
+                        .build()))
                 .indoorRoom(true)
                 .build();
         EntityRuntimeFixture.debug(runtime).setGeniePrivateState4ForTest(0, 2);
@@ -145,14 +141,14 @@ final class EntityRuntimeGenie2Test extends EntityRuntimeTestSupport {
     @Test
     void thrownGenieJarTargetOverlapDoesNotCountBeforeTheBackgroundCollisionCheck() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .sourceLoadOrder(0)
                                 .type(0x5C)
                                 .at(0x50, 0x68)
                                 .status(EntityStatus.THROWN)
                                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x5C))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(1)
                                 .sourceLoadOrder(1)
                                 .type(0x88)

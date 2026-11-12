@@ -8,18 +8,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class MoblinKingMotionTest {
     @Test
     void hopUsesCurrentLinkSideAndRomDominantAxisSpeed() {
         MoblinKingMotion motion = new MoblinKingMotion();
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, -3);
-        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0, 0x20);
-        var hop = motion.advance(entity(88, 96), 24, 64, 0, 0x30, 0, () -> 0, null, false);
+        MotionTestFixture.setStateForTest(motion, 0, 2, 0, 0, 0, -3);
+        MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0, 0x20);
+        var hop = motion.advance(new MoblinKingFrame(entity(88, 96), 24, 64, 0, 0x30, 0, () -> 0, null, false));
         assertEquals(0xFA, motion.speedX(0)); // target (72,64): dx=-16, dy=-32.
-        var next = motion.advance(hop.entity(), 24, 64, 0, 0x30, 1, () -> 0, null, false);
-        var following = motion.advance(next.entity(), 24, 64, 0, 0x30, 2, () -> 0, null, false);
+        var next = motion.advance(new MoblinKingFrame(hop.entity(), 24, 64, 0, 0x30, 1, () -> 0, null, false));
+        var following = motion.advance(new MoblinKingFrame(next.entity(), 24, 64, 0, 0x30, 2, () -> 0, null, false));
         assertEquals(87, following.entity().x());
         assertEquals(94, following.entity().y());
     }
@@ -35,15 +36,17 @@ final class MoblinKingMotionTest {
                 0,
                 List.of(new EntitySpriteDefinition.Variant(
                         new EntitySpriteDefinition.OamAttribute(0, 0), new EntitySpriteDefinition.OamAttribute(2, 0))));
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
                 .spriteDefinition(loadedDefinition)
                 .build();
 
-        MoblinKingMotion.Update setup = motion.advance(king, 0x30, 0x58, 0, 0, 0, () -> 0, null, false);
-        MoblinKingMotion.Update intro = motion.advance(setup.entity(), 0x30, 0x58, 0, 0, 1, () -> 0, null, false);
+        MoblinKingMotion.Update setup =
+                motion.advance(new MoblinKingFrame(king, 0x30, 0x58, 0, 0, 0, () -> 0, null, false));
+        MoblinKingMotion.Update intro =
+                motion.advance(new MoblinKingFrame(setup.entity(), 0x30, 0x58, 0, 0, 1, () -> 0, null, false));
 
         assertEquals(0, intro.entity().spriteVariant());
         assertEquals(1, motion.bodyVariant(0));
@@ -54,14 +57,16 @@ final class MoblinKingMotionTest {
         MoblinKingMotion motion = new MoblinKingMotion();
         RoomEntity king = entity(0x58, 0x58);
 
-        MoblinKingMotion.Update setup = motion.advance(king, 0x30, 0x58, 0, 0, 0, () -> 0, null, false);
+        MoblinKingMotion.Update setup =
+                motion.advance(new MoblinKingFrame(king, 0x30, 0x58, 0, 0, 0, () -> 0, null, false));
 
         assertEquals(1, motion.state(0));
         assertEquals(0x20, setup.transitionCountdown());
         assertEquals(1, motion.direction(0));
         assertFalse(setup.openIntroDialog());
 
-        MoblinKingMotion.Update intro = motion.advance(setup.entity(), 0x30, 0x58, 0, 0, 0x20, () -> 0, null, false);
+        MoblinKingMotion.Update intro =
+                motion.advance(new MoblinKingFrame(setup.entity(), 0x30, 0x58, 0, 0, 0x20, () -> 0, null, false));
 
         assertEquals(2, motion.state(0));
         assertEquals(0x30, intro.slowTransitionCountdown());
@@ -72,9 +77,10 @@ final class MoblinKingMotionTest {
     void sourceAttackWindupLaunchesHorizontalMoblinArrowAtCountdownTwelve() {
         MoblinKingMotion motion = new MoblinKingMotion();
         RoomEntity king = enterAttackState(motion);
-        linksawakening.world.entity.motion.MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0x0D, 0x20);
+        MotionTestFixture.setPrivateCountdownsForTest(motion, 0, 0x0D, 0x20);
 
-        MoblinKingMotion.Update update = motion.advance(king, 0x20, 0x58, 0, 0x20, 0, () -> 0, null, false);
+        MoblinKingMotion.Update update =
+                motion.advance(new MoblinKingFrame(king, 0x20, 0x58, 0, 0x20, 0, () -> 0, null, false));
 
         assertNotNull(update.arrowRequest());
         assertEquals(0x50, update.arrowRequest().x());
@@ -88,8 +94,8 @@ final class MoblinKingMotionTest {
         MoblinKingMotion motion = new MoblinKingMotion();
         RoomEntity king = enterChargeState(motion);
 
-        MoblinKingMotion.Update impact =
-                motion.advance(king, 0x20, 0x58, 0x22, 0, 0, () -> 0, (entity, direction, x, y) -> true, false);
+        MoblinKingMotion.Update impact = motion.advance(
+                new MoblinKingFrame(king, 0x20, 0x58, 0x22, 0, 0, () -> 0, (entity, direction, x, y) -> true, false));
 
         assertEquals(5, motion.state(0));
         assertEquals(0x60, impact.transitionCountdown());
@@ -104,7 +110,8 @@ final class MoblinKingMotionTest {
         MoblinKingMotion motion = new MoblinKingMotion();
         RoomEntity king = enterChargeState(motion);
 
-        MoblinKingMotion.Update collision = motion.advance(king, 0x50, 0x58, 0x22, 0, 0, () -> 0, null, true);
+        MoblinKingMotion.Update collision =
+                motion.advance(new MoblinKingFrame(king, 0x50, 0x58, 0x22, 0, 0, () -> 0, null, true));
 
         assertEquals(9, motion.state(0));
         assertEquals(0x60, collision.transitionCountdown());
@@ -115,20 +122,22 @@ final class MoblinKingMotionTest {
 
     private static RoomEntity enterAttackState(MoblinKingMotion motion) {
         RoomEntity king = entity(0x58, 0x58);
-        MoblinKingMotion.Update setup = motion.advance(king, 0x20, 0x58, 0, 0, 0, () -> 0, null, false);
-        return motion.advance(setup.entity(), 0x20, 0x58, 0, 0, 0, () -> 0, null, false)
+        MoblinKingMotion.Update setup =
+                motion.advance(new MoblinKingFrame(king, 0x20, 0x58, 0, 0, 0, () -> 0, null, false));
+        return motion.advance(new MoblinKingFrame(setup.entity(), 0x20, 0x58, 0, 0, 0, () -> 0, null, false))
                 .entity();
     }
 
     private static RoomEntity enterChargeState(MoblinKingMotion motion) {
         RoomEntity king = enterAttackState(motion);
-        linksawakening.world.entity.motion.MotionTestFixture.setStateForTest(motion, 0, 3, 1, 0x28, 0, 0);
-        MoblinKingMotion.Update prepare = motion.advance(king, 0x20, 0x58, 0, 0, 0, () -> 0, null, false);
+        MotionTestFixture.setStateForTest(motion, 0, 3, 1, 0x28, 0, 0);
+        MoblinKingMotion.Update prepare =
+                motion.advance(new MoblinKingFrame(king, 0x20, 0x58, 0, 0, 0, () -> 0, null, false));
         return prepare.entity();
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(x, y)

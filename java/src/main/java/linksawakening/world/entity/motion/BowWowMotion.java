@@ -65,7 +65,7 @@ public final class BowWowMotion {
             int linkEntityZ,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return advanceWithTargetScan(
+        return advanceWithTargetScan(new BowWowTargetFrame(
                         entity,
                         frameCounter,
                         linkEntityX,
@@ -74,22 +74,22 @@ public final class BowWowMotion {
                         randomByteSupplier,
                         backgroundCollision,
                         List.of(entity),
-                        type -> false)
+                        type -> false))
                 .entity();
     }
 
-    Update advanceWithTargetScan(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity) {
+    Update advanceWithTargetScan(BowWowTargetFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        java.util.List<RoomEntity> entities = inputs.entities();
+        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
         tickTimers(entity.slot());
-        return advanceAfterTimers(
+        return advanceAfterTimers(new BowWowFrame(
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -98,20 +98,20 @@ public final class BowWowMotion {
                 randomByteSupplier,
                 backgroundCollision,
                 entities,
-                canEatEntity);
+                canEatEntity));
     }
 
-    public Update advanceAfterTimers(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity) {
-        return advanceAfterTimers(
+    public Update advanceAfterTimers(BowWowFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        java.util.List<RoomEntity> entities = inputs.entities();
+        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
+        return advanceAfterTimers(new BowWowCollisionFrame(
                 entity,
                 frameCounter,
                 linkEntityX,
@@ -121,20 +121,20 @@ public final class BowWowMotion {
                 backgroundCollision,
                 entities,
                 canEatEntity,
-                1);
+                1));
     }
 
-    public Update advanceAfterTimers(
-            RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkEntityZ,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            List<RoomEntity> entities,
-            IntPredicate canEatEntity,
-            int bowWowState) {
+    public Update advanceAfterTimers(BowWowCollisionFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        int linkEntityZ = inputs.linkEntityZ();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        java.util.List<RoomEntity> entities = inputs.entities();
+        java.util.function.IntPredicate canEatEntity = inputs.canEatEntity();
+        int bowWowState = inputs.bowWowState();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot);

@@ -11,6 +11,7 @@ import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.PokeyFrame;
 import linksawakening.world.entity.motion.PokeyMotion;
 
 /** ROM handler stages for Pokey. */
@@ -62,7 +63,7 @@ final class PokeyHandler {
                     state.slot().setHealth(slot, 0x02);
                 }
                 PokeyMotion.Update pokeyUpdate = state.motion(PokeyMotion.class, PokeyMotion::new)
-                        .advanceMain(
+                        .advanceMain(new PokeyFrame(
                                 slotState.updated(),
                                 frameInput.frame(),
                                 state.slot().pokeyInertia(slot),
@@ -71,7 +72,7 @@ final class PokeyHandler {
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
                                 frameInput.randomByteSupplier(),
-                                frameInput.backgroundCollision());
+                                frameInput.backgroundCollision()));
                 slotState.updated(pokeyUpdate.entity());
                 state.slot().setPokeyInertia(slot, pokeyUpdate.inertia());
                 state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());

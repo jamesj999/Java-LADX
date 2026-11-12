@@ -28,7 +28,7 @@ final class SlimeEyeRuntimeTest {
         for (int s = 0; s < 16; s++) list.add(RoomEntity.disabled(s));
         list.set(
                 0,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x5B)
                         .at(0x50, 0x48)
@@ -59,7 +59,7 @@ final class SlimeEyeRuntimeTest {
     }
 
     private void sword(RoomEntityRuntime r, RoomEntity e, boolean dash) {
-        r.resolveCombat(
+        r.resolveCombat(new EntityVerticalContactFrame(
                 frame & 255,
                 0x50,
                 0x60,
@@ -70,7 +70,7 @@ final class SlimeEyeRuntimeTest {
                 4,
                 e.y() - e.z() + 8,
                 4,
-                new EnemyAttackContext(1, false, false, false, dash));
+                new EnemyAttackContext(1, false, false, false, dash)));
     }
 
     private void drop(RoomEntityRuntime r) {
@@ -309,7 +309,7 @@ final class SlimeEyeRuntimeTest {
         for (int i = 0; i < xs.length; i++)
             slots.set(
                     i,
-                    new linksawakening.world.entity.RoomEntityBuilder()
+                    new RoomEntityBuilder()
                             .slot(i)
                             .type(0x5B)
                             .at(xs[i], 64)
@@ -387,7 +387,7 @@ final class SlimeEyeRuntimeTest {
         r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
         r.entityState.combatTables.writeEnemyHealth(0, 5);
         var e = r.slots[0];
-        var events = r.resolveCombat(
+        var events = r.resolveCombat(new EntityVerticalContactFrame(
                 frame,
                 80,
                 88,
@@ -398,7 +398,7 @@ final class SlimeEyeRuntimeTest {
                 4,
                 e.y() - e.z() + 8,
                 4,
-                new EnemyAttackContext(1, false, false, false, true));
+                new EnemyAttackContext(1, false, false, false, true)));
         assertEquals(
                 4, r.entityState.combatTables.readEnemyHealth(0), "6DDF clears boots before damage type is selected");
         assertEquals(0x10, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
@@ -425,8 +425,8 @@ final class SlimeEyeRuntimeTest {
         r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0);
         r.entityState.combatTables.writeEnemyHealth(0, 5);
         var e = r.slots[0];
-        var events = r.resolveCombat(
-                frame, 80, 88, false, true, true, e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard());
+        var events = r.resolveCombat(new EntityVerticalContactFrame(
+                frame, 80, 88, false, true, true, e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard()));
         assertEquals(4, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
         assertEquals(1, events.getFirst().enemyDamage());
     }

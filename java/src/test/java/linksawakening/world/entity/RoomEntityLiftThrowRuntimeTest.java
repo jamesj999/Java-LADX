@@ -168,7 +168,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         EntitySpriteDefinition polsVoiceDefinition = definition(0x18);
         List<RoomEntity> slots = new ArrayList<>();
         int targetSlot = 0;
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .slot(targetSlot)
                 .sourceLoadOrder(1)
                 .type(0x18)
@@ -179,7 +179,7 @@ final class RoomEntityLiftThrowRuntimeTest {
             slots.add(RoomEntity.disabled(slot));
         }
         int thrownSlot = EntityRoomLoader.MAX_ENTITIES - 1;
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .slot(thrownSlot)
                 .sourceLoadOrder(0)
                 .type(0x05)
@@ -225,7 +225,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     void activeSideViewPotUsesItsBraceletPickupHandler() {
         EntitySpriteDefinition definition = definition(0xD6);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xD6)
                 .at(0x50, 0x60)
@@ -696,7 +696,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         }
         slots.set(
                 potSlot,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(potSlot)
                         .sourceLoadOrder(0)
                         .type(0xD6)
@@ -705,7 +705,7 @@ final class RoomEntityLiftThrowRuntimeTest {
                         .build());
         slots.set(
                 tarinSlot,
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(tarinSlot)
                         .sourceLoadOrder(1)
                         .type(0x3F)
@@ -906,7 +906,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     private static RoomEntityRuntime sideViewPotRuntime() {
         EntitySpriteDefinition definition = definition(0xD6);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xD6)
                 .at(0x50, 0x60)
@@ -923,13 +923,13 @@ final class RoomEntityLiftThrowRuntimeTest {
         EntitySpriteDefinition potDefinition = definition(0xD6);
         EntitySpriteDefinition targetDefinition = definition(0x18);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xD6)
                 .at(0x50, 0x60)
                 .spriteDefinition(potDefinition)
                 .build());
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(1)
                 .type(0x18)
@@ -950,7 +950,7 @@ final class RoomEntityLiftThrowRuntimeTest {
     private static RoomEntityRuntime runtimeWithEntity(EntityStatus status, int type) {
         EntitySpriteDefinition definition = definition(type);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(type)
                 .at(0x20, 0x30)

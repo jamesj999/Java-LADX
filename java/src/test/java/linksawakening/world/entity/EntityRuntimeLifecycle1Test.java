@@ -35,7 +35,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void deathPresentationFieldsAreIndependentFromNormalSpriteVariant() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity entity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -53,7 +53,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void rejectsDeathSpriteVariantsOutsideTheFourFrameRange() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        assertThrows(IllegalArgumentException.class, () -> new linksawakening.world.entity.RoomEntityBuilder()
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -62,7 +62,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteVariant(1)
                 .deathSpriteVariant(-2)
                 .build());
-        assertThrows(IllegalArgumentException.class, () -> new linksawakening.world.entity.RoomEntityBuilder()
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -76,7 +76,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void rejectsDeathSpriteVariantsForNonDyingEntities() {
         EntitySpriteDefinition body = pairDefinition(0x09, 2);
-        assertThrows(IllegalArgumentException.class, () -> new linksawakening.world.entity.RoomEntityBuilder()
+        assertThrows(IllegalArgumentException.class, () -> new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -92,7 +92,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         EntitySpriteDefinition octorok = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         EntitySpriteDefinition keese = catalog.forEntityType(0x19, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -101,7 +101,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         for (int slot = 1; slot < 15; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+        slots.add(new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(1)
                 .type(0x19)
@@ -114,8 +114,8 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        runtime.resolveCombat(
-                0, 80, 64, false, true, true, 112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false));
+        runtime.resolveCombat(new EntityVerticalContactFrame(
+                0, 80, 64, false, true, true, 112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false)));
         assertTrue(runtime.enemies().powerRecoilDeath(15));
         runtime.clearEntity(15);
         assertFalse(runtime.enemies().powerRecoilDeath(15));
@@ -136,7 +136,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void followsPieceOfPowerFrameDrivenPaletteVariant() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x33)
                 .at(24, 32)
@@ -156,7 +156,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void activeEntitiesPassThroughTheGroundInteractionBoundaryAfterMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x4D)
                 .at(32, 48)
@@ -166,7 +166,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         AtomicInteger calls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {
             calls.incrementAndGet();
-            RoomEntity updated = new linksawakening.world.entity.RoomEntityBuilder()
+            RoomEntity updated = new RoomEntityBuilder()
                     .slot(entity.slot())
                     .sourceLoadOrder(entity.sourceLoadOrder())
                     .type(entity.type())
@@ -192,7 +192,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void groundResultQueuesSplashAndUnloadsTheSlotInSourceOrder() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x4D)
                 .at(0x40, 0x50)
@@ -220,7 +220,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void pitResultStartsRomFallingStateWithAlignedTargetAndCountdown() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x4D)
                 .at(0x40, 0x50)
@@ -248,7 +248,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void colorDungeonShellFallingDispatchReturnsToItsRomStateSix() {
         EntitySpriteDefinition definition = EntitySpriteDefinition.unsupported(0xE9);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE9)
                 .at(0x40, 0x50)
@@ -282,7 +282,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void fallingHandlerUsesRomVectorPhaseJingleAndUnloadBoundary() {
         EntitySpriteDefinition definition = pairDefinition(0x4D, 4);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x4D)
                 .at(0x40, 0x50)
@@ -328,7 +328,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     void fallingHandlerUsesItsDedicatedRomDisplayListForTwoVariantEnemies() throws Exception {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
         EntitySpriteDefinition hardhat = catalog.forEntityType(0x20, EntityRoomLoader.RoomTable.INDOORS_A);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x20)
                 .at(0x40, 0x50)
@@ -356,7 +356,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void longFallingHandlerRunsOnlyItsRomPresentationHandoff() {
         EntitySpriteDefinition definition = pairDefinition(0x09, 8);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(0x40, 0x50)
@@ -401,14 +401,14 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                         new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x01), null),
                         new EntitySpriteDefinition.Variant(new EntitySpriteDefinition.OamAttribute(0x5E, 0x41), null)));
         RoomEntitySnapshot initial = snapshot(
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x6E)
                         .at(24, 32)
                         .status(EntityStatus.INIT)
                         .spriteDefinition(definition)
                         .build(),
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(1)
                         .sourceLoadOrder(1)
                         .type(0x6E)
@@ -427,7 +427,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void butterflyUsesBankSixSignedFixedPointPositionUpdates() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6E)
                 .at(24, 32)
@@ -449,7 +449,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void butterflyAppliesTheTwoPixelVectorTowardLinkOnItsSixtyFourFramePhase() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6E)
                 .at(24, 32)
@@ -477,7 +477,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void butterflyUsesTheRomRatioForDiagonalAttractionVectors() {
         EntitySpriteDefinition definition = butterflyDefinition();
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6E)
                 .at(64, 64)
@@ -496,13 +496,13 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     void entityHandlersConsumeSharedRandomBytesInRomReverseSlotOrder() {
         EntitySpriteDefinition definition = keeseDefinition();
         RoomEntitySnapshot initial = snapshot(
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x19)
                         .at(64, 64)
                         .spriteDefinition(definition)
                         .build(),
-                new linksawakening.world.entity.RoomEntityBuilder()
+                new RoomEntityBuilder()
                         .slot(1)
                         .sourceLoadOrder(1)
                         .type(0x19)
@@ -531,13 +531,12 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0x4FCB, definition.address());
         assertEquals(8, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x24)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(definition)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x24)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(definition)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -586,7 +585,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     void runtimeExposesTheRoamingEnemyLaunchRequestAndSpawnsTheProjectile() {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
         EntitySpriteDefinition definition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntitySnapshot initial = snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x09)
                 .at(64, 64)
@@ -627,19 +626,18 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void clearingBurningOrStunnedEntitiesResetsTheirStatusCountdowns() throws IOException {
         RomEnemyCombatTables burningTables = new RomEnemyCombatTables(romWithSwordResult(0x09, 0xFE));
-        RoomEntityRuntime burningRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x09)
-                                .at(64, 64)
-                                .spriteDefinition(pairDefinition(0x09, 2))
-                                .build()))
+        RoomEntityRuntime burningRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(64, 64)
+                        .spriteDefinition(pairDefinition(0x09, 2))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(null)
                 .enemyCombatTables(burningTables)
                 .build();
-        burningRuntime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        burningRuntime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         burningRuntime.clearEntity(0);
 
         assertEquals(
@@ -649,19 +647,18 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0, burningRuntime.enemies().stunnedCountdown(0));
 
         RomEnemyCombatTables stunnedTables = new RomEnemyCombatTables(loadRom());
-        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xE9)
-                                .at(64, 64)
-                                .spriteDefinition(pairDefinition(0xE9, 2))
-                                .build()))
+        RoomEntityRuntime stunnedRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xE9)
+                        .at(64, 64)
+                        .spriteDefinition(pairDefinition(0xE9, 2))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(null)
                 .spriteHandlers(null)
                 .enemyCombatTables(stunnedTables)
                 .build();
-        stunnedRuntime.resolveCombat(0, 120, 120, false, true, true, 72, 1, 72, 1);
+        stunnedRuntime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         stunnedRuntime.clearEntity(0);
 
         assertEquals(0, stunnedRuntime.enemies().transitionCountdown(0));

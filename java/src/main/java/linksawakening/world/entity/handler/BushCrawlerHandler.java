@@ -9,6 +9,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntityCombatRules;
 import linksawakening.world.entity.motion.*;
+import linksawakening.world.entity.motion.BushCrawlerFrame;
 import linksawakening.world.entity.motion.BushCrawlerMotion;
 
 /** ROM handler stages for BushCrawler. */
@@ -29,7 +30,7 @@ final class BushCrawlerHandler {
                 && timerGates.handlerLinkCollisionEnabled()) {
 
             BushCrawlerMotion.Update bushUpdate = state.motion(BushCrawlerMotion.class, BushCrawlerMotion::new)
-                    .advance(
+                    .advance(new BushCrawlerFrame(
                             slotState.entity(),
                             frameInput.frame(),
                             frameInput.linkEntityX(),
@@ -42,7 +43,7 @@ final class BushCrawlerHandler {
                             state.link().actionButtonAHeld(),
                             state.link().actionButtonBHeld(),
                             state.link().linkItemA(),
-                            state.link().linkItemB());
+                            state.link().linkItemB()));
             state.slot().setTransitionCountdown(slotState.entity().slot(), bushUpdate.transitionCountdown());
             state.background().setFallingVisualYOffset(slotState.entity().slot(), bushUpdate.visualYOffset());
             slotState.updated(bushUpdate.entity());

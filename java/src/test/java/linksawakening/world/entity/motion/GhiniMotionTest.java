@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class GhiniMotionTest {
@@ -172,7 +173,7 @@ final class GhiniMotionTest {
 
     private static RoomEntity entity(
             int slot, int type, int x, int y, int z, EntitySpriteDefinition definition, int flipAttribute) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(slot)
                 .type(type)

@@ -1,7 +1,6 @@
 package linksawakening.world.entity.motion;
 
 import java.util.Objects;
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -56,16 +55,16 @@ public final class PokeyMotion {
         initialized[slot] = true;
     }
 
-    public Update advanceMain(
-            RoomEntity entity,
-            int frameCounter,
-            int inertia,
-            int transitionCountdown,
-            int flashCountdown,
-            int linkEntityX,
-            int linkEntityY,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision) {
+    public Update advanceMain(PokeyFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int frameCounter = inputs.frameCounter();
+        int inertia = inputs.inertia();
+        int transitionCountdown = inputs.transitionCountdown();
+        int flashCountdown = inputs.flashCountdown();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
         checkType(entity);
         validateByte(inertia, "Pokey inertia");
         validateByte(transitionCountdown, "Pokey transition countdown");

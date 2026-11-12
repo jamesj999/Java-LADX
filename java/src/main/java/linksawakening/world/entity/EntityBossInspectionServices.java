@@ -4,29 +4,29 @@ import linksawakening.world.entity.motion.*;
 
 /** Dependencies used by EntityBossInspection; resolved lazily to preserve initialization order. */
 interface EntityBossInspectionServices {
-    linksawakening.world.entity.EntityBossRewards bossRewards();
+    EntityBossRewards bossRewards();
 
-    linksawakening.world.entity.EntityEnemyInspection enemyInspection();
+    EntityEnemyInspection enemyInspection();
 
-    linksawakening.world.entity.EntityMotionRegistry motions();
+    EntityMotionRegistry motions();
 
-    linksawakening.world.entity.EntityPhysicsTables physicsTables();
+    EntityPhysicsTables physicsTables();
 
     static EntityBossInspectionServices bind(RoomEntityRuntime r) {
         return new EntityBossInspectionServices() {
-            public linksawakening.world.entity.EntityBossRewards bossRewards() {
+            public EntityBossRewards bossRewards() {
                 return r.bossRewards;
             }
 
-            public linksawakening.world.entity.EntityEnemyInspection enemyInspection() {
+            public EntityEnemyInspection enemyInspection() {
                 return r.enemyInspection;
             }
 
-            public linksawakening.world.entity.EntityMotionRegistry motions() {
+            public EntityMotionRegistry motions() {
                 return r.entityState.motions;
             }
 
-            public linksawakening.world.entity.EntityPhysicsTables physicsTables() {
+            public EntityPhysicsTables physicsTables() {
                 return r.entityState.physicsTables;
             }
         };

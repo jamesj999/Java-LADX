@@ -55,14 +55,13 @@ final class BeachOpeningRuntimeTest {
     void swordPickupUsesTheRomFanfareSequenceBeforeGrantingTheSword() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(1)
-                                .type(ENTITY_SWORD_SHIELD_PICKUP)
-                                .at(0x58, 0x60)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_SWORD_SHIELD_PICKUP, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(1)
+                        .type(ENTITY_SWORD_SHIELD_PICKUP)
+                        .at(0x58, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_SWORD_SHIELD_PICKUP, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -136,14 +135,13 @@ final class BeachOpeningRuntimeTest {
     void sleepyToadstoolUsesTheRomHeldItemSequenceBeforeGrantingItsReward() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_SLEEPY_TOADSTOOL)
-                                .at(0x58, 0x60)
-                                .spriteDefinition(catalog.forEntityType(
-                                        ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_SLEEPY_TOADSTOOL)
+                        .at(0x58, 0x60)
+                        .spriteDefinition(
+                                catalog.forEntityType(ENTITY_SLEEPY_TOADSTOOL, EntityRoomLoader.RoomTable.OVERWORLD))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -219,13 +217,12 @@ final class BeachOpeningRuntimeTest {
     void beachOwlTriggersInTheRomRectangleAndCompletesItsDialogEvent() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_OWL_EVENT)
-                                .at(0x08, 0x10)
-                                .spriteDefinition(catalog.forOwlEvent(false))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_OWL_EVENT)
+                        .at(0x08, 0x10)
+                        .spriteDefinition(catalog.forOwlEvent(false))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -271,13 +268,12 @@ final class BeachOpeningRuntimeTest {
     void landedOwlReleasesLinkForTheFiveSourceInteractionCountdownFrames() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshot(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(ENTITY_OWL_EVENT)
-                                .at(0x08, 0x10)
-                                .spriteDefinition(catalog.forOwlEvent(false))
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(ENTITY_OWL_EVENT)
+                        .at(0x08, 0x10)
+                        .spriteDefinition(catalog.forOwlEvent(false))
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -378,7 +374,7 @@ final class BeachOpeningRuntimeTest {
     void tailKeyOwlWaitsForOwnershipAndTheChestInitializedPrivateCountdown() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity owl = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity owl = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_OWL_EVENT)
                 .at(0x58, 0x50)
@@ -438,7 +434,7 @@ final class BeachOpeningRuntimeTest {
     }
 
     private static RoomEntityRuntime owlRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
-        return RoomEntityRuntime.builder(snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        return RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_OWL_EVENT)
                         .at(0x58, 0x50)
@@ -452,7 +448,7 @@ final class BeachOpeningRuntimeTest {
     }
 
     private static RoomEntityRuntime toadstoolRuntime(EntitySpriteHandlerCatalog catalog, byte[] rom) {
-        return RoomEntityRuntime.builder(snapshot(new linksawakening.world.entity.RoomEntityBuilder()
+        return RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_SLEEPY_TOADSTOOL)
                         .at(0x58, 0x60)

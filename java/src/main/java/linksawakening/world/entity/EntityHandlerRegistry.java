@@ -10,7 +10,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
-final class EntityHandlerRegistry implements linksawakening.world.entity.EntityHandlerRegistration {
+final class EntityHandlerRegistry implements EntityHandlerRegistration {
     private static final class Binding implements EntityHandler {
         private final EntityHandler initializer;
         private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;

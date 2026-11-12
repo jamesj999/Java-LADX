@@ -40,7 +40,7 @@ final class EntityCollisionPointProbeTest {
         int nextX = 0x80;
         int nextY = 0x90;
         for (int boxType = 0; boxType < 4; boxType++) {
-            RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+            RoomEntity entity = new RoomEntityBuilder()
                     .sourceLoadOrder(0)
                     .type(0x20 + boxType)
                     .at(nextX, nextY)

@@ -97,7 +97,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         List<RoomEntity> slots = new ArrayList<>();
         EntitySpriteDefinition unsupported = EntitySpriteDefinition.unsupported(0xFF);
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+            slots.add(new RoomEntityBuilder()
                     .slot(slot)
                     .sourceLoadOrder(slot)
                     .type(0xFF)
@@ -261,28 +261,28 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     @Test
     void bombExplosionPublishesOnlyTargetsInsideTheInclusiveCountdownWindow() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(11)
                                 .sourceLoadOrder(11)
                                 .type(0x4D)
                                 .at(0x40, 0x67)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(12)
                                 .sourceLoadOrder(12)
                                 .type(0x4D)
                                 .at(0x58, 0x4F)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(13)
                                 .sourceLoadOrder(13)
                                 .type(0x4D)
                                 .at(0x57, 0x66)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(14)
                                 .sourceLoadOrder(14)
                                 .type(0x4D)
@@ -322,35 +322,35 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     @Test
     void bombExplosionFiltersNonInteractiveTargetsAtTheExactInteractionTick() throws Exception {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(10)
                                 .sourceLoadOrder(10)
                                 .type(0x4D)
                                 .at(0x40, 0x4F)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(11)
                                 .sourceLoadOrder(11)
                                 .type(0x4D)
                                 .at(0x40, 0x4F)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(12)
                                 .sourceLoadOrder(12)
                                 .type(0x4D)
                                 .at(0x40, 0x4F)
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(13)
                                 .sourceLoadOrder(13)
                                 .type(0x05)
                                 .at(0x40, 0x4F)
                                 .spriteDefinition(pairDefinition(0x05, 1))
                                 .build(),
-                        new linksawakening.world.entity.RoomEntityBuilder()
+                        new RoomEntityBuilder()
                                 .slot(14)
                                 .sourceLoadOrder(14)
                                 .type(0x4D)
@@ -381,7 +381,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void bombExplosionAppliesRomDamageAndFinalSourceRelativeRecoil() throws IOException {
         byte[] rom = loadRom();
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        RoomEntity octorok = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity octorok = new RoomEntityBuilder()
                 .slot(14)
                 .sourceLoadOrder(14)
                 .type(0x09)
@@ -526,14 +526,13 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
         EntitySpriteDefinition bomberDefinition = catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshotWithSlots(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xBA)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(bomberDefinition)
-                                .z(0x00)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xBA)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(bomberDefinition)
+                        .z(0x00)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -560,14 +559,13 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void bomberEnemyBombCarriesTheSourceVectorIntoTheNextBombHandlerFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshotWithSlots(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0xBA)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1))
-                                .z(0x00)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0xBA)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                        .z(0x00)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -597,14 +595,13 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x4126, definition.address());
         assertEquals(5, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshotWithSlots(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x93)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(definition)
-                                .z(0x00)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x93)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(definition)
+                        .z(0x00)
+                        .build()))
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
@@ -640,14 +637,13 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x7CEF, definition.address());
         assertEquals(6, definition.variantCount());
 
-        RoomEntityRuntime runtime = RoomEntityRuntime.builder(
-                        snapshotWithSlots(new linksawakening.world.entity.RoomEntityBuilder()
-                                .sourceLoadOrder(0)
-                                .type(0x56)
-                                .at(0x50, 0x50)
-                                .spriteDefinition(definition)
-                                .z(0x00)
-                                .build()))
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x56)
+                        .at(0x50, 0x50)
+                        .spriteDefinition(definition)
+                        .z(0x00)
+                        .build()))
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)

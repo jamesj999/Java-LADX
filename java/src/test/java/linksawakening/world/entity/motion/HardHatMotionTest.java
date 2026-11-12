@@ -7,6 +7,7 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -56,7 +57,7 @@ final class HardHatMotionTest {
                 EntitySpriteDefinition.Shape.PAIR,
                 0,
                 List.of(new EntitySpriteDefinition.Variant(tile, tile)));
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x20)
                 .at(0x40, 0x40)

@@ -35,7 +35,7 @@ final class PlayerProjectileLaunchSpeedTest {
         assertEquals(expectedX, fireball.speedX(0));
         assertEquals(expectedY, fireball.speedY(0));
 
-        RoomEntity entity = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity entity = new RoomEntityBuilder()
                 .type(0x00)
                 .at(0x40, 0x50)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x00))

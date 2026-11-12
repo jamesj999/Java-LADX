@@ -41,6 +41,8 @@ public final class FollowingNpcEntitySpawner {
      * Applies the four source-ordered follower creation paths. Link values
      * are the ROM hLinkPositionX/Y/Z bytes; {@code entityYOffset} is wC13B.
      */
+    /** Compatibility for existing world.room callers. */
+    @Deprecated
     public Result synchronize(
             RoomEntitySnapshot initial,
             FollowingNpcRoomContext room,
@@ -51,6 +53,20 @@ public final class FollowingNpcEntitySpawner {
             int entityYOffset,
             int linkDirection,
             LinkPositionHistory history) {
+        return synchronize(new FollowingNpcSpawn(
+                initial, room, requestedState, linkX, linkY, linkZ, entityYOffset, linkDirection, history));
+    }
+
+    public Result synchronize(FollowingNpcSpawn inputs) {
+        RoomEntitySnapshot initial = inputs.initial();
+        FollowingNpcRoomContext room = inputs.room();
+        FollowingNpcState requestedState = inputs.requestedState();
+        int linkX = inputs.linkX();
+        int linkY = inputs.linkY();
+        int linkZ = inputs.linkZ();
+        int entityYOffset = inputs.entityYOffset();
+        int linkDirection = inputs.linkDirection();
+        LinkPositionHistory history = inputs.history();
         if (initial == null || room == null || requestedState == null || history == null) {
             throw new IllegalArgumentException("Follower synchronization inputs cannot be null");
         }

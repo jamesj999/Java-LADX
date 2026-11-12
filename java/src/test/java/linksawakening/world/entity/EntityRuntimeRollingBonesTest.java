@@ -17,14 +17,15 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesBarContactUsesHorizontalRecoilOnBothSides() {
         for (int linkX : new int[] {0x3C, 0x44}) {
-            var enemy = new linksawakening.world.entity.RoomEntityBuilder()
+            var enemy = new RoomEntityBuilder()
                     .sourceLoadOrder(0)
                     .type(0x82)
                     .at(0x40, 0x50)
                     .spriteDefinition(pairDefinition(0x82, 2))
                     .build();
             var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
-            var events = runtime.resolveCombat(1, linkX, 0x58, false, true, false, 0, 0, 0, 0);
+            var events =
+                    runtime.resolveCombat(new EntitySwordContactFrame(1, linkX, 0x58, false, true, false, 0, 0, 0, 0));
             assertEquals(1, events.size());
             assertEquals(
                     new EntityCombatEvent.LinkCollisionResponse(linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10),
@@ -36,13 +37,13 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     void rollingBonesLaunchesTheBarAfterTheRomPreparationDelay() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
                 .at(0x38, 0x38)
                 .spriteDefinition(catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntity boss = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity boss = new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(0)
                 .type(0x81)
@@ -89,13 +90,13 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     void rollingBonesRecoilSkipsItsApproachAndJumpPhysics() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
                 .at(56, 64)
                 .spriteDefinition(catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntity boss = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity boss = new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(0)
                 .type(0x81)
@@ -120,13 +121,13 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     void rollingBonesNewSwordHitStartsRecoilOnTheFollowingHandlerFrame() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
                 .at(56, 64)
                 .spriteDefinition(catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntity boss = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity boss = new RoomEntityBuilder()
                 .slot(1)
                 .sourceLoadOrder(0)
                 .type(0x81)
@@ -139,7 +140,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(rom))
                 .build();
-        runtime.resolveCombat(0, 87, 64, false, true, true, 71, 8, 64, 8);
+        runtime.resolveCombat(new EntitySwordContactFrame(0, 87, 64, false, true, true, 71, 8, 64, 8));
         assertEquals(7, runtime.enemies().enemyHealth(1));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(71, runtime.inspection().snapshot().slots().get(1).x());
@@ -155,7 +156,8 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         for (int frame = 2; frame < 24; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, () -> 0));
         RoomEntity recovered = runtime.inspection().snapshot().slots().get(1);
         assertEquals(1, runtime.enemies().enemyFlashCountdown(1));
-        runtime.resolveCombat(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8);
+        runtime.resolveCombat(
+                new EntitySwordContactFrame(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8));
         assertEquals(
                 6,
                 runtime.enemies().enemyHealth(1),
@@ -166,14 +168,14 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     void rollingBonesDeathSetsTailCaveMinibossEventAndRemovesTheBar() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bar = new RoomEntityBuilder()
                 .slot(14)
                 .sourceLoadOrder(1)
                 .type(0x82)
                 .at(0x38, 0x38)
                 .spriteDefinition(catalog.forEntityType(0x82, EntityRoomLoader.RoomTable.INDOORS_A, -1))
                 .build();
-        RoomEntity boss = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity boss = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
                 .type(0x81)
@@ -225,7 +227,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     void rollingBonesBarSkipsAirborneLinkAndClinksAGroundedSword() throws IOException {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RoomEntity bar = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x82)
                 .at(0x50, 0x50)
@@ -238,11 +240,12 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(new RomEnemyCombatTables(rom))
                 .build();
 
-        assertTrue(runtime.resolveCombat(1, 0x50, 0x50, true, true, true, 0x50, 0x10, 0x50, 0x10)
+        assertTrue(runtime.resolveCombat(
+                        new EntitySwordContactFrame(1, 0x50, 0x50, true, true, true, 0x50, 0x10, 0x50, 0x10))
                 .isEmpty());
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(1, 0xC0, 0xC0, false, true, true, 0x50, 0x10, 0x50, 0x10);
+        List<EntityCombatEvent> events = runtime.resolveCombat(
+                new EntitySwordContactFrame(1, 0xC0, 0xC0, false, true, true, 0x50, 0x10, 0x50, 0x10));
 
         assertEquals(1, events.size());
         assertEquals(0, events.get(0).enemyDamage());

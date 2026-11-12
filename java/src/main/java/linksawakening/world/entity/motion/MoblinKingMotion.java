@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -50,16 +49,16 @@ public final class MoblinKingMotion {
     private final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
-    public Update advance(
-            RoomEntity entity,
-            int linkX,
-            int linkY,
-            int transitionCountdown,
-            int slowTransitionCountdown,
-            int frameCounter,
-            IntSupplier randomByteSupplier,
-            RoomEntityBackgroundCollision backgroundCollision,
-            boolean touchingLink) {
+    public Update advance(MoblinKingFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkX = inputs.linkX();
+        int linkY = inputs.linkY();
+        int transitionCountdown = inputs.transitionCountdown();
+        int slowTransitionCountdown = inputs.slowTransitionCountdown();
+        int frameCounter = inputs.frameCounter();
+        java.util.function.IntSupplier randomByteSupplier = inputs.randomByteSupplier();
+        RoomEntityBackgroundCollision backgroundCollision = inputs.backgroundCollision();
+        boolean touchingLink = inputs.touchingLink();
         int slot = entity.slot();
         if (privateCountdown1[slot] > 0) {
             privateCountdown1[slot]--;

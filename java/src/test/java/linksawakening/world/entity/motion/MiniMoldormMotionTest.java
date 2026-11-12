@@ -7,6 +7,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 final class MiniMoldormMotionTest {
@@ -41,7 +42,7 @@ final class MiniMoldormMotionTest {
         motion.beginFrame(entity, false);
         motion.advanceAfterHistory(entity, 0, 0, 0, null, () -> 0, 0);
 
-        RoomEntity moved = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity moved = new RoomEntityBuilder()
                 .sourceLoadOrder(7)
                 .type(0x29)
                 .at(0x50, 0x60)
@@ -78,7 +79,7 @@ final class MiniMoldormMotionTest {
                     : EntityBackgroundCollisionResult.passable(direction, 0, nextX, nextY);
         };
 
-        RoomEntity moved = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity moved = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x29)
                 .at(0x50, 0x60)
@@ -96,7 +97,7 @@ final class MiniMoldormMotionTest {
     }
 
     private static RoomEntity entity(int slot, int loadOrder, int x, int y, int variant) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .slot(slot)
                 .sourceLoadOrder(loadOrder)
                 .type(0x29)

@@ -28,24 +28,25 @@ public final class EntityEnemySpawns {
     }
 
     public int spawnEnemyBomb(int entityX, int entityY, int entityZ, int transitionCountdown) {
-        return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, 0, 0, 0, false, 0x01);
+        return spawnEnemyBomb(new EnemyBombSpawn(entityX, entityY, entityZ, transitionCountdown, 0, 0, 0, false, 0x01));
     }
 
     public int spawnEnemyBomb(
             int entityX, int entityY, int entityZ, int transitionCountdown, int speedX, int speedY, int speedZ) {
-        return spawnEnemyBomb(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ, true, 0x01);
+        return spawnEnemyBomb(
+                new EnemyBombSpawn(entityX, entityY, entityZ, transitionCountdown, speedX, speedY, speedZ, true, 0x01));
     }
 
-    public int spawnEnemyBomb(
-            int entityX,
-            int entityY,
-            int entityZ,
-            int transitionCountdown,
-            int speedX,
-            int speedY,
-            int speedZ,
-            boolean initializeMotion,
-            int privateState4) {
+    public int spawnEnemyBomb(EnemyBombSpawn inputs) {
+        int entityX = inputs.entityX();
+        int entityY = inputs.entityY();
+        int entityZ = inputs.entityZ();
+        int transitionCountdown = inputs.transitionCountdown();
+        int speedX = inputs.speedX();
+        int speedY = inputs.speedY();
+        int speedZ = inputs.speedZ();
+        boolean initializeMotion = inputs.initializeMotion();
+        int privateState4 = inputs.privateState4();
         EntitySlotValidation.validateByte(entityX, "Enemy bomb X");
         EntitySlotValidation.validateByte(entityY, "Enemy bomb Y");
         EntitySlotValidation.validateByte(entityZ, "Enemy bomb Z");
@@ -110,7 +111,7 @@ public final class EntityEnemySpawns {
     }
 
     public int spawnTarinTransformationBomb(RoomEntity tarin) {
-        return spawnEnemyBomb(tarin.x(), tarin.y(), tarin.z(), 0x20, 0, 0, 0, false, 0x4C);
+        return spawnEnemyBomb(new EnemyBombSpawn(tarin.x(), tarin.y(), tarin.z(), 0x20, 0, 0, 0, false, 0x4C));
     }
 
     public boolean spawnKanaletWallMoblin(RoomEntity wall) {

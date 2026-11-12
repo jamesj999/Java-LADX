@@ -14,7 +14,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void kidnappedBowWowEnablesTheMoblinKingSourceIntro() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -42,7 +42,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void moblinKingStateMachineFreezesWhileDialogIsActive() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -67,7 +67,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void moblinKingWaitsForRoomTransitionBeforeStartingCharge() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -91,7 +91,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void moblinKingUnloadsUnlessBowWowIsKidnapped() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -109,7 +109,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void moblinKingOnlyTakesSwordDamageDuringTheWallStunState() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -123,13 +123,13 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 2, 0, 0, 0, 0, 0x30);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
         assertEquals(0x08, runtime.enemies().enemyHealth(0));
 
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
-        runtime.resolveCombat(3, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(new EntitySwordContactFrame(3, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
 
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
         int beforeX = runtime.inspection().snapshot().slots().get(0).x();
@@ -142,7 +142,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void moblinKingChargeImpactUsesItsDedicatedLinkDamageAndImmunityWrites() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -158,7 +158,8 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0, true));
         assertEquals(4, runtime.inspection().moblinKingState(0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x58, 0x58, () -> 0, true));
-        List<EntityCombatEvent> events = runtime.resolveCombat(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
 
         EntityCombatEvent impact = events.getFirst();
         assertEquals(0x08, impact.linkDamage());
@@ -170,7 +171,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
 
     @Test
     void stunnedMoblinKingIsHarmlessToLinkWhileVulnerable() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -184,14 +185,15 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0));
-        List<EntityCombatEvent> events = runtime.resolveCombat(1, 0x58, 0x58, false, true, false, 0, 0, 0, 0);
+        List<EntityCombatEvent> events =
+                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
 
         assertEquals(0, events.getFirst().linkDamage());
     }
 
     @Test
     void defeatingMoblinKingPersistsTheMinibossRoomEventThatOpensTheRescuePath() {
-        RoomEntity king = new linksawakening.world.entity.RoomEntityBuilder()
+        RoomEntity king = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0xE4)
                 .at(0x58, 0x58)
@@ -206,7 +208,7 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8);
+        runtime.resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
         assertEquals(0xA0, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
         for (int frame = 3; frame <= 162; frame++)

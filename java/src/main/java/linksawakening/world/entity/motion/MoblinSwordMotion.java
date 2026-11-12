@@ -82,7 +82,7 @@ public final class MoblinSwordMotion {
             int ignoreHitsCountdown,
             int alertingSoundCounter,
             int frameCounter) {
-        return advance(
+        return advance(new MoblinSwordFrame(
                 entity,
                 linkEntityX,
                 linkEntityY,
@@ -91,19 +91,19 @@ public final class MoblinSwordMotion {
                 alertingSoundCounter,
                 -1,
                 0,
-                frameCounter);
+                frameCounter));
     }
 
-    public Update advance(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            RoomEntityBackgroundInteraction backgroundInteraction,
-            int ignoreHitsCountdown,
-            int alertingSoundCounter,
-            int mapId,
-            int transitionSequenceCounter,
-            int frameCounter) {
+    public Update advance(MoblinSwordFrame inputs) {
+        RoomEntity entity = inputs.entity();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
+        int ignoreHitsCountdown = inputs.ignoreHitsCountdown();
+        int alertingSoundCounter = inputs.alertingSoundCounter();
+        int mapId = inputs.mapId();
+        int transitionSequenceCounter = inputs.transitionSequenceCounter();
+        int frameCounter = inputs.frameCounter();
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.x());

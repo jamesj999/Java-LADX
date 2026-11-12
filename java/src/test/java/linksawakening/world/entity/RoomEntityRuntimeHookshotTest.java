@@ -52,7 +52,7 @@ final class RoomEntityRuntimeHookshotTest {
         List<RoomEntity> slots = new ArrayList<>();
         EntitySpriteDefinition unsupported = EntitySpriteDefinition.unsupported(0xFF);
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
-            slots.add(new linksawakening.world.entity.RoomEntityBuilder()
+            slots.add(new RoomEntityBuilder()
                     .slot(slot)
                     .sourceLoadOrder(0)
                     .spriteDefinition(unsupported)

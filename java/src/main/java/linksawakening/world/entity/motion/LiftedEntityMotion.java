@@ -56,19 +56,19 @@ public final class LiftedEntityMotion {
     private LiftedEntityMotion() {}
 
     /** Advances one frame of the ROM's lifted-object presentation. */
-    public static Update advance(
-            int phase,
-            int transitionCountdown,
-            int sourceRomDirection,
-            int currentRomDirection,
-            int linkX,
-            int linkY,
-            int linkZ,
-            int linkC13B,
-            int entityType,
-            boolean sideScrolling,
-            boolean fastTransition,
-            int existingEntityZ) {
+    public static Update advance(LiftedEntityFrame inputs) {
+        int phase = inputs.phase();
+        int transitionCountdown = inputs.transitionCountdown();
+        int sourceRomDirection = inputs.sourceRomDirection();
+        int currentRomDirection = inputs.currentRomDirection();
+        int linkX = inputs.linkX();
+        int linkY = inputs.linkY();
+        int linkZ = inputs.linkZ();
+        int linkC13B = inputs.linkC13B();
+        int entityType = inputs.entityType();
+        boolean sideScrolling = inputs.sideScrolling();
+        boolean fastTransition = inputs.fastTransition();
+        int existingEntityZ = inputs.existingEntityZ();
         validatePhase(phase);
         validateByte(transitionCountdown, "Transition countdown");
         validateDirection(sourceRomDirection);

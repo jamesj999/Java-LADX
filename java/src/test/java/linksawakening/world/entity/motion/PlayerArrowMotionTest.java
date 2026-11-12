@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -43,7 +44,7 @@ final class PlayerArrowMotionTest {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x10, 0x20, 0x07, 0);
         motion.initializeSpawn(0, 0);
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 0x20, 0xE0, 0);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0x20, 0xE0, 0);
 
         PlayerArrowMotion.Update update =
                 motion.advance(entity, (candidate, direction, nextX, nextY) -> direction == 2);
@@ -63,7 +64,7 @@ final class PlayerArrowMotionTest {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x10, 0x20, 0x00, 0);
         motion.initializeSpawn(0, 0);
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionForTest(motion, 0, 0x10, 0x00, 0x10);
+        MotionTestFixture.setTransitionForTest(motion, 0, 0x10, 0x00, 0x10);
 
         PlayerArrowMotion.Update update = motion.advance(entity, null);
 
@@ -73,7 +74,7 @@ final class PlayerArrowMotionTest {
         assertEquals(0, update.entity().spriteVariant());
         assertEquals(3, motion.advance(update.entity(), null).entity().spriteVariant());
 
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionForTest(motion, 0, 0x02, 0x07, 0x10);
+        MotionTestFixture.setTransitionForTest(motion, 0, 0x02, 0x07, 0x10);
         PlayerArrowMotion.Update unload = motion.advance(entity, null);
 
         assertTrue(unload.unloaded());
@@ -85,8 +86,8 @@ final class PlayerArrowMotionTest {
     void sideViewReboundFallsOnYAndPreservesHeight() {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x40, 0x50, 7, 0);
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, 0xF0, 0, 0x10);
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
+        MotionTestFixture.setSpeedForTest(motion, 0, 0xF0, 0, 0x10);
+        MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
         for (int frame = 1; frame <= 9; frame++) {
             PlayerArrowMotion.Update update = motion.advance(entity, null, frame, 0, true);
@@ -115,8 +116,8 @@ final class PlayerArrowMotionTest {
             int groundStatus, int initialX, int expectedX, int expectedY) {
         PlayerArrowMotion motion = new PlayerArrowMotion();
         RoomEntity entity = entity(0x40, 0x50, 7, 0);
-        linksawakening.world.entity.motion.MotionTestFixture.setSpeedForTest(motion, 0, initialX, expectedY - 1, 0x10);
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
+        MotionTestFixture.setSpeedForTest(motion, 0, initialX, expectedY - 1, 0x10);
+        MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 7, 0x10);
 
         PlayerArrowMotion.Update first = motion.advance(entity, null, 7, groundStatus, true);
         assertEquals(initialX, motion.speedX(0));
@@ -147,7 +148,7 @@ final class PlayerArrowMotionTest {
 
         motion.clear(0);
         motion.initializeSpawn(0, 2);
-        linksawakening.world.entity.motion.MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 0, 0x10);
+        MotionTestFixture.setTransitionForTest(motion, 0, 0x18, 0, 0x10);
         assertEquals(2, motion.advance(entity, null).entity().spriteVariant());
     }
 
@@ -161,7 +162,7 @@ final class PlayerArrowMotionTest {
     }
 
     private static RoomEntity entity(int x, int y, int z, int variant) {
-        return new linksawakening.world.entity.RoomEntityBuilder()
+        return new RoomEntityBuilder()
                 .type(0x00)
                 .at(x, y)
                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x00))
