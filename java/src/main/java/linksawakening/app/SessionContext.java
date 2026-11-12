@@ -42,6 +42,7 @@ import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.DroppableRupeeSystem;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
@@ -768,5 +769,33 @@ public final class SessionContext {
     public IntUnaryOperator openingStory_romDirection() {
         if (openingStory_romDirection == null) openingStory_romDirection = session::romDirectionForLink;
         return openingStory_romDirection;
+    }
+
+    public RoomSession bushes_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public OverworldBushInteraction bushes_overworldBushInteraction() {
+        return session.services.overworldBushInteraction();
+    }
+
+    public Link bushes_link() {
+        return session.services.link();
+    }
+
+    public EquipmentController bushes_equipmentController() {
+        return session.services.equipmentController();
+    }
+
+    public GameplaySoundSink bushes_gameplaySoundSink() {
+        return session.gameplaySoundSink;
+    }
+
+    public TransientVfxSystem bushes_transientVfxSystem() {
+        return session.services.transientVfxSystem();
+    }
+
+    public DroppableRupeeSystem bushes_droppableRupeeSystem() {
+        return session.services.droppableRupeeSystem();
     }
 }
