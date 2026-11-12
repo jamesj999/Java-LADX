@@ -45,7 +45,7 @@ public final class SaveCoordinator {
         return context.gpu();
     }
 
-    public byte[] romData() {
+    public Rom romData() {
         return context.romData();
     }
 
@@ -179,7 +179,7 @@ public final class SaveCoordinator {
     public void finishGameOver(int option) {
         if (playerState().health() == 0) {
             playerState()
-                    .setHealth(new Rom(romData())
+                    .setHealth(romData()
                             .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();

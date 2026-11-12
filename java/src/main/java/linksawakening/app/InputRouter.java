@@ -228,7 +228,7 @@ public final class InputRouter {
                 }
                 int areaIndex = ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + col;
                 int id = roomObjectsArea[areaIndex];
-                int flag = romTables().objectPhysicsFlag(tableIdx, id);
+                int flag = romTables().physicsTables().objectPhysicsFlag(tableIdx, id);
                 sb.append(" id=")
                         .append(String.format("%02X", id))
                         .append("(fl=")

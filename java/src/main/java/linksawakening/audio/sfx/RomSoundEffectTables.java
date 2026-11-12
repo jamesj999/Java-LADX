@@ -15,12 +15,10 @@ public final class RomSoundEffectTables {
     static final int NOISE_BEGIN_TABLE = RomSymbols.NoiseSfxHandlersTable1.address();
     static final int NOISE_CONTINUE_TABLE = RomSymbols.NoiseSfxHandlersTable2.address();
 
-    private final byte[] romData;
-    private final Rom rom;
+    private final Rom romData;
 
-    public RomSoundEffectTables(byte[] romData) {
+    public RomSoundEffectTables(Rom romData) {
         this.romData = Objects.requireNonNull(romData, "romData");
-        this.rom = new Rom(romData);
     }
 
     public int beginHandlerAddress(SoundEffect effect) {
@@ -47,13 +45,18 @@ public final class RomSoundEffectTables {
         int table = tableBase(namespace, begin);
         int offset = new RomAddress(SFX_BANK, table + ((id - 1) * 2)).offset();
         requireReadable(offset, 2);
-        return rom.u16le(new RomAddress(SFX_BANK, table + ((id - 1) * 2)));
+        return romData.u16le(new RomAddress(SFX_BANK, table + ((id - 1) * 2)));
     }
 
     private void requireReadable(int offset, int length) {
-        if (offset < 0 || offset + length > romData.length) {
+        if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalArgumentException("SFX table read outside ROM at offset 0x"
                     + Integer.toHexString(offset).toUpperCase());
         }
+    }
+
+    @Deprecated(forRemoval = true)
+    public RomSoundEffectTables(byte[] romData) {
+        this(new Rom(romData));
     }
 }

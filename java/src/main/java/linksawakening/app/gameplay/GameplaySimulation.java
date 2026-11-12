@@ -58,7 +58,7 @@ public final class GameplaySimulation {
         return context.gpu();
     }
 
-    public byte[] romData() {
+    public linksawakening.rom.Rom romData() {
         return context.romData();
     }
 

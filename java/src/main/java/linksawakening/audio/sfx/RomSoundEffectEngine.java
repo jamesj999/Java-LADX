@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomBank;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 final class RomSoundEffectEngine {
@@ -19,17 +19,15 @@ final class RomSoundEffectEngine {
     private static final int AUDIO_STATE_END = 0xD3FF;
     static final int MAX_INSTRUCTIONS_PER_TICK = 20_000;
 
-    private final byte[] romData;
-    private final Rom romView;
+    private final Rom romData;
     private final GameBoyApu apu;
     private static final SoundEffectNamespace[] NAMESPACES = SoundEffectNamespace.values();
     private final SfxCpu cpu = new SfxCpu(this);
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
 
-    RomSoundEffectEngine(byte[] romData, GameBoyApu apu) {
+    RomSoundEffectEngine(Rom romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
-        this.romView = new Rom(this.romData);
         this.apu = Objects.requireNonNull(apu, "apu");
         tables = new RomSoundEffectTables(romData);
     }
@@ -132,11 +130,11 @@ final class RomSoundEffectEngine {
     int read8(int address) {
         address &= 0xFFFF;
         if (address >= 0x4000 && address <= 0x7FFF) {
-            int offset = RomBank.romOffset(RomSoundEffectTables.SFX_BANK, address);
-            if (offset < 0 || offset >= romData.length) {
+            int offset = new RomAddress(RomSoundEffectTables.SFX_BANK, address).offset();
+            if (offset < 0 || offset >= romData.size()) {
                 throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x" + hex16(address));
             }
-            return Byte.toUnsignedInt(romData[offset]);
+            return romData.u8(RomAddress.fromOffset(offset));
         }
         if (address >= 0xFF10 && address <= 0xFF26) {
             return apu.readRegister(address & 0xFF);

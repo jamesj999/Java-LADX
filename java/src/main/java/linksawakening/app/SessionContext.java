@@ -47,6 +47,7 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameSceneBuilder;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
@@ -206,7 +207,7 @@ public final class SessionContext {
         return gpu;
     }
 
-    public byte[] romData() {
+    public Rom romData() {
         return services().romData();
     }
 

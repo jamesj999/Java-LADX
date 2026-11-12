@@ -31,7 +31,7 @@ final class EntitySheetTileLoader {
     };
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
 
-    public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
+    public void loadEntitySpriteSheets(Rom romData, int[] sheetValues) {
         if (sheetValues == null || sheetValues.length != 4) {
             throw new IllegalArgumentException("Exactly four entity sheet selectors are required");
         }
@@ -50,18 +50,18 @@ final class EntitySheetTileLoader {
         }
     }
 
-    public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
+    public void loadColorDungeonEntitySheets(Rom romData, int roomId) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {
             throw new IllegalArgumentException("Color Dungeon room id out of range: " + roomId);
         }
-        Rom rom = new Rom(romData);
+        Rom rom = romData;
         for (int slot = 0; slot < COLOR_DUNGEON_SHEET_TABLES.length; slot++) {
             RomAddress table = COLOR_DUNGEON_SHEET_TABLES[slot].plus(roomId * 2);
             int tableOffset = table.offset();
-            if (tableOffset < 0 || tableOffset + 2 > romData.length) {
+            if (tableOffset < 0 || tableOffset + 2 > romData.size()) {
                 throw new IllegalArgumentException("Color Dungeon sheet table exceeds ROM bounds");
             }
             int sourceHighByte = rom.u8(table);

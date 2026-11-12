@@ -6,14 +6,12 @@ import java.util.function.IntPredicate;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomBank;
 
 /** ROM music stream sequencing at the original frame cadence. */
 public final class MusicDriver {
     private static final int CHANNEL_COUNT = 4;
     private static final int HEADER_SIZE = 11;
-    private final byte[] romData;
-    private final Rom romView;
+    private final Rom romData;
     private final GameBoyApu apu;
     private final MusicVoiceEmitter voice;
     private final MusicChannelState[] channels = {
@@ -44,9 +42,8 @@ public final class MusicDriver {
     private int speedTablePointer;
     private int musicTranspose;
 
-    public MusicDriver(byte[] romData, GameBoyApu apu) {
+    public MusicDriver(Rom romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
-        this.romView = new Rom(this.romData);
         this.apu = Objects.requireNonNull(apu, "apu");
         voice = new MusicVoiceEmitter(this, apu);
     }
@@ -63,7 +60,7 @@ public final class MusicDriver {
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
-        musicTranspose = (byte) romView.u8(RomAddress.fromOffset(headerOffset));
+        musicTranspose = romData.s8(RomAddress.fromOffset(headerOffset));
         speedTablePointer = readWordAtOffset(headerOffset + 1);
         for (int channel = 1; channel <= CHANNEL_COUNT; channel++) {
             int streamPointer = readWordAtOffset(headerOffset + 1 + (channel * 2));
@@ -230,23 +227,27 @@ public final class MusicDriver {
     }
 
     int readByte(int bank, int address) {
-        int offset = RomBank.romOffset(bank, address);
+        if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
+        // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
+        int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
         requireReadable(offset, 1, bank, address);
-        return Byte.toUnsignedInt(romData[offset]);
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     private int readWord(int bank, int address) {
-        int offset = RomBank.romOffset(bank, address);
+        if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
+        // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
+        int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
         requireReadable(offset, 2, bank, address);
         return readWordAtOffset(offset);
     }
 
     private int readWordAtOffset(int offset) {
-        return Byte.toUnsignedInt(romData[offset]) | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return romData.u16le(RomAddress.fromOffset(offset));
     }
 
     private void requireReadable(int offset, int length, int bank, int address) {
-        if (offset < 0 || offset + length > romData.length) {
+        if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalStateException(
                     "Music ROM read out of range: bank " + hex(bank) + " address " + hex(address));
         }
@@ -293,5 +294,10 @@ public final class MusicDriver {
 
     static String hex(int value) {
         return "0x" + Integer.toHexString(value).toUpperCase();
+    }
+
+    @Deprecated(forRemoval = true)
+    public MusicDriver(byte[] romData, GameBoyApu apu) {
+        this(new Rom(romData), apu);
     }
 }

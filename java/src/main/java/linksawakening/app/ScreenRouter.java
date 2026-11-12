@@ -12,6 +12,7 @@ import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
 import linksawakening.save.SaveRamStore;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
@@ -35,7 +36,7 @@ public final class ScreenRouter {
         return context.gpu();
     }
 
-    public byte[] romData() {
+    public Rom romData() {
         return context.romData();
     }
 
@@ -149,7 +150,7 @@ public final class ScreenRouter {
         showScreen().accept(cutsceneScreen());
         musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         gpu().loadIntroSequenceTiles(romData());
-        cutsceneManager().startIntro(romData(), this::loadIntroBackgroundScene);
+        cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
     }
 
     public BackgroundScene loadIntroBackgroundScene(String sceneId) {
@@ -173,7 +174,7 @@ public final class ScreenRouter {
         gpu().loadMenuTiles(romData());
         setFileMenu()
                 .accept(new FileMenuController(
-                        new FileMenuRomData(romData()),
+                        new FileMenuRomData(romData().unsafeBytes()),
                         this::loadFileMenuBackgroundScene,
                         saveRamStore().saveFilesMask(),
                         saveRamStore().savedNames(),

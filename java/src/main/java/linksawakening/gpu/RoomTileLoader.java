@@ -45,7 +45,7 @@ final class RoomTileLoader {
     private static final int CAMERA_SHOP_TILES_ADDR = RomSymbols.CameraShopIndoorTiles.address();
     private static final int W_TILESET_NO_UPDATE = 0xFF;
 
-    public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
+    public void loadRoomSpecificTiles(Rom romData, int roomId, int tilesetId) {
         if (tilesetId == W_TILESET_KEEP) {
             return;
         }
@@ -55,11 +55,11 @@ final class RoomTileLoader {
         target.loadTilesFromROM(romData, GbcBanks.adjust(TILESET_BANK), offset, TILESET_TILE_COUNT, TILESET_VRAM_INDEX);
     }
 
-    public void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+    public void loadIndoorTiles(Rom romData, int mapId, int roomId) {
         loadIndoorTiles(romData, mapId, roomId, false);
     }
 
-    public void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
+    public void loadIndoorTiles(Rom romData, int mapId, int roomId, boolean sideScrolling) {
         target.animatedTiles.currentMapId = mapId;
         target.animatedTiles.stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
@@ -67,7 +67,7 @@ final class RoomTileLoader {
             return;
         }
 
-        Rom rom = new Rom(romData);
+        Rom rom = romData;
         // Shared dungeon tiles (96 tiles at VRAM tile 0x120).
         target.loadTilesFromROM(
                 romData,
@@ -112,7 +112,7 @@ final class RoomTileLoader {
         loadRoomOverlay(romData, mapId, roomId, rom);
     }
 
-    private void loadMapOverlays(byte[] romData, int mapId, Rom rom) {
+    private void loadMapOverlays(Rom romData, int mapId, Rom rom) {
         // Per-map walls overlay the first 32 tiles of the shared block. Each
         // entry in DungeonWallsTilesPointers is a single high byte — the
         // actual source address is that byte * 0x100 within bank 0x0D.
@@ -151,7 +151,7 @@ final class RoomTileLoader {
         }
     }
 
-    private void loadRoomOverlay(byte[] romData, int mapId, int roomId, Rom rom) {
+    private void loadRoomOverlay(Rom romData, int mapId, int roomId, Rom rom) {
         // Per-room indoor tileset at VRAM tile 0x100 (vTiles2 base).
         // IndoorsTilesetsTable is actually two 256-byte halves: IndoorsA at
         // $6EB3 and IndoorsB at $6FB3 (bank0.asm:1031 — `inc h` for IndoorsB
@@ -176,7 +176,7 @@ final class RoomTileLoader {
         }
     }
 
-    public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
+    public void copySwitchBlockTiles(Rom romData, int sourceOffset, int destinationTile) {
         if (sourceOffset != 0x00 && sourceOffset != 0x40 && sourceOffset != 0x80) {
             throw new IllegalArgumentException("Unknown switch-block source offset: " + sourceOffset);
         }
@@ -191,7 +191,7 @@ final class RoomTileLoader {
                 destinationTile);
     }
 
-    public void copyPressedFloorSwitchTiles(byte[] romData) {
+    public void copyPressedFloorSwitchTiles(Rom romData) {
         target.loadTilesFromROM(
                 romData,
                 PRESSED_FLOOR_SWITCH_TILES_BANK,

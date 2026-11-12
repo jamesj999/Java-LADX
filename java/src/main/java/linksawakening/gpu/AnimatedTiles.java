@@ -33,14 +33,14 @@ final class AnimatedTiles {
         return animatedTilesFrameCount;
     }
 
-    public void loadAnimatedTilesGroup(byte[] romData, int animatedTilesGroup) {
+    public void loadAnimatedTilesGroup(Rom romData, int animatedTilesGroup) {
         currentAnimatedTilesGroup = animatedTilesGroup;
         // Keep animatedTilesDataOffset across rooms, matching the original
         // (hAnimatedTilesDataOffset is never reset on room change).
         copyAnimatedTilesFrame(romData, animatedTilesDataOffset);
     }
 
-    public void tickAnimatedTiles(byte[] romData) {
+    public void tickAnimatedTiles(Rom romData) {
         animatedTilesFrameCount = (animatedTilesFrameCount + 1) & 0xFF;
 
         if (currentAnimatedTilesGroup == DUNGEON_TWO_ANIMATED_GROUP) {
@@ -85,7 +85,7 @@ final class AnimatedTiles {
         }
     }
 
-    private void copyAnimatedTilesFrame(byte[] romData, int dataOffset) {
+    private void copyAnimatedTilesFrame(Rom romData, int dataOffset) {
         int groupOffset = animatedTilesGroupOffset(currentAnimatedTilesGroup);
         if (groupOffset < 0) {
             return;
@@ -129,15 +129,15 @@ final class AnimatedTiles {
         };
     }
 
-    void stageAnimatedScrollingTiles(byte[] romData, int mapId, int roomId) {
-        Rom rom = new Rom(romData);
-        byte[] staged = rom.slice(
+    void stageAnimatedScrollingTiles(Rom romData, int mapId, int roomId) {
+        Rom rom = romData;
+        byte[] staged = rom.bytes(
                 RomSymbols.Items1Tiles.inBank(GbcBanks.adjust(RomSymbols.Items1Tiles.bank()))
                         .plus(0x3C0),
                 animatedScrollingTiles.length);
         System.arraycopy(staged, 0, animatedScrollingTiles, 0, staged.length);
         if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
-            byte[] symbols = rom.slice(RomSymbols.ColorDungeonNpcTiles.plus(0xF00), 0x20);
+            byte[] symbols = rom.bytes(RomSymbols.ColorDungeonNpcTiles.plus(0xF00), 0x20);
             System.arraycopy(symbols, 0, animatedScrollingTiles, 0, symbols.length);
         }
     }
