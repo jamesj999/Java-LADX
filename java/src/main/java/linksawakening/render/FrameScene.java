@@ -1,7 +1,6 @@
 package linksawakening.render;
 
 import java.util.List;
-import java.util.ServiceLoader;
 import linksawakening.gpu.GPU;
 
 /** Retains ordered layers and reusable scratch storage for indexed frame composition. */
@@ -12,8 +11,7 @@ public final class FrameScene {
     private HardwareFrame reusableFrame;
     private final boolean hardwareSupported;
 
-    private static final FrameDrawObserver.Provider OBSERVERS =
-            ServiceLoader.load(FrameDrawObserver.Provider.class).findFirst().orElse(null);
+    private FrameDrawObserver observer;
 
     private FrameScene(List<RenderLayer> layers) {
         this.layers = List.copyOf(layers);
@@ -35,7 +33,7 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu) {
-        drawTo(buffer, gpu, OBSERVERS == null ? null : OBSERVERS.current());
+        drawTo(buffer, gpu, observer);
     }
 
     public void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
@@ -81,6 +79,11 @@ public final class FrameScene {
         FrameScene scene = new FrameScene(layers);
         scene.reusableFrame = frame;
         return scene;
+    }
+
+    FrameScene observedBy(FrameDrawObserver observer) {
+        this.observer = observer;
+        return this;
     }
 
     public int layerCount() {

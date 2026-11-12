@@ -29,7 +29,7 @@ final class FrameSceneTest {
                     writePixel(context.buffer(), 1, 0, 0x445566);
                 }));
 
-        scene.drawTo(buffer, gpu);
+        scene.drawTo(buffer, gpu, TestDrawObservers.CURRENT.get());
 
         assertEquals(List.of("first", "second"), calls);
         assertEquals(0x112233, pixelColor(buffer, 0, 0));

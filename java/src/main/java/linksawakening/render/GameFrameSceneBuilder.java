@@ -10,6 +10,13 @@ public final class GameFrameSceneBuilder {
     private final HardwareFrame frame = new HardwareFrame(true);
     private final WorldSceneLayers world = new WorldSceneLayers();
 
+    private FrameDrawObserver observer;
+
+    /** Attaches optional inspection to scenes built by this session-local builder. */
+    public void setDrawObserver(FrameDrawObserver observer) {
+        this.observer = observer;
+    }
+
     public FrameScene build(GameFrameState state) {
         layers.clear();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
@@ -40,7 +47,7 @@ public final class GameFrameSceneBuilder {
                         new InventoryFadeRenderLayer(
                                 layers.get(i), state.inventoryController().transition()));
         }
-        return FrameScene.of(layers, frame);
+        return FrameScene.of(layers, frame).observedBy(observer);
     }
 
     private void addDialogLayers(GameFrameState state) {
