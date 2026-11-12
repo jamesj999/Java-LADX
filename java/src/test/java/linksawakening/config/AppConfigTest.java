@@ -23,6 +23,25 @@ import linksawakening.input.InputConfig;
 import org.junit.jupiter.api.Test;
 
 final class AppConfigTest {
+    @Test
+    void recordingShortcutDefaultsCanBeRemappedOrDisabled() {
+        assertEquals(298, AppConfig.defaults().inputConfig().recordingKey());
+        assertEquals(
+                301,
+                AppConfig.parse("{\"controls\":{\"recordingKey\":\"f12\"}}")
+                        .inputConfig()
+                        .recordingKey());
+        assertEquals(
+                -1,
+                AppConfig.parse("{\"controls\":{\"recordingKey\":\"NONE\"}}")
+                        .inputConfig()
+                        .recordingKey());
+        assertEquals(
+                298,
+                AppConfig.parse("{\"controls\":{\"recordingKey\":\"typo\"}}")
+                        .inputConfig()
+                        .recordingKey());
+    }
 
     @Test
     void checkedInConfigPlaysIntroWithNewGameAndDebugControlsAvailable() {

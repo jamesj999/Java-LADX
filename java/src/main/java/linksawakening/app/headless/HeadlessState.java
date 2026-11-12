@@ -1,243 +1,72 @@
 package linksawakening.app.headless;
 
-import linksawakening.world.entity.EntityStatus;
+/** Public immutable checkpoint contract retained by HeadlessGameDriver. */
+public interface HeadlessState {
+    int frame();
 
-/**
- * Immutable replay checkpoint values; the driver exposes the compatibility State name. Created on demand for
- * one diagnostic capture.
- */
-// Facing is retained as an integer checkpoint value to preserve raw snapshot/equality representation.
-public abstract class HeadlessState {
-    private final int frame;
-    private final int map;
-    private final int room;
-    private final int x;
-    private final int y;
-    private final boolean dialog;
-    private final boolean pageWait;
-    private final String text;
-    private final int shield;
-    private final int health;
-    private final int sword;
-    private final int urchins;
-    private final boolean toadstool;
-    private final int powder;
-    private final int inventoryTick;
-    private final int tarinX;
-    private final int tarinY;
-    private final boolean forestCleared;
-    private final int tailKey;
-    private final int bgTick;
-    private final int smallKeys;
-    private final int compass;
-    private final int dungeonMap;
-    private final int nightmareKey;
-    private final int animation;
-    private final int direction;
-    private final int swordAnimation;
-    private final int z;
-    private final int velocityZ;
-    private final int speedX;
-    private final int speedY;
-    private final boolean loading;
-    private final int maxHearts;
-    private final int instrument1Flags;
+    int map();
 
-    protected HeadlessState(SessionDiagnostics snapshot) {
+    int room();
 
-        var tarin = snapshot.roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                .filter(entity -> entity.type() == 0x3F)
-                .findFirst()
-                .orElse(null);
-        this.frame = snapshot.frameCounter();
-        this.map = snapshot.roomSession().rooms().mapId();
-        this.room = snapshot.roomSession().rooms().currentRoomId();
-        this.x = snapshot.link().position().romEntityX();
-        this.y = snapshot.link().position().romEntityY();
-        this.dialog = snapshot.dialogController().isActive();
-        this.pageWait = snapshot.dialogController().isWaitingForPageAdvance();
-        this.text = snapshot.dialogController().visibleText();
-        this.shield = snapshot.playerState().equipmentLevels().shieldLevel();
-        this.health = snapshot.playerState().vitals().health();
-        this.sword = snapshot.playerState().equipmentLevels().swordLevel();
-        this.urchins = (int) snapshot.roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                .filter(entity -> entity.type() == 0xC5 && entity.status() == EntityStatus.ACTIVE)
-                .count();
-        this.toadstool = snapshot.playerState().ammunition().hasToadstool();
-        this.powder = snapshot.playerState().ammunition().magicPowderCount();
-        this.inventoryTick = snapshot.inventoryMenu().instrumentPaletteTick();
-        this.tarinX = tarin == null ? -1 : tarin.x();
-        this.tarinY = tarin == null ? -1 : tarin.y();
-        this.forestCleared = (snapshot.roomSession().dungeon().overworldRoomStatusSnapshot()[0x51] & 0x10) != 0;
-        this.tailKey = snapshot.playerState().progression().tailKeyCount();
-        this.bgTick = snapshot.gpu().animatedTilesFrameCount();
-        this.smallKeys = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[4] & 0xFF;
-        this.compass = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[1] & 0xFF;
-        this.dungeonMap = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[0] & 0xFF;
-        this.nightmareKey = snapshot.roomSession().dungeon().currentDungeonItemFlagsSnapshot()[3] & 0xFF;
-        this.animation = snapshot.link().animation().romAnimationState();
-        this.direction = 3 - snapshot.link().animation().direction();
-        this.swordAnimation = snapshot.equipmentController().activeSword() == null
-                ? 0
-                : snapshot.equipmentController().activeSword().state();
-        this.z = snapshot.link().animation().romEntityZ();
-        this.velocityZ = snapshot.link().airborne().zVelocity();
-        this.speedX = snapshot.link().position().romSpeedX();
-        this.speedY = snapshot.link().position().romSpeedY();
-        this.loading = snapshot.scrollController().isActive()
-                || snapshot.transitionController().isInputBlocked();
-        this.maxHearts = snapshot.playerState().vitals().maxHearts();
-        this.instrument1Flags = snapshot.roomSession().dungeon().dungeonProgressFlagsSnapshot()[0] & 0xFF;
-    }
+    int x();
 
-    public int frame() {
-        return frame;
-    }
+    int y();
 
-    public int map() {
-        return map;
-    }
+    boolean dialog();
 
-    public int room() {
-        return room;
-    }
+    boolean pageWait();
 
-    public int x() {
-        return x;
-    }
+    String text();
 
-    public int y() {
-        return y;
-    }
+    int shield();
 
-    public boolean dialog() {
-        return dialog;
-    }
+    int health();
 
-    public boolean pageWait() {
-        return pageWait;
-    }
+    int sword();
 
-    public String text() {
-        return text;
-    }
+    int urchins();
 
-    public int shield() {
-        return shield;
-    }
+    boolean toadstool();
 
-    public int health() {
-        return health;
-    }
+    int powder();
 
-    public int sword() {
-        return sword;
-    }
+    int inventoryTick();
 
-    public int urchins() {
-        return urchins;
-    }
+    int tarinX();
 
-    public boolean toadstool() {
-        return toadstool;
-    }
+    int tarinY();
 
-    public int powder() {
-        return powder;
-    }
+    boolean forestCleared();
 
-    public int inventoryTick() {
-        return inventoryTick;
-    }
+    int tailKey();
 
-    public int tarinX() {
-        return tarinX;
-    }
+    int bgTick();
 
-    public int tarinY() {
-        return tarinY;
-    }
+    int smallKeys();
 
-    public boolean forestCleared() {
-        return forestCleared;
-    }
+    int compass();
 
-    public int tailKey() {
-        return tailKey;
-    }
+    int dungeonMap();
 
-    public int bgTick() {
-        return bgTick;
-    }
+    int nightmareKey();
 
-    public int smallKeys() {
-        return smallKeys;
-    }
+    int animation();
 
-    public int compass() {
-        return compass;
-    }
+    int direction();
 
-    public int dungeonMap() {
-        return dungeonMap;
-    }
+    int swordAnimation();
 
-    public int nightmareKey() {
-        return nightmareKey;
-    }
+    int z();
 
-    public int animation() {
-        return animation;
-    }
+    int velocityZ();
 
-    public int direction() {
-        return direction;
-    }
+    int speedX();
 
-    public int swordAnimation() {
-        return swordAnimation;
-    }
+    int speedY();
 
-    public int z() {
-        return z;
-    }
+    boolean loading();
 
-    public int velocityZ() {
-        return velocityZ;
-    }
+    int maxHearts();
 
-    public int speedX() {
-        return speedX;
-    }
-
-    public int speedY() {
-        return speedY;
-    }
-
-    public boolean loading() {
-        return loading;
-    }
-
-    public int maxHearts() {
-        return maxHearts;
-    }
-
-    public int instrument1Flags() {
-        return instrument1Flags;
-    }
-
-    @Override
-    public boolean equals(Object value) {
-        return HeadlessStateValues.equal(this, value);
-    }
-
-    @Override
-    public int hashCode() {
-        return HeadlessStateValues.hash(this);
-    }
-
-    @Override
-    public String toString() {
-        return HeadlessStateValues.text(this);
-    }
+    int instrument1Flags();
 }

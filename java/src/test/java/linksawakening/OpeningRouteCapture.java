@@ -10,7 +10,7 @@ import linksawakening.app.host.*;
 
 /** Exercises Main, without scene injection, using the shared button route. */
 public final class OpeningRouteCapture {
-    private static final HeadlessGameDriver game = new HeadlessGameDriver();
+    private static HeadlessGameDriver game;
     private static int lastHealth = 24;
     private static final StringBuilder instrumentTrace = new StringBuilder();
     private static final StringBuilder kingTrace = new StringBuilder();
@@ -24,6 +24,15 @@ public final class OpeningRouteCapture {
         combatTrace.setLength(0);
         kingTrace.setLength(0);
         instrumentTrace.setLength(0);
+        game = args.length > 2
+                ? new HeadlessGameDriver(linksawakening.recording.RecordingOptions.defaults(Path.of(args[2])))
+                : new HeadlessGameDriver();
+        try (var recordingSession = game) {
+            capture(route, out);
+        }
+    }
+
+    private static void capture(Path route, Path out) throws Exception {
         game.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
         int frame = 0, segment = 0;

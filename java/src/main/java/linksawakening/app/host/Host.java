@@ -18,6 +18,8 @@ public interface Host extends AutoCloseable {
 
     void present(byte[] pixels);
 
+    default void recordingStatus(boolean active) {}
+
     default void releasePresentation() {}
 
     @Override

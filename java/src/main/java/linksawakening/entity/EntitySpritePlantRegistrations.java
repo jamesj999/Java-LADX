@@ -23,17 +23,16 @@ final class EntitySpritePlantRegistrations {
 
     private EntitySpritePlantRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_GOPONGA_FLOWER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, GOPONGA_FLOWER_SPRITE_VARIANTS.bank(), GOPONGA_FLOWER_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_GIANT_GOPONGA_FLOWER) {
-            return catalog.decodeRectangle(entityType, DATA_006_6316.bank(), DATA_006_6316.address(), 3, 8, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_006_6316.bank(), DATA_006_6316.address(), 3, 8, 0);
         }
         if (entityType == ENTITY_GOPONGA_FLOWER_PROJECTILE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     GOPONGA_FLOWER_PROJECTILE_SPRITE_LIST.bank(),
                     GOPONGA_FLOWER_PROJECTILE_SPRITE_LIST.address(),
@@ -41,16 +40,16 @@ final class EntitySpritePlantRegistrations {
                     0);
         }
         if (entityType == ENTITY_POKEY) {
-            return catalog.forPokeyState(0);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.POKEY, entityType);
         }
         if (entityType == ENTITY_PIRANHA_PLANT) {
-            return catalog.decodeRectangle(entityType, DATA_036_6FC2.bank(), DATA_036_6FC2.address(), 6, 4, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_036_6FC2.bank(), DATA_036_6FC2.address(), 6, 4, 0);
         }
         if (entityType == ENTITY_BUSH_CRAWLER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     BUSHCRAWLER_INDOOR_SPRITE_VARIANTS.bank(),
-                    catalog.isIndoorRoomTable(roomTable)
+                    EntitySpriteGeometry.isIndoorRoomTable(roomTable)
                             ? BUSHCRAWLER_INDOOR_SPRITE_VARIANTS.address()
                             : BUSHCRAWLER_OUTDOOR_SPRITE_VARIANTS.address(),
                     2,

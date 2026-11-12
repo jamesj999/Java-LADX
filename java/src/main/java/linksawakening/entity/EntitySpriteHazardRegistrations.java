@@ -22,15 +22,14 @@ final class EntitySpriteHazardRegistrations {
 
     private EntitySpriteHazardRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == 0xE4) {
             // func_015_4AC9 indexes fourteen three-sprite body variants at
             // Data_015_4A15. Its separate weapon layer is handler-generated.
-            return catalog.decodeRectangle(entityType, DATA_015_4A15.bank(), DATA_015_4A15.address(), 14, 3, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_015_4A15.bank(), DATA_015_4A15.address(), 14, 3, 0);
         }
         if (entityType == ENTITY_MASKED_MIMIC_GORIYA && mapId != 0x1F) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     MASKED_MIMIC_GORIYA_SPRITE_VARIANTS.bank(),
                     MASKED_MIMIC_GORIYA_SPRITE_VARIANTS.address(),
@@ -38,22 +37,24 @@ final class EntitySpriteHazardRegistrations {
                     0);
         }
         if (entityType == ENTITY_ANTI_FAIRY) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, ANTI_FAIRY_SPRITE_VARIANTS.bank(), ANTI_FAIRY_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_SPARK_COUNTER_CLOCKWISE || entityType == ENTITY_SPARK_CLOCKWISE) {
-            return catalog.decodePair(entityType, SPARK_SPRITE_VARIANTS.bank(), SPARK_SPRITE_VARIANTS.address(), 2, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, SPARK_SPRITE_VARIANTS.bank(), SPARK_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_LASER) {
-            return catalog.decodePair(entityType, LASER_SPRITE_VARIANTS.bank(), LASER_SPRITE_VARIANTS.address(), 8, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, LASER_SPRITE_VARIANTS.bank(), LASER_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_LASER_BEAM) {
             // LaserBeamEntityHandler never renders a normal entity sprite;
             // its visible pixels are transient VFX $06 from bank $02.
-            return EntitySpriteDefinition.unsupported(entityType);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.UNSUPPORTED, entityType);
         }
         if (entityType == ENTITY_SPIKE_TRAP) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, SPIKE_TRAP_SPRITE_VARIANTS.bank(), SPIKE_TRAP_SPRITE_VARIANTS.address(), 1, 0);
         }
         return null;

@@ -19,6 +19,7 @@ public final class InputConfig {
     private final int aKey;
     private final int bKey;
     private final int selectKey;
+    private final int recordingKey;
 
     public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey) {
         this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, KEY_TAB);
@@ -26,6 +27,20 @@ public final class InputConfig {
 
     public InputConfig(
             int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey, int selectKey) {
+        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, KEY_F9);
+    }
+
+    public InputConfig(
+            int menuOpenKey,
+            int upKey,
+            int downKey,
+            int leftKey,
+            int rightKey,
+            int aKey,
+            int bKey,
+            int selectKey,
+            int recordingKey) {
+        this.recordingKey = recordingKey;
         this.menuOpenKey = menuOpenKey;
         this.upKey = upKey;
         this.downKey = downKey;
@@ -64,6 +79,10 @@ public final class InputConfig {
         return bKey;
     }
 
+    public int recordingKey() {
+        return recordingKey;
+    }
+
     public int selectKey() {
         return selectKey;
     }
@@ -81,7 +100,11 @@ public final class InputConfig {
         int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
         int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
         int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
-        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey);
+        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(java.util.Locale.ROOT);
+        int recordingKey = KEY_NAME_TO_CODE.getOrDefault(recordingName, KEY_F9);
+        if (!KEY_NAME_TO_CODE.containsKey(recordingName))
+            System.err.println("Unknown recording key: " + recordingName + " (falling back to F9)");
+        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
     }
 
     private static int resolveKey(String name) {
@@ -95,6 +118,8 @@ public final class InputConfig {
 
     private static Map<String, Integer> buildKeyTable() {
         Map<String, Integer> table = new HashMap<>();
+        table.put("NONE", -1);
+        for (int i = 1; i <= 25; i++) table.put("F" + i, 289 + i);
         table.put("ENTER", KEY_ENTER);
         table.put("RETURN", KEY_ENTER);
         table.put("SPACE", KEY_SPACE);

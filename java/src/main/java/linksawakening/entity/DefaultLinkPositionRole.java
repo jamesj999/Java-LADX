@@ -27,98 +27,98 @@ final class DefaultLinkPositionRole implements LinkPositionRole {
     }
 
     public int romSpeedX() {
-        return linkMotion.accessRomSpeedX();
+        return linkMotion.position().accessRomSpeedX();
     }
 
     public int romSpeedY() {
-        return linkMotion.accessRomSpeedY();
+        return linkMotion.position().accessRomSpeedY();
     }
 
     public int romSwordCollisionY() {
-        return linkMotion.accessRomSwordCollisionY();
+        return linkMotion.romSwordCollisionY();
     }
 
     public void setPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetPixelPosition(pixelX, pixelY);
+        linkMotion.position().setPixelPosition(pixelX, pixelY);
     }
 
     public void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetRoomScrollEntryPixelPosition(pixelX, pixelY);
+        linkMotion.position().setRoomScrollEntryPixelPosition(pixelX, pixelY);
     }
 
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetRoomEntryPixelPosition(pixelX, pixelY);
+        linkMotion.position().setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
     public void markRoomEntryPosition() {
-        linkMotion.accessMarkRoomEntryPosition();
+        linkMotion.position().markRoomEntryPosition();
     }
 
     public int roomEntryPixelX() {
-        return linkMotion.accessRoomEntryPixelX();
+        return linkMotion.position().roomEntryPixelX();
     }
 
     public int roomEntryPixelY() {
-        return linkMotion.accessRoomEntryPixelY();
+        return linkMotion.position().roomEntryPixelY();
     }
 
     public int roomEntryRomPositionX() {
-        return linkMotion.accessRoomEntryRomPositionX();
+        return linkMotion.position().roomEntryRomPositionX();
     }
 
     public int roomEntryRomPositionY() {
-        return linkMotion.accessRoomEntryRomPositionY();
+        return linkMotion.position().roomEntryRomPositionY();
     }
 
     public void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
-        linkMotion.accessSetRoomEntryRomPosition(romPositionX, romPositionY);
+        linkMotion.position().setRoomEntryRomPosition(romPositionX, romPositionY);
     }
 
     public void applyRomSpeed(int speedX, int speedY) {
-        linkMotion.accessApplyRomSpeed(speedX, speedY);
+        linkMotion.position().applyRomSpeed(speedX, speedY);
     }
 
     public void applyRomSpeedX(int speedX) {
-        linkMotion.accessApplyRomSpeedX(speedX);
+        linkMotion.position().applyRomSpeedX(speedX);
     }
 
     public void applyRomFinalPosition(int speedX, int speedY) {
-        linkMotion.accessApplyRomFinalPosition(speedX, speedY);
+        linkMotion.position().applyRomFinalPosition(speedX, speedY);
     }
 
     public void captureRomFinalPosition() {
-        linkMotion.accessCaptureRomFinalPosition();
+        linkMotion.position().captureRomFinalPosition();
     }
 
     public void restoreRomFinalPosition() {
-        linkMotion.accessRestoreRomFinalPosition();
+        linkMotion.position().restoreRomFinalPosition();
     }
 
     public void restoreRomFinalPositionX() {
-        linkMotion.accessRestoreRomFinalPositionX();
+        linkMotion.position().restoreRomFinalPositionX();
     }
 
     public void clearRomPositionIncrement() {
-        linkMotion.accessClearRomPositionIncrement();
+        linkMotion.position().clearRomPositionIncrement();
     }
 
     public int pixelX() {
-        return linkMotion.accessPixelX();
+        return linkMotion.position().pixelX();
     }
 
     public int pixelY() {
-        return linkMotion.accessPixelY();
+        return linkMotion.position().pixelY();
     }
 
     public int romEntityX() {
-        return linkMotion.accessRomEntityX();
+        return linkMotion.position().romEntityX();
     }
 
     public int romFinalPositionX() {
-        return linkMotion.accessRomFinalPositionX();
+        return linkMotion.position().romFinalPositionX();
     }
 
     public int romEntityY() {
-        return linkMotion.accessRomEntityY();
+        return linkMotion.position().romEntityY();
     }
 }

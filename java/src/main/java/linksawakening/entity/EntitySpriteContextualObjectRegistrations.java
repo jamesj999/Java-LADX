@@ -4,7 +4,6 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.EntityRoomLoader;
-import linksawakening.world.entity.EntityStatus;
 
 /** Context-dependent FloatingItemEntityHandler and ColorShellBlueEntityHandler display lists; also validates lookup inputs. */
 final class EntitySpriteContextualObjectRegistrations {
@@ -15,8 +14,7 @@ final class EntitySpriteContextualObjectRegistrations {
 
     private EntitySpriteContextualObjectRegistrations() {}
 
-    static EntitySpriteDefinition lookupFloatingItem(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookupFloatingItem(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if ((entityType & ~0xFF) != 0) {
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
         }
@@ -29,17 +27,17 @@ final class EntitySpriteContextualObjectRegistrations {
         // intentionally deferred until its dedicated renderer is modeled.
         if ((entityType == ENTITY_FLOATING_ITEM || entityType == ENTITY_FLOATING_ITEM_2)
                 && !(roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON && entityType == ENTITY_FLOATING_ITEM)) {
-            return catalog.decodeFloatingItemMain(entityType);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.FLOATING_ITEM, entityType);
         }
 
-        if (catalog.isColorShellType(entityType)) {
+        if (EntitySpriteGeometry.isColorShellType(entityType)) {
             // Room streams begin in INIT. The bank-$36 renderer uses its
             // inactive four-variant list until the first active handler tick.
-            return catalog.forColorShellState(entityType, 0, EntityStatus.INIT);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.COLOR_SHELL, entityType);
         }
 
         if (entityType == 0x9D) {
-            return catalog.decodeRectangle(
+            return EntitySpriteRecipe.rectangle(
                     entityType,
                     LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO.bank(),
                     mapId == 1
@@ -50,10 +48,10 @@ final class EntitySpriteContextualObjectRegistrations {
                     0);
         }
         if (entityType == ENTITY_LIFTABLE_ROCK) {
-            return catalog.decodeLiftableRock(roomTable);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.ROCK, entityType);
         }
         if (entityType == 0x41) {
-            return catalog.forOwlEvent(false);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.OWL, entityType);
         }
         return null;
     }

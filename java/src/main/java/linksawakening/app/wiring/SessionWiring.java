@@ -49,11 +49,24 @@ public final class SessionWiring {
             OpeningStoryState opening,
             GameplaySounds sounds,
             boolean headless) {
+        return build(
+                random, headlessPcm, clock, opening, sounds, headless, java.util.function.UnaryOperator.identity());
+    }
+
+    public static SessionContext build(
+            RomRandomByteSource random,
+            PcmSoundOutput headlessPcm,
+            FrameClock clock,
+            OpeningStoryState opening,
+            GameplaySounds sounds,
+            boolean headless,
+            java.util.function.UnaryOperator<Host> decorateHost) {
         var screens = new ScreenState();
         var navigator = new SessionNavigator(screens);
         Host host = headless
                 ? (headlessPcm == null ? new HeadlessHost() : new HeadlessHost(headlessPcm))
                 : new DesktopHost();
+        host = decorateHost.apply(host);
         var built = SubsystemWiring.build(
                 random, new GPU(), new TransitionController(), new ScrollController(), navigator, host, headless);
         var services = built.services();

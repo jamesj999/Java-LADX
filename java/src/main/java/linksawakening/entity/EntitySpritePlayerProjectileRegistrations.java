@@ -2,7 +2,6 @@ package linksawakening.entity;
 
 import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
-import java.util.List;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -24,18 +23,17 @@ final class EntitySpritePlayerProjectileRegistrations {
 
     private EntitySpritePlayerProjectileRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_ARROW) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, ENTITY_ARROW_SPRITE_VARIANTS.bank(), ENTITY_ARROW_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_BOOMERANG) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, BOOMERANG_SPRITE_VARIANTS.bank(), BOOMERANG_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_MAGIC_ROD_FIREBALL) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     MAGIC_ROD_FIREBALL_SPRITE_VARIANTS.bank(),
                     MAGIC_ROD_FIREBALL_SPRITE_VARIANTS.address(),
@@ -43,31 +41,21 @@ final class EntitySpritePlayerProjectileRegistrations {
                     0);
         }
         if (entityType == ENTITY_MAGIC_POWDER_SPRINKLE) {
-            return catalog.decodeRectangle(entityType, DATA_018_7ABA.bank(), DATA_018_7ABA.address(), 8, 3, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_018_7ABA.bank(), DATA_018_7ABA.address(), 8, 3, 0);
         }
         if (entityType == ENTITY_MUSICAL_NOTE) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, MUSICAL_NOTE_ENTITY_HANDLER.bank(), MUSICAL_NOTE_ENTITY_HANDLER.address(), 1, 0);
         }
         if (entityType == ENTITY_SWORD_BEAM) {
-            return catalog.decodeRectangle(entityType, DATA_019_44FC.bank(), DATA_019_44FC.address(), 4, 2, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_019_44FC.bank(), DATA_019_44FC.address(), 4, 2, 0);
         }
         if (entityType == ENTITY_BOMB) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, RomSymbols.BombSprite.bank(), RomSymbols.BombSprite.address(), 1, 0);
         }
         if (entityType == ENTITY_HOOKSHOT_CHAIN) {
-            // HookshotChainSpriteVariants is an inline handler list in
-            // entities/18_hookshot_chain.asm, not a bank display-list label.
-            return new EntitySpriteDefinition(
-                    entityType,
-                    -1,
-                    -1,
-                    EntitySpriteDefinition.Shape.PAIR,
-                    0,
-                    List.of(new EntitySpriteDefinition.Variant(
-                            new EntitySpriteDefinition.OamAttribute(0x36, 0x00),
-                            new EntitySpriteDefinition.OamAttribute(0x36, 0x20))));
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.HOOKSHOT_CHAIN, entityType);
         }
         return null;
     }

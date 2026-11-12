@@ -16,6 +16,7 @@
     "rightKey": "RIGHT",
     "aKey": "Z",
     "bKey": "X",
-    "selectKey": "TAB"
+    "selectKey": "TAB",
+    "recordingKey": "F9"
   }
 }

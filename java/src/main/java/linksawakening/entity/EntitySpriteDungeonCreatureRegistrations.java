@@ -41,10 +41,9 @@ final class EntitySpriteDungeonCreatureRegistrations {
 
     private EntitySpriteDungeonCreatureRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_KEESE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     KEESE_CAVE_BSPRITE_VARIANTS.bank(),
                     mapId == 0x0A ? KEESE_CAVE_BSPRITE_VARIANTS.address() : KEESE_SPRITE_VARIANTS.address(),
@@ -52,14 +51,15 @@ final class EntitySpriteDungeonCreatureRegistrations {
                     0);
         }
         if (entityType == ENTITY_SNAKE) {
-            return catalog.decodePair(entityType, SNAKE_SPRITE_VARIANTS.bank(), SNAKE_SPRITE_VARIANTS.address(), 4, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, SNAKE_SPRITE_VARIANTS.bank(), SNAKE_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_WIZROBE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, WIZROBE_SPRITE_VARIANTS.bank(), WIZROBE_SPRITE_VARIANTS.address(), 5, 0);
         }
         if (entityType == ENTITY_WIZROBE_PROJECTILE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     WIZROBE_PROJECTILE_SPRITE_VARIANTS.bank(),
                     WIZROBE_PROJECTILE_SPRITE_VARIANTS.address(),
@@ -67,7 +67,7 @@ final class EntitySpriteDungeonCreatureRegistrations {
                     0);
         }
         if (entityType == ENTITY_BOUNCING_BOMBITE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     BOUNCING_BOMBITE_ENTITY_HANDLER.bank(),
                     mapId == 0x07
@@ -77,7 +77,7 @@ final class EntitySpriteDungeonCreatureRegistrations {
                     0);
         }
         if (entityType == ENTITY_TIMER_BOMBITE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     BOMBITE2_SPRITE_VARIANTS.bank(),
                     mapId == 0x07 ? BOMBITE2_SPRITE_VARIANTS.address() : BOMBITE1_SPRITE_VARIANTS.address(),
@@ -87,26 +87,27 @@ final class EntitySpriteDungeonCreatureRegistrations {
         if (entityType == ENTITY_MIMIC) {
             // The eighth pair consumes the $21 byte at Data_019_6AAC,
             // immediately following the source's final commented attribute.
-            return catalog.decodePair(entityType, MIMIC_SPRITE_VARIANTS.bank(), MIMIC_SPRITE_VARIANTS.address(), 8, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, MIMIC_SPRITE_VARIANTS.bank(), MIMIC_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_MINI_MOLDORM) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, MINI_MOLDORM_SPRITE_VARIANTS.bank(), MINI_MOLDORM_SPRITE_VARIANTS.address(), 10, 0);
         }
         if (entityType == ENTITY_LIKE_LIKE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, LIKE_LIKE_SPRITE_VARIANTS.bank(), LIKE_LIKE_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_POLS_VOICE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, POLS_VOICE_SPRITE_VARIANTS.bank(), POLS_VOICE_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_PAIRODD) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, PAIRODD_SPRITE_VARIANTS.bank(), PAIRODD_SPRITE_VARIANTS.address(), 8, 0);
         }
         if (entityType == ENTITY_PAIRODD_PROJECTILE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     PAIRODD_PROJECTILE_SPRITE_VARIANTS.bank(),
                     PAIRODD_PROJECTILE_SPRITE_VARIANTS.address(),

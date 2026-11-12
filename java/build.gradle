@@ -121,6 +121,8 @@ tasks.register('captureOpeningRoute', JavaExec) {
     jvmArgs '-Djava.awt.headless=true'
     args providers.gradleProperty('openingRoute').getOrElse(file('../tools/opening/house-route.tsv').absolutePath),
         providers.gradleProperty('openingOutput').getOrElse(layout.buildDirectory.dir('opening-route').get().asFile.absolutePath)
+    if (providers.gradleProperty('openingRecording').isPresent())
+        args providers.gradleProperty('openingRecording').get()
 }
 
 // Never package user-supplied ROMs or saves.

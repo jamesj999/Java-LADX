@@ -22,7 +22,9 @@ final class LinkSignals {
     WaterSplash pendingWaterSplash;
 
     boolean accessRecoveryBlocksInput() {
-        return linkStateMachine.get().recoveringInWater || linkAirborne.get().fallingIntoPit || pitWarpPending;
+        return linkStateMachine.get().status().recoveringInWater()
+                || linkAirborne.get().pit().fallingIntoPit()
+                || pitWarpPending;
     }
 
     boolean accessConsumePitWarp() {
