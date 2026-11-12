@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.ArrayList;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -179,7 +180,7 @@ final class BooBuddyPauseTest {
             }
             rom = stream.readAllBytes();
         }
-        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         var slots = new ArrayList<RoomEntity>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));

@@ -12,6 +12,7 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
@@ -26,7 +27,7 @@ final class RoomEntityLiftThrowRuntimeTest {
 
     @Test
     void thrownStatueBreaksIntoSixRomRubbleSpritesAndTheyExpire() {
-        var catalog = new linksawakening.entity.EntitySpriteHandlerCatalog(loadRom());
+        var catalog = new linksawakening.entity.EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         var runtime = RoomEntityRuntime.builder(runtimeWithEntity(EntityStatus.ACTIVE, 0x9D)
                         .inspection()
                         .snapshot())
@@ -633,14 +634,14 @@ final class RoomEntityLiftThrowRuntimeTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         for (LinkAttackStepRequest request : runtime.consumePendingLinkAttackStepRequests()) {
-            link.startRomItemAttackStep();
+            link.equipment().startRomItemAttackStep();
         }
 
-        assertEquals(0x0C, link.romAttackStepAnimationCountdown());
+        assertEquals(0x0C, link.equipment().romAttackStepAnimationCountdown());
     }
 
     @Test
@@ -679,13 +680,13 @@ final class RoomEntityLiftThrowRuntimeTest {
                                     > steps.get(stepIndex).sourceSlot());
             if (applyClear) {
                 clearIndex++;
-                link.clearRomAttackStepAnimationCountdown();
+                link.equipment().clearRomAttackStepAnimationCountdown();
             } else {
                 stepIndex++;
-                link.startRomItemAttackStep();
+                link.equipment().startRomItemAttackStep();
             }
         }
-        return link.romAttackStepAnimationCountdown();
+        return link.equipment().romAttackStepAnimationCountdown();
     }
 
     private static RoomEntityRuntime sideViewPotAndTarinRuntime(int potSlot, int tarinSlot) {

@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
-import linksawakening.entity.Link;
 import linksawakening.rom.RomBank;
+import linksawakening.state.Direction;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -255,24 +255,24 @@ final class RoomSessionState2Test {
         int linkY = madam.y() + 0x10;
 
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_DOWN);
+        session.entities().tickEntities(0, madam.x(), linkY, 0, Direction.DOWN.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
         session.entityState().setEntityActionButtonsHeld(false, true);
-        session.entities().tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(1, madam.x(), linkY, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
         session.entityState().setEntityActionButtonsHeld(true, false);
         session.entityState().setEntityTalkState(false, 1, 0x80);
-        session.entities().tickEntities(2, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(2, madam.x(), linkY, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
         session.entityState().setEntityTalkState(false, 0, 0x70);
-        session.entities().tickEntities(3, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(3, madam.x(), linkY, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
 
         session.entityState().setEntityTalkState(false, 0, 0x80);
-        session.entities().tickEntities(4, madam.x(), linkY, 0, true, Link.DIRECTION_UP);
+        session.entities().tickEntities(4, madam.x(), linkY, 0, true, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
     }
 }

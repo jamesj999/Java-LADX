@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ final class CuccoRuntimeTest {
 
     @Test
     void decodesCuccoDisplayListFromBankFive() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertEquals(0x05, definition.bank());
@@ -33,7 +34,7 @@ final class CuccoRuntimeTest {
     @Test
     void routesCuccoThroughItsHarmlessHandlerAndPowerBraceletLift() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -64,7 +65,7 @@ final class CuccoRuntimeTest {
     @Test
     void harmlessPhysicsSuppressesCuccoContactDamageButKeepsEnemyCollision() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(EntitySpriteHandlerCatalog.ENTITY_CUCCO, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()

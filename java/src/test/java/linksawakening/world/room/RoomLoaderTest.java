@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
 
@@ -41,9 +43,7 @@ final class RoomLoaderTest {
         int entityStream = RomBank.romOffset(0x16, 0x5000);
         rom[entityStream] = (byte) 0xFF;
 
-        LoadedRoom loaded = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
-                .loadOverworld(0);
+        LoadedRoom loaded = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))).loadOverworld(0);
 
         assertEquals(0, loaded.roomId());
         assertEquals(Warp.CATEGORY_OVERWORLD, loaded.mapCategory());
@@ -54,8 +54,7 @@ final class RoomLoaderTest {
 
     @Test
     void indoorLoaderCanPreserveSideScrollingMapCategory() {
-        LoadedRoom loaded = new RoomLoader(
-                        (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())))
+        LoadedRoom loaded = new RoomLoader((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())))
                 .loadIndoor(0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
 
         assertEquals(Warp.CATEGORY_SIDESCROLL, loaded.mapCategory());
@@ -63,9 +62,8 @@ final class RoomLoaderTest {
 
     @Test
     void overworldLoaderAttachesRomBackedEntitySnapshotAndSpriteSelection() {
-        LoadedRoom loaded = new RoomLoader(
-                        (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())))
-                .loadOverworld(0x92);
+        LoadedRoom loaded =
+                new RoomLoader((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom()))).loadOverworld(0x92);
 
         assertEquals(7, loaded.entities().loadedEntities().size());
         assertEquals(0x73, loaded.entities().loadedEntities().get(0).type());
@@ -79,8 +77,7 @@ final class RoomLoaderTest {
     void ordinaryOverworldRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[][] palettes = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadOverworld(0x00)
                 .entities()
                 .spriteSelection()
@@ -97,7 +94,7 @@ final class RoomLoaderTest {
         int[] rawRoomPalette = readPalette(rom, 0x21, 0x56D8);
         int[] specialColors = readPalette(rom, 0x21, 0x56C8);
 
-        int[] palette = new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[] palette = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadOverworld(0x92)
                 .entities()
                 .spriteSelection()
@@ -110,8 +107,7 @@ final class RoomLoaderTest {
     void ordinaryIndoorRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[][] palettes = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadIndoor(0x10, 0xA4, null)
                 .entities()
                 .spriteSelection()
@@ -124,8 +120,7 @@ final class RoomLoaderTest {
 
     @Test
     void newGameHouseLoadsMarinAndTarinFromTheRomEntityStream() {
-        LoadedRoom loaded = new RoomLoader(
-                        (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())))
+        LoadedRoom loaded = new RoomLoader((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())))
                 .loadIndoor(0x10, 0xA3, null);
 
         assertEquals(4, loaded.entities().loadedEntities().size());
@@ -142,8 +137,7 @@ final class RoomLoaderTest {
     void ordinaryDungeonRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[][] palettes = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadIndoor(0x00, 0x25, null)
                 .entities()
                 .spriteSelection()
@@ -158,8 +152,7 @@ final class RoomLoaderTest {
     void sideScrollingDungeonRoomUsesDungeonPaletteBObjectRows() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[][] palettes = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadIndoor(0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL)
                 .entities()
                 .spriteSelection()
@@ -173,8 +166,7 @@ final class RoomLoaderTest {
     void turtleRockSideScrollingOverrideUsesItsDedicatedObjectRows() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+        int[][] palettes = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
                 .loadIndoor(0x07, 0x64, null, Warp.CATEGORY_SIDESCROLL)
                 .entities()
                 .spriteSelection()

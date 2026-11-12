@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
@@ -15,13 +17,12 @@ final class RoomSessionFloatingItemTest {
     @Test
     void activeSideScrollRoomMarksEntityRenderSnapshotForMixedSpriteYRules() {
         byte[] rom = loadRom();
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(TestRoms.partial(rom));
         RoomSession session = new RoomSession(new RoomSessionConfig(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldTilesetTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
                 new OverworldCollision(tables),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));

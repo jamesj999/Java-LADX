@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.Link;
+import linksawakening.state.Direction;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -168,12 +168,7 @@ final class RoomSessionState1Test {
         session.tickEntities(new EntityTickInputs(
                 1,
                 new LinkPosition(
-                        initialized.x(),
-                        initialized.y(),
-                        initialized.z(),
-                        linksawakening.state.Direction.fromJavaOrUnknown(0),
-                        0x01,
-                        0),
+                        initialized.x(), initialized.y(), initialized.z(), Direction.fromJavaOrUnknown(0), 0x01, 0),
                 new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
@@ -182,13 +177,7 @@ final class RoomSessionState1Test {
 
         session.tickEntities(new EntityTickInputs(
                 2,
-                new LinkPosition(
-                        revealTick.x(),
-                        revealTick.y(),
-                        revealTick.z(),
-                        linksawakening.state.Direction.fromJavaOrUnknown(0),
-                        0,
-                        0),
+                new LinkPosition(revealTick.x(), revealTick.y(), revealTick.z(), Direction.fromJavaOrUnknown(0), 0, 0),
                 new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
@@ -210,7 +199,7 @@ final class RoomSessionState1Test {
                         oldOverloadGhini.x(),
                         oldOverloadGhini.y(),
                         oldOverloadGhini.z(),
-                        linksawakening.state.Direction.fromJavaOrUnknown(0),
+                        Direction.fromJavaOrUnknown(0),
                         0,
                         0),
                 new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
@@ -430,13 +419,10 @@ final class RoomSessionState1Test {
         assertFalse(start.poking());
         assertEquals(0x55, start.location());
         assertEquals(
-                0x71,
-                session.playerItems()
-                        .shovelAnimationState(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT), 1));
+                0x71, session.playerItems().shovelAnimationState(Direction.fromJava(Direction.RIGHT.javaIndex()), 1));
         assertEquals(
                 0x72,
-                session.playerItems()
-                        .shovelAnimationState(linksawakening.state.Direction.fromJava(Link.DIRECTION_RIGHT), 0x10));
+                session.playerItems().shovelAnimationState(Direction.fromJava(Direction.RIGHT.javaIndex()), 0x10));
 
         for (int timer = 1; timer <= 15; timer++) {
             session.playerItems().advanceShovel(0x44, 0x56, 0, timer);

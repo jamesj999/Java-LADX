@@ -32,7 +32,7 @@ public record RoomSessionConfig(
             Presentation presentation,
             linksawakening.world.entity.RomRandomByteSource randomByteSource) {
         this(
-                romData == null ? null : new Rom(romData),
+                romData == null ? null : Rom.unchecked(romData),
                 gpu,
                 roomLoader,
                 overworldTilesetTable,

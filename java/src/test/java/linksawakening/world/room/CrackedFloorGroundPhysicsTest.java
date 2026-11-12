@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
@@ -19,12 +21,11 @@ class CrackedFloorGroundPhysicsTest {
             rom = input.readAllBytes();
         }
         var session = new RoomSession(new RoomSessionConfig(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldTilesetTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldCollision(RomTables.loadFromRom(rom)),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldCollision(RomTables.load(TestRoms.partial(rom))),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         session.rooms().loadIndoor(0, 0x17);

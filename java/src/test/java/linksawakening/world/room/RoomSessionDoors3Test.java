@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -77,17 +77,12 @@ final class RoomSessionDoors3Test {
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int tick = 0; tick < 63; tick++) {
             session.doors()
-                    .tryPushIndoorBlock(
-                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08);
+                    .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
         assertTrue(sounds.isEmpty());
-        session.doors()
-                .tryPushIndoorBlock(
-                        0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         assertEquals(java.util.List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
-        session.doors()
-                .tryPushIndoorBlock(
-                        0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         assertEquals(1, sounds.size());
 
         RoomSession blocked = newSession();
@@ -96,8 +91,7 @@ final class RoomSessionDoors3Test {
         blocked.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
         for (int tick = 0; tick < 64; tick++) {
             blocked.doors()
-                    .tryPushIndoorBlock(
-                            0x15, 0x28, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT), 0x08);
+                    .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
         assertEquals(1, sounds.size());
     }

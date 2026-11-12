@@ -58,7 +58,7 @@ final class RoomSessionContext {
         values.droppableRupeeSystem = droppableRupeeSystem;
         values.roomLoadListener = roomLoadListener;
         values.roomTilemapBuilder = new RoomTilemapBuilder(romData);
-        values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData.unsafeBytes());
+        values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         values.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(values.entitySpriteHandlerCatalog);
         values.enemyCombatTables = new RomEnemyCombatTables(romData);
         values.chestContentsTable = new ChestContentsTable(romData);

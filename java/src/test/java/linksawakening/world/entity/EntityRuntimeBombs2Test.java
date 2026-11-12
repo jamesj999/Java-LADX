@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -19,7 +20,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     @Test
     void bouncingBombiteUsesItsRomSwordRecoilInsteadOfTakingSwordDamage() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
@@ -56,7 +57,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
     @Test
     void litBouncingBombiteCollidesWithAnotherBombiteUsingTheRomEntityPass() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x55, EntityRoomLoader.RoomTable.INDOORS_A, -1);
         assertTrue(definition.supported());
@@ -124,7 +125,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 

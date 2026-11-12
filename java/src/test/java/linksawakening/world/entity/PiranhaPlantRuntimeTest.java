@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -16,7 +17,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void decodesPiranhaPlantsRomRectangleDisplayList() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
         assertEquals(0x36, definition.bank());
@@ -45,7 +46,7 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_PIRANHA_PLANT));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_PIRANHA_PLANT));
 
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -68,7 +69,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void clearsSharedSwordRecoilBeforeRunningItsStateMachine() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -98,7 +99,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void waitsForWorldGameplayAndTheStableTransitionSequence() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
@@ -138,7 +139,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void hiddenPipeStateDoesNotRunEnemyDamageCollision() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -158,7 +159,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void waitsUntilLinkLeavesItsPipeColumnBeforeStartingRise() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -193,7 +194,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void risesThroughRomFramesThenReturnsToHiddenPosition() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)

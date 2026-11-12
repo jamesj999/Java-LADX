@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -133,7 +134,7 @@ final class PlayerProjectilePauseTest {
             return RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
                     .indoorRoom(false)
                     .randomByteSupplier(() -> 0)
-                    .spriteHandlers(new EntitySpriteHandlerCatalog(stream.readAllBytes()))
+                    .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(stream.readAllBytes())))
                     .build();
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);

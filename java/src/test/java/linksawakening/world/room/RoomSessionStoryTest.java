@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.Link;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
@@ -34,9 +34,9 @@ final class RoomSessionStoryTest {
                     .filter(entity -> entity.type() == 0x42)
                     .findFirst()
                     .orElseThrow();
-            session.entities().tickEntities(0, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
+            session.entities().tickEntities(0, statue.x(), statue.y() + 0x13, 0, Direction.UP.javaIndex());
             session.entityState().setEntityActionButtonsHeld(true, false);
-            session.entities().tickEntities(1, statue.x(), statue.y() + 0x13, 0, Link.DIRECTION_UP);
+            session.entities().tickEntities(1, statue.x(), statue.y() + 0x13, 0, Direction.UP.javaIndex());
             assertEquals(
                     List.of(new DialogRequest(hasBeak ? 2 : 1, hasBeak ? 0x82 : 0x10)),
                     session.entityState().consumeEntityDialogRequests());
@@ -58,34 +58,34 @@ final class RoomSessionStoryTest {
         session.rooms().loadIndoor(2, 0x54);
         int x = 0x38;
         int y = 0x40;
-        session.entities().tickEntities(0, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(0, x, y + 0x13, 0, Direction.UP.javaIndex());
         session.entityState().setEntityActionButtonsHeld(false, true);
-        session.entities().tickEntities(1, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(1, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, x, y + 0x13, 0, Link.DIRECTION_DOWN);
+        session.entities().tickEntities(2, x, y + 0x13, 0, Direction.DOWN.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
-        session.entities().tickEntities(3, x, y + 0x14, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(3, x, y + 0x14, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityTalkState(false, 1, 0x80);
-        session.entities().tickEntities(4, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(4, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityTalkState(true, 0, 0x80);
-        session.entities().tickEntities(5, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(5, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityTalkState(false, 0, 0x70);
-        session.entities().tickEntities(6, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(6, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityTalkState(false, 0, 0x80);
         session.entityState().setEntityDialogActive(true);
-        session.entities().tickEntities(7, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(7, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
         session.entityState().setEntityDialogActive(false);
-        session.entities().tickEntities(8, x, y + 0x13, 0, true, Link.DIRECTION_UP);
+        session.entities().tickEntities(8, x, y + 0x13, 0, true, Direction.UP.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
-        session.entities().tickEntities(9, x + 0x10, y, 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(9, x + 0x10, y, 0, Direction.LEFT.javaIndex());
         assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
-        session.entities().tickEntities(10, x, y + 0x13, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(10, x, y + 0x13, 0, Direction.UP.javaIndex());
         assertEquals(
                 0x110,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
@@ -235,11 +235,11 @@ final class RoomSessionStoryTest {
                 .orElseThrow();
         int linkX = richard.x() + 0x0F;
 
-        session.entities().tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
-        session.entities().tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
+        session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         assertEquals(0x40, session.components.entityBridge().outbox.consumePendingMusicTrack());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 
         assertEquals(
                 0x13A,
@@ -260,10 +260,10 @@ final class RoomSessionStoryTest {
                 .findFirst()
                 .orElseThrow();
 
-        session.entities().tickEntities(0, richard.x() + 0x0F, richard.y(), 0, Link.DIRECTION_LEFT);
-        session.entities().tickEntities(1, richard.x() + 0x0F, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(0, richard.x() + 0x0F, richard.y(), 0, Direction.LEFT.javaIndex());
+        session.entities().tickEntities(1, richard.x() + 0x0F, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, richard.x() - 0x10, richard.y(), 0, Link.DIRECTION_RIGHT);
+        session.entities().tickEntities(2, richard.x() - 0x10, richard.y(), 0, Direction.RIGHT.javaIndex());
 
         assertEquals(
                 0x13A,
@@ -280,18 +280,18 @@ final class RoomSessionStoryTest {
                 .orElseThrow();
         int linkX = richard.x() + 0x0F;
 
-        session.entities().tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
-        session.entities().tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
+        session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entityState().consumeEntityDialogRequests();
 
         session.entityState().setEntityActionButtonsHeld(false, false);
         session.entityState().setEntityDialogActive(true);
-        session.entities().tickEntities(3, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(3, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.components.entityInputs().setEntityDialogAskSelectionIndex(1);
         session.entityState().setEntityDialogActive(false);
-        session.entities().tickEntities(4, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(4, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 
         assertEquals(
                 0x13C,
@@ -314,7 +314,7 @@ final class RoomSessionStoryTest {
                         .tryLiftObject(
                                 statue.x() - 8,
                                 statue.y() - 8,
-                                linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                                Direction.fromJavaOrUnknown(Direction.UP.javaIndex()),
                                 true,
                                 8,
                                 false,

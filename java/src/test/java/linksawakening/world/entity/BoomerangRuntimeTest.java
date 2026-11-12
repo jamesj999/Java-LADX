@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.BoomerangObjectRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.ChestContentsTable;
@@ -21,7 +23,7 @@ final class BoomerangRuntimeTest {
     @Test
     void spawnPublishesTheRomEntityAndLaunchesThenReturns() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables combatTables =
                 new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
@@ -29,8 +31,7 @@ final class BoomerangRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(combatTables)
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
 
         int slot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
@@ -115,14 +116,13 @@ final class BoomerangRuntimeTest {
     @Test
     void bushIntersectionRestoresPositionAndUsesThePaddedLocation() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
         int slot = runtime.spawnBoomerang(0x20, 0x40, 0, 0, 0);
         runtime.configuration()
@@ -148,14 +148,13 @@ final class BoomerangRuntimeTest {
     @Test
     void playerProjectileGateMatchesTheRomCounter() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
 
         int boomerangSlot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
@@ -333,10 +332,9 @@ final class BoomerangRuntimeTest {
         return RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(indoor)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
     }
 

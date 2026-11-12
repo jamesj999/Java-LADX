@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesLaunchesTheBarAfterTheRomPreparationDelay() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
@@ -89,7 +90,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesRecoilSkipsItsApproachAndJumpPhysics() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
@@ -120,7 +121,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesNewSwordHitStartsRecoilOnTheFollowingHandlerFrame() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(1)
                 .type(0x82)
@@ -167,7 +168,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesDeathSetsTailCaveMinibossEventAndRemovesTheBar() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bar = new RoomEntityBuilder()
                 .slot(14)
                 .sourceLoadOrder(1)
@@ -227,7 +228,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
     @Test
     void rollingBonesBarSkipsAirborneLinkAndClinksAGroundedSword() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bar = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x82)

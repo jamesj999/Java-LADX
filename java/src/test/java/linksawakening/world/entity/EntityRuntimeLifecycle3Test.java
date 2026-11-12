@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -19,7 +20,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         int sourceX = 0x44;
         int sourceY = 0x58;
@@ -96,7 +97,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void terminalEnemyDeathSpawnsSideScrollHeartWithRomDropConfiguration() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
@@ -138,7 +139,7 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void fullEntitySlotsStillUnloadSourceWhenDropCannotBeSpawned() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {

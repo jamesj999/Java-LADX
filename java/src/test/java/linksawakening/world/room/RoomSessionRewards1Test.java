@@ -12,12 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.startup.NewGameStartProfile;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EnemyDropResolver;
@@ -123,13 +126,13 @@ final class RoomSessionRewards1Test {
         assertEquals(0x0F, session.components.entityBridge().outbox.consumePendingMusicTrack());
 
         frame = pickupFrame + 1;
-        while (playerState.swordLevel() == 0 && frame < pickupFrame + 0x300) {
+        while (playerState.equipmentLevels().swordLevel() == 0 && frame < pickupFrame + 0x300) {
             session.entities().tickEntities(frame++, sword.x(), sword.y());
             session.entityState().consumeEntityDialogRequests();
             BeachSwordRewardConsumer.consume(session, playerState);
         }
-        assertEquals(1, playerState.swordLevel());
-        assertEquals(PlayerState.INVENTORY_SWORD, playerState.itemB());
+        assertEquals(1, playerState.equipmentLevels().swordLevel());
+        assertEquals(InventoryItem.SWORD.romValue(), playerState.inventory().itemB());
         assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xF2) & 0x20);
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xF2) & 0x10);
         // $03:5BCE-5BD7 requests MUSIC_OVERWORLD_INTRO; MUSIC_OVERWORLD is only
@@ -381,13 +384,13 @@ final class RoomSessionRewards1Test {
         session.rooms().loadInitialOverworld(0x41);
         // Real replay: entity (72,80), then approach to the source boundary (72,74).
         assertFalse(session.doors()
-                .tryOpenChest(64, 64, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .tryOpenChest(64, 64, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1)
                 .opened());
         assertFalse(session.doors()
-                .tryOpenChest(64, 59, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .tryOpenChest(64, 59, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1)
                 .opened());
-        var opened = session.doors()
-                .tryOpenChest(64, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1);
+        var opened =
+                session.doors().tryOpenChest(64, 58, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1);
         assertTrue(opened.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, opened.itemType());
         assertEquals(0x34, opened.location());
@@ -407,7 +410,7 @@ final class RoomSessionRewards1Test {
         session.rooms().loadInitialOverworld(0x51);
         session.rooms().loadInitialOverworld(0x41);
         assertFalse(session.doors()
-                .tryOpenChest(64, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .tryOpenChest(64, 58, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1)
                 .opened());
         for (int i = 0; i < 4; i++) {
             assertEquals(rom[source + i] & 0xFF, session.rooms().activeRoom().tileIds()[positions[i]]);
@@ -423,12 +426,7 @@ final class RoomSessionRewards1Test {
         session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xA0;
 
         ChestOpenResult result = session.doors()
-                .tryOpenChest(
-                        0x18,
-                        0x21,
-                        linksawakening.state.Direction.fromJavaOrUnknown(linksawakening.entity.Link.DIRECTION_UP),
-                        true,
-                        1);
+                .tryOpenChest(0x18, 0x21, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1);
 
         assertTrue(result.opened());
         assertEquals(0xA1, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
@@ -479,7 +477,7 @@ final class RoomSessionRewards1Test {
 
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
         ChestOpenResult chest = session.doors()
-                .tryOpenChest(0x78, 0x21, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1);
+                .tryOpenChest(0x78, 0x21, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, chest.itemType());
     }
@@ -516,7 +514,7 @@ final class RoomSessionRewards1Test {
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
         assertEquals(
                 ChestContentsTable.CHEST_NIGHTMARE_KEY,
-                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
+                new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)))
                         .itemForSpawn(0x01, 0x27, 1, true));
     }
 
@@ -526,7 +524,7 @@ final class RoomSessionRewards1Test {
         session.rooms().loadIndoor(0, 0x15);
         assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertTrue(session.doors()
-                .tryOpenChest(48, 58, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), true, 1)
+                .tryOpenChest(48, 58, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1)
                 .opened());
         assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0, 0x15) & 0x10);
         session.entities().tickEntities(0, 56, 74);
@@ -686,7 +684,7 @@ final class RoomSessionRewards1Test {
             int offset = 0x36 * 0x4000 + 0x3096 + ((frame >> 1) & 0x3C);
             for (int c = 0; c < 2; c++) {
                 int word = (rom[offset + c * 2] & 255) | ((rom[offset + c * 2 + 1] & 255) << 8);
-                assertEquals(linksawakening.rom.RomUtil.decodeRgb555(word), after[1][c + 2]);
+                assertEquals(RomBank.decodeRgb555(word), after[1][c + 2]);
             }
             assertEquals(before[1][0], after[1][0]);
             assertEquals(before[1][1], after[1][1]);

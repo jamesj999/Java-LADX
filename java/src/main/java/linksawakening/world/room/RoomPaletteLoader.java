@@ -261,6 +261,6 @@ public final class RoomPaletteLoader {
     /** @deprecated Pass Rom; retained for main/java/linksawakening/entity/EntitySpriteCatalog.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public RoomPaletteLoader(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
+        this(romData == null ? null : Rom.unchecked(romData));
     }
 }

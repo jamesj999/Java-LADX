@@ -39,8 +39,8 @@ final class SlimeEyeControlsTest {
             player.vitals().setMaxHearts(6);
             player.vitals().setHealth(48);
             room.rooms().loadIndoor(2, 0x5A);
-            link.setRoomEntryRomPosition(72, 80);
-            link.setDirection(Direction.UP.javaIndex());
+            link.position().setRoomEntryRomPosition(72, 80);
+            link.animation().setDirection(Direction.UP.javaIndex());
             d.scrollController().startScreenShake(7, 0);
             var runtime = linksawakening.world.room.RoomFrameTestAccess.runtime(room);
             // All setup writes end here. Below this point only headlessButton/headlessFrame mutate gameplay.
@@ -110,11 +110,11 @@ final class SlimeEyeControlsTest {
                         .append('\t')
                         .append(String.join("+", desired.stream().sorted().toList()))
                         .append('\t')
-                        .append(link.romEntityX())
+                        .append(link.position().romEntityX())
                         .append('\t')
-                        .append(link.romEntityY())
+                        .append(link.position().romEntityY())
                         .append('\t')
-                        .append(link.romEntityZ())
+                        .append(link.animation().romEntityZ())
                         .append('\t')
                         .append(player.vitals().health())
                         .append('\t')
@@ -163,7 +163,8 @@ final class SlimeEyeControlsTest {
     }
 
     private int distance(Link link, int x, int y) {
-        return Math.abs(x - link.romEntityX()) + Math.abs(y - link.romEntityY());
+        return Math.abs(x - link.position().romEntityX())
+                + Math.abs(y - link.position().romEntityY());
     }
 
     private void approach(Set<String> desired, Link link, int x, int y, int frame, boolean body) {
@@ -174,7 +175,7 @@ final class SlimeEyeControlsTest {
         for (int[] pose : poses) {
             if (pose[0] < 24 || pose[0] > 136 || pose[1] < 32 || pose[1] > 112) continue;
             int cost = distance(link, pose[0], pose[1]);
-            if (pose[2] != romDirection(link.direction())) cost += 4;
+            if (pose[2] != romDirection(link.animation().direction())) cost += 4;
             if (cost < score) {
                 score = cost;
                 best = pose;
@@ -185,10 +186,10 @@ final class SlimeEyeControlsTest {
     }
 
     private void move(Set<String> desired, Link link, int x, int y, int facing) {
-        int dx = x - link.romEntityX(), dy = y - link.romEntityY();
+        int dx = x - link.position().romEntityX(), dy = y - link.position().romEntityY();
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2)
             desired.add(KEYS[Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 0 : 1) : (dy >= 0 ? 3 : 2)]);
-        else if (facing >= 0 && romDirection(link.direction()) != facing) desired.add(KEYS[facing]);
+        else if (facing >= 0 && romDirection(link.animation().direction()) != facing) desired.add(KEYS[facing]);
     }
 
     private int romDirection(int direction) {

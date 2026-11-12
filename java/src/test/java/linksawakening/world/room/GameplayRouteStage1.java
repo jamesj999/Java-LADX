@@ -18,7 +18,10 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.TarinShieldMotion;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.transition.RoomBoundaryController;
@@ -30,7 +33,7 @@ final class GameplayRouteStage1 {
     static void run(GameplayRouteState route) throws Exception {
 
         route.rom = loadRom();
-        route.romTables = RomTables.loadFromRom(route.rom);
+        route.romTables = RomTables.load(TestRoms.partial(route.rom));
         route.collision = new OverworldCollision(route.romTables);
         route.session = newSession(route.rom, route.romTables, route.collision);
         route.playerState = new PlayerState();
@@ -50,18 +53,25 @@ final class GameplayRouteStage1 {
         assertEquals(
                 0x54,
                 route.shieldMotion
-                        .tick(false, 0x60, true, route.playerState.shieldLevel())
+                        .tick(
+                                false,
+                                0x60,
+                                true,
+                                route.playerState.equipmentLevels().shieldLevel())
                         .dialogLowId());
-        route.shieldMotion.tick(true, 0x60, false, route.playerState.shieldLevel());
-        route.shieldMotion.tick(false, 0x60, false, route.playerState.shieldLevel());
+        route.shieldMotion.tick(
+                true, 0x60, false, route.playerState.equipmentLevels().shieldLevel());
+        route.shieldMotion.tick(
+                false, 0x60, false, route.playerState.equipmentLevels().shieldLevel());
         route.shieldReward = null;
         for (int frame = 0; frame < 0x80; frame++) {
-            route.shieldReward = route.shieldMotion.tick(false, 0x60, false, route.playerState.shieldLevel());
+            route.shieldReward = route.shieldMotion.tick(
+                    false, 0x60, false, route.playerState.equipmentLevels().shieldLevel());
         }
         assertTrue(route.shieldReward.grantShield());
-        route.playerState.applyChestReward(ChestContentsTable.CHEST_SHIELD);
-        assertEquals(1, route.playerState.shieldLevel());
-        assertEquals(0, route.playerState.swordLevel());
+        route.playerState.chestRewards().applyChestReward(ChestContentsTable.CHEST_SHIELD);
+        assertEquals(1, route.playerState.equipmentLevels().shieldLevel());
+        assertEquals(0, route.playerState.equipmentLevels().swordLevel());
         assertTrue(route.tarin.spriteDefinition().supported());
 
         route.scroll = new ScrollController();
@@ -79,14 +89,14 @@ final class GameplayRouteStage1 {
                 null,
                 route.playerState,
                 route.itemRegistry);
-        route.itemRegistry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(route.link));
-        route.link.setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
+        route.itemRegistry.register(InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(route.link));
+        route.link.position().setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         while (route.transition.isActive()) route.transition.tick();
         assertEquals(0xA2, route.session.rooms().currentRoomId());
 
         for (int expectedRoom = 0xB2; expectedRoom <= 0xF2; expectedRoom += 0x10) {
-            route.link.setPixelPosition(route.link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+            route.link.position().setPixelPosition(route.link.position().pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
             route.coordinator.handleOverworldBoundary(route.link);
             assertEquals(expectedRoom, route.session.rooms().currentRoomId());
             while (route.scroll.isActive()) {
@@ -94,8 +104,9 @@ final class GameplayRouteStage1 {
             }
             // A north-edge cliff now runs the source's post-scroll drop.
             // Let it land before teleporting to the next boundary.
-            for (int frame = 0; frame < 64 && route.link.isAirborne(); frame++) route.link.update();
-            assertFalse(route.link.isAirborne());
+            for (int frame = 0; frame < 64 && route.link.airborne().isAirborne(); frame++)
+                route.link.motion().update();
+            assertFalse(route.link.airborne().isAirborne());
         }
 
         route.sword = route.session.rooms().activeRoom().entities().loadedEntities().stream()
@@ -114,9 +125,9 @@ final class GameplayRouteStage1 {
         route.session
                 .story()
                 .setChestPlayerLevels(
-                        route.playerState.shieldLevel(),
-                        route.playerState.swordLevel(),
-                        route.playerState.powerBraceletLevel());
+                        route.playerState.equipmentLevels().shieldLevel(),
+                        route.playerState.equipmentLevels().swordLevel(),
+                        route.playerState.equipmentLevels().powerBraceletLevel());
         tickInteractiveEntities(route.session, 0, 0x3F, 0x44);
         tickInteractiveEntities(route.session, 1, 0x40, 0x44);
         assertEquals(0x22, route.session.components.entityBridge().outbox.consumePendingMusicTrack());
@@ -143,12 +154,12 @@ final class GameplayRouteStage1 {
         assertNotNull(route.pickup);
 
         route.frame = route.pickupFrame + 1;
-        while (route.playerState.swordLevel() == 0 && route.frame < route.pickupFrame + 0x300) {
+        while (route.playerState.equipmentLevels().swordLevel() == 0 && route.frame < route.pickupFrame + 0x300) {
             route.session.entities().tickEntities(route.frame++, route.sword.x(), route.sword.y());
             route.session.entityState().consumeEntityDialogRequests();
             BeachSwordRewardConsumer.consume(route.session, route.playerState);
         }
-        assertEquals(1, route.playerState.swordLevel());
+        assertEquals(1, route.playerState.equipmentLevels().swordLevel());
         assertEquals(0x30, RoomDebugFixture.of(route.session).overworldRoomStatusForTest(0xF2) & 0x30);
 
         route.session.rooms().loadInitialOverworld(0xF2);
@@ -158,10 +169,10 @@ final class GameplayRouteStage1 {
         route.session
                 .story()
                 .setChestPlayerLevels(
-                        route.playerState.shieldLevel(),
-                        route.playerState.swordLevel(),
-                        route.playerState.powerBraceletLevel());
-        route.link.setPixelPosition(0x50, 0x50);
+                        route.playerState.equipmentLevels().shieldLevel(),
+                        route.playerState.equipmentLevels().swordLevel(),
+                        route.playerState.equipmentLevels().powerBraceletLevel());
+        route.link.position().setPixelPosition(0x50, 0x50);
         route.routeToForest = new int[] {
             ScrollController.LEFT, ScrollController.LEFT, ScrollController.UP,
             ScrollController.UP, ScrollController.RIGHT, ScrollController.UP,
@@ -235,7 +246,7 @@ final class GameplayRouteStage1 {
                         route.toadstool.y(),
                         false,
                         true,
-                        Link.DIRECTION_RIGHT,
+                        Direction.RIGHT.javaIndex(),
                         0);
         assertNotNull(route.toadstoolPickup);
         route.toadstoolRewards = List.of();
@@ -248,9 +259,11 @@ final class GameplayRouteStage1 {
         assertEquals(List.of(new ToadstoolRewardEvent(route.toadstool.slot())), route.toadstoolRewards);
         // Mirrors Main's live event consumer; RoomSession owns the entity
         // cadence and PlayerState owns the resulting inventory mutation.
-        route.playerState.applyToadstoolReward();
-        assertTrue(route.playerState.hasToadstool());
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, route.playerState.subscreenItem(0));
+        route.playerState.playerRewards().applyToadstoolReward();
+        assertTrue(route.playerState.ammunition().hasToadstool());
+        assertEquals(
+                InventoryItem.MAGIC_POWDER.romValue(),
+                route.playerState.inventory().subscreenItem(0));
 
         route.routeToWitchHut = new int[] {
             ScrollController.UP, ScrollController.UP, ScrollController.DOWN,
@@ -280,8 +293,10 @@ final class GameplayRouteStage1 {
         assertEquals(0x24, route.witchHut.tileLocation());
         route.coordinator = new RoomTransitionCoordinator(
                 route.session, new RoomBoundaryController(), route.transition, route.scroll);
-        route.link.setPixelPosition(
-                (route.witchHut.tileLocation() & 0x0F) * 16, (route.witchHut.tileLocation() >>> 4) * 16);
+        route.link
+                .position()
+                .setPixelPosition(
+                        (route.witchHut.tileLocation() & 0x0F) * 16, (route.witchHut.tileLocation() >>> 4) * 16);
         walkIntoDoor(route.link, route.inputState, route.inputConfig, route.coordinator, route.transition);
         while (route.transition.isActive()) route.transition.tick();
         assertEquals(0x0E, route.session.rooms().activeRoom().mapId());
@@ -291,22 +306,28 @@ final class GameplayRouteStage1 {
                 .filter(entity -> entity.type() == 0x40)
                 .findFirst()
                 .orElseThrow();
-        route.playerState.swapItemAWithSubscreen(0);
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, route.playerState.itemA());
+        route.playerState.inventory().swapItemAWithSubscreen(0);
+        assertEquals(
+                InventoryItem.MAGIC_POWDER.romValue(),
+                route.playerState.inventory().itemA());
         route.session.entityState().setToadstoolPlayerState(true, 0);
         route.session
                 .components
                 .entityInputs()
-                .setEntityInventorySlots(route.playerState.itemA(), route.playerState.itemB());
+                .setEntityInventorySlots(
+                        route.playerState.inventory().itemA(),
+                        route.playerState.inventory().itemB());
         route.session.entityState().setEntityActionButtonsHeld(true, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.exchangeEvents = route.session.components.entityBridge().outbox.consumeWitchExchangeEvents();
         assertEquals(1, route.exchangeEvents.size());
-        route.playerState.beginWitchToadstoolExchange(
-                route.exchangeEvents.getFirst().inventorySlot());
-        assertFalse(route.playerState.hasToadstool());
-        assertEquals(PlayerState.INVENTORY_EMPTY, route.playerState.itemA());
+        route.playerState
+                .playerRewards()
+                .beginWitchToadstoolExchange(route.exchangeEvents.getFirst().inventorySlot());
+        assertFalse(route.playerState.ammunition().hasToadstool());
+        assertEquals(
+                InventoryItem.EMPTY.romValue(), route.playerState.inventory().itemA());
 
         route.session.entityState().setEntityActionButtonsHeld(false, false);
         route.brewingDialog = false;
@@ -342,11 +363,13 @@ final class GameplayRouteStage1 {
                         .outbox
                         .consumeWitchRewardEvents()
                         .size());
-        route.playerState.applyWitchMagicPowderReward();
-        assertEquals(PlayerState.INVENTORY_MAGIC_POWDER, route.playerState.itemA());
-        assertEquals(20, route.playerState.magicPowderCount());
+        route.playerState.playerRewards().applyWitchMagicPowderReward();
+        assertEquals(
+                InventoryItem.MAGIC_POWDER.romValue(),
+                route.playerState.inventory().itemA());
+        assertEquals(20, route.playerState.ammunition().magicPowderCount());
 
-        route.link.setPixelPosition(route.link.pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
+        route.link.position().setPixelPosition(route.link.position().pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         while (route.transition.isActive()) route.transition.tick();
         assertEquals(Warp.CATEGORY_OVERWORLD, route.session.rooms().mapCategory());
@@ -376,11 +399,15 @@ final class GameplayRouteStage1 {
         route.session
                 .components
                 .entityInputs()
-                .setEntityInventorySlots(route.playerState.itemA(), route.playerState.itemB());
-        route.session.entityState().setToadstoolPlayerState(false, route.playerState.magicPowderCount());
+                .setEntityInventorySlots(
+                        route.playerState.inventory().itemA(),
+                        route.playerState.inventory().itemB());
+        route.session
+                .entityState()
+                .setToadstoolPlayerState(false, route.playerState.ammunition().magicPowderCount());
         route.session
                 .entities()
-                .tickEntitiesWithProjectileEvents(route.frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x6A, 0x40, 0, 0, Direction.RIGHT.javaIndex(), false);
         // ROM direction zero adds $0E to Link's entity X, placing the
         // sprinkle at Tarin's live $78 coordinate.
         assertTrue(route.session.playerItems().sprinkleMagicPowder(0x6A, 0x40, 0, 0));
@@ -390,7 +417,8 @@ final class GameplayRouteStage1 {
                 && route.frame < route.pickupFrame + 0xD00) {
             route.session
                     .entities()
-                    .tickEntitiesWithProjectileEvents(route.frame++, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++, 0x6A, 0x40, 0, 0, Direction.RIGHT.javaIndex(), false);
             route.transformedDialogOpened |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x00A);
         }
@@ -406,7 +434,7 @@ final class GameplayRouteStage1 {
         route.session.rooms().loadInitialOverworld(0x51);
         route.session
                 .entities()
-                .tickEntitiesWithProjectileEvents(route.frame, 0x6A, 0x40, 0, 0, Link.DIRECTION_RIGHT, false);
+                .tickEntitiesWithProjectileEvents(route.frame, 0x6A, 0x40, 0, 0, Direction.RIGHT.javaIndex(), false);
         assertFalse(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3F));
 
@@ -425,9 +453,9 @@ final class GameplayRouteStage1 {
                 .tryOpenChest(
                         0x38,
                         0x31,
-                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        Direction.fromJavaOrUnknown(Direction.UP.javaIndex()),
                         true,
-                        route.playerState.swordLevel());
+                        route.playerState.equipmentLevels().swordLevel());
         assertTrue(route.tailKeyChest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, route.tailKeyChest.itemType());
         route.session.entities().tickEntities(route.frame++, 0x38, 0x31);
@@ -436,7 +464,7 @@ final class GameplayRouteStage1 {
                 .entityBridge()
                 .outbox
                 .consumeChestRewardEvents()
-                .forEach(reward -> route.playerState.applyChestReward(reward.itemType()));
-        assertEquals(1, route.playerState.tailKeyCount());
+                .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
+        assertEquals(1, route.playerState.progression().tailKeyCount());
     }
 }

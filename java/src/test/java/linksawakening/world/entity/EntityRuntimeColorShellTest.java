@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
 
     @Test
     void colorShellDyingRefreshPreservesDeathPresentationMetadata() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition body = pairDefinition(0xE9, 2);
         RoomEntity initialEntity = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
@@ -94,7 +95,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
     @Test
     void colorShellRuntimeDispatchesRomStateAndWorldSideEffects() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RuntimeColorShellWorld world = new RuntimeColorShellWorld();
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

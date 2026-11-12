@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.object.SwitchBlockAnimation;
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +17,10 @@ final class OpeningHouseRegressionTest {
     void houseLoadPreservesFurnitureInTheSwitchBlockVramSlots() throws Exception {
         byte[] rom = rom();
         GPU expected = new GPU();
-        expected.loadBaseTiles(rom);
-        expected.loadIndoorTiles(rom, 0x10, 0xA3);
+        expected.loadBaseTiles(TestRoms.partial(rom));
+        expected.loadIndoorTiles(TestRoms.partial(rom), 0x10, 0xA3);
         GPU actual = new GPU();
-        actual.loadBaseTiles(rom);
+        actual.loadBaseTiles(TestRoms.partial(rom));
         session(rom, actual).rooms().loadIndoor(0x10, 0xA3);
         for (int offset = 0x1040; offset < 0x10C0; offset++) {
             assertEquals(
@@ -31,8 +33,7 @@ final class OpeningHouseRegressionTest {
     @Test
     void roomsContainingMobileBlocksStillLoadBothBlockGraphics() throws Exception {
         byte[] rom = rom();
-        RoomLoader loader =
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        RoomLoader loader = new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         int blockRoom = -1;
         for (int room = 0; room < 256 && blockRoom < 0; room++) {
             for (int object : loader.loadIndoor(0, room, new int[8][4]).roomObjectsArea()) {
@@ -70,12 +71,11 @@ final class OpeningHouseRegressionTest {
 
     private static RoomSession session(byte[] rom, GPU gpu) {
         return new RoomSession(new RoomSessionConfig(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 gpu,
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldTilesetTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldCollision(RomTables.loadFromRom(rom)),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldCollision(RomTables.load(TestRoms.partial(rom))),
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
     }

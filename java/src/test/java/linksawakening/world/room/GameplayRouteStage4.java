@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.DialogRequest;
@@ -22,7 +22,8 @@ final class GameplayRouteStage4 {
         while (!route.transition.isActive() && route.slowWarpTicks < 0x204) {
             route.session
                     .entities()
-                    .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x60, 0, 0, Link.DIRECTION_DOWN, false);
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
             route.slowWarpTicks++;
             if (route.coordinator.handlePendingInstrumentTransition(route.link)) {
                 break;
@@ -135,9 +136,11 @@ final class GameplayRouteStage4 {
                 .filter(warp -> warp.destMap() == 0x15 && warp.destRoom() == 0xF0)
                 .findFirst()
                 .orElseThrow();
-        route.link.setPixelPosition(
-                (route.moblinHideoutEntrance.tileLocation() & 0x0F) * 16,
-                (route.moblinHideoutEntrance.tileLocation() >>> 4) * 16);
+        route.link
+                .position()
+                .setPixelPosition(
+                        (route.moblinHideoutEntrance.tileLocation() & 0x0F) * 16,
+                        (route.moblinHideoutEntrance.tileLocation() >>> 4) * 16);
         walkIntoDoor(route.link, route.inputState, route.inputConfig, route.coordinator, route.transition);
         while (route.transition.isActive()) route.transition.tick();
         assertEquals(0x15, route.session.rooms().activeRoom().mapId());
@@ -153,7 +156,7 @@ final class GameplayRouteStage4 {
             route.session
                     .entities()
                     .tickEntitiesWithProjectileEvents(
-                            route.frame++, 0x70, route.hideoutGuard.y(), 0, 0, Link.DIRECTION_LEFT, false);
+                            route.frame++, 0x70, route.hideoutGuard.y(), 0, 0, Direction.LEFT.javaIndex(), false);
             route.hideoutGuardDialogOpened |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x190);
         }
@@ -178,14 +181,16 @@ final class GameplayRouteStage4 {
             for (int recovery = 0; recovery < 0x20; recovery++) {
                 route.session
                         .entities()
-                        .tickEntitiesWithProjectileEvents(route.frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
+                        .tickEntitiesWithProjectileEvents(
+                                route.frame++, 0x20, 0x70, 0, 0, Direction.RIGHT.javaIndex(), false);
             }
         }
         route.guardDeadline = route.frame + 0x100;
         while (RoomDebugFixture.of(route.session).activeRoomEventForTest() != 0 && route.frame < route.guardDeadline) {
             route.session
                     .entities()
-                    .tickEntitiesWithProjectileEvents(route.frame++, 0x20, 0x70, 0, 0, Link.DIRECTION_RIGHT, false);
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++, 0x20, 0x70, 0, 0, Direction.RIGHT.javaIndex(), false);
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x01);
@@ -200,7 +205,7 @@ final class GameplayRouteStage4 {
         assertEquals(4, route.hideoutMoblinSlots.size());
         route.session
                 .entities()
-                .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+                .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x50, 0, 0, Direction.RIGHT.javaIndex(), false);
         for (int moblinSlot : route.hideoutMoblinSlots) {
             for (int hit = 0;
                     hit < 4
@@ -231,7 +236,7 @@ final class GameplayRouteStage4 {
                     route.session
                             .entities()
                             .tickEntitiesWithProjectileEvents(
-                                    route.frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+                                    route.frame++, 0x50, 0x50, 0, 0, Direction.RIGHT.javaIndex(), false);
                 }
             }
         }
@@ -240,7 +245,8 @@ final class GameplayRouteStage4 {
                 && route.frame < route.moblinRoomDeadline) {
             route.session
                     .entities()
-                    .tickEntitiesWithProjectileEvents(route.frame++, 0x50, 0x50, 0, 0, Link.DIRECTION_RIGHT, false);
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++, 0x50, 0x50, 0, 0, Direction.RIGHT.javaIndex(), false);
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x08);
@@ -265,7 +271,8 @@ final class GameplayRouteStage4 {
                 && route.frame < route.moblinKingDeadline) {
             route.session
                     .entities()
-                    .tickEntitiesWithProjectileEvents(route.frame++, 0x00, 0x20, 0, 0, Link.DIRECTION_RIGHT, false);
+                    .tickEntitiesWithProjectileEvents(
+                            route.frame++, 0x00, 0x20, 0, 0, Direction.RIGHT.javaIndex(), false);
             route.moblinKingIntroOpened |= route.session.entityState().consumeEntityDialogRequests().stream()
                     .anyMatch(request -> request.globalDialogId() == 0x191);
             route.moblinKing =
@@ -279,21 +286,31 @@ final class GameplayRouteStage4 {
             for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
                 liveSword.tick(false);
             }
-            route.link.setDirection(Link.DIRECTION_RIGHT);
+            route.link.animation().setDirection(Direction.RIGHT.javaIndex());
             Sword.CollisionBox initialSwordBox = liveSword.enemyCollisionBox(
-                    route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
-            route.link.setPixelPosition(
-                    route.moblinKing.x() - (initialSwordBox.x() - route.link.pixelX()),
-                    route.moblinKing.y() - (initialSwordBox.y() - route.link.pixelY()));
+                    route.link.position().romEntityX(),
+                    route.link.position().romSwordCollisionY(),
+                    route.link.animation().direction());
+            route.link
+                    .position()
+                    .setPixelPosition(
+                            route.moblinKing.x()
+                                    - (initialSwordBox.x()
+                                            - route.link.position().pixelX()),
+                            route.moblinKing.y()
+                                    - (initialSwordBox.y()
+                                            - route.link.position().pixelY()));
             Sword.CollisionBox swordBox = liveSword.enemyCollisionBox(
-                    route.link.romEntityX(), route.link.romSwordCollisionY(), route.link.direction());
+                    route.link.position().romEntityX(),
+                    route.link.position().romSwordCollisionY(),
+                    route.link.animation().direction());
             int moblinKingSlot = route.moblinKing.slot();
             List<EntityCombatEvent> kingHit = route.session
                     .entities()
                     .resolveEntityCombat(new EntityCombatInputs(
                             moblinKingSlot ^ 1,
-                            route.link.romEntityX(),
-                            route.link.romEntityY(),
+                            route.link.position().romEntityX(),
+                            route.link.position().romEntityY(),
                             false,
                             0,
                             true,
@@ -330,9 +347,9 @@ final class GameplayRouteStage4 {
                             route.kidnappedBowWow.x(),
                             route.kidnappedBowWow.y(),
                             0,
-                            linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_RIGHT),
+                            Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()),
                             1,
-                            Link.DIRECTION_RIGHT),
+                            Direction.RIGHT.javaIndex()),
                     new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
@@ -348,11 +365,11 @@ final class GameplayRouteStage4 {
                 .entities()
                 .tickEntitiesWithProjectileEvents(
                         route.frame,
-                        route.link.romEntityX(),
-                        route.link.romEntityY(),
+                        route.link.position().romEntityX(),
+                        route.link.position().romEntityY(),
                         0,
                         0,
-                        Link.DIRECTION_LEFT,
+                        Direction.LEFT.javaIndex(),
                         false);
         assertTrue(route.session.rooms().activeRoom().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x6D));
@@ -364,11 +381,11 @@ final class GameplayRouteStage4 {
                 .entities()
                 .tickEntitiesWithProjectileEvents(
                         route.frame++,
-                        route.link.romEntityX(),
-                        route.link.romEntityY(),
+                        route.link.position().romEntityX(),
+                        route.link.position().romEntityY(),
                         0,
                         0,
-                        Link.DIRECTION_DOWN,
+                        Direction.DOWN.javaIndex(),
                         false);
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0, route.session.rooms().activeRoom().shutterDoorMask() & 0x02);
@@ -386,11 +403,11 @@ final class GameplayRouteStage4 {
                 .entities()
                 .tickEntitiesWithProjectileEvents(
                         route.frame++,
-                        route.link.romEntityX(),
-                        route.link.romEntityY(),
+                        route.link.position().romEntityX(),
+                        route.link.position().romEntityY(),
                         0,
                         0,
-                        Link.DIRECTION_DOWN,
+                        Direction.DOWN.javaIndex(),
                         false);
         assertEquals(
                 0,

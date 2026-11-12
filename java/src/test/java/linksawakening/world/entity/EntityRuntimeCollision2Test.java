@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
@@ -252,7 +253,7 @@ final class EntityRuntimeCollision2Test extends EntityRuntimeTestSupport {
     @Test
     void sideScrollDropUsesDownCollisionToAlignAndStopWeakLanding() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)

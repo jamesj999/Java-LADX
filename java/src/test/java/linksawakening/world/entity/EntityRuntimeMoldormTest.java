@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -74,7 +75,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
     @Test
     void miniMoldormUsesDelayedRomPositionHistoryForItsDynamicTail() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntity initialEntity = new RoomEntityBuilder()

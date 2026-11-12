@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -21,8 +23,8 @@ final class IndoorTorchPaletteEffectTest {
         for (int palette = 0; palette < 8; palette++) {
             rom[offset + palette] = (byte) (palette + 1);
         }
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((rom == null ? (Rom) null : TestRoms.partial(rom)));
         effect.reset(solidPalettes(31, 17, 1), torches);
         if (fadeTicks != 0) {
             effect.igniteTorch();
@@ -41,8 +43,8 @@ final class IndoorTorchPaletteEffectTest {
     void scalingPreservesTheRomTruncationForAllRgb555ChannelValues() {
         byte[] rom = loadRom();
         for (int channel = 0; channel < 32; channel++) {
-            IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                    (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+            IndoorTorchPaletteEffect effect =
+                    new IndoorTorchPaletteEffect((rom == null ? (Rom) null : TestRoms.partial(rom)));
             effect.reset(solidPalettes(channel, 31 - channel, channel), 1);
             for (int palette = 0; palette < 8; palette++) {
                 int factor = Byte.toUnsignedInt(rom[0x853E3 + palette]);
@@ -66,8 +68,8 @@ final class IndoorTorchPaletteEffectTest {
     @Test
     void unlitTorchStartsAtTheSourceFourStepDarkness() {
         int[][] base = solidPalettes(31, 31, 31);
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         effect.reset(base, 1);
 
@@ -79,8 +81,8 @@ final class IndoorTorchPaletteEffectTest {
 
     @Test
     void lightingTorchAdvancesOncePerCycleAndCopiesPalettesInTwoHalves() {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 1);
 
         effect.igniteTorch();
@@ -119,8 +121,8 @@ final class IndoorTorchPaletteEffectTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5, 6})
     void nondefaultLinkMotionPausesThePaletteCountdown(int motion) {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 1);
         effect.igniteTorch();
         for (int tick = 0; tick < 20; tick++) {
@@ -133,8 +135,8 @@ final class IndoorTorchPaletteEffectTest {
 
     @Test
     void extinctionCapsTheTargetWithoutRestartingTheCountdown() {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 2);
         effect.extinguishTorch();
         effect.tick(false, false);
@@ -145,8 +147,8 @@ final class IndoorTorchPaletteEffectTest {
 
     @Test
     void revolvingDoorExtinctionUpdatesTheTargetWithoutStartingAFade() {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 0);
         effect.extinguishTorch(false);
         assertEquals(4, effect.targetAddress());
@@ -158,8 +160,8 @@ final class IndoorTorchPaletteEffectTest {
 
     @Test
     void turtleRockReloadsTheSubsequentCycleAtTenFrames() {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 1);
         effect.igniteTorch();
         for (int tick = 0; tick < 11; tick++) {
@@ -175,8 +177,8 @@ final class IndoorTorchPaletteEffectTest {
 
     @Test
     void dialogPausesThePaletteTransitionLikeGameplayPaletteHandler() {
-        IndoorTorchPaletteEffect effect = new IndoorTorchPaletteEffect(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        IndoorTorchPaletteEffect effect =
+                new IndoorTorchPaletteEffect((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         effect.reset(solidPalettes(31, 31, 31), 1);
         effect.igniteTorch();
 

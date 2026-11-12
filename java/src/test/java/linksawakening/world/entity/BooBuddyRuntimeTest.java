@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ final class BooBuddyRuntimeTest {
 
     @Test
     void sharedTimerReachingOneRunsTheRomDisappearanceReposition() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -44,7 +45,7 @@ final class BooBuddyRuntimeTest {
 
     @Test
     void routesBooBuddyThroughItsRomDisplayAndTriggerStates() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(BooBuddyMotion.ENTITY_TYPE, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()

@@ -9,6 +9,7 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class FollowingNpcEntitySpawnerTest {
@@ -24,7 +25,7 @@ final class FollowingNpcEntitySpawnerTest {
         LinkPositionHistory history = new LinkPositionHistory();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
-                        new EntitySpriteHandlerCatalog(syntheticRom()))
+                        new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))
                 .synchronize(new FollowingNpcSpawn(
                         initial,
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
@@ -61,7 +62,7 @@ final class FollowingNpcEntitySpawnerTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
-                        new EntitySpriteHandlerCatalog(syntheticRom()))
+                        new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))
                 .synchronize(new FollowingNpcSpawn(
                         runtime.inspection().snapshot(),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
@@ -80,7 +81,7 @@ final class FollowingNpcEntitySpawnerTest {
     @Test
     void sourceOrderUsesHighestFreeSlotForRoosterGhostMarinThenBowWow() {
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
-                        new EntitySpriteHandlerCatalog(syntheticRom()))
+                        new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))
                 .synchronize(new FollowingNpcSpawn(
                         new RoomEntitySnapshot(disabledSlots(), selection()),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x20),
@@ -105,7 +106,7 @@ final class FollowingNpcEntitySpawnerTest {
     @Test
     void ghostTriggerStateIsUpdatedWithoutSpawningDuringTheCheckPass() {
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
-                        new EntitySpriteHandlerCatalog(syntheticRom()))
+                        new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))
                 .synchronize(new FollowingNpcSpawn(
                         new RoomEntitySnapshot(disabledSlots(), selection()),
                         new FollowingNpcRoomContext(false, false, 0x00, 0x40),
@@ -130,7 +131,7 @@ final class FollowingNpcEntitySpawnerTest {
         LinkPositionHistory history = new LinkPositionHistory();
 
         FollowingNpcEntitySpawner.Result result = new FollowingNpcEntitySpawner(
-                        new EntitySpriteHandlerCatalog(syntheticRom()))
+                        new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())))
                 .synchronize(new FollowingNpcSpawn(
                         initial,
                         new FollowingNpcRoomContext(true, false, 0x09, 0x20),

@@ -11,7 +11,9 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkAttackClearRequest;
@@ -476,8 +478,7 @@ final class TarinRaccoonRuntimeTest {
 
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes =
-                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 2), session.rooms().palettes());
         assertArrayEquals(
@@ -493,8 +494,7 @@ final class TarinRaccoonRuntimeTest {
 
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes =
-                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 0, 1), session.rooms().palettes());
         assertArrayEquals(
@@ -511,8 +511,7 @@ final class TarinRaccoonRuntimeTest {
         session.story().initializeNewGameWorldState();
         session.rooms().loadIndoor(0x10, 0xA3);
 
-        RoomPaletteLoader palettes =
-                new RoomPaletteLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        RoomPaletteLoader palettes = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertArrayEquals(
                 palettes.loadIndoor(0x10, 0xA3, null, 0, 0), session.rooms().palettes());
         assertArrayEquals(
@@ -635,11 +634,10 @@ final class TarinRaccoonRuntimeTest {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
         return new RoomSession(new linksawakening.world.room.RoomSessionConfig(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldTilesetTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
                 new OverworldCollision(romTables),
                 new linksawakening.world.room.RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -655,7 +653,7 @@ final class TarinRaccoonRuntimeTest {
 
     private static RoomEntityRuntime raccoonRuntime(boolean indoor, int tarinSlot, EntityStatus status, int variant) {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(
                 ENTITY_TARIN, indoor ? EntityRoomLoader.RoomTable.INDOORS_B : EntityRoomLoader.RoomTable.OVERWORLD);
         List<RoomEntity> slots = new java.util.ArrayList<>();
@@ -678,8 +676,7 @@ final class TarinRaccoonRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
     }
 

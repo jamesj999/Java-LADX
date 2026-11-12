@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
 
     @Test
     void hidingZolRequestsTheRomJumpJingleForEachLaunchedLeap() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -61,7 +62,7 @@ final class EntityRuntimeZolGel2Test extends EntityRuntimeTestSupport {
 
     @Test
     void hidingZolRestoresHarmlessPhysicsWhenItsFinalLeapHides() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x9B, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

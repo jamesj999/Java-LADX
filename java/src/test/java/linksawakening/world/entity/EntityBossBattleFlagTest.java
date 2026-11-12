@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.stream.IntStream;
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -23,8 +26,8 @@ class EntityBossBattleFlagTest {
                 .spriteHandlers(null)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new linksawakening.world.room.ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
-                .romTables(linksawakening.rom.RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                        (rom == null ? (Rom) null : TestRoms.partial(rom))))
+                .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
         runtime.bossRewards.writeEnemyDropResolver(

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
@@ -222,7 +224,7 @@ final class PlayerProjectileEnemyCollisionTest {
             }
             rom = stream.readAllBytes();
         }
-        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         var slots = new ArrayList<RoomEntity>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
@@ -239,8 +241,7 @@ final class PlayerProjectileEnemyCollisionTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
     }
 }

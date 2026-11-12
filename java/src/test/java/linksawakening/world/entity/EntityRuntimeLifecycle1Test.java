@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
@@ -88,7 +89,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
 
     @Test
     void clearingThenReusingAProjectileSlotDoesNotRetainPowerDeathState() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition octorok = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         EntitySpriteDefinition keese = catalog.forEntityType(0x19, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
@@ -326,7 +327,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
 
     @Test
     void fallingHandlerUsesItsDedicatedRomDisplayListForTwoVariantEnemies() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition hardhat = catalog.forEntityType(0x20, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
@@ -522,7 +523,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
     @Test
     void ironMaskUsesItsRomRoamingHandlerSpeedAndMaskedDisplay() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
 
@@ -583,7 +584,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
 
     @Test
     void runtimeExposesTheRoamingEnemyLaunchRequestAndSpawnsTheProjectile() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
