@@ -14,8 +14,15 @@ public final class GameFrameSceneBuilder {
     private static final int VIEWPORT_TILE_WIDTH = 20;
     private static final int VIEWPORT_TILE_HEIGHT = 18;
 
+    private final List<RenderLayer> layers = new ArrayList<>();
+    private final List<RenderLayer> sprites = new ArrayList<>();
+    private final HardwareFrame frame = new HardwareFrame(true);
+    private linksawakening.entity.Link cachedLink;
+    private linksawakening.world.transition.ScrollController cachedScroll;
+    private LinkRenderLayer linkLayer;
+
     public FrameScene build(GameFrameState state) {
-        List<RenderLayer> layers = new ArrayList<>();
+        layers.clear();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
             addOverworldLayers(layers, state);
         } else if (state.fileMenuFrame() != null
@@ -80,10 +87,10 @@ public final class GameFrameSceneBuilder {
                         new InventoryFadeRenderLayer(
                                 layers.get(i), state.inventoryController().transition()));
         }
-        return FrameScene.of(layers);
+        return FrameScene.of(layers, frame);
     }
 
-    private static void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
+    private void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
         var warp = state.room().instrumentWarp();
         int[][] backgroundPalettes = warp == null
                 ? state.room().palettes()
@@ -94,7 +101,7 @@ public final class GameFrameSceneBuilder {
                 backgroundPalettes,
                 state.room().entities());
         layers.add(new RoomRenderLayer(room, state.scrollController(), state.transitionController()));
-        List<RenderLayer> sprites = new ArrayList<>();
+        sprites.clear();
         boolean showWorldSprites = state.inventoryController() == null
                 || state.inventoryController().transition().worldSpritesVisible();
         if (showWorldSprites
@@ -122,7 +129,12 @@ public final class GameFrameSceneBuilder {
                             state.scrollController()));
                 }
             } else {
-                sprites.add(new LinkRenderLayer(state.link(), state.scrollController()));
+                if (cachedLink != state.link() || cachedScroll != state.scrollController()) {
+                    cachedLink = state.link();
+                    cachedScroll = state.scrollController();
+                    linkLayer = new LinkRenderLayer(cachedLink, cachedScroll);
+                }
+                sprites.add(linkLayer);
                 if (state.room().entities() != null
                         && state.room().entities().spriteSelection() != null
                         && !state.room().entities().sideScrolling()) {

@@ -60,7 +60,7 @@ final class InstrumentWarpRenderLayer implements HardwareRenderLayer {
 
             @Override
             public void submit(HardwareFrame model, linksawakening.gpu.GPU gpu) {
-                HardwareFrame background = new HardwareFrame(true);
+                HardwareFrame background = model.backgroundScratch();
                 HardwareBackgroundRenderer.renderBackground(
                         background, gpu, visual.tiles(), visual.attributes(), faded, 20, 18);
                 model.copyBackgroundRows(background, Math.min(Framebuffer.HEIGHT, visual.commandBatches() * 16));

@@ -90,7 +90,7 @@ public final class EntityRenderLayer implements HardwareRenderLayer {
 
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        submitEntities(new RenderContext(new byte[0], gpu, frame));
+        submitEntities(RenderContext.indexed(gpu, frame));
     }
 
     private void renderSnapshot(RenderContext context, RoomEntitySnapshot entities, int[][] palettes, Offset offset) {

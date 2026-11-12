@@ -33,27 +33,29 @@ public record GameFrameState(
         int frameCounter,
         IntroFrameSnapshot introFrameSnapshot,
         FileMenuFrameSnapshot fileMenuFrame) {
+    private static final GameFrameState EMPTY = new GameFrameState(
+            RenderScreen.TITLE,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            null,
+            null);
+
     public static GameFrameState empty() {
-        return new GameFrameState(
-                RenderScreen.TITLE,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                0,
-                null,
-                null);
+        return EMPTY;
     }
 
     public GameFrameState withScreen(RenderScreen screen) {

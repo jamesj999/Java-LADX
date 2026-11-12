@@ -28,7 +28,7 @@ public final class DialogRenderLayer implements HardwareRenderLayer {
         DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
         if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
             OamDrawing.draw8x16(
-                    new RenderContext(new byte[0], gpu, frame),
+                    RenderContext.indexed(gpu, frame),
                     gpu,
                     0xA2,
                     0x97 - 8,

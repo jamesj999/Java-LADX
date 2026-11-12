@@ -5,6 +5,7 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
     public record Sprite(int tileIndex, int x, int y, int paletteIndex, boolean flipX, boolean flipY, int height) {}
 
     private final Iterable<Sprite> sprites;
+    private final java.util.ArrayList<Sprite> ordered = new java.util.ArrayList<>();
     private final int[][] palettes;
     private linksawakening.gpu.EntitySpriteTileSnapshot tiles;
 
@@ -21,8 +22,8 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
 
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        var ordered = new java.util.ArrayList<Sprite>();
-        sprites.forEach(ordered::add);
+        ordered.clear();
+        for (Sprite sprite : sprites) ordered.add(sprite);
         for (int i = ordered.size() - 1; i >= 0; i--) {
             Sprite sprite = ordered.get(i);
             int[] palette = palettes[Math.min(sprite.paletteIndex(), palettes.length - 1)];

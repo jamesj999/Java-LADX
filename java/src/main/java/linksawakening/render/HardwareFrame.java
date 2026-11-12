@@ -27,6 +27,13 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     final boolean backgroundPriorityEnabled;
 
     private final HardwareFrameDiagnostics diagnostics;
+    private HardwareFrame backgroundScratch;
+
+    HardwareFrame backgroundScratch() {
+        if (backgroundScratch == null) backgroundScratch = new HardwareFrame(true);
+        backgroundScratch.reset();
+        return backgroundScratch;
+    }
 
     public HardwareFrame(boolean backgroundPriorityEnabled) {
         this(backgroundPriorityEnabled, null);

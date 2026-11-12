@@ -80,6 +80,6 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
 
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
-        submitEffects(new RenderContext(new byte[0], gpu, frame));
+        submitEffects(RenderContext.indexed(gpu, frame));
     }
 }
