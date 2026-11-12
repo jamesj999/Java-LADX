@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.state.Direction;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 
 /** ROM-faithful equipment collaborator for Link. */
 final class LinkEquipment {
@@ -43,9 +43,9 @@ final class LinkEquipment {
         if (link.inputState == null || link.inputConfig == null || link.playerState == null) {
             return false;
         }
-        boolean usingA = link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
+        boolean usingA = link.playerState.itemA() == InventoryItem.SHIELD.romValue()
                 && link.inputState.isDown(link.inputConfig.aKey());
-        boolean usingB = link.playerState.itemB() == PlayerState.INVENTORY_SHIELD
+        boolean usingB = link.playerState.itemB() == InventoryItem.SHIELD.romValue()
                 && link.inputState.isDown(link.inputConfig.bKey());
         return usingA || usingB;
     }

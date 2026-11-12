@@ -31,7 +31,7 @@ public record NewGameStartProfile(
                 0x30, // wMaxArrows
                 0x30, // wMaxBombs
                 0x20, // wMaxMagicPowder
-                0x03, // DIRECTION_DOWN in the ROM encoding
+                0x03, // Direction.DOWN.javaIndex() in the ROM encoding
                 0x00, // standing animation state
                 0x16, // wWreckingBallRoom
                 0x50, // wWreckingBallPosX

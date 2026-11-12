@@ -1,5 +1,6 @@
 package linksawakening.equipment;
 
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
 /**
@@ -33,7 +34,7 @@ public final class ItemRegistry {
             return sword;
         }
         // The acquisition sequence spins the sword before it enters inventory.
-        EquipmentItem registered = lookup(PlayerState.INVENTORY_SWORD);
+        EquipmentItem registered = lookup(InventoryItem.SWORD.romValue());
         if (registered instanceof Sword sword && sword.spinAttackActive()) return sword;
         return null;
     }

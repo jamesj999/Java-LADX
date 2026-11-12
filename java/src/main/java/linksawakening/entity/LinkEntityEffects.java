@@ -195,7 +195,7 @@ final class LinkEntityEffects {
         link.linkAirborne.zVelocity = 0x12;
         link.linkAirborne.groundStatus = GroundStatus.NORMAL;
         link.linkAirborne.fallingIntoPit = false;
-        link.direction = Link.DIRECTION_RIGHT;
+        link.direction = Direction.RIGHT.javaIndex();
         link.linkMotion.lastRomSpeedX = 0x0C;
         link.linkMotion.lastRomSpeedY = 0;
         link.linkMotion.forcedSpeedPending = false;

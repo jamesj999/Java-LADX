@@ -4,7 +4,8 @@ import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 
 final class LinkSideView {
     private final Link link;
@@ -53,7 +54,7 @@ final class LinkSideView {
             link.linkAirborne.airborne = false;
             sideViewSpeedX = (mask & 3) == 1 ? 8 : (mask & 3) == 2 ? -8 : 0;
             sideViewSpeedY = (mask & 12) == 4 ? -16 : (mask & 12) == 8 ? 16 : 0;
-            link.direction = Link.DIRECTION_UP;
+            link.direction = Direction.UP.javaIndex();
         } else {
             int targetX = (mask & 3) == 1 ? 16 : (mask & 3) == 2 ? -16 : 0;
             if (sideViewGrounded || standingOnSideViewEntity) {
@@ -68,9 +69,9 @@ final class LinkSideView {
                 if ((mask & 3) != 0) sideViewSpeedX += Integer.compare(targetX, sideViewSpeedX);
             }
             if ((mask & 3) != 0 && !link.linkEquipment.itemsLockFacing())
-                link.direction = (mask & 1) != 0 ? Link.DIRECTION_RIGHT : Link.DIRECTION_LEFT;
-            if ((mask & 15) == 4) link.direction = Link.DIRECTION_UP;
-            if ((mask & 15) == 8) link.direction = Link.DIRECTION_DOWN;
+                link.direction = (mask & 1) != 0 ? Direction.RIGHT.javaIndex() : Direction.LEFT.javaIndex();
+            if ((mask & 15) == 4) link.direction = Direction.UP.javaIndex();
+            if ((mask & 15) == 8) link.direction = Direction.DOWN.javaIndex();
         }
         if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
         int oldX = link.linkMotion.subX, oldY = link.linkMotion.subY;
@@ -89,7 +90,7 @@ final class LinkSideView {
                 sideViewSpeedY++;
                 boolean featherHeld = link.playerState != null
                         && link.inputState != null
-                        && (link.playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER
+                        && (link.playerState.itemB() == InventoryItem.ROCS_FEATHER.romValue()
                                 ? link.inputState.isDown(link.inputConfig.bKey())
                                 : link.inputState.isDown(link.inputConfig.aKey()));
                 if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;

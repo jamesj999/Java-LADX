@@ -53,8 +53,14 @@ public final class PlayerState implements LinkPlayerState {
     public static final int INVENTORY_BOOMERANG = 0x0D;
 
     // Values stored in the ROM's wOcarinaSongFlags byte.
+    /** @deprecated Use {@link OcarinaSong#FROGS_SONG_OF_THE_SOUL}. */
+    @Deprecated(forRemoval = true)
     public static final int FROGS_SONG_OF_THE_SOUL_FLAG = 0x01;
+    /** @deprecated Use {@link OcarinaSong#MANBO_MAMBO}. */
+    @Deprecated(forRemoval = true)
     public static final int MANBO_MAMBO_FLAG = 0x02;
+    /** @deprecated Use {@link OcarinaSong#BALLAD_OF_THE_WIND_FISH}. */
+    @Deprecated(forRemoval = true)
     public static final int BALLAD_OF_THE_WIND_FISH_FLAG = 0x04;
 
     // Values written to the ROM's wTunicType ($DC0F).
@@ -95,8 +101,8 @@ public final class PlayerState implements LinkPlayerState {
     private int swordLevel = 1;
     private int shieldLevel = 1;
     private int powerBraceletLevel = 1;
-    private int itemA = INVENTORY_SWORD;
-    private int itemB = INVENTORY_EMPTY;
+    private int itemA = InventoryItem.SWORD.romValue();
+    private int itemB = InventoryItem.EMPTY.romValue();
     private int ocarinaSongFlags;
     private int selectedSongIndex;
     private final int[] subscreen = new int[SUBSCREEN_SLOT_COUNT];
@@ -162,7 +168,7 @@ public final class PlayerState implements LinkPlayerState {
         // the real pickup/chest flow exists. Fills slots with the inventory
         // ids BOMBS..SHOVEL in order.
         for (int i = 0; i < subscreen.length; i++) {
-            subscreen[i] = INVENTORY_BOMBS + i;
+            subscreen[i] = InventoryItem.BOMBS.romValue() + i;
         }
     }
 
@@ -183,11 +189,11 @@ public final class PlayerState implements LinkPlayerState {
         swordLevel = 0;
         shieldLevel = 0;
         powerBraceletLevel = 0;
-        itemA = INVENTORY_EMPTY;
-        itemB = INVENTORY_EMPTY;
+        itemA = InventoryItem.EMPTY.romValue();
+        itemB = InventoryItem.EMPTY.romValue();
         ocarinaSongFlags = 0;
         selectedSongIndex = 0;
-        Arrays.fill(subscreen, INVENTORY_EMPTY);
+        Arrays.fill(subscreen, InventoryItem.EMPTY.romValue());
         arrowCount = 0;
         this.maxArrows = clamp(maxArrows, 0, 99);
         bombCount = 0;
@@ -236,14 +242,17 @@ public final class PlayerState implements LinkPlayerState {
         setMaxMagicPowder(99);
         setMagicPowderCount(99);
         setSubscreenItems(new int[] {
-            INVENTORY_BOMBS, INVENTORY_POWER_BRACELET, INVENTORY_SHIELD,
-            INVENTORY_BOW, INVENTORY_HOOKSHOT, INVENTORY_MAGIC_ROD,
-            INVENTORY_PEGASUS_BOOTS, INVENTORY_OCARINA, INVENTORY_ROCS_FEATHER,
-            INVENTORY_SHOVEL
+            InventoryItem.BOMBS.romValue(), InventoryItem.POWER_BRACELET.romValue(), InventoryItem.SHIELD.romValue(),
+            InventoryItem.BOW.romValue(), InventoryItem.HOOKSHOT.romValue(), InventoryItem.MAGIC_ROD.romValue(),
+            InventoryItem.PEGASUS_BOOTS.romValue(), InventoryItem.OCARINA.romValue(),
+                    InventoryItem.ROCS_FEATHER.romValue(),
+            InventoryItem.SHOVEL.romValue()
         });
-        setItemA(INVENTORY_SWORD);
-        setItemB(INVENTORY_BOOMERANG);
-        setOcarinaSongFlags(FROGS_SONG_OF_THE_SOUL_FLAG | MANBO_MAMBO_FLAG | BALLAD_OF_THE_WIND_FISH_FLAG);
+        setItemA(InventoryItem.SWORD.romValue());
+        setItemB(InventoryItem.BOOMERANG.romValue());
+        setOcarinaSongFlags(OcarinaSong.FROGS_SONG_OF_THE_SOUL.romValue()
+                | OcarinaSong.MANBO_MAMBO.romValue()
+                | OcarinaSong.BALLAD_OF_THE_WIND_FISH.romValue());
         setHasFlippers(true);
         setHasMedicine(true);
         setMedicineCount(1);
@@ -406,11 +415,11 @@ public final class PlayerState implements LinkPlayerState {
             case 0x34 -> setPowerUp(PowerUp.GUARDIAN_ACORN);
             case 0x37 -> arrowCount = incrementUpTo(arrowCount, maxArrows);
             case 0x38 -> {
-                giveInventoryItem(INVENTORY_BOMBS);
+                giveInventoryItem(InventoryItem.BOMBS.romValue());
                 bombCount = incrementUpTo(bombCount, maxBombs);
             }
             case 0x3B -> {
-                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
                 magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
             }
             case 0x3D -> seashells = Math.min(99, seashells + 1);
@@ -441,13 +450,13 @@ public final class PlayerState implements LinkPlayerState {
 
     /** Applies the delayed reward at the end of the beach-sword cutscene. */
     public void applyBeachSwordReward() {
-        giveInventoryItem(INVENTORY_SWORD);
+        giveInventoryItem(InventoryItem.SWORD.romValue());
         setSwordLevel(1);
     }
 
     /** Applies SleepyToadstoolEntityHandler's final inventory and flag writes. */
     public void applyToadstoolReward() {
-        giveInventoryItem(INVENTORY_MAGIC_POWDER);
+        giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
         hasToadstool = true;
     }
 
@@ -462,9 +471,9 @@ public final class PlayerState implements LinkPlayerState {
     /** Applies WitchEntityHandler's slot clear and wHasToadstool reset. */
     public void beginWitchToadstoolExchange(int inventorySlot) {
         if (inventorySlot == 0) {
-            itemB = INVENTORY_EMPTY;
+            itemB = InventoryItem.EMPTY.romValue();
         } else if (inventorySlot == 1) {
-            itemA = INVENTORY_EMPTY;
+            itemA = InventoryItem.EMPTY.romValue();
         } else {
             throw new IllegalArgumentException("Inventory slot must be B (0) or A (1): " + inventorySlot);
         }
@@ -473,7 +482,7 @@ public final class PlayerState implements LinkPlayerState {
 
     /** Applies the witch's AssignItemToSlot and BCD +$20 powder reward. */
     public void applyWitchMagicPowderReward() {
-        giveInventoryItem(INVENTORY_MAGIC_POWDER);
+        giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
         // The player model stores quantities as decimal values. WitchEntityHandler
         // adds BCD $20 with DAA and does not clamp against wMaxMagicPowder.
         magicPowderCount = Math.min(99, magicPowderCount + 20);
@@ -484,7 +493,7 @@ public final class PlayerState implements LinkPlayerState {
         switch (FloatingItemPickupEffect.pickupEffect(entityType, sourceVariant)) {
             case TEN_RUPEES -> addRupeeBuffer = 10;
             case MAGIC_POWDER -> {
-                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
                 magicPowderCount = incrementByTenUpTo(magicPowderCount, maxMagicPowder);
             }
             case TEN_BOMBS -> bombCount = incrementByTenUpTo(bombCount, maxBombs);
@@ -509,29 +518,29 @@ public final class PlayerState implements LinkPlayerState {
         switch (chestItem) {
             case ChestContentsTable.CHEST_POWER_BRACELET -> {
                 powerBraceletLevel = Math.min(2, powerBraceletLevel + 1);
-                giveInventoryItem(INVENTORY_POWER_BRACELET);
+                giveInventoryItem(InventoryItem.POWER_BRACELET.romValue());
             }
             case ChestContentsTable.CHEST_SHIELD -> {
                 setShieldLevel(shieldLevel + 1);
-                giveInventoryItem(INVENTORY_SHIELD);
+                giveInventoryItem(InventoryItem.SHIELD.romValue());
             }
-            case ChestContentsTable.CHEST_BOW -> giveInventoryItem(INVENTORY_BOW);
-            case ChestContentsTable.CHEST_HOOKSHOT -> giveInventoryItem(INVENTORY_HOOKSHOT);
-            case ChestContentsTable.CHEST_MAGIC_ROD -> giveInventoryItem(INVENTORY_MAGIC_ROD);
-            case ChestContentsTable.CHEST_PEGASUS_BOOTS -> giveInventoryItem(INVENTORY_PEGASUS_BOOTS);
-            case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(INVENTORY_OCARINA);
-            case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(INVENTORY_ROCS_FEATHER);
-            case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(INVENTORY_SHOVEL);
+            case ChestContentsTable.CHEST_BOW -> giveInventoryItem(InventoryItem.BOW.romValue());
+            case ChestContentsTable.CHEST_HOOKSHOT -> giveInventoryItem(InventoryItem.HOOKSHOT.romValue());
+            case ChestContentsTable.CHEST_MAGIC_ROD -> giveInventoryItem(InventoryItem.MAGIC_ROD.romValue());
+            case ChestContentsTable.CHEST_PEGASUS_BOOTS -> giveInventoryItem(InventoryItem.PEGASUS_BOOTS.romValue());
+            case ChestContentsTable.CHEST_OCARINA -> giveInventoryItem(InventoryItem.OCARINA.romValue());
+            case ChestContentsTable.CHEST_FEATHER -> giveInventoryItem(InventoryItem.ROCS_FEATHER.romValue());
+            case ChestContentsTable.CHEST_SHOVEL -> giveInventoryItem(InventoryItem.SHOVEL.romValue());
             case ChestContentsTable.CHEST_FLIPPERS -> hasFlippers = true;
             case ChestContentsTable.CHEST_MAGIC_POWDER_BAG -> {
-                giveInventoryItem(INVENTORY_MAGIC_POWDER);
+                giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());
                 magicPowderCount = incrementUpTo(magicPowderCount, maxMagicPowder);
             }
             case ChestContentsTable.CHEST_BOMB -> {
-                giveInventoryItem(INVENTORY_BOMBS);
+                giveInventoryItem(InventoryItem.BOMBS.romValue());
                 bombCount = incrementUpTo(bombCount, maxBombs);
             }
-            case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(INVENTORY_SWORD);
+            case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(InventoryItem.SWORD.romValue());
             case ChestContentsTable.CHEST_MEDICINE -> {
                 hasMedicine = true;
                 medicineCount = incrementByte(medicineCount);
@@ -716,11 +725,11 @@ public final class PlayerState implements LinkPlayerState {
         }
         magicPowderCount--;
         if (magicPowderCount == 0) {
-            if (itemA == INVENTORY_MAGIC_POWDER) {
-                itemA = INVENTORY_EMPTY;
+            if (itemA == InventoryItem.MAGIC_POWDER.romValue()) {
+                itemA = InventoryItem.EMPTY.romValue();
             }
-            if (itemB == INVENTORY_MAGIC_POWDER) {
-                itemB = INVENTORY_EMPTY;
+            if (itemB == InventoryItem.MAGIC_POWDER.romValue()) {
+                itemB = InventoryItem.EMPTY.romValue();
             }
         }
         return true;
@@ -982,16 +991,16 @@ public final class PlayerState implements LinkPlayerState {
                 return;
             }
         }
-        if (itemB == INVENTORY_EMPTY) {
+        if (itemB == InventoryItem.EMPTY.romValue()) {
             itemB = inventoryId;
             return;
         }
-        if (itemA == INVENTORY_EMPTY) {
+        if (itemA == InventoryItem.EMPTY.romValue()) {
             itemA = inventoryId;
             return;
         }
         for (int index = 0; index < subscreen.length; index++) {
-            if (subscreen[index] == INVENTORY_EMPTY) {
+            if (subscreen[index] == InventoryItem.EMPTY.romValue()) {
                 subscreen[index] = inventoryId;
                 return;
             }

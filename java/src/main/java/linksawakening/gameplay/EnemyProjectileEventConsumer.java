@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.state.PlayerState;
+import linksawakening.state.PowerUp;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
 /** Applies one frame of ROM enemy-projectile events at the gameplay boundary. */
@@ -84,10 +85,9 @@ public final class EnemyProjectileEventConsumer {
             // every generic damaging source, even when a guardian acorn
             // reduces the resulting damage to zero.
             playerState.setRunningWithPegasusBoots(false);
-            int previousPowerUp = playerState.activePowerUp();
+            PowerUp previousPowerUp = playerState.powerUp();
             playerState.applyRomEnemyDamage(event.linkDamage());
-            if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE
-                    && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_NONE) {
+            if (previousPowerUp != PowerUp.NONE && playerState.powerUp() == PowerUp.NONE) {
                 onPowerUpEnded.run();
             }
             onContactHurt.run();

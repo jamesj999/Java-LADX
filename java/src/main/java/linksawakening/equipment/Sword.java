@@ -2,7 +2,6 @@ package linksawakening.equipment;
 
 import java.util.Objects;
 import java.util.function.IntSupplier;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
@@ -77,20 +76,25 @@ public final class Sword implements EquipmentItem {
     // bank2.asm:46E9-4708. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION = {
         {
-            Link.DIRECTION_RIGHT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_LEFT,
-            Link.DIRECTION_LEFT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_RIGHT
+            Direction.RIGHT.javaIndex(), Direction.UP.javaIndex(), Direction.UP.javaIndex(), Direction.LEFT.javaIndex(),
+            Direction.LEFT.javaIndex(), Direction.DOWN.javaIndex(), Direction.DOWN.javaIndex(),
+                    Direction.RIGHT.javaIndex()
         },
         {
-            Link.DIRECTION_LEFT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_RIGHT,
-            Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT
+            Direction.LEFT.javaIndex(), Direction.UP.javaIndex(), Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(),
+            Direction.RIGHT.javaIndex(), Direction.DOWN.javaIndex(), Direction.DOWN.javaIndex(),
+                    Direction.LEFT.javaIndex()
         },
         {
-            Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN,
-            Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP
+            Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(), Direction.RIGHT.javaIndex(),
+                    Direction.DOWN.javaIndex(),
+            Direction.DOWN.javaIndex(), Direction.LEFT.javaIndex(), Direction.LEFT.javaIndex(), Direction.UP.javaIndex()
         },
         {
-            Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP,
-            Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN
+            Direction.DOWN.javaIndex(), Direction.LEFT.javaIndex(), Direction.LEFT.javaIndex(),
+                    Direction.UP.javaIndex(),
+            Direction.UP.javaIndex(), Direction.RIGHT.javaIndex(), Direction.RIGHT.javaIndex(),
+                    Direction.DOWN.javaIndex()
         },
     };
 
@@ -113,8 +117,8 @@ public final class Sword implements EquipmentItem {
     private int spinFramesRemaining;
     private int spinFrameCounter;
     private int spinSector;
-    private int spinBaseDirection = Link.DIRECTION_DOWN;
-    private int lastKnownDirection = Link.DIRECTION_DOWN;
+    private int spinBaseDirection = Direction.DOWN.javaIndex();
+    private int lastKnownDirection = Direction.DOWN.javaIndex();
     private boolean spinAttackQueued;
     private int queuedSpinDelayFrames;
 
@@ -378,7 +382,7 @@ public final class Sword implements EquipmentItem {
 
     /** Starts the ROM's forced sword-spin state (wIsUsingSpinAttack=$20). */
     public void startSwordAcquisitionSpin(int baseDirection) {
-        if (baseDirection < Link.DIRECTION_DOWN || baseDirection > Link.DIRECTION_RIGHT) {
+        if (baseDirection < Direction.DOWN.javaIndex() || baseDirection > Direction.RIGHT.javaIndex()) {
             throw new IllegalArgumentException("Invalid Link direction: " + baseDirection);
         }
         spinBaseDirection = baseDirection;

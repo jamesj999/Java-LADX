@@ -5,8 +5,8 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.GroundStatus;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
-import linksawakening.state.PlayerState;
 
 /** ROM-faithful airborne collaborator for Link. */
 final class LinkAirborne {
@@ -132,7 +132,7 @@ final class LinkAirborne {
 
     boolean swordSuppressesJumpAnimation() {
         if (link.itemRegistry == null) return false;
-        EquipmentItem item = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+        EquipmentItem item = link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
         return item instanceof linksawakening.equipment.Sword sword && sword.suppressesJumpAnimation();
     }
 

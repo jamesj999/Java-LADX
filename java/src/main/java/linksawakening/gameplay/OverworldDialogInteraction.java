@@ -8,6 +8,7 @@ import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 import java.util.Objects;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
+import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
 public final class OverworldDialogInteraction {
@@ -36,7 +37,7 @@ public final class OverworldDialogInteraction {
         if (!actionPressed
                 || (blockers != null && blockers.blocksOpening())
                 || mapCategory != Warp.CATEGORY_OVERWORLD
-                || linkDirection != Link.DIRECTION_UP
+                || linkDirection != Direction.UP.javaIndex()
                 || roomObjectsArea == null
                 || dialogController == null
                 || dialogController.isActive()) {

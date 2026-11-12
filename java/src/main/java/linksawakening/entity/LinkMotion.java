@@ -4,8 +4,9 @@ import static linksawakening.entity.Link.*;
 
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
-import linksawakening.state.PlayerState;
 
 final class LinkMotion {
     private final Link link;
@@ -37,9 +38,9 @@ final class LinkMotion {
 
         int moveDirection;
         if (isXAxis) {
-            moveDirection = signedSpeed > 0 ? Link.DIRECTION_RIGHT : Link.DIRECTION_LEFT;
+            moveDirection = signedSpeed > 0 ? Direction.RIGHT.javaIndex() : Direction.LEFT.javaIndex();
         } else {
-            moveDirection = signedSpeed > 0 ? Link.DIRECTION_DOWN : Link.DIRECTION_UP;
+            moveDirection = signedSpeed > 0 ? Direction.DOWN.javaIndex() : Direction.UP.javaIndex();
         }
 
         // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
@@ -61,11 +62,11 @@ final class LinkMotion {
             else subX += adjustment << Link.SUB_PIXEL_SHIFT;
             collisionProbePixelX[moveDirection] = candidatePixelX;
             collisionProbePixelY[moveDirection] = candidatePixelY;
-            romCollisionType |= switch (moveDirection) {
-                case Link.DIRECTION_UP -> LinkRomConstants.COLLISION_TYPE_UP;
-                case Link.DIRECTION_DOWN -> LinkRomConstants.COLLISION_TYPE_DOWN;
-                case Link.DIRECTION_LEFT -> LinkRomConstants.COLLISION_TYPE_LEFT;
-                case Link.DIRECTION_RIGHT -> LinkRomConstants.COLLISION_TYPE_RIGHT;
+            romCollisionType |= switch (Direction.fromJavaOrUnknown(moveDirection)) {
+                case UP -> LinkRomConstants.COLLISION_TYPE_UP;
+                case DOWN -> LinkRomConstants.COLLISION_TYPE_DOWN;
+                case LEFT -> LinkRomConstants.COLLISION_TYPE_LEFT;
+                case RIGHT -> LinkRomConstants.COLLISION_TYPE_RIGHT;
                 default -> 0;
             };
             return;
@@ -113,7 +114,7 @@ final class LinkMotion {
                 link.linkDamage.collisionIgnoreFramesRemaining = 0;
                 if (link.playerState != null) link.playerState.setInvincibilityCounter(0);
                 if (link.itemRegistry != null
-                        && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
+                        && link.itemRegistry.lookup(InventoryItem.SWORD.romValue())
                                 instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
                 link.soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
@@ -141,7 +142,7 @@ final class LinkMotion {
                 blocked = true;
                 // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
                 // follows its poke path; a raised shield suppresses the write.
-                var sword = link.itemRegistry == null ? null : link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+                var sword = link.itemRegistry == null ? null : link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
                         && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
                 boolean running = link.playerState != null && link.playerState.runningWithPegasusBoots();
@@ -160,13 +161,7 @@ final class LinkMotion {
 
     boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {
         int ledgeDirection =
-                switch (physicsFlag - PhysicsFlags.CAT_LEDGE) {
-                    case 0 -> Link.DIRECTION_RIGHT;
-                    case 1 -> Link.DIRECTION_LEFT;
-                    case 2 -> Link.DIRECTION_UP;
-                    case 3 -> Link.DIRECTION_DOWN;
-                    default -> -1;
-                };
+                Direction.fromRomOrUnknown(physicsFlag - PhysicsFlags.CAT_LEDGE).javaIndex();
         if (link.linkAirborne.airborne
                 || link.direction != ledgeDirection
                 || moveDirection != ledgeDirection
@@ -184,14 +179,14 @@ final class LinkMotion {
         link.linkStateMachine.resetPegasusBoots();
         link.linkAirborne.directionalLedgeCollisionCounter = 0;
         link.linkAirborne.directionalLedgeJumpMotionLocked = true;
-        link.linkAirborne.directionalLedgeJumpSpeedX = switch (ledgeDirection) {
-            case Link.DIRECTION_RIGHT -> 0x10;
-            case Link.DIRECTION_LEFT -> -0x10;
+        link.linkAirborne.directionalLedgeJumpSpeedX = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+            case RIGHT -> 0x10;
+            case LEFT -> -0x10;
             default -> 0;
         };
-        link.linkAirborne.directionalLedgeJumpSpeedY = switch (ledgeDirection) {
-            case Link.DIRECTION_DOWN -> 0x10;
-            case Link.DIRECTION_UP -> -0x10;
+        link.linkAirborne.directionalLedgeJumpSpeedY = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+            case DOWN -> 0x10;
+            case UP -> -0x10;
             default -> 0;
         };
         lastRomSpeedX = link.linkAirborne.directionalLedgeJumpSpeedX & 0xFF;
@@ -264,8 +259,8 @@ final class LinkMotion {
         boolean blocked = false;
         int lastObject = 0xFF;
         for (int index = 0; index < 2; index++) {
-            int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Link.DIRECTION_UP][index];
-            int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Link.DIRECTION_UP][index];
+            int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Direction.UP.javaIndex()][index];
+            int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Direction.UP.javaIndex()][index];
             blocked |= link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers());
             lastObject = link.collision.objectIdAtPoint(pointX, pointY);
         }
@@ -281,11 +276,11 @@ final class LinkMotion {
     }
 
     static int joypadBitForDirection(int direction) {
-        return switch (direction) {
-            case Link.DIRECTION_DOWN -> LinkRomConstants.JOY_DOWN;
-            case Link.DIRECTION_UP -> LinkRomConstants.JOY_UP;
-            case Link.DIRECTION_LEFT -> LinkRomConstants.JOY_LEFT;
-            case Link.DIRECTION_RIGHT -> LinkRomConstants.JOY_RIGHT;
+        return switch (Direction.fromJavaOrUnknown(direction)) {
+            case DOWN -> LinkRomConstants.JOY_DOWN;
+            case UP -> LinkRomConstants.JOY_UP;
+            case LEFT -> LinkRomConstants.JOY_LEFT;
+            case RIGHT -> LinkRomConstants.JOY_RIGHT;
             default -> 0;
         };
     }

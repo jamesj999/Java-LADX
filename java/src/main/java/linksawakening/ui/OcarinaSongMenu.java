@@ -3,6 +3,7 @@ package linksawakening.ui;
 import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.OcarinaSong;
 import linksawakening.state.PlayerState;
 
 /**
@@ -17,10 +18,6 @@ public final class OcarinaSongMenu {
 
     public static final int SONG_COUNT = 3;
     public static final int OPEN_CLOSE_FRAMES = 0x10;
-
-    private static final int[] SONG_FLAGS = {
-        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG, PlayerState.MANBO_MAMBO_FLAG, PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG
-    };
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -135,13 +132,15 @@ public final class OcarinaSongMenu {
         if (songIndex < 0 || songIndex >= SONG_COUNT) {
             return false;
         }
-        return (playerState.ocarinaSongFlags() & SONG_FLAGS[songIndex]) != 0;
+        return OcarinaSong.fromSelectionIndex(songIndex).isSet(playerState.ocarinaSongFlags());
     }
 
+    /** @deprecated Use {@link OcarinaSong#fromSelectionIndex(int)}. */
+    @Deprecated(forRemoval = true)
     public static int songFlagForIndex(int songIndex) {
         if (songIndex < 0 || songIndex >= SONG_COUNT) {
             throw new IllegalArgumentException("Song index out of range: " + songIndex);
         }
-        return SONG_FLAGS[songIndex];
+        return OcarinaSong.fromSelectionIndex(songIndex).romValue();
     }
 }

@@ -7,8 +7,9 @@ import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.Tile;
 import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Tunic;
 
 /** ROM pose selection and sprite data for both rendering paths. */
 final class LinkAnimator {
@@ -99,7 +100,7 @@ final class LinkAnimator {
                 // of wInvincibilityCounter while Link is flashing.
                 ? link.tunicPalette.forObjectPalette(4)
                 : link.tunicPalette.forTunic(
-                        link.playerState == null ? PlayerState.TUNIC_GREEN : link.playerState.tunicType());
+                        link.playerState == null ? Tunic.GREEN.romValue() : link.playerState.tunicType());
 
         if (link.linkStateMachine.revolvingDoorPaletteVariant >= 0 && link.linkStateMachine.revolvingDoorFrame < 0x38) {
             palette = link.romTables.revolvingDoorPalette(link.linkStateMachine.revolvingDoorPaletteVariant);
@@ -154,7 +155,7 @@ final class LinkAnimator {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            EquipmentItem acquisitionSword = link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(
                         displayBuffer,
@@ -254,8 +255,8 @@ final class LinkAnimator {
         if (link.spriteSheet != null) {
             int carriedShield = !link.linkStateMachine.gelClinging
                             && link.playerState != null
-                            && (link.playerState.itemA() == PlayerState.INVENTORY_SHIELD
-                                    || link.playerState.itemB() == PlayerState.INVENTORY_SHIELD)
+                            && (link.playerState.itemA() == InventoryItem.SHIELD.romValue()
+                                    || link.playerState.itemB() == InventoryItem.SHIELD.romValue())
                     ? link.playerState.shieldLevel()
                     : 0;
             return link.spriteSheet.walkingAnimationState(
@@ -306,7 +307,7 @@ final class LinkAnimator {
     void showHeldItemPose() {
         link.linkStateMachine.romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6C;
-        link.direction = Link.DIRECTION_DOWN;
+        link.direction = Direction.DOWN.javaIndex();
         link.romAttackStepAnimationCountdown = 0;
         link.movingThisFrame = false;
     }
@@ -340,7 +341,7 @@ final class LinkAnimator {
         tarinShieldPresentation = false;
         romAnimationStateOverride = 0x22;
         link.linkStateMachine.romInteractiveMotionBlocked = false;
-        link.direction = Link.DIRECTION_DOWN;
+        link.direction = Direction.DOWN.javaIndex();
         link.movingThisFrame = false;
     }
 
@@ -381,7 +382,7 @@ final class LinkAnimator {
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
         romAnimationStateOverride = 0x6B;
-        link.direction = Link.DIRECTION_DOWN;
+        link.direction = Direction.DOWN.javaIndex();
         link.movingThisFrame = false;
     }
 
@@ -415,7 +416,7 @@ final class LinkAnimator {
                 // of wInvincibilityCounter while Link is flashing.
                 ? link.tunicPalette.forObjectPalette(4)
                 : link.tunicPalette.forTunic(
-                        link.playerState == null ? PlayerState.TUNIC_GREEN : link.playerState.tunicType());
+                        link.playerState == null ? Tunic.GREEN.romValue() : link.playerState.tunicType());
 
         if (link.linkStateMachine.revolvingDoorPaletteVariant >= 0 && link.linkStateMachine.revolvingDoorFrame < 0x38) {
             palette = link.romTables.revolvingDoorPalette(link.linkStateMachine.revolvingDoorPaletteVariant);
@@ -461,7 +462,7 @@ final class LinkAnimator {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD);
+            EquipmentItem acquisitionSword = link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.submitOam(
                         sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);

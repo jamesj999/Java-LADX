@@ -5,6 +5,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
 /** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
@@ -172,7 +173,7 @@ public final class InventoryMenu {
         if (next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
-            if (playerState.subscreenItem(cursorSlot) == PlayerState.INVENTORY_OCARINA
+            if (playerState.subscreenItem(cursorSlot) == InventoryItem.OCARINA.romValue()
                     && playerState.ocarinaSongFlags() != 0) {
                 ocarinaSongMenu.requestOpen();
             }
@@ -203,7 +204,7 @@ public final class InventoryMenu {
     }
 
     private void openOcarinaIfSelected(int selectedItem) {
-        if (selectedItem == PlayerState.INVENTORY_OCARINA && playerState.ocarinaSongFlags() != 0) {
+        if (selectedItem == InventoryItem.OCARINA.romValue() && playerState.ocarinaSongFlags() != 0) {
             ocarinaSongMenu.requestOpen();
         }
     }

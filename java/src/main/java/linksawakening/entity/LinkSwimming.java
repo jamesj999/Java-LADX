@@ -1,6 +1,7 @@
 package linksawakening.entity;
 
 import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
 /** ROM-faithful swimming collaborator for Link. */
@@ -77,7 +78,7 @@ final class LinkSwimming {
 
     void updateRecover() {
         if (link.itemRegistry != null
-                && link.itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+                && link.itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         link.linkMotion.lastRomSpeedX = link.linkMotion.lastRomSpeedY = 0;
         link.movingThisFrame = false;

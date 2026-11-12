@@ -12,6 +12,23 @@ public enum OcarinaSong {
         this.romValue = romValue;
     }
 
+    public int selectionIndex() {
+        return switch (this) {
+            case BALLAD_OF_THE_WIND_FISH -> 0;
+            case MANBO_MAMBO -> 1;
+            case FROGS_SONG_OF_THE_SOUL -> 2;
+        };
+    }
+
+    public static OcarinaSong fromSelectionIndex(int index) {
+        return switch (index) {
+            case 0 -> BALLAD_OF_THE_WIND_FISH;
+            case 1 -> MANBO_MAMBO;
+            case 2 -> FROGS_SONG_OF_THE_SOUL;
+            default -> throw new IllegalArgumentException("Song index out of range: " + index);
+        };
+    }
+
     public int romValue() {
         return romValue;
     }

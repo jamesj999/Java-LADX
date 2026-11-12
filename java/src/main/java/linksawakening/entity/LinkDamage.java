@@ -1,5 +1,6 @@
 package linksawakening.entity;
 
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
@@ -36,7 +37,7 @@ final class LinkDamage {
     void hurtBySpikes() {
         if (link.playerState == null || link.playerState.invincibilityCounter() != 0) return;
         if (link.itemRegistry != null
-                && link.itemRegistry.lookup(PlayerState.INVENTORY_SWORD)
+                && link.itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         link.linkMotion.lastRomSpeedX = (-link.linkMotion.lastRomSpeedX) & 0xFF;
         link.linkMotion.lastRomSpeedY = (-link.linkMotion.lastRomSpeedY) & 0xFF;

@@ -5,8 +5,8 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
-import linksawakening.state.PlayerState;
 
 final class LinkStateMachine {
     private final Link link;
@@ -91,7 +91,8 @@ final class LinkStateMachine {
 
         if (link.linkAirborne.spinningPitWarpArrival) {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
-            link.direction = Link.javaDirectionForRomDirection(link.romTables.pitWarpArrivalDirection(frameCounter));
+            link.direction = Direction.fromRom(link.romTables.pitWarpArrivalDirection(frameCounter))
+                    .javaIndex();
             link.linkMotion.forcedSpeedPending = false;
             link.linkMotion.forcedSpeedXOnly = false;
             link.movingThisFrame = false;
@@ -289,7 +290,7 @@ final class LinkStateMachine {
         }
         if (++revolvingDoorFrame >= 0x38) {
             link.linkMotion.subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
-            link.direction = Link.DIRECTION_UP;
+            link.direction = Direction.UP.javaIndex();
             link.linkAnimator.romAnimationStateOverride = 0x04;
         }
         if (revolvingDoorFrame == 0x48) {
@@ -334,9 +335,9 @@ final class LinkStateMachine {
         if (link.playerState == null || link.inputState == null || link.inputConfig == null) {
             return;
         }
-        boolean aHeld = link.playerState.itemA() == PlayerState.INVENTORY_PEGASUS_BOOTS
+        boolean aHeld = link.playerState.itemA() == InventoryItem.PEGASUS_BOOTS.romValue()
                 && link.inputState.isDown(link.inputConfig.aKey());
-        boolean bHeld = link.playerState.itemB() == PlayerState.INVENTORY_PEGASUS_BOOTS
+        boolean bHeld = link.playerState.itemB() == InventoryItem.PEGASUS_BOOTS.romValue()
                 && link.inputState.isDown(link.inputConfig.bKey());
         if (!aHeld && !bHeld) {
             pegasusBootsChargeMeter = 0;
@@ -368,17 +369,17 @@ final class LinkStateMachine {
     }
 
     int pegasusRunningSpeedX() {
-        return switch (link.direction) {
-            case Link.DIRECTION_LEFT -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
-            case Link.DIRECTION_RIGHT -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+        return switch (Direction.fromJavaOrUnknown(link.direction)) {
+            case LEFT -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+            case RIGHT -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
         };
     }
 
     int pegasusRunningSpeedY() {
-        return switch (link.direction) {
-            case Link.DIRECTION_UP -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
-            case Link.DIRECTION_DOWN -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+        return switch (Direction.fromJavaOrUnknown(link.direction)) {
+            case UP -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
+            case DOWN -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
         };
     }
@@ -510,10 +511,10 @@ final class LinkStateMachine {
         int probeX = link.linkMotion.pixelX();
         int probeY = link.linkMotion.pixelY();
         link.linkMotion.lastRomSpeedY = 0x01;
-        boolean blocked = link.linkMotion.leadingEdgeBlocked(probeX, probeY, Link.DIRECTION_DOWN);
+        boolean blocked = link.linkMotion.leadingEdgeBlocked(probeX, probeY, Direction.DOWN.javaIndex());
         int object = link.collision.objectIdAtPoint(
-                probeX + COLLISION_POINTS_X[Link.DIRECTION_DOWN][1],
-                probeY + COLLISION_POINTS_Y[Link.DIRECTION_DOWN][1]);
+                probeX + COLLISION_POINTS_X[Direction.DOWN.javaIndex()][1],
+                probeY + COLLISION_POINTS_Y[Direction.DOWN.javaIndex()][1]);
         // Switch blocks $DB/$DC are exempt from fallback unstucking.
         if (object != 0xDB
                 && object != 0xDC

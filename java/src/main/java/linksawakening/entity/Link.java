@@ -14,6 +14,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.GroundStatus;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.LinkPlayerState;
 import linksawakening.state.PlayerState;
@@ -94,7 +95,7 @@ public final class Link implements RocsFeather.JumpTarget {
     final ItemRegistry itemRegistry;
     final LinkTunicPalette tunicPalette;
 
-    int direction = DIRECTION_DOWN;
+    int direction = Direction.DOWN.javaIndex();
     int walkTickCounter;
     int walkFrame;
     boolean movingThisFrame;
@@ -398,11 +399,11 @@ public final class Link implements RocsFeather.JumpTarget {
 
     private boolean hasFacingCollision() {
         int flag =
-                switch (direction) {
-                    case DIRECTION_UP -> COLLISION_TYPE_UP;
-                    case DIRECTION_DOWN -> COLLISION_TYPE_DOWN;
-                    case DIRECTION_LEFT -> COLLISION_TYPE_LEFT;
-                    case DIRECTION_RIGHT -> COLLISION_TYPE_RIGHT;
+                switch (Direction.fromJavaOrUnknown(direction)) {
+                    case UP -> COLLISION_TYPE_UP;
+                    case DOWN -> COLLISION_TYPE_DOWN;
+                    case LEFT -> COLLISION_TYPE_LEFT;
+                    case RIGHT -> COLLISION_TYPE_RIGHT;
                     default -> 0;
                 };
         return (linkMotion.romCollisionType & flag) != 0;
@@ -475,7 +476,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void setDirection(int newDirection) {
-        if (newDirection < DIRECTION_DOWN || newDirection > DIRECTION_RIGHT) {
+        if (newDirection < Direction.DOWN.javaIndex() || newDirection > Direction.RIGHT.javaIndex()) {
             throw new IllegalArgumentException("Invalid Link direction: " + newDirection);
         }
         direction = newDirection;
@@ -484,7 +485,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void setRomDirection(int romDirection) {
-        setDirection(javaDirectionForRomDirection(romDirection));
+        setDirection(Direction.fromRom(romDirection).javaIndex());
     }
 
     /**
@@ -492,7 +493,7 @@ public final class Link implements RocsFeather.JumpTarget {
      * UpdateLinkWalkingAnimation.
      */
     public void faceRomDirectionPreservingWalkPhase(int romDirection) {
-        direction = javaDirectionForRomDirection(romDirection);
+        direction = Direction.fromRom(romDirection).javaIndex();
     }
 
     public boolean isAirborne() {
@@ -850,7 +851,7 @@ public final class Link implements RocsFeather.JumpTarget {
         // entry uses the updated Z. Preserve the fractional position at ground.
         linkAnimator.bedJumpRenderZ = zPixels();
         if (itemRegistry != null
-                && itemRegistry.lookup(linksawakening.state.PlayerState.INVENTORY_SWORD)
+                && itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) {
             sword.resetSpinAttack();
         }

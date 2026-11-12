@@ -5,7 +5,9 @@ public enum Direction {
     DOWN(0, 3),
     UP(1, 2),
     LEFT(2, 1),
-    RIGHT(3, 0);
+    RIGHT(3, 0),
+    /** Classification only; never a valid facing or ROM direction. */
+    UNKNOWN(-1, -1);
 
     private final int javaIndex;
     private final int romIndex;
@@ -25,6 +27,16 @@ public enum Direction {
 
     public int romValue() {
         return romIndex;
+    }
+
+    /** Sentinel classification for legacy switches whose default accepts arbitrary integers. */
+    public static Direction fromJavaOrUnknown(int value) {
+        return value >= 0 && value <= 3 ? fromJava(value) : UNKNOWN;
+    }
+
+    /** Unknown ROM indices classify as UNKNOWN without masking. */
+    public static Direction fromRomOrUnknown(int value) {
+        return value >= 0 && value <= 3 ? fromRom(value) : UNKNOWN;
     }
 
     public static Direction fromJava(int value) {
