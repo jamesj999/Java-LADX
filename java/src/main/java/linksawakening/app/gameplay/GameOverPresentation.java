@@ -61,7 +61,7 @@ final class GameOverPresentation {
                 cursorVisible = true;
                 int option = menu.tick(context.inputState(), context.inputConfig(), context.gameplaySoundSink());
                 if (option >= 0) {
-                    context.gameOverOutcome().accept(option);
+                    context.gameOverOutcome().finishGameOver(option);
                     return;
                 }
             }

@@ -4,7 +4,6 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import java.util.function.IntConsumer;
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.app.debug.DebugMenuOverlay;
 import linksawakening.app.gameplay.BushInteraction;
@@ -107,7 +106,6 @@ public final class SessionContext {
 
         saveState = new SaveState(built.saveRamStore());
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
-        simulationGameOverOutcome = this::finishGameOver;
         inputRouterStop = () -> running = false;
 
         simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
@@ -123,6 +121,12 @@ public final class SessionContext {
         openingStoryInstance = new OpeningStory(this);
         rendererInstance = new RenderStateAssembler(this);
         savesInstance = new SaveCoordinator(this);
+        gameOverFlow = new linksawakening.app.gameplay.GameOverFlow(
+                services().equipmentController(),
+                passOutController,
+                savesInstance,
+                services().transientVfxSystem(),
+                services().droppableRupeeSystem());
         routerInstance = new ScreenRouter(this);
         inputRouterInstance = new InputRouter(this);
         simulationInstance = new GameplaySimulation(this);
@@ -149,10 +153,10 @@ public final class SessionContext {
         return passOutController;
     }
 
-    private final IntConsumer simulationGameOverOutcome;
+    private final linksawakening.app.gameplay.GameOverFlow gameOverFlow;
 
-    public IntConsumer gameOverOutcome() {
-        return simulationGameOverOutcome;
+    public linksawakening.app.gameplay.GameOverActions gameOverOutcome() {
+        return gameOverFlow;
     }
 
     public GPU gpu() {
@@ -540,15 +544,6 @@ public final class SessionContext {
 
     LiftInteraction lifting() {
         return liftingInstance;
-    }
-
-    void finishGameOver(int option) {
-        var sword = services().equipmentController().activeSword();
-        if (sword != null) sword.resetAfterGameOver();
-        passOutController.clear();
-        saves().finishGameOver(option);
-        services().transientVfxSystem().clear();
-        services().droppableRupeeSystem().clear();
     }
 
     GameplaySimulation simulation() {

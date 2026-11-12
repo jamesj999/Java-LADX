@@ -4,7 +4,6 @@ import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import java.util.function.IntConsumer;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.SessionContext;
 import linksawakening.app.story.OpeningStory;
@@ -81,7 +80,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
         return context.passOutController();
     }
 
-    public IntConsumer gameOverOutcome() {
+    public GameOverActions gameOverOutcome() {
         return context.gameOverOutcome();
     }
 
