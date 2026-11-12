@@ -1,14 +1,15 @@
 package linksawakening.input;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import linksawakening.config.AppConfig;
 
+/** Configurable engine key bindings with the legacy numeric key namespace. */
 public final class InputConfig {
 
-    private static final Map<String, Integer> KEY_NAME_TO_GLFW = buildKeyTable();
+    private static final Map<String, Integer> KEY_NAME_TO_CODE = buildKeyTable();
 
     private final int menuOpenKey;
     private final int upKey;
@@ -20,7 +21,7 @@ public final class InputConfig {
     private final int selectKey;
 
     public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey) {
-        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, GLFW_KEY_TAB);
+        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, KEY_TAB);
     }
 
     public InputConfig(
@@ -84,38 +85,38 @@ public final class InputConfig {
     }
 
     private static int resolveKey(String name) {
-        Integer glfwKey = KEY_NAME_TO_GLFW.get(name.toUpperCase());
+        Integer glfwKey = KEY_NAME_TO_CODE.get(name.toUpperCase());
         if (glfwKey == null) {
             System.err.println("Unknown key name in input config: " + name + " (falling back to ENTER)");
-            return GLFW_KEY_ENTER;
+            return KEY_ENTER;
         }
         return glfwKey;
     }
 
     private static Map<String, Integer> buildKeyTable() {
         Map<String, Integer> table = new HashMap<>();
-        table.put("ENTER", GLFW_KEY_ENTER);
-        table.put("RETURN", GLFW_KEY_ENTER);
-        table.put("SPACE", GLFW_KEY_SPACE);
-        table.put("TAB", GLFW_KEY_TAB);
-        table.put("ESCAPE", GLFW_KEY_ESCAPE);
-        table.put("ESC", GLFW_KEY_ESCAPE);
-        table.put("BACKSPACE", GLFW_KEY_BACKSPACE);
-        table.put("LEFT_SHIFT", GLFW_KEY_LEFT_SHIFT);
-        table.put("RIGHT_SHIFT", GLFW_KEY_RIGHT_SHIFT);
-        table.put("LEFT_CONTROL", GLFW_KEY_LEFT_CONTROL);
-        table.put("RIGHT_CONTROL", GLFW_KEY_RIGHT_CONTROL);
-        table.put("LEFT_ALT", GLFW_KEY_LEFT_ALT);
-        table.put("RIGHT_ALT", GLFW_KEY_RIGHT_ALT);
-        table.put("UP", GLFW_KEY_UP);
-        table.put("DOWN", GLFW_KEY_DOWN);
-        table.put("LEFT", GLFW_KEY_LEFT);
-        table.put("RIGHT", GLFW_KEY_RIGHT);
+        table.put("ENTER", KEY_ENTER);
+        table.put("RETURN", KEY_ENTER);
+        table.put("SPACE", KEY_SPACE);
+        table.put("TAB", KEY_TAB);
+        table.put("ESCAPE", KEY_ESCAPE);
+        table.put("ESC", KEY_ESCAPE);
+        table.put("BACKSPACE", KEY_BACKSPACE);
+        table.put("LEFT_SHIFT", KEY_LEFT_SHIFT);
+        table.put("RIGHT_SHIFT", KEY_RIGHT_SHIFT);
+        table.put("LEFT_CONTROL", KEY_LEFT_CONTROL);
+        table.put("RIGHT_CONTROL", KEY_RIGHT_CONTROL);
+        table.put("LEFT_ALT", KEY_LEFT_ALT);
+        table.put("RIGHT_ALT", KEY_RIGHT_ALT);
+        table.put("UP", KEY_UP);
+        table.put("DOWN", KEY_DOWN);
+        table.put("LEFT", KEY_LEFT);
+        table.put("RIGHT", KEY_RIGHT);
         for (char c = 'A'; c <= 'Z'; c++) {
-            table.put(String.valueOf(c), GLFW_KEY_A + (c - 'A'));
+            table.put(String.valueOf(c), KEY_A + (c - 'A'));
         }
         for (char c = '0'; c <= '9'; c++) {
-            table.put(String.valueOf(c), GLFW_KEY_0 + (c - '0'));
+            table.put(String.valueOf(c), KEY_0 + (c - '0'));
         }
         return table;
     }

@@ -4,6 +4,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.function.BiConsumer;
 import linksawakening.gpu.Framebuffer;
+import linksawakening.input.KeyCodes;
 import linksawakening.render.OpenGlFramePresenter;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -56,7 +57,15 @@ public final class DesktopHost implements Host {
         keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long handle, int key, int scancode, int action, int mods) {
-                keys.accept(key, action);
+                // Key codes intentionally share the engine's stable numeric namespace.
+                int engineAction =
+                        switch (action) {
+                            case GLFW_PRESS -> KeyCodes.PRESS;
+                            case GLFW_RELEASE -> KeyCodes.RELEASE;
+                            case GLFW_REPEAT -> KeyCodes.REPEAT;
+                            default -> action;
+                        };
+                keys.accept(key, engineAction);
             }
         };
         glfwSetKeyCallback(window, keyCallback);

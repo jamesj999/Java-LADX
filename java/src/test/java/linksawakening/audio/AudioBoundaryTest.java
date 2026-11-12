@@ -17,7 +17,7 @@ final class AudioBoundaryTest {
                 .getCodeSource()
                 .getLocation()
                 .toURI());
-        for (String pkg : new String[] {"audio"}) {
+        for (String pkg : new String[] {"audio", "input"}) {
             try (var paths = Files.walk(root.resolve("linksawakening/" + pkg))) {
                 for (Path file :
                         paths.filter(p -> p.toString().endsWith(".class")).toList()) {
