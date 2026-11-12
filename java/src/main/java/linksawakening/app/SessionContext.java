@@ -24,6 +24,7 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.OverworldDialogBlockers;
+import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
@@ -797,5 +798,40 @@ public final class SessionContext {
 
     public DroppableRupeeSystem bushes_droppableRupeeSystem() {
         return session.services.droppableRupeeSystem();
+    }
+
+    public InputConfig dialogs_inputConfig() {
+        return session.services.inputConfig();
+    }
+
+    public OverworldDialogInteraction dialogs_overworldDialogInteraction() {
+        return session.services.overworldDialogInteraction();
+    }
+
+    public RoomSession dialogs_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public Link dialogs_link() {
+        return session.services.link();
+    }
+
+    public PlayerState dialogs_playerState() {
+        return session.services.playerState();
+    }
+
+    public DialogController dialogs_dialogController() {
+        return session.services.dialogController();
+    }
+
+    public DialogTextLoader dialogs_dialogTextLoader() {
+        return session.services.dialogTextLoader();
+    }
+
+    private Supplier<OverworldDialogBlockers> dialogs_blockers;
+
+    public Supplier<OverworldDialogBlockers> dialogs_blockers() {
+        if (dialogs_blockers == null) dialogs_blockers = session::currentOverworldDialogBlockers;
+        return dialogs_blockers;
     }
 }

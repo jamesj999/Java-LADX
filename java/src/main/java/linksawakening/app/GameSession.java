@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    DialogInteractions dialogsInstance;
     BushInteraction bushesInstance;
     OpeningStory openingStoryInstance;
     RenderStateAssembler rendererInstance;
@@ -357,6 +358,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        dialogsInstance = new DialogInteractions(context);
         bushesInstance = new BushInteraction(context);
         openingStoryInstance = new OpeningStory(context);
         rendererInstance = new RenderStateAssembler(context);
@@ -375,15 +377,7 @@ public class GameSession {
     }
 
     DialogInteractions dialogs() {
-        return new DialogInteractions(
-                services.inputConfig(),
-                services.overworldDialogInteraction(),
-                services.roomSession(),
-                services.link(),
-                services.playerState(),
-                services.dialogController(),
-                services.dialogTextLoader(),
-                this::currentOverworldDialogBlockers);
+        return dialogsInstance;
     }
 
     LiftInteraction lifting() {
