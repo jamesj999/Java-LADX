@@ -3,6 +3,7 @@ package linksawakening.cutscene;
 import static linksawakening.cutscene.IntroSequence.*;
 
 import java.util.function.Function;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
 /** IntroSceneRendering behavior on the shared IntroSequence state. */
@@ -11,7 +12,7 @@ abstract class IntroSceneRendering extends IntroSceneTransitions {
         super();
     }
 
-    protected IntroSceneRendering(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    protected IntroSceneRendering(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         super(romData, backgroundProvider);
     }
 

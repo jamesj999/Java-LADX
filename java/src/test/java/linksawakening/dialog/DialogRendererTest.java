@@ -21,7 +21,7 @@ final class DialogRendererTest {
     private static final int BLACK = 0x000000;
     private static final int WHITE = 0xF8F8F8;
     private static final int SENTINEL = 0x123456;
-    private static final DialogFont EXPECTED_FONT = DialogFont.loadFromRom(classpathRom());
+    private static final DialogFont EXPECTED_FONT = DialogFont.loadFromRom(linksawakening.rom.Rom.of(classpathRom()));
 
     @Test
     void rendersTopBoxAtOriginalYAndLeavesBottomAreaUntouched() {

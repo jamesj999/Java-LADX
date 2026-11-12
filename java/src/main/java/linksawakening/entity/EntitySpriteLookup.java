@@ -4,11 +4,12 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 
 /** EntitySpriteLookup behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteLookup extends EntitySpriteDecodeState {
-    protected EntitySpriteLookup(byte[] romData) {
+    protected EntitySpriteLookup(Rom romData) {
         super(romData);
     }
 

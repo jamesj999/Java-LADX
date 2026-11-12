@@ -46,7 +46,7 @@ final class LinkSwimming {
     int divingCountdown;
 
     boolean enterSwimmingIfNeeded() {
-        if (linkServices.get().romTables == null || linkServices.get().collision == null) return false;
+        if (linkServices.get().linkMotionTables == null || linkServices.get().collision == null) return false;
         int flag = linkServices
                 .get()
                 .collision
@@ -86,12 +86,12 @@ final class LinkSwimming {
         linkAirborne.get().zVelocity = 0;
         swimmingSpeedX = linkServices
                 .get()
-                .romTables
+                .linkMotionTables
                 .swimmingEntrySpeedX(
                         Direction.fromJava(linkAnimationState.get().direction).romIndex());
         swimmingSpeedY = linkServices
                 .get()
-                .romTables
+                .linkMotionTables
                 .swimmingEntrySpeedY(
                         Direction.fromJava(linkAnimationState.get().direction).romIndex());
         linkMotion.get().lastRomSpeedX = swimmingSpeedX & 0xFF;
@@ -116,8 +116,8 @@ final class LinkSwimming {
             };
         }
         if (index < 0) return;
-        int x = linkServices.get().romTables.waterCurrentSpeedX(index);
-        int y = linkServices.get().romTables.waterCurrentSpeedY(index);
+        int x = linkServices.get().linkMotionTables.waterCurrentSpeedX(index);
+        int y = linkServices.get().linkMotionTables.waterCurrentSpeedY(index);
         linkMotion.get().lastRomSpeedX = x & 255;
         linkMotion.get().lastRomSpeedY = y & 255;
         if (x != 0) linkMotion.get().tryMoveAxis(x, true);
@@ -223,8 +223,8 @@ final class LinkSwimming {
             linkMotion.get().forcedSpeedXOnly = false;
         } else if ((linkStateMachine.get().frameCounter & 0x01) == 0) {
             boolean fast = swimmingFastCountdown >= 0x10;
-            int targetX = linkServices.get().romTables.swimmingSpeedX(mask, fast);
-            int targetY = linkServices.get().romTables.swimmingSpeedY(mask, fast);
+            int targetX = linkServices.get().linkMotionTables.swimmingSpeedX(mask, fast);
+            int targetY = linkServices.get().linkMotionTables.swimmingSpeedY(mask, fast);
             swimmingSpeedX = approachSignedSpeed(swimmingSpeedX, targetX);
             swimmingSpeedY = approachSignedSpeed(swimmingSpeedY, targetY);
         }

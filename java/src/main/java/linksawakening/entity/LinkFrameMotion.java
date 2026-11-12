@@ -105,7 +105,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
         if (linkAirborne.get().spinningPitWarpArrival) {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
             linkAnimationState.get().direction = Direction.fromRom(
-                            linkServices.get().romTables.pitWarpArrivalDirection(frameCounter))
+                            linkServices.get().linkMotionTables.pitWarpArrivalDirection(frameCounter))
                     .javaIndex();
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
@@ -241,7 +241,7 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
         } else if (linkMotion.get().forcedSpeedPending) {
             frame.speedX = linkMotion.get().forcedSpeedX;
             frame.speedY = linkMotion.get().forcedSpeedXOnly
-                    ? (byte) linkServices.get().romTables.linkSpeedY(groundSpeedIndex(frame.mask))
+                    ? (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(frame.mask))
                     : linkMotion.get().forcedSpeedY;
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
@@ -251,8 +251,8 @@ abstract class LinkFrameMotion extends LinkMotionLifecycle {
             frame.speedX = frame.carriedSpeedX;
             frame.speedY = frame.carriedSpeedY;
         } else {
-            frame.speedX = (byte) linkServices.get().romTables.linkSpeedX(groundSpeedIndex(frame.mask));
-            frame.speedY = (byte) linkServices.get().romTables.linkSpeedY(groundSpeedIndex(frame.mask));
+            frame.speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(frame.mask));
+            frame.speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(frame.mask));
         }
         if (frame.platformVerticalSpeedForThisUpdate >= 0) {
             frame.speedY = (byte) frame.platformVerticalSpeedForThisUpdate;

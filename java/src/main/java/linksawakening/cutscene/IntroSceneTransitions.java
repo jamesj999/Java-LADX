@@ -5,6 +5,7 @@ import static linksawakening.cutscene.IntroSequence.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
 /** IntroSceneTransitions behavior on the shared IntroSequence state. */
@@ -14,7 +15,7 @@ abstract class IntroSceneTransitions extends IntroBeachMotion {
         super();
     }
 
-    protected IntroSceneTransitions(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    protected IntroSceneTransitions(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         super(romData, backgroundProvider);
     }
 

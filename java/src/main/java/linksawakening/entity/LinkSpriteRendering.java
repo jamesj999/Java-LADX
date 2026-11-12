@@ -50,7 +50,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                 && linkStateMachine.get().revolvingDoorFrame < 0x38) {
             palette = linkServices
                     .get()
-                    .romTables
+                    .linkMotionTables
                     .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
         }
 

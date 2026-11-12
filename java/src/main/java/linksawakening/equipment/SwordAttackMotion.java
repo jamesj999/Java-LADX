@@ -201,7 +201,7 @@ abstract class SwordAttackMotion extends SwordState {
         }
         int effectiveDirection = effectiveDirection(direction);
         int lookupState = effectiveLinkAnimationState();
-        int value = romTables.swordDirectionAnimState(toRomDirection(effectiveDirection), lookupState);
+        int value = swordTables.swordDirectionAnimState(toRomDirection(effectiveDirection), lookupState);
         if (value == 0xFF) {
             return -1;
         }

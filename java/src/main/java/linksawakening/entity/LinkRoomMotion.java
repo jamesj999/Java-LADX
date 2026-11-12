@@ -23,7 +23,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
         if (revolvingDoorFrame == 0x18) revolvingDoorPaletteVariant = 1;
         if (revolvingDoorFrame < 0x38) {
             linkAnimator.get().romAnimationStateOverride =
-                    linkServices.get().romTables.revolvingDoorAnimation(revolvingDoorFrame);
+                    linkServices.get().linkMotionTables.revolvingDoorAnimation(revolvingDoorFrame);
         }
         if (++revolvingDoorFrame >= 0x38) {
             linkMotion.get().subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
@@ -52,8 +52,8 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
         if (newDirection != -1) {
             linkAnimationState.get().direction = newDirection;
         }
-        int speedX = (byte) linkServices.get().romTables.linkSpeedX(groundSpeedIndex(mask));
-        int speedY = (byte) linkServices.get().romTables.linkSpeedY(groundSpeedIndex(mask));
+        int speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(mask));
+        int speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(mask));
         linkMotion.get().lastRomSpeedX = speedX & 0xFF;
         linkMotion.get().lastRomSpeedY = speedY & 0xFF;
         linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;

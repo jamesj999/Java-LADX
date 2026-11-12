@@ -1,6 +1,7 @@
 package linksawakening.cutscene;
 
 import java.util.function.Function;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
 /**
@@ -26,11 +27,17 @@ public final class IntroSequence extends IntroSceneRendering {
         super();
     }
 
-    public IntroSequence(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    public IntroSequence(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         super(romData, backgroundProvider);
     }
 
     public IntroSequence(DefaultResources resources) {
         super(resources);
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public IntroSequence(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+        this(romData == null ? null : new Rom(romData), backgroundProvider);
     }
 }

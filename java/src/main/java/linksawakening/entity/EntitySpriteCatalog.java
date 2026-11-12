@@ -29,17 +29,17 @@ public final class EntitySpriteCatalog {
     private static final int ROOM_OW_WALRUS = 0xFD;
     private static final int OW_ROOM_STATUS_OWL_TALKED = 0x20;
 
-    private final byte[] romData;
+    private final Rom romData;
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final RoomPaletteLoader roomPaletteLoader;
 
-    public EntitySpriteCatalog(byte[] romData) {
+    public EntitySpriteCatalog(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         this.romData = romData;
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
-        this.roomPaletteLoader = new RoomPaletteLoader(romData);
+        this.roomPaletteLoader = new RoomPaletteLoader(romData.unsafeBytes());
     }
 
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId) {
@@ -104,7 +104,7 @@ public final class EntitySpriteCatalog {
                     case INDOORS_B -> INDOORS_B_GROUP_ADDRESS;
                 };
         int groupOffset = checkedOffset(DATA_BANK, groupAddress + roomId, 1, "room spritesheet group");
-        int groupIndex = new Rom(romData).u8(RomAddress.fromOffset(groupOffset));
+        int groupIndex = romData.u8(RomAddress.fromOffset(groupOffset));
         groupIndex = applyRoomContextOverride(roomTable, roomId, groupIndex, mapId, overworldRoomStatus);
         int[][] palettes =
                 switch (roomTable) {
@@ -138,7 +138,7 @@ public final class EntitySpriteCatalog {
                 "entity spritesheet table");
         int[] sheetValues = new int[ENTITY_SHEET_SLOT_COUNT];
         for (int slot = 0; slot < ENTITY_SHEET_SLOT_COUNT; slot++) {
-            sheetValues[slot] = new Rom(romData).u8(RomAddress.fromOffset(sheetOffset + slot));
+            sheetValues[slot] = romData.u8(RomAddress.fromOffset(sheetOffset + slot));
         }
         EntitySpriteDefinition floatingOverlay = entitySpriteHandlerCatalog.forFloatingItemOverlay();
         return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues, true, palettes)
@@ -182,8 +182,8 @@ public final class EntitySpriteCatalog {
         int offset = checkedOffset(PALETTE_BANK, OBJECT_PALETTES_ADDRESS, paletteCount * 4 * 2, "object palette table");
         for (int palette = 0; palette < paletteCount; palette++) {
             for (int color = 0; color < 4; color++) {
-                int low = new Rom(romData).u8(RomAddress.fromOffset(offset++));
-                int high = new Rom(romData).u8(RomAddress.fromOffset(offset++));
+                int low = romData.u8(RomAddress.fromOffset(offset++));
+                int high = romData.u8(RomAddress.fromOffset(offset++));
                 palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
             }
         }
@@ -197,10 +197,16 @@ public final class EntitySpriteCatalog {
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException("Invalid " + description + " address", exception);
         }
-        if (offset < 0 || length < 0 || offset > romData.length - length) {
+        if (offset < 0 || length < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException(
                     "Truncated " + description + " at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return offset;
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public EntitySpriteCatalog(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

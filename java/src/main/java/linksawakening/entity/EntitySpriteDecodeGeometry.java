@@ -4,11 +4,13 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
 /** EntitySpriteDecodeGeometry behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding {
-    protected EntitySpriteDecodeGeometry(byte[] romData) {
+    protected EntitySpriteDecodeGeometry(Rom romData) {
         super(romData);
     }
 
@@ -43,13 +45,14 @@ abstract class EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding {
             int variantOffset = offset + variant * stride;
             for (int sprite = 0; sprite < spriteCount; sprite++) {
                 int index = variantOffset + sprite * 4;
-                int yOffset = signedByte(romData[index]);
-                int xOffset = signedByte(romData[index + 1]);
+                int yOffset = signedByte((byte) romData.u8(RomAddress.fromOffset(index)));
+                int xOffset = signedByte((byte) romData.u8(RomAddress.fromOffset(index + 1)));
                 sprites.add(new EntitySpriteDefinition.RectangleSprite(
                         yOffset,
                         xOffset,
                         new EntitySpriteDefinition.OamAttribute(
-                                Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
+                                romData.u8(RomAddress.fromOffset(index + 2)),
+                                romData.u8(RomAddress.fromOffset(index + 3)))));
             }
             rectangleVariants.add(List.copyOf(sprites));
         }
@@ -72,7 +75,7 @@ abstract class EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding {
             throw new IllegalArgumentException("Display list crosses the selected ROM bank boundary");
         }
         int offset = RomBank.romOffset(bank, address);
-        if (offset < 0 || byteCount > romData.length - offset) {
+        if (offset < 0 || byteCount > romData.size() - offset) {
             throw new IllegalArgumentException(
                     "Display list exceeds ROM bounds at 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
@@ -81,10 +84,10 @@ abstract class EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding {
 
     protected int readByte(int bank, int address) {
         int offset = RomBank.romOffset(bank, address);
-        if (offset < 0 || offset >= romData.length) {
+        if (offset < 0 || offset >= romData.size()) {
             throw new IllegalArgumentException("ROM byte is outside the ROM at 0x" + Integer.toHexString(offset));
         }
-        return Byte.toUnsignedInt(romData[offset]);
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     /** Bank $19:43A9: center pair followed by four orbiting single sprites. */

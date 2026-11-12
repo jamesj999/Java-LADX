@@ -3,6 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.List;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
@@ -100,9 +101,9 @@ abstract class EntitySpriteDecodeState {
     protected static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {0x6688, 0x66E8, 0x6748};
     protected static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {0x67A8, 0x67D8, 0x6808};
 
-    protected final byte[] romData;
+    protected final Rom romData;
 
-    public EntitySpriteDecodeState(byte[] romData) {
+    public EntitySpriteDecodeState(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }

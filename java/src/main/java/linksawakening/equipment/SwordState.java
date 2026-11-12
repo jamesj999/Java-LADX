@@ -7,6 +7,7 @@ import java.util.function.IntSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.rom.RomTables;
+import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 import linksawakening.world.entity.RomRandomByteSource;
 
@@ -61,7 +62,7 @@ abstract class SwordState implements EquipmentItem {
         },
     };
 
-    protected final RomTables romTables;
+    protected final SwordTables swordTables;
     protected final SwordRenderer renderer;
     protected final GameplaySoundSink soundSink;
     protected final IntSupplier randomByteSupplier;
@@ -119,7 +120,7 @@ abstract class SwordState implements EquipmentItem {
             IntSupplier randomByteSupplier,
             SwordPalette swordPalette,
             BeamTarget beamTarget) {
-        this.romTables = romTables;
+        this.swordTables = romTables == null ? null : romTables.swordTables();
         this.renderer = new SwordRenderer(romTables, spriteSheet);
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");

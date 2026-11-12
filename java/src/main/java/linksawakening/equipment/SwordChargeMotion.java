@@ -65,7 +65,7 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
         }
         int effectiveDirection = effectiveDirection(linkDirection);
         int romDirection = toRomDirection(effectiveDirection);
-        int swordDirection = romTables.swordDirectionFor(romDirection, spinAnimationState());
+        int swordDirection = swordTables.swordDirectionFor(romDirection, spinAnimationState());
         return 4 + (swordDirection & 0x07);
     }
 
@@ -126,7 +126,7 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
     public Sword.CollisionBox enemyCollisionBox(
             int linkEntityX, int linkEntityY, int linkDirection, boolean runningWithPegasusBoots) {
         lastKnownDirection = linkDirection;
-        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING)) || romTables == null) {
+        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING)) || swordTables == null) {
             return Sword.CollisionBox.inactive();
         }
         if (spinAttackActive()) {
@@ -134,15 +134,15 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
         }
 
         int romDirection = toRomDirection(linkDirection);
-        if (!romTables.swordEnemyCollisionEnabled(romDirection, state)) {
+        if (!swordTables.swordEnemyCollisionEnabled(romDirection, state)) {
             return Sword.CollisionBox.inactive();
         }
         return new Sword.CollisionBox(
                 true,
-                linkEntityX + romTables.swordCollisionXOriginOffset(romDirection, state),
-                romTables.swordCollisionWidth(romDirection, state),
-                linkEntityY + romTables.swordCollisionYOriginOffset(romDirection, state),
-                romTables.swordCollisionHeight(romDirection, state));
+                linkEntityX + swordTables.swordCollisionXOriginOffset(romDirection, state),
+                swordTables.swordCollisionWidth(romDirection, state),
+                linkEntityY + swordTables.swordCollisionYOriginOffset(romDirection, state),
+                swordTables.swordCollisionHeight(romDirection, state));
     }
 
     // Flash is driven by bit 2 of the global frame counter during HOLDING at
@@ -173,17 +173,17 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
             return direction;
         }
         int baseDirection = toSpinDirectionIndex(spinBaseDirection);
-        return romTables == null
+        return swordTables == null
                 ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
                 : fromRomDirection(
-                        romTables.swordSpinAbsoluteDirection(toRomDirection(spinBaseDirection), spinSector()));
+                        swordTables.swordSpinAbsoluteDirection(toRomDirection(spinBaseDirection), spinSector()));
     }
 
     protected int spinAnimationState() {
         int baseDirection = toSpinDirectionIndex(spinBaseDirection);
-        return romTables == null
+        return swordTables == null
                 ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
-                : romTables.swordSpinAnimationState(toRomDirection(spinBaseDirection), spinSector());
+                : swordTables.swordSpinAnimationState(toRomDirection(spinBaseDirection), spinSector());
     }
 
     protected int spinSector() {

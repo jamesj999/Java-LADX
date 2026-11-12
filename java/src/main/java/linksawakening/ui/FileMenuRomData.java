@@ -29,12 +29,13 @@ public final class FileMenuRomData {
     private static final int NAME_POSITION_COUNT = 5;
     private static final int CODEPOINT_TO_TILE_MAP_COUNT = 0x100;
 
-    private final byte[] romData;
+    private final Rom romData;
     private final Rom romView;
 
-    public FileMenuRomData(byte[] romData) {
-        this.romData = Objects.requireNonNull(romData, "romData").clone();
-        this.romView = new Rom(this.romData);
+    public FileMenuRomData(Rom romData) {
+        this.romData =
+                new Rom(Objects.requireNonNull(romData, "romData").bytes(RomAddress.fromOffset(0), romData.size()));
+        this.romView = romData;
     }
 
     public int[] deathDigitTiles() {
@@ -79,15 +80,21 @@ public final class FileMenuRomData {
 
     private int[] readUnsignedBytes(String label, int bank, int address, int length) {
         int offset = RomBank.romOffset(bank, address);
-        if (length < 0 || offset < 0 || offset > romData.length - length) {
+        if (length < 0 || offset < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException(String.format(
                     "%s truncated: bank $%02X address $%04X length %d (ROM length %d)",
-                    label, bank, address, length, romData.length));
+                    label, bank, address, length, romData.size()));
         }
         int[] values = new int[length];
         for (int index = 0; index < length; index++) {
             values[index] = romView.u8(RomAddress.fromOffset(offset + index));
         }
         return values;
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public FileMenuRomData(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

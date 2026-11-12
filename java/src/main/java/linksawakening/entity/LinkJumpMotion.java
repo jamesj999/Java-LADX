@@ -41,11 +41,11 @@ abstract class LinkJumpMotion extends LinkAirborneState {
                         || !linkServices.get().playerState.runningWithPegasusBoots())) {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
-                int target = linkServices.get().romTables.airSpeedX(mask & 3);
+                int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);
                 linkMotion.get().lastRomSpeedX = steerAirSpeed(linkMotion.get().lastRomSpeedX, target);
             }
             if ((mask & (LinkRomConstants.JOY_UP | LinkRomConstants.JOY_DOWN)) != 0) {
-                int target = linkServices.get().romTables.airSpeedY((mask >>> 2) & 3);
+                int target = linkServices.get().linkMotionTables.airSpeedY((mask >>> 2) & 3);
                 linkMotion.get().lastRomSpeedY = steerAirSpeed(linkMotion.get().lastRomSpeedY, target);
             }
         }

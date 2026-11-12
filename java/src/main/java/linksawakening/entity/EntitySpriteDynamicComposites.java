@@ -4,10 +4,11 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
 
 /** EntitySpriteDynamicComposites behavior on the shared EntitySpriteHandlerCatalog state. */
 abstract class EntitySpriteDynamicComposites extends EntitySpriteBossComposites {
-    protected EntitySpriteDynamicComposites(byte[] romData) {
+    protected EntitySpriteDynamicComposites(Rom romData) {
         super(romData);
     }
 

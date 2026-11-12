@@ -9,14 +9,18 @@ import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.LinkMotionTables;
 import linksawakening.rom.RomTables;
+import linksawakening.rom.SwordTables;
 import linksawakening.state.LinkPlayerState;
 
 /** Construction-time services shared by Link components; nullable test collaborators stay explicit. */
 final class LinkServices {
     final InputState inputState;
     final InputConfig inputConfig;
-    final RomTables romTables;
+    final LinkMotionTables linkMotionTables;
+
+    final SwordTables swordTables;
     final OverworldCollision collision;
     final LinkSpriteSheet spriteSheet;
     final LinkPlayerState playerState;
@@ -33,7 +37,8 @@ final class LinkServices {
             Link.Services arguments) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
-        this.romTables = romTables;
+        this.linkMotionTables = romTables == null ? null : romTables.linkMotionTables();
+        this.swordTables = romTables == null ? null : romTables.swordTables();
         this.collision = collision;
         this.spriteSheet = spriteSheet;
         this.playerState = arguments.playerState();

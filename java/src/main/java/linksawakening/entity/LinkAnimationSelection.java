@@ -100,7 +100,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         if (countdown < 0 || countdown > 0x20) {
             throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
         }
-        if (linkServices.get().romTables == null) {
+        if (linkServices.get().linkMotionTables == null) {
             throw new IllegalStateException("Sword acquisition spin requires ROM tables");
         }
         if (swordAcquisitionBaseRomDirection < 0) {
@@ -113,10 +113,11 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         // front of this ROM-driven sword pose.
         romAnimationStateOverride = -1;
         int sector = Math.min(7, countdown >> 2);
-        int swordState = linkServices.get().romTables.swordSpinAnimationState(swordAcquisitionBaseRomDirection, sector);
+        int swordState =
+                linkServices.get().swordTables.swordSpinAnimationState(swordAcquisitionBaseRomDirection, sector);
         int absoluteRomDirection =
-                linkServices.get().romTables.swordSpinAbsoluteDirection(swordAcquisitionBaseRomDirection, sector);
-        int animationState = linkServices.get().romTables.swordDirectionAnimState(absoluteRomDirection, swordState);
+                linkServices.get().swordTables.swordSpinAbsoluteDirection(swordAcquisitionBaseRomDirection, sector);
+        int animationState = linkServices.get().swordTables.swordDirectionAnimState(absoluteRomDirection, swordState);
         // UpdateSpinAttackAnimation leaves hLinkAnimationState unchanged for
         // LINK_ANIMATION_STATE_HIDDEN, so retain the previous ROM pose.
         if (animationState != 0xFF) {
@@ -180,7 +181,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
                 && linkStateMachine.get().revolvingDoorFrame < 0x38) {
             palette = linkServices
                     .get()
-                    .romTables
+                    .linkMotionTables
                     .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
         }
 
