@@ -34,7 +34,7 @@ final class OcarinaPopupRendererTest {
         writeSolidTile(gpu, 0x22, 1);
 
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x07);
+        player.progression().setOcarinaSongFlags(0x07);
         OcarinaSongMenu menu = new OcarinaSongMenu(player, linksawakening.gameplay.GameplaySoundSink.none());
         menu.requestOpen();
         for (int frame = 0; frame < 16; frame++) {

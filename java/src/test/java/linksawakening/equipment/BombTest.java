@@ -38,7 +38,7 @@ final class BombTest {
         InputState input = new InputState();
         InputConfig inputConfig = inputConfig();
         PlayerState player = playerWithBombs(2);
-        player.setItemA(PlayerState.INVENTORY_BOMBS);
+        player.inventory().setItemA(PlayerState.INVENTORY_BOMBS);
         RecordingTarget target = new RecordingTarget();
         Bomb bomb = new Bomb(player, GameplaySoundSink.none(), target);
         ItemRegistry registry = new ItemRegistry();
@@ -51,7 +51,7 @@ final class BombTest {
         controller.dispatchButtonEdges();
 
         assertEquals(1, target.placementRequests);
-        assertEquals(1, player.bombCount());
+        assertEquals(1, player.ammunition().bombCount());
     }
 
     @Test
@@ -63,7 +63,7 @@ final class BombTest {
 
         bomb.onPress();
 
-        assertEquals(0, player.bombCount());
+        assertEquals(0, player.ammunition().bombCount());
         assertEquals(0, target.placementRequests);
         assertEquals(List.of(GameplaySoundEvent.WRONG_ANSWER), sounds.events);
     }
@@ -77,7 +77,7 @@ final class BombTest {
 
         bomb.onPress();
 
-        assertEquals(2, player.bombCount());
+        assertEquals(2, player.ammunition().bombCount());
         assertEquals(0, target.placementRequests);
         assertEquals(List.of(), sounds.events);
     }
@@ -92,7 +92,7 @@ final class BombTest {
 
         bomb.onPress();
 
-        assertEquals(0, player.bombCount());
+        assertEquals(0, player.ammunition().bombCount());
         assertEquals(0, target.placementRequests);
         assertEquals(List.of(), sounds.events);
     }
@@ -105,7 +105,7 @@ final class BombTest {
 
         bomb.onPress();
 
-        assertEquals(1, player.bombCount());
+        assertEquals(1, player.ammunition().bombCount());
         assertEquals(1, target.placementRequests);
         assertEquals(1, target.countObservedAtPlacement);
     }
@@ -133,7 +133,7 @@ final class BombTest {
 
         bomb.onPress();
 
-        assertEquals(1, player.bombCount());
+        assertEquals(1, player.ammunition().bombCount());
         assertEquals(1, target.placementRequests);
         assertEquals(1, target.countObservedAtPlacement);
         assertEquals(List.of(), sounds.events);
@@ -141,8 +141,8 @@ final class BombTest {
 
     private static PlayerState playerWithBombs(int count) {
         PlayerState player = new PlayerState();
-        player.setMaxBombs(9);
-        player.setBombCount(count);
+        player.ammunition().setMaxBombs(9);
+        player.ammunition().setBombCount(count);
         return player;
     }
 
@@ -170,7 +170,7 @@ final class BombTest {
         @Override
         public boolean placeBomb() {
             placementRequests++;
-            countObservedAtPlacement = player == null ? -1 : player.bombCount();
+            countObservedAtPlacement = player == null ? -1 : player.ammunition().bombCount();
             return placementSucceeds;
         }
 

@@ -1,47 +1,61 @@
 package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
 
-/** Source-compatible Link operations delegated to their state owners. */
+/** Temporary legacy Link API delegates. */
 abstract class LinkRoomView extends LinkActionView {
-    LinkRoomView(LinkServices services) {
-        super(services);
-    }
 
+    /** @deprecated Use motion().setRomPhysicsModifier instead. */
+    @Deprecated(forRemoval = true)
     public void setRomPhysicsModifier(int modifier) {
-        linkStateMachine.accessSetRomPhysicsModifier(modifier);
+        legacyRoles().motion().setRomPhysicsModifier(modifier);
     }
 
+    /** @deprecated Use motion().consumePegasusScreenShakeRequest instead. */
+    @Deprecated(forRemoval = true)
     public ScreenShakeRequest consumePegasusScreenShakeRequest() {
-        return linkStateMachine.accessConsumePegasusScreenShakeRequest();
+        return legacyRoles().motion().consumePegasusScreenShakeRequest();
     }
 
+    /** @deprecated Use motion().resetPegasusBoots instead. */
+    @Deprecated(forRemoval = true)
     public void resetPegasusBoots() {
-        linkStateMachine.accessResetPegasusBoots();
+        legacyRoles().motion().resetPegasusBoots();
     }
 
+    /** @deprecated Use sideView().applySideViewPlatformContact instead. */
+    @Deprecated(forRemoval = true)
     public void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY, boolean standing) {
-        linkSideView.accessApplySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing);
+        legacyRoles().sideView().applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY, standing);
     }
 
+    /** @deprecated Use sideView().applySideViewPlatformContact instead. */
+    @Deprecated(forRemoval = true)
     public void applySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY) {
-        linkSideView.accessApplySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY);
+        legacyRoles().sideView().applySideViewPlatformContact(horizontalDelta, romPositionY, romSpeedY);
     }
 
+    /** @deprecated Use sideView().clearSideViewPlatformState instead. */
+    @Deprecated(forRemoval = true)
     public void clearSideViewPlatformState() {
-        linkSideView.accessClearSideViewPlatformState();
+        legacyRoles().sideView().clearSideViewPlatformState();
     }
 
+    /** @deprecated Use sideView().clearStandingOnSideViewEntity instead. */
+    @Deprecated(forRemoval = true)
     public void clearStandingOnSideViewEntity() {
-        linkSideView.accessClearStandingOnSideViewEntity();
+        legacyRoles().sideView().clearStandingOnSideViewEntity();
     }
 
+    /** @deprecated Use sideView().applySideViewPotContact instead. */
+    @Deprecated(forRemoval = true)
     public void applySideViewPotContact(int romPositionY, int romSpeedY) {
-        linkSideView.accessApplySideViewPotContact(romPositionY, romSpeedY);
+        legacyRoles().sideView().applySideViewPotContact(romPositionY, romSpeedY);
     }
 
+    /** @deprecated Use animation().submitOam instead. */
+    @Deprecated(forRemoval = true)
     public void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        linkAnimator.accessSubmitOam(sink, offsetX, offsetY);
+        legacyRoles().animation().submitOam(sink, offsetX, offsetY);
     }
 }

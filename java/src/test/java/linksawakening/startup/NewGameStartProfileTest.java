@@ -28,54 +28,55 @@ final class NewGameStartProfileTest {
     @Test
     void profileClearsDebugStateBeforeApplyingFreshGameValues() {
         PlayerState playerState = new PlayerState();
-        playerState.setRupees(321);
-        playerState.setMaxHearts(10);
-        playerState.setHealth(1);
-        playerState.setSwordLevel(2);
-        playerState.setShieldLevel(2);
-        playerState.setItemA(PlayerState.INVENTORY_BOW);
-        playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
-        playerState.setMaxArrows(2);
-        playerState.setArrowCount(2);
-        playerState.setMaxBombs(2);
-        playerState.setBombCount(2);
-        playerState.setMaxMagicPowder(2);
-        playerState.setMagicPowderCount(2);
-        playerState.setTunicType(PlayerState.TUNIC_RED);
-        playerState.setRunningWithPegasusBoots(true);
-        playerState.setInvincibilityCounter(0x40);
-        playerState.applyRomEnemyDamage(8);
-        playerState.applyEntityPickup(0x2D);
-        playerState.applyEntityPickup(0x2E);
-        playerState.applyEntityPickup(0x3D);
+        playerState.wallet().setRupees(321);
+        playerState.vitals().setMaxHearts(10);
+        playerState.vitals().setHealth(1);
+        playerState.equipmentLevels().setSwordLevel(2);
+        playerState.equipmentLevels().setShieldLevel(2);
+        playerState.inventory().setItemA(PlayerState.INVENTORY_BOW);
+        playerState.inventory().setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.ammunition().setMaxArrows(2);
+        playerState.ammunition().setArrowCount(2);
+        playerState.ammunition().setMaxBombs(2);
+        playerState.ammunition().setBombCount(2);
+        playerState.ammunition().setMaxMagicPowder(2);
+        playerState.ammunition().setMagicPowderCount(2);
+        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_RED);
+        playerState.equipmentLevels().setRunningWithPegasusBoots(true);
+        playerState.vitals().setInvincibilityCounter(0x40);
+        playerState.vitals().applyRomEnemyDamage(8);
+        playerState.playerRewards().applyEntityPickup(0x2D);
+        playerState.playerRewards().applyEntityPickup(0x2E);
+        playerState.playerRewards().applyEntityPickup(0x3D);
 
         NewGameStartProfile.romDefaults().initializePlayerState(playerState);
 
-        assertEquals(0, playerState.rupees());
-        assertEquals(3, playerState.maxHearts());
-        assertEquals(3 * PlayerState.HP_PER_HEART, playerState.health());
-        assertEquals(0, playerState.swordLevel());
-        assertEquals(0, playerState.shieldLevel());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
-        assertEquals(30, playerState.maxArrows());
-        assertEquals(0, playerState.arrowCount());
-        assertEquals(30, playerState.maxBombs());
-        assertEquals(0, playerState.bombCount());
-        assertEquals(20, playerState.maxMagicPowder());
-        assertEquals(0, playerState.magicPowderCount());
-        assertEquals(0, playerState.heartPieces());
-        assertEquals(0, playerState.seashells());
-        assertEquals(PlayerState.ACTIVE_POWER_UP_NONE, playerState.activePowerUp());
-        assertEquals(PlayerState.TUNIC_GREEN, playerState.tunicType());
-        assertEquals(0, playerState.invincibilityCounter());
-        assertEquals(0, playerState.addHealthBuffer());
-        assertEquals(0, playerState.subtractHealthBuffer());
-        assertEquals(0, playerState.addRupeeBuffer());
-        assertEquals(0, playerState.powerUpHits());
-        assertEquals(false, playerState.runningWithPegasusBoots());
+        assertEquals(0, playerState.wallet().rupees());
+        assertEquals(3, playerState.vitals().maxHearts());
+        assertEquals(3 * PlayerState.HP_PER_HEART, playerState.vitals().health());
+        assertEquals(0, playerState.equipmentLevels().swordLevel());
+        assertEquals(0, playerState.equipmentLevels().shieldLevel());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemA());
+        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().itemB());
+        assertEquals(30, playerState.ammunition().maxArrows());
+        assertEquals(0, playerState.ammunition().arrowCount());
+        assertEquals(30, playerState.ammunition().maxBombs());
+        assertEquals(0, playerState.ammunition().bombCount());
+        assertEquals(20, playerState.ammunition().maxMagicPowder());
+        assertEquals(0, playerState.ammunition().magicPowderCount());
+        assertEquals(0, playerState.progression().heartPieces());
+        assertEquals(0, playerState.progression().seashells());
+        assertEquals(
+                PlayerState.ACTIVE_POWER_UP_NONE, playerState.equipmentLevels().activePowerUp());
+        assertEquals(PlayerState.TUNIC_GREEN, playerState.equipmentLevels().tunicType());
+        assertEquals(0, playerState.vitals().invincibilityCounter());
+        assertEquals(0, playerState.vitals().addHealthBuffer());
+        assertEquals(0, playerState.vitals().subtractHealthBuffer());
+        assertEquals(0, playerState.wallet().addRupeeBuffer());
+        assertEquals(0, playerState.equipmentLevels().powerUpHits());
+        assertEquals(false, playerState.equipmentLevels().runningWithPegasusBoots());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
-            assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(slot));
+            assertEquals(PlayerState.INVENTORY_EMPTY, playerState.inventory().subscreenItem(slot));
         }
     }
 }

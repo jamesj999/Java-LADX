@@ -115,8 +115,8 @@ final class InventoryMenuSoundTest {
     void ocarinaAnimationSuppressesValidationSounds() throws Exception {
         var sink = new RecordingGameplaySoundSink();
         var player = new PlayerState();
-        player.setSubscreenItems(new int[] {0, PlayerState.INVENTORY_OCARINA, 0, 0, 0, 0, 0, 0, 0, 0});
-        player.setOcarinaSongFlags(7);
+        player.inventory().setSubscreenItems(new int[] {0, PlayerState.INVENTORY_OCARINA, 0, 0, 0, 0, 0, 0, 0, 0});
+        player.progression().setOcarinaSongFlags(7);
         var menu = new InventoryMenu(loadTilemap(), player, sink);
         openMenu(menu);
         menu.moveCursor(1, 0);

@@ -43,8 +43,8 @@ final class LinkJumpBehaviorTest extends LinkFixture {
                 .sounds(soundSink)
                 .build();
 
-        link.useRocsFeather();
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
+        link.airborne().useRocsFeather();
 
         assertEquals(List.of(GameplaySoundEvent.ROC_FEATHER_JUMP), soundSink.events);
     }
@@ -52,28 +52,28 @@ final class LinkJumpBehaviorTest extends LinkFixture {
     @Test
     void likeLikeCanHideLinkWithoutReplacingHisPositionOrAirborneMotion() throws IOException {
         Link link = linkWithEmptyRoom(new InputState());
-        link.setPixelPosition(0x20, 0x20);
-        link.useRocsFeather();
-        link.update();
-        int beforeZ = link.romEntityZ();
+        link.position().setPixelPosition(0x20, 0x20);
+        link.airborne().useRocsFeather();
+        link.motion().update();
+        int beforeZ = link.animation().romEntityZ();
         assertTrue(beforeZ > 0);
 
-        link.applyLikeLikeCapture(0x40, 0x50, false);
-        assertTrue(link.isLikeLikeCaptured());
-        assertEquals(0x20, link.pixelX());
-        assertEquals(0x20, link.pixelY());
-        assertEquals(beforeZ, link.romEntityZ());
+        link.actions().applyLikeLikeCapture(0x40, 0x50, false);
+        assertTrue(link.actions().isLikeLikeCaptured());
+        assertEquals(0x20, link.position().pixelX());
+        assertEquals(0x20, link.position().pixelY());
+        assertEquals(beforeZ, link.animation().romEntityZ());
         // Hidden Link returns before touching the absent sprite sheet/buffer.
-        link.render(null, 0, 0);
-        link.update();
-        assertTrue(link.romEntityZ() > beforeZ);
+        link.animation().render(null, 0, 0);
+        link.motion().update();
+        assertTrue(link.animation().romEntityZ() > beforeZ);
 
-        link.applyLikeLikeCapture(0x40, 0x50, true);
-        assertEquals(0x38, link.pixelX());
-        assertEquals(0x40, link.pixelY());
-        assertEquals(0, link.romEntityZ());
-        link.releaseLikeLikeCapture();
-        assertFalse(link.isLikeLikeCaptured());
+        link.actions().applyLikeLikeCapture(0x40, 0x50, true);
+        assertEquals(0x38, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
+        assertEquals(0, link.animation().romEntityZ());
+        link.actions().releaseLikeLikeCapture();
+        assertFalse(link.actions().isLikeLikeCaptured());
     }
 
     @Test
@@ -82,7 +82,7 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -93,11 +93,11 @@ final class LinkJumpBehaviorTest extends LinkFixture {
                 .items(itemRegistry)
                 .build();
 
-        link.useRocsFeather();
-        link.update();
+        link.airborne().useRocsFeather();
+        link.motion().update();
 
-        assertTrue(link.isAirborne());
-        assertEquals(0x1E, link.zVelocity());
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x1E, link.airborne().zVelocity());
     }
 
     @Test
@@ -105,33 +105,35 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         InputState input = new InputState();
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = linkWithEmptyRoom(input);
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
-        link.useRocsFeather();
-        link.update();
-        assertEquals(41, link.pixelX());
-        assertEquals(0x10, link.romSpeedX());
+        link.airborne().useRocsFeather();
+        link.motion().update();
+        assertEquals(41, link.position().pixelX());
+        assertEquals(0x10, link.position().romSpeedX());
         input.onKeyEvent(config.rightKey(), GLFW_RELEASE);
-        link.update();
-        assertEquals(42, link.pixelX(), "Releasing input must not stop airborne momentum");
-        assertEquals(0x10, link.romSpeedX());
+        link.motion().update();
+        assertEquals(42, link.position().pixelX(), "Releasing input must not stop airborne momentum");
+        assertEquals(0x10, link.position().romSpeedX());
         input.onKeyEvent(config.leftKey(), GLFW_PRESS);
         input.onKeyEvent(config.upKey(), GLFW_PRESS);
-        link.update();
-        assertEquals(43, link.pixelX(), "XY movement precedes the steering adjustment");
-        assertEquals(40, link.pixelY());
-        assertEquals(0x0F, link.romSpeedX());
-        assertEquals(0xFF, link.romSpeedY());
+        link.motion().update();
+        assertEquals(43, link.position().pixelX(), "XY movement precedes the steering adjustment");
+        assertEquals(40, link.position().pixelY());
+        assertEquals(0x0F, link.position().romSpeedX());
+        assertEquals(0xFF, link.position().romSpeedY());
         assertEquals(
-                Link.DIRECTION_RIGHT, link.direction(), "Airborne steering must preserve the takeoff facing direction");
-        link.update();
-        assertEquals(0x0E, link.romSpeedX());
-        assertEquals(0xFE, link.romSpeedY());
+                Link.DIRECTION_RIGHT,
+                link.animation().direction(),
+                "Airborne steering must preserve the takeoff facing direction");
+        link.motion().update();
+        assertEquals(0x0E, link.position().romSpeedX());
+        assertEquals(0xFE, link.position().romSpeedY());
         input.onKeyEvent(config.leftKey(), GLFW_RELEASE);
         input.onKeyEvent(config.upKey(), GLFW_RELEASE);
-        link.update();
-        assertEquals(0x0E, link.romSpeedX());
-        assertEquals(0xFE, link.romSpeedY());
+        link.motion().update();
+        assertEquals(0x0E, link.position().romSpeedX());
+        assertEquals(0xFE, link.position().romSpeedY());
     }
 
     /**
@@ -161,18 +163,21 @@ final class LinkJumpBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x07, 0x20);
+        link.position().setPixelPosition(0x07, 0x20);
 
-        link.useRocsFeather();
-        assertTrue(link.isAirborne());
+        link.airborne().useRocsFeather();
+        assertTrue(link.airborne().isAirborne());
         int jumpFrames = 0;
-        while (link.isAirborne() && jumpFrames++ < 0x50) {
-            link.update();
-            assertEquals(0x07, link.pixelX(), "airborne Link must remain on the original side of the raised block");
+        while (link.airborne().isAirborne() && jumpFrames++ < 0x50) {
+            link.motion().update();
+            assertEquals(
+                    0x07,
+                    link.position().pixelX(),
+                    "airborne Link must remain on the original side of the raised block");
         }
 
         assertTrue(jumpFrames < 0x50, "Roc's Feather jump did not land");
-        assertFalse(link.isAirborne());
-        assertEquals(0x07, link.pixelX());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0x07, link.position().pixelX());
     }
 }

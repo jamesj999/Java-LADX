@@ -41,25 +41,25 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x25, 0x28);
+        link.position().setPixelPosition(0x25, 0x28);
         for (int frame = 0; frame < 16; frame++) {
-            link.tickRomLinkPushing();
+            link.equipment().tickRomLinkPushing();
             int previousSteps = link.linkAnimationState.romConsecutiveStepsCount;
-            link.update();
-            assertTrue(link.isRomLinkPushing());
+            link.motion().update();
+            assertTrue(link.equipment().isRomLinkPushing());
             if (frame == 0) assertEquals(-1, link.linkAnimator.pushingAnimationState);
             else assertEquals(0x20 + ((previousSteps >> 3) & 1), link.linkAnimator.resolveAnimationState());
         }
         input.onKeyEvent(config.rightKey(), GLFW_RELEASE);
-        link.tickRomLinkPushing();
-        assertTrue(link.isRomLinkPushing());
-        link.tickRomLinkPushing();
-        assertTrue(link.isRomLinkPushing());
-        link.tickRomLinkPushing();
-        assertFalse(link.isRomLinkPushing());
-        link.markRomLinkPushing(3); // Entity collision writes the same byte.
+        link.equipment().tickRomLinkPushing();
+        assertTrue(link.equipment().isRomLinkPushing());
+        link.equipment().tickRomLinkPushing();
+        assertTrue(link.equipment().isRomLinkPushing());
+        link.equipment().tickRomLinkPushing();
+        assertFalse(link.equipment().isRomLinkPushing());
+        link.equipment().markRomLinkPushing(3); // Entity collision writes the same byte.
         int steps = link.linkAnimationState.romConsecutiveStepsCount;
-        link.update();
+        link.motion().update();
         assertEquals(0x20 + ((steps >> 3) & 1), link.linkAnimator.resolveAnimationState());
     }
 
@@ -85,37 +85,38 @@ final class LinkTest extends LinkFixture {
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(72, 1);
-        for (int tick = 0; tick < 20 && link.romMotionState() != 5; tick++) link.update();
-        assertEquals(5, link.romMotionState());
-        assertFalse(link.canUseItems());
+        link.position().setPixelPosition(72, 1);
+        for (int tick = 0; tick < 20 && link.airborne().romMotionState() != 5; tick++)
+            link.motion().update();
+        assertEquals(5, link.airborne().romMotionState());
+        assertFalse(link.equipment().canUseItems());
         input.onKeyEvent(config.upKey(), GLFW_RELEASE);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         for (int frame = 1; frame <= 72; frame++) {
-            link.update();
-            assertEquals(80, link.romEntityX());
-            assertEquals(frame < 56 ? 16 : -5, link.romEntityY());
+            link.motion().update();
+            assertEquals(80, link.position().romEntityX());
+            assertEquals(frame < 56 ? 16 : -5, link.position().romEntityY());
             if (frame < 72) {
-                assertEquals(5, link.romMotionState());
-                assertFalse(link.consumeRevolvingDoorTransition());
+                assertEquals(5, link.airborne().romMotionState());
+                assertFalse(link.motion().consumeRevolvingDoorTransition());
             }
         }
-        assertEquals(0, link.romMotionState());
-        assertTrue(link.consumeRevolvingDoorTransition());
-        assertFalse(link.consumeRevolvingDoorTransition());
+        assertEquals(0, link.airborne().romMotionState());
+        assertTrue(link.motion().consumeRevolvingDoorTransition());
+        assertFalse(link.motion().consumeRevolvingDoorTransition());
     }
 
     @Test
     void enemyRecoilPreservesSpeedForCountdownAndStillStopsAtWalls() throws Exception {
         InputState input = new InputState();
         Link link = linkWithEmptyRoom(input);
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
         input.onKeyEvent(4, GLFW_PRESS); // Opposing input cannot replace recoil.
-        link.applyRomSpeed(0x20, 0);
-        link.setCollisionIgnoreFrames(4);
+        link.position().applyRomSpeed(0x20, 0);
+        link.status().setCollisionIgnoreFrames(4);
         for (int i = 1; i <= 4; i++) {
-            link.update();
-            assertEquals(40 + 2 * i, link.pixelX());
+            link.motion().update();
+            assertEquals(40 + 2 * i, link.position().pixelX());
         }
 
         RomTables tables = RomTables.loadFromRom(loadRom());
@@ -133,11 +134,11 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        atWall.setPixelPosition(48, 40);
-        atWall.applyRomSpeed(0x20, 0);
-        atWall.setCollisionIgnoreFrames(16);
-        for (int i = 0; i < 16; i++) atWall.update();
-        assertTrue(atWall.pixelX() < 64 - 8, "Recoil must not cross the solid column");
+        atWall.position().setPixelPosition(48, 40);
+        atWall.position().applyRomSpeed(0x20, 0);
+        atWall.status().setCollisionIgnoreFrames(16);
+        for (int i = 0; i < 16; i++) atWall.motion().update();
+        assertTrue(atWall.position().pixelX() < 64 - 8, "Recoil must not cross the solid column");
     }
 
     @Test
@@ -152,15 +153,15 @@ final class LinkTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.blockNextRomMotionFrame();
-        link.showMarinWakeUpBed(4);
-        link.applyLikeLikeCapture(0x40, 0x40);
-        link.resetTransientStateForDebug();
+        link.motion().blockNextRomMotionFrame();
+        link.animation().showMarinWakeUpBed(4);
+        link.actions().applyLikeLikeCapture(0x40, 0x40);
+        link.motion().resetTransientStateForDebug();
 
-        assertFalse(link.isMarinWakeUpBedVisible());
-        assertFalse(link.isLikeLikeCaptured());
+        assertFalse(link.animation().isMarinWakeUpBedVisible());
+        assertFalse(link.actions().isLikeLikeCaptured());
         assertEquals(0, resolvedAnimationState(link));
-        assertFalse(link.isAirborne());
+        assertFalse(link.airborne().isAirborne());
     }
 
     @Test
@@ -169,11 +170,11 @@ final class LinkTest extends LinkFixture {
         RomTables romTables = RomTables.loadFromRom(loadRom());
         Link link = linkInRoom(inputConfig, romTables, emptyRoomObjectsArea());
 
-        link.applyRomSpeed(0xF0, 0x08);
-        link.update();
+        link.position().applyRomSpeed(0xF0, 0x08);
+        link.motion().update();
 
-        assertEquals(0xF0, link.romSpeedX());
-        assertEquals(0x08, link.romSpeedY());
+        assertEquals(0xF0, link.position().romSpeedX());
+        assertEquals(0x08, link.position().romSpeedY());
     }
 
     @Test
@@ -187,14 +188,14 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(20, 30);
-        link.captureRomFinalPosition();
-        link.applyRomFinalPosition(0x10, 0x10);
+        link.position().setPixelPosition(20, 30);
+        link.position().captureRomFinalPosition();
+        link.position().applyRomFinalPosition(0x10, 0x10);
 
-        link.restoreRomFinalPositionX();
+        link.position().restoreRomFinalPositionX();
 
-        assertEquals(20, link.pixelX());
-        assertEquals(31, link.pixelY());
+        assertEquals(20, link.position().pixelX());
+        assertEquals(31, link.position().pixelY());
     }
 
     @Test
@@ -209,12 +210,12 @@ final class LinkTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.setPixelPosition(20, 30);
-        link.applySideViewPotContact(0x50, 0x02);
+        link.position().setPixelPosition(20, 30);
+        link.sideView().applySideViewPotContact(0x50, 0x02);
 
-        assertEquals(0x40, link.pixelY());
-        assertEquals(0x02, link.romSpeedY());
-        assertTrue(link.standingOnSideViewEntity());
+        assertEquals(0x40, link.position().pixelY());
+        assertEquals(0x02, link.position().romSpeedY());
+        assertTrue(link.sideView().standingOnSideViewEntity());
     }
 
     @Test
@@ -229,16 +230,16 @@ final class LinkTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.markRomLinkPushing(3);
+        link.equipment().markRomLinkPushing(3);
 
-        assertTrue(link.isRomLinkPushing());
-        assertFalse(link.canUseItems());
-        link.tickRomLinkPushing();
-        assertTrue(link.isRomLinkPushing());
-        link.tickRomLinkPushing();
-        assertTrue(link.isRomLinkPushing());
-        link.tickRomLinkPushing();
-        assertFalse(link.isRomLinkPushing());
+        assertTrue(link.equipment().isRomLinkPushing());
+        assertFalse(link.equipment().canUseItems());
+        link.equipment().tickRomLinkPushing();
+        assertTrue(link.equipment().isRomLinkPushing());
+        link.equipment().tickRomLinkPushing();
+        assertTrue(link.equipment().isRomLinkPushing());
+        link.equipment().tickRomLinkPushing();
+        assertFalse(link.equipment().isRomLinkPushing());
     }
 
     @Test
@@ -247,7 +248,7 @@ final class LinkTest extends LinkFixture {
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
-        playerState.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        playerState.inventory().setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
         RomTables romTables = RomTables.loadFromRom(loadRom());
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
@@ -262,17 +263,17 @@ final class LinkTest extends LinkFixture {
                 .build();
 
         for (int frame = 0; frame < 0x1F; frame++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertFalse(playerState.runningWithPegasusBoots());
-        assertEquals(0x1F, link.pegasusBootsChargeMeter());
+        assertFalse(playerState.equipmentLevels().runningWithPegasusBoots());
+        assertEquals(0x1F, link.motion().pegasusBootsChargeMeter());
 
-        link.update();
+        link.motion().update();
 
-        assertTrue(playerState.runningWithPegasusBoots());
-        assertEquals(0x20, link.pegasusBootsChargeMeter());
-        assertEquals(0x20, link.romSpeedY());
+        assertTrue(playerState.equipmentLevels().runningWithPegasusBoots());
+        assertEquals(0x20, link.motion().pegasusBootsChargeMeter());
+        assertEquals(0x20, link.position().romSpeedY());
     }
 
     @Test
@@ -282,7 +283,7 @@ final class LinkTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
-        playerState.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
+        playerState.inventory().setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
         RomTables romTables = RomTables.loadFromRom(loadRom());
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x00;
@@ -297,22 +298,22 @@ final class LinkTest extends LinkFixture {
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         Link.ScreenShakeRequest shake = null;
         int guard = 0;
         while (shake == null && guard++ < 64) {
-            link.update();
-            shake = link.consumePegasusScreenShakeRequest();
+            link.motion().update();
+            shake = link.motion().consumePegasusScreenShakeRequest();
         }
 
         assertNotNull(shake);
         assertEquals(0x20, shake.countdown());
         assertEquals(0, shake.phase());
-        assertEquals(0x02, link.pegasusBootsCollisionCountdown());
-        assertEquals((link.romEntityX() + 0x10) & 0xFF, link.pegasusBootsCollisionPosX());
-        assertEquals((link.romEntityY() + 0x0C) & 0xFF, link.pegasusBootsCollisionPosY());
-        assertFalse(playerState.runningWithPegasusBoots());
+        assertEquals(0x02, link.motion().pegasusBootsCollisionCountdown());
+        assertEquals((link.position().romEntityX() + 0x10) & 0xFF, link.motion().pegasusBootsCollisionPosX());
+        assertEquals((link.position().romEntityY() + 0x0C) & 0xFF, link.motion().pegasusBootsCollisionPosY());
+        assertFalse(playerState.equipmentLevels().runningWithPegasusBoots());
     }
 
     @Test
@@ -327,18 +328,18 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
-        link.applyLikeLikeCapture(0x40, 0x50);
-        assertTrue(link.isLikeLikeCaptured());
-        assertEquals(0x38, link.pixelX());
-        assertEquals(0x40, link.pixelY());
-        link.update();
-        assertEquals(0x38, link.pixelX());
-        assertEquals(0x40, link.pixelY());
+        link.actions().applyLikeLikeCapture(0x40, 0x50);
+        assertTrue(link.actions().isLikeLikeCaptured());
+        assertEquals(0x38, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
+        link.motion().update();
+        assertEquals(0x38, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
 
-        link.releaseLikeLikeCapture();
-        assertFalse(link.isLikeLikeCaptured());
+        link.actions().releaseLikeLikeCapture();
+        assertFalse(link.actions().isLikeLikeCaptured());
     }
 
     @Test
@@ -360,14 +361,14 @@ final class LinkTest extends LinkFixture {
                 .sounds(GameplaySoundSink.none())
                 .palette(tunicPalette)
                 .build();
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
 
         byte[] green = new byte[linksawakening.gpu.Framebuffer.WIDTH * linksawakening.gpu.Framebuffer.HEIGHT * 4];
-        link.render(green, 0, 0);
+        link.animation().render(green, 0, 0);
 
-        playerState.setTunicType(PlayerState.TUNIC_RED);
+        playerState.equipmentLevels().setTunicType(PlayerState.TUNIC_RED);
         byte[] red = new byte[green.length];
-        link.render(red, 0, 0);
+        link.animation().render(red, 0, 0);
 
         int changedPixels = 0;
         int greenTunicColor = tunicPalette.forTunic(PlayerState.TUNIC_GREEN)[2];
@@ -402,14 +403,14 @@ final class LinkTest extends LinkFixture {
                 .sounds(GameplaySoundSink.none())
                 .palette(tunicPalette)
                 .build();
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
 
         byte[] normal = new byte[linksawakening.gpu.Framebuffer.WIDTH * linksawakening.gpu.Framebuffer.HEIGHT * 4];
-        link.render(normal, 0, 0);
+        link.animation().render(normal, 0, 0);
 
-        playerState.setInvincibilityCounter(0x04);
+        playerState.vitals().setInvincibilityCounter(0x04);
         byte[] flashing = new byte[normal.length];
-        link.render(flashing, 0, 0);
+        link.animation().render(flashing, 0, 0);
 
         int changedPixels = 0;
         int[] flashPalette = tunicPalette.forObjectPalette(4);
@@ -433,7 +434,7 @@ final class LinkTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -445,9 +446,9 @@ final class LinkTest extends LinkFixture {
                 .build();
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
 
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
     }
 
     @Test
@@ -468,9 +469,9 @@ final class LinkTest extends LinkFixture {
         walkTickCounter.setAccessible(true);
         walkTickCounter.setInt(link.linkAnimationState, 3);
 
-        link.faceRomDirectionPreservingWalkPhase(0);
+        link.animation().faceRomDirectionPreservingWalkPhase(0);
 
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
         assertEquals(0x0B, resolvedAnimationState(link));
         assertEquals(1, walkFrame.getInt(link.linkAnimationState));
         assertEquals(3, walkTickCounter.getInt(link.linkAnimationState));
@@ -482,7 +483,7 @@ final class LinkTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -492,18 +493,18 @@ final class LinkTest extends LinkFixture {
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        link.setPixelPosition(0x40, 0x50);
+        link.position().setPixelPosition(0x40, 0x50);
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        link.applyRomFinalPosition(0x30, 0xE8);
+        link.position().applyRomFinalPosition(0x30, 0xE8);
 
-        assertEquals(0x43, link.pixelX());
-        assertEquals(0x4E, link.pixelY());
+        assertEquals(0x43, link.position().pixelX());
+        assertEquals(0x4E, link.position().pixelY());
 
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x43, link.pixelX());
-        assertEquals(0x4E, link.pixelY());
+        assertEquals(0x43, link.position().pixelX());
+        assertEquals(0x4E, link.position().pixelY());
     }
 
     @Test
@@ -517,14 +518,14 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x40, 0x50);
+        link.position().setPixelPosition(0x40, 0x50);
 
-        link.captureRomFinalPosition();
-        link.applyRomFinalPosition(0x10, 0xF0);
-        link.restoreRomFinalPosition();
+        link.position().captureRomFinalPosition();
+        link.position().applyRomFinalPosition(0x10, 0xF0);
+        link.position().restoreRomFinalPosition();
 
-        assertEquals(0x40, link.pixelX());
-        assertEquals(0x50, link.pixelY());
+        assertEquals(0x40, link.position().pixelX());
+        assertEquals(0x50, link.position().pixelY());
     }
 
     @Test
@@ -541,22 +542,22 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x40, 0x50);
+        link.position().setPixelPosition(0x40, 0x50);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        link.useRocsFeather();
-        assertEquals(0x20, link.zVelocity());
+        link.airborne().useRocsFeather();
+        assertEquals(0x20, link.airborne().zVelocity());
         int priorAnimationState = resolvedAnimationState(link);
 
-        link.blockNextRomMotionFrame();
-        link.update();
+        link.motion().blockNextRomMotionFrame();
+        link.motion().update();
 
-        assertEquals(0x40, link.pixelX());
-        assertEquals(0x50, link.pixelY());
-        assertEquals(0, link.zVelocity());
+        assertEquals(0x40, link.position().pixelX());
+        assertEquals(0x50, link.position().pixelY());
+        assertEquals(0, link.airborne().zVelocity());
         assertEquals(priorAnimationState, resolvedAnimationState(link));
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
-        link.update();
+        link.motion().update();
         assertEquals(0x00, resolvedAnimationState(link));
     }
 
@@ -572,13 +573,13 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x40, 0x50);
+        link.position().setPixelPosition(0x40, 0x50);
 
-        link.showRomFallenPose();
-        link.update();
+        link.animation().showRomFallenPose();
+        link.motion().update();
 
-        assertEquals(0x40, link.pixelX());
-        assertEquals(0x50, link.pixelY());
+        assertEquals(0x40, link.position().pixelX());
+        assertEquals(0x50, link.position().pixelY());
         assertEquals(0x6A, resolvedAnimationState(link));
     }
 
@@ -600,15 +601,15 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x4D, 0x50);
+        link.position().setPixelPosition(0x4D, 0x50);
 
         assertTrue(collision.pointBlocked(0x5B, 0x59));
 
         for (int i = 0; i < 4; i++) {
-            link.applyRomFinalPosition(0x0C, 0);
+            link.position().applyRomFinalPosition(0x0C, 0);
         }
 
-        assertEquals(0x50, link.pixelX());
+        assertEquals(0x50, link.position().pixelX());
     }
 
     @Test
@@ -628,40 +629,40 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.update();
-        int currentRomSpeedX = link.romSpeedX();
-        link.setPixelPosition(0x40, 0x20);
-        link.useRocsFeather();
+        link.motion().update();
+        int currentRomSpeedX = link.position().romSpeedX();
+        link.position().setPixelPosition(0x40, 0x20);
+        link.airborne().useRocsFeather();
 
         // Establish non-zero low subpixel nibbles through the source-shaped
         // final-position path, then let the contact snap only the ROM bytes.
-        link.applyRomFinalPosition(1, 0);
-        link.applyRomFinalPosition(0, 0x0F);
-        link.applySideViewPlatformContact(1, 0x50, 0x02, true);
+        link.position().applyRomFinalPosition(1, 0);
+        link.position().applyRomFinalPosition(0, 0x0F);
+        link.sideView().applySideViewPlatformContact(1, 0x50, 0x02, true);
 
-        assertEquals(0x41, link.pixelX());
-        assertEquals(0x40, link.pixelY());
-        assertEquals(currentRomSpeedX, link.romSpeedX());
-        assertEquals(0x02, link.romSpeedY());
-        assertTrue(link.standingOnSideViewEntity());
+        assertEquals(0x41, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
+        assertEquals(currentRomSpeedX, link.position().romSpeedX());
+        assertEquals(0x02, link.position().romSpeedY());
+        assertTrue(link.sideView().standingOnSideViewEntity());
 
         // The preserved X fraction carries when 15 more subpixels arrive.
-        link.applyRomFinalPosition(15, 0);
-        assertEquals(0x42, link.pixelX());
-        assertEquals(0x40, link.pixelY());
+        link.position().applyRomFinalPosition(15, 0);
+        assertEquals(0x42, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
 
         // A platform contact must not queue the old horizontal speed as a
         // forced movement after the player releases the direction.
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
-        link.update();
-        assertEquals(0x41, link.pixelY());
-        assertEquals(0x42, link.pixelX());
-        assertEquals(0x02, link.romSpeedY());
-        assertFalse(link.isAirborne());
-        assertEquals(0, link.zVelocity());
+        link.motion().update();
+        assertEquals(0x41, link.position().pixelY());
+        assertEquals(0x42, link.position().pixelX());
+        assertEquals(0x02, link.position().romSpeedY());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0, link.airborne().zVelocity());
 
-        link.clearStandingOnSideViewEntity();
-        assertFalse(link.standingOnSideViewEntity());
+        link.sideView().clearStandingOnSideViewEntity();
+        assertFalse(link.sideView().standingOnSideViewEntity());
     }
 
     @Test
@@ -675,12 +676,12 @@ final class LinkTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0, 0);
+        link.position().setPixelPosition(0, 0);
 
-        link.applySideViewPlatformContact(-1, 0x10, 0x02, true);
+        link.sideView().applySideViewPlatformContact(-1, 0x10, 0x02, true);
 
-        assertEquals(0xFF, link.pixelX());
-        assertEquals(0x00, link.pixelY());
+        assertEquals(0xFF, link.position().pixelX());
+        assertEquals(0x00, link.position().pixelY());
     }
 
     @Test
@@ -695,9 +696,12 @@ final class LinkTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        assertThrows(IllegalArgumentException.class, () -> link.applySideViewPlatformContact(-0x81, 0x10, 0x02, true));
-        assertThrows(IllegalArgumentException.class, () -> link.applySideViewPlatformContact(0, 0x100, 0x02, true));
-        assertThrows(IllegalArgumentException.class, () -> link.applySideViewPlatformContact(0, 0x10, 0x100, true));
+        assertThrows(IllegalArgumentException.class, () -> link.sideView()
+                .applySideViewPlatformContact(-0x81, 0x10, 0x02, true));
+        assertThrows(IllegalArgumentException.class, () -> link.sideView()
+                .applySideViewPlatformContact(0, 0x100, 0x02, true));
+        assertThrows(IllegalArgumentException.class, () -> link.sideView()
+                .applySideViewPlatformContact(0, 0x10, 0x100, true));
     }
 
     @Test
@@ -706,7 +710,7 @@ final class LinkTest extends LinkFixture {
         InputState inputState = new InputState();
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         RomTables romTables = RomTables.loadFromRom(loadRom());
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
@@ -719,29 +723,29 @@ final class LinkTest extends LinkFixture {
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        link.setPixelPosition(0x40, 0x20);
-        link.applySideViewPlatformContact(0, 0x50, 0x02, true);
+        link.position().setPixelPosition(0x40, 0x20);
+        link.sideView().applySideViewPlatformContact(0, 0x50, 0x02, true);
 
-        link.update();
-        playerState.setItemA(PlayerState.INVENTORY_EMPTY);
-        link.update();
+        link.motion().update();
+        playerState.inventory().setItemA(PlayerState.INVENTORY_EMPTY);
+        link.motion().update();
 
-        assertEquals(0x40, link.pixelX());
-        assertEquals(0x40, link.pixelY());
-        assertEquals(0, link.romSpeedY());
+        assertEquals(0x40, link.position().pixelX());
+        assertEquals(0x40, link.position().pixelY());
+        assertEquals(0, link.position().romSpeedY());
     }
 
     @Test
     void clearingRomPositionIncrementCancelsPendingPlatformVerticalSpeed() throws Exception {
         Link link = linkWithEmptyRoom(new InputState());
-        link.setPixelPosition(0x40, 0x20);
-        link.applyRomFinalPosition(0, 0x0F);
-        link.applySideViewPlatformContact(0, 0x50, 0x02, true);
+        link.position().setPixelPosition(0x40, 0x20);
+        link.position().applyRomFinalPosition(0, 0x0F);
+        link.sideView().applySideViewPlatformContact(0, 0x50, 0x02, true);
 
-        link.clearRomPositionIncrement();
-        link.update();
+        link.position().clearRomPositionIncrement();
+        link.motion().update();
 
-        assertEquals(0x40, link.pixelY());
-        assertEquals(0, link.romSpeedY());
+        assertEquals(0x40, link.position().pixelY());
+        assertEquals(0, link.position().romSpeedY());
     }
 }

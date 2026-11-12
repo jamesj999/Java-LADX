@@ -130,7 +130,28 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             OverworldCollision collision,
             LinkSpriteSheet spriteSheet,
             Services arguments) {
-        super(new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+
+        assembly = new LinkAssembly(
+                new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+        linkAnimator = assembly.linkAnimator.get();
+        linkSideView = assembly.linkSideView.get();
+        linkStateMachine = assembly.linkStateMachine.get();
+        linkEquipment = assembly.linkEquipment.get();
+        linkEntityEffects = assembly.linkEntityEffects.get();
+        linkMotion = assembly.linkMotion.get();
+        linkAirborne = assembly.linkAirborne.get();
+        linkSwimming = assembly.linkSwimming.get();
+        linkDamage = assembly.linkDamage.get();
+        linkAnimationState = assembly.linkAnimationState.get();
+        linkItemState = assembly.linkItemState.get();
+        linkGroundMotion = assembly.linkGroundMotion.get();
+        linkSignals = assembly.linkSignals.get();
+        linkRecovery = assembly.linkRecovery.get();
+        linkServices = assembly.linkServices.get();
+        linkControls = assembly.linkControls.get();
+        dialogGotItemSequence = assembly.dialogGotItemSequence.get();
+
+        roles = new LinkRoles(assembly);
     }
     /** Immutable water splash values. */
     public record WaterSplash(int romX, int romY) {}
@@ -182,5 +203,66 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             for (int i = 0; i < values.length; i++) values[i] = new GrabFlags(i >>> 2, (i & 2) != 0, (i & 1) != 0);
             return values;
         }
+    }
+
+    final LinkAssembly assembly;
+    final LinkAnimator linkAnimator;
+    final LinkSideView linkSideView;
+    final LinkStateMachine linkStateMachine;
+    final LinkEquipment linkEquipment;
+    final LinkEntityEffects linkEntityEffects;
+    final LinkMotion linkMotion;
+    final LinkAirborne linkAirborne;
+    final LinkSwimming linkSwimming;
+    final LinkDamage linkDamage;
+    final LinkAnimationState linkAnimationState;
+    final LinkItemState linkItemState;
+    final LinkGroundMotion linkGroundMotion;
+    final LinkSignals linkSignals;
+    final LinkRecovery linkRecovery;
+    final LinkServices linkServices;
+    final LinkControls linkControls;
+    final DialogGotItemSequence dialogGotItemSequence;
+    private final LinkRoles roles;
+
+    @Override
+    protected LinkRoles legacyRoles() {
+        return roles;
+    }
+
+    public LinkSideViewRole sideView() {
+        return roles.sideView();
+    }
+
+    public LinkMotionRole motion() {
+        return roles.motion();
+    }
+
+    public LinkStatusRole status() {
+        return roles.status();
+    }
+
+    public LinkEquipmentRole equipment() {
+        return roles.equipment();
+    }
+
+    public LinkAnimationRole animation() {
+        return roles.animation();
+    }
+
+    public LinkActionsRole actions() {
+        return roles.actions();
+    }
+
+    public LinkPositionRole position() {
+        return roles.position();
+    }
+
+    public LinkAirborneRole airborne() {
+        return roles.airborne();
+    }
+
+    public LinkControlsRole controls() {
+        return roles.controls();
     }
 }

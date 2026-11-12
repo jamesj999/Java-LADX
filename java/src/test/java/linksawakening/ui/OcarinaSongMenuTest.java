@@ -16,7 +16,9 @@ final class OcarinaSongMenuTest {
     @Test
     void rightAndLeftSkipSongsThatAreNotInTheSaveFlags() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
+        player.progression()
+                .setOcarinaSongFlags(
+                        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
         RecordingSoundSink sounds = new RecordingSoundSink();
         OcarinaSongMenu menu = new OcarinaSongMenu(player, sounds);
 
@@ -24,10 +26,10 @@ final class OcarinaSongMenuTest {
         finishOpening(menu);
 
         menu.moveSelection(+1);
-        assertEquals(2, player.selectedSongIndex());
+        assertEquals(2, player.progression().selectedSongIndex());
 
         menu.moveSelection(-1);
-        assertEquals(0, player.selectedSongIndex());
+        assertEquals(0, player.progression().selectedSongIndex());
         assertEquals(List.of(GameplaySoundEvent.MENU_VALIDATE, GameplaySoundEvent.MENU_VALIDATE), sounds.events);
     }
 
@@ -43,7 +45,7 @@ final class OcarinaSongMenuTest {
     @Test
     void closingFinishesAfterSixteenFramesAndPreservesCloseRequest() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(PlayerState.MANBO_MAMBO_FLAG);
+        player.progression().setOcarinaSongFlags(PlayerState.MANBO_MAMBO_FLAG);
         OcarinaSongMenu menu = new OcarinaSongMenu(player, GameplaySoundSink.none());
 
         menu.requestOpen();

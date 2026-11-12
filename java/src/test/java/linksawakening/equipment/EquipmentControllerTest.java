@@ -24,8 +24,8 @@ final class EquipmentControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
-        player.setItemB(PlayerState.INVENTORY_BOMBS);
+        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemB(PlayerState.INVENTORY_BOMBS);
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
         RecordingItem bombs = new RecordingItem();
@@ -58,7 +58,7 @@ final class EquipmentControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
         registry.register(PlayerState.INVENTORY_SWORD, sword);
@@ -72,9 +72,9 @@ final class EquipmentControllerTest {
     @Test
     void forcedAcquisitionSpinIsAvailableBeforeTheSwordIsEquipped() {
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_EMPTY);
-        player.setItemB(PlayerState.INVENTORY_SHIELD);
-        player.setSwordLevel(0);
+        player.inventory().setItemA(PlayerState.INVENTORY_EMPTY);
+        player.inventory().setItemB(PlayerState.INVENTORY_SHIELD);
+        player.equipmentLevels().setSwordLevel(0);
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         registry.register(PlayerState.INVENTORY_SWORD, sword);
@@ -90,7 +90,7 @@ final class EquipmentControllerTest {
     @Test
     void blockedItemInputLetsASwingFinishWithoutHoldingOrStartingASpin() {
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemA(PlayerState.INVENTORY_SWORD);
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         registry.register(PlayerState.INVENTORY_SWORD, sword);

@@ -8,76 +8,52 @@ abstract class PlayerResourceCompatibility extends PlayerStateComponents {
         super();
     }
 
-    public Inventory inventory() {
-        return inventory;
-    }
+    public abstract Inventory inventory();
 
-    public Ammunition ammunition() {
-        return ammunition;
-    }
+    public abstract Ammunition ammunition();
 
-    public Progression progression() {
-        return progression;
-    }
+    public abstract Progression progression();
 
-    public EquipmentLevels equipmentLevels() {
-        return equipmentLevels;
-    }
+    public abstract EquipmentLevels equipmentLevels();
 
-    public Vitals vitals() {
-        return vitals;
-    }
+    public abstract Vitals vitals();
 
-    public Wallet wallet() {
-        return wallet;
-    }
+    public abstract Wallet wallet();
 
-    public PlayerSounds playerSounds() {
-        return playerSounds;
-    }
+    public abstract PlayerSounds playerSounds();
 
-    public PlayerResources playerResources() {
-        return playerResources;
-    }
+    public abstract PlayerResources playerResources();
 
-    public PlayerRewards playerRewards() {
-        return playerRewards;
-    }
+    public abstract PlayerRewards playerRewards();
 
-    public ChestRewards chestRewards() {
-        return chestRewards;
-    }
+    public abstract ChestRewards chestRewards();
 
-    public PlayerInitialization playerInitialization() {
-        return playerInitialization;
-    }
+    public abstract PlayerInitialization playerInitialization();
 
-    public PlayerSaveLoader playerSaveLoader() {
-        return playerSaveLoader;
-    }
+    public abstract PlayerSaveLoader playerSaveLoader();
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public void latchFullHearts() {
-        vitals.latchFullHearts();
+        vitals().latchFullHearts();
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public boolean fullHearts() {
-        return vitals.fullHearts();
+        return vitals().fullHearts();
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public boolean isOnLowHealth() {
-        return vitals.isOnLowHealth();
+        return vitals().isOnLowHealth();
     }
 
     /** @deprecated Use {@link #playerSounds()}. */
     @Deprecated(forRemoval = true)
     public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
-        ResourceSound sound = playerSounds.takeResourceSound();
+        ResourceSound sound = playerSounds().takeResourceSound();
         if (sound == null) return null;
         return switch (sound) {
             case LOW_HEARTS -> linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS;
@@ -89,96 +65,96 @@ abstract class PlayerResourceCompatibility extends PlayerStateComponents {
     /** @deprecated Use {@link #playerInitialization()}. */
     @Deprecated(forRemoval = true)
     public void initializeNewGame(int maxArrows, int maxBombs, int maxMagicPowder) {
-        playerInitialization.initializeNewGame(maxArrows, maxBombs, maxMagicPowder);
+        playerInitialization().initializeNewGame(maxArrows, maxBombs, maxMagicPowder);
     }
 
     /** @deprecated Use {@link #playerInitialization()}. */
     @Deprecated(forRemoval = true)
     public void initializeDebugState() {
-        playerInitialization.initializeDebugState();
+        playerInitialization().initializeDebugState();
     }
 
     /** @deprecated Use {@link #playerResources()}. */
     @Deprecated(forRemoval = true)
     public void clearResourceBuffersForDebug() {
-        playerResources.clearResourceBuffersForDebug();
+        playerResources().clearResourceBuffersForDebug();
     }
 
     /** @deprecated Use {@link #wallet()}. */
     @Deprecated(forRemoval = true)
     public int rupees() {
-        return wallet.rupees();
+        return wallet().rupees();
     }
 
     /** @deprecated Use {@link #wallet()}. */
     @Deprecated(forRemoval = true)
     public void setRupees(int value) {
-        wallet.setRupees(value);
+        wallet().setRupees(value);
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public int maxHearts() {
-        return vitals.maxHearts();
+        return vitals().maxHearts();
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public void setMaxHearts(int value) {
-        vitals.setMaxHearts(value);
+        vitals().setMaxHearts(value);
     }
 
     /** @deprecated Use {@link #progression()}. */
     @Deprecated(forRemoval = true)
     public int deathCount() {
-        return progression.deathCount();
+        return progression().deathCount();
     }
 
     /** @deprecated Use {@link #progression()}. */
     @Deprecated(forRemoval = true)
     public void setDeathCount(int value) {
-        progression.setDeathCount(value);
+        progression().setDeathCount(value);
     }
 
     /** @deprecated Use {@link #progression()}. */
     @Deprecated(forRemoval = true)
     public void incrementDeathCount() {
-        progression.incrementDeathCount();
+        progression().incrementDeathCount();
     }
 
     /** @deprecated Use {@link #progression()}. */
     @Deprecated(forRemoval = true)
     public int deathCountBcd() {
-        return progression.deathCountBcd();
+        return progression().deathCountBcd();
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public int health() {
-        return vitals.health();
+        return vitals().health();
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public void setHealth(int value) {
-        vitals.setHealth(value);
+        vitals().setHealth(value);
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public void damage(int amount) {
-        vitals.damage(amount);
+        vitals().damage(amount);
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public int applyRomEnemyDamage(int nominalDamage) {
-        return vitals.applyRomEnemyDamage(nominalDamage);
+        return vitals().applyRomEnemyDamage(nominalDamage);
     }
 
     /** @deprecated Use {@link #vitals()}. */
     @Deprecated(forRemoval = true)
     public int invincibilityCounter() {
-        return vitals.invincibilityCounter();
+        return vitals().invincibilityCounter();
     }
 }

@@ -50,13 +50,13 @@ final class RocsFeatherTest {
         A(GLFW_KEY_A) {
             @Override
             void equip(PlayerState player, int inventoryId) {
-                player.setItemA(inventoryId);
+                player.inventory().setItemA(inventoryId);
             }
         },
         B(GLFW_KEY_B) {
             @Override
             void equip(PlayerState player, int inventoryId) {
-                player.setItemB(inventoryId);
+                player.inventory().setItemB(inventoryId);
             }
         };
 

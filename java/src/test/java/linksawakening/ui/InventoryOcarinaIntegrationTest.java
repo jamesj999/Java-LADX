@@ -14,7 +14,7 @@ final class InventoryOcarinaIntegrationTest {
     @Test
     void selectingOcarinaOpensPopupAndHorizontalInputChangesSong() throws Exception {
         PlayerState player = new PlayerState();
-        player.setSubscreenItems(new int[] {
+        player.inventory().setSubscreenItems(new int[] {
             PlayerState.INVENTORY_BOMBS,
             PlayerState.INVENTORY_OCARINA,
             PlayerState.INVENTORY_EMPTY,
@@ -26,8 +26,10 @@ final class InventoryOcarinaIntegrationTest {
             PlayerState.INVENTORY_EMPTY,
             PlayerState.INVENTORY_EMPTY
         });
-        player.setOcarinaSongFlags(PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
-        player.setSelectedSongIndex(0);
+        player.progression()
+                .setOcarinaSongFlags(
+                        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG | PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG);
+        player.progression().setSelectedSongIndex(0);
         InventoryMenu menu = new InventoryMenu(loadTilemap(), player);
         openInventory(menu);
 
@@ -39,14 +41,14 @@ final class InventoryOcarinaIntegrationTest {
 
         menu.moveCursor(+1, 0);
 
-        assertEquals(2, player.selectedSongIndex());
+        assertEquals(2, player.progression().selectedSongIndex());
         assertEquals(1, menu.cursorSlot());
     }
 
     @Test
     void menuButtonClosesOcarinaBeforeClosingInventory() throws Exception {
         PlayerState player = new PlayerState();
-        player.setSubscreenItems(new int[] {
+        player.inventory().setSubscreenItems(new int[] {
             PlayerState.INVENTORY_EMPTY,
             PlayerState.INVENTORY_OCARINA,
             PlayerState.INVENTORY_EMPTY,
@@ -58,7 +60,7 @@ final class InventoryOcarinaIntegrationTest {
             PlayerState.INVENTORY_EMPTY,
             PlayerState.INVENTORY_EMPTY
         });
-        player.setOcarinaSongFlags(PlayerState.MANBO_MAMBO_FLAG);
+        player.progression().setOcarinaSongFlags(PlayerState.MANBO_MAMBO_FLAG);
         InventoryMenu menu = new InventoryMenu(loadTilemap(), player);
         openInventory(menu);
         menu.moveCursor(+1, 0);

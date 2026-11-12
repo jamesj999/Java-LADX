@@ -58,20 +58,20 @@ final class MarinWakeUpLinkStateTest {
                 .items(new ItemRegistry())
                 .build();
 
-        link.showMarinWakeUpBed(4);
-        assertTrue(link.isMarinWakeUpBedVisible());
-        assertEquals(4, link.marinWakeUpBedVariant());
-        link.leaveMarinWakeUpBed();
+        link.animation().showMarinWakeUpBed(4);
+        assertTrue(link.animation().isMarinWakeUpBedVisible());
+        assertEquals(4, link.animation().marinWakeUpBedVariant());
+        link.actions().leaveMarinWakeUpBed();
 
         // Marin has already emitted bed OAM on the launch frame.
-        assertTrue(link.isMarinWakeUpBedVisible());
-        assertEquals(3, link.marinWakeUpBedVariant());
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
-        assertTrue(link.isAirborne());
-        assertEquals(0x12, link.zVelocity());
-        assertEquals(0x0C, link.romSpeedX());
-        assertEquals(0, link.romSpeedY());
-        assertEquals(1, link.romEntityZ());
+        assertTrue(link.animation().isMarinWakeUpBedVisible());
+        assertEquals(3, link.animation().marinWakeUpBedVariant());
+        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x12, link.airborne().zVelocity());
+        assertEquals(0x0C, link.position().romSpeedX());
+        assertEquals(0, link.position().romSpeedY());
+        assertEquals(1, link.animation().romEntityZ());
     }
 
     @Test
@@ -94,25 +94,25 @@ final class MarinWakeUpLinkStateTest {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x40, 0x40);
-        link.leaveMarinWakeUpBed();
+        link.position().setPixelPosition(0x40, 0x40);
+        link.actions().leaveMarinWakeUpBed();
 
         int airborneFrames = 0;
         do {
-            link.update();
-            assertEquals(0x0C, link.romSpeedX());
-            assertEquals(0, link.romSpeedY());
-            assertEquals(Link.DIRECTION_RIGHT, link.direction());
+            link.motion().update();
+            assertEquals(0x0C, link.position().romSpeedX());
+            assertEquals(0, link.position().romSpeedY());
+            assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
             airborneFrames++;
-        } while (link.isAirborne() && airborneFrames < 100);
+        } while (link.airborne().isAirborne() && airborneFrames < 100);
 
         assertTrue(airborneFrames > 1);
-        assertFalse(link.isAirborne());
-        assertFalse(link.isMarinWakeUpBedVisible());
-        assertEquals(0x40 + 14, link.pixelX(), "No horizontal movement on the landing frame");
-        link.update();
-        assertEquals(Link.DIRECTION_LEFT, link.direction());
-        assertEquals(0xF0, link.romSpeedX());
+        assertFalse(link.airborne().isAirborne());
+        assertFalse(link.animation().isMarinWakeUpBedVisible());
+        assertEquals(0x40 + 14, link.position().pixelX(), "No horizontal movement on the landing frame");
+        link.motion().update();
+        assertEquals(Link.DIRECTION_LEFT, link.animation().direction());
+        assertEquals(0xF0, link.position().romSpeedX());
     }
 
     private static byte[] loadRom() throws IOException {

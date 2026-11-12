@@ -87,7 +87,7 @@ abstract class LinkFixture {
                 .player(new PlayerStateTestBuilder().build())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         return link;
     }
 
@@ -115,17 +115,17 @@ abstract class LinkFixture {
 
     protected static void assertJumpAnimation(int direction, int frame0, int frame1, int frame2) throws Exception {
         Link link = linkFacing(direction);
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
 
         assertEquals(frame0, resolvedAnimationState(link));
         int[] poses = {frame0, frame1, frame2};
         for (int frame = 0; frame < 24; frame++) {
-            link.update();
-            assertTrue(link.isAirborne(), "frame " + frame);
+            link.motion().update();
+            assertTrue(link.airborne().isAirborne(), "frame " + frame);
             assertEquals(poses[frame / 8], resolvedAnimationState(link), "frame " + frame);
         }
-        link.update();
-        assertTrue(link.isAirborne());
+        link.motion().update();
+        assertTrue(link.airborne().isAirborne());
         assertEquals(new int[] {0x01, 0x05, 0x07, 0x0B}[direction], resolvedAnimationState(link));
     }
 
@@ -134,7 +134,7 @@ abstract class LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerStateTestBuilder().build();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         switch (direction) {
             case Link.DIRECTION_RIGHT:
                 inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
@@ -160,12 +160,12 @@ abstract class LinkFixture {
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        link.update();
+        link.motion().update();
         return link;
     }
 
     protected static int resolvedAnimationState(Link link) throws Exception {
-        return link.romAnimationState();
+        return link.animation().romAnimationState();
     }
 
     protected static int javaDirectionForRomDirection(int romDirection) {
@@ -180,18 +180,18 @@ abstract class LinkFixture {
 
     protected static void runUntilPitFallStarts(Link link) {
         int guard = 0;
-        while (!link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (!link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
     }
 
     protected static void runUntilPitFallFinishes(Link link) {
         int guard = 0;
-        while (link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertFalse(link.isFallingIntoPit());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     protected static void pressDirection(InputState inputState, InputConfig inputConfig, int direction) {
@@ -214,7 +214,7 @@ abstract class LinkFixture {
     }
 
     protected static void placeAtRoomEntry(Link link, int pixelX, int pixelY) {
-        link.setRoomEntryPixelPosition(pixelX, pixelY);
+        link.position().setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
     protected static int[] emptyRoomObjectsArea() {

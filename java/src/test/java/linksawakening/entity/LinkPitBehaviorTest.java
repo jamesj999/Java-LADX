@@ -44,11 +44,11 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .sounds(soundSink)
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         runUntilPitFallStarts(link);
         for (int i = 0; i < 8; i++) {
-            link.update();
+            link.motion().update();
         }
 
         assertEquals(List.of(GameplaySoundEvent.PIT_FALL), soundSink.events);
@@ -74,22 +74,22 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         runUntilPitFallStarts(link);
-        int fallX = link.pixelX();
+        int fallX = link.position().pixelX();
 
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
         assertEquals(0x55, resolvedAnimationState(link));
 
         for (int i = 0; i < 16; i++) {
-            link.update();
+            link.motion().update();
         }
-        assertEquals(fallX, link.pixelX());
+        assertEquals(fallX, link.position().pixelX());
         assertEquals(0x56, resolvedAnimationState(link));
 
         for (int i = 0; i < 16; i++) {
-            link.update();
+            link.motion().update();
         }
         assertEquals(0x57, resolvedAnimationState(link));
     }
@@ -113,15 +113,15 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         for (int i = 0; i < 4; i++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertTrue(link.isFallingIntoPit());
-        assertEquals(0x20, link.pixelX());
-        assertEquals(0x23, link.pixelY());
+        assertTrue(link.airborne().isFallingIntoPit());
+        assertEquals(0x20, link.position().pixelX());
+        assertEquals(0x23, link.position().pixelY());
     }
 
     @Test
@@ -136,7 +136,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         collision.setRoom(roomObjects);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new AnimationOverrideItem(0x22));
+        itemRegistry.register(playerState.inventory().itemA(), new AnimationOverrideItem(0x22));
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -146,7 +146,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         runUntilPitFallStarts(link);
 
@@ -169,67 +169,67 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .items(itemRegistry)
                 .build();
 
-        assertTrue(link.canUseItems());
+        assertTrue(link.equipment().canUseItems());
 
         Sword sword = new Sword(null, null);
-        itemRegistry.register(playerState.itemA(), sword);
+        itemRegistry.register(playerState.inventory().itemA(), sword);
         sword.onPress();
-        assertFalse(link.canUseItems());
+        assertFalse(link.equipment().canUseItems());
 
         HookshotTarget hookshotTarget = new HookshotTarget();
-        playerState.setItemA(PlayerState.INVENTORY_HOOKSHOT);
-        itemRegistry.register(playerState.itemA(), new Hookshot(hookshotTarget));
+        playerState.inventory().setItemA(PlayerState.INVENTORY_HOOKSHOT);
+        itemRegistry.register(playerState.inventory().itemA(), new Hookshot(hookshotTarget));
         hookshotTarget.active = true;
-        assertFalse(link.canUseItems());
+        assertFalse(link.equipment().canUseItems());
 
         hookshotTarget.active = false;
-        link.setCarryingLiftedObjectState(1, 3);
-        assertFalse(link.canUseItems());
+        link.actions().setCarryingLiftedObjectState(1, 3);
+        assertFalse(link.equipment().canUseItems());
 
-        link.setCarryingLiftedObjectState(0, 3);
-        assertTrue(link.canUseItems());
+        link.actions().setCarryingLiftedObjectState(0, 3);
+        assertTrue(link.equipment().canUseItems());
 
-        link.useRocsFeather();
-        assertTrue(link.isAirborne());
-        assertTrue(link.canUseItems());
+        link.airborne().useRocsFeather();
+        assertTrue(link.airborne().isAirborne());
+        assertTrue(link.equipment().canUseItems());
 
         Link pitLink = pitLink(inputConfig);
         runUntilPitFallStarts(pitLink);
-        assertFalse(pitLink.canUseItems());
+        assertFalse(pitLink.equipment().canUseItems());
     }
 
     @Test
     void pitWarpArrivalSpinsWithGlobalFramePhaseAndLocksInputUntilLanding() throws Exception {
         RomTables tables = RomTables.loadFromRom(loadRom());
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, emptyRoomObjectsArea());
-        link.setRoomEntryPixelPosition(64, 64);
+        link.position().setRoomEntryPixelPosition(64, 64);
         link.linkStateMachine.frameCounter = 0;
-        link.setPitWarpArrival(0x70);
+        link.airborne().setPitWarpArrival(0x70);
         int[] directions = {Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_UP};
         int frame = 0;
-        while (link.isAirborne() && frame < 128) {
+        while (link.airborne().isAirborne() && frame < 128) {
             frame++;
-            link.update();
-            assertEquals(directions[(frame >>> 2) & 3], link.direction(), "frame " + frame);
-            assertEquals(64, link.pixelX());
-            assertEquals(64, link.pixelY());
-            assertEquals(0, link.romSpeedX());
-            assertEquals(0, link.romSpeedY());
-            assertEquals(link.isAirborne(), link.linkAirborne.spinningPitWarpArrival);
+            link.motion().update();
+            assertEquals(directions[(frame >>> 2) & 3], link.animation().direction(), "frame " + frame);
+            assertEquals(64, link.position().pixelX());
+            assertEquals(64, link.position().pixelY());
+            assertEquals(0, link.position().romSpeedX());
+            assertEquals(0, link.position().romSpeedY());
+            assertEquals(link.airborne().isAirborne(), link.linkAirborne.spinningPitWarpArrival);
         }
         assertTrue(frame > 16 && frame < 128);
         assertFalse(link.linkAirborne.spinningPitWarpArrival);
-        assertEquals(0, link.romEntityZ());
-        int finalDirection = link.direction();
+        assertEquals(0, link.animation().romEntityZ());
+        int finalDirection = link.animation().direction();
         assertEquals(directions[(frame >>> 2) & 3], finalDirection);
         link.linkServices.inputState.onKeyEvent(link.linkServices.inputConfig.rightKey(), GLFW_RELEASE);
-        link.update();
-        assertEquals(finalDirection, link.direction());
-        assertEquals(64, link.pixelX());
+        link.motion().update();
+        assertEquals(finalDirection, link.animation().direction());
+        assertEquals(64, link.position().pixelX());
         link.linkServices.inputState.onKeyEvent(link.linkServices.inputConfig.rightKey(), GLFW_PRESS);
-        link.update();
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
-        assertTrue(link.pixelX() > 64);
+        link.motion().update();
+        assertEquals(Link.DIRECTION_RIGHT, link.animation().direction());
+        assertTrue(link.position().pixelX() > 64);
     }
 
     @Test
@@ -240,18 +240,18 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
         Link link = linkInRoom(inputConfig, romTables, roomObjects);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         for (int i = 0; i < 20; i++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertTrue(link.pixelX() > 0x24);
-        assertTrue(link.pixelX() <= 0x30);
-        assertFalse(link.isAirborne());
+        assertTrue(link.position().pixelX() > 0x24);
+        assertTrue(link.position().pixelX() <= 0x30);
+        assertFalse(link.airborne().isAirborne());
 
         runUntilPitFallStarts(link);
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
     }
 
     @Test
@@ -262,20 +262,20 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_INDOOR_PIT_WARP;
         PlayerState playerState = new PlayerState();
-        playerState.setHealth(PlayerState.HP_PER_HEART);
+        playerState.vitals().setHealth(PlayerState.HP_PER_HEART);
         Link link = linkInRoom(inputConfig, romTables, roomObjects, playerState, RomTables.PHYSICS_TABLE_INDOORS1);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         for (int i = 0; i < 160; i++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertTrue(link.pixelX() > 0x24);
-        assertFalse(link.isFallingIntoPit());
-        assertTrue(link.pitWarpPending());
-        assertTrue(link.recoveryBlocksInput());
-        assertEquals(PlayerState.HP_PER_HEART, playerState.health());
-        assertEquals(0, playerState.invincibilityCounter());
+        assertTrue(link.position().pixelX() > 0x24);
+        assertFalse(link.airborne().isFallingIntoPit());
+        assertTrue(link.status().pitWarpPending());
+        assertTrue(link.status().recoveryBlocksInput());
+        assertEquals(PlayerState.HP_PER_HEART, playerState.vitals().health());
+        assertEquals(0, playerState.vitals().invincibilityCounter());
     }
 
     @Test
@@ -286,14 +286,14 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_TREE_TOP_LEFT;
         Link link = linkInRoom(inputConfig, romTables, roomObjects);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         for (int i = 0; i < 20; i++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertEquals(0x24, link.pixelX());
-        assertFalse(link.isFallingIntoPit());
+        assertEquals(0x24, link.position().pixelX());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     @Test
@@ -317,32 +317,32 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         assertEquals(0xD3, collision.objectPhysicsFlagAtPoint(0x26, 0x30));
         for (int frame = 0; frame < 5; frame++) {
-            link.update();
-            assertFalse(link.isAirborne(), "frame " + frame);
-            assertEquals(0x20, link.pixelY(), "frame " + frame);
+            link.motion().update();
+            assertFalse(link.airborne().isAirborne(), "frame " + frame);
+            assertEquals(0x20, link.position().pixelY(), "frame " + frame);
         }
 
-        link.update();
+        link.motion().update();
 
-        assertTrue(link.isAirborne());
-        assertEquals(0x1A, link.zVelocity());
-        assertEquals(0x10, link.romSpeedY());
-        assertEquals(0x20, link.pixelY());
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x1A, link.airborne().zVelocity());
+        assertEquals(0x10, link.position().romSpeedY());
+        assertEquals(0x20, link.position().pixelY());
 
         // $02:47CC writes each pose before incrementing its eight-frame
         // timer. The directional ledge jump lasts longer than the flip.
         for (int frame = 1; frame <= 24; frame++) {
-            assertTrue(link.isAirborne(), "frame " + frame);
+            assertTrue(link.airborne().isAirborne(), "frame " + frame);
             assertEquals(0x64 + (frame - 1) / 8, resolvedAnimationState(link), "frame " + frame);
-            link.update();
+            link.motion().update();
         }
-        assertTrue(link.isAirborne());
+        assertTrue(link.airborne().isAirborne());
         assertEquals(0x01, resolvedAnimationState(link));
-        assertTrue(link.pixelY() > 0x20);
+        assertTrue(link.position().pixelY() > 0x20);
     }
 
     @Test
@@ -366,24 +366,24 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         for (int frame = 0; frame < 4; frame++) {
-            link.update();
+            link.motion().update();
         }
         inputState.onKeyEvent(inputConfig.downKey(), GLFW_RELEASE);
         inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
         inputState.onKeyEvent(inputConfig.upKey(), GLFW_RELEASE);
         inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         for (int frame = 0; frame < 5; frame++) {
-            link.update();
+            link.motion().update();
         }
 
-        assertFalse(link.isAirborne());
-        link.update();
-        assertTrue(link.isAirborne());
+        assertFalse(link.airborne().isAirborne());
+        link.motion().update();
+        assertTrue(link.airborne().isAirborne());
     }
 
     @Test
@@ -408,32 +408,32 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .sounds(soundSink)
                 .build();
-        link.setPixelPosition(0x20, 0x28);
+        link.position().setPixelPosition(0x20, 0x28);
 
         assertEquals(PhysicsFlags.CAT_LEDGE_OVERWORLD, collision.objectPhysicsFlagAtPoint(0x26, 0x38));
-        link.update();
+        link.motion().update();
 
-        assertFalse(link.isAirborne(), "The unstucking handler runs on the next frame");
-        assertEquals(0x02, link.romMotionState());
-        assertEquals(0x28, link.pixelY());
+        assertFalse(link.airborne().isAirborne(), "The unstucking handler runs on the next frame");
+        assertEquals(0x02, link.airborne().romMotionState());
+        assertEquals(0x28, link.position().pixelY());
         assertEquals(List.of(GameplaySoundEvent.LEDGE_FALL), soundSink.events);
-        link.update();
-        assertTrue(link.isAirborne());
-        assertEquals(0x28 + 21, link.pixelY());
+        link.motion().update();
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x28 + 21, link.position().pixelY());
         // Unlike LinkMotionDefault, LinkMotionUnstuckingHandler does not
         // call UpdateLinkWalkingAnimation while descending.
         int frame = 1;
-        while (link.romMotionState() == 0x02) {
+        while (link.airborne().romMotionState() == 0x02) {
             assertEquals(0x64 + Math.min(2, (frame - 1) / 8), resolvedAnimationState(link), "frame " + frame);
             assertTrue(frame < 64, "cliff fall must land");
-            link.update();
+            link.motion().update();
             frame++;
         }
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
-        assertTrue(link.isAirborne(), "$02:49B6 writes 1 even on the landing frame");
+        assertEquals(Link.LINK_MOTION_DEFAULT, link.airborne().romMotionState());
+        assertTrue(link.airborne().isAirborne(), "$02:49B6 writes 1 even on the landing frame");
         assertEquals(0x64, resolvedAnimationState(link));
-        link.update();
-        assertFalse(link.isAirborne());
+        link.motion().update();
+        assertFalse(link.airborne().isAirborne());
     }
 
     @Test
@@ -456,13 +456,13 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
         assertEquals(0xD0, collision.objectPhysicsFlagAtPoint(0x30, 0x29));
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x25, link.pixelX());
-        assertFalse(link.isAirborne());
+        assertEquals(0x25, link.position().pixelX());
+        assertFalse(link.airborne().isAirborne());
     }
 
     @Test
@@ -473,7 +473,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
-        playerState.setRunningWithPegasusBoots(true);
+        playerState.equipmentLevels().setRunningWithPegasusBoots(true);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x23;
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -488,15 +488,15 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
-        link.update();
+        link.motion().update();
 
-        assertTrue(link.isAirborne());
-        assertFalse(playerState.runningWithPegasusBoots());
-        assertEquals(0x1A, link.zVelocity());
-        assertEquals(0x10, link.romSpeedX());
-        assertEquals(null, link.consumePegasusScreenShakeRequest());
+        assertTrue(link.airborne().isAirborne());
+        assertFalse(playerState.equipmentLevels().runningWithPegasusBoots());
+        assertEquals(0x1A, link.airborne().zVelocity());
+        assertEquals(0x10, link.position().romSpeedX());
+        assertEquals(null, link.motion().consumePegasusScreenShakeRequest());
     }
 
     @Test
@@ -507,20 +507,20 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
         Link link = linkInRoom(inputConfig, romTables, roomObjects);
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
 
-        assertTrue(link.isAirborne());
-        assertEquals(0x20, link.zVelocity());
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x20, link.airborne().zVelocity());
 
         int guard = 0;
-        while (link.isAirborne() && guard++ < 80) {
-            link.update();
+        while (link.airborne().isAirborne() && guard++ < 80) {
+            link.motion().update();
         }
 
-        assertFalse(link.isAirborne());
-        assertTrue(link.pixelX() > 0x40);
+        assertFalse(link.airborne().isAirborne());
+        assertTrue(link.position().pixelX() > 0x40);
     }
 
     @Test
@@ -531,13 +531,13 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         Link link = linkInRoom(inputConfig, romTables, roomObjects);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
-        link.update();
-        link.useRocsFeather();
+        link.motion().update();
+        link.airborne().useRocsFeather();
 
-        assertFalse(link.isAirborne());
-        assertEquals(0, link.zVelocity());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0, link.airborne().zVelocity());
     }
 
     @Test
@@ -559,19 +559,19 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x1C, 0x18);
+        link.position().setPixelPosition(0x1C, 0x18);
 
-        link.update();
-        assertEquals(0x1C, link.pixelX());
-        assertEquals(0x18, link.pixelY());
+        link.motion().update();
+        assertEquals(0x1C, link.position().pixelX());
+        assertEquals(0x18, link.position().pixelY());
 
-        link.update();
-        link.update();
-        link.update();
+        link.motion().update();
+        link.motion().update();
+        link.motion().update();
 
-        assertEquals(0x1D, link.pixelX());
-        assertEquals(0x19, link.pixelY());
-        assertFalse(link.isFallingIntoPit());
+        assertEquals(0x1D, link.position().pixelX());
+        assertEquals(0x19, link.position().pixelY());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     @Test
@@ -582,7 +582,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         PlayerState playerState = new PlayerState();
-        playerState.setHealth(PlayerState.HP_PER_HEART);
+        playerState.vitals().setHealth(PlayerState.HP_PER_HEART);
         InputState inputState = new InputState();
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
@@ -597,15 +597,15 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .build();
 
         placeAtRoomEntry(link, 0x10, 0x20);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         runUntilPitFallStarts(link);
         runUntilPitFallFinishes(link);
 
-        assertFalse(link.isFallingIntoPit());
-        assertEquals(0x10, link.pixelX());
-        assertEquals(0x20, link.pixelY());
-        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
-        assertEquals(0x40, playerState.invincibilityCounter());
+        assertFalse(link.airborne().isFallingIntoPit());
+        assertEquals(0x10, link.position().pixelX());
+        assertEquals(0x20, link.position().pixelY());
+        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.vitals().health());
+        assertEquals(0x40, playerState.vitals().invincibilityCounter());
     }
 
     @Test
@@ -616,7 +616,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         PlayerState playerState = new PlayerState();
-        playerState.setHealth(PlayerState.HP_PER_HEART);
+        playerState.vitals().setHealth(PlayerState.HP_PER_HEART);
         InputState inputState = new InputState();
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
@@ -631,17 +631,17 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .build();
 
         placeAtRoomEntry(link, 0x10, 0x20);
-        link.setPixelPosition(0x17, 0x20);
-        link.update();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x17, 0x20);
+        link.motion().update();
+        link.position().setPixelPosition(0x20, 0x20);
         runUntilPitFallStarts(link);
         runUntilPitFallFinishes(link);
 
-        assertFalse(link.isFallingIntoPit());
-        assertEquals(0x10, link.pixelX());
-        assertEquals(0x20, link.pixelY());
-        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
-        assertEquals(0x40, playerState.invincibilityCounter());
+        assertFalse(link.airborne().isFallingIntoPit());
+        assertEquals(0x10, link.position().pixelX());
+        assertEquals(0x20, link.position().pixelY());
+        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.vitals().health());
+        assertEquals(0x40, playerState.vitals().invincibilityCounter());
     }
 
     @Test
@@ -652,7 +652,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         PlayerState playerState = new PlayerState();
-        playerState.setHealth(PlayerState.HP_PER_HEART);
+        playerState.vitals().setHealth(PlayerState.HP_PER_HEART);
         InputState inputState = new InputState();
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(roomObjects);
@@ -667,14 +667,14 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .build();
 
         placeAtRoomEntry(link, 0x10, 0x20);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         runUntilPitFallStarts(link);
         runUntilPitFallFinishes(link);
-        assertEquals(0x40, playerState.invincibilityCounter());
+        assertEquals(0x40, playerState.vitals().invincibilityCounter());
 
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x3F, playerState.invincibilityCounter());
+        assertEquals(0x3F, playerState.vitals().invincibilityCounter());
     }
 
     @Test
@@ -699,18 +699,18 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .build();
 
         placeAtRoomEntry(link, 0x10, 0x20);
-        link.useRocsFeather();
-        link.setPixelPosition(0x18, 0x20);
-        link.update();
-        while (link.isAirborne()) {
-            link.update();
+        link.airborne().useRocsFeather();
+        link.position().setPixelPosition(0x18, 0x20);
+        link.motion().update();
+        while (link.airborne().isAirborne()) {
+            link.motion().update();
         }
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         runUntilPitFallStarts(link);
         runUntilPitFallFinishes(link);
 
-        assertEquals(0x10, link.pixelX());
-        assertEquals(0x20, link.pixelY());
+        assertEquals(0x10, link.position().pixelX());
+        assertEquals(0x20, link.position().pixelY());
     }
 
     @Test
@@ -734,23 +734,23 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
         for (int i = 0; i < 12; i++) {
-            link.update();
+            link.motion().update();
         }
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
-        assertTrue(link.pixelX() >= 0x30);
+        assertTrue(link.position().pixelX() >= 0x30);
 
         int guard = 0;
-        while (link.isAirborne() && guard++ < 80) {
-            link.update();
+        while (link.airborne().isAirborne() && guard++ < 80) {
+            link.motion().update();
         }
 
-        assertFalse(link.isAirborne());
+        assertFalse(link.airborne().isAirborne());
         runUntilPitFallStarts(link);
-        assertTrue(link.isFallingIntoPit());
-        assertTrue(link.pixelX() >= 0x30);
+        assertTrue(link.airborne().isFallingIntoPit());
+        assertTrue(link.position().pixelX() >= 0x30);
     }
 }

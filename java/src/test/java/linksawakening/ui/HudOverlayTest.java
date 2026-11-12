@@ -18,9 +18,9 @@ final class HudOverlayTest {
         gpu.loadBaseTiles(rom);
 
         PlayerState player = new PlayerState();
-        player.setItemB(PlayerState.INVENTORY_BOW);
-        player.setItemA(PlayerState.INVENTORY_HOOKSHOT);
-        player.setSubscreenItems(new int[] {
+        player.inventory().setItemB(PlayerState.INVENTORY_BOW);
+        player.inventory().setItemA(PlayerState.INVENTORY_HOOKSHOT);
+        player.inventory().setSubscreenItems(new int[] {
             PlayerState.INVENTORY_BOW,
             PlayerState.INVENTORY_HOOKSHOT,
             PlayerState.INVENTORY_EMPTY,
