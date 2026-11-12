@@ -61,32 +61,29 @@ final class MainArchitectureTest {
 
     @Test
     void mainConsumesProjectileEventsAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "tick", "tickEntitiesWithProjectileEvents", "EnemyProjectileEventConsumer.consume");
+        check("EntityPhase", "tick", "tickEntities", "applyCombat");
     }
 
     @Test
     void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
         check("CombatPhase", "tick", "enemyCollisionBox", "resolveEntityCombat");
+        check("EntityPhase", "buildUiInputs", "isActive", "isMusicPlaying");
+        check("EntityPhase", "tick", "buildInputs", "tickEntities");
+        check("EntityPhase", "applyCombat", "EnemyCombatEventConsumer.consume");
         check(
                 "EntityPhase",
-                "tick",
-                "setEntityDialogActive",
-                "setEntityMusicActive",
-                "tickEntitiesWithProjectileEvents");
-        check("EntityPhase", "tick", "consumeHeartContainerRewards", "applyHeartContainerReward");
-        check(
-                "EntityPhase",
-                "tick",
-                "EnemyCombatEventConsumer.consume",
+                "routeDialogs",
                 "consumePendingMusicTrack",
                 "playDirectMusic",
                 "openEntityDialogRequests",
                 "handlePendingInstrumentTransition");
+        check("EntityPhase", "applyChestRewards", "consumeHeartContainerRewards", "applyHeartContainerReward");
+        check("EntityPhase", "tick", "applyCombat", "routeDialogs");
     }
 
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "LinkCommandAdapter.from", "Link.apply");
+        check("EntityPhase", "applyAttackWrites", "consumeAttackWrites", "LinkCommandAdapter.from", "Link.apply");
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Facing")
                 .contains("faceRomDirectionPreservingWalkPhase"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Action")
@@ -95,13 +92,18 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
-        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "consumeLinkAttackStepRequests");
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("sourceSlot"));
+        CompiledCode.calls(
+                "linksawakening.world.room.RoomSession",
+                "consumeAttackWrites",
+                "consumeLinkAttackClearRequests",
+                "consumeLinkAttackStepRequests",
+                "RoomLinkWrites.attacks");
+        assertTrue(CompiledCode.code("linksawakening.world.room.RoomLinkWrites").contains("sourceSlot"));
     }
 
     @Test
     void mainDoesNotSuppressHinoxThrowDamageBehindInvincibilityGate() throws Exception {
-        String code = CompiledCode.method(P + "EntityPhase", "tick");
+        String code = CompiledCode.method(P + "EntityPhase", "applyFinalEffects");
         String hinox = code.substring(code.indexOf("consumeHinoxLinkEffectRequests"));
         assertTrue(hinox.contains("applyRomEnemyDamage"));
         assertFalse(hinox.contains("invincibilityCounter"));
@@ -114,17 +116,23 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
-        check("EntityPhase", "tick", "consumeSideViewPotLinkRequests", "consumeLinkFinalPositionRequests");
+        CompiledCode.calls(
+                "linksawakening.world.room.RoomSession",
+                "consumePositionWrites",
+                "consumeSideViewPlatformLinkRequests",
+                "consumeSideViewPotLinkRequests",
+                "consumeLinkFinalPositionRequests",
+                "RoomLinkWrites.positions");
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("LinkCommandAdapter.from"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$PotContact")
                 .contains("applySideViewPotContact"));
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("setEntityFinalPositionX"));
+        assertTrue(CompiledCode.code(P + "EntityPhase").contains("romFinalPositionX"));
     }
 
     @Test
     void mainAppliesHookshotPullEventsWithoutProjectileIgnoreSideEffects() throws Exception {
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("HOOKSHOT_PULL"));
-        check("EntityPhase", "tick", "HOOKSHOT_PULL", "LinkCommandAdapter.from", "Link.apply");
+        check("EntityPhase", "applyProjectileResponses", "HOOKSHOT_PULL", "LinkCommandAdapter.from", "Link.apply");
         CompiledCode.calls(
                 "linksawakening.entity.LinkCommand$ProjectileResponse",
                 "applyTo",
@@ -147,7 +155,7 @@ final class MainArchitectureTest {
     @Test
     void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
         check("LinkEquipmentPhase", "tick", "throwLiftedEntity");
-        check("EntityPhase", "tick", "tickEntitiesWithProjectileEvents", "consumeLinkAttackStepRequests");
+        check("EntityPhase", "tick", "tickEntities", "applyAttackWrites");
     }
 
     @Test

@@ -238,10 +238,18 @@ Scrolling, transitions and inventory state gate entity ticking.
 
 The runtime iterates slots from highest index to zero. Each slot passes
 `EntitySlotPhase1` through `EntitySlotPhase5`; a phase can end that slot's work.
+`EntityPhase` builds immutable `RoomSession.EntityFrameInputs` from Link, player,
+UI, buttons and sword-box snapshots. `RoomSession.tickEntities` applies those
+inputs in the original setter order before advancing entity slots.
 Entity effects are consumed at the entity boundary, including projectiles,
 combat, rewards, dialog and music requests. Link writes become `LinkCommand`
 values through `LinkCommandAdapter` and are applied through `Link.apply`.
-Competing Link writes retain descending source-slot ordering.
+Competing Link writes retain descending source-slot ordering. `RoomLinkWrites`
+merges position streams with pot/platform/final-position tie precedence and
+attack streams with attack-step precedence on ties. These are separate
+consumption stages: a platform write can load a room before later outputs
+are drained. `EntityFrameResults` groups live outbox views by Link, rewards
+and presentation; it deliberately does not eagerly snapshot every channel.
 
 After simulation, `RenderStateAssembler` supplies frame state to scene
 construction. Indexed layers and OAM entries feed hardware composition.
@@ -331,7 +339,11 @@ To add an entity type:
 
 `world.room.RoomSession` is the public room API. It delegates to room-scoped
 collaborators instead of exposing entity handlers to application code.
-`RoomSessionContext` collects room dependencies and state.
+The `doors()`, `transitions()`, `playerItems()` and `story()` views expose
+focused role interfaces; existing public facade methods delegate to them for
+compatibility. Their implementations receive their specific collaborator.
+`RoomSessionContext` still collects room dependencies and shared state;
+converting remaining collaborators away from `session.context` remains open.
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
@@ -351,6 +363,11 @@ intact: a visually plausible destination alone does not verify a transition.
 room representation. Door, puzzle and player-item collaborators implement
 specific interactions; `world.object` contains object-specific behavior.
 Entity integration passes through room bridges, inputs and reward handling.
+`RoomEntityBridge` coordinates ticking; `RoomEntityFrameSetup` configures
+the runtime, `RoomEntityAfterTick` applies ordered room effects,
+`RoomEntityCombatBridge` handles combat/pickup integration and
+`RoomEntityOutbox` owns queued outputs. The outbox uses a runtime supplier
+because loading a room replaces the runtime.
 Changing a visual tile alone is insufficient when collision or persistent room
 status also changes.
 

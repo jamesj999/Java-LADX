@@ -83,7 +83,7 @@ final class RoomTransitionController {
         session.loadRoomSpecificTilesIfNeeded(nextRoomId);
         session.context.roomLoadCoordinator.loadOverworld(nextRoomId, true);
         if (discoveredTailKeyRoom) {
-            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
                     0, session.ENTITY_OWL_EVENT, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
         }
         scrollController.start(direction, linkScreenX, linkScreenY, previousRoom, session.scrollTarget(direction));
@@ -95,7 +95,7 @@ final class RoomTransitionController {
         session.context.roomLoadCoordinator.loadOverworld(session.ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
         scrollController.start(
                 ScrollController.UP, linkScreenX, linkScreenY, previousRoom, session.scrollTarget(ScrollController.UP));
-        session.context.entityBridge.pendingRoomEntityEvents.add(
+        session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
                 new EntityCombatEvent(0, session.ENTITY_TARIN, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1E));
     }
 
@@ -147,7 +147,7 @@ final class RoomTransitionController {
     }
 
     int ocarinaAnimationState() {
-        if (!session.ocarinaPlaying()) {
+        if (!session.transitions().ocarinaPlaying()) {
             return -1;
         }
         return session.context.ocarinaAnimationPhase == 0 ? 0x76 : 0x75;
@@ -183,13 +183,13 @@ final class RoomTransitionController {
             if (session.context.selectedSongIndex == 0x01) {
                 session.context.pendingManboTransition = true;
             } else if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
-                session.context.entityBridge.pendingRoomDialogRequests.add(
+                session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
                         new DialogRequest(session.OCARINA_MARIN_DIALOG_TABLE, session.OCARINA_MARIN_DIALOG_ID));
             }
             return;
         }
         if (session.context.ocarinaSongFlags == 0) {
-            session.context.entityBridge.pendingRoomDialogRequests.add(
+            session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
                     new DialogRequest(session.OCARINA_NO_SONG_DIALOG_TABLE, session.OCARINA_NO_SONG_DIALOG_ID));
         } else if (session.context.selectedSongIndex == 0x01) {
             session.context.pendingManboTransition = true;
@@ -197,7 +197,7 @@ final class RoomTransitionController {
     }
 
     void tickOcarinaAnimationHandler() {
-        if (!session.ocarinaPlaying()) {
+        if (!session.transitions().ocarinaPlaying()) {
             return;
         }
         session.context.ocarinaAnimationCounter++;

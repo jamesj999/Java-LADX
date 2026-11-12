@@ -79,7 +79,7 @@ final class RoomPlayerItemActions {
     }
 
     boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return session.playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     boolean fireMagicRodFireball(
@@ -145,7 +145,7 @@ final class RoomPlayerItemActions {
         } else if (normalizedTimer == session.SHOVEL_FINISH_TIMER) {
             if (session.context.shovelUseState == session.SHOVEL_STATE_DUG
                     && session.context.followingNpcState.marinFollowing()) {
-                session.context.entityBridge.pendingRoomDialogRequests.add(
+                session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
                         new DialogRequest(session.SHOVEL_DIALOG_TABLE, session.SHOVEL_DIALOG_ID));
             }
             session.context.shovelUseState = 0;
@@ -245,12 +245,13 @@ final class RoomPlayerItemActions {
     }
 
     boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
+        return session.playerItems()
+                .shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false)
                 .spawned();
     }
 
     ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return session.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
+        return session.playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, false);
     }
 
     ArrowShotResult shootArrowResult(

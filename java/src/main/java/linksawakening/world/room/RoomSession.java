@@ -59,6 +59,457 @@ import linksawakening.world.transition.Warp;
 
 /** Public room API delegating to room-scoped collaborators. */
 public final class RoomSession extends RoomSessionRules {
+    /** Immutable snapshot of the app inputs used by one entity frame. */
+    public record EntityFrameInputs(
+            int frameCounter,
+            LinkInputs link,
+            PlayerInputs player,
+            UiInputs ui,
+            ButtonInputs buttons,
+            SwordBox sword) {}
+
+    public record UiInputs(
+            boolean dialogActive,
+            boolean inventoryAppearing,
+            int dialogCooldown,
+            int windowY,
+            int selectionIndex,
+            boolean musicActive) {}
+
+    public record ButtonInputs(
+            boolean aHeld,
+            boolean bHeld,
+            boolean joypadHeld,
+            int pressedMask,
+            boolean braceletHeld,
+            boolean bombHeld) {}
+
+    public record PlayerInputs(
+            ProgressInputs progress, InventoryInputs inventory, PlayerLevels levels, PlayerHealth health) {}
+
+    public record ProgressInputs(
+            int heartPieces,
+            boolean birdKey,
+            boolean tailKey,
+            int tradeItem,
+            boolean hasToadstool,
+            int powder,
+            int leaves) {}
+
+    public record InventoryInputs(int itemA, int itemB, boolean redTunic, boolean pieceOfPower) {}
+
+    public record PlayerLevels(int shield, int sword, int bracelet) {}
+
+    public record PlayerHealth(int maxHearts, int health, boolean powerUp, boolean lowHealth) {}
+
+    public record LinkInputs(
+            LinkPosition position,
+            LinkMotion motion,
+            int attackCountdown,
+            int finalX,
+            boolean freeMovement,
+            int velocityZ) {}
+
+    public record LinkPosition(int x, int y, int z, int direction, int collisionType) {}
+
+    public record LinkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {}
+
+    public record SwordBox(boolean active, int x, int width, int y, int height) {}
+    /** Applies the live frame inputs in the original setter order before ticking slots. */
+    public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
+        setEntityDialogActive(inputs.ui().dialogActive());
+        setEntityTalkState(
+                inputs.ui().inventoryAppearing(),
+                inputs.ui().dialogCooldown(),
+                inputs.ui().windowY());
+        setEntityDialogAskSelectionIndex(inputs.ui().selectionIndex());
+        setHeartPiecesCount(inputs.player().progress().heartPieces());
+        setEntityMusicActive(inputs.ui().musicActive());
+        setEntityActionButtonsHeld(inputs.buttons().aHeld(), inputs.buttons().bHeld());
+        setEntityJoypadHeld(inputs.buttons().joypadHeld());
+        setEntityPressedButtonsMask(inputs.buttons().pressedMask());
+        setEntityPowerBraceletButtonHeld(inputs.buttons().braceletHeld());
+        setEntityBombButtonHeld(inputs.buttons().bombHeld());
+        setEntityAttackStepAnimationCountdown(inputs.link().attackCountdown());
+        setEntityFinalPositionX(inputs.link().finalX());
+        setBirdKeyOwned(inputs.player().progress().birdKey());
+        setTailKeyOwned(inputs.player().progress().tailKey());
+        setEntityInventorySlots(
+                inputs.player().inventory().itemA(), inputs.player().inventory().itemB());
+        setLiftStrengthBoost(
+                inputs.player().inventory().redTunic(),
+                inputs.player().inventory().pieceOfPower());
+        setHouseNpcTradeItem(inputs.player().progress().tradeItem());
+        setChestPlayerLevels(
+                inputs.player().levels().shield(),
+                inputs.player().levels().sword(),
+                inputs.player().levels().bracelet());
+        setToadstoolPlayerState(
+                inputs.player().progress().hasToadstool(),
+                inputs.player().progress().powder());
+        setEntityGoldenLeavesCount(inputs.player().progress().leaves());
+        setEnemyDropPlayerState(
+                inputs.player().health().maxHearts(),
+                inputs.player().health().health(),
+                inputs.player().health().powerUp(),
+                inputs.player().health().lowHealth());
+        setFreeMovementMode(inputs.link().freeMovement());
+        setEntityLinkVelocityZ(inputs.link().velocityZ());
+        return tickEntitiesWithProjectileEvents(
+                inputs.frameCounter(),
+                inputs.link().position().x(),
+                inputs.link().position().y(),
+                inputs.link().position().z(),
+                inputs.link().motion().airborne(),
+                inputs.link().motion().state(),
+                inputs.link().position().direction(),
+                inputs.link().position().collisionType(),
+                inputs.link().motion().shield(),
+                inputs.player().levels().shield(),
+                inputs.link().motion().invincibility(),
+                inputs.sword().active(),
+                inputs.sword().x(),
+                inputs.sword().width(),
+                inputs.sword().y(),
+                inputs.sword().height(),
+                inputs.link().motion().speedX(),
+                inputs.link().motion().speedY());
+    }
+
+    /** Ordered writes at one of the original Link consumption boundaries. */
+    public sealed interface LinkWrite {
+        record PlatformWrite(SideViewPlatformLinkRequest request) implements LinkWrite {}
+
+        record FinalPositionWrite(LinkFinalPositionRequest request) implements LinkWrite {}
+
+        record PotWrite(SideViewPotLinkRequest request) implements LinkWrite {}
+
+        record AttackClearWrite(LinkAttackClearRequest request) implements LinkWrite {}
+
+        record AttackStepWrite(LinkAttackStepRequest request) implements LinkWrite {}
+    }
+    /** Drains only the position channels: applying these can load a different room. */
+    List<LinkWrite> consumePositionWrites() {
+        var platforms = consumeSideViewPlatformLinkRequests();
+        var pots = consumeSideViewPotLinkRequests();
+        var positions = consumeLinkFinalPositionRequests();
+        return RoomLinkWrites.positions(platforms, pots, positions);
+    }
+
+    List<LinkWrite> consumeAttackWrites() {
+        return RoomLinkWrites.attacks(consumeLinkAttackClearRequests(), consumeLinkAttackStepRequests());
+    }
+
+    /** Frame outbox views. Drain at the original consumer boundaries: Link writes may load a room. */
+    public record EntityFrameResults(LinkOutputs link, RewardOutputs rewards, PresentationOutputs presentation) {}
+
+    public EntityFrameResults entityFrameResults() {
+        return new EntityFrameResults(new LinkOutputs(this), new RewardOutputs(this), new PresentationOutputs(this));
+    }
+
+    public static final class LinkOutputs {
+        private final RoomSession session;
+
+        private LinkOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<LinkWrite> consumePositionWrites() {
+            return session.consumePositionWrites();
+        }
+
+        public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
+            return session.consumeLinkMotionBlockRequests();
+        }
+
+        public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
+            return session.consumeWarpLinkStateRequests();
+        }
+
+        public boolean consumeWorldLinkMotionBlockRequest() {
+            return session.consumeWorldLinkMotionBlockRequest();
+        }
+
+        public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
+            return session.consumeLinkFallenPoseRequests();
+        }
+
+        public List<LinkFacingRequest> consumeLinkFacingRequests() {
+            return session.consumeLinkFacingRequests();
+        }
+
+        public List<LinkWrite> consumeAttackWrites() {
+            return session.consumeAttackWrites();
+        }
+
+        public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
+            return session.consumeLinkHeldItemPoseRequests();
+        }
+
+        public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
+            return session.consumeLinkSwordSpinPoseRequests();
+        }
+
+        public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
+            return session.consumeLinkSwordFinalPoseRequests();
+        }
+
+        public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
+            return session.consumeRoosterLinkStateRequests();
+        }
+
+        public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
+            return session.consumeHinoxLinkEffectRequests();
+        }
+    }
+
+    public static final class RewardOutputs {
+        private final RoomSession session;
+
+        private RewardOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<ChestRewardEvent> consumeChestRewardEvents() {
+            return session.consumeChestRewardEvents();
+        }
+
+        public List<KeyRewardEvent> consumeKeyRewardEvents() {
+            return session.consumeKeyRewardEvents();
+        }
+
+        public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+            return session.consumeSlimeKeyRewardEvents();
+        }
+
+        public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
+            return session.consumeHeartPieceUpdates();
+        }
+
+        public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
+            return session.consumeHeartContainerRewards();
+        }
+
+        public List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
+            return session.consumeMadamMeowMeowFullHealRequests();
+        }
+
+        public List<RichardProgressEvent> consumeRichardProgressEvents() {
+            return session.consumeRichardProgressEvents();
+        }
+
+        public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
+            return session.consumeToadstoolRewards();
+        }
+
+        public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
+            return session.consumeWitchExchangeEvents();
+        }
+
+        public List<WitchRewardEvent> consumeWitchRewardEvents() {
+            return session.consumeWitchRewardEvents();
+        }
+    }
+
+    public static final class PresentationOutputs {
+        private final RoomSession session;
+
+        private PresentationOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<ScreenShakeRequest> consumeScreenShakeRequests() {
+            return session.consumeScreenShakeRequests();
+        }
+
+        public List<EntityCombatEvent> consumeEntityEvents() {
+            return session.consumeEntityEvents();
+        }
+
+        public int consumePendingMusicFadeOutCountdown() {
+            return session.consumePendingMusicFadeOutCountdown();
+        }
+
+        public int consumePendingMusicTrack() {
+            return session.consumePendingMusicTrack();
+        }
+
+        public List<LikeLikeEvent> consumeLikeLikeEvents() {
+            return session.consumeLikeLikeEvents();
+        }
+    }
+
+    public interface Doors {
+        ChestOpenResult tryOpenChest(
+                int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel);
+
+        boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryLiftObject(
+                int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp);
+
+        boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level);
+
+        boolean tryLiftIndoorObject(
+                int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask);
+
+        boolean tryLiftIndoorObject(
+                int linkPixelX,
+                int linkPixelY,
+                int linkDirection,
+                boolean braceletButtonHeld,
+                int pressedButtonsMask,
+                boolean pieceOfPowerActive);
+
+        boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType);
+
+        boolean tryUnlockTailCaveKeyhole(
+                int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey);
+
+        boolean tryUnlockKeyCavernKeyhole(
+                int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount);
+
+        int tickTailCaveKeyholeSequence();
+
+        boolean tailCaveKeyholeSequenceActive();
+    }
+
+    public Doors doors() {
+        return new RoomDoorsView(context.roomDoorInteractions);
+    }
+
+    public interface Transitions {
+        void loadWarpDestination(Warp warp);
+
+        int tickDungeonTitleMessage(
+                boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement);
+
+        void startAdjacentOverworldScroll(
+                ScrollController scrollController, int direction, int linkScreenX, int linkScreenY);
+
+        void startAdjacentIndoorScroll(
+                ScrollController scrollController, int direction, int linkScreenX, int linkScreenY);
+
+        boolean startOcarina(int countdown, int songFlags, int selectedSong);
+
+        boolean ocarinaPlaying();
+
+        int ocarinaAnimationState();
+
+        Warp consumeManboPondTransitionRequest();
+
+        Warp consumeInstrumentTransitionRequest();
+
+        Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject);
+    }
+
+    public Transitions transitions() {
+        return new RoomTransitionsView(context.roomTransitionController);
+    }
+
+    public interface PlayerItems {
+        boolean throwLiftedEntity(int linkDirection);
+
+        boolean fireHookshot(
+                int linkEntityX,
+                int linkEntityY,
+                int linkEntityZ,
+                int romDirection,
+                boolean linkAirborne,
+                boolean linkPushing);
+
+        boolean fireBoomerang(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask);
+
+        boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean fireMagicRodFireball(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower);
+
+        boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne);
+
+        void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer);
+
+        int shovelAnimationState(int javaDirection, int timer);
+
+        boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        boolean lastBombPlacementPlayedBump();
+
+        boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection);
+
+        ArrowShotResult shootArrowResult(
+                int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower);
+
+        int activeProjectileCount();
+
+        boolean bombActive();
+
+        boolean hookshotActive();
+
+        boolean boomerangActive();
+    }
+
+    public PlayerItems playerItems() {
+        return new RoomPlayerItemsView(context.roomPlayerItemActions);
+    }
+
+    public interface Story {
+        boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant);
+
+        void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY);
+
+        void setBirdKeyOwned(boolean owned);
+
+        void setTailKeyOwned(boolean owned);
+
+        void initializeNewGameWorldState();
+
+        void restoreRoomStatuses(
+                byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus);
+
+        void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides);
+
+        void setFollowingNpcState(
+                FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection);
+
+        FollowingNpcState followingNpcState();
+
+        int bowWowState();
+
+        void setBowWowState(int state);
+
+        int richardSpokenFlag();
+
+        void setRichardSpokenFlag(int flag);
+
+        int tarinFlag();
+
+        void setTarinFlag(int flag);
+
+        void setHouseNpcTradeItem(int tradeItem);
+
+        void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel);
+
+        void setEntityDefaultMusicTrack(int trackId);
+
+        boolean shouldGetLostInMysteriousWoods();
+    }
+
+    public Story story() {
+        return new RoomStoryView(context.roomStoryState);
+    }
+
     final RoomSessionContext context;
     static long nextRoomSessionId;
 
@@ -161,29 +612,25 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public void loadWarpDestination(Warp warp) {
-        context.roomTransitionController.loadWarpDestination(warp);
+        transitions().loadWarpDestination(warp);
     }
     /** $00:0F53 countdown and $01:61EE dungeon-title dialog gates. */
     public int tickDungeonTitleMessage(
             boolean dialogActive, boolean inventoryClosed, int linkMotionState, boolean freeMovement) {
-        return context.roomTransitionController.tickDungeonTitleMessage(
-                dialogActive, inventoryClosed, linkMotionState, freeMovement);
+        return transitions().tickDungeonTitleMessage(dialogActive, inventoryClosed, linkMotionState, freeMovement);
     }
 
     public void startAdjacentOverworldScroll(
             ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        context.roomTransitionController.startAdjacentOverworldScroll(
-                scrollController, direction, linkScreenX, linkScreenY);
+        transitions().startAdjacentOverworldScroll(scrollController, direction, linkScreenX, linkScreenY);
     }
 
     void startMysteriousWoodsLostScroll(ScrollController scrollController, int linkScreenX, int linkScreenY) {
         context.roomTransitionController.startMysteriousWoodsLostScroll(scrollController, linkScreenX, linkScreenY);
     }
 
-    public void startAdjacentIndoorScroll(
-            ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
-        context.roomTransitionController.startAdjacentIndoorScroll(
-                scrollController, direction, linkScreenX, linkScreenY);
+    void startAdjacentIndoorScroll(ScrollController scrollController, int direction, int linkScreenX, int linkScreenY) {
+        transitions().startAdjacentIndoorScroll(scrollController, direction, linkScreenX, linkScreenY);
     }
     /** Whether the most recent load follows room_transition.asm rather than the warp loader. */
     public boolean musicSelectionIsScroll() {
@@ -218,11 +665,11 @@ public final class RoomSession extends RoomSessionRules {
         return context.roomSessionViews.activeRoom();
     }
     /** Identifies the current load instance for Link room-entry state. */
-    public long roomLoadSerial() {
+    long roomLoadSerial() {
         return context.roomSessionViews.roomLoadSerial();
     }
     /** Distinguishes same-room loads performed by different live sessions. */
-    public long roomLoadToken() {
+    long roomLoadToken() {
         return context.roomSessionViews.roomLoadToken();
     }
 
@@ -231,19 +678,19 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return context.roomStoryState.applyMarinWakeUpPresentation(x, y, spriteVariant);
+        return story().applyMarinWakeUpPresentation(x, y, spriteVariant);
     }
     /** Tarin's indoor handler updates his facing every 32 frames, even during the bed scene. */
     public void updateHouseTarinPresentation(int frameCounter, int linkX, int linkY) {
-        context.roomStoryState.updateHouseTarinPresentation(frameCounter, linkX, linkY);
+        story().updateHouseTarinPresentation(frameCounter, linkX, linkY);
     }
     /** Supplies the patched EntityInitKeyDropPoint inventory byte. */
     public void setBirdKeyOwned(boolean owned) {
-        context.roomStoryState.setBirdKeyOwned(owned);
+        story().setBirdKeyOwned(owned);
     }
     /** Supplies wHasTailKey to the active owl-event handler. */
     public void setTailKeyOwned(boolean owned) {
-        context.roomStoryState.setTailKeyOwned(owned);
+        story().setTailKeyOwned(owned);
     }
 
     public int currentRoomId() {
@@ -293,12 +740,12 @@ public final class RoomSession extends RoomSessionRules {
      * as the beach sword and owl.
      */
     public void initializeNewGameWorldState() {
-        context.roomStoryState.initializeNewGameWorldState();
+        story().initializeNewGameWorldState();
     }
     /** Restores the room-status WRAM tables loaded by the source save path. */
     public void restoreRoomStatuses(
             byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
-        context.roomStoryState.restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
+        story().restoreRoomStatuses(overworldStatus, indoorAStatus, indoorBStatus, colorDungeonStatus);
     }
 
     public void setDungeonItemForDebug(int mapId, int index, int value) {
@@ -370,11 +817,11 @@ public final class RoomSession extends RoomSessionRules {
         return context.roomSessionViews.heartPiecePickupActive();
     }
 
-    public void setHeartPiecesCount(int count) {
+    void setHeartPiecesCount(int count) {
         context.roomSessionViews.setHeartPiecesCount(count);
     }
 
-    public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
+    List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         return context.roomSessionViews.consumeHeartPieceUpdates();
     }
 
@@ -396,8 +843,8 @@ public final class RoomSession extends RoomSessionRules {
      * {@link #setFollowingNpcState(FollowingNpcState, int, int, int, int, int)}
      * so spawning and selection stay in one ROM-shaped path.
      */
-    public void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
-        context.roomStoryState.setFollowerSpriteOverrides(overrides);
+    void setFollowerSpriteOverrides(Map<Integer, EntitySpriteDefinition> overrides) {
+        story().setFollowerSpriteOverrides(overrides);
     }
     /**
      * Binds the current WRAM-like follower flags and Link coordinates to the
@@ -405,37 +852,37 @@ public final class RoomSession extends RoomSessionRules {
      * state change, matching the room-transition caller in room_transition.asm.
      * Coordinates are hLinkPositionX/Y/Z and entityYOffset is wC13B.
      */
-    public void setFollowingNpcState(
+    void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
-        context.roomStoryState.setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
+        story().setFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
     }
 
-    public FollowingNpcState followingNpcState() {
-        return context.roomStoryState.followingNpcState();
+    FollowingNpcState followingNpcState() {
+        return story().followingNpcState();
     }
     /** Mirrors wIsBowWowFollowingLink, including BOW_WOW_KIDNAPPED=$80. */
     public int bowWowState() {
-        return context.roomStoryState.bowWowState();
+        return story().bowWowState();
     }
 
     public void setBowWowState(int state) {
-        context.roomStoryState.setBowWowState(state);
+        story().setBowWowState(state);
     }
 
     public int richardSpokenFlag() {
-        return context.roomStoryState.richardSpokenFlag();
+        return story().richardSpokenFlag();
     }
 
     public void setRichardSpokenFlag(int flag) {
-        context.roomStoryState.setRichardSpokenFlag(flag);
+        story().setRichardSpokenFlag(flag);
     }
     /** Mirrors the unsigned-byte world progression flag at wTarinFlag. */
     public int tarinFlag() {
-        return context.roomStoryState.tarinFlag();
+        return story().tarinFlag();
     }
 
     public void setTarinFlag(int flag) {
-        context.roomStoryState.setTarinFlag(flag);
+        story().setTarinFlag(flag);
     }
     /** Supplies the held J_A|J_B state consumed by input-driven entity handlers. */
     public void setEntityActionButtonsHeld(boolean actionButtonsHeld) {
@@ -446,7 +893,7 @@ public final class RoomSession extends RoomSessionRules {
         return context.entityBridge.entityRuntime != null && context.entityBridge.entityRuntime.gelClingingToLink();
     }
     /** Supplies wDialogState's active gate to the room entity handlers. */
-    public void setEntityLinkVelocityZ(int velocity) {
+    void setEntityLinkVelocityZ(int velocity) {
         context.entityInputs.setEntityLinkVelocityZ(velocity);
     }
 
@@ -458,11 +905,11 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
-    public void setEntityDialogAskSelectionIndex(int selectionIndex) {
+    void setEntityDialogAskSelectionIndex(int selectionIndex) {
         context.entityInputs.setEntityDialogAskSelectionIndex(selectionIndex);
     }
     /** Supplies the source wActiveMusicIndex gate to entity state machines. */
-    public void setEntityMusicActive(boolean active) {
+    void setEntityMusicActive(boolean active) {
         context.entityInputs.setEntityMusicActive(active);
     }
     /** Supplies the distinct held A/B states consumed by ROM input handlers. */
@@ -470,24 +917,24 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
     /** Supplies whether any held Game Boy joypad bit is active. */
-    public void setEntityJoypadHeld(boolean joypadHeld) {
+    void setEntityJoypadHeld(boolean joypadHeld) {
         context.entityInputs.setEntityJoypadHeld(joypadHeld);
     }
     /** Supplies hPressedButtonsMask's currently-held D-pad bits to entities. */
-    public void setEntityPressedButtonsMask(int pressedButtonsMask) {
+    void setEntityPressedButtonsMask(int pressedButtonsMask) {
         context.entityInputs.setEntityPressedButtonsMask(pressedButtonsMask);
     }
     /** Supplies the B/A inventory bytes consumed by Like Like's handler. */
-    public void setEntityInventorySlots(int itemA, int itemB) {
+    void setEntityInventorySlots(int itemA, int itemB) {
         context.entityInputs.setEntityInventorySlots(itemA, itemB);
     }
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
     public void setHouseNpcTradeItem(int tradeItem) {
-        context.roomStoryState.setHouseNpcTradeItem(tradeItem);
+        story().setHouseNpcTradeItem(tradeItem);
     }
 
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        context.roomStoryState.setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        story().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
     }
     /** Supplies the two WRAM values checked by SleepyToadstoolEntityHandler. */
     public void setToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
@@ -504,14 +951,14 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public void setEntityDefaultMusicTrack(int trackId) {
-        context.roomStoryState.setEntityDefaultMusicTrack(trackId);
+        story().setEntityDefaultMusicTrack(trackId);
     }
 
     void updateWitchEnvironment() {
         context.roomStoryState.updateWitchEnvironment();
     }
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
-    public void setEntityGoldenLeavesCount(int goldenLeavesCount) {
+    void setEntityGoldenLeavesCount(int goldenLeavesCount) {
         context.entityInputs.setEntityGoldenLeavesCount(goldenLeavesCount);
     }
     /** Supplies wScreenShakeCountdown to ceiling-triggered entity handlers. */
@@ -539,43 +986,43 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityAttackStepAnimationCountdown(countdown);
     }
     /** Supplies hLinkFinalPositionX captured before the current Link update. */
-    public void setEntityFinalPositionX(int positionX) {
+    void setEntityFinalPositionX(int positionX) {
         context.entityInputs.setEntityFinalPositionX(positionX);
     }
     /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
     public boolean shouldGetLostInMysteriousWoods() {
-        return context.roomStoryState.shouldGetLostInMysteriousWoods();
+        return story().shouldGetLostInMysteriousWoods();
     }
     /** Starts the source UseOcarina countdown consumed by active entities. */
     public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
-        return context.roomTransitionController.startOcarina(countdown, songFlags, selectedSong);
+        return transitions().startOcarina(countdown, songFlags, selectedSong);
     }
     /** Mirrors wLinkPlayingOcarinaCountdown for Link's motion gate. */
     public boolean ocarinaPlaying() {
-        return context.roomTransitionController.ocarinaPlaying();
+        return transitions().ocarinaPlaying();
     }
     /** Mirrors hLinkAnimationState $75/$76 while LinkPlayingOcarinaHandler runs. */
     public int ocarinaAnimationState() {
-        return context.roomTransitionController.ocarinaAnimationState();
+        return transitions().ocarinaAnimationState();
     }
     /**
      * Returns the ROM destination prepared by the completed Mambo branch.
      * The caller starts the non-interactive transition and applies this warp
      * only after the source's {@code $C0}-frame effect has finished.
      */
-    public Warp consumeManboPondTransitionRequest() {
-        return context.roomTransitionController.consumeManboPondTransitionRequest();
+    Warp consumeManboPondTransitionRequest() {
+        return transitions().consumeManboPondTransitionRequest();
     }
     /** Returns the room's prepared warp after the instrument effect completes. */
-    public Warp consumeInstrumentTransitionRequest() {
-        return context.roomTransitionController.consumeInstrumentTransitionRequest();
+    Warp consumeInstrumentTransitionRequest() {
+        return transitions().consumeInstrumentTransitionRequest();
     }
     /** Returns the completed entity-$61 request emitted by the ROM handler. */
     Warp consumeClearedDungeonWarp() {
         return context.roomTransitionController.consumeClearedDungeonWarp();
     }
     /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
-    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
+    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
         context.entityBridge.setEnemyDropPlayerState(maxHearts, health, activePowerUp);
     }
 
@@ -584,7 +1031,7 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Throws the currently held object using Link's Java direction order. */
     public boolean throwLiftedEntity(int linkDirection) {
-        return context.roomPlayerItemActions.throwLiftedEntity(linkDirection);
+        return playerItems().throwLiftedEntity(linkDirection);
     }
     /** Register inputs used by ApplyLinkMotionState/ApplyLinkGroundPhysics ($00:1794/$02:75BD). */
     public record LinkGroundFrame(
@@ -618,32 +1065,30 @@ public final class RoomSession extends RoomSessionRules {
             int romDirection,
             boolean linkAirborne,
             boolean linkPushing) {
-        return context.roomPlayerItemActions.fireHookshot(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing);
+        return playerItems()
+                .fireHookshot(linkEntityX, linkEntityY, linkEntityZ, romDirection, linkAirborne, linkPushing);
     }
     /** Mirrors UseBoomerang's player-projectile spawn bridge. */
     public boolean fireBoomerang(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, int pressedButtonsMask) {
-        return context.roomPlayerItemActions.fireBoomerang(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
+        return playerItems().fireBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
     }
     /** Mirrors the level-two branch of UseSword's player-projectile spawn. */
     public boolean fireSwordBeam(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.fireSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().fireSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** Mirrors the delayed UseMagicRod player-projectile spawn bridge. */
     public boolean fireMagicRodFireball(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
     public boolean fireMagicRodFireball(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return context.roomPlayerItemActions.fireMagicRodFireball(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        return playerItems().fireMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
     /** Mirrors the delayed UseMagicPowder sprinkle-entity spawn bridge. */
     public boolean sprinkleMagicPowder(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.sprinkleMagicPowder(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().sprinkleMagicPowder(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /**
      * Mirrors {@code UseShovel}: the item always enters its 24-frame pose
@@ -654,15 +1099,15 @@ public final class RoomSession extends RoomSessionRules {
      * caller supplies ROM direction order: RIGHT, LEFT, UP, DOWN.</p>
      */
     public ShovelStartResult startShovel(int linkEntityX, int linkEntityY, int romDirection, boolean linkAirborne) {
-        return context.roomPlayerItemActions.startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne);
+        return playerItems().startShovel(linkEntityX, linkEntityY, romDirection, linkAirborne);
     }
     /** Applies the ROM shovel timer's delayed room mutation and finish path. */
     public void advanceShovel(int linkEntityX, int linkEntityY, int romDirection, int timer) {
-        context.roomPlayerItemActions.advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
+        playerItems().advanceShovel(linkEntityX, linkEntityY, romDirection, timer);
     }
     /** Resolves the ROM shovel animation table through Java's Link direction order. */
     public int shovelAnimationState(int javaDirection, int timer) {
-        return context.roomPlayerItemActions.shovelAnimationState(javaDirection, timer);
+        return playerItems().shovelAnimationState(javaDirection, timer);
     }
 
     ShovelProbe probeShovel(int linkEntityX, int linkEntityY, int romDirection) {
@@ -678,35 +1123,34 @@ public final class RoomSession extends RoomSessionRules {
      * allocation and immutable snapshot refresh.
      */
     public boolean placeBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().placeBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** Returns whether the last successful bomb placement queued the top-view bump jingle. */
     public boolean lastBombPlacementPlayedBump() {
-        return context.roomPlayerItemActions.lastBombPlacementPlayedBump();
+        return playerItems().lastBombPlacementPlayedBump();
     }
     /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
     public record ArrowShotResult(boolean spawned, boolean playWhoosh) {}
     /** Mirrors ShootArrow's player-projectile bridge and refreshes the room snapshot. */
-    public boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.shootArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+    boolean shootArrow(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
+        return playerItems().shootArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
 
     public ArrowShotResult shootArrowResult(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
-        return context.roomPlayerItemActions.shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        return playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection);
     }
     /** ShootArrow's label_140F speed-table selector for Piece of Power. */
     public ArrowShotResult shootArrowResult(
             int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection, boolean pieceOfPower) {
-        return context.roomPlayerItemActions.shootArrowResult(
-                linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        return playerItems().shootArrowResult(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
     }
     /** Returns the modeled player-projectile count used by the item gates. */
     public int activeProjectileCount() {
-        return context.roomPlayerItemActions.activeProjectileCount();
+        return playerItems().activeProjectileCount();
     }
     /** Returns whether the live room currently owns an ordinary bomb entity. */
     public boolean bombActive() {
-        return context.roomPlayerItemActions.bombActive();
+        return playerItems().bombActive();
     }
 
     int bombDirectionForTest(int slot) {
@@ -714,11 +1158,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Returns whether the live room currently owns entity {@code $03}. */
     public boolean hookshotActive() {
-        return context.roomPlayerItemActions.hookshotActive();
+        return playerItems().hookshotActive();
     }
     /** Returns whether the live room currently owns the boomerang entity. */
     public boolean boomerangActive() {
-        return context.roomPlayerItemActions.boomerangActive();
+        return playerItems().boomerangActive();
     }
 
     public void setColorShellSoundSink(GameplaySoundSink soundSink) {
@@ -1052,152 +1496,152 @@ public final class RoomSession extends RoomSessionRules {
         context.roomTransitionController.tickOcarinaAnimationHandler();
     }
     /** Returns and clears entity side-effect events emitted by the last tick. */
-    public List<EntityCombatEvent> consumeEntityEvents() {
-        return context.entityBridge.consumeEntityEvents();
+    List<EntityCombatEvent> consumeEntityEvents() {
+        return context.entityBridge.outbox.consumeEntityEvents();
     }
 
     public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return context.entityBridge.deferContactRecoil(slot, linkX, linkY);
+        return context.entityBridge.combat.deferContactRecoil(slot, linkX, linkY);
     }
     /** Returns and clears handlers that restore Link's pre-entity final position. */
-    public List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
-        return context.entityBridge.consumeLinkFinalPositionRequests();
+    List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
+        return context.entityBridge.outbox.consumeLinkFinalPositionRequests();
     }
     /** Returns and clears Rooster's Link HRAM writes from the last entity tick. */
-    public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return context.entityBridge.consumeRoosterLinkStateRequests();
+    List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
+        return context.entityBridge.outbox.consumeRoosterLinkStateRequests();
     }
     /** Returns and clears handlers that block Link's next interactive motion frame. */
-    public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return context.entityBridge.consumeLinkMotionBlockRequests();
+    List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
+        return context.entityBridge.outbox.consumeLinkMotionBlockRequests();
     }
     /** Returns and clears side-view platform Link writes from the last entity tick. */
-    public List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
-        return context.entityBridge.consumeSideViewPlatformLinkRequests();
+    List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
+        return context.entityBridge.outbox.consumeSideViewPlatformLinkRequests();
     }
     /** Returns state-0 side-view pot Link writes from the last entity tick. */
-    public List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
-        return context.entityBridge.consumeSideViewPotLinkRequests();
+    List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
+        return context.entityBridge.outbox.consumeSideViewPotLinkRequests();
     }
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
-    public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
+    List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
         return context.entityBridge.consumeWarpLinkStateRequests();
     }
     /** Returns and clears Hinox grab/throw writes for the last entity tick. */
-    public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return context.entityBridge.consumeHinoxLinkEffectRequests();
+    List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
+        return context.entityBridge.outbox.consumeHinoxLinkEffectRequests();
     }
     /** Returns and clears explicit ROM Link fallen-pose requests. */
-    public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return context.entityBridge.consumeLinkFallenPoseRequests();
+    List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
+        return context.entityBridge.outbox.consumeLinkFallenPoseRequests();
     }
     /** Returns and clears a motion block emitted by a world handler rather than an entity. */
-    public void setFreeMovementMode(boolean enabled) {
-        context.entityBridge.setFreeMovementMode(enabled);
+    void setFreeMovementMode(boolean enabled) {
+        context.entityBridge.outbox.setFreeMovementMode(enabled);
     }
 
-    public boolean consumeWorldLinkMotionBlockRequest() {
+    boolean consumeWorldLinkMotionBlockRequest() {
         return context.entityBridge.consumeWorldLinkMotionBlockRequest();
     }
 
-    public List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return context.entityBridge.consumeLinkFacingRequests();
+    List<LinkFacingRequest> consumeLinkFacingRequests() {
+        return context.entityBridge.outbox.consumeLinkFacingRequests();
     }
 
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return context.entityBridge.consumeLinkAttackClearRequests();
+        return context.entityBridge.outbox.consumeLinkAttackClearRequests();
     }
     /** Returns lifted-throw attack-step writes for Main's post-entity phase. */
-    public List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
-        return context.entityBridge.consumeLinkAttackStepRequests();
+    List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
+        return context.entityBridge.outbox.consumeLinkAttackStepRequests();
     }
 
-    public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return context.entityBridge.consumeLinkHeldItemPoseRequests();
+    List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
+        return context.entityBridge.outbox.consumeLinkHeldItemPoseRequests();
     }
 
     public boolean gotItemPresentationActive() {
-        return context.entityBridge.gotItemPresentationActive();
+        return context.entityBridge.outbox.gotItemPresentationActive();
     }
 
     public boolean powerUpPickupSequenceActive() {
-        return context.entityBridge.powerUpPickupSequenceActive();
+        return context.entityBridge.outbox.powerUpPickupSequenceActive();
     }
 
     public boolean swordPickupSequenceActive() {
-        return context.entityBridge.swordPickupSequenceActive();
+        return context.entityBridge.outbox.swordPickupSequenceActive();
     }
 
-    public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return context.entityBridge.consumeLinkSwordSpinPoseRequests();
+    List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
+        return context.entityBridge.outbox.consumeLinkSwordSpinPoseRequests();
     }
 
-    public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return context.entityBridge.consumeLinkSwordFinalPoseRequests();
+    List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
+        return context.entityBridge.outbox.consumeLinkSwordFinalPoseRequests();
     }
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
-    public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return context.entityBridge.consumeScreenShakeRequests();
+    List<ScreenShakeRequest> consumeScreenShakeRequests() {
+        return context.entityBridge.outbox.consumeScreenShakeRequests();
     }
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
-    public List<ChestRewardEvent> consumeChestRewardEvents() {
-        return context.entityBridge.consumeChestRewardEvents();
+    List<ChestRewardEvent> consumeChestRewardEvents() {
+        return context.entityBridge.outbox.consumeChestRewardEvents();
     }
     /** Returns and clears key or hookshot rewards emitted by key-drop entities. */
-    public List<KeyRewardEvent> consumeKeyRewardEvents() {
-        return context.entityBridge.consumeKeyRewardEvents();
+    List<KeyRewardEvent> consumeKeyRewardEvents() {
+        return context.entityBridge.outbox.consumeKeyRewardEvents();
     }
     /** Returns and clears Hiding Slime Key leaf-count updates emitted by entity handlers. */
-    public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
-        return context.entityBridge.consumeSlimeKeyRewardEvents();
+    List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+        return context.entityBridge.outbox.consumeSlimeKeyRewardEvents();
     }
     /** Returns and clears completed boss heart-container rewards. */
-    public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
-        return context.entityBridge.consumeHeartContainerRewards();
+    List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
+        return context.entityBridge.outbox.consumeHeartContainerRewards();
     }
 
-    public List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
-        return context.entityBridge.consumeMadamMeowMeowFullHealRequests();
+    List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
+        return context.entityBridge.outbox.consumeMadamMeowMeowFullHealRequests();
     }
 
-    public List<RichardProgressEvent> consumeRichardProgressEvents() {
-        return context.entityBridge.consumeRichardProgressEvents();
+    List<RichardProgressEvent> consumeRichardProgressEvents() {
+        return context.entityBridge.outbox.consumeRichardProgressEvents();
     }
 
     public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        return context.entityBridge.consumeSwordPickupRewards();
+        return context.entityBridge.outbox.consumeSwordPickupRewards();
     }
 
-    public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
-        return context.entityBridge.consumeToadstoolRewards();
+    List<ToadstoolRewardEvent> consumeToadstoolRewards() {
+        return context.entityBridge.outbox.consumeToadstoolRewards();
     }
 
-    public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
-        return context.entityBridge.consumeWitchExchangeEvents();
+    List<WitchExchangeEvent> consumeWitchExchangeEvents() {
+        return context.entityBridge.outbox.consumeWitchExchangeEvents();
     }
 
-    public List<WitchRewardEvent> consumeWitchRewardEvents() {
-        return context.entityBridge.consumeWitchRewardEvents();
+    List<WitchRewardEvent> consumeWitchRewardEvents() {
+        return context.entityBridge.outbox.consumeWitchRewardEvents();
     }
     /** Returns the raw music-track request emitted by a chest, or {@code -1}. */
-    public int consumePendingMusicTrack() {
-        return context.entityBridge.consumePendingMusicTrack();
+    int consumePendingMusicTrack() {
+        return context.entityBridge.outbox.consumePendingMusicTrack();
     }
 
-    public int consumePendingMusicFadeOutCountdown() {
-        return context.entityBridge.consumePendingMusicFadeOutCountdown();
+    int consumePendingMusicFadeOutCountdown() {
+        return context.entityBridge.outbox.consumePendingMusicFadeOutCountdown();
     }
     /** Returns and clears Like Like capture/release requests from the last tick. */
-    public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return context.entityBridge.consumeLikeLikeEvents();
+    List<LikeLikeEvent> consumeLikeLikeEvents() {
+        return context.entityBridge.outbox.consumeLikeLikeEvents();
     }
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */
     public List<DialogRequest> consumeEntityDialogRequests() {
-        return context.entityBridge.consumeEntityDialogRequests();
+        return context.entityBridge.outbox.consumeEntityDialogRequests();
     }
     /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
-    public List<BombExplosionEvent> consumeBombExplosionEvents() {
-        return context.entityBridge.consumeBombExplosionEvents();
+    List<BombExplosionEvent> consumeBombExplosionEvents() {
+        return context.entityBridge.outbox.consumeBombExplosionEvents();
     }
     /** Advances the ROM's VBlank tile path, including switch blocks. */
     public void tickGameplayVBlank() {
@@ -1219,7 +1663,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1244,7 +1688,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1271,7 +1715,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1287,7 +1731,7 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public int clearEntity(int slot) {
-        return context.entityBridge.clearEntity(slot);
+        return context.entityBridge.combat.clearEntity(slot);
     }
     /**
      * Applies the ROM pickup collision cadence to the active room entities.
@@ -1297,7 +1741,7 @@ public final class RoomSession extends RoomSessionRules {
     /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
@@ -1308,7 +1752,7 @@ public final class RoomSession extends RoomSessionRules {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
 
@@ -1320,7 +1764,7 @@ public final class RoomSession extends RoomSessionRules {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
@@ -1337,7 +1781,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1352,15 +1796,15 @@ public final class RoomSession extends RoomSessionRules {
                 swordHeight);
     }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY) {
+    RoomBoundaryState boundaryState(int linkX, int linkY) {
         return context.roomCollisionQueries.boundaryState(linkX, linkY);
     }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
+    RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne) {
         return context.roomCollisionQueries.boundaryState(linkX, linkY, linkAirborne);
     }
 
-    public RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
+    RoomBoundaryState boundaryState(int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
         return context.roomCollisionQueries.boundaryState(linkX, linkY, linkAirborne, linkPhysicsModifier);
     }
 
@@ -1384,7 +1828,7 @@ public final class RoomSession extends RoomSessionRules {
         context.roomStoryState.synchronizeFollowingNpcEntitiesIfNeeded();
     }
 
-    public void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
+    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
         setEnemyDropPlayerState(maxHearts, health, activePowerUp);
         context.enemyDropLowHealth = lowHealth;
         configureEnemyDropRuntime();
@@ -1473,24 +1917,22 @@ public final class RoomSession extends RoomSessionRules {
      */
     public ChestOpenResult tryOpenChest(
             int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
-        return context.roomDoorInteractions.tryOpenChest(
-                linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
+        return doors().tryOpenChest(linkPixelX, linkPixelY, linkDirection, actionPressed, swordLevel);
     }
     /** Mirrors bank 2's locked-door branch for physics categories $90-$93. */
     public boolean tryUnlockIndoorKeyDoor(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryUnlockIndoorKeyDoor(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryUnlockIndoorKeyDoor(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** $02:70F2-$710F checks ROM Link coordinates against the authored door origin. */
     static boolean alignedWithIndoorKeyDoor(int location, int direction, int linkPixelX, int linkPixelY) {
         return RoomInteractionGeometry.alignedWithIndoorKeyDoor(location, direction, linkPixelX, linkPixelY);
     }
     /** Mirrors bank 2's $A7 collision counter and entity-$06 spawn branch. */
-    public boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
+    boolean tryPushIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+        return doors().tryPushIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
-    public void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
+    void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
         if (context.entityBridge.entityRuntime != null) {
             context.entityBridge.entityRuntime.configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
         }
@@ -1498,28 +1940,33 @@ public final class RoomSession extends RoomSessionRules {
 
     public boolean tryLiftObject(
             int x, int y, int direction, boolean held, int buttons, boolean power, int level, boolean anyPowerUp) {
-        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
+        return doors().tryLiftObject(x, y, direction, held, buttons, power, level, anyPowerUp);
     }
 
     public boolean tryLiftObject(int x, int y, int direction, boolean held, int buttons, boolean power, int level) {
-        return context.roomDoorInteractions.tryLiftObject(x, y, direction, held, buttons, power, level);
+        return doors().tryLiftObject(x, y, direction, held, buttons, power, level);
     }
 
-    public boolean tryLiftIndoorObject(
+    boolean tryLiftIndoorObject(
             int linkPixelX, int linkPixelY, int linkDirection, boolean braceletButtonHeld, int pressedButtonsMask) {
-        return context.roomDoorInteractions.tryLiftIndoorObject(
-                linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
+        return doors().tryLiftIndoorObject(
+                        linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask);
     }
     /** Includes the source's shortened pull while Piece of Power is active. */
-    public boolean tryLiftIndoorObject(
+    boolean tryLiftIndoorObject(
             int linkPixelX,
             int linkPixelY,
             int linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
-        return context.roomDoorInteractions.tryLiftIndoorObject(
-                linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, pieceOfPowerActive);
+        return doors().tryLiftIndoorObject(
+                        linkPixelX,
+                        linkPixelY,
+                        linkDirection,
+                        braceletButtonHeld,
+                        pressedButtonsMask,
+                        pieceOfPowerActive);
     }
 
     int entityPhysicsFlagsForTest(int slot) {
@@ -1527,13 +1974,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Dispatches bank 2's shared $A7/$DE interactive-block collision branch. */
     public boolean tryInteractWithIndoorBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryInteractWithIndoorBlock(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+        return doors().tryInteractWithIndoorBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
     /** Mirrors bank 2's $DE interactive-block branch and TryOpenLockedDoor. */
-    public boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
-        return context.roomDoorInteractions.tryUnlockIndoorKeyholeBlock(
-                linkPixelX, linkPixelY, linkDirection, collisionType);
+    boolean tryUnlockIndoorKeyholeBlock(int linkPixelX, int linkPixelY, int linkDirection, int collisionType) {
+        return doors().tryUnlockIndoorKeyholeBlock(linkPixelX, linkPixelY, linkDirection, collisionType);
     }
 
     static int keyDoorDirectionIndex(int linkDirection) {
@@ -1554,14 +1999,13 @@ public final class RoomSession extends RoomSessionRules {
      */
     public boolean tryUnlockTailCaveKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
-        return context.roomDoorInteractions.tryUnlockTailCaveKeyhole(
-                linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
+        return doors().tryUnlockTailCaveKeyhole(linkPixelX, linkPixelY, linkDirection, collisionType, hasTailKey);
     }
     /** Mirrors bank 2's room-$B5 Slime Key branch of the shared keyhole handler. */
     public boolean tryUnlockKeyCavernKeyhole(
             int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
-        return context.roomDoorInteractions.tryUnlockKeyCavernKeyhole(
-                linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
+        return doors().tryUnlockKeyCavernKeyhole(
+                        linkPixelX, linkPixelY, linkDirection, collisionType, goldenLeavesCount);
     }
 
     boolean tryUnlockOverworldDungeonKeyhole(
@@ -1577,11 +2021,11 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** One RenderTranscientRumble step, called once per unpaused gameplay frame. */
     public int tickTailCaveKeyholeSequence() {
-        return context.roomDoorInteractions.tickTailCaveKeyholeSequence();
+        return doors().tickTailCaveKeyholeSequence();
     }
 
     public boolean tailCaveKeyholeSequenceActive() {
-        return context.roomDoorInteractions.tailCaveKeyholeSequenceActive();
+        return doors().tailCaveKeyholeSequenceActive();
     }
 
     int tailCaveKeyholeCountdownForTest() {
@@ -1736,8 +2180,8 @@ public final class RoomSession extends RoomSessionRules {
         context.roomPuzzleController.tickRoomEventStairReveal();
     }
     /** Mirrors renderTranscientVFXs' hStaircase leave-and-return state machine. */
-    public Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) {
-        return context.roomTransitionController.pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject);
+    Warp pollStaircaseWarp(int linkEntityX, int linkEntityY, int linkZ, boolean carryingObject) {
+        return transitions().pollStaircaseWarp(linkEntityX, linkEntityY, linkZ, carryingObject);
     }
 
     void configureStaircase(int location) {
