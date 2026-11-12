@@ -60,6 +60,7 @@ import linksawakening.world.room.ChestContentsTable;
  * class only advances handler-owned status and sprite-variant fields.
  */
 public final class RoomEntityRuntime {
+    final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
     // Compatibility aliases for constants previously inherited by the public facade.
     public static final int ENTITY_CHEST_WITH_ITEM = EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
@@ -164,37 +165,48 @@ public final class RoomEntityRuntime {
     public static final int MAP_COLOR_DUNGEON = EntityRomConstants.MAP_COLOR_DUNGEON;
     public static final int DIALOG_MOBLIN = EntityRomConstants.DIALOG_MOBLIN;
 
-    private final EntityPlayerCommands playerCommands = new EntityPlayerCommands(this);
+    private final EntityPlayerCommands playerCommands =
+            new EntityPlayerCommands(EntityPlayerCommandsServices.bind(this));
 
     private void disableEntityWithoutPersistence(int slot) {
         lifecycle.disableEntityWithoutPersistence(slot);
     }
 
-    final EntityRoomInitialization roomInitialization = new EntityRoomInitialization(this);
-    final EntitySlotProperties slotProperties = new EntitySlotProperties(this);
-    final EntityBackgroundMechanics backgroundMechanics = new EntityBackgroundMechanics(this);
-    final EntityBombInteractions bombInteractions = new EntityBombInteractions(this);
-    final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(this);
-    final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(this);
-    final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(this);
-    private final EntityEffectConsumption effects = new EntityEffectConsumption(this);
-    private final EntityRuntimeConfiguration entityRuntimeConfiguration = new EntityRuntimeConfiguration(this);
-    final EntityDebugConfiguration entityDebugConfiguration = new EntityDebugConfiguration(this);
+    final EntityRoomInitialization roomInitialization =
+            new EntityRoomInitialization(EntityRoomInitializationServices.bind(this));
+    final EntitySlotProperties slotProperties = new EntitySlotProperties(EntitySlotPropertiesServices.bind(this));
+    final EntityBackgroundMechanics backgroundMechanics =
+            new EntityBackgroundMechanics(EntityBackgroundMechanicsServices.bind(this));
+    final EntityBombInteractions bombInteractions =
+            new EntityBombInteractions(EntityBombInteractionsServices.bind(this));
+    final EntitySlotLifecycle lifecycle = new EntitySlotLifecycle(EntitySlotLifecycleServices.bind(this));
+    final EntityEnemySpawns entityEnemySpawns = new EntityEnemySpawns(EntityEnemySpawnsServices.bind(this));
+    final EntityPlayerSpawns entityPlayerSpawns = new EntityPlayerSpawns(EntityPlayerSpawnsServices.bind(this));
+    private final EntityEffectConsumption effects =
+            new EntityEffectConsumption(EntityEffectConsumptionServices.bind(this));
+    private final EntityRuntimeConfiguration entityRuntimeConfiguration =
+            new EntityRuntimeConfiguration(EntityRuntimeConfigurationServices.bind(this));
+    final EntityDebugConfiguration entityDebugConfiguration =
+            new EntityDebugConfiguration(EntityDebugConfigurationServices.bind(this));
     final EntityHandlerRegistry entityHandlers = roomInitialization.createEntityHandlers();
-    final EntityRewardController rewards = new EntityRewardController(this);
-    final EntityStoryController story = new EntityStoryController(this);
-    final SlimeEyeController slimeEye = new SlimeEyeController(this);
-    final GenieEntityController genie = new GenieEntityController(this);
-    final EntityProjectileController projectiles = new EntityProjectileController(this);
-    final EntityPickupController pickups = new EntityPickupController(this);
-    final EntityLiftThrowController liftThrow = new EntityLiftThrowController(this);
-    private final EntityCombatResolver combat = new EntityCombatResolver(this);
-    final EntityBossRewards bossRewards = new EntityBossRewards(this);
-    final EntityRoomInspection roomInspection = new EntityRoomInspection(this);
-    final EntityBossInspection bossInspection = new EntityBossInspection(this);
-    final EntityFlyingEnemyInspection flyingEnemyInspection = new EntityFlyingEnemyInspection(this);
-    final EntityPickupInspection pickupInspection = new EntityPickupInspection(this);
-    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(this);
+    final EntityRewardController rewards = new EntityRewardController(EntityRewardControllerServices.bind(this));
+    final EntityStoryController story = new EntityStoryController(EntityStoryControllerServices.bind(this));
+    final SlimeEyeController slimeEye = new SlimeEyeController(SlimeEyeControllerServices.bind(this));
+    final GenieEntityController genie = new GenieEntityController(GenieEntityControllerServices.bind(this));
+    final EntityProjectileController projectiles =
+            new EntityProjectileController(EntityProjectileControllerServices.bind(this));
+    final EntityPickupController pickups = new EntityPickupController(EntityPickupControllerServices.bind(this));
+    final EntityLiftThrowController liftThrow =
+            new EntityLiftThrowController(EntityLiftThrowControllerServices.bind(this));
+    private final EntityCombatResolver combat = new EntityCombatResolver(EntityCombatResolverServices.bind(this));
+    final EntityBossRewards bossRewards = new EntityBossRewards(EntityBossRewardsServices.bind(this));
+    final EntityRoomInspection roomInspection = new EntityRoomInspection(EntityRoomInspectionServices.bind(this));
+    final EntityBossInspection bossInspection = new EntityBossInspection(EntityBossInspectionServices.bind(this));
+    final EntityFlyingEnemyInspection flyingEnemyInspection =
+            new EntityFlyingEnemyInspection(EntityFlyingEnemyInspectionServices.bind(this));
+    final EntityPickupInspection pickupInspection =
+            new EntityPickupInspection(EntityPickupInspectionServices.bind(this));
+    final EntityEnemyInspection enemyInspection = new EntityEnemyInspection(EntityEnemyInspectionServices.bind(this));
 
     final RoomEntity[] slots;
     final java.util.List<RoomEntity> slotEntities;
@@ -209,13 +221,11 @@ public final class RoomEntityRuntime {
     final ChestContentsTable chestContentsTable;
 
     public boolean gelClingingToLink() {
-        return entityState.gelClingingToLink;
+        return entityState.motionSet.zolGelMotion.readGelClingingToLink();
     }
 
-    final boolean[] bombFinalPresentationPending = new boolean[EntityRoomLoader.MAX_ENTITIES];
-
     public void setFreeMovementMode(boolean enabled) {
-        entityState.freeMovementMode = enabled;
+        entityState.roomVariables.writeFreeMovementMode(enabled);
     }
 
     final WarpMotion warpMotion;
@@ -262,9 +272,9 @@ public final class RoomEntityRuntime {
             byte[] romData) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
-        this.entityState.spriteSelection = initial.spriteSelection();
+        this.entityState.presentationState.writeSpriteSelection(initial.spriteSelection());
         this.spriteTiles = initial.spriteTiles();
-        this.entityState.groundInteractionSideScrolling = initial.sideScrolling();
+        this.entityState.physicsTables.writeGroundInteractionSideScrolling(initial.sideScrolling());
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null ? new RomRandomByteSource() : null;
@@ -488,19 +498,21 @@ public final class RoomEntityRuntime {
         state.handlerLinkCollisionEnabled = state.context.handlerLinkCollisionEnabled();
         Objects.requireNonNull(state.randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(state.projectileLinkState, "projectileLinkState");
-        state.runtime.entityState.gelClingingToLink = false; // AnimateEntities clears wIsGelClingingToLink each pass.
-        state.countdownBlocksInteraction = state.runtime.entityState.entityInteractionCountdown != 0;
+        state.runtime.entityState.motionSet.zolGelMotion.writeGelClingingToLink(
+                false); // AnimateEntities clears wIsGelClingingToLink each pass.
+        state.countdownBlocksInteraction =
+                state.runtime.entityState.roomVariables.readEntityInteractionCountdown() != 0;
         if (!state.runtime.entityState.linkState.dialogActive
-                && state.runtime.entityState.entityInteractionCountdown > 0)
-            state.runtime.entityState.entityInteractionCountdown--;
+                && state.runtime.entityState.roomVariables.readEntityInteractionCountdown() > 0)
+            state.runtime.entityState.roomVariables.postEntityInteractionCountdown(-1);
         state.handlerLinkCollisionEnabled = state.handlerLinkCollisionEnabled
                 && !state.runtime.entityState.linkState.inventoryAppearing
                 && !state.countdownBlocksInteraction;
         state.threeOfAKindInteractive =
                 state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive();
         state.handlerInteractive = state.runtime.backgroundMechanics.entityHandlerInteractive(state.creditsGameplay);
-        state.bowWowHandlerInteractive = state.runtime.entityState.transitionSequenceCounter == 0x04
-                && !state.runtime.entityState.roomTransitionActive
+        state.bowWowHandlerInteractive = state.runtime.entityState.roomVariables.readTransitionSequenceCounter() == 0x04
+                && !state.runtime.entityState.roomVariables.readRoomTransitionActive()
                 && !state.runtime.entityState.linkState.dialogActive
                 && !state.runtime.entityState.linkState.inventoryAppearing
                 && !state.runtime.inspection().witchGotItemPresentationActive();
@@ -510,34 +522,38 @@ public final class RoomEntityRuntime {
         state.sideViewPotLinkCollisionInteractive = state.sideViewPotInteractive
                 && state.handlerLinkCollisionEnabled
                 && state.projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
-        state.runtime.entityState.shouldGetLostInMysteriousWoods = false;
+        state.runtime.story.writeShouldGetLostInMysteriousWoods(false);
         state.runtime.bombInteractions.finalizePendingBombPresentations();
         state.frame = state.frameCounter & 0xFF;
         state.romCollisionType = state.collisionType & 0xFF;
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.runtime.entityState.boomerangSoundClockProvided
-                && state.runtime.entityState.gameplayWorld
+        if (!state.runtime.projectiles.readBoomerangSoundClockProvided()
+                && state.runtime.entityState.roomVariables.readGameplayWorld()
                 && !state.creditsGameplay) {
-            state.runtime.entityState.boomerangSfxCounter = (state.runtime.entityState.boomerangSfxCounter + 1)
-                    % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
+            state.runtime.projectiles.writeBoomerangSfxCounter((state.runtime.projectiles.readBoomerangSfxCounter() + 1)
+                    % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
-        state.runtime.entityState.boomerangSoundClockProvided = false;
-        if (state.runtime.entityState.swordMoblinAlertingSoundCounter > 0) {
-            state.runtime.entityState.swordMoblinAlertingSoundCounter--;
+        state.runtime.projectiles.writeBoomerangSoundClockProvided(false);
+        if (state.runtime.entityState.motionSet.moblinSwordMotion.readSwordMoblinAlertingSoundCounter() > 0) {
+            state.runtime.entityState.motionSet.moblinSwordMotion.postSwordMoblinAlertingSoundCounter(-1);
         }
-        if (state.runtime.entityState.bombArrowCooldown > 0) {
-            state.runtime.entityState.bombArrowCooldown--;
+        if (state.runtime.bombInteractions.readBombArrowCooldown() > 0) {
+            state.runtime.bombInteractions.postBombArrowCooldown(-1);
         }
-        if (state.runtime.entityState.backgroundInteraction != null) {
+        if (state.runtime.entityState.physicsTables.readBackgroundInteraction() != null) {
             state.backgroundCollision = (entity, direction, nextX, nextY) -> {
-                EntityBackgroundCollisionResult result = state.runtime.entityState.backgroundInteraction.probe(
-                        entity,
-                        direction,
-                        nextX,
-                        nextY,
-                        state.runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()],
-                        state.frame);
+                EntityBackgroundCollisionResult result = state.runtime
+                        .entityState
+                        .physicsTables
+                        .readBackgroundInteraction()
+                        .probe(
+                                entity,
+                                direction,
+                                nextX,
+                                nextY,
+                                state.runtime.entityState.combatTables.readEnemyIgnoreHitsCountdown(entity.slot()),
+                                state.frame);
                 if (result.blocked()
                         && entity.status() == EntityStatus.THROWN
                         && checksThrownRoomEventTriggers(entity.type())) {
@@ -548,16 +564,16 @@ public final class RoomEntityRuntime {
                 return result.blocked();
             };
         }
-        state.hinoxBackgroundInteraction = state.runtime.entityState.backgroundInteraction;
+        state.hinoxBackgroundInteraction = state.runtime.entityState.physicsTables.readBackgroundInteraction();
         if (state.hinoxBackgroundInteraction == null && state.backgroundCollision != null) {
             state.hinoxBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
         }
         state.runtime.entityState.events.projectileLaunchRequests.clear();
-        Arrays.fill(state.runtime.entityState.enemyProjectileSpawnedThisFrame, false);
-        Arrays.fill(state.runtime.entityState.dynamicEntitySpawnedThisFrame, false);
+        state.runtime.entityState.physicsTables.clearEnemyProjectileSpawnedThisFrame();
+        state.runtime.entityState.physicsTables.clearDynamicEntitySpawnedThisFrame();
         state.runtime.genie.beginFrame();
-        Arrays.fill(state.runtime.entityState.wingedSwordAttackThisFrame, false);
-        Arrays.fill(state.runtime.entityState.wingedStateTwoThisFrame, false);
+        Arrays.fill(state.runtime.slotProperties.storageWingedSwordAttackThisFrame(), false);
+        Arrays.fill(state.runtime.slotProperties.storageWingedStateTwoThisFrame(), false);
         state.runtime.entityState.events.transientVfxRequests.clear();
         state.runtime.entityState.events.pendingLinkFinalPositionRequests.clear();
         state.runtime.entityState.events.pendingRoosterLinkStateRequests.clear();
@@ -595,11 +611,11 @@ public final class RoomEntityRuntime {
         state.runtime.entityState.events.pendingInstrumentRewards.clear();
         state.runtime.entityState.events.pendingInstrumentCompletions.clear();
         state.runtime.entityState.events.pendingRichardProgressEvents.clear();
-        if (state.runtime.entityState.bossAgonySfxCountdown > 0) {
-            state.runtime.entityState.bossAgonySfxCountdown--;
-            if (state.runtime.entityState.bossAgonySfxCountdown == 0) {
+        if (state.runtime.bossRewards.readBossAgonySfxCountdown() > 0) {
+            state.runtime.bossRewards.postBossAgonySfxCountdown(-1);
+            if (state.runtime.bossRewards.readBossAgonySfxCountdown() == 0) {
                 state.runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        state.runtime.entityState.bossAgonySourceSlot,
+                        state.runtime.bossRewards.readBossAgonySourceSlot(),
                         EntityRomConstants.ENTITY_GENIE,
                         0,
                         false,
@@ -615,7 +631,7 @@ public final class RoomEntityRuntime {
         state.runtime.entityState.events.pendingLikeLikeEvents.clear();
         state.runtime.entityState.events.pendingBombExplosionEvents.clear();
         state.runtime.entityState.events.hookshotBridgeUpdates.clear();
-        state.runtime.entityState.pendingSwitchBlockAnimationRequest = false;
+        state.runtime.entityState.roomVariables.writePendingSwitchBlockAnimationRequest(false);
         if (state.runtime.entityState.linkState.linkPlayingOcarinaCountdown >= 0x10
                 && state.runtime.entityState.linkState.ocarinaAnimationCounter == 0x14) {
             state.runtime.entityPlayerSpawns.spawnMusicalNote(
@@ -625,7 +641,8 @@ public final class RoomEntityRuntime {
                 state.runtime.entityState.events.outbox.channel(EntityProjectileEvent.class, "projectileEvents");
         state.projectileEvents.clear();
         if (state.linkPositionHistory != null) {
-            state.runtime.entityState.followingLinkPositionHistory = state.linkPositionHistory;
+            state.runtime.entityState.motionSet.followingNpcMotion.writeFollowingLinkPositionHistory(
+                    state.linkPositionHistory);
         }
         state.runtime.entityState.linkState.followingLinkZ = state.linkZ & 0xFF;
         state.runtime.entityState.linkState.followingLinkDirection = state.linkDirection & 0xFF;
@@ -898,7 +915,7 @@ public final class RoomEntityRuntime {
      * The battle flag survives boss death, but not a room load/warp.
      */
     void resetRoomVariables() {
-        entityState.inBossBattle = false;
+        bossRewards.writeInBossBattle(false);
     }
 
     /** EntityInitHandler $03:48B5-4910. No boss-handler writes are outstanding:
@@ -908,8 +925,8 @@ public final class RoomEntityRuntime {
      * unloaded before calling this initialization hook.
      */
     boolean initializeBossBattle(RoomEntity entity) {
-        int options = entityState.entityOptions1Override[entity.slot()] >= 0
-                ? entityState.entityOptions1Override[entity.slot()]
+        int options = entityState.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
+                ? entityState.physicsTables.readEntityOptions1Override(entity.slot())
                 : romTables == null ? 0 : romTables.entityOptions1(entity.type());
         return initializeBossBattle(entity, options);
     }
@@ -917,11 +934,11 @@ public final class RoomEntityRuntime {
     private boolean initializeBossBattle(RoomEntity entity, int options) {
         if ((options & 0x80) == 0) return true;
         // $03:48BE-48C4 rejects an already defeated room boss.
-        if ((entityState.entityRoomStatus & 0x30) != 0) {
+        if ((entityState.roomVariables.readEntityRoomStatus() & 0x30) != 0) {
             lifecycle.disableEntityWithoutPersistence(entity.slot());
             return false;
         }
-        entityState.inBossBattle = true;
+        bossRewards.writeInBossBattle(true);
         return true;
     }
 
@@ -932,8 +949,8 @@ public final class RoomEntityRuntime {
         if (slots[slot].status() == EntityStatus.ACTIVE) {
             initializeBossBattle(slots[slot], romTables == null ? 0 : romTables.entityOptions1(slots[slot].type()));
         }
-        entityState.enemyHealthGroup[slot] =
-                enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type());
+        entityState.combatTables.writeEnemyHealthGroup(
+                slot, enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type()));
     }
 
     int contactDamage(int slot) {
@@ -1230,7 +1247,7 @@ public final class RoomEntityRuntime {
     }
 
     public void setHeartPiecesCount(int count) {
-        entityState.heartPiecesCount = count;
+        pickups.writeHeartPiecesCount(count);
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
@@ -1282,7 +1299,7 @@ public final class RoomEntityRuntime {
             if (!slots[slot].loaded()) {
                 // Dynamic entity paths reuse this slot directly rather than
                 // necessarily passing through clearEntity first.
-                entityState.enemyHitboxFlags[slot] = 0;
+                entityState.combatTables.writeEnemyHitboxFlags(slot, 0);
                 return slot;
             }
         }
@@ -1293,7 +1310,7 @@ public final class RoomEntityRuntime {
         int first = Math.min(highestSlot, slots.length - 1);
         for (int slot = first; slot >= 0; slot--) {
             if (!slots[slot].loaded()) {
-                entityState.enemyHitboxFlags[slot] = 0;
+                entityState.combatTables.writeEnemyHitboxFlags(slot, 0);
                 return slot;
             }
         }
@@ -1366,7 +1383,7 @@ public final class RoomEntityRuntime {
 
     public int thrownDirection(int slot) {
         validateEntitySlot(slot);
-        return entityState.thrownDirection[slot] & 0xFF;
+        return liftThrow.readThrownDirection(slot) & 0xFF;
     }
 
     public int options1(int slot) {

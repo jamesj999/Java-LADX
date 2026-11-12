@@ -129,16 +129,16 @@ final class SlimeEyeRuntimeTest {
                 splitBlockValues,
                 "04:4A94 writes the live split countdown, not a Boolean 2");
         assertEquals(2, eyes(r).size());
-        assertTrue(
-                eyes(r).stream().allMatch(e -> r.slimeEye.half(e.slot()) && r.entityState.enemyHealth[e.slot()] == 5));
+        assertTrue(eyes(r).stream()
+                .allMatch(e -> r.slimeEye.half(e.slot()) && r.entityState.combatTables.readEnemyHealth(e.slot()) == 5));
         assertFalse(r.inspection().snapshot().slots().getFirst().loaded());
         int hits = 0;
         for (int i = 0; i < 2400 && !eyes(r).isEmpty(); i++) {
             for (RoomEntity e : eyes(r)) {
                 if (e.status() == EntityStatus.ACTIVE) {
-                    int before = r.entityState.enemyHealth[e.slot()];
+                    int before = r.entityState.combatTables.readEnemyHealth(e.slot());
                     sword(r, e, false);
-                    if (r.entityState.enemyHealth[e.slot()] < before) hits++;
+                    if (r.entityState.combatTables.readEnemyHealth(e.slot()) < before) hits++;
                 }
             }
             tick(r);
@@ -165,13 +165,13 @@ final class SlimeEyeRuntimeTest {
             // Disclosed isolated comparison setup: preset handler state, not a D3 route.
             set(r, "state", dead ? 0 : half ? 2 : 1);
             set(r, "half", half ? 1 : 0);
-            r.entityState.enemyTransitionCountdown[0] = 0;
-            r.entityState.enemyHealth[0] = dead ? 0 : half ? 5 : 0x50;
+            r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
+            r.entityState.combatTables.writeEnemyHealth(0, dead ? 0 : half ? 5 : 0x50);
             r.slots[0] = EntitySnapshots.withZ(
                     EntitySnapshots.withStatus(r.slots[0], dead ? EntityStatus.DYING : EntityStatus.ACTIVE),
                     half ? 0 : 0x7E);
             StringBuilder trace = new StringBuilder(header);
-            for (int i = 0; i < 33; i++) r.entityState.bossIntroMotion.advance(0x90, 0x5B, 2, 0);
+            for (int i = 0; i < 33; i++) r.entityState.motionSet.bossIntroMotion.advance(0x90, 0x5B, 2, 0);
             frame = 39;
             for (int i = 0; i < (dead ? 226 : 145); i++) {
                 tick(r);
@@ -191,15 +191,15 @@ final class SlimeEyeRuntimeTest {
                         .append('\t')
                         .append(r.slimeEye.speedZ(0))
                         .append('\t')
-                        .append(r.entityState.enemyTransitionCountdown[0])
+                        .append(r.entityState.physicsTables.readEnemyTransitionCountdown(0))
                         .append('\t')
                         .append(r.slimeEye.variant(0))
                         .append('\t')
                         .append(r.slimeEye.dropping(0))
                         .append('\t')
-                        .append(r.entityState.slowTransitionCountdown[0])
+                        .append(r.entityState.physicsTables.readSlowTransitionCountdown(0))
                         .append('\t')
-                        .append(r.entityState.enemyHealth[0])
+                        .append(r.entityState.combatTables.readEnemyHealth(0))
                         .append('\n');
             }
             java.nio.file.Files.writeString(directory.resolve(name + "-engine.tsv"), trace);
@@ -370,18 +370,18 @@ final class SlimeEyeRuntimeTest {
         set(r, "half", 1);
         set(r, "state", 1);
         r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0);
-        r.entityState.enemyHealth[0] = 1;
+        r.entityState.combatTables.writeEnemyHealth(0, 1);
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x5B));
         r.projectiles.applyPlayerProjectileDamage(r.slots[0], EntityRomConstants.DAMAGE_TYPE_ARROW, 0x20, 0);
         assertEquals(EntityStatus.ACTIVE, r.slots[0].status());
-        assertEquals(1, r.entityState.enemyHealth[0]);
-        r.entityState.enemyTransitionCountdown[0] = 0;
+        assertEquals(1, r.entityState.combatTables.readEnemyHealth(0));
+        r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
         sword(r, r.slots[0], false);
         assertEquals(EntityStatus.DYING, r.slots[0].status());
         tick(r); // active handler's lethal collision frame
         tick(r); // first destruction handler visit
         assertEquals(1, r.slimeEye.state(0));
-        assertEquals(0x40, r.entityState.enemyTransitionCountdown[0]);
+        assertEquals(0x40, r.entityState.physicsTables.readEnemyTransitionCountdown(0));
         r.lifecycle.disableEntityWithoutPersistence(0);
         assertFalse(r.slimeEye.half(0));
         assertEquals(0, r.slimeEye.state(0));
@@ -394,8 +394,8 @@ final class SlimeEyeRuntimeTest {
         set(r, "half", 1);
         set(r, "state", 1);
         r.slots[0] = EntitySnapshots.withZ(r.slots[0], 1);
-        r.entityState.enemyTransitionCountdown[0] = 0;
-        r.entityState.enemyHealth[0] = 5;
+        r.entityState.physicsTables.writeEnemyTransitionCountdown(0, 0);
+        r.entityState.combatTables.writeEnemyHealth(0, 5);
         var e = r.slots[0];
         var events = r.resolveCombat(
                 frame,
@@ -409,18 +409,21 @@ final class SlimeEyeRuntimeTest {
                 e.y() - e.z() + 8,
                 4,
                 new EnemyAttackContext(1, false, false, false, true));
-        assertEquals(4, r.entityState.enemyHealth[0], "6DDF clears boots before damage type is selected");
+        assertEquals(
+                4, r.entityState.combatTables.readEnemyHealth(0), "6DDF clears boots before damage type is selected");
         assertEquals(0x10, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
         assertTrue(events.getFirst().linkCollisionResponse().active());
         tick(r);
         int z = r.slots[0].z();
         assertEquals(
-                0x18, r.entityState.enemyFlashCountdown[0], "Fresh hit flash is not aged before its source call site");
+                0x18,
+                r.entityState.combatTables.readEnemyFlashCountdown(0),
+                "Fresh hit flash is not aged before its source call site");
         for (int i = 0; i < 10; i++) {
             tick(r);
             assertEquals(z, r.slots[0].z(), "04:6DC8 discards the half handler return during recoil");
         }
-        assertEquals(0, r.entityState.enemyIgnoreHitsCountdown[0]);
+        assertEquals(0, r.entityState.combatTables.readEnemyIgnoreHitsCountdown(0));
     }
 
     @Test
@@ -430,7 +433,7 @@ final class SlimeEyeRuntimeTest {
         set(r, "half", 1);
         set(r, "state", 0);
         r.slots[0] = EntitySnapshots.withZ(r.slots[0], 0);
-        r.entityState.enemyHealth[0] = 5;
+        r.entityState.combatTables.writeEnemyHealth(0, 5);
         var e = r.slots[0];
         var events = r.resolveCombat(
                 frame, 80, 88, false, true, true, e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard());

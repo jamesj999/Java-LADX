@@ -12,17 +12,17 @@ import linksawakening.world.entity.motion.HinoxMotion;
 
 /** ROM sword and contact combat resolution, sharing the owning room slot table. */
 final class EntityCombatResolver {
-    private final RoomEntityRuntime runtime;
+    private final EntityCombatResolverServices runtime;
     private final boolean[] deferredLeeverContact = new boolean[RoomEntity.SLOT_COUNT];
     private final int[] contactLinkX = new int[RoomEntity.SLOT_COUNT];
     private final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
-    EntityCombatResolver(RoomEntityRuntime runtime) {
+    EntityCombatResolver(EntityCombatResolverServices runtime) {
         this.runtime = runtime;
     }
 
     boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        RoomEntity entity = runtime.slots[slot];
+        RoomEntity entity = runtime.slots()[slot];
         if (entity.type() != EntityRomConstants.ENTITY_LEEVER || entity.status() != EntityStatus.ACTIVE) return false;
         deferredLeeverContact[slot] = true;
         contactLinkX[slot] = linkX;
@@ -43,20 +43,22 @@ final class EntityCombatResolver {
         // the updated position tables when selecting Link's recoil vector.
         var vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 moved.x(), moved.y(), moved.z(), contactLinkX[slot], contactLinkY[slot], 0x14);
-        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
-                slot,
-                moved.type(),
-                0,
-                false,
-                0,
-                -1,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                EntityCombatEvent.SoundChannel.NONE,
-                -1,
-                null,
-                EntityCombatEvent.LinkAction.NONE,
-                new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
+        runtime.events()
+                .pendingEntityEvents
+                .add(new EntityCombatEvent(
+                        slot,
+                        moved.type(),
+                        0,
+                        false,
+                        0,
+                        -1,
+                        EntityCombatEvent.SoundChannel.NONE,
+                        -1,
+                        EntityCombatEvent.SoundChannel.NONE,
+                        -1,
+                        null,
+                        EntityCombatEvent.LinkAction.NONE,
+                        new EntityCombatEvent.LinkCollisionResponse(vector.x() & 255, vector.y() & 255, 0x10)));
     }
 
     List<EntityCombatEvent> resolveCombat(
@@ -77,27 +79,27 @@ final class EntityCombatResolver {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
-        runtime.entityState.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
-        List<EntityCombatEvent> events =
-                runtime.entityState.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        runtime.linkState().runningWithPegasusBoots = attackContext.pegasusBoots();
+        List<EntityCombatEvent> events = runtime.events().outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
-        for (int index = runtime.slots.length - 1; index >= 0; index--) {
-            RoomEntity entity = runtime.slots[index];
+        for (int index = runtime.slots().length - 1; index >= 0; index--) {
+            RoomEntity entity = runtime.slots()[index];
             if (entity.loaded() && entity.type() == 0x5B) {
-                runtime.slimeEye.resolveCombat(
-                        entity,
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkInteractive,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        attackContext,
-                        events);
+                runtime.slimeEye()
+                        .resolveCombat(
+                                entity,
+                                frameCounter,
+                                linkEntityX,
+                                linkEntityY,
+                                linkAirborne,
+                                linkInteractive,
+                                swordCollisionActive,
+                                swordX,
+                                swordWidth,
+                                swordY,
+                                swordHeight,
+                                attackContext,
+                                events);
                 continue;
             }
             if (!entity.loaded()
@@ -106,12 +108,12 @@ final class EntityCombatResolver {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_HINOX
-                    && runtime.entityState.hinoxMotion.state(entity.slot()) == HinoxMotion.STATE_GRAB) {
+                    && runtime.motionSet().hinoxMotion.state(entity.slot()) == HinoxMotion.STATE_GRAB) {
                 // HinoxState4Handler does not call DefaultEnemyDamageCollisionHandler.
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND
-                    && runtime.entityState.threeOfAKindMotion.state(entity.slot()) == 2) {
+                    && runtime.motionSet().threeOfAKindMotion.state(entity.slot()) == 2) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR && linkAirborne) {
@@ -120,13 +122,13 @@ final class EntityCombatResolver {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_PIRANHA_PLANT
-                    && runtime.entityState.piranhaMotion.state(entity.slot()) == 0) {
+                    && runtime.motionSet().piranhaMotion.state(entity.slot()) == 0) {
                 // PiranhaPlantState0Handler keeps the plant hidden and does
                 // not call DefaultEnemyDamageCollisionHandler.
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_ZOMBIE
-                    && !runtime.entityState.zombieMotion.allowsEnemyCollision(entity.slot())) {
+                    && !runtime.motionSet().zombieMotion.allowsEnemyCollision(entity.slot())) {
                 // ZombieState2Handler is the only Zombie branch that calls
                 // DefaultEnemyDamageCollisionHandler.
                 continue;
@@ -142,79 +144,84 @@ final class EntityCombatResolver {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_FISH
-                    && !runtime.entityState.fishMotion.allowsEnemyCollision(entity.slot())) {
+                    && !runtime.motionSet().fishMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_CROW
-                    && !runtime.entityState.crowMotion.allowsEnemyCollision(entity.slot())) {
+                    && !runtime.motionSet().crowMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
             boolean booBuddyAllowsLinkCollision = entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
-                    || runtime.entityState.booBuddyMotion.allowsEnemyCollision(
-                            entity.slot(),
-                            runtime.entityState.booBuddyTriggerCount,
-                            runtime.entityState.enemyTransitionCountdown[entity.slot()],
-                            swordCollisionActive);
+                    || runtime.motionSet()
+                            .booBuddyMotion
+                            .allowsEnemyCollision(
+                                    entity.slot(),
+                                    runtime.motionSet().booBuddyMotion.readBooBuddyTriggerCount(),
+                                    runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()),
+                                    swordCollisionActive);
             boolean booBuddyAllowsSwordCollision = entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
-                    || runtime.entityState.booBuddyMotion.allowsSwordCollision(
-                            entity.slot(), runtime.entityState.booBuddyTriggerCount);
+                    || runtime.motionSet()
+                            .booBuddyMotion
+                            .allowsSwordCollision(
+                                    entity.slot(),
+                                    runtime.motionSet().booBuddyMotion.readBooBuddyTriggerCount());
             if (!booBuddyAllowsLinkCollision && !booBuddyAllowsSwordCollision) {
                 continue;
             }
             if (isGhiniType(entity.type())
-                    && (runtime.entityState.ghiniMotion.hidden(entity.slot()) || entity.spriteVariant() < 0)) {
+                    && (runtime.motionSet().ghiniMotion.hidden(entity.slot()) || entity.spriteVariant() < 0)) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE
-                    && !runtime.entityState.spikedBeetleMotion.allowsCombat(entity.slot())) {
+                    && !runtime.motionSet().spikedBeetleMotion.allowsCombat(entity.slot())) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_ARMOS_STATUE
-                    && !runtime.entityState.armosMotion.isActive(entity.slot())) {
+                    && !runtime.motionSet().armosMotion.isActive(entity.slot())) {
                 continue;
             }
             // $15:4EFA skips DefaultEnemyDamageCollisionHandler only for
             // the jump's initial $08 transition countdown, not all airtime.
             if (entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
-                    && runtime.entityState.stalfosEvasiveMotion.privateState1(entity.slot()) == 0
-                    && runtime.entityState.enemyTransitionCountdown[entity.slot()] != 0) {
+                    && runtime.motionSet().stalfosEvasiveMotion.privateState1(entity.slot()) == 0
+                    && runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()) != 0) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_LEEVER
-                    && !runtime.entityState.leeverMotion.isChasing(entity.slot())) {
+                    && !runtime.motionSet().leeverMotion.isChasing(entity.slot())) {
                 continue;
             }
             boolean peaHatGrounded = entity.type() != EntityRomConstants.ENTITY_PEAHAT
-                    || runtime.entityState.peaHatMotion.isGrounded(entity);
+                    || runtime.motionSet().peaHatMotion.isGrounded(entity);
             if (entity.type() == EntityRomConstants.ENTITY_PAIRODD
-                    && !runtime.entityState.pairoddMotion.allowsEnemyCollision(entity.slot())) {
+                    && !runtime.motionSet().pairoddMotion.allowsEnemyCollision(entity.slot())) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_WIZROBE
-                    && runtime.entityState.wizrobeMotion.state(entity.slot()) != 3) {
+                    && runtime.motionSet().wizrobeMotion.state(entity.slot()) != 3) {
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_POKEY
-                    && runtime.entityState.pokeyMotion.isSegment(entity.slot())
-                    && runtime.entityState.enemyTransitionCountdown[entity.slot()] != 0) {
+                    && runtime.motionSet().pokeyMotion.isSegment(entity.slot())
+                    && runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()) != 0) {
                 // The detached branch calls DefaultEnemyDamageCollisionHandler
                 // only after its transition countdown reaches zero.
                 continue;
             }
             if (entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK
-                    && (runtime.entityState.wingedOctorokMotion.state(entity.slot()) == 2
-                            || runtime.entityState.wingedStateTwoThisFrame[entity.slot()])) {
+                    && (runtime.motionSet().wingedOctorokMotion.state(entity.slot()) == 2
+                            || runtime.slotProperties().readWingedStateTwoThisFrame(entity.slot()))) {
                 // WingedOctorokEntityHandler returns directly from its jump
                 // state instead of calling DefaultEnemyDamageCollisionHandler.
                 continue;
             }
-            if (isZolGelType(entity.type()) && runtime.entityState.zolGelMotion.skipsEnemyCollision(entity.slot())) {
+            if (isZolGelType(entity.type()) && runtime.motionSet().zolGelMotion.skipsEnemyCollision(entity.slot())) {
                 continue;
             }
             boolean hidingZolSwordCollision = entity.type() != EntityRomConstants.ENTITY_HIDING_ZOL
-                    || runtime.entityState.hidingZolMotion.allowsSwordCollision(entity.slot());
+                    || runtime.motionSet().hidingZolMotion.allowsSwordCollision(entity.slot());
             boolean hidingZolLinkCollision = entity.type() != EntityRomConstants.ENTITY_HIDING_ZOL
-                    || runtime.entityState.hidingZolMotion.allowsLinkCollision(entity.slot());
+                    || runtime.motionSet().hidingZolMotion.allowsLinkCollision(entity.slot());
             if (!hidingZolSwordCollision && !hidingZolLinkCollision) {
                 continue;
             }
@@ -222,27 +229,28 @@ final class EntityCombatResolver {
             // Main's combat pass precedes tick(), so read that impending value.
             int collisionFlashCountdown = Math.max(
                     0,
-                    runtime.entityState.enemyFlashCountdown[entity.slot()]
+                    runtime.combatTables().readEnemyFlashCountdown(entity.slot())
                             - (entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES ? 1 : 0));
             if ((collisionFlashCountdown > 0 && entity.type() != EntityRomConstants.ENTITY_MOLDORM)
-                    || runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] > 0) {
+                    || runtime.combatTables().readEnemyIgnoreHitsCountdown(entity.slot()) > 0) {
                 continue;
             }
             if ((entity.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE
-                            && runtime.entityState.bombiteMotion.state(entity.slot()) == 1)
+                            && runtime.motionSet().bombiteMotion.state(entity.slot()) == 1)
                     || (entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE
-                            && runtime.entityState.bombPrivateCountdown1[entity.slot()] > 0)) {
+                            && runtime.bombInteractions().readBombPrivateCountdown1(entity.slot()) > 0)) {
                 continue;
             }
 
-            boolean goombaStomp = runtime.roomInspection.canGoombaStomp(
-                    entity,
-                    linkEntityX,
-                    linkEntityY,
-                    linkAirborne,
-                    linkVerticalVelocity,
-                    linkInteractive,
-                    frameCounter);
+            boolean goombaStomp = runtime.roomInspection()
+                    .canGoombaStomp(
+                            entity,
+                            linkEntityX,
+                            linkEntityY,
+                            linkAirborne,
+                            linkVerticalVelocity,
+                            linkInteractive,
+                            frameCounter);
             boolean linkCollision = entity.type() != EntityRomConstants.ENTITY_LIKE_LIKE
                     && !linkAirborne
                     && linkInteractive
@@ -253,35 +261,35 @@ final class EntityCombatResolver {
                     && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY);
             boolean swordHit = swordCollisionActive
                     && booBuddyAllowsSwordCollision
-                    && !runtime.entityState.wingedSwordAttackThisFrame[entity.slot()]
+                    && !runtime.slotProperties().readWingedSwordAttackThisFrame(entity.slot())
                     && (entity.type() != EntityRomConstants.ENTITY_LIKE_LIKE
-                            || runtime.entityState.likeLikeMotion.state(entity.slot()) == 0)
+                            || runtime.motionSet().likeLikeMotion.state(entity.slot()) == 0)
                     && hidingZolSwordCollision
-                    && runtime.backgroundMechanics.moldormOrHeadOverlapsSword(
-                            entity, swordX, swordWidth, swordY, swordHeight);
+                    && runtime.backgroundMechanics()
+                            .moldormOrHeadOverlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
             // $20:4B4A supplies the shield rectangle to the same collision
             // pass as the sword, but $03:6EA5 dispatches it separately.
             if (entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE
                     && linkInteractive
                     && attackContext.usingShield()
                     && !swordCollisionActive
-                    && runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] == 0
-                    && (runtime.entityState.enemyFlashCountdown[entity.slot()] == 0
-                            || runtime.entityState.enemyFlashCountdown[entity.slot()] >= 0x18)) {
+                    && runtime.combatTables().readEnemyIgnoreHitsCountdown(entity.slot()) == 0
+                    && (runtime.combatTables().readEnemyFlashCountdown(entity.slot()) == 0
+                            || runtime.combatTables().readEnemyFlashCountdown(entity.slot()) >= 0x18)) {
                 int direction = attackContext.romDirection();
                 int shieldX = attackContext.shieldX(linkEntityX);
                 int shieldY = attackContext.shieldY(linkEntityY);
                 if (shieldX != 0
                         && RoomEntityCombatRules.overlapsSword(
                                 entity, shieldX, attackContext.shieldWidth(), shieldY, attackContext.shieldHeight())) {
-                    if (runtime.entityState.spikedBeetleMotion.state(entity.slot()) != 3) {
-                        runtime.entityState.spikedBeetleMotion.flipFromShield(entity.slot(), direction);
-                        runtime.entityState.enemyTransitionCountdown[entity.slot()] = 0xFF;
+                    if (runtime.motionSet().spikedBeetleMotion.state(entity.slot()) != 3) {
+                        runtime.motionSet().spikedBeetleMotion.flipFromShield(entity.slot(), direction);
+                        runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0xFF);
                     }
                     // func_003_6F5C clears the ignore-hits countdown after
                     // the shared shield bump; it does not damage the shell.
-                    runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0;
-                    runtime.entityState.enemyRecoilMotion.clear(entity.slot());
+                    runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0);
+                    runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
                     EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                             entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
                     events.add(new EntityCombatEvent(
@@ -310,11 +318,12 @@ final class EntityCombatResolver {
             }
 
             if (goombaStomp) {
-                runtime.entityState.goombaMotion.enterStomp(entity.slot());
-                runtime.entityState.enemyTransitionCountdown[entity.slot()] = 0x30;
-                EntityCombatEvent.LinkAction linkAction = runtime.entityState.groundInteractionSideScrolling
-                        ? EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING
-                        : EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN;
+                runtime.motionSet().goombaMotion.enterStomp(entity.slot());
+                runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x30);
+                EntityCombatEvent.LinkAction linkAction =
+                        runtime.physicsTables().readGroundInteractionSideScrolling()
+                                ? EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING
+                                : EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN;
                 events.add(new EntityCombatEvent(
                         entity.slot(),
                         entity.type(),
@@ -345,32 +354,33 @@ final class EntityCombatResolver {
                     && (runtime.options1(entity.slot()) & 0x40) != 0;
             boolean rollingBonesBarSwordClink = entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
             boolean moblinKingSwordClink = entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
-                    && runtime.entityState.moblinKingMotion.state(entity.slot()) != 5;
+                    && runtime.motionSet().moblinKingMotion.state(entity.slot()) != 5;
             if (entity.type() == EntityRomConstants.ENTITY_CRYSTAL_SWITCH) {
                 if (swordHit) {
                     // The crystal handler uses the normal enemy-hit path for
                     // the flash/ignore timers, but its preceding health write
                     // prevents the generic damage path from killing it.
-                    runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] =
-                            attackContext.powerRecoil() ? 0x20 : 0x0A;
-                    runtime.entityState.enemyFlashCountdown[entity.slot()] = 0x18;
-                    runtime.entityState.enemyRecoilMotion.clear(entity.slot());
+                    runtime.combatTables()
+                            .writeEnemyIgnoreHitsCountdown(entity.slot(), attackContext.powerRecoil() ? 0x20 : 0x0A);
+                    runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0x18);
+                    runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
                     soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                     soundId = 0x03;
                 }
             } else if (swordHit
                     && entity.type() == EntityRomConstants.ENTITY_IRON_MASK
-                    && runtime.entityState.unmaskedIronMaskMotion.maskRemovalState(entity.slot()) == 0
-                    && runtime.entityState.linkState.lastRomLinkDirection
-                            != runtime.entityState.roamingEnemyMotion.direction(entity.slot())) {
+                    && runtime.motionSet().unmaskedIronMaskMotion.maskRemovalState(entity.slot()) == 0
+                    && runtime.linkState().lastRomLinkDirection
+                            != runtime.motionSet().roamingEnemyMotion.direction(entity.slot())) {
                 // DefaultEnemyDamageCollisionHandler's masked Iron Mask branch
                 // only accepts a sword hit from the direction the mask faces.
                 // A rear hit pushes Link and the mask apart, then uses the
                 // shared sword-poke presentation without applying damage.
                 swordPokeVfx = new EntityCombatEvent.SwordPokeVfx(byteValue(swordX - 0x08), byteValue(swordY - 0x08));
-                runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0x10;
-                runtime.entityState.enemyRecoilMotion.configure(
-                        entity.slot(), entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x10);
+                runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0x10);
+                runtime.motionSet()
+                        .enemyRecoilMotion
+                        .configure(entity.slot(), entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x10);
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
             } else if (swordHit
@@ -387,24 +397,28 @@ final class EntityCombatResolver {
                 // sixteen ignored-hit frames, then the sword-poke VFX and
                 // jingle writes.
                 swordPokeVfx = new EntityCombatEvent.SwordPokeVfx(byteValue(swordX - 0x08), byteValue(swordY - 0x08));
-                runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0x10;
-                runtime.entityState.enemyRecoilMotion.clear(entity.slot());
+                runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0x10);
+                runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
                 soundId = 0x07;
             } else if (swordHit && entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE) {
                 // EnemyCollidedWithSword's Bombite branch is not a damage hit:
                 // it enters state-$02, reverses the vector returned by
                 // GetVectorTowardsLink, and starts the private lit window.
-                runtime.entityState.bombiteMotion.enterBouncingLitFromSword(
-                        entity.slot(), entity, linkEntityX, linkEntityY);
-                runtime.entityState.enemyTransitionCountdown[entity.slot()] = 0x40;
-                runtime.entityState.bombPrivateCountdown1[entity.slot()] = 0x08;
-                runtime.entityState.enemyRecoilMotion.clear(entity.slot());
+                runtime.motionSet()
+                        .bombiteMotion
+                        .enterBouncingLitFromSword(entity.slot(), entity, linkEntityX, linkEntityY);
+                runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x40);
+                runtime.bombInteractions().writeBombPrivateCountdown1(entity.slot(), 0x08);
+                runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
             } else if (swordHit) {
-                RomEnemyCombatTables.SwordDamageResult swordResult = runtime.enemyCombatTables == null
+                RomEnemyCombatTables.SwordDamageResult swordResult = runtime.enemyCombatTables() == null
                         ? null
-                        : runtime.enemyCombatTables.resolveSwordDamage(
-                                entity.type(), runtime.entityState.enemyHealthGroup[entity.slot()], attackContext);
+                        : runtime.enemyCombatTables()
+                                .resolveSwordDamage(
+                                        entity.type(),
+                                        runtime.combatTables().readEnemyHealthGroup(entity.slot()),
+                                        attackContext);
                 int swordDamage = swordResult == null
                         ? RoomEntityCombatRules.basicSwordDamage(entity.type())
                         : swordResult.numericDamage();
@@ -416,24 +430,30 @@ final class EntityCombatResolver {
                 if (usesSharedRecoil(entity.type()) || entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                     // EnemyCollidedWithSword applies the default `$30` recoil
                     // before ApplySwordDamagesToEnemy changes health.
-                    runtime.entityState.enemyRecoilMotion.configure(
-                            entity.slot(), entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x30);
+                    runtime.motionSet()
+                            .enemyRecoilMotion
+                            .configure(
+                                    entity.slot(), entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x30);
                 }
                 // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
                 // before ApplySwordDamagesToEnemy, including lethal hits.
-                runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = attackContext.powerRecoil() ? 0x20 : 0x0A;
+                runtime.combatTables()
+                        .writeEnemyIgnoreHitsCountdown(entity.slot(), attackContext.powerRecoil() ? 0x20 : 0x0A);
                 if (swordDamage > 0) {
                     // $06:6CEB checks existing recoil before $6CEE applies a new hit.
                     // Main resolves combat before ticking handlers, so preserve that phase.
                     if (entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES)
-                        runtime.entityState.rollingBonesMotion.setSwordHitFrame(
-                                entity.slot(), (frameCounter & 0xFF) + 1);
-                    runtime.entityState.enemyHealth[entity.slot()] =
-                            Math.max(0, runtime.entityState.enemyHealth[entity.slot()] - swordDamage);
+                        runtime.motionSet()
+                                .rollingBonesMotion
+                                .setSwordHitFrame(entity.slot(), (frameCounter & 0xFF) + 1);
+                    runtime.combatTables()
+                            .writeEnemyHealth(
+                                    entity.slot(),
+                                    Math.max(0, runtime.combatTables().readEnemyHealth(entity.slot()) - swordDamage));
                     if (entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-                        runtime.entityState.moldormMotion.onSwordHit(entity.slot());
-                        runtime.entityState.enemyFlashCountdown[entity.slot()] = 0x28;
-                        runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0;
+                        runtime.motionSet().moldormMotion.onSwordHit(entity.slot());
+                        runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0x28);
+                        runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0);
                     }
                 }
                 soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
@@ -441,12 +461,12 @@ final class EntityCombatResolver {
                 if (enemySpecialAction == 0xFE) {
                     // ApplySwordDamagesToEnemy's burning branch starts the
                     // shared $60 transition and emits NOISE_SFX_BURSTING_FLAME.
-                    runtime.entityState.enemyTransitionCountdown[entity.slot()] = 0x60;
-                    runtime.entityState.enemyStunnedCountdown[entity.slot()] = 0;
-                    runtime.entityState.enemyFlashCountdown[entity.slot()] = 0;
-                    runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
-                    runtime.entityState.enemyRecoilMotion.clear(entity.slot());
-                    runtime.slots[entity.slot()] = withStatus(entity, EntityStatus.BURNING);
+                    runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0x60);
+                    runtime.combatTables().writeEnemyStunnedCountdown(entity.slot(), 0);
+                    runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0);
+                    runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0x0A);
+                    runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
+                    runtime.slots()[entity.slot()] = withStatus(entity, EntityStatus.BURNING);
                     secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
                     secondarySoundId = 0x12;
                 } else if (enemySpecialAction == 0xFF) {
@@ -454,13 +474,13 @@ final class EntityCombatResolver {
                     // vertical speed; the runtime has no separate Z velocity
                     // for this status, so the countdown is the authoritative
                     // stun state here.
-                    runtime.entityState.enemyTransitionCountdown[entity.slot()] = 0;
-                    runtime.entityState.enemyStunnedCountdown[entity.slot()] = 0xFF;
-                    runtime.entityState.enemyFlashCountdown[entity.slot()] = 0;
-                    runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = 0x0A;
-                    runtime.entityState.enemyRecoilMotion.clear(entity.slot());
-                    runtime.slots[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
-                } else if (swordDamage > 0 && runtime.entityState.enemyHealth[entity.slot()] == 0) {
+                    runtime.physicsTables().writeEnemyTransitionCountdown(entity.slot(), 0);
+                    runtime.combatTables().writeEnemyStunnedCountdown(entity.slot(), 0xFF);
+                    runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0);
+                    runtime.combatTables().writeEnemyIgnoreHitsCountdown(entity.slot(), 0x0A);
+                    runtime.motionSet().enemyRecoilMotion.clear(entity.slot());
+                    runtime.slots()[entity.slot()] = withStatus(entity, EntityStatus.STUNNED);
+                } else if (swordDamage > 0 && runtime.combatTables().readEnemyHealth(entity.slot()) == 0) {
                     // ApplySwordDamagesToEnemy falls through on death to
                     // $03:73B6-73E4. Moldorm already received $28/$C8 above;
                     // ordinary lethal hits also flash for $18. The recoil
@@ -468,59 +488,66 @@ final class EntityCombatResolver {
                     // Final Nightmare ($E6), form 3, also uses $28/$C8
                     // ($03:73BF-73C8); wire this when its form handler exists.
                     if (entity.type() != EntityRomConstants.ENTITY_MOLDORM) {
-                        runtime.entityState.enemyFlashCountdown[entity.slot()] = 0x18;
+                        runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0x18);
                     }
-                    runtime.entityState.dyingCountdown[entity.slot()] = entity.type()
-                                    == EntityRomConstants.ENTITY_MOLDORM
-                            ? 0
-                            : (attackContext.powerRecoil() ? 0x40 : 0x2F);
+                    runtime.combatTables()
+                            .writeDyingCountdown(
+                                    entity.slot(),
+                                    entity.type() == EntityRomConstants.ENTITY_MOLDORM
+                                            ? 0
+                                            : (attackContext.powerRecoil() ? 0x40 : 0x2F));
                     if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
-                        runtime.entityState.bossDeathProducerState[entity.slot()] = 0;
-                        runtime.entityState.moblinKingMotion.setLethalHitFrame(entity.slot(), (frameCounter & 255) + 1);
+                        runtime.bossRewards().writeBossDeathProducerState(entity.slot(), 0);
+                        runtime.motionSet().moblinKingMotion.setLethalHitFrame(entity.slot(), (frameCounter & 255) + 1);
                     }
                     if (entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-                        runtime.entityState.bossDeathProducerState[entity.slot()] = 0;
-                        runtime.entityState.moldormMotion.setDestructionTailState(entity.slot(), 0);
+                        runtime.bossRewards().writeBossDeathProducerState(entity.slot(), 0);
+                        runtime.motionSet().moldormMotion.setDestructionTailState(entity.slot(), 0);
                     }
                     if (entity.type() == 0x12) {
-                        runtime.bossRewards.cascadeGhiniDeath(
-                                entity, runtime.frameContext(frameCounter).randomByteSupplier());
+                        runtime.bossRewards()
+                                .cascadeGhiniDeath(
+                                        entity,
+                                        runtime.frameContext(frameCounter).randomByteSupplier());
                     }
-                    runtime.entityState.powerRecoilDeath[entity.slot()] = attackContext.powerRecoil();
-                    runtime.slots[entity.slot()] = withDeathPresentation(
+                    runtime.combatTables().writePowerRecoilDeath(entity.slot(), attackContext.powerRecoil());
+                    runtime.slots()[entity.slot()] = withDeathPresentation(
                             withStatus(entity, EntityStatus.DYING),
                             -1,
-                            runtime.entityState.powerRecoilDeath[entity.slot()]);
+                            runtime.combatTables().readPowerRecoilDeath(entity.slot()));
                 } else if (swordDamage > 0) {
                     // jr_003_73B6 and StartIgnoringHitsForEntity: a normal
                     // sword hit flashes for $18 frames and suppresses the
                     // next $0A collision passes.
                     if (entity.type() != EntityRomConstants.ENTITY_MOLDORM) {
-                        runtime.entityState.enemyFlashCountdown[entity.slot()] = 0x18;
+                        runtime.combatTables().writeEnemyFlashCountdown(entity.slot(), 0x18);
                     }
-                    runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()] = entity.type()
-                                    == EntityRomConstants.ENTITY_MOLDORM
-                            ? 0
-                            : attackContext.powerRecoil() ? 0x20 : 0x0A;
+                    runtime.combatTables()
+                            .writeEnemyIgnoreHitsCountdown(
+                                    entity.slot(),
+                                    entity.type() == EntityRomConstants.ENTITY_MOLDORM
+                                            ? 0
+                                            : attackContext.powerRecoil() ? 0x20 : 0x0A);
                     if (isZolGelType(entity.type())) {
-                        runtime.entityState.zolGelMotion.onSwordHit(entity.slot());
+                        runtime.motionSet().zolGelMotion.onSwordHit(entity.slot());
                     }
-                    if (entity.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers != null) {
-                        entity =
-                                withDefinition(entity, runtime.spriteHandlers.forZolSlimeEye(), entity.spriteVariant());
-                        runtime.slots[entity.slot()] = entity;
+                    if (entity.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers() != null) {
+                        entity = withDefinition(
+                                entity, runtime.spriteHandlers().forZolSlimeEye(), entity.spriteVariant());
+                        runtime.slots()[entity.slot()] = entity;
                     }
                 }
             }
             if (linkCollision && entity.type() == EntityRomConstants.ENTITY_GEL) {
-                runtime.entityState.zolGelMotion.onLinkCollision(entity.slot());
+                runtime.motionSet().zolGelMotion.onLinkCollision(entity.slot());
             }
             // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
             // immediately after starting the cling, before damage/recoil.
             int linkDamage = linkCollision && entity.type() != EntityRomConstants.ENTITY_GEL
                     ? runtime.contactDamage(entity.slot())
                     : 0;
-            if ((runtime.entityState.enemyPhysicsFlags[entity.slot()] & EntityRomConstants.ENTITY_PHYSICS_HARMLESS)
+            if ((runtime.physicsTables().readEnemyPhysicsFlags(entity.slot())
+                            & EntityRomConstants.ENTITY_PHYSICS_HARMLESS)
                     != 0) {
                 // func_003_6CC0 keeps CheckLinkCollisionWithEnemy's carry
                 // result for harmless entities but suppresses Link damage.
@@ -552,10 +579,10 @@ final class EntityCombatResolver {
             if (linkDamage > 0
                     && !swordHit
                     && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
-                    && runtime.entityState.moblinKingMotion.state(entity.slot()) == 9
-                    && runtime.entityState.enemyTransitionCountdown[entity.slot()] == 0x60) {
+                    && runtime.motionSet().moblinKingMotion.state(entity.slot()) == 9
+                    && runtime.physicsTables().readEnemyTransitionCountdown(entity.slot()) == 0x60) {
                 linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
-                        runtime.entityState.moblinKingMotion.speedX(entity.slot()), 0, 0x28, 0x40);
+                        runtime.motionSet().moblinKingMotion.speedX(entity.slot()), 0, 0x28, 0x40);
             }
             events.add(new EntityCombatEvent(
                     entity.slot(),
@@ -571,6 +598,6 @@ final class EntityCombatResolver {
                     swordPokeVfx,
                     linkCollisionResponse));
         }
-        return runtime.entityState.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+        return runtime.events().outbox.drain(EntityCombatEvent.class, "resolvedCombat");
     }
 }

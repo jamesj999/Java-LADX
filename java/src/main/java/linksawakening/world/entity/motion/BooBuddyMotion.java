@@ -1,11 +1,22 @@
 package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 BooBuddyEntityHandler's drift, trigger, and flee states. */
 public final class BooBuddyMotion {
+    private int booBuddyTriggerCount;
+
+    public int readBooBuddyTriggerCount() {
+        return booBuddyTriggerCount;
+    }
+
+    public int writeBooBuddyTriggerCount(int value) {
+        return booBuddyTriggerCount = value;
+    }
+
     public static final int ENTITY_TYPE = 0x50;
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10;
     public static final int OPTIONS1 = 0x20 | 0x08;

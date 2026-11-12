@@ -54,7 +54,8 @@ final class RoamingSimultaneousContactTest {
                                 new EntitySpriteDefinition.OamAttribute(0, 0))));
         slots.set(2, new RoomEntity(2, 0, type, 58, 82, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false));
         var runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
-        runtime.entityState.enemyHealth[2] = 8; // Synthetic nonlethal target, matching the CPU-hook probe.
+        runtime.entityState.combatTables.writeEnemyHealth(
+                2, 8); // Synthetic nonlethal target, matching the CPU-hook probe.
         return runtime;
     }
 }

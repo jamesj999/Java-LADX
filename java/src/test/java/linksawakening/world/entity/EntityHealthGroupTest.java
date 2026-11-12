@@ -36,7 +36,7 @@ class EntityHealthGroupTest {
                 .toList();
         var runtime = RoomEntityRuntime.from(
                 new RoomEntitySnapshot(slots), false, () -> 0, null, new RomEnemyCombatTables(rom));
-        runtime.entityState.enemyDropResolver = new EnemyDropResolver(rom);
+        runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
         return runtime;
     }
 
@@ -105,7 +105,7 @@ class EntityHealthGroupTest {
                 .findFirst()
                 .orElseThrow();
         runtime.entityState.slotView.setHealthGroup(0, group);
-        runtime.entityState.enemyHealth[0] = 100;
+        runtime.entityState.combatTables.writeEnemyHealth(0, 100);
         var events = runtime.resolveCombat(1, 100, 100, false, true, true, 48, 32, 64, 32);
         assertEquals(1, events.size());
         assertEquals(

@@ -26,7 +26,7 @@ class EntityBossBattleFlagTest {
                 new linksawakening.world.room.ChestContentsTable(rom),
                 linksawakening.rom.RomTables.loadFromRom(rom),
                 rom);
-        runtime.entityState.enemyDropResolver = new EnemyDropResolver(rom);
+        runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
         return runtime;
     }
 
@@ -68,7 +68,7 @@ class EntityBossBattleFlagTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
         runtime.slots[14] = entity(14, 0x81);
-        runtime.entityState.entityRoomStatus = 0x20;
+        runtime.entityState.roomVariables.writeEntityRoomStatus(0x20);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
         assertEquals(EntityStatus.DISABLED, runtime.slots[14].status());
@@ -81,14 +81,14 @@ class EntityBossBattleFlagTest {
         runtime.slots[0] = source;
         runtime.slots[15] = entity(15, 0x81);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        runtime.entityState.enemyDropCounters = new EnemyDropResolver.CounterState(11, 0);
+        runtime.bossRewards.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         runtime.bossRewards.handleTerminalEnemyDeath(runtime.slots[0], () -> 0);
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var peaceful = runtime();
         peaceful.slots[0] = source;
         peaceful.initializeHealthGroup(0);
-        peaceful.entityState.enemyDropCounters = new EnemyDropResolver.CounterState(11, 0);
+        peaceful.bossRewards.writeEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         peaceful.bossRewards.handleTerminalEnemyDeath(source, () -> 0);
         assertTrue(peaceful.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
     }

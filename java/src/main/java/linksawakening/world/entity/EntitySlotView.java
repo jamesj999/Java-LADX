@@ -2,62 +2,69 @@ package linksawakening.world.entity;
 
 /** Reused view of ROM slot state, preserving array indexing and values. */
 public final class EntitySlotView {
-    private final EntityRuntimeState state;
+    private final EntityCombatTables combat;
+    private final EntityPhysicsTables physics;
+    private final linksawakening.world.entity.motion.UnmaskedIronMaskMotion ironMask;
 
-    EntitySlotView(EntityRuntimeState state) {
-        this.state = state;
+    EntitySlotView(
+            EntityCombatTables combat,
+            EntityPhysicsTables physics,
+            linksawakening.world.entity.motion.UnmaskedIronMaskMotion ironMask) {
+        this.combat = combat;
+        this.physics = physics;
+        this.ironMask = ironMask;
     }
 
     public int transitionCountdown(int slot) {
-        return state.enemyTransitionCountdown[slot];
+        return physics.readEnemyTransitionCountdown(slot);
     }
 
     public void setTransitionCountdown(int slot, int value) {
-        state.enemyTransitionCountdown[slot] = value;
+        physics.writeEnemyTransitionCountdown(slot, value);
     }
 
     public int ignoreHits(int slot) {
-        return state.enemyIgnoreHitsCountdown[slot];
+        return combat.readEnemyIgnoreHitsCountdown(slot);
     }
 
     public void setIgnoreHits(int slot, int value) {
-        state.enemyIgnoreHitsCountdown[slot] = value;
+        combat.writeEnemyIgnoreHitsCountdown(slot, value);
     }
 
     public void decrementIgnoreHits(int slot) {
-        state.enemyIgnoreHitsCountdown[slot]--;
+        combat.postEnemyIgnoreHitsCountdown(slot, -1);
     }
 
     public void shiftIgnoreHitsRight(int slot, int distance) {
-        state.enemyIgnoreHitsCountdown[slot] >>>= distance;
+        combat.writeEnemyIgnoreHitsCountdown(slot, combat.readEnemyIgnoreHitsCountdown(slot) >>> (distance));
     }
 
     public int physicsFlags(int slot) {
-        return state.enemyPhysicsFlags[slot];
+        return physics.readEnemyPhysicsFlags(slot);
     }
 
     public void setPhysicsFlags(int slot, int value) {
-        state.enemyPhysicsFlags[slot] = value;
+        physics.writeEnemyPhysicsFlags(slot, value);
     }
 
     public void andPhysicsFlags(int slot, int mask) {
-        state.enemyPhysicsFlags[slot] &= mask;
+        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) & (mask));
     }
 
     public void orPhysicsFlags(int slot, int mask) {
-        state.enemyPhysicsFlags[slot] |= mask;
+        physics.writeEnemyPhysicsFlags(slot, physics.readEnemyPhysicsFlags(slot) | (mask));
     }
 
     public int flashCountdown(int slot) {
-        return state.enemyFlashCountdown[slot];
+        return combat.readEnemyFlashCountdown(slot);
     }
 
     public void setFlashCountdown(int slot, int value) {
-        state.enemyFlashCountdown[slot] = value;
+        combat.writeEnemyFlashCountdown(slot, value);
     }
 
     public int healthGroup(int slot) {
-        return state.enemyHealthGroup[slot];
+        return combat.readEnemyHealthGroup(slot);
     }
     /**
      * Writes wEntitiesHealthGroup ($C4D0) for a handler's slot.
@@ -72,58 +79,58 @@ public final class EntitySlotView {
      */
     public void setHealthGroup(int slot, int value) {
         EntitySlotValidation.validateByte(value, "Health group");
-        state.enemyHealthGroup[slot] = value;
+        combat.writeEnemyHealthGroup(slot, value);
     }
 
     public int health(int slot) {
-        return state.enemyHealth[slot];
+        return combat.readEnemyHealth(slot);
     }
 
     public void setHealth(int slot, int value) {
-        state.enemyHealth[slot] = value;
+        combat.writeEnemyHealth(slot, value);
     }
 
     public int hitboxFlags(int slot) {
-        return state.enemyHitboxFlags[slot];
+        return combat.readEnemyHitboxFlags(slot);
     }
 
     public void setHitboxFlags(int slot, int value) {
-        state.enemyHitboxFlags[slot] = value;
+        combat.writeEnemyHitboxFlags(slot, value);
     }
 
     public int options1Override(int slot) {
-        return state.entityOptions1Override[slot];
+        return physics.readEntityOptions1Override(slot);
     }
 
     public void setOptions1Override(int slot, int value) {
-        state.entityOptions1Override[slot] = value;
+        physics.writeEntityOptions1Override(slot, value);
     }
 
     public int pokeyInertia(int slot) {
-        return state.entityInertia[slot];
+        return physics.readEntityInertia(slot);
     }
 
     public void setPokeyInertia(int slot, int value) {
-        state.entityInertia[slot] = value;
+        physics.writeEntityInertia(slot, value);
     }
 
     public int slowTransitionCountdown(int slot) {
-        return state.slowTransitionCountdown[slot];
+        return physics.readSlowTransitionCountdown(slot);
     }
 
     public void setSlowTransitionCountdown(int slot, int value) {
-        state.slowTransitionCountdown[slot] = value;
+        physics.writeSlowTransitionCountdown(slot, value);
     }
 
     public boolean slowTimerInitialized(int slot) {
-        return state.slowTimerInitialized[slot];
+        return physics.readSlowTimerInitialized(slot);
     }
 
     public void setSlowTimerInitialized(int slot, boolean value) {
-        state.slowTimerInitialized[slot] = value;
+        physics.writeSlowTimerInitialized(slot, value);
     }
 
     public int ironMaskPrivateState2(int slot) {
-        return state.unmaskedIronMaskMotion.maskRemovalState(slot);
+        return ironMask.maskRemovalState(slot);
     }
 }

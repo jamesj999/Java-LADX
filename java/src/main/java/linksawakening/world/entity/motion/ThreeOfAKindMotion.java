@@ -93,12 +93,16 @@ public final class ThreeOfAKindMotion {
     }
 
     public PuzzleResult resolvePuzzle(List<RoomEntity> entities, int[] transitionCountdowns) {
+        return resolvePuzzle(entities, slot -> transitionCountdowns[slot]);
+    }
+
+    public PuzzleResult resolvePuzzle(List<RoomEntity> entities, java.util.function.IntUnaryOperator countdown) {
         List<RoomEntity> cards = entities.stream()
                 .filter(entity -> entity.status() == EntityStatus.ACTIVE && entity.type() == ENTITY_TYPE)
                 .toList();
         if (cards.size() != 3
                 || cards.stream()
-                        .anyMatch(entity -> state[entity.slot()] != 2 || transitionCountdowns[entity.slot()] != 0)) {
+                        .anyMatch(entity -> state[entity.slot()] != 2 || countdown.applyAsInt(entity.slot()) != 0)) {
             return PuzzleResult.NONE;
         }
         int face = direction[cards.getFirst().slot()];

@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.List;
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
@@ -10,6 +11,16 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Bank-$36 Color Shell state machine and fixed-point movement tables. */
 public final class ColorShellMotion {
+    private ColorShellWorld colorShellWorld = ColorShellWorld.none();
+
+    public ColorShellWorld readColorShellWorld() {
+        return colorShellWorld;
+    }
+
+    public ColorShellWorld writeColorShellWorld(ColorShellWorld value) {
+        return colorShellWorld = value;
+    }
+
     static final int ENTITY_COLOR_SHELL_RED = 0xE9;
     static final int ENTITY_COLOR_SHELL_BLUE = 0xEB;
 

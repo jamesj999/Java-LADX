@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.BowWowChain;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
@@ -18,6 +19,16 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
  * without running a general Game Boy CPU.</p>
  */
 public final class BowWowMotion {
+    private int bowWowState;
+
+    public int readBowWowState() {
+        return bowWowState;
+    }
+
+    public int writeBowWowState(int value) {
+        return bowWowState = value;
+    }
+
     private static final int[] SPEED_X_BY_RANDOM = {0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8, 0xF4, 0xF8};
     private static final int[] SPEED_Y_BY_RANDOM = {0xF4, 0xF8, 0x04, 0x08, 0x0C, 0x08, 0xFC, 0xF8};
 

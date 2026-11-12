@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
@@ -13,6 +14,56 @@ import linksawakening.world.entity.RoomEntityObjectSample;
  * Pegasus-Boots collision branch instead of the object-under-entity branch.</p>
  */
 public final class SecretSeashellMotion {
+    private boolean secretSeashellScreenShakeActive;
+
+    public boolean readSecretSeashellScreenShakeActive() {
+        return secretSeashellScreenShakeActive;
+    }
+
+    public boolean writeSecretSeashellScreenShakeActive(boolean value) {
+        return secretSeashellScreenShakeActive = value;
+    }
+
+    private boolean secretSeashellPegasusCollisionActive;
+
+    public boolean readSecretSeashellPegasusCollisionActive() {
+        return secretSeashellPegasusCollisionActive;
+    }
+
+    public boolean writeSecretSeashellPegasusCollisionActive(boolean value) {
+        return secretSeashellPegasusCollisionActive = value;
+    }
+
+    private boolean secretSeashellPegasusCollisionCoordinatesKnown;
+
+    public boolean readSecretSeashellPegasusCollisionCoordinatesKnown() {
+        return secretSeashellPegasusCollisionCoordinatesKnown;
+    }
+
+    public boolean writeSecretSeashellPegasusCollisionCoordinatesKnown(boolean value) {
+        return secretSeashellPegasusCollisionCoordinatesKnown = value;
+    }
+
+    private int secretSeashellPegasusCollisionX;
+
+    public int readSecretSeashellPegasusCollisionX() {
+        return secretSeashellPegasusCollisionX;
+    }
+
+    public int writeSecretSeashellPegasusCollisionX(int value) {
+        return secretSeashellPegasusCollisionX = value;
+    }
+
+    private int secretSeashellPegasusCollisionY;
+
+    public int readSecretSeashellPegasusCollisionY() {
+        return secretSeashellPegasusCollisionY;
+    }
+
+    public int writeSecretSeashellPegasusCollisionY(int value) {
+        return secretSeashellPegasusCollisionY = value;
+    }
+
     static final int ENTITY_TYPE = 0x3D;
 
     private static final int NORMAL_HIDDEN_STATE = 0x02;

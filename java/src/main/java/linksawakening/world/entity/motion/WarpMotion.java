@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.WarpDestination;
 
@@ -13,6 +14,7 @@ import linksawakening.world.entity.event.WarpDestination;
  * table, exactly as {@code WarpState3Handler} does.
  */
 public final class WarpMotion {
+
     public static final int ENTITY_TYPE = 0x61;
     static final int STATE_IDLE = 0;
     public static final int STATE_APPROACH = 1;

@@ -22,12 +22,12 @@ final class EntitySlotPhase5 {
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
                 && !state.keyDropTransitionActive
-                && state.runtime.entityState.enemyDropActive[state.updated.slot()]) {
-            state.updated = state.runtime.entityState.enemyDropMotion.advance(
+                && state.runtime.bossRewards.readEnemyDropActive(state.updated.slot())) {
+            state.updated = state.runtime.entityState.motionSet.enemyDropMotion.advance(
                     state.updated,
                     state.frame,
-                    state.runtime.entityState.entityGroundStatus[state.updated.slot()],
-                    state.runtime.entityState.groundInteractionSideScrolling);
+                    state.runtime.entityState.physicsTables.readEntityGroundStatus(state.updated.slot()),
+                    state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling());
         }
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
@@ -39,20 +39,27 @@ final class EntitySlotPhase5 {
             // entity handler's movement and before the final display-list
             // presentation. The room session supplies terrain physics;
             // direct runtime users retain the no-op default.
-            int previousGroundStatus = state.runtime.entityState.entityGroundStatus[state.updated.slot()];
+            int previousGroundStatus =
+                    state.runtime.entityState.physicsTables.readEntityGroundStatus(state.updated.slot());
             RoomEntityGroundInteraction.Result groundResult = state.preAppliedGroundResult != null
                     ? state.preAppliedGroundResult
                     : Objects.requireNonNull(
-                            state.runtime.entityState.groundInteraction.apply(
-                                    state.updated,
-                                    state.frame,
-                                    previousGroundStatus,
-                                    state.runtime.backgroundMechanics.verticalSpeedZ(state.updated),
-                                    state.runtime.entityState.groundInteractionSideScrolling),
+                            state.runtime
+                                    .entityState
+                                    .physicsTables
+                                    .readGroundInteraction()
+                                    .apply(
+                                            state.updated,
+                                            state.frame,
+                                            previousGroundStatus,
+                                            state.runtime.backgroundMechanics.verticalSpeedZ(state.updated),
+                                            state.runtime.entityState.physicsTables
+                                                    .readGroundInteractionSideScrolling()),
                             "Room entity ground interaction returned null");
             state.updated = Objects.requireNonNull(
                     groundResult.entity(), "Room entity ground interaction returned a null entity");
-            state.runtime.entityState.entityGroundStatus[state.updated.slot()] = groundResult.groundStatus() & 0xFF;
+            state.runtime.entityState.physicsTables.writeEntityGroundStatus(
+                    state.updated.slot(), groundResult.groundStatus() & 0xFF);
             if (groundResult.pitTransition() != null
                     && state.runtime.backgroundMechanics.beginFalling(
                             state.updated, groundResult.pitTransition(), state.ignoreHitsDecrementedBeforeHandler)) {
@@ -74,32 +81,36 @@ final class EntitySlotPhase5 {
                 return false;
             }
             if (state.status == EntityStatus.ACTIVE
-                    && state.runtime.entityState.enemyDropActive[state.updated.slot()]) {
+                    && state.runtime.bossRewards.readEnemyDropActive(state.updated.slot())) {
                 // BouncingEntityPhysics calls the complete background helper before
                 // bouncing. Ground effects alone omit the neighbouring bush walls.
-                RoomEntityBackgroundInteraction dropBackground = state.runtime.entityState.backgroundInteraction;
+                RoomEntityBackgroundInteraction dropBackground =
+                        state.runtime.entityState.physicsTables.readBackgroundInteraction();
                 if (dropBackground == null && state.backgroundCollision != null) {
                     dropBackground = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
                 }
-                state.updated = state.runtime.entityState.enemyDropMotion.resolveWalls(
+                state.updated = state.runtime.entityState.motionSet.enemyDropMotion.resolveWalls(
                         beforeDropPhysics,
                         state.updated,
                         dropBackground,
-                        state.runtime.entityState.enemyIgnoreHitsCountdown[state.updated.slot()],
+                        state.runtime.entityState.combatTables.readEnemyIgnoreHitsCountdown(state.updated.slot()),
                         state.frame);
-                boolean dropGroundCollision = state.runtime.entityState.groundInteractionSideScrolling
-                        && state.runtime.entityState.enemyDropMotion.speedY(state.updated.slot()) != 0
-                        && (state.runtime.entityState.enemyDropMotion.speedY(state.updated.slot()) & 0x80) == 0
-                        && state.backgroundCollision != null
-                        && state.backgroundCollision.blocks(
-                                state.updated,
-                                EntityBackgroundCollisionResult.DOWN,
-                                state.updated.x(),
-                                state.updated.y());
-                state.updated = state.runtime.entityState.enemyDropMotion.bounce(
+                boolean dropGroundCollision =
+                        state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling()
+                                && state.runtime.entityState.motionSet.enemyDropMotion.speedY(state.updated.slot()) != 0
+                                && (state.runtime.entityState.motionSet.enemyDropMotion.speedY(state.updated.slot())
+                                                & 0x80)
+                                        == 0
+                                && state.backgroundCollision != null
+                                && state.backgroundCollision.blocks(
+                                        state.updated,
+                                        EntityBackgroundCollisionResult.DOWN,
+                                        state.updated.x(),
+                                        state.updated.y());
+                state.updated = state.runtime.entityState.motionSet.enemyDropMotion.bounce(
                         state.updated,
                         groundResult.groundStatus(),
-                        state.runtime.entityState.groundInteractionSideScrolling,
+                        state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling(),
                         dropGroundCollision);
             }
         }
@@ -123,7 +134,7 @@ final class EntitySlotPhase5 {
             state.updated = withZ(
                     state.updated,
                     FloatingItemMotion.zForFrame(
-                            state.runtime.entityState.groundInteractionSideScrolling, state.frame));
+                            state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling(), state.frame));
         }
         state.variant = state.preserveGhiniPresentation
                         || state.preserveMadBomberPresentation
@@ -170,7 +181,10 @@ final class EntitySlotPhase5 {
                 : EntityTypeRules.variantFor(state.updated, state.frame);
         if (state.status == EntityStatus.ACTIVE && state.runtime.lifecycle.shouldDisappear(state.entity)) {
             state.variant =
-                    (state.runtime.entityState.slowTransitionCountdown[state.entity.slot()] & 0x01) != 0 ? 0 : -1;
+                    (state.runtime.entityState.physicsTables.readSlowTransitionCountdown(state.entity.slot()) & 0x01)
+                                    != 0
+                            ? 0
+                            : -1;
         }
         state.renderFlipAttribute = state.preserveGhiniPresentation
                         || state.preserveMadBomberPresentation
@@ -214,14 +228,14 @@ final class EntitySlotPhase5 {
                         || state.preserveDroppablePresentation
                         || state.preserveTarinPresentation
                 ? state.updated.entityFlipAttribute()
-                : state.runtime.entityState.baseEntityFlipAttribute[state.entity.slot()];
+                : state.runtime.entityState.physicsTables.readBaseEntityFlipAttribute(state.entity.slot());
         if (state.preserveBombitePresentation && state.updated.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE) {
             state.renderFlipAttribute |=
-                    (state.runtime.entityState.bombPrivateCountdown1[state.updated.slot()] << 3) & 0x10;
+                    (state.runtime.bombInteractions.readBombPrivateCountdown1(state.updated.slot()) << 3) & 0x10;
         }
-        if (state.runtime.entityState.enemyFlashCountdown[state.entity.slot()] > 0) {
+        if (state.runtime.entityState.combatTables.readEnemyFlashCountdown(state.entity.slot()) > 0) {
             state.renderFlipAttribute ^=
-                    (state.runtime.entityState.enemyFlashCountdown[state.entity.slot()] << 2) & 0x10;
+                    (state.runtime.entityState.combatTables.readEnemyFlashCountdown(state.entity.slot()) << 2) & 0x10;
         }
         if (state.status != state.entity.status()
                 || state.variant != state.entity.spriteVariant()

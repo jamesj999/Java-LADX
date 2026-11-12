@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
@@ -7,6 +8,22 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** ROM bank-$07 Moblin Sword state machine plus bank-$03 falling presentation state. */
 public final class MoblinSwordMotion {
+    private int swordMoblinAlertingSoundCounter;
+
+    public int readSwordMoblinAlertingSoundCounter() {
+        return swordMoblinAlertingSoundCounter;
+    }
+
+    public int writeSwordMoblinAlertingSoundCounter(int value) {
+        return swordMoblinAlertingSoundCounter = value;
+    }
+
+    public int postSwordMoblinAlertingSoundCounter(int delta) {
+        int previous = swordMoblinAlertingSoundCounter;
+        swordMoblinAlertingSoundCounter += delta;
+        return previous;
+    }
+
     private static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
     private static final int[] SPEED_X_BY_DIRECTION = {0x06, 0xFA, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xFA, 0x06};

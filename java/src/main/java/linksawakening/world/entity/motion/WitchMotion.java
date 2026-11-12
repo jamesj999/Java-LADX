@@ -1,10 +1,25 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 
 /** State and timing port of bank-$05 {@code WitchEntityHandler}. */
 public final class WitchMotion {
+    private final int[] witchGotItemCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+
+    public int readWitchGotItemCountdown(int slot) {
+        return witchGotItemCountdown[slot];
+    }
+
+    public int writeWitchGotItemCountdown(int slot, int value) {
+        return witchGotItemCountdown[slot] = value;
+    }
+
+    public int[] storageWitchGotItemCountdown() {
+        return witchGotItemCountdown;
+    }
+
     public static final int ENTITY_TYPE = 0x40;
     private static final int INVENTORY_MAGIC_POWDER = 0x0C;
     private static final int NO_DIALOG = -1;

@@ -1,5 +1,6 @@
 package linksawakening.world.entity.motion;
 
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
@@ -12,6 +13,26 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
  * eight-frame Z bob without introducing a general entity CPU.
  */
 public final class FollowingNpcMotion {
+    private FollowingNpcState followingNpcState = FollowingNpcState.none();
+
+    public FollowingNpcState readFollowingNpcState() {
+        return followingNpcState;
+    }
+
+    public FollowingNpcState writeFollowingNpcState(FollowingNpcState value) {
+        return followingNpcState = value;
+    }
+
+    private LinkPositionHistory followingLinkPositionHistory = new LinkPositionHistory();
+
+    public LinkPositionHistory readFollowingLinkPositionHistory() {
+        return followingLinkPositionHistory;
+    }
+
+    public LinkPositionHistory writeFollowingLinkPositionHistory(LinkPositionHistory value) {
+        return followingLinkPositionHistory = value;
+    }
+
     private static final int ENTITY_GHOST = 0xD4;
     private static final int ENTITY_ROOSTER = 0xD5;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;

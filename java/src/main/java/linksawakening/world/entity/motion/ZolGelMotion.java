@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -8,6 +9,16 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** Bank-$06 Zol/Gel inching, leaping, and split state machine. */
 public final class ZolGelMotion {
+    private boolean gelClingingToLink;
+
+    public boolean readGelClingingToLink() {
+        return gelClingingToLink;
+    }
+
+    public boolean writeGelClingingToLink(boolean value) {
+        return gelClingingToLink = value;
+    }
+
     static final int ENTITY_ZOL = 0x1B;
     static final int ENTITY_GEL = 0x1C;
 

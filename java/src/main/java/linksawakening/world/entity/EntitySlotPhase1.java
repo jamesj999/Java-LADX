@@ -13,31 +13,31 @@ final class EntitySlotPhase1 {
         if (state.runtime.liftThrow.advanceStatueRubble(state.entity, state.sideViewPotInteractive)) return false;
         state.moldormIntroOpenedThisFrame = false;
         state.rollingBonesHitThisFrame = state.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES
-                && state.runtime.entityState.rollingBonesMotion.swordHitFrame(state.index) == state.frame + 1;
-        state.runtime.entityState.rollingBonesMotion.setSwordHitFrame(state.index, 0);
+                && state.runtime.entityState.motionSet.rollingBonesMotion.swordHitFrame(state.index) == state.frame + 1;
+        state.runtime.entityState.motionSet.rollingBonesMotion.setSwordHitFrame(state.index, 0);
         if (!state.entity.loaded()) {
             return false;
         }
         if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_TYPE_0X35, state)) return false;
-        if (state.runtime.entityState.enemyProjectileSpawnedThisFrame[state.entity.slot()]
-                || state.runtime.entityState.dynamicEntitySpawnedThisFrame[state.entity.slot()]) {
+        if (state.runtime.entityState.physicsTables.readEnemyProjectileSpawnedThisFrame(state.entity.slot())
+                || state.runtime.entityState.physicsTables.readDynamicEntitySpawnedThisFrame(state.entity.slot())) {
             return false;
         }
         if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_KANALET_BOMBABLE_WALL, state)) return false;
         state.kanaletLeafProducer = state.entity.type() == EntityRomConstants.ENTITY_CROW
                         && !state.runtime.indoorRoom
-                        && state.runtime.entityState.entityRoomId == 0x58
+                        && state.runtime.entityState.roomVariables.readEntityRoomId() == 0x58
                 || state.entity.type() == EntityRomConstants.ENTITY_MAD_BOMBER
                 || state.entity.type() == EntityRomConstants.ENTITY_KNIGHT
-                        && state.runtime.entityState.entityMapId >= 0x14;
+                        && state.runtime.entityState.roomVariables.readEntityMapId() >= 0x14;
         if (state.kanaletLeafProducer) {
             if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_CROW, state)) return false;
-            if ((state.runtime.entityState.entityRoomStatus & 0x10) != 0) {
+            if ((state.runtime.entityState.roomVariables.readEntityRoomStatus() & 0x10) != 0) {
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
-            state.runtime.entityState.droppedItemBySlot[state.entity.slot()] =
-                    EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+            state.runtime.bossRewards.writeDroppedItemBySlot(
+                    state.entity.slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (state.entity.sourceLoadOrder() != 0xFF) {
                 state.entity = withSourceLoadOrder(state.entity, 0xFF);
                 state.runtime.slots[state.index] = state.entity;
@@ -50,7 +50,7 @@ final class EntitySlotPhase1 {
         state.wasInitializing = state.initialStatus == EntityStatus.INIT;
         state.freezeTarinTimers = !state.runtime.indoorRoom
                 && state.entity.type() == EntityRomConstants.ENTITY_TARIN
-                && state.runtime.entityState.tarinRaccoonMotion.state(state.entity.slot()) != 0
+                && state.runtime.entityState.motionSet.tarinRaccoonMotion.state(state.entity.slot()) != 0
                 && !state.runtime.roomInspection.tarinTransformationTimersInteractive();
         state.freezeThreeOfAKindTimers =
                 state.entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND && !state.threeOfAKindInteractive;
@@ -59,7 +59,7 @@ final class EntitySlotPhase1 {
                 && (state.creditsGameplay
                         || !state.handlerLinkCollisionEnabled
                         || !state.runtime.backgroundMechanics.entityTimersInteractive()
-                        || state.runtime.entityState.transitionSequenceCounter != 0x04);
+                        || state.runtime.entityState.roomVariables.readTransitionSequenceCounter() != 0x04);
         state.freezeGenieTimers = state.entity.type() == EntityRomConstants.ENTITY_GENIE
                 && (!state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(state.creditsGameplay)
                         || state.runtime.inspection().witchGotItemPresentationActive());
@@ -196,7 +196,7 @@ final class EntitySlotPhase1 {
         if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_INSTRUMENT_OF_THE_SIRENS_2, state)) return false;
         if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_1_SWORD_SHIELD_PICKUP, state)) return false;
         if (state.status == EntityStatus.ACTIVE
-                && state.runtime.entityState.powerUpPickupCountdown[state.entity.slot()] != 0) {
+                && state.runtime.rewards.readPowerUpPickupCountdown(state.entity.slot()) != 0) {
             state.runtime.rewards.advancePowerUpPickup(
                     state.entity, state.frame, state.linkEntityX, state.linkEntityY, state.linkZ);
             return false;

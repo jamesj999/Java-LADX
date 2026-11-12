@@ -27,72 +27,85 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** ROM per-slot options, sprite definitions and handler metadata. */
 public final class EntitySlotProperties {
-    private final RoomEntityRuntime runtime;
+    private List<HookshotChainOam.Entry> hookshotChainOam = List.of();
+    private List<PincerBodyOam.Entry> pincerBodyOam = List.of();
+    private List<WingedOctorokOam.Entry> wingedOctorokOam = List.of();
+    private final boolean[] wingedSwordAttackThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] wingedStateTwoThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private List<BowWowChain.Entry> bowWowChainOam = List.of();
+    private final EntitySlotPropertiesServices runtime;
 
-    EntitySlotProperties(RoomEntityRuntime runtime) {
+    EntitySlotProperties(EntitySlotPropertiesServices runtime) {
         this.runtime = runtime;
     }
 
     void resolveThreeOfAKindPuzzle() {
-        ThreeOfAKindMotion.PuzzleResult result = runtime.entityState.threeOfAKindMotion.resolvePuzzle(
-                Arrays.asList(runtime.slots), runtime.entityState.enemyTransitionCountdown);
+        ThreeOfAKindMotion.PuzzleResult result = runtime.motionSet()
+                .threeOfAKindMotion
+                .resolvePuzzle(Arrays.asList(runtime.slots()), runtime.physicsTables()::readEnemyTransitionCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
-        int coordinatorSlot = Arrays.stream(runtime.slots)
+        int coordinatorSlot = Arrays.stream(runtime.slots())
                 .filter(entity -> entity.status() == EntityStatus.ACTIVE
                         && entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND)
                 .mapToInt(RoomEntity::slot)
                 .findFirst()
                 .orElse(0);
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? runtime.entityState.threeOfAKindMotion.matchedJingle(coordinatorSlot)
+                ? runtime.motionSet().threeOfAKindMotion.matchedJingle(coordinatorSlot)
                 : 0x1D;
-        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
-                coordinatorSlot,
-                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
-                EntityCombatEvent.SoundChannel.JINGLE,
-                jingle));
+        runtime.events()
+                .pendingEntityEvents
+                .add(new EntityCombatEvent(
+                        coordinatorSlot,
+                        EntityRomConstants.ENTITY_THREE_OF_A_KIND,
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        jingle));
         if (result != ThreeOfAKindMotion.PuzzleResult.MATCH) {
             return;
         }
-        for (int index = 0; index < runtime.slots.length; index++) {
-            RoomEntity entity = runtime.slots[index];
+        for (int index = 0; index < runtime.slots().length; index++) {
+            RoomEntity entity = runtime.slots()[index];
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_THREE_OF_A_KIND) {
                 continue;
             }
             int slot = entity.slot();
-            runtime.entityState.droppedItemBySlot[slot] = runtime.entityState.threeOfAKindMotion.matchedDrop(slot);
-            runtime.entityState.dyingCountdown[slot] = 0x1F;
-            runtime.entityState.enemyHealth[slot] = 0;
-            runtime.entityState.enemyPhysicsFlags[slot] = 0x04;
-            runtime.slots[index] = withStatus(entity, EntityStatus.DYING);
+            runtime.bossRewards()
+                    .writeDroppedItemBySlot(
+                            slot, runtime.motionSet().threeOfAKindMotion.matchedDrop(slot));
+            runtime.combatTables().writeDyingCountdown(slot, 0x1F);
+            runtime.combatTables().writeEnemyHealth(slot, 0);
+            runtime.physicsTables().writeEnemyPhysicsFlags(slot, 0x04);
+            runtime.slots()[index] = withStatus(entity, EntityStatus.DYING);
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
-                coordinatorSlot,
-                EntityRomConstants.ENTITY_THREE_OF_A_KIND,
-                0,
-                false,
-                EntityCombatEvent.SoundChannel.NOISE,
-                0x13));
+        runtime.events()
+                .pendingEntityEvents
+                .add(new EntityCombatEvent(
+                        coordinatorSlot,
+                        EntityRomConstants.ENTITY_THREE_OF_A_KIND,
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.NOISE,
+                        0x13));
     }
 
     int initialHealth(int type) {
-        return runtime.roomInspection.initialHealth(type);
+        return runtime.roomInspection().initialHealth(type);
     }
 
     int contactDamage(int slot) {
-        return runtime.roomInspection.contactDamage(slot);
+        return runtime.roomInspection().contactDamage(slot);
     }
 
     public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
-        int inertia = (runtime.entityState.musicalNoteInertia[slot] - 1) & 0xFF;
-        runtime.entityState.musicalNoteInertia[slot] = inertia;
+        int inertia = (runtime.projectiles().readMusicalNoteInertia(slot) - 1) & 0xFF;
+        runtime.projectiles().writeMusicalNoteInertia(slot, inertia);
         if (inertia == 0) {
             runtime.clearEntity(slot);
             return null;
@@ -100,92 +113,96 @@ public final class EntitySlotProperties {
 
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
         if ((inertia & 0x01) == 0) {
-            runtime.entityState.musicalNoteSpeedX[slot] =
-                    (runtime.entityState.musicalNoteSpeedX[slot] + speedXAdjustment) & 0xFF;
+            runtime.projectiles()
+                    .writeMusicalNoteSpeedX(
+                            slot, (runtime.projectiles().readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
         }
-        int x = (entity.x() + signedByte(runtime.entityState.musicalNoteSpeedX[slot])) & 0xFF;
-        int y = (entity.y() + signedByte(runtime.entityState.musicalNoteSpeedY[slot])) & 0xFF;
+        int x = (entity.x() + signedByte(runtime.projectiles().readMusicalNoteSpeedX(slot))) & 0xFF;
+        int y = (entity.y() + signedByte(runtime.projectiles().readMusicalNoteSpeedY(slot))) & 0xFF;
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = runtime.inspection().hookshotSlot();
-        if (slot < 0 || !runtime.slots[slot].loaded()) {
-            runtime.entityState.hookshotChainOam = List.of();
+        if (slot < 0 || !runtime.slots()[slot].loaded()) {
+            this.writeHookshotChainOam(List.of());
             return;
         }
-        RoomEntity chain = runtime.slots[slot];
-        runtime.entityState.hookshotChainOam =
-                HookshotChainOam.entries(chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
+        RoomEntity chain = runtime.slots()[slot];
+        this.writeHookshotChainOam(
+                HookshotChainOam.entries(chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter));
     }
 
     void updateBowWowChain(int frame) {
         List<BowWowChain.Entry> entries = new ArrayList<>();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
-        if (runtime.entityState.transitionSequenceCounter != 4
-                && !runtime.entityState.roomTransitionActive
-                && !runtime.entityState.linkState.dialogActive
-                && !runtime.entityState.linkState.inventoryAppearing
+        if (runtime.roomVariables().readTransitionSequenceCounter() != 4
+                && !runtime.roomVariables().readRoomTransitionActive()
+                && !runtime.linkState().dialogActive
+                && !runtime.linkState().inventoryAppearing
                 && !runtime.inspection().witchGotItemPresentationActive()) {
-            runtime.entityState.bowWowChainOam = List.of();
+            this.writeBowWowChainOam(List.of());
             return;
         }
-        boolean moving = (runtime.entityState.linkState.currentLinkSpeedX
-                        | runtime.entityState.linkState.currentLinkSpeedY
-                        | runtime.entityState.linkState.currentLinkVelocityZ)
+        boolean moving = (runtime.linkState().currentLinkSpeedX
+                        | runtime.linkState().currentLinkSpeedY
+                        | runtime.linkState().currentLinkVelocityZ)
                 != 0;
-        for (int slot = 0; slot < runtime.slots.length; slot++) {
-            RoomEntity entity = runtime.slots[slot];
+        for (int slot = 0; slot < runtime.slots().length; slot++) {
+            RoomEntity entity = runtime.slots()[slot];
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            runtime.slots[slot] =
-                    runtime.entityState.bowWowMotion.advanceChain(entity, runtime.entityState.bowWowState, moving);
-            entries.addAll(runtime.entityState.bowWowMotion.chainEntries(slot, runtime.entityState.bowWowState, frame));
+            runtime.slots()[slot] = runtime.motionSet()
+                    .bowWowMotion
+                    .advanceChain(entity, runtime.motionSet().bowWowMotion.readBowWowState(), moving);
+            entries.addAll(runtime.motionSet()
+                    .bowWowMotion
+                    .chainEntries(slot, runtime.motionSet().bowWowMotion.readBowWowState(), frame));
         }
-        runtime.entityState.bowWowChainOam = List.copyOf(entries);
+        this.writeBowWowChainOam(List.copyOf(entries));
     }
 
     void updatePincerBodyOam() {
         List<PincerBodyOam.Entry> entries = new ArrayList<>();
-        for (RoomEntity entity : runtime.slots) {
+        for (RoomEntity entity : runtime.slots()) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
-                    runtime.entityState.pincerMotion.holeX(entity.slot()),
-                    runtime.entityState.pincerMotion.holeY(entity.slot()),
+                    runtime.motionSet().pincerMotion.holeX(entity.slot()),
+                    runtime.motionSet().pincerMotion.holeY(entity.slot()),
                     entity.x(),
                     entity.y(),
-                    runtime.entityState.pincerMotion.state(entity.slot())));
+                    runtime.motionSet().pincerMotion.state(entity.slot())));
         }
-        runtime.entityState.pincerBodyOam = List.copyOf(entries);
+        this.writePincerBodyOam(List.copyOf(entries));
     }
 
     void updateWingedOctorokOam() {
         List<WingedOctorokOam.Entry> entries = new ArrayList<>();
-        for (RoomEntity entity : runtime.slots) {
+        for (RoomEntity entity : runtime.slots()) {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    runtime.entityState.wingedOctorokMotion.privateState2(entity.slot()),
+                    runtime.motionSet().wingedOctorokMotion.privateState2(entity.slot()),
                     entity.x(),
                     entity.y(),
                     entity.z()));
         }
-        runtime.entityState.wingedOctorokOam = List.copyOf(entries);
+        this.writeWingedOctorokOam(List.copyOf(entries));
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
-        for (RoomEntity candidate : runtime.slots) {
+        for (RoomEntity candidate : runtime.slots()) {
             if (!candidate.loaded()) {
                 continue;
             }
             if (candidate.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
-                    && runtime.entityState.liftableRockSmashActive[candidate.slot()]
-                    && runtime.entityState.liftableRockSmashSourceVariant[candidate.slot()]
+                    && runtime.liftThrow().readLiftableRockSmashActive(candidate.slot())
+                    && runtime.liftThrow().readLiftableRockSmashSourceVariant(candidate.slot())
                             == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
                 int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
                 int distanceY = signedByte(((crow.y() - crow.z()) - candidate.y()) & 0xFF);
@@ -197,8 +214,8 @@ public final class EntitySlotProperties {
             if (candidate.type() != EntityRomConstants.ENTITY_BOMB) {
                 continue;
             }
-            int countdown = runtime.entityState.enemyTransitionCountdown[candidate.slot()] & 0xFF;
-            if (runtime.entityState.enemyFlashCountdown[candidate.slot()] == 0 || countdown >= 0x22) {
+            int countdown = runtime.physicsTables().readEnemyTransitionCountdown(candidate.slot()) & 0xFF;
+            if (runtime.combatTables().readEnemyFlashCountdown(candidate.slot()) == 0 || countdown >= 0x22) {
                 continue;
             }
             int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
@@ -211,165 +228,227 @@ public final class EntitySlotProperties {
     }
 
     public EntitySpriteDefinition spriteDefinitionFor(int entityType) {
-        return runtime.roomInspection.spriteDefinitionFor(entityType);
+        return runtime.roomInspection().spriteDefinitionFor(entityType);
     }
 
     public EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
-        return runtime.roomInspection.spriteDefinitionForBushCrawlerState(privateState1);
+        return runtime.roomInspection().spriteDefinitionForBushCrawlerState(privateState1);
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
-        return runtime.roomInspection.spriteDefinitionForPokeySegment();
+        return runtime.roomInspection().spriteDefinitionForPokeySegment();
     }
 
     public EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
-        return runtime.roomInspection.spriteDefinitionForBushCrawlerCrawlState(privateState4);
+        return runtime.roomInspection().spriteDefinitionForBushCrawlerCrawlState(privateState4);
     }
 
     EntitySpriteDefinition spriteDefinitionForChest(int itemType) {
         if (itemType == ChestContentsTable.CHEST_ZOL) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        if (runtime.spriteHandlers == null) {
+        if (runtime.spriteHandlers() == null) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        int roomId = runtime.entityState.spriteSelection == null ? -1 : runtime.entityState.spriteSelection.roomId();
-        if (runtime.entityState.entityMapId >= 0 && roomId >= 0) {
-            return runtime.spriteHandlers.forChestState(runtime.entityState.entityMapId, roomId, itemType);
+        int roomId = runtime.presentationState().readSpriteSelection() == null
+                ? -1
+                : runtime.presentationState().readSpriteSelection().roomId();
+        if (runtime.roomVariables().readEntityMapId() >= 0 && roomId >= 0) {
+            return runtime.spriteHandlers()
+                    .forChestState(runtime.roomVariables().readEntityMapId(), roomId, itemType);
         }
-        return runtime.spriteHandlers.forEntityType(
-                EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                runtime.entityState.spriteSelection == null
-                        ? (runtime.indoorRoom
-                                ? EntityRoomLoader.RoomTable.INDOORS_A
-                                : EntityRoomLoader.RoomTable.OVERWORLD)
-                        : runtime.entityState.spriteSelection.roomTable(),
-                runtime.entityState.entityMapId);
+        return runtime.spriteHandlers()
+                .forEntityType(
+                        EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
+                        runtime.presentationState().readSpriteSelection() == null
+                                ? (runtime.indoorRoom()
+                                        ? EntityRoomLoader.RoomTable.INDOORS_A
+                                        : EntityRoomLoader.RoomTable.OVERWORLD)
+                                : runtime.presentationState()
+                                        .readSpriteSelection()
+                                        .roomTable(),
+                        runtime.roomVariables().readEntityMapId());
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int privateState1) {
-        return runtime.roomInspection.spriteDefinitionForEvasiveState(fallback, privateState1);
+        return runtime.roomInspection().spriteDefinitionForEvasiveState(fallback, privateState1);
     }
 
     public RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
-        return runtime.roomInspection.refreshColorShellDisplay(entity, status);
+        return runtime.roomInspection().refreshColorShellDisplay(entity, status);
     }
 
     public int options1(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots().length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        if (runtime.entityState.entityOptions1Override[slot] >= 0) {
-            return runtime.entityState.entityOptions1Override[slot];
+        if (runtime.physicsTables().readEntityOptions1Override(slot) >= 0) {
+            return runtime.physicsTables().readEntityOptions1Override(slot);
         }
-        if (isGhiniType(runtime.slots[slot].type())) {
+        if (isGhiniType(runtime.slots()[slot].type())) {
             return EntityRomConstants.GHINI_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOMB) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOMB) {
             return EntityRomConstants.BOMB_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOMBER) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOMBER) {
             return EntityRomConstants.BOMBER_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MAD_BOMBER) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MAD_BOMBER) {
             return EntityRomConstants.MAD_BOMBER_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_WIZROBE_PROJECTILE) {
             return EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
             return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                     | EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_KEY_DROP_POINT) {
             return EntityRomConstants.KEY_DROP_POINT_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
             return EntityRomConstants.ARMOS_KNIGHT_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_HINOX) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_HINOX) {
             return EntityRomConstants.HINOX_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
             return 0x84;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
             return 0x40;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {
             return EntityRomConstants.CHEST_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             return EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_FISH) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_FISH) {
             return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CROW) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CROW) {
             return EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_CUCCO) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_CUCCO) {
             return EntityRomConstants.ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER) {
             return GopongaFlowerMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GIANT_GOPONGA_FLOWER) {
             return GiantGopongaMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_POKEY) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_POKEY) {
             return PokeyMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ZORA) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ZORA) {
             return ZoraMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_ZOMBIE) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_ZOMBIE) {
             return ZombieMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
             return BuzzBlobMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SAND_CRAB) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SAND_CRAB) {
             return SandCrabMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_URCHIN) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_URCHIN) {
             return UrchinMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_WITCH_RAT) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_WITCH_RAT) {
             return WitchRatMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_GOPONGA_FLOWER_PROJECTILE) {
             return GopongaProjectileMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
             return BooBuddyMotion.OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
             return EntityRomConstants.FAIRY_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
             // The static table starts at splash-only. The handler writes the
             // sword-clink-off bit on its first normal active pass.
             return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_POLS_VOICE) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_POLS_VOICE) {
             return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
             return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MOLDORM) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MOLDORM) {
             return MoldormMotion.INITIAL_OPTIONS1;
         }
-        if (runtime.slots[slot].type() == EntityRomConstants.ENTITY_MIMIC) {
+        if (runtime.slots()[slot].type() == EntityRomConstants.ENTITY_MIMIC) {
             return EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER;
         }
-        if (isBombiteType(runtime.slots[slot].type())) {
+        if (isBombiteType(runtime.slots()[slot].type())) {
             return EntityRomConstants.BOMBITE_OPTIONS1;
         }
-        return runtime.slots[slot].type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
-                        || runtime.slots[slot].type() == EntityRomConstants.ENTITY_LIKE_LIKE
+        return runtime.slots()[slot].type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
+                        || runtime.slots()[slot].type() == EntityRomConstants.ENTITY_LIKE_LIKE
                 ? EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                 : 0;
+    }
+
+    List<HookshotChainOam.Entry> readHookshotChainOam() {
+        return hookshotChainOam;
+    }
+
+    List<HookshotChainOam.Entry> writeHookshotChainOam(List<HookshotChainOam.Entry> value) {
+        return hookshotChainOam = value;
+    }
+
+    List<PincerBodyOam.Entry> readPincerBodyOam() {
+        return pincerBodyOam;
+    }
+
+    List<PincerBodyOam.Entry> writePincerBodyOam(List<PincerBodyOam.Entry> value) {
+        return pincerBodyOam = value;
+    }
+
+    List<WingedOctorokOam.Entry> readWingedOctorokOam() {
+        return wingedOctorokOam;
+    }
+
+    List<WingedOctorokOam.Entry> writeWingedOctorokOam(List<WingedOctorokOam.Entry> value) {
+        return wingedOctorokOam = value;
+    }
+
+    boolean readWingedSwordAttackThisFrame(int slot) {
+        return wingedSwordAttackThisFrame[slot];
+    }
+
+    boolean writeWingedSwordAttackThisFrame(int slot, boolean value) {
+        return wingedSwordAttackThisFrame[slot] = value;
+    }
+
+    boolean[] storageWingedSwordAttackThisFrame() {
+        return wingedSwordAttackThisFrame;
+    }
+
+    boolean readWingedStateTwoThisFrame(int slot) {
+        return wingedStateTwoThisFrame[slot];
+    }
+
+    boolean writeWingedStateTwoThisFrame(int slot, boolean value) {
+        return wingedStateTwoThisFrame[slot] = value;
+    }
+
+    boolean[] storageWingedStateTwoThisFrame() {
+        return wingedStateTwoThisFrame;
+    }
+
+    List<BowWowChain.Entry> readBowWowChainOam() {
+        return bowWowChainOam;
+    }
+
+    List<BowWowChain.Entry> writeBowWowChainOam(List<BowWowChain.Entry> value) {
+        return bowWowChainOam = value;
     }
 }

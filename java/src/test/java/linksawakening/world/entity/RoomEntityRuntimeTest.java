@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -10785,23 +10784,20 @@ final class RoomEntityRuntimeTest {
         runtime.debug().setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        Field pendingField = RoomEntityRuntime.class.getDeclaredField("bombFinalPresentationPending");
-        pendingField.setAccessible(true);
-        boolean[] pending = (boolean[]) pendingField.get(runtime);
-        assertTrue(pending[slot]);
+        assertTrue(runtime.bombInteractions.bombFinalPresentationPending(slot));
 
         Method disable = RoomEntityRuntime.class.getDeclaredMethod("disableEntityWithoutPersistence", int.class);
         disable.setAccessible(true);
         disable.invoke(runtime, slot);
 
-        assertFalse(pending[slot]);
+        assertFalse(runtime.bombInteractions.bombFinalPresentationPending(slot));
         assertEquals(0xFF, runtime.inspection().bombDirection(slot));
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(slot).status());
         assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
         assertEquals(1, runtime.inspection().bombDirection(slot));
-        assertFalse(pending[slot]);
+        assertFalse(runtime.bombInteractions.bombFinalPresentationPending(slot));
     }
 
     @Test
