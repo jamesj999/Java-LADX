@@ -33,8 +33,7 @@ final class MaskedMimicGoriyaHandler {
             RoomEntityBackgroundInteraction maskedMimicBackgroundInteraction =
                     state.background().interaction();
             if (maskedMimicBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                maskedMimicBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                maskedMimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             MaskedMimicMotion.Update maskedMimicUpdate = state.motion(MaskedMimicMotion.class, MaskedMimicMotion::new)
                     .advance(new MaskedMimicFrame(

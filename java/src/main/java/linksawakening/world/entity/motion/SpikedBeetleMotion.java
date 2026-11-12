@@ -63,7 +63,7 @@ public final class SpikedBeetleMotion {
     }
 
     public linksawakening.world.entity.motion.SpikedBeetleMotion.Update advance(SpikedBeetleFrame inputs) {
-        return new SpikedBeetleFrameStep(this, inputs).run();
+        return spikedBeetleFrameStep.run(this, inputs);
     }
 
     /** Mirrors the shield-contact branch at $03:6F2A. */
@@ -215,4 +215,6 @@ public final class SpikedBeetleMotion {
     record Position(int x, int y, boolean collided) {}
 
     public record Update(RoomEntity entity, int transitionCountdown, int options1, int hitboxFlags) {}
+
+    final SpikedBeetleFrameStep spikedBeetleFrameStep = new SpikedBeetleFrameStep();
 }

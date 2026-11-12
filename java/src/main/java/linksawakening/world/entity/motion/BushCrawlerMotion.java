@@ -50,7 +50,7 @@ public final class BushCrawlerMotion {
     }
 
     public Update advance(BushCrawlerFrame inputs) {
-        return new BushCrawlerStep(this, inputs).run();
+        return bushCrawlerStep.run(this, inputs);
     }
 
     public void clear(int slot) {
@@ -168,4 +168,6 @@ public final class BushCrawlerMotion {
     }
 
     record Position(int x, int y, boolean collided) {}
+
+    final BushCrawlerStep bushCrawlerStep = new BushCrawlerStep();
 }

@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for DroppablePickupBehavior.advanceCommonDroppable; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for DroppablePickupBehavior.advanceCommonDroppable; values are assigned in source order. */
 final class DroppablePickupFrameStep {
     private linksawakening.world.entity.EntityPickupController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -19,18 +19,7 @@ final class DroppablePickupFrameStep {
     private int slot;
     private int hiddenState;
 
-    DroppablePickupFrameStep(
-            linksawakening.world.entity.EntityPickupController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            linksawakening.world.entity.RoomEntityObjectSample objectUnderEntity) {
-        this.owner = owner;
-        this.entity = entity;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.objectUnderEntity = objectUnderEntity;
-    }
+    DroppablePickupFrameStep() {}
 
     linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run() {
         runtime = owner.runtime;
@@ -108,5 +97,36 @@ final class DroppablePickupFrameStep {
         }
         return new CommonDroppableUpdate(
                 withVariant(entity, entity.spriteDefinition().supported() ? 0 : -1), false);
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.RoomEntityRuntime.CommonDroppableUpdate run(
+            linksawakening.world.entity.EntityPickupController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            linksawakening.world.entity.RoomEntityObjectSample objectUnderEntity) {
+        if (inUse) {
+            return new DroppablePickupFrameStep().run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        hiddenState = 0;
+        this.owner = owner;
+        this.entity = entity;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.objectUnderEntity = objectUnderEntity;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.objectUnderEntity = null;
+            this.runtime = null;
+        }
     }
 }

@@ -13,7 +13,7 @@ import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BoomerangMotion;
 
-/** Per-invocation scratch for BoomerangBehavior.advanceBoomerangEntity; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BoomerangBehavior.advanceBoomerangEntity; values are assigned in source order. */
 final class BoomerangStep {
     private linksawakening.world.entity.EntityProjectileController owner;
     private linksawakening.world.entity.BoomerangFrame inputs;
@@ -37,12 +37,7 @@ final class BoomerangStep {
     private linksawakening.world.entity.RoomEntity positioned;
     private boolean stateCollision;
 
-    BoomerangStep(
-            linksawakening.world.entity.EntityProjectileController owner,
-            linksawakening.world.entity.BoomerangFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BoomerangStep() {}
 
     void run() {
         if (!prepareMotion()) return;
@@ -169,5 +164,51 @@ final class BoomerangStep {
         }
         runtime.slots()[index] = withPositionAndVariant(positioned, positioned.x(), positioned.y(), variant);
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityProjectileController owner,
+            linksawakening.world.entity.BoomerangFrame inputs) {
+        if (inUse) {
+            new BoomerangStep().run(owner, inputs);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        index = 0;
+        entity = null;
+        frame = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkEntityZ = 0;
+        linkMotionState = 0;
+        handlerInteractive = false;
+        timersInteractive = false;
+        slot = 0;
+        variant = 0;
+        moved = null;
+        intersectionQuery = null;
+        object = null;
+        objectCollision = false;
+        bushCollision = false;
+        positioned = null;
+        stateCollision = false;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.runtime = null;
+            this.entity = null;
+            this.moved = null;
+            this.intersectionQuery = null;
+            this.object = null;
+            this.positioned = null;
+        }
     }
 }

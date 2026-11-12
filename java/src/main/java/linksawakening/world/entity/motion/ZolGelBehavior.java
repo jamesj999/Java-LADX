@@ -31,7 +31,7 @@ final class ZolGelBehavior {
     }
 
     static ZolGelMotion.Update advance(ZolGelMotion owner, ZolGelFrame inputs) {
-        return new ZolGelStep(owner, inputs).run();
+        return owner.zolGelStep.run(owner, inputs);
     }
 
     static int[] move(

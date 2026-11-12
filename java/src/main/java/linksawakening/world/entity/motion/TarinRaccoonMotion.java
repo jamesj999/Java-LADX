@@ -249,4 +249,6 @@ public final class TarinRaccoonMotion {
     }
 
     record Movement(int x, int y, int collisionFlags) {}
+
+    final TarinRaccoonStep tarinRaccoonStep = new TarinRaccoonStep();
 }

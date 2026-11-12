@@ -59,16 +59,15 @@ public final class CrowMotion {
             int linkEntityY,
             boolean allowLinkProximityTrigger,
             boolean externalTakeoffTrigger) {
-        return new CrowStep(
-                        this,
-                        entity,
-                        transitionCountdown,
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        allowLinkProximityTrigger,
-                        externalTakeoffTrigger)
-                .run();
+        return crowStep.run(
+                this,
+                entity,
+                transitionCountdown,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                allowLinkProximityTrigger,
+                externalTakeoffTrigger);
     }
 
     public void clear(int slot) {
@@ -184,4 +183,6 @@ public final class CrowMotion {
 
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, boolean unloaded, boolean boomerangSound) {}
+
+    final CrowStep crowStep = new CrowStep();
 }

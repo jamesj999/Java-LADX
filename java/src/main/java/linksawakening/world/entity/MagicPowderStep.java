@@ -13,7 +13,7 @@ import linksawakening.world.entity.event.MagicPowderObjectRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for MagicPowderBehavior.advanceMagicPowderSprinkleEntity; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MagicPowderBehavior.advanceMagicPowderSprinkleEntity; values are assigned in source order. */
 final class MagicPowderStep {
     private linksawakening.world.entity.EntityProjectileController owner;
     private int index;
@@ -32,22 +32,7 @@ final class MagicPowderStep {
     private int location;
     private int objectId;
 
-    MagicPowderStep(
-            linksawakening.world.entity.EntityProjectileController owner,
-            int index,
-            linksawakening.world.entity.RoomEntity entity,
-            int frame,
-            int linkMotionState,
-            boolean handlerInteractive,
-            boolean timersInteractive) {
-        this.owner = owner;
-        this.index = index;
-        this.entity = entity;
-        this.frame = frame;
-        this.linkMotionState = linkMotionState;
-        this.handlerInteractive = handlerInteractive;
-        this.timersInteractive = timersInteractive;
-    }
+    MagicPowderStep() {}
 
     void run() {
         if (!prepareCountdowns()) return;
@@ -199,5 +184,49 @@ final class MagicPowderStep {
             owner.collideMagicPowderWithEntities(entity, frame);
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityProjectileController owner,
+            int index,
+            linksawakening.world.entity.RoomEntity entity,
+            int frame,
+            int linkMotionState,
+            boolean handlerInteractive,
+            boolean timersInteractive) {
+        if (inUse) {
+            new MagicPowderStep()
+                    .run(owner, index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        transitionCountdown = 0;
+        intersectionQuery = null;
+        object = null;
+        objectLeft = 0;
+        objectTop = 0;
+        location = 0;
+        objectId = 0;
+        this.owner = owner;
+        this.index = index;
+        this.entity = entity;
+        this.frame = frame;
+        this.linkMotionState = linkMotionState;
+        this.handlerInteractive = handlerInteractive;
+        this.timersInteractive = timersInteractive;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+            this.intersectionQuery = null;
+            this.object = null;
+        }
     }
 }

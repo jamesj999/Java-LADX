@@ -35,9 +35,8 @@ public final class LeeverMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new LeeverFrameStep(
-                        this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision)
-                .run();
+        return leeverFrameStep.run(
+                this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -123,4 +122,6 @@ public final class LeeverMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final LeeverFrameStep leeverFrameStep = new LeeverFrameStep();
 }

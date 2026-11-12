@@ -27,6 +27,7 @@ final class TarinHandler {
     }
 
     private static boolean phase4Tarin(EntityFrameExecution state) {
-        return new TarinHandlerFrameStep(state).run();
+        return state.scratch(TarinHandlerFrameStep.class, TarinHandlerFrameStep::new)
+                .run(state);
     }
 }

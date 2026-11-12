@@ -40,15 +40,8 @@ public final class WizrobeMotion {
             IntSupplier randomByteSupplier,
             int transitionCountdown,
             int currentPhysicsFlags) {
-        return new WizrobeFrameStep(
-                        this,
-                        entity,
-                        linkEntityX,
-                        linkEntityY,
-                        randomByteSupplier,
-                        transitionCountdown,
-                        currentPhysicsFlags)
-                .run();
+        return wizrobeFrameStep.run(
+                this, entity, linkEntityX, linkEntityY, randomByteSupplier, transitionCountdown, currentPhysicsFlags);
     }
 
     public void clear(int slot) {
@@ -120,4 +113,6 @@ public final class WizrobeMotion {
 
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, ProjectileSpawn projectileSpawn) {}
+
+    final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep();
 }

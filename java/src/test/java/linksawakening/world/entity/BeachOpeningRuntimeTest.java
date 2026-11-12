@@ -31,7 +31,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void beachRoomLoadsSwordAndOwlUntilTheirRoomEventsAreSet() throws IOException {
         byte[] rom = loadRom();
-        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        EntityRoomLoader loader = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom));
         byte[] statuses = new byte[0x100];
 
         RoomEntitySnapshot fresh = loader.load(EntityRoomLoader.RoomTable.OVERWORLD, BEACH_ROOM, 0, -1, statuses);
@@ -65,7 +65,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         runtime.configuration().setEntityRoomStatus(0);
@@ -145,7 +145,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setEntityRoomId(0x50);
         runtime.configuration().setToadstoolPlayerState(false, 0);
@@ -226,7 +226,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         runtime.configuration().setEntityRoomStatus(0);
@@ -277,7 +277,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setEntityRoomId(BEACH_ROOM);
         int frame = 0;
@@ -384,7 +384,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable(rom))
                 .build();
         runtime.configuration().setEntityRoomId(0x41);
@@ -443,7 +443,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
     }
 
@@ -458,7 +458,7 @@ final class BeachOpeningRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
     }
 

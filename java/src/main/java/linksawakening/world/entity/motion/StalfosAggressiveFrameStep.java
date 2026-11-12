@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for StalfosAggressiveMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for StalfosAggressiveMotion.advance; values are assigned in source order. */
 final class StalfosAggressiveFrameStep {
-    private final StalfosAggressiveMotion owner;
+    private StalfosAggressiveMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
     private int linkEntityX;
@@ -18,22 +18,7 @@ final class StalfosAggressiveFrameStep {
     private int z;
     private int variant;
 
-    StalfosAggressiveFrameStep(
-            StalfosAggressiveMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundCollision = backgroundCollision;
-    }
+    StalfosAggressiveFrameStep() {}
 
     linksawakening.world.entity.RoomEntity run() {
         slot = entity.slot();
@@ -139,5 +124,53 @@ final class StalfosAggressiveFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.RoomEntity run(
+            StalfosAggressiveMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+        if (inUse) {
+            return new StalfosAggressiveFrameStep()
+                    .run(
+                            owner,
+                            entity,
+                            frameCounter,
+                            linkEntityX,
+                            linkEntityY,
+                            randomByteSupplier,
+                            backgroundCollision);
+        }
+        inUse = true;
+        slot = 0;
+        frame = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundCollision = backgroundCollision;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.completedResult = null;
+        }
     }
 }

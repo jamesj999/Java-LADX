@@ -35,7 +35,7 @@ public final class FollowingNpcEntitySpawner {
         this.spriteHandlers = spriteHandlers;
     }
 
-    /** Compatibility for world.room.RoomStoryState; use FollowingNpcSpawn. */
+    /** Compatibility for world.room.RoomFollowerSynchronizer; use FollowingNpcSpawn. */
     @Deprecated
     public Result synchronize(
             RoomEntitySnapshot initial,
@@ -52,7 +52,7 @@ public final class FollowingNpcEntitySpawner {
     }
 
     public Result synchronize(FollowingNpcSpawn inputs) {
-        return new FollowingNpcEntitySpawnerFrameStep(this, inputs).run();
+        return followingNpcEntitySpawnerFrameStep.run(this, inputs);
     }
 
     SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y, EntitySpriteDefinition definition) {
@@ -129,4 +129,7 @@ public final class FollowingNpcEntitySpawner {
     }
 
     record SpawnResult(RoomEntity entity, boolean changed) {}
+
+    final FollowingNpcEntitySpawnerFrameStep followingNpcEntitySpawnerFrameStep =
+            new FollowingNpcEntitySpawnerFrameStep();
 }

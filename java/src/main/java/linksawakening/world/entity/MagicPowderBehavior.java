@@ -17,7 +17,7 @@ final class MagicPowderBehavior {
             int linkMotionState,
             boolean handlerInteractive,
             boolean timersInteractive) {
-        new MagicPowderStep(owner, index, entity, frame, linkMotionState, handlerInteractive, timersInteractive).run();
+        owner.magicPowderStep.run(owner, index, entity, frame, linkMotionState, handlerInteractive, timersInteractive);
     }
 
     static boolean collideMagicPowderWithEntities(EntityProjectileController owner, RoomEntity sprinkle, int frame) {

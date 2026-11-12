@@ -27,8 +27,7 @@ final class MimicHandler {
             RoomEntityBackgroundInteraction mimicBackgroundInteraction =
                     state.background().interaction();
             if (mimicBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                mimicBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                mimicBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             MimicMotion.Update mimicUpdate = state.motion(MimicMotion.class, MimicMotion::new)
                     .advance(

@@ -52,7 +52,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
@@ -77,7 +77,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         List<EntityCombatEvent> events =
@@ -192,7 +192,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -216,7 +216,7 @@ final class UrchinRuntimeTest {
         linksawakening.gameplay.EnemyCombatEventConsumer.consume(events, sounds::add);
         assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.URCHIN_PUSH), sounds);
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(rom));
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(EntityRomTestData.view(rom)));
         var effect = map.resolve(sounds.getFirst()).orElseThrow();
         assertEquals(linksawakening.audio.sfx.SoundEffectNamespace.JINGLE, effect.namespace());
         assertEquals(0x3E, effect.id());
@@ -235,7 +235,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(

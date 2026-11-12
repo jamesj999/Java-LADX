@@ -8,16 +8,14 @@ import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 
-/** Per-invocation scratch for GenieHandler.phase4Genie; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for GenieHandler.phase4Genie; values are assigned in source order. */
 final class GenieHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
     private linksawakening.world.entity.EntitySlotExecution slotState;
     private linksawakening.world.entity.EntityFrameInputs frameInput;
     private linksawakening.world.entity.EntityTimerGates timerGates;
 
-    GenieHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-        this.state = state;
-    }
+    GenieHandlerFrameStep() {}
 
     boolean run() {
         if (!advanceIntroAndJar()) return completedResult;
@@ -148,5 +146,31 @@ final class GenieHandlerFrameStep {
             slotState.updated(state.entityAt(slotState.entity().slot()));
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        if (inUse) {
+            return new GenieHandlerFrameStep().run(state);
+        }
+        inUse = true;
+        slotState = null;
+        frameInput = null;
+        timerGates = null;
+        bossIntro = null;
+        genieThresholdReached = false;
+        completedResult = false;
+        this.state = state;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.state = null;
+            this.slotState = null;
+            this.frameInput = null;
+            this.timerGates = null;
+            this.bossIntro = null;
+        }
     }
 }

@@ -17,7 +17,7 @@ final class OwlEventBehavior {
             int linkEntityX,
             int linkEntityY,
             boolean handlerLinkInteractive) {
-        new OwlEventStep(owner, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive).run();
+        owner.owlEventStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
     }
 
     static void advanceDepartingOwl(EntityStoryController owner, RoomEntity entity, int slot, int frameCounter) {

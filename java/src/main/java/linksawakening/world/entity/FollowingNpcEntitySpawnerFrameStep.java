@@ -3,9 +3,9 @@ package linksawakening.world.entity;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/** Per-invocation scratch for FollowingNpcEntitySpawner.synchronize; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for FollowingNpcEntitySpawner.synchronize; values are assigned in source order. */
 final class FollowingNpcEntitySpawnerFrameStep {
-    private final FollowingNpcEntitySpawner owner;
+    private FollowingNpcEntitySpawner owner;
     private linksawakening.world.entity.FollowingNpcSpawn inputs;
     private linksawakening.world.entity.RoomEntitySnapshot initial;
     private linksawakening.world.entity.FollowingNpcRoomContext room;
@@ -22,11 +22,7 @@ final class FollowingNpcEntitySpawnerFrameStep {
     private boolean changed;
     private linksawakening.world.entity.RoomEntitySnapshot snapshot;
 
-    FollowingNpcEntitySpawnerFrameStep(
-            FollowingNpcEntitySpawner owner, linksawakening.world.entity.FollowingNpcSpawn inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    FollowingNpcEntitySpawnerFrameStep() {}
 
     linksawakening.world.entity.FollowingNpcEntitySpawner.Result run() {
         if (!prepareRoomAndRooster()) return completedResult;
@@ -151,5 +147,46 @@ final class FollowingNpcEntitySpawnerFrameStep {
                 initial.spriteTiles(),
                 initial.sideScrolling());
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.FollowingNpcEntitySpawner.Result run(
+            FollowingNpcEntitySpawner owner, linksawakening.world.entity.FollowingNpcSpawn inputs) {
+        if (inUse) {
+            return new FollowingNpcEntitySpawnerFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        initial = null;
+        room = null;
+        requestedState = null;
+        linkX = 0;
+        linkY = 0;
+        linkZ = 0;
+        entityYOffset = 0;
+        linkDirection = 0;
+        history = null;
+        slots = null;
+        state = null;
+        changed = false;
+        snapshot = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.initial = null;
+            this.room = null;
+            this.requestedState = null;
+            this.history = null;
+            this.slots = null;
+            this.state = null;
+            this.snapshot = null;
+            this.completedResult = null;
+        }
     }
 }

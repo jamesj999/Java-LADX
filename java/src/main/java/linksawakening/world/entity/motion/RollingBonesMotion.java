@@ -90,7 +90,7 @@ public final class RollingBonesMotion {
             int transitionCountdown,
             int health,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new RollingBonesFrameStep(this, entity, bar, transitionCountdown, health, backgroundCollision).run();
+        return rollingBonesFrameStep.run(this, entity, bar, transitionCountdown, health, backgroundCollision);
     }
 
     public BarUpdate advanceBar(
@@ -228,4 +228,6 @@ public final class RollingBonesMotion {
     }
 
     record MoveResult(int position, boolean blocked) {}
+
+    final RollingBonesFrameStep rollingBonesFrameStep = new RollingBonesFrameStep();
 }

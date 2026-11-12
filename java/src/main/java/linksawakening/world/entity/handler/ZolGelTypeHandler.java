@@ -49,8 +49,7 @@ final class ZolGelTypeHandler {
             RoomEntityBackgroundInteraction zolGelBackgroundInteraction =
                     state.background().interaction();
             if (zolGelBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                zolGelBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                zolGelBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             ZolGelMotion.Update zolGelUpdate = state.motion(ZolGelMotion.class, ZolGelMotion::new)
                     .advance(new ZolGelFrame(

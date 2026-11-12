@@ -18,6 +18,7 @@ final class HookshotChainHandler {
     }
 
     private static boolean phase1HookshotChain(EntityFrameExecution state) {
-        return new HookshotChainHandlerFrameStep(state).run();
+        return state.scratch(HookshotChainHandlerFrameStep.class, HookshotChainHandlerFrameStep::new)
+                .run(state);
     }
 }

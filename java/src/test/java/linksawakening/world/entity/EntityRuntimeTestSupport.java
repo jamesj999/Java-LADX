@@ -149,7 +149,7 @@ abstract class EntityRuntimeTestSupport {
 
     static byte[] romWithSwordResult(int entityType, int rawValue) throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         int healthGroup = tables.healthGroup(entityType);
         int damageMatrixOffset = RomBank.romOffset(0x03, 0x43EC);
         int damageValuesOffset = RomBank.romOffset(0x03, 0x473C);

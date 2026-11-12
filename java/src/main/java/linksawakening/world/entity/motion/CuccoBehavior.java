@@ -43,6 +43,6 @@ final class CuccoBehavior {
     }
 
     static CuccoMotion.Update advance(CuccoMotion owner, CuccoInteractionFrame inputs) {
-        return new CuccoStep(owner, inputs).run();
+        return owner.cuccoStep.run(owner, inputs);
     }
 }

@@ -72,7 +72,8 @@ final class MoldormHandler {
     }
 
     private static boolean phase2Moldorm(EntityFrameExecution state) {
-        return new MoldormHandlerFrameStep(state).run();
+        return state.scratch(MoldormHandlerFrameStep.class, MoldormHandlerFrameStep::new)
+                .run(state);
     }
 
     private static boolean phase2Moldorm2(EntityFrameExecution state) {

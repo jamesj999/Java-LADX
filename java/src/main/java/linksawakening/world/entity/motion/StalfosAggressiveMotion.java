@@ -42,9 +42,8 @@ public final class StalfosAggressiveMotion {
             int linkEntityY,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
-        return new StalfosAggressiveFrameStep(
-                        this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision)
-                .run();
+        return stalfosAggressiveFrameStep.run(
+                this, entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -131,4 +130,6 @@ public final class StalfosAggressiveMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final StalfosAggressiveFrameStep stalfosAggressiveFrameStep = new StalfosAggressiveFrameStep();
 }

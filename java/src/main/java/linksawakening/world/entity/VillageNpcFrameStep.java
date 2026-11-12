@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for VillageNpcBehavior.advanceVillageKid; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for VillageNpcBehavior.advanceVillageKid; values are assigned in source order. */
 final class VillageNpcFrameStep {
     private linksawakening.world.entity.EntityStoryController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -21,18 +21,7 @@ final class VillageNpcFrameStep {
     private boolean landed;
     private int timer;
 
-    VillageNpcFrameStep(
-            linksawakening.world.entity.EntityStoryController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frame,
-            int linkX,
-            int linkY) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frame = frame;
-        this.linkX = linkX;
-        this.linkY = linkY;
-    }
+    VillageNpcFrameStep() {}
 
     void run() {
         if (!advanceKidMotion()) return;
@@ -143,5 +132,38 @@ final class VillageNpcFrameStep {
             runtime.events().pendingDialogRequests.add(new DialogRequest(1, dialog));
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityStoryController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frame,
+            int linkX,
+            int linkY) {
+        if (inUse) {
+            new VillageNpcFrameStep().run(owner, entity, frame, linkX, linkY);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        z = 0;
+        landed = false;
+        timer = 0;
+        this.owner = owner;
+        this.entity = entity;
+        this.frame = frame;
+        this.linkX = linkX;
+        this.linkY = linkY;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+        }
     }
 }

@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.motion.*;
 
-/** ROM reward presentation sequences, sharing the owning room slot table. */
+/** SirensInstrumentEntityHandler and SwordShieldPickableEntityHandler pickup sequences and owned state. */
 public final class EntityRewardController {
     private final int[] swordPickupState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] swordPickupSequenceActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -46,8 +46,9 @@ public final class EntityRewardController {
         this.writeInstrumentPickupSequenceActive(slot, true);
         this.writeInstrumentPickupState(slot, 0);
         this.writeInstrumentWarpFadeStep(slot, 0);
-        this.writeInstrumentBackgroundFade(
-                slot, this.writeInstrumentObjectFade(slot, this.writeInstrumentHintBatches(slot, 0)));
+        writeInstrumentHintBatches(slot, 0);
+        writeInstrumentObjectFade(slot, 0);
+        writeInstrumentBackgroundFade(slot, 0);
         this.writeInstrumentHintCountdown(slot, 0);
         this.writeInstrumentHintOpened(slot, false);
         this.writeInstrumentPickupSparklesPending(slot, true);
@@ -102,19 +103,18 @@ public final class EntityRewardController {
     }
 
     public void refreshInstrumentPalette(EntityStatus status, int slot, int frame) {
-        if (status == EntityStatus.ACTIVE
-                && this.readInstrumentParticleKind(slot) == 0
-                && this.readInstrumentPickupState(slot) < 3
-                && runtime.roomVariables().readTransitionSequenceCounter() == 4
-                && runtime.presentationState().readSpriteSelection() != null) {
-            int[][] palettes = runtime.presentationState().readSpriteSelection().objectPalettes();
-            int offset = ((frame >> 1) & 0x3C) / 2;
-            palettes[1][2] = this.readInstrumentPaletteCycle(offset);
-            palettes[1][3] = this.readInstrumentPaletteCycle(offset + 1);
-            runtime.presentationState()
-                    .writeSpriteSelection(
-                            runtime.presentationState().readSpriteSelection().withObjectPalettes(palettes));
-        }
+        if (status != EntityStatus.ACTIVE
+                || readInstrumentParticleKind(slot) != 0
+                || readInstrumentPickupState(slot) >= 3
+                || runtime.roomVariables().readTransitionSequenceCounter() != 4
+                || runtime.presentationState().readSpriteSelection() == null) return;
+        int[][] palettes = runtime.presentationState().readSpriteSelection().objectPalettes();
+        int offset = ((frame >> 1) & 0x3C) / 2;
+        palettes[1][2] = this.readInstrumentPaletteCycle(offset);
+        palettes[1][3] = this.readInstrumentPaletteCycle(offset + 1);
+        runtime.presentationState()
+                .writeSpriteSelection(
+                        runtime.presentationState().readSpriteSelection().withObjectPalettes(palettes));
     }
 
     public int instrumentParticleKind(int slot) {
@@ -392,4 +392,7 @@ public final class EntityRewardController {
     int[] storageInstrumentParticleYAccumulator() {
         return instrumentParticleYAccumulator;
     }
+
+    final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep();
+    final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep();
 }

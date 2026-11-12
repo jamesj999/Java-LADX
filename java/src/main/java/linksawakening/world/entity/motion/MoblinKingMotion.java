@@ -50,7 +50,7 @@ public final class MoblinKingMotion {
     final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(MoblinKingFrame inputs) {
-        return new MoblinKingStep(this, inputs).run();
+        return moblinKingStep.run(this, inputs);
     }
 
     Update applyLinkImpact(
@@ -152,4 +152,6 @@ public final class MoblinKingMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final MoblinKingStep moblinKingStep = new MoblinKingStep();
 }

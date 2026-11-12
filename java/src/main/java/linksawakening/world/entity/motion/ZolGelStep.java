@@ -5,7 +5,7 @@ import static linksawakening.world.entity.motion.ZolGelMotion.*;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.RoomEntity;
 
-/** Per-invocation scratch for ZolGelBehavior.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for ZolGelBehavior.advance; values are assigned in source order. */
 final class ZolGelStep {
     private linksawakening.world.entity.motion.ZolGelMotion owner;
     private linksawakening.world.entity.motion.ZolGelFrame inputs;
@@ -28,12 +28,7 @@ final class ZolGelStep {
     private boolean clinging;
     private linksawakening.world.entity.RoomEntity updated;
 
-    ZolGelStep(
-            linksawakening.world.entity.motion.ZolGelMotion owner,
-            linksawakening.world.entity.motion.ZolGelFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    ZolGelStep() {}
 
     linksawakening.world.entity.motion.ZolGelMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -201,6 +196,51 @@ final class ZolGelStep {
             owner.decreaseTransitionCountdown(slot);
             owner.decreaseTransitionCountdown(slot);
             owner.decreaseTransitionCountdown(slot);
+        }
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.ZolGelMotion.Update run(
+            linksawakening.world.entity.motion.ZolGelMotion owner,
+            linksawakening.world.entity.motion.ZolGelFrame inputs) {
+        if (inUse) {
+            return new ZolGelStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkEntityZ = 0;
+        randomByteSupplier = null;
+        backgroundInteraction = null;
+        frameCounter = 0;
+        ignoreHitsCountdown = 0;
+        joypadHeld = false;
+        slot = 0;
+        z = 0;
+        hitGround = false;
+        type = 0;
+        split = null;
+        x = 0;
+        y = 0;
+        clinging = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.split = null;
+            this.updated = null;
+            this.completedResult = null;
         }
     }
 }

@@ -60,7 +60,7 @@ public final class BomberMotion {
     }
 
     public linksawakening.world.entity.motion.BomberMotion.Update advance(BomberFrame inputs) {
-        return new BomberFrameStep(this, inputs).run();
+        return bomberFrameStep.run(this, inputs);
     }
 
     public void clear(int slot) {
@@ -170,4 +170,6 @@ public final class BomberMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final BomberFrameStep bomberFrameStep = new BomberFrameStep();
 }

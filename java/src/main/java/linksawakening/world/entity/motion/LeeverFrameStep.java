@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for LeeverMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for LeeverMotion.advance; values are assigned in source order. */
 final class LeeverFrameStep {
-    private final LeeverMotion owner;
+    private LeeverMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
     private int linkEntityX;
@@ -16,22 +16,7 @@ final class LeeverFrameStep {
     private int y;
     private int variant;
 
-    LeeverFrameStep(
-            LeeverMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundCollision = backgroundCollision;
-    }
+    LeeverFrameStep() {}
 
     linksawakening.world.entity.RoomEntity run() {
         slot = entity.slot();
@@ -140,5 +125,51 @@ final class LeeverFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.RoomEntity run(
+            LeeverMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+        if (inUse) {
+            return new LeeverFrameStep()
+                    .run(
+                            owner,
+                            entity,
+                            frameCounter,
+                            linkEntityX,
+                            linkEntityY,
+                            randomByteSupplier,
+                            backgroundCollision);
+        }
+        inUse = true;
+        slot = 0;
+        x = 0;
+        y = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundCollision = backgroundCollision;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.completedResult = null;
+        }
     }
 }

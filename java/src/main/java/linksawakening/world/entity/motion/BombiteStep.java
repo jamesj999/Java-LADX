@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-/** Per-invocation scratch for BombiteMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BombiteMotion.advance; values are assigned in source order. */
 final class BombiteStep {
-    private final BombiteMotion owner;
+    private BombiteMotion owner;
     private linksawakening.world.entity.motion.BombiteFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -28,10 +28,7 @@ final class BombiteStep {
     private boolean blockedY;
     private linksawakening.world.entity.RoomEntity moved;
 
-    BombiteStep(BombiteMotion owner, linksawakening.world.entity.motion.BombiteFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BombiteStep() {}
 
     linksawakening.world.entity.motion.BombiteMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -197,5 +194,53 @@ final class BombiteStep {
             }
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.BombiteMotion.Update run(
+            BombiteMotion owner, linksawakening.world.entity.motion.BombiteFrame inputs) {
+        if (inUse) {
+            return new BombiteStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        transitionCountdown = 0;
+        slowTransitionCountdown = 0;
+        privateCountdown1 = 0;
+        enemyIgnoreHitsCountdown = 0;
+        runningWithPegasusBoots = false;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        slot = 0;
+        nextTransition = 0;
+        nextSlowTransition = 0;
+        nextPrivateCountdown1 = 0;
+        spriteVariant = 0;
+        explode = false;
+        bumpJingle = false;
+        x = 0;
+        y = 0;
+        blockedX = false;
+        blockedY = false;
+        moved = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.moved = null;
+            this.completedResult = null;
+        }
     }
 }

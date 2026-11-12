@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for ArmosKnightMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for ArmosKnightMotion.advance; values are assigned in source order. */
 final class ArmosKnightStep {
-    private final ArmosKnightMotion owner;
+    private ArmosKnightMotion owner;
     private linksawakening.world.entity.motion.ArmosKnightFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int linkEntityX;
@@ -27,10 +27,7 @@ final class ArmosKnightStep {
     private int jingleId;
     private linksawakening.world.entity.RoomEntity updated;
 
-    ArmosKnightStep(ArmosKnightMotion owner, linksawakening.world.entity.motion.ArmosKnightFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    ArmosKnightStep() {}
 
     linksawakening.world.entity.motion.ArmosKnightMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -256,5 +253,50 @@ final class ArmosKnightStep {
 
         updated = EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.ArmosKnightMotion.Update run(
+            ArmosKnightMotion owner, linksawakening.world.entity.motion.ArmosKnightFrame inputs) {
+        if (inUse) {
+            return new ArmosKnightStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkZ = 0;
+        transitionCountdown = 0;
+        physicsFlags = 0;
+        hitboxFlags = 0;
+        options1 = 0;
+        health = 0;
+        slot = 0;
+        linkMotionBlocked = false;
+        x = 0;
+        y = 0;
+        z = 0;
+        landed = false;
+        variant = 0;
+        rubbleRequest = null;
+        screenShakeRequest = null;
+        jingleId = 0;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.rubbleRequest = null;
+            this.screenShakeRequest = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

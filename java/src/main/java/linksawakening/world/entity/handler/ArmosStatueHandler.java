@@ -32,8 +32,7 @@ final class ArmosStatueHandler {
             RoomEntityBackgroundInteraction armosBackgroundInteraction =
                     state.background().interaction();
             if (armosBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                armosBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                armosBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             ArmosMotion.Update armosUpdate = state.motion(ArmosMotion.class, ArmosMotion::new)
                     .advance(

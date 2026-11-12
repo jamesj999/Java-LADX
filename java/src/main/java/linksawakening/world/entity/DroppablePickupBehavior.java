@@ -47,7 +47,7 @@ final class DroppablePickupBehavior {
             int linkEntityX,
             int linkEntityY,
             RoomEntityObjectSample objectUnderEntity) {
-        return new DroppablePickupFrameStep(owner, entity, linkEntityX, linkEntityY, objectUnderEntity).run();
+        return owner.droppablePickupFrameStep.run(owner, entity, linkEntityX, linkEntityY, objectUnderEntity);
     }
 
     static void revealCommonDroppable(

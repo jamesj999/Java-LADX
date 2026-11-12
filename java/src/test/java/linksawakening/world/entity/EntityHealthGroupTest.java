@@ -30,9 +30,10 @@ class EntityHealthGroupTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
-        runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.bossRewards.writeEnemyDropResolver(
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }
 

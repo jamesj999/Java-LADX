@@ -6,7 +6,7 @@ import linksawakening.world.entity.event.*;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
-/** Per-invocation scratch for SlimeEyeCombat.resolveCombat; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for SlimeEyeCombat.resolveCombat; values are assigned in source order. */
 final class SlimeEyeCombatStep {
     private linksawakening.world.entity.SlimeEyeController owner;
     private linksawakening.world.entity.SlimeEyeCombatFrame inputs;
@@ -29,12 +29,7 @@ final class SlimeEyeCombatStep {
     private int hitbox;
     private boolean hit;
 
-    SlimeEyeCombatStep(
-            linksawakening.world.entity.SlimeEyeController owner,
-            linksawakening.world.entity.SlimeEyeCombatFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    SlimeEyeCombatStep() {}
 
     void run() {
         if (!prepareCollision()) return;
@@ -170,5 +165,48 @@ final class SlimeEyeCombatStep {
                 .build());
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.SlimeEyeController owner,
+            linksawakening.world.entity.SlimeEyeCombatFrame inputs) {
+        if (inUse) {
+            new SlimeEyeCombatStep().run(owner, inputs);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        e = null;
+        frame = 0;
+        lx = 0;
+        ly = 0;
+        airborne = false;
+        interactive = false;
+        sword = false;
+        sx = 0;
+        sw = 0;
+        sy = 0;
+        sh = 0;
+        attack = null;
+        events = null;
+        s = 0;
+        isHalf = false;
+        hitbox = 0;
+        hit = false;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.runtime = null;
+            this.e = null;
+            this.attack = null;
+            this.events = null;
+        }
     }
 }

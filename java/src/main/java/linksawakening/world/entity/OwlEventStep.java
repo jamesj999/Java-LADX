@@ -11,7 +11,7 @@ import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.OwlEventCompletion;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for OwlEventBehavior.advanceOwlEvent; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for OwlEventBehavior.advanceOwlEvent; values are assigned in source order. */
 final class OwlEventStep {
     private linksawakening.world.entity.EntityStoryController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -22,20 +22,7 @@ final class OwlEventStep {
     private linksawakening.world.entity.EntityStoryControllerServices runtime;
     private int slot;
 
-    OwlEventStep(
-            linksawakening.world.entity.EntityStoryController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean handlerLinkInteractive) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.handlerLinkInteractive = handlerLinkInteractive;
-    }
+    OwlEventStep() {}
 
     void run() {
         runtime = owner.runtime;
@@ -237,5 +224,37 @@ final class OwlEventStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityStoryController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean handlerLinkInteractive) {
+        if (inUse) {
+            new OwlEventStep().run(owner, entity, frameCounter, linkEntityX, linkEntityY, handlerLinkInteractive);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.handlerLinkInteractive = handlerLinkInteractive;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+        }
     }
 }

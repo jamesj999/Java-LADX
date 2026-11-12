@@ -5,7 +5,6 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
-import java.util.Arrays;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
@@ -14,6 +13,12 @@ import linksawakening.world.entity.motion.ColorShellMotion;
 
 /** Snapshot, presentation and collision queries over the narrow room inspection services. */
 final class EntityRoomQueries {
+    static EntityRoomLoader.RoomTable spriteRoomTable(EntityRoomInspectionServices runtime) {
+        return runtime.presentationState().readSpriteSelection() == null
+                ? (runtime.indoorRoom() ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
+                : runtime.presentationState().readSpriteSelection().roomTable();
+    }
+
     static LiftedEntityState liftedEntityState(EntityRoomInspectionServices runtime) {
         if (runtime.liftThrow().readLiftedEntitySlot() < 0
                 || runtime.liftThrow().readLiftedEntitySlot() >= runtime.slots().length) {
@@ -78,21 +83,8 @@ final class EntityRoomQueries {
         // These handlers test story state before drawing ($05:4E78,
         // $05:51CE, $05:4BF1). Apply the same gates to pre-tick snapshots,
         // including room transitions which pause entity advancement.
-        var presentedSlots = Arrays.stream(runtime.slots())
-                .map(entity -> {
-                    boolean hidden = entity.type() == 0x3E
-                            && (runtime.indoorRoom()
-                                    // The beach-letter branch has a separate sprite pair, not
-                                    // Marin's person sprites. That later presentation is not yet
-                                    // ported; retain its previous hidden presentation here.
-                                    ? indoorMarinAbsent(runtime)
-                                            || runtime.story().readHouseTradeItem() >= 7
-                                    : runtime.pickups().readChestPlayerLevelsKnown()
-                                            && runtime.pickups().readChestSwordLevel() == 0);
-                    hidden |= entity.type() == 0x3F && runtime.indoorRoom() && indoorTarinAbsent(runtime);
-                    return hidden ? EntitySnapshots.withVariant(entity, -1) : entity;
-                })
-                .toList();
+        var presentedSlots = new java.util.ArrayList<RoomEntity>(runtime.slots().length);
+        for (int slot = 0; slot < runtime.slots().length; slot++) presentedSlots.add(presentedEntity(runtime, slot));
         return new RoomEntitySnapshot(
                 presentedSlots,
                 runtime.presentationState().readSpriteSelection(),
@@ -258,5 +250,16 @@ final class EntityRoomQueries {
                 runtime.motions()
                         .get(ColorShellMotion.class, ColorShellMotion::new)
                         .spriteVariant(entity.slot()));
+    }
+
+    static RoomEntity presentedEntity(EntityRoomInspectionServices runtime, int slot) {
+        RoomEntity entity = runtime.slots()[slot];
+        boolean hidden = entity.type() == 0x3E
+                && (runtime.indoorRoom()
+                        ? indoorMarinAbsent(runtime) || runtime.story().readHouseTradeItem() >= 7
+                        : runtime.pickups().readChestPlayerLevelsKnown()
+                                && runtime.pickups().readChestSwordLevel() == 0);
+        hidden |= entity.type() == 0x3F && runtime.indoorRoom() && indoorTarinAbsent(runtime);
+        return hidden && entity.spriteVariant() != -1 ? EntitySnapshots.withVariant(entity, -1) : entity;
     }
 }

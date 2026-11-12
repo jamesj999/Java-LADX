@@ -156,7 +156,7 @@ final class SlimeEyeBehavior {
     }
 
     static void advanceHalf(SlimeEyeController owner, EntityFrameExecution f) {
-        new SlimeEyeHalfStep(owner, f).run();
+        owner.slimeEyeHalfStep.run(owner, f);
     }
 
     static int spawn(SlimeEyeController owner, int type, int x, int y, int z) {

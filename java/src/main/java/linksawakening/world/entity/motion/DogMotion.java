@@ -48,7 +48,7 @@ public final class DogMotion {
     }
 
     public Update advance(DogFrame inputs) {
-        return new DogStep(this, inputs).run();
+        return dogStep.run(this, inputs);
     }
 
     public int state(int slot) {
@@ -266,4 +266,6 @@ public final class DogMotion {
     record PositionAndCollision(int x, int y, int collisionFlags) {}
 
     record Vector(int x, int y) {}
+
+    final DogStep dogStep = new DogStep();
 }

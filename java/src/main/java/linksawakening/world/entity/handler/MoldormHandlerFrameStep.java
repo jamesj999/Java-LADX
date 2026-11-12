@@ -3,12 +3,11 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
 import linksawakening.world.entity.EntityStatus;
-import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.MoldormMotion;
 
-/** Per-invocation scratch for MoldormHandler.phase2Moldorm; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MoldormHandler.phase2Moldorm; values are assigned in source order. */
 final class MoldormHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
     private linksawakening.world.entity.EntitySlotExecution slotState;
@@ -16,9 +15,7 @@ final class MoldormHandlerFrameStep {
     private linksawakening.world.entity.EntityTimerGates timerGates;
     private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
-    MoldormHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-        this.state = state;
-    }
+    MoldormHandlerFrameStep() {}
 
     boolean run() {
         if (!prepareMotion()) return completedResult;
@@ -76,8 +73,7 @@ final class MoldormHandlerFrameStep {
         }
         moldormBackgroundInteraction = state.background().interaction();
         if (moldormBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-            moldormBackgroundInteraction =
-                    RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+            moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
         }
         transitionForMotion = state.slot().transitionCountdown(slot);
         if (transitionForMotion != 0) {
@@ -127,5 +123,36 @@ final class MoldormHandlerFrameStep {
         state.slot().setPhysicsFlags(slot, 0x02);
         presentationFlags.preserveMoldormPresentation(true);
         return true;
+    }
+
+    private boolean inUse;
+
+    boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        if (inUse) {
+            return new MoldormHandlerFrameStep().run(state);
+        }
+        inUse = true;
+        slotState = null;
+        frameInput = null;
+        timerGates = null;
+        presentationFlags = null;
+        slot = 0;
+        moldormBackgroundInteraction = null;
+        transitionForMotion = 0;
+        moldormUpdate = null;
+        completedResult = false;
+        this.state = state;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.state = null;
+            this.slotState = null;
+            this.frameInput = null;
+            this.timerGates = null;
+            this.presentationFlags = null;
+            this.moldormBackgroundInteraction = null;
+            this.moldormUpdate = null;
+        }
     }
 }

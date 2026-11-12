@@ -28,7 +28,7 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
     @Test
     void crystalSwitchHitFlashesThenRequestsTheRomSwitchAnimation() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         EntitySpriteDefinition definition = catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -70,7 +70,7 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
     @Test
     void crystalSwitchDoesNotRequestAnotherAnimationWhileSwitchBlocksAreActive() throws Exception {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

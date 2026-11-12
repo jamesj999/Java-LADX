@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static linksawakening.world.entity.motion.HinoxMotion.*;
 
-/** Per-invocation scratch for HinoxBehavior.advance; values are assigned in source order. */
+/** HinoxEntityHandler and HinoxState1Handler (bank $06); reentrancy-safe frame scratch. */
 final class HinoxStep {
     private HinoxMotion owner;
     private HinoxFrame inputs;
@@ -34,12 +34,9 @@ final class HinoxStep {
     private HinoxMotion.BombSpawn bomb;
     private int spriteVariant;
 
-    HinoxStep(HinoxMotion owner, HinoxFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    HinoxStep() {}
 
-    HinoxMotion.Update run() {
+    private HinoxMotion.Update run() {
         if (!prepareFrame()) return completedResult;
         if (!applyFlashBombTransition()) return completedResult;
         if (!advanceBehavior()) return completedResult;
@@ -99,6 +96,7 @@ final class HinoxStep {
             owner.speedX[slot] = vector.x();
             owner.speedY[slot] = vector.y();
         }
+        // This branch advances inertia twice in the ROM; preserve both calls.
         owner.tickInertia(slot);
         spriteVariant = owner.tickInertia(slot);
         if ((frame & 0x0F) == 0) {
@@ -133,6 +131,7 @@ final class HinoxStep {
             owner.bombOriginY[slot] = (y + 0x0A) & 0xFF;
             owner.bombOriginWritten[slot] = true;
         }
+        // This branch advances inertia twice in the ROM; preserve both calls.
         owner.tickInertia(slot);
         spriteVariant = owner.tickInertia(slot);
         if ((frame & 0x0F) == 0) {
@@ -146,10 +145,8 @@ final class HinoxStep {
         if (transition == 0) {
             owner.state[slot] = STATE_INITIAL;
             transition = 0;
-            {
-                completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
-                return false;
-            }
+            completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
+            return false;
         } else if (transition == 0x20) {
             linkSpeedY = 0x20;
             linkSpeedX = (linkX & 0xFF) >= 0x50 ? 0xE0 : 0x20;
@@ -242,40 +239,23 @@ final class HinoxStep {
         if (owner.state[slot] < STATE_GRAB && (flashCountdown & 0xFF) == 0x03) {
             owner.state[slot] = STATE_BOMB;
             transition = 0x20;
-            {
-                completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
-                return false;
-            }
+            completedResult = result(spriteVariant, linkMotionBlockedAtEntry, linkX, linkY, linkZ, false, false);
+            return false;
         }
         return true;
     }
 
     private boolean advanceBehavior() {
 
-        switch (owner.state[slot]) {
-            case STATE_INITIAL -> {
-                if (!advanceInitial()) return false;
-            }
-            case STATE_WANDER -> {
-                if (!advanceWander()) return false;
-            }
-            case STATE_CHARGE_WINDUP -> {
-                if (!advanceChargeWindup()) return false;
-            }
-            case STATE_CHARGE -> {
-                if (!advanceCharge()) return false;
-            }
-            case STATE_GRAB -> {
-                if (!advanceGrab()) return false;
-            }
-            case STATE_BOMB -> {
-                if (!advanceBomb()) return false;
-            }
-            default -> {
-                if (!advanceDefault()) return false;
-            }
-        }
-        return true;
+        return switch (owner.state[slot]) {
+            case STATE_INITIAL -> advanceInitial();
+            case STATE_WANDER -> advanceWander();
+            case STATE_CHARGE_WINDUP -> advanceChargeWindup();
+            case STATE_CHARGE -> advanceCharge();
+            case STATE_GRAB -> advanceGrab();
+            case STATE_BOMB -> advanceBomb();
+            default -> advanceDefault();
+        };
     }
 
     private boolean holdGrabbedLink() {
@@ -326,5 +306,56 @@ final class HinoxStep {
                 heldWritten,
                 heldPose,
                 bomb));
+    }
+
+    private boolean inUse;
+
+    HinoxMotion.Update run(HinoxMotion owner, HinoxFrame inputs) {
+        if (inUse) {
+            return new HinoxStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        transitionCountdown = 0;
+        frameCounter = 0;
+        linkX = 0;
+        linkY = 0;
+        linkZ = 0;
+        linkMotionState = 0;
+        randomByteSupplier = null;
+        backgroundInteraction = null;
+        entityCollisionFlagsForFrame = 0;
+        flashCountdown = 0;
+        slot = 0;
+        linkMotionBlockedAtEntry = false;
+        x = 0;
+        y = 0;
+        transition = 0;
+        frame = 0;
+        linkSpeedX = 0;
+        linkSpeedY = 0;
+        linkVelocityZ = 0;
+        airborne = 0;
+        linkDamage = 0;
+        jingle = 0;
+        wave = 0;
+        dust = false;
+        bomb = null;
+        spriteVariant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.bomb = null;
+            this.completedResult = null;
+        }
     }
 }

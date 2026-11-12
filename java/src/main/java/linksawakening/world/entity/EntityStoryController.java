@@ -348,4 +348,8 @@ public final class EntityStoryController {
     OwlEventState owlState() {
         return owl;
     }
+
+    final RichardStep richardStep = new RichardStep();
+    final VillageNpcFrameStep villageNpcFrameStep = new VillageNpcFrameStep();
+    final OwlEventStep owlEventStep = new OwlEventStep();
 }

@@ -16,7 +16,7 @@ final class MagicRodBehavior {
             int frame,
             boolean handlerInteractive,
             boolean timersInteractive) {
-        new MagicRodFrameStep(owner, index, entity, frame, handlerInteractive, timersInteractive).run();
+        owner.magicRodFrameStep.run(owner, index, entity, frame, handlerInteractive, timersInteractive);
     }
 
     static boolean collideMagicRodFireballWithEntities(

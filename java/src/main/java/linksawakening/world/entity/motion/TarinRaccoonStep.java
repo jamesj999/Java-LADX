@@ -2,7 +2,7 @@ package linksawakening.world.entity.motion;
 
 import static linksawakening.world.entity.motion.TarinRaccoonMotion.*;
 
-/** Per-invocation scratch for TarinRaccoonBehavior.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for TarinRaccoonBehavior.advance; values are assigned in source order. */
 final class TarinRaccoonStep {
     private linksawakening.world.entity.motion.TarinRaccoonMotion owner;
     private linksawakening.world.entity.RoomEntity source;
@@ -25,16 +25,7 @@ final class TarinRaccoonStep {
     private int collisionFlags;
     private linksawakening.world.entity.RoomEntity entity;
 
-    TarinRaccoonStep(
-            linksawakening.world.entity.motion.TarinRaccoonMotion owner,
-            linksawakening.world.entity.RoomEntity source,
-            linksawakening.world.entity.motion.TarinRaccoonMotion.Input input,
-            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
-        this.owner = owner;
-        this.source = source;
-        this.input = input;
-        this.backgroundInteraction = backgroundInteraction;
-    }
+    TarinRaccoonStep() {}
 
     linksawakening.world.entity.motion.TarinRaccoonMotion.Update run() {
         TarinRaccoonMotion.checkType(source);
@@ -229,5 +220,50 @@ final class TarinRaccoonStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.TarinRaccoonMotion.Update run(
+            linksawakening.world.entity.motion.TarinRaccoonMotion owner,
+            linksawakening.world.entity.RoomEntity source,
+            linksawakening.world.entity.motion.TarinRaccoonMotion.Input input,
+            linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction) {
+        if (inUse) {
+            return new TarinRaccoonStep().run(owner, source, input, backgroundInteraction);
+        }
+        inUse = true;
+        slot = 0;
+        slowCountdown = 0;
+        transitionCountdown = 0;
+        variant = 0;
+        shouldGetLost = false;
+        dialog = 0;
+        blockLink = false;
+        clearAttack = false;
+        linkFacing = 0;
+        pushLink = false;
+        roomChanged = false;
+        tarinFlag = false;
+        soundId = 0;
+        spawnBomb = false;
+        collisionFlags = 0;
+        entity = null;
+        completedResult = null;
+        this.owner = owner;
+        this.source = source;
+        this.input = input;
+        this.backgroundInteraction = backgroundInteraction;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.source = null;
+            this.input = null;
+            this.backgroundInteraction = null;
+            this.entity = null;
+            this.completedResult = null;
+        }
     }
 }

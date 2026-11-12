@@ -102,8 +102,7 @@ final class EntityBackgroundCollisionResolverTest {
     void ledgeDirectionUsesThrownDirectionAndZToStartTheLedgeTimer() {
         RoomEntity grounded = entity(0x09, 0);
         RoomEntity airborne = entity(0x09, 1);
-        EntityBackgroundCollisionResolver resolver =
-                new EntityBackgroundCollisionResolver(tables(0, 0, 0, 0, grounded.type(), 0));
+        EntityBackgroundCollisionResolver resolver = collisionResolver(tables(0, 0, 0, 0, grounded.type(), 0));
 
         EntityBackgroundCollisionResolution groundedResult =
                 resolveWithState(resolver, grounded, 0x00, true, 0x00, 0x00, 0xD0);
@@ -124,8 +123,7 @@ final class EntityBackgroundCollisionResolverTest {
     @Test
     void ledgeTimerUsesRomCadenceAndWreckingBallStaysSolid() {
         RoomEntity ordinary = entity(0x09, 0);
-        EntityBackgroundCollisionResolver resolver =
-                new EntityBackgroundCollisionResolver(tables(0, 0, 0, 0, ordinary.type(), 0));
+        EntityBackgroundCollisionResolver resolver = collisionResolver(tables(0, 0, 0, 0, ordinary.type(), 0));
 
         EntityBackgroundCollisionResolution zeroTimer =
                 resolveWithState(resolver, ordinary, 0x00, true, 0x00, 0x00, 0xD1);
@@ -181,8 +179,7 @@ final class EntityBackgroundCollisionResolverTest {
     @Test
     void switchBlockObjectKindMatchesTheRomStateByte() {
         RoomEntity ordinary = entity(0x30, 0);
-        EntityBackgroundCollisionResolver resolver =
-                new EntityBackgroundCollisionResolver(tables(0, 0, 0, 0, ordinary.type(), 0));
+        EntityBackgroundCollisionResolver resolver = collisionResolver(tables(0, 0, 0, 0, ordinary.type(), 0));
 
         assertFalse(resolveSwitchBlockWithState(resolver, ordinary, 0xDB, 0x00)
                 .result()
@@ -206,7 +203,7 @@ final class EntityBackgroundCollisionResolverTest {
 
     @Test
     void switchBlockBombExceptionsPassRegardlessOfObjectKindOrState() {
-        EntityBackgroundCollisionResolver resolver = new EntityBackgroundCollisionResolver(tables(0, 0, 0, 0, 0x02, 0));
+        EntityBackgroundCollisionResolver resolver = collisionResolver(tables(0, 0, 0, 0, 0x02, 0));
         for (int type : new int[] {0x02, 0xA8}) {
             RoomEntity entity = entity(type, 0);
             for (int objectId : new int[] {0xDB, 0xDC}) {
@@ -228,7 +225,7 @@ final class EntityBackgroundCollisionResolverTest {
     @Test
     void hookshotChainPassesSwitchBlockOnlyWhenLinkIsStandingOnOne() {
         EntityBackgroundCollisionResolver resolver =
-                new EntityBackgroundCollisionResolver(tables(0, 0, 0, 0, HookshotChainMotion.ENTITY_TYPE, 0));
+                collisionResolver(tables(0, 0, 0, 0, HookshotChainMotion.ENTITY_TYPE, 0));
         RoomEntity hookshot = entity(HookshotChainMotion.ENTITY_TYPE, 0);
 
         assertTrue(resolveSwitchBlockWithState(resolver, hookshot, 0xDC, 0x00, false)
@@ -307,7 +304,7 @@ final class EntityBackgroundCollisionResolverTest {
         writeFineRow(rom, fineOffset - (0x80 - 0x7C) * 4, openDoorRow);
         writeFineRow(rom, fineOffset, fineRow);
         rom[RomBank.romOffset(0x03, 0x42F1) + entityType] = (byte) options;
-        return RomTables.loadFromRom(rom);
+        return RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
     }
 
     private static void writeFineRow(byte[] rom, int offset, int[] row) {
@@ -334,13 +331,13 @@ final class EntityBackgroundCollisionResolverTest {
 
     private static EntityBackgroundCollisionResult resolve(
             RomTables tables, RoomEntity entity, int direction, int sampleX, int sampleY, int physics) {
-        return new EntityBackgroundCollisionResolver(tables)
+        return collisionResolver(tables)
                 .resolve(entity, direction, new EntityCollisionPointProbe.Sample(sampleX, sampleY), 0x22, physics);
     }
 
     private static EntityBackgroundCollisionResult resolveWithIgnoreHits(
             RomTables tables, RoomEntity entity, int sampleX, int sampleY, int physics, int ignoreHitsCountdown) {
-        return new EntityBackgroundCollisionResolver(tables)
+        return collisionResolver(tables)
                 .resolve(
                         entity,
                         EntityBackgroundCollisionResult.RIGHT,
@@ -386,5 +383,9 @@ final class EntityBackgroundCollisionResolverTest {
                 0x04,
                 new EntityBackgroundCollisionState(
                         0x00, false, 0xFF, 0x00, switchBlocksState, linkStandingOnSwitchBlock));
+    }
+
+    private static EntityBackgroundCollisionResolver collisionResolver(RomTables tables) {
+        return new EntityBackgroundCollisionResolver(tables.collisionTables(), tables.entityPropertyTables());
     }
 }

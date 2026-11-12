@@ -16,7 +16,7 @@ final class RichardBehavior {
             int linkEntityX,
             int linkEntityY,
             boolean linkAirborne) {
-        new RichardStep(owner, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne).run();
+        owner.richardStep.run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
     }
 
     static void enableBowWowFollowing(EntityStoryController owner) {

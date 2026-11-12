@@ -30,8 +30,7 @@ final class HidingZolHandler {
             RoomEntityBackgroundInteraction hidingZolBackgroundInteraction =
                     state.background().interaction();
             if (hidingZolBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                hidingZolBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                hidingZolBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             HidingZolMotion.Update hidingZolUpdate = state.motion(HidingZolMotion.class, HidingZolMotion::new)
                     .advance(

@@ -19,8 +19,8 @@ final class InstrumentPickupBehavior {
             int linkEntityY,
             int linkZ,
             IntSupplier randomByteSupplier) {
-        new InstrumentPickupStep(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier)
-                .run();
+        owner.instrumentPickupStep.run(
+                owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
     }
 
     static void spawnInstrumentParticle(EntityRewardController owner, RoomEntity source, int offsetIndex, int variant) {

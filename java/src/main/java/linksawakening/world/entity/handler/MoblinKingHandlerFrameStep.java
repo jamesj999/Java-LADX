@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.MoblinKingFrame;
 import linksawakening.world.entity.motion.MoblinKingMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
-/** Per-invocation scratch for MoblinKingHandler.phase4MoblinKing; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MoblinKingHandler.phase4MoblinKing; values are assigned in source order. */
 final class MoblinKingHandlerFrameStep {
     private linksawakening.world.entity.EntityFrameExecution state;
     private linksawakening.world.entity.EntitySlotExecution slotState;
@@ -22,9 +22,7 @@ final class MoblinKingHandlerFrameStep {
     private linksawakening.world.entity.EntityTimerGates timerGates;
     private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
 
-    MoblinKingHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-        this.state = state;
-    }
+    MoblinKingHandlerFrameStep() {}
 
     boolean run() {
         slotState = state.slotFrame();
@@ -144,6 +142,30 @@ final class MoblinKingHandlerFrameStep {
         }
         if (kingUpdate.screenShakeCountdown() != 0) {
             state.emit(new ScreenShakeRequest(slotState.entity().slot(), kingUpdate.screenShakeCountdown(), 0));
+        }
+    }
+
+    private boolean inUse;
+
+    boolean run(linksawakening.world.entity.EntityFrameExecution state) {
+        if (inUse) {
+            return new MoblinKingHandlerFrameStep().run(state);
+        }
+        inUse = true;
+        slotState = null;
+        frameInput = null;
+        timerGates = null;
+        presentationFlags = null;
+        this.state = state;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.state = null;
+            this.slotState = null;
+            this.frameInput = null;
+            this.timerGates = null;
+            this.presentationFlags = null;
         }
     }
 }

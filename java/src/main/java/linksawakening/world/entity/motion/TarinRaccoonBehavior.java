@@ -18,7 +18,7 @@ final class TarinRaccoonBehavior {
             RoomEntity source,
             TarinRaccoonMotion.Input input,
             RoomEntityBackgroundInteraction backgroundInteraction) {
-        return new TarinRaccoonStep(owner, source, input, backgroundInteraction).run();
+        return owner.tarinRaccoonStep.run(owner, source, input, backgroundInteraction);
     }
 
     static TarinRaccoonMotion.Movement moveWithBackground(

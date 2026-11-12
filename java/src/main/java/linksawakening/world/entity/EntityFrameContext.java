@@ -26,7 +26,7 @@ public record EntityFrameContext(
         int linkSpeedY,
         boolean creditsGameplay,
         boolean handlerLinkCollisionEnabled) {
-    /** Compatibility for world.room.RoomEntityBridge; use builder for new callers. */
+    /** Compatibility for world.room.RoomEntitySimulation; use builder for new callers. */
     @Deprecated
     public EntityFrameContext(
             int frameCounter,

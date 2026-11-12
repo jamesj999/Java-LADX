@@ -18,7 +18,7 @@ final class EntityRoomLoaderTest {
         try (var input = linksawakening.testing.TestRom.open()) {
             rom = input.readAllBytes();
         }
-        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        EntityRoomLoader loader = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom));
         int hearts = 0;
         for (int room = 0; room < 256; room++) {
             for (RoomEntity entity :
@@ -38,7 +38,8 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5000);
         writeStream(rom, 0x5000, 0x67, 0x80, 0x24, 0xFE, 0xFF);
 
-        RoomEntitySnapshot snapshot = new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0);
+        RoomEntitySnapshot snapshot = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0);
 
         assertEquals(EntityRoomLoader.MAX_ENTITIES, snapshot.slots().size());
 
@@ -75,7 +76,10 @@ final class EntityRoomLoaderTest {
             writePointer(rom, table, 0, address);
             writeStream(rom, address, 0x10 + index, 0xA0 + index, 0xFF);
 
-            RoomEntity entity = new EntityRoomLoader(rom).load(table, 0).slots().get(0);
+            RoomEntity entity = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                    .load(table, 0)
+                    .slots()
+                    .get(0);
             assertEquals(0xA0 + index, entity.type(), table.name());
             assertEquals(0x08 + index * 0x10, entity.x(), table.name());
             assertEquals(0x20, entity.y(), table.name());
@@ -90,8 +94,8 @@ final class EntityRoomLoaderTest {
                 rom, 0x5100, 0x00, 0x20, 0x11, 0x21, 0x22, 0x22, 0x33, 0x23, 0x44, 0x24, 0x55, 0x25, 0x66, 0x26, 0x77,
                 0x27, 0x88, 0x28, 0xFF);
 
-        RoomEntitySnapshot snapshot =
-                new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0, 0b0101_0011);
+        RoomEntitySnapshot snapshot = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0, 0b0101_0011);
 
         assertEquals(5, snapshot.loadedEntities().size());
         assertEquals(2, snapshot.loadedEntities().get(0).sourceLoadOrder());
@@ -116,7 +120,7 @@ final class EntityRoomLoaderTest {
                 0x34, 0xC2, // Marin at Tal Tal: shift Y by -3.
                 0xFF);
 
-        List<RoomEntity> overworld = new EntityRoomLoader(rom)
+        List<RoomEntity> overworld = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities();
         assertEquals(0x30, overworld.get(0).x());
@@ -127,7 +131,7 @@ final class EntityRoomLoaderTest {
         assertEquals(0x3D, overworld.get(2).y());
 
         writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_A, 0, 0x5150);
-        List<RoomEntity> indoor = new EntityRoomLoader(rom)
+        List<RoomEntity> indoor = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.INDOORS_A, 0)
                 .loadedEntities();
         assertEquals(0x28, indoor.get(0).x());
@@ -142,8 +146,10 @@ final class EntityRoomLoaderTest {
         for (EntityRoomLoader.RoomTable table : EntityRoomLoader.RoomTable.values()) {
             writePointer(rom, table, 0, 0x5170);
             writeStream(rom, 0x5170, 0x34, 0x61, 0xFF);
-            RoomEntity warp =
-                    new EntityRoomLoader(rom).load(table, 0).loadedEntities().get(0);
+            RoomEntity warp = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                    .load(table, 0)
+                    .loadedEntities()
+                    .get(0);
             boolean indoor = table != EntityRoomLoader.RoomTable.OVERWORLD;
             assertEquals(indoor ? 0x50 : 0x48, warp.x());
             assertEquals(indoor ? 0x48 : 0x40, warp.y());
@@ -156,7 +162,7 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
         writeStream(rom, 0x5170, 0x22, 0x09, 0xFF);
 
-        RoomEntity octorok = new EntityRoomLoader(rom)
+        RoomEntity octorok = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities()
                 .get(0);
@@ -174,7 +180,7 @@ final class EntityRoomLoaderTest {
                 0x11, 0x14, // hActiveEntityPosX bit $10 set: initial right variant.
                 0xFF);
 
-        List<RoomEntity> swords = new EntityRoomLoader(rom)
+        List<RoomEntity> swords = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities();
 
@@ -191,7 +197,7 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
         writeStream(rom, 0x5170, 0x00, 0x86, 0x01, 0x86, 0x10, 0xE5, 0x11, 0xE5, 0xFF);
 
-        List<RoomEntity> entities = new EntityRoomLoader(rom)
+        List<RoomEntity> entities = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities();
 
@@ -210,7 +216,7 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5170);
         writeStream(rom, 0x5170, 0x00, 0x12, 0x01, 0x10, 0x02, 0x11, 0x03, 0x86, 0xFF);
 
-        List<RoomEntity> entities = new EntityRoomLoader(rom)
+        List<RoomEntity> entities = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities();
 
@@ -226,7 +232,7 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5180);
         writeStream(rom, 0x5180, 0x12, 0xE9, 0x23, 0xEA, 0x34, 0xEB, 0xFF);
 
-        List<RoomEntity> shells = new EntityRoomLoader(rom)
+        List<RoomEntity> shells = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0)
                 .loadedEntities();
 
@@ -247,11 +253,11 @@ final class EntityRoomLoaderTest {
         writeStream(rom, 0x5160, 0x12, 0x3D, 0xFF);
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0x10, 0x5160);
 
-        RoomEntity special = new EntityRoomLoader(rom)
+        RoomEntity special = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0xA4)
                 .loadedEntities()
                 .get(0);
-        RoomEntity ordinary = new EntityRoomLoader(rom)
+        RoomEntity ordinary = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x10)
                 .loadedEntities()
                 .get(0);
@@ -268,7 +274,8 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.OVERWORLD, 0, 0x5200);
         writeStream(rom, 0x5200, 0xFF);
 
-        RoomEntitySnapshot empty = new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0);
+        RoomEntitySnapshot empty = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0);
         assertEquals(16, empty.slots().size());
         assertEquals(0, empty.loadedEntities().size());
 
@@ -281,7 +288,8 @@ final class EntityRoomLoaderTest {
         definitions[34] = 0xFF;
         writeStream(rom, 0x5300, definitions);
 
-        RoomEntitySnapshot full = new EntityRoomLoader(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 1);
+        RoomEntitySnapshot full = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 1);
         assertEquals(16, full.loadedEntities().size());
         assertEquals(0x40, full.loadedEntities().get(0).type());
         assertEquals(0x4F, full.loadedEntities().get(15).type());
@@ -290,7 +298,7 @@ final class EntityRoomLoaderTest {
     @Test
     void rejectsInvalidRoomAndTruncatedDefinition() {
         byte[] rom = syntheticRom();
-        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        EntityRoomLoader loader = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         assertThrows(IllegalArgumentException.class, () -> loader.load(EntityRoomLoader.RoomTable.OVERWORLD, -1));
         assertThrows(IllegalArgumentException.class, () -> loader.load(EntityRoomLoader.RoomTable.OVERWORLD, 0x100));
@@ -302,7 +310,8 @@ final class EntityRoomLoaderTest {
 
     @Test
     void shippedRomContainsKnownOverworldDefinitionsInSourceOrder() throws Exception {
-        RoomEntitySnapshot room00 = new EntityRoomLoader(loadRom()).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
+        RoomEntitySnapshot room00 = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(loadRom()))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
 
         assertEquals(
                 List.of(0x29, 0x35, 0x7A),
@@ -312,7 +321,8 @@ final class EntityRoomLoaderTest {
         assertEquals(0x48, room00.loadedEntities().get(1).x());
         assertEquals(0x30, room00.loadedEntities().get(1).y());
 
-        RoomEntitySnapshot room92 = new EntityRoomLoader(loadRom()).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        RoomEntitySnapshot room92 = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(loadRom()))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         assertEquals(
                 List.of(0x73, 0x3E, 0x6F, 0x6E, 0x6E, 0x6E, 0xDC),
                 room92.loadedEntities().stream().map(RoomEntity::type).toList());
@@ -322,7 +332,7 @@ final class EntityRoomLoaderTest {
 
     @Test
     void shippedRomRoom67InitializesTheGhiniFamilyWithSourceZValues() throws Exception {
-        List<RoomEntity> entities = new EntityRoomLoader(loadRom())
+        List<RoomEntity> entities = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(loadRom()))
                 .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x67)
                 .loadedEntities();
 
@@ -335,7 +345,7 @@ final class EntityRoomLoaderTest {
 
     @Test
     void shippedRomUsesIndoorAndColorDungeonPointerTables() throws Exception {
-        EntityRoomLoader loader = new EntityRoomLoader(loadRom());
+        EntityRoomLoader loader = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
 
         assertEquals(
                 List.of(0x39),
@@ -365,7 +375,7 @@ final class EntityRoomLoaderTest {
         writePointer(rom, EntityRoomLoader.RoomTable.INDOORS_A, 0x7C, 0x5020);
         writeStream(rom, 0x5020, 0x00, 0x30, 0xFF);
 
-        EntityRoomLoader loader = new EntityRoomLoader(rom);
+        EntityRoomLoader loader = new EntityRoomLoader(linksawakening.world.entity.EntityRomTestData.view(rom));
         byte[] status = new byte[0x100];
         status[0xF8] = 0x20;
         RoomEntity quicksandKey = loader.load(EntityRoomLoader.RoomTable.INDOORS_A, 0xF8, 0, -1, status)

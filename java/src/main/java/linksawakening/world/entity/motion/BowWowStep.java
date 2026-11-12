@@ -5,7 +5,7 @@ import static linksawakening.world.entity.motion.BowWowMotion.*;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.RoomEntity;
 
-/** Per-invocation scratch for BowWowBehavior.advanceAfterTimers; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for BowWowBehavior.advanceAfterTimers; values are assigned in source order. */
 final class BowWowStep {
     private linksawakening.world.entity.motion.BowWowMotion owner;
     private linksawakening.world.entity.motion.BowWowCollisionFrame inputs;
@@ -27,12 +27,7 @@ final class BowWowStep {
     private int z;
     private linksawakening.world.entity.motion.BowWowMotion.TargetContact targetContact;
 
-    BowWowStep(
-            linksawakening.world.entity.motion.BowWowMotion owner,
-            linksawakening.world.entity.motion.BowWowCollisionFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    BowWowStep() {}
 
     linksawakening.world.entity.motion.BowWowMotion.Update run() {
         entity = inputs.entity();
@@ -56,7 +51,7 @@ final class BowWowStep {
             owner.selectedVariant[slot] = owner.movementVariant(frameCounter, slot);
         }
 
-        if (owner.privateState4[slot] == 0) {
+        if (owner.setupComplete[slot] == 0) {
             return new BowWowMotion.Update(owner.setup(entity), owner.targetSlot[slot], null);
         }
 
@@ -189,5 +184,50 @@ final class BowWowStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.BowWowMotion.Update run(
+            linksawakening.world.entity.motion.BowWowMotion owner,
+            linksawakening.world.entity.motion.BowWowCollisionFrame inputs) {
+        if (inUse) {
+            return new BowWowStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkEntityZ = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        entities = null;
+        canEatEntity = null;
+        bowWowState = 0;
+        slot = 0;
+        variant = 0;
+        wasAboveGround = false;
+        x = 0;
+        y = 0;
+        z = 0;
+        targetContact = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.entities = null;
+            this.canEatEntity = null;
+            this.targetContact = null;
+            this.completedResult = null;
+        }
     }
 }
