@@ -6,18 +6,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import linksawakening.input.InputConfig;
 
+/** Launch preferences and key bindings loaded from a strict JSON object. */
 public final class AppConfig {
 
     private static final String RESOURCE_PATH = "config/config.json";
-    private static final Pattern STRING_ENTRY_PATTERN = Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*\"([^\"]*)\"");
-    private static final Pattern BOOLEAN_ENTRY_PATTERN =
-            Pattern.compile("\"([A-Za-z0-9_]+)\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern OBJECT_PATTERN_TEMPLATE =
-            Pattern.compile("\"%s\"\\s*:\\s*\\{([^}]*)}", Pattern.DOTALL);
 
     public enum StartLocationType {
         OVERWORLD
@@ -114,17 +108,18 @@ public final class AppConfig {
 
     public static AppConfig parse(String content) {
         AppConfig defaults = defaults();
-        Map<String, Boolean> booleans = readBooleanEntries(content);
+        Map<String, Object> entries = object(MiniJson.parse(content), "config");
+        Map<String, Boolean> booleans = booleanEntries(entries);
 
         boolean showTitleScreen = booleans.getOrDefault("showTitleScreen", defaults.showTitleScreen);
         boolean playIntroStory = booleans.getOrDefault("playIntroStory", defaults.playIntroStory);
         boolean debugEnabled = booleans.getOrDefault("debugEnabled", defaults.debugEnabled);
-        Map<String, String> stringEntries = readStringEntries(content);
+        Map<String, String> stringEntries = stringEntries(entries);
 
         StartMode startMode = parseStartMode(stringEntries.get("startMode"), defaults.startMode);
-        StartLocation startLocation = parseStartLocation(content, defaults.startLocation);
+        StartLocation startLocation = parseStartLocation(entries, defaults.startLocation);
         ItemProfile itemProfile = parseItemProfile(stringEntries.get("itemProfile"));
-        InputConfig inputConfig = InputConfig.fromKeyNames(readStringEntries(objectSection(content, "controls")));
+        InputConfig inputConfig = InputConfig.fromKeyNames(stringEntries(section(entries, "controls")));
 
         return new AppConfig(
                 showTitleScreen, playIntroStory, debugEnabled, startMode, startLocation, itemProfile, inputConfig);
@@ -142,8 +137,8 @@ public final class AppConfig {
         }
     }
 
-    private static StartLocation parseStartLocation(String content, StartLocation fallback) {
-        Map<String, String> entries = readStringEntries(objectSection(content, "startLocation"));
+    private static StartLocation parseStartLocation(Map<String, Object> content, StartLocation fallback) {
+        Map<String, String> entries = stringEntries(section(content, "startLocation"));
         StartLocationType type = parseStartLocationType(entries.get("type"), fallback.type);
         int roomId = parseRoomId(entries.get("roomId"), fallback.roomId);
         return new StartLocation(type, roomId);
@@ -190,28 +185,34 @@ public final class AppConfig {
         }
     }
 
-    private static String objectSection(String content, String name) {
-        Pattern pattern =
-                Pattern.compile(String.format(OBJECT_PATTERN_TEMPLATE.pattern(), Pattern.quote(name)), Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(content);
-        return matcher.find() ? matcher.group(1) : "";
+    private static Map<String, Object> object(Object value, String name) {
+        if (!(value instanceof Map<?, ?> map))
+            throw new IllegalArgumentException("Config " + name + " must be an object");
+        Map<String, Object> result = new HashMap<>();
+        map.forEach((key, entry) -> result.put((String) key, entry));
+        return result;
     }
 
-    private static Map<String, String> readStringEntries(String content) {
-        Map<String, String> entries = new HashMap<>();
-        Matcher matcher = STRING_ENTRY_PATTERN.matcher(content);
-        while (matcher.find()) {
-            entries.put(matcher.group(1), matcher.group(2));
-        }
-        return entries;
+    private static Map<String, Object> section(Map<String, Object> entries, String name) {
+        return entries.containsKey(name) ? object(entries.get(name), name) : Map.of();
     }
 
-    private static Map<String, Boolean> readBooleanEntries(String content) {
-        Map<String, Boolean> entries = new HashMap<>();
-        Matcher matcher = BOOLEAN_ENTRY_PATTERN.matcher(content);
-        while (matcher.find()) {
-            entries.put(matcher.group(1), Boolean.parseBoolean(matcher.group(2)));
+    private static Map<String, String> stringEntries(Map<String, Object> entries) {
+        Map<String, String> result = new HashMap<>();
+        entries.forEach((key, value) -> {
+            if (value instanceof String text) result.put(key, text);
+        });
+        return result;
+    }
+
+    private static Map<String, Boolean> booleanEntries(Map<String, Object> entries) {
+        Map<String, Boolean> result = new HashMap<>();
+        for (String key : new String[] {"showTitleScreen", "playIntroStory", "debugEnabled"}) {
+            if (!entries.containsKey(key)) continue;
+            if (!(entries.get(key) instanceof Boolean value))
+                throw new IllegalArgumentException("Config " + key + " must be a boolean");
+            result.put(key, value);
         }
-        return entries;
+        return result;
     }
 }
