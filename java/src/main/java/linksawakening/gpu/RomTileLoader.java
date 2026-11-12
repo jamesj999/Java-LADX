@@ -216,6 +216,7 @@ class RomTileLoader extends Vram {
     }
 
     final void loadTilesFromROM(Rom romData, int bank, int address, int tileCount, int vramTileIndex) {
+        if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
         int romOffset = bank == 0 ? address : bank * 0x4000 + (address - 0x4000);
         int vramOffset = vramTileIndex * TILE_DATA_SIZE;
         int byteCount = tileCount * TILE_DATA_SIZE;
@@ -274,18 +275,8 @@ class RomTileLoader extends Vram {
     }
 
     @Deprecated(forRemoval = true)
-    public void replaceSlimeKeyTilesByGoldenLeaf(byte[] romData) {
-        replaceSlimeKeyTilesByGoldenLeaf(romData == null ? null : new Rom(romData));
-    }
-
-    @Deprecated(forRemoval = true)
     public void loadMenuTiles(byte[] romData) {
         loadMenuTiles(romData == null ? null : new Rom(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    public void loadSaveMenuTiles(byte[] romData) {
-        loadSaveMenuTiles(romData == null ? null : new Rom(romData));
     }
 
     @Deprecated(forRemoval = true)
@@ -324,16 +315,6 @@ class RomTileLoader extends Vram {
     }
 
     @Deprecated(forRemoval = true)
-    public void updateHeartPieceMeterTiles(byte[] rom, int command) {
-        updateHeartPieceMeterTiles(rom == null ? null : new Rom(rom), command);
-    }
-
-    @Deprecated(forRemoval = true)
-    public void updateTradingItemTiles(byte[] rom, int item) {
-        updateTradingItemTiles(rom == null ? null : new Rom(rom), item);
-    }
-
-    @Deprecated(forRemoval = true)
     public void loadOcarinaSymbolsTiles(byte[] romData) {
         loadOcarinaSymbolsTiles(romData == null ? null : new Rom(romData));
     }
@@ -341,10 +322,5 @@ class RomTileLoader extends Vram {
     @Deprecated(forRemoval = true)
     public void loadSharedVfxTiles(byte[] romData) {
         loadSharedVfxTiles(romData == null ? null : new Rom(romData));
-    }
-
-    @Deprecated(forRemoval = true)
-    final void loadTilesFromROM(byte[] romData, int bank, int address, int tileCount, int vramTileIndex) {
-        loadTilesFromROM(romData == null ? null : new Rom(romData), bank, address, tileCount, vramTileIndex);
     }
 }

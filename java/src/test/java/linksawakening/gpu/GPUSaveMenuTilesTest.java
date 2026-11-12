@@ -2,6 +2,7 @@ package linksawakening.gpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ final class GPUSaveMenuTilesTest {
         rom[RomBank.romOffset(0x0F, 0x4400) + 0x4FF] = 0x22;
 
         GPU gpu = new GPU();
-        gpu.loadSaveMenuTiles(rom);
+        gpu.loadSaveMenuTiles(new Rom(rom));
 
         assertEquals(0x11, Byte.toUnsignedInt(gpu.readVRAM(0x0800)));
         assertEquals(0x22, Byte.toUnsignedInt(gpu.readVRAM(0x0800 + 0x4FF)));
