@@ -34,7 +34,7 @@ public record GameFrameState(
         int frameCounter,
         IntroFrameSnapshot introFrameSnapshot,
         FileMenuFrameSnapshot fileMenuFrame)
-        implements GameFrameStateUpdates {
+        implements GameFrameInputs, GameFrameStateUpdates {
     private static final GameFrameState EMPTY = new GameFrameState(
             RenderScreen.TITLE,
             null,

@@ -139,3 +139,78 @@ Any later initialization failure releases earlier resources; cleanup attempts al
 releases and is idempotent. Shader compile/link errors retain their driver log.
 Pure fake shader and ownership tests exercise these paths without a native context.
 These checks supplement the default regression gate, not independent emulator parity.
+
+## Reusable scene construction
+
+`GameFrameSceneBuilder.build(ReusableGameFrameState)` refills a builder-owned
+scene and configurable room/entity/Link/VFX/HUD/dialog layers. The returned scene
+is borrowed until the next build on that builder and must be drawn on the same
+thread. `GameFrameState` and `build(GameFrameState)` retain their existing owned
+container/layer-list behavior for tests and captures. `snapshot()` explicitly
+copies mutable room planes into that form; Link/controller/live-view references
+retain the original frame-state API's reference semantics.
+
+Reusable setters mirror the immutable `withX` names and return the same object.
+`reset()` restores empty-input defaults. `withRoomData(tiles, attributes, palettes,
+entities, warp, heart, grassPalette)` borrows caller-owned planes/metadata;
+`withRoomControllers(scroll, transition)` binds the controllers. The compatibility
+`withRoom(snapshot, ...)`/`copyFrom(snapshot)` paths cache immutable room metadata
+by identity, but new immutable room snapshots still incur their defensive getters.
+They must not be used as a substitute for the world's pending borrowed room view.
+
+Normal overworld scenes retain layers and indexed contexts. Entity metadata is
+packed into primitive integers, snapshot tiles are read through immutable views,
+and hardware OAM structs retain storage across frames. No iterator, captured
+palette callback, sprite record or copied tile is created per ordinary entity
+submission. Bounded origin-relative VFX poses are sampled once from the existing
+VFX renderer, so its ROM geometry and ordering remain the only implementation.
+The VFX runtime's current `activeSlots()` API still creates its immutable list/slot
+snapshot; the render layer consumes that boundary once per draw.
+
+The ROM-free representative guard uses an injected engine-authored dialog glyph/window
+(`setDialogWindowPainter`); production keeps the default ROM-backed dialog painter.
+The fixture includes a room, HUD/window, visible Link,
+ten entities including a three-entry rectangle, three active VFX and an open
+bottom dialog. With escape analysis disabled, build+draw measured **25,184 bytes
+before** and **328 bytes after**; construction alone measures **0**. With escape analysis enabled, the four
+variants measured **272–311.8 bytes/frame** (construction still **0**). The budget is
+**410 bytes/frame**, adding 25% headroom to the achieved total and remaining below
+512. The measured reusable loops cover both immutable-input copying and complete
+`reset()`/borrowed-plane refills, low/high entity type ids, varying frame phase
+and Link position. Pixel tests compare against owned scenes across changing room tiles,
+attributes, Link positions and dialog presence; cached VFX poses are checked
+against the existing renderer across all types/phases. Scene parity remains the
+wider oracle.
+
+Special presentation paths (menu/intro snapshots, instrument warp, heart-piece
+presentation, pass-out/inventory fades and scripted story poses) currently use
+the existing owned pipeline through the reusable entry point. This preserves
+their exact behavior; the allocation budget above covers ordinary overworld
+presentation, not these fallback paths.
+
+### App owner handoff
+
+No app file is changed by this rendering refactor.
+
+- `app/presentation/RenderStateAssembler.java:composeFrameBuffer` can immediately
+  change `frameSceneBuilder.build(currentGameFrameState())` to
+  `frameSceneBuilder.buildReusable(currentGameFrameState())`. This preserves the
+  current `Screen.renderState` overrides (including gameplay's game-over menu).
+  It removes repeated layer/scene construction while retaining immutable room
+  extraction costs until the world owner exposes borrowed planes.
+- For the complete allocation-bounded path, retain one `ReusableGameFrameState`
+  on that assembler, refill it using the same current fields with `reset()` and
+  `withX`, feed borrowed room arrays/entities using `withRoomData`, then call
+  `frameSceneBuilder.build(reusableState).drawTo(...)`. Keep
+  `currentGameFrameState()` as the explicit snapshot/capture API.
+- If using mutable states through screen dispatch, add the corresponding
+  `Screen.renderState(ReusableGameFrameState)` overload. In
+  `GameplayScreen.renderState`, preserve the existing game-over override by
+  returning `state.reset().withScreen(FILE_SAVE).withFileMenuFrame(snapshot)`
+  when `driver.gameOver()` is non-null; other screen overrides use the matching
+  mutable setters. The one-line bridge above needs no screen changes.
+
+The world's immutable `RoomRenderSnapshot` getters currently copy their arrays.
+The world owner must supply borrowed planes/a live entity view to realize the
+full end-to-end bound; this renderer deliberately does not bypass that ownership
+boundary or access private world fields.

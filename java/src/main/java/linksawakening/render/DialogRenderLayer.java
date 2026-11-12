@@ -5,10 +5,11 @@ import linksawakening.dialog.DialogRenderer;
 
 /** Submits dialog window pixels and the timed page-advance prompt. */
 public final class DialogRenderLayer implements HardwareRenderLayer {
-    private final DialogController dialogController;
-    private final int[] backgroundPalette;
-    private final int[][] objectPalettes;
-    private final int frameCounter;
+    DialogWindowPainter windowPainter;
+    private DialogController dialogController;
+    private int[] backgroundPalette;
+    private int[][] objectPalettes;
+    private int frameCounter;
 
     public DialogRenderLayer(DialogController dialogController) {
         this(dialogController, null, null, 0);
@@ -22,11 +23,20 @@ public final class DialogRenderLayer implements HardwareRenderLayer {
         this.frameCounter = frameCounter;
     }
 
+    void configure(
+            DialogController dialogController, int[] backgroundPalette, int[][] objectPalettes, int frameCounter) {
+        this.dialogController = dialogController;
+        this.backgroundPalette = backgroundPalette;
+        this.objectPalettes = objectPalettes;
+        this.frameCounter = frameCounter;
+    }
+
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (!dialogController.isActive()) return;
         frame.hideSpritesUnderDialog(dialogController.boxPosition() == DialogController.BoxPosition.BOTTOM);
-        DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
+        if (windowPainter == null) DialogRenderer.submitWindow(frame, dialogController, backgroundPalette);
+        else windowPainter.submit(frame, dialogController, backgroundPalette);
         if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
             OamDrawing.draw8x16(
                     RenderContext.indexed(gpu, frame),

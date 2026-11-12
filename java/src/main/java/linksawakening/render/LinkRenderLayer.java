@@ -5,10 +5,15 @@ import linksawakening.world.transition.ScrollController;
 
 /** Submits Link OAM using interpolated scrolling coordinates and screen shake. */
 public final class LinkRenderLayer implements HardwareRenderLayer {
-    private final Link link;
-    private final ScrollController scrollController;
+    private Link link;
+    private ScrollController scrollController;
 
     public LinkRenderLayer(Link link, ScrollController scrollController) {
+        this.link = link;
+        this.scrollController = scrollController;
+    }
+
+    void configure(Link link, ScrollController scrollController) {
         this.link = link;
         this.scrollController = scrollController;
     }

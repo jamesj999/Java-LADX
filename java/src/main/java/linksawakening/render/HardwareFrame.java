@@ -27,6 +27,14 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     final boolean backgroundPriorityEnabled;
 
     private final HardwareFrameObserver observer;
+    private RenderContext indexedContext;
+
+    RenderContext indexedContext(linksawakening.gpu.GPU gpu) {
+        if (indexedContext == null || indexedContext.gpu() != gpu)
+            indexedContext = new RenderContext(new byte[0], gpu, this);
+        return indexedContext;
+    }
+
     private HardwareFrame backgroundScratch;
 
     HardwareFrame backgroundScratch() {
@@ -219,14 +227,15 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void hideSpritesUnderDialog(boolean bottom) {
         if (closedWindowY == 0 || inventoryCutoffY >= 0)
             return; // $5F6A-$5F6E: fully open inventory has no dialog filter.
-        oam.removeIf(entry -> {
+        for (int i = oam.size() - 1; i >= 0; i--) {
+            OamEntry entry = oam.get(i);
             if (entry.source().equals("LinkRenderLayer")
                     || entry.source().equals("LinkShadowRenderLayer")
                     || entry.source().equals("LinkGrassRenderLayer")
-                    || entry.source().equals("DialogRenderLayer")) return false;
+                    || entry.source().equals("DialogRenderLayer")) continue;
             int rawY = (entry.entryY() + 16) & 255;
-            return bottom ? rawY >= 0x58 : rawY < 0x3E;
-        });
+            if (bottom ? rawY >= 0x58 : rawY < 0x3E) oam.remove(i);
+        }
     }
 
     @Override
