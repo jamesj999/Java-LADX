@@ -5,10 +5,13 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class RoomTileLoader {
-    private final RomTileLoader target;
+    private final Vram target;
 
-    RoomTileLoader(RomTileLoader target) {
+    private final AnimatedTiles animation;
+
+    RoomTileLoader(Vram target, AnimatedTiles animation) {
         this.target = target;
+        this.animation = animation;
     }
 
     private static final int SWITCH_BLOCK_TILES_BANK = GbcBanks.adjust(RomSymbols.SwitchBlockTiles.bank());
@@ -60,8 +63,8 @@ final class RoomTileLoader {
     }
 
     public void loadIndoorTiles(Rom romData, int mapId, int roomId, boolean sideScrolling) {
-        target.animatedTiles.currentMapId = mapId;
-        target.animatedTiles.stageAnimatedScrollingTiles(romData, mapId, roomId);
+        animation.currentMapId = mapId;
+        animation.stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
             new ColorDungeonTileLoader(target).loadBackground(romData, roomId);
             return;

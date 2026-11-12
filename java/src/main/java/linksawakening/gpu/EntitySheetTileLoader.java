@@ -6,9 +6,9 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 final class EntitySheetTileLoader {
-    private final RomTileLoader target;
+    private final Vram target;
 
-    EntitySheetTileLoader(RomTileLoader target) {
+    EntitySheetTileLoader(Vram target) {
         this.target = target;
     }
 
