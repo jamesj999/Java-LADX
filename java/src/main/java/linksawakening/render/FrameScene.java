@@ -41,25 +41,24 @@ public final class FrameScene {
     }
 
     HardwareFrame hardwareFrame(GPU gpu) {
-        return hardwareFrame(gpu, null);
+        return hardwareFrame(gpu, (HardwareFrame) null);
     }
 
-    HardwareFrame hardwareFrame(GPU gpu, HardwareFrameDiagnostics diagnostics) {
+    HardwareFrame hardwareFrame(GPU gpu, HardwareFrame suppliedFrame) {
         for (RenderLayer layer : layers) {
             if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
                 throw new IllegalStateException(
                         "Layer not migrated: " + layer.getClass().getName());
         }
         HardwareFrame frame;
-        if (diagnostics != null) frame = new HardwareFrame(true, diagnostics);
+        if (suppliedFrame != null) frame = suppliedFrame;
         else {
             if (reusableFrame == null) reusableFrame = new HardwareFrame(true);
             frame = reusableFrame;
             frame.reset();
         }
         for (RenderLayer layer : layers) {
-            if (frame.diagnostics() != null)
-                frame.submittingLayer(layer.getClass().getSimpleName());
+            if (frame.observer() != null) frame.submittingLayer(layer.getClass().getSimpleName());
             else frame.objectVisibilitySource(layer);
             ((HardwareRenderLayer) layer).submit(frame, gpu);
         }

@@ -53,7 +53,7 @@ final class LinkScrollVisibilityTest {
         frame.compose(buffer);
         long count = 0;
         for (int pixel = 0; pixel < 160 * 144; pixel++) {
-            if (frame.diagnostics().fidelitySource(pixel).startsWith("OBJ=LinkRenderLayer ")) count++;
+            if (TestHardwareFrames.diagnostics(frame).fidelitySource(pixel).startsWith("OBJ=LinkRenderLayer ")) count++;
         }
         return count;
     }
