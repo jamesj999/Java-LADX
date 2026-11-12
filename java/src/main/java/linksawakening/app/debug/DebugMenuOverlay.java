@@ -1,10 +1,10 @@
 package linksawakening.app.debug;
 
 /**
- * Development-only bitmap text, drawn directly into the game's RGBA buffer.
- * Do not initialize AWT/Java2D here: on macOS its native toolkit interferes
- * with GLFW's main-thread event loop, even when drawing an offscreen image.
- * The small font below is engine-authored and contains no ROM graphics.
+ * Development-only bitmap text, drawn directly into the game's RGBA buffer. Do not initialize AWT/Java2D
+ * here: on macOS its native toolkit interferes with GLFW's main-thread event loop, even when drawing an
+ * offscreen image. The small font below is engine-authored and contains no ROM graphics. One instance is
+ * retained for the owning session.
  */
 public final class DebugMenuOverlay {
     private static final int WIDTH = 160;

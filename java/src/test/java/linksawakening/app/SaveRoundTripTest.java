@@ -3,6 +3,7 @@ package linksawakening.app;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
+import linksawakening.app.flow.SaveCoordinator;
 import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;

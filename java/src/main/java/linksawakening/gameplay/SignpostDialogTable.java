@@ -5,7 +5,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
-/** Signpost dialog table behavior and state. */
+/** ROM-backed room-to-dialog lookup, loaded once and retained by the gameplay dialog service. */
 public final class SignpostDialogTable {
 
     private static final int SIGNPOST_DIALOG_TABLE_BANK = RomSymbols.SignpostDialogTable.bank();

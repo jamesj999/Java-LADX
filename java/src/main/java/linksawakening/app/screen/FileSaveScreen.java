@@ -1,14 +1,16 @@
 package linksawakening.app.screen;
 
 import java.util.Objects;
-import linksawakening.app.ScreenState;
+import linksawakening.app.state.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 import linksawakening.ui.FileSaveAction;
 
-/** Owns save-menu ticks and returns to the requested screen. */
+/**
+ * Owns save-menu ticks and returns to the requested screen. One instance is retained for the owning session.
+ */
 public final class FileSaveScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(

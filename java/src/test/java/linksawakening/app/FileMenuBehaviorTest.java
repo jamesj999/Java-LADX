@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
 import java.util.*;
+import linksawakening.app.flow.SessionContext;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveRamStore;

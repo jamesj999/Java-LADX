@@ -2,7 +2,10 @@ package linksawakening.app.screen;
 
 import linksawakening.save.SaveSlotState;
 
-/** Persistence and room-entry operations requested by menus and recovery. */
+/**
+ * Persistence and room-entry operations requested by menus and recovery. Implementations are connected when
+ * the owning session is wired.
+ */
 public interface SaveActions {
     void startNewGame();
 

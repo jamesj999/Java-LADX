@@ -5,7 +5,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
-/** Dialog text loader behavior and state. */
+/** Retained ROM-backed decoder of dialog control bytes into formatted presentation text. */
 public final class DialogTextLoader {
 
     private static final int POINTER_TABLE_BANK = RomSymbols.DialogPointerTable.bank();

@@ -1,6 +1,6 @@
 package linksawakening.gameplay;
 
-/** Named gameplay sound event values. */
+/** Shared gameplay effect identifiers, independent of session state. */
 public enum GameplaySoundEvent {
     RUPEE,
     LOW_HEARTS,

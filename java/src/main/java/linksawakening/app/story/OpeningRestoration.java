@@ -3,7 +3,10 @@ package linksawakening.app.story;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
 
-/** Ordered writes when restoring opening-house progression from a save. */
+/**
+ * Ordered writes when restoring opening-house progression from a save. Implementations are connected when
+ * the owning session is wired.
+ */
 public interface OpeningRestoration {
     void restoreWake(MarinWakeUpMotion motion);
 

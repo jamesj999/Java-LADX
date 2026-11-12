@@ -5,6 +5,7 @@ import static linksawakening.app.gameplay.GameplaySimulation.*;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
 
+/** Advances dialog and opening-story gates before player motion. Retained for one simulation. */
 final class DialogStoryPhase {
     boolean tick(GameplaySimulation context) {
         if ((context.inventoryMenu().isFullyClosed())) {

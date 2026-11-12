@@ -1,10 +1,10 @@
 package linksawakening.app.screen;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import java.util.Objects;
-import linksawakening.app.MusicDirector;
-import linksawakening.app.gameplay.DialogSoundRouting;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.interaction.DialogSoundRouting;
 import linksawakening.app.story.MusicRequests;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -12,7 +12,10 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
-/** Ticks intro dialogs and cutscenes before completing the input frame. */
+/**
+ * Ticks intro dialogs and cutscenes before completing the input frame. One instance is retained for the
+ * owning session.
+ */
 public final class CutsceneScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(
@@ -59,17 +62,17 @@ public final class CutsceneScreen implements Screen {
 
     @Override
     public void onKey(int key, int action) {
-        if (key == GLFW_KEY_ENTER
-                && action == GLFW_PRESS
+        if (key == KEY_ENTER
+                && action == PRESS
                 && dependencies.cutsceneManager().skipIntroToTitle()) {
             dependencies.navigator().show(ScreenKind.TITLE);
             dependencies.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             return;
         }
-        if (action == GLFW_PRESS
+        if (action == PRESS
                 && (key == dependencies.inputConfig().aKey()
                         || key == dependencies.inputConfig().bKey()
-                        || key == GLFW_KEY_ENTER)) {
+                        || key == KEY_ENTER)) {
             dependencies.dialogController().advance();
         }
     }

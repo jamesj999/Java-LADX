@@ -1,8 +1,8 @@
 package linksawakening.app.screen;
 
 import java.util.Objects;
-import linksawakening.app.SaveState;
-import linksawakening.app.ScreenState;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
@@ -10,7 +10,10 @@ import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveSlotState;
 import linksawakening.ui.FileMenuAction;
 
-/** Ticks the file-selection controller and dispatches its save actions. */
+/**
+ * Ticks the file-selection controller and dispatches its save actions. One instance is retained for the
+ * owning session.
+ */
 public final class FileMenuScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(

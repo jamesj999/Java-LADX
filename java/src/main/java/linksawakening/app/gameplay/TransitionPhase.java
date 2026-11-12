@@ -5,7 +5,10 @@ import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
-/** Advances scrolling before warp transitions and clears platform state at the gate. */
+/**
+ * Advances scrolling before warp transitions and clears platform state at the gate. One instance is retained
+ * for the owning session.
+ */
 public final class TransitionPhase implements GameplayFrame.Transitions {
     private final ScrollController scroll;
     private final TransitionController transition;

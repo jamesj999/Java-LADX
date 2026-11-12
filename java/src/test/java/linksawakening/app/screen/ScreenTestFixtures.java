@@ -1,6 +1,9 @@
 package linksawakening.app.screen;
 
 import linksawakening.app.*;
+import linksawakening.app.flow.SessionNavigator;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.ScreenState;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.*;
