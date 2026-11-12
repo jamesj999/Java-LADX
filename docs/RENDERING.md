@@ -105,6 +105,13 @@ coverage; dedicated `RenderPipelineParityTest` checks remain independent.
 sliding-window hiding after 1,000 warm-up frames, over 200 measured frames.
 The 2026-11-12 cleanup measured **64 bytes/frame**, below **4,096 bytes/frame**.
 This protects composition reuse, not whole-session allocation.
-The ROM-enabled default suite passed 2,743 cases (zero failures/errors, one skipped
+The ROM-enabled default suite passed 2,745 cases (zero failures/errors, one skipped
 live-audio case) after the cleanup. No route fixtures or expected hashes changed.
 No new emulator capture was run; these checks bound behavior and do not prove parity.
+
+The render/gpu size audit covered production and test sources: the largest file
+is 296 lines and the largest method is 71 lines after helper extraction.
+Explicit standalone observation measured 986 identical scenes with no unexplained
+mismatches. This is a narrower observation scope than the former implicit service;
+method-local sessions outside render tests require their owner to attach the
+builder observer. The full default regression suite remains the behavioral gate.
