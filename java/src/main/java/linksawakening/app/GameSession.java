@@ -35,11 +35,13 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
-    private final ScreenState screens = new ScreenState();
-    private final DebugState debug = new DebugState();
-    private final SceneState scene = new SceneState();
+    SessionContext context;
+    GameplaySimulation simulationInstance;
+    final ScreenState screens = new ScreenState();
+    final DebugState debug = new DebugState();
+    final SceneState scene = new SceneState();
 
-    private final RomRandomByteSource random;
+    final RomRandomByteSource random;
 
     public GameSession() {
         this(new RomRandomByteSource());
@@ -49,47 +51,47 @@ public class GameSession {
         this.random = java.util.Objects.requireNonNull(random);
     }
 
-    private linksawakening.gameplay.PcmSoundOutput headlessPcm;
+    linksawakening.gameplay.PcmSoundOutput headlessPcm;
 
     public GameSession(linksawakening.gameplay.PcmSoundOutput output) {
         this();
         headlessPcm = java.util.Objects.requireNonNull(output);
     }
 
-    private SessionBootstrap.Collaborators services;
+    SessionBootstrap.Collaborators services;
 
-    private Host host = new HeadlessHost();
-    private GPU gpu;
-    private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
-    private final TransitionController transitionController = new TransitionController();
+    Host host = new HeadlessHost();
+    GPU gpu;
+    final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
+    final TransitionController transitionController = new TransitionController();
 
-    private boolean running = true;
-    private int frameCounter;
+    boolean running = true;
+    int frameCounter;
 
     // Room pixel dimensions
-    private final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8; // 160
-    private final int ROOM_PIXEL_HEIGHT = ROOM_TILE_HEIGHT * 8; // 128
+    final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8; // 160
+    final int ROOM_PIXEL_HEIGHT = ROOM_TILE_HEIGHT * 8; // 128
 
     // Scroll state
-    private final int SCROLL_SPEED = 4; // pixels per frame (original uses ~2-4px)
+    final int SCROLL_SPEED = 4; // pixels per frame (original uses ~2-4px)
 
-    private final ScrollController scrollController = new ScrollController();
+    final ScrollController scrollController = new ScrollController();
     // Mirrors the first OBJ palette entry used for Link and leaf particles.
-    private final int[] GREEN_OBJECTS_SPRITE_PALETTE = {
+    final int[] GREEN_OBJECTS_SPRITE_PALETTE = {
         0x00000000, 0x00000000, 0x0010A840, 0x00F8B888,
     };
 
-    private boolean overworldDialogInputConsumedThisFrame;
-    private GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
-    private MusicDirector musicDirector;
-    private SaveRamStore saveRamStore;
-    private MarinWakeUpMotion newGameWakeUpMotion;
-    private TarinShieldMotion newGameTarinShieldMotion;
-    private int[] newGameTarinShieldPalette;
-    private AppConfig appConfig;
-    private final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(
+    boolean overworldDialogInputConsumedThisFrame;
+    GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
+    MusicDirector musicDirector;
+    SaveRamStore saveRamStore;
+    MarinWakeUpMotion newGameWakeUpMotion;
+    TarinShieldMotion newGameTarinShieldMotion;
+    int[] newGameTarinShieldPalette;
+    AppConfig appConfig;
+    final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(
             () -> services.cutsceneManager(), () -> services.inputState(), () -> router().startFileSelection()));
-    private final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(
+    final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(
             () -> services.cutsceneManager(),
             () -> services.inputState(),
             () -> services.dialogController(),
@@ -100,7 +102,7 @@ public class GameSession {
                 currentScreen = titleScreen;
                 musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             }));
-    private final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(
+    final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(
             () -> screens.fileMenuController,
             () -> services.inputState(),
             () -> services.inputConfig(),
@@ -110,7 +112,7 @@ public class GameSession {
             saved -> saves().startSavedGame(saved),
             mutation -> saves().persistFileMenuMutation(mutation),
             this::completeInputFrame));
-    private final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(
+    final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(
             () -> screens.fileSaveController,
             () -> services.inputState(),
             () -> services.inputConfig(),
@@ -121,14 +123,14 @@ public class GameSession {
             () -> saves().saveCurrentPlayerState(),
             () -> router().startFileSelection(),
             this::completeInputFrame));
-    private final GameplayScreen gameplayScreen = new GameplayScreen(
+    final GameplayScreen gameplayScreen = new GameplayScreen(
             this::tickGameplayScreen,
             (key, action) -> inputRouter().gameplayKey(key, action),
             () -> this.passOutController.snapshot(),
             () -> inputRouter().tryPresentFileSave());
-    private Screen currentScreen = titleScreen;
+    Screen currentScreen = titleScreen;
 
-    private final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
+    final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
 
     public void run(String[] args) {
         initialize(false);
@@ -197,7 +199,7 @@ public class GameSession {
         update();
     }
 
-    private void composeFrameBuffer() {
+    void composeFrameBuffer() {
         renderer().composeFrameBuffer();
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
             if (debug.debugMenuOverlay == null)
@@ -234,7 +236,7 @@ public class GameSession {
         inputRouter().onKeyEvent(key, action);
     }
 
-    private void debugTeleport(linksawakening.world.transition.Warp destination) {
+    void debugTeleport(linksawakening.world.transition.Warp destination) {
         services.roomSession().loadWarpDestination(destination);
         newGameWakeUpMotion = null;
         newGameTarinShieldMotion = null;
@@ -249,7 +251,7 @@ public class GameSession {
         gameplayScreen.clearPendingInput();
     }
 
-    private void update() {
+    void update() {
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) return;
         frameCounter = (frameCounter + 1) & 0xFF;
         // The engine's frame boundary uses scanline zero for non-entity draws.
@@ -260,7 +262,7 @@ public class GameSession {
         currentScreen.tick();
     }
 
-    private void tickGameplayScreen() {
+    void tickGameplayScreen() {
         new GameplayFrame(
                         new TransitionPhase(scrollController, transitionController, services.link(), SCROLL_SPEED),
                         () -> simulation().tick(),
@@ -268,17 +270,17 @@ public class GameSession {
                 .tick();
     }
 
-    private void completeInputFrame() {
+    void completeInputFrame() {
         // Run last so all consumers observe this frame's input edges.
         services.inputState().tickEdges();
         overworldDialogInputConsumedThisFrame = false;
     }
 
-    private void routeDialogSounds() {
+    void routeDialogSounds() {
         DialogSoundRouter.routePending(services.dialogController(), services.dialogSoundSink());
     }
 
-    private int romDirectionForLink(int javaDirection) {
+    int romDirectionForLink(int javaDirection) {
         return switch (javaDirection) {
             case Link.DIRECTION_RIGHT -> 0;
             case Link.DIRECTION_LEFT -> 1;
@@ -288,7 +290,7 @@ public class GameSession {
         };
     }
 
-    private OverworldDialogBlockers currentOverworldDialogBlockers() {
+    OverworldDialogBlockers currentOverworldDialogBlockers() {
         return new OverworldDialogBlockers(
                 services.inventoryController() != null
                         && services.inventoryController().shouldBlockOverworldInput(),
@@ -298,14 +300,14 @@ public class GameSession {
                 overworldDialogInputConsumedThisFrame);
     }
 
-    private AppConfig currentAppConfig() {
+    AppConfig currentAppConfig() {
         return appConfig != null ? appConfig : AppConfig.defaults();
     }
 
     /** Applies the configured player profile before a direct gameplay launch. */
 
     /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
-    private void cleanup() {
+    void cleanup() {
         host.releasePresentation();
         if (services.dialogSoundOutput() != null) {
             services.dialogSoundOutput().close();
@@ -317,7 +319,7 @@ public class GameSession {
         host.close();
     }
 
-    private OpeningStory openingStory() {
+    OpeningStory openingStory() {
         return new OpeningStory(
                 frameCounter,
                 newGameWakeUpMotion,
@@ -336,7 +338,7 @@ public class GameSession {
                 this::romDirectionForLink);
     }
 
-    private void initialize(boolean headless) {
+    void initialize(boolean headless) {
         host = headless
                 ? (headlessPcm == null ? new HeadlessHost() : new HeadlessHost(headlessPcm))
                 : new DesktopHost();
@@ -363,9 +365,11 @@ public class GameSession {
         musicDirector = new MusicDirector(services.musicPlayer(), services.gameplayMusicController());
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
+        context = new SessionContext(this);
+        simulationInstance = new GameplaySimulation(context);
     }
 
-    private SaveCoordinator saves() {
+    SaveCoordinator saves() {
         return new SaveCoordinator(
                 services.playerState(),
                 services.roomSession(),
@@ -405,7 +409,7 @@ public class GameSession {
                 router()::loadFileMenuBackgroundScene);
     }
 
-    private BushInteraction bushes() {
+    BushInteraction bushes() {
         return new BushInteraction(
                 services.roomSession(),
                 services.overworldBushInteraction(),
@@ -416,7 +420,7 @@ public class GameSession {
                 services.droppableRupeeSystem());
     }
 
-    private DialogInteractions dialogs() {
+    DialogInteractions dialogs() {
         return new DialogInteractions(
                 services.inputConfig(),
                 services.overworldDialogInteraction(),
@@ -428,7 +432,7 @@ public class GameSession {
                 this::currentOverworldDialogBlockers);
     }
 
-    private LiftInteraction lifting() {
+    LiftInteraction lifting() {
         return new LiftInteraction(
                 services.inputState(),
                 services.inputConfig(),
@@ -438,10 +442,10 @@ public class GameSession {
                 this::romDirectionForLink);
     }
 
-    private final linksawakening.app.gameplay.PassOutController passOutController =
+    final linksawakening.app.gameplay.PassOutController passOutController =
             new linksawakening.app.gameplay.PassOutController();
 
-    private void finishGameOver(int option) {
+    void finishGameOver(int option) {
         var sword = services.equipmentController().activeSword();
         if (sword != null) sword.resetAfterGameOver();
         passOutController.clear();
@@ -450,43 +454,8 @@ public class GameSession {
         services.droppableRupeeSystem().clear();
     }
 
-    private GameplaySimulation simulation() {
-        return new GameplaySimulation(
-                passOutController,
-                this::finishGameOver,
-                gpu,
-                services.romData(),
-                services.roomSession(),
-                transitionController,
-                services.roomTransitionCoordinator(),
-                debug.debugNoClip,
-                frameCounter,
-                ROOM_PIXEL_HEIGHT,
-                scrollController,
-                services.inputConfig(),
-                services.inputState(),
-                services.playerState(),
-                services.inventoryMenu(),
-                services.inventoryController(),
-                services.dialogController(),
-                services.dialogTextLoader(),
-                gameplaySoundSink,
-                services.musicPlayer(),
-                services.gameplayMusicController(),
-                musicDirector,
-                services.transientVfxSystem(),
-                services.droppableRupeeSystem(),
-                services.itemRegistry(),
-                services.equipmentController(),
-                services.link(),
-                openingStory(),
-                lifting(),
-                bushes(),
-                dialogs(),
-                this::currentOverworldDialogBlockers,
-                () -> inputRouter().tryDebugScreenScroll(),
-                this::romDirectionForLink,
-                this::routeDialogSounds);
+    GameplaySimulation simulation() {
+        return simulationInstance;
     }
 
     public HeadlessGameDriver.Diagnostics diagnostics() {
@@ -503,7 +472,7 @@ public class GameSession {
                 services.link());
     }
 
-    private RenderStateAssembler renderer() {
+    RenderStateAssembler renderer() {
         return new RenderStateAssembler(
                 gpu,
                 frameSceneBuilder,
@@ -528,7 +497,7 @@ public class GameSession {
                 currentScreen);
     }
 
-    private InputRouter inputRouter() {
+    InputRouter inputRouter() {
         return new InputRouter(
                 services.roomSession(),
                 transitionController,
@@ -557,7 +526,7 @@ public class GameSession {
                 this::dialogs);
     }
 
-    private ScreenRouter router() {
+    ScreenRouter router() {
         return new ScreenRouter(
                 gpu,
                 services.romData(),
