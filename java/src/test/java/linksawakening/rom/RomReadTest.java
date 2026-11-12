@@ -43,7 +43,7 @@ class RomReadTest {
                 .getMessage()
                 .contains("01:4000 length 1"));
         assertThrows(IndexOutOfBoundsException.class, () -> rom.s8(end));
-        assertThrows(IndexOutOfBoundsException.class, () -> rom.u16le(end.plus(-1)));
+        assertThrows(IndexOutOfBoundsException.class, () -> rom.u16le(RomAddress.fromOffset(end.offset() - 1)));
         assertThrows(IndexOutOfBoundsException.class, () -> rom.bytes(START, -1));
         assertThrows(IndexOutOfBoundsException.class, () -> rom.bytes(START, Integer.MAX_VALUE));
         assertThrows(IndexOutOfBoundsException.class, () -> rom.view(end, 1));

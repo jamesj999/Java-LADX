@@ -95,7 +95,7 @@ public final class Rom {
         checkedOffset(address, count * 2);
         if (bank < 0) throw new IllegalArgumentException("Negative pointer bank: " + bank);
         RomAddress[] result = new RomAddress[count];
-        for (int i = 0; i < count; i++) result[i] = pointer(address.plus(i * 2), bank);
+        for (int i = 0; i < count; i++) result[i] = pointer(RomAddress.fromOffset(address.offset() + i * 2), bank);
         return result;
     }
 

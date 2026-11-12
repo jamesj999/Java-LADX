@@ -13,13 +13,15 @@ public record RomAddress(int bank, int address) {
         return offset < 0x4000 ? new RomAddress(0, offset) : new RomAddress(offset / 0x4000, 0x4000 + offset % 0x4000);
     }
 
+    /** Advance within this CPU bank window; use fromOffset for explicit file-order traversal. */
     public RomAddress plus(int bytes) {
-        return fromOffset(Math.addExact(offset(), bytes));
+        int next = Math.addExact(address, bytes);
+        return new RomAddress(bank, next);
     }
 
     /** Mirrors AdjustBankNumberForGBC; callers opt in only on adjusted load paths. */
     public RomAddress withGbcBank() {
-        return inBank(bank | 0x20);
+        return inBank(GbcBanks.adjust(bank));
     }
 
     public int offset() {

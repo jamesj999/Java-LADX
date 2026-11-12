@@ -22,7 +22,7 @@ public final class RomSlice {
                     "ROM view %02X:%04X length %d: index %d length %d",
                     start.bank(), start.address(), length, index, count));
         }
-        return start.plus(index);
+        return RomAddress.fromOffset(start.offset() + index);
     }
 
     public int u8(int index) {
