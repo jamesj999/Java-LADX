@@ -20,7 +20,7 @@ final class InstrumentWarpRenderLayerTest {
             context.buffer()[2] = 0;
             context.buffer()[3] = (byte) 255;
         };
-        new InstrumentWarpRenderLayer(List.of(sprite), 4).render(new RenderContext(buffer, new GPU()));
+        CallbackScene.renderPaletteCallbacks(List.of(sprite), 4, new RenderContext(buffer, new GPU()));
         assertEquals(248, buffer[0] & 255);
         assertEquals(48, buffer[1] & 255);
         assertEquals(32, buffer[2] & 255);

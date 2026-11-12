@@ -6,7 +6,11 @@ import linksawakening.gpu.GPU;
 public interface HardwareRenderLayer extends RenderLayer {
     @Override
     default void render(RenderContext context) {
-        RgbaCallbackCompatibility.renderIndexed(this, context);
+        if (context == null || context.buffer() == null || context.gpu() == null)
+            throw new IllegalArgumentException("Render context is incomplete");
+        HardwareFrame frame = new HardwareFrame(true);
+        submit(frame, context.gpu());
+        frame.composeOverlay(context.buffer());
     }
 
     default boolean supportsHardware() {

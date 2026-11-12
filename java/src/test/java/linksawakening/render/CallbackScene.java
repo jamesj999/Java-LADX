@@ -4,17 +4,8 @@ import java.util.List;
 import linksawakening.gpu.GPU;
 
 /** Source-compatible adapters for external RGBA callbacks; never used by production indexed scenes. */
-final class RgbaCallbackCompatibility {
-    private RgbaCallbackCompatibility() {}
-
-    static void renderIndexed(HardwareRenderLayer layer, RenderContext context) {
-        if (context == null || context.buffer() == null || context.gpu() == null)
-            throw new IllegalArgumentException("Render context is incomplete");
-        HardwareFrame frame = new HardwareFrame(true);
-        frame.submittingLayer(layer.getClass().getSimpleName());
-        layer.submit(frame, context.gpu());
-        frame.composeOverlay(context.buffer());
-    }
+final class CallbackScene {
+    private CallbackScene() {}
 
     static void drawCallbacks(List<RenderLayer> layers, byte[] buffer, GPU gpu) {
         IndexedRenderer.clear(buffer);

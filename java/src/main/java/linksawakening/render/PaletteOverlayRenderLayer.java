@@ -39,10 +39,4 @@ public final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
         }
         return result;
     }
-
-    @Override
-    public void render(RenderContext context) {
-        if (supportsHardware()) HardwareRenderLayer.super.render(context);
-        else RgbaCallbackCompatibility.renderPaletteCallbacks(layers, increment, context);
-    }
 }

@@ -9,16 +9,11 @@ public final class FrameScene {
 
     private final List<RenderLayer> layers;
     private HardwareFrame reusableFrame;
-    private final boolean hardwareSupported;
 
     private FrameDrawObserver observer;
 
     private FrameScene(List<RenderLayer> layers) {
         this.layers = List.copyOf(layers);
-        boolean supported = true;
-        for (RenderLayer layer : layers)
-            if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware()) supported = false;
-        hardwareSupported = supported;
     }
 
     public static FrameScene empty() {
@@ -37,12 +32,6 @@ public final class FrameScene {
     }
 
     public void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
-        if (!hardwareSupported) {
-            // Preserve the original functional RenderLayer callback API outside production scenes.
-            RgbaCallbackCompatibility.drawCallbacks(layers, buffer, gpu);
-            if (observer != null) observer.drawn(this, buffer, gpu);
-            return;
-        }
         hardwareFrame(gpu).compose(buffer);
         if (observer != null) observer.drawn(this, buffer, gpu);
     }
