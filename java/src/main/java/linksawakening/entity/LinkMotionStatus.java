@@ -7,6 +7,7 @@ import linksawakening.state.LinkMotionState;
 
 /** Explicit motion-mode, recovery and per-frame gates from ApplyLinkMotionState. */
 final class LinkMotionStatus {
+
     private LinkMotionState motionState = LinkMotionState.DEFAULT;
 
     LinkMotionState motionState() {
@@ -127,15 +128,15 @@ final class LinkMotionStatus {
     void writeRomInteractiveMotionBlock(int value) {
         if ((value & ~255) != 0) throw new IllegalArgumentException("Interaction block must be an unsigned byte");
         // Keep the existing movement lock separate from the exact ROM equipment gate.
-        this.romInteractiveMotionBlockValue(value);
-        this.romInteractiveMotionBlocked(value != 0);
+        romInteractiveMotionBlockValue = value;
+        romInteractiveMotionBlocked = value != 0;
     }
 
     boolean accessDebugNoClip() {
-        return this.debugNoClip();
+        return debugNoClip;
     }
 
     boolean accessIsSwimming() {
-        return this.motionState() == LinkMotionState.SWIMMING;
+        return motionState == LinkMotionState.SWIMMING;
     }
 }

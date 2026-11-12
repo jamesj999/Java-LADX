@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 /** Shared subpixel height and airborne flag used by ROM ground and pit motion. */
 final class LinkElevation {
+
     private boolean airborne;
 
     boolean airborne() {

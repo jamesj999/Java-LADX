@@ -10,6 +10,7 @@ import linksawakening.state.LinkMotionState;
 
 /** Pose selection and scripted presentation for ROM UpdateLinkAnimation ($02:47BC). */
 final class LinkAnimator {
+
     private final LinkSpriteComposer sprites;
 
     private final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
@@ -345,48 +346,24 @@ final class LinkAnimator {
         dialogGotItemSequence.get().clear();
     }
 
-    boolean tarinShieldPresentation() {
-        return tarinShieldPresentation;
-    }
-
     boolean tarinShieldPresentation(boolean value) {
         return tarinShieldPresentation = value;
-    }
-
-    int[] tarinShieldPalette() {
-        return tarinShieldPalette;
     }
 
     int[] tarinShieldPalette(int[] value) {
         return tarinShieldPalette = value;
     }
 
-    int romAnimationStateOverride() {
-        return romAnimationStateOverride;
-    }
-
     int romAnimationStateOverride(int value) {
         return romAnimationStateOverride = value;
-    }
-
-    int swordAcquisitionBaseRomDirection() {
-        return swordAcquisitionBaseRomDirection;
     }
 
     int swordAcquisitionBaseRomDirection(int value) {
         return swordAcquisitionBaseRomDirection = value;
     }
 
-    int swordAcquisitionAnimationState() {
-        return swordAcquisitionAnimationState;
-    }
-
     int swordAcquisitionAnimationState(int value) {
         return swordAcquisitionAnimationState = value;
-    }
-
-    int marinWakeUpBedVariant() {
-        return marinWakeUpBedVariant;
     }
 
     int marinWakeUpBedVariant(int value) {
@@ -401,10 +378,6 @@ final class LinkAnimator {
         return bedJumpRenderZ = value;
     }
 
-    int ledgeJumpRenderY() {
-        return ledgeJumpRenderY;
-    }
-
     int ledgeJumpRenderY(int value) {
         return ledgeJumpRenderY = value;
     }
@@ -415,10 +388,6 @@ final class LinkAnimator {
 
     int jumpAnimationCounter(int value) {
         return jumpAnimationCounter = value;
-    }
-
-    int jumpAnimationFrame() {
-        return jumpAnimationFrame;
     }
 
     int jumpAnimationFrame(int value) {

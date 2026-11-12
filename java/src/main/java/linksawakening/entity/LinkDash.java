@@ -9,14 +9,11 @@ import linksawakening.state.LinkMotionState;
 
 /** Owns charge, rebound and shake for ROM UsePegasusBoots / bank2:74AD. */
 final class LinkDash {
+
     private int pegasusBootsChargeMeter;
 
     int pegasusBootsChargeMeter() {
         return pegasusBootsChargeMeter;
-    }
-
-    int pegasusBootsChargeMeter(int value) {
-        return pegasusBootsChargeMeter = value;
     }
 
     private int pegasusBootsCollisionCountdown;
@@ -31,43 +28,11 @@ final class LinkDash {
 
     private int pegasusBootsCollisionPosX;
 
-    int pegasusBootsCollisionPosX() {
-        return pegasusBootsCollisionPosX;
-    }
-
-    int pegasusBootsCollisionPosX(int value) {
-        return pegasusBootsCollisionPosX = value;
-    }
-
     private int pegasusBootsCollisionPosY;
-
-    int pegasusBootsCollisionPosY() {
-        return pegasusBootsCollisionPosY;
-    }
-
-    int pegasusBootsCollisionPosY(int value) {
-        return pegasusBootsCollisionPosY = value;
-    }
 
     private int pendingPegasusScreenShakeCountdown;
 
-    int pendingPegasusScreenShakeCountdown() {
-        return pendingPegasusScreenShakeCountdown;
-    }
-
-    int pendingPegasusScreenShakeCountdown(int value) {
-        return pendingPegasusScreenShakeCountdown = value;
-    }
-
     private int pendingPegasusScreenShakePhase;
-
-    int pendingPegasusScreenShakePhase() {
-        return pendingPegasusScreenShakePhase;
-    }
-
-    int pendingPegasusScreenShakePhase(int value) {
-        return pendingPegasusScreenShakePhase = value;
-    }
 
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
@@ -109,7 +74,7 @@ final class LinkDash {
                         .inputState
                         .isDown(linkServices.get().inputConfig.bKey());
         if (!aHeld && !bHeld) {
-            this.pegasusBootsChargeMeter(0);
+            pegasusBootsChargeMeter = 0;
             return;
         }
         if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
@@ -124,11 +89,11 @@ final class LinkDash {
 
         int heldBootsSlots = (aHeld ? 1 : 0) + (bHeld ? 1 : 0);
         for (int slot = 0; slot < heldBootsSlots; slot++) {
-            if (this.pegasusBootsChargeMeter() >= LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
+            if (pegasusBootsChargeMeter >= LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 break;
             }
-            this.pegasusBootsChargeMeter(this.pegasusBootsChargeMeter() + 1);
-            if (this.pegasusBootsChargeMeter() == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
+            pegasusBootsChargeMeter = pegasusBootsChargeMeter + 1;
+            if (pegasusBootsChargeMeter == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(true);
                 linkMotion.get().position().forcedSpeedPending(false);
                 linkMotion.get().position().forcedSpeedXOnly(false);
@@ -176,16 +141,16 @@ final class LinkDash {
         int romDirection = linkAnimationState.get().direction.romIndex();
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
-        this.pegasusBootsCollisionPosX((linkMotion.get().position().romEntityX() + xOffsets[romDirection]) & 0xFF);
-        this.pegasusBootsCollisionPosY((linkMotion.get().position().romEntityY() + yOffsets[romDirection]) & 0xFF);
-        this.pegasusBootsCollisionCountdown(LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN);
-        this.pendingPegasusScreenShakeCountdown(LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE);
-        this.pendingPegasusScreenShakePhase((romDirection & 0x02) << 1);
+        pegasusBootsCollisionPosX = (linkMotion.get().position().romEntityX() + xOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionPosY = (linkMotion.get().position().romEntityY() + yOffsets[romDirection]) & 0xFF;
+        pegasusBootsCollisionCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN;
+        pendingPegasusScreenShakeCountdown = LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE;
+        pendingPegasusScreenShakePhase = (romDirection & 0x02) << 1;
     }
 
     /** Mirrors ResetPegasusBoots for handlers that interrupt a this. */
     void resetPegasusBoots() {
-        this.pegasusBootsChargeMeter(0);
+        pegasusBootsChargeMeter = 0;
         if (linkServices.get().playerState != null) {
             linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
         }
@@ -193,26 +158,26 @@ final class LinkDash {
 
     /** Returns and clears the one-shot shake request written this frame. */
     ScreenShakeRequest consumePegasusScreenShakeRequest() {
-        ScreenShakeRequest request = new ScreenShakeRequest(
-                this.pendingPegasusScreenShakeCountdown(), this.pendingPegasusScreenShakePhase());
-        this.pendingPegasusScreenShakeCountdown(0);
-        this.pendingPegasusScreenShakePhase(0);
+        ScreenShakeRequest request =
+                new ScreenShakeRequest(pendingPegasusScreenShakeCountdown, pendingPegasusScreenShakePhase);
+        pendingPegasusScreenShakeCountdown = 0;
+        pendingPegasusScreenShakePhase = 0;
         return request.countdown() == 0 ? null : request;
     }
 
     int accessPegasusBootsChargeMeter() {
-        return this.pegasusBootsChargeMeter() & 0xFF;
+        return pegasusBootsChargeMeter & 0xFF;
     }
 
     int accessPegasusBootsCollisionCountdown() {
-        return this.pegasusBootsCollisionCountdown() & 0xFF;
+        return pegasusBootsCollisionCountdown & 0xFF;
     }
 
     int accessPegasusBootsCollisionPosX() {
-        return this.pegasusBootsCollisionPosX() & 0xFF;
+        return pegasusBootsCollisionPosX & 0xFF;
     }
 
     int accessPegasusBootsCollisionPosY() {
-        return this.pegasusBootsCollisionPosY() & 0xFF;
+        return pegasusBootsCollisionPosY & 0xFF;
     }
 }

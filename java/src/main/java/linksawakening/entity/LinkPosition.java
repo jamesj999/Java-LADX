@@ -4,6 +4,7 @@ import static linksawakening.entity.Link.*;
 
 /** Owns subpixel coordinates, speeds and shadows for ComputeLinkPosition / UpdateFinalLinkPosition. */
 final class LinkPosition {
+
     private int subX;
 
     int subX() {
@@ -116,33 +117,9 @@ final class LinkPosition {
 
     private int romFinalSubX;
 
-    int romFinalSubX() {
-        return romFinalSubX;
-    }
-
-    int romFinalSubX(int value) {
-        return romFinalSubX = value;
-    }
-
     private int romFinalSubY;
 
-    int romFinalSubY() {
-        return romFinalSubY;
-    }
-
-    int romFinalSubY(int value) {
-        return romFinalSubY = value;
-    }
-
     private boolean hasRomFinalPosition;
-
-    boolean hasRomFinalPosition() {
-        return hasRomFinalPosition;
-    }
-
-    boolean hasRomFinalPosition(boolean value) {
-        return hasRomFinalPosition = value;
-    }
 
     private int roomEntrySubX;
 
@@ -183,8 +160,8 @@ final class LinkPosition {
     }
 
     void setPixelPosition(int pixelX, int pixelY) {
-        this.subX(pixelX << Link.SUB_PIXEL_SHIFT);
-        this.subY(pixelY << Link.SUB_PIXEL_SHIFT);
+        subX = pixelX << Link.SUB_PIXEL_SHIFT;
+        subY = pixelY << Link.SUB_PIXEL_SHIFT;
     }
 
     void setRoomEntryPixelPosition(int pixelX, int pixelY) {
@@ -195,26 +172,26 @@ final class LinkPosition {
 
     void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
         linkSideView.get().clearSideViewPlatformState();
-        this.subX(this.subX() + ((pixelX - pixelX()) << Link.SUB_PIXEL_SHIFT));
-        this.subY(this.subY() + ((pixelY - pixelY()) << Link.SUB_PIXEL_SHIFT));
+        subX = subX + ((pixelX - pixelX()) << Link.SUB_PIXEL_SHIFT);
+        subY = subY + ((pixelY - pixelY()) << Link.SUB_PIXEL_SHIFT);
         markRoomEntryPosition();
     }
 
     void markRoomEntryPosition() {
         collisionState.doorWarpPending(false);
-        this.roomEntrySubX(this.subX());
-        this.roomEntrySubY(this.subY());
-        this.hasRoomEntryPosition(true);
+        roomEntrySubX = subX;
+        roomEntrySubY = subY;
+        hasRoomEntryPosition = true;
     }
 
     /** Returns the Java top-left X coordinate recorded for the current room entry. */
     int roomEntryPixelX() {
-        return this.hasRoomEntryPosition() ? this.roomEntrySubX() >> Link.SUB_PIXEL_SHIFT : pixelX();
+        return hasRoomEntryPosition ? roomEntrySubX >> Link.SUB_PIXEL_SHIFT : pixelX();
     }
 
     /** Returns the Java top-left Y coordinate recorded for the current room entry. */
     int roomEntryPixelY() {
-        return this.hasRoomEntryPosition() ? this.roomEntrySubY() >> Link.SUB_PIXEL_SHIFT : pixelY();
+        return hasRoomEntryPosition ? roomEntrySubY >> Link.SUB_PIXEL_SHIFT : pixelY();
     }
 
     /**
@@ -252,20 +229,20 @@ final class LinkPosition {
         if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
             throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
         }
-        this.forcedSpeedX((byte) speedX);
-        this.forcedSpeedY((byte) speedY);
-        this.forcedSpeedXOnly(false);
-        this.forcedSpeedPending(true);
+        forcedSpeedX = (byte) speedX;
+        forcedSpeedY = (byte) speedY;
+        forcedSpeedXOnly = false;
+        forcedSpeedPending = true;
     }
 
     /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
     void applyRomSpeedX(int speedX) {
         Link.validateRomByte(speedX, "Link X speed");
-        this.forcedSpeedX((byte) speedX);
+        forcedSpeedX = (byte) speedX;
         // The pot handler leaves hLinkSpeedY untouched; Link computes its
         // ordinary Y input on the next motion accessUpdate.
-        this.forcedSpeedXOnly(true);
-        this.forcedSpeedPending(true);
+        forcedSpeedXOnly = true;
+        forcedSpeedPending = true;
     }
 
     /**
@@ -276,39 +253,39 @@ final class LinkPosition {
         if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
             throw new IllegalArgumentException("Link final-position speeds must be unsigned bytes");
         }
-        this.subY(this.subY() + ((byte) speedY));
-        this.subX(this.subX() + ((byte) speedX));
+        subY = subY + ((byte) speedY);
+        subX = subX + ((byte) speedX);
     }
 
     /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
     void captureRomFinalPosition() {
-        this.romFinalSubX(this.subX());
-        this.romFinalSubY(this.subY());
-        this.hasRomFinalPosition(true);
+        romFinalSubX = subX;
+        romFinalSubY = subY;
+        hasRomFinalPosition = true;
     }
 
     /** Copies the captured ROM final position back over an entity push. */
     void restoreRomFinalPosition() {
-        if (!this.hasRomFinalPosition()) {
+        if (!hasRomFinalPosition) {
             return;
         }
-        this.subX(this.romFinalSubX());
-        this.subY(this.romFinalSubY());
+        subX = romFinalSubX;
+        subY = romFinalSubY;
     }
 
     /** Copies only hLinkFinalPositionX back over a side-view pot push. */
     void restoreRomFinalPositionX() {
-        if (this.hasRomFinalPosition()) {
-            this.subX(this.romFinalSubX());
+        if (hasRomFinalPosition) {
+            subX = romFinalSubX;
         }
     }
 
     int pixelX() {
-        return this.subX() >> Link.SUB_PIXEL_SHIFT;
+        return subX >> Link.SUB_PIXEL_SHIFT;
     }
 
     int pixelY() {
-        return this.subY() >> Link.SUB_PIXEL_SHIFT;
+        return subY >> Link.SUB_PIXEL_SHIFT;
     }
 
     /** ROM hLinkPositionX: the first 8x16 OAM column's X origin. */
@@ -323,25 +300,25 @@ final class LinkPosition {
 
     /** ROM hLinkFinalPositionX captured before the current Link update. */
     int romFinalPositionX() {
-        return this.hasRomFinalPosition() ? (this.romFinalSubX() >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
+        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
     }
 
     /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
     void clearRomPositionIncrement() {
-        this.forcedSpeedX(0);
-        this.forcedSpeedY(0);
-        this.forcedSpeedPending(false);
-        this.forcedSpeedXOnly(false);
+        forcedSpeedX = 0;
+        forcedSpeedY = 0;
+        forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
         linkSideView.get().sideViewPlatformVerticalSpeedPending = -1;
-        this.lastRomSpeedX(0);
-        this.lastRomSpeedY(0);
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
     }
 
     int accessRomSpeedX() {
-        return this.lastRomSpeedX() & 0xFF;
+        return lastRomSpeedX & 0xFF;
     }
 
     int accessRomSpeedY() {
-        return this.lastRomSpeedY() & 0xFF;
+        return lastRomSpeedY & 0xFF;
     }
 }

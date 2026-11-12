@@ -8,6 +8,7 @@ import linksawakening.state.LinkMotionState;
 
 /** Owns room-entry identity and physics defaults for ApplyRoomTransition. */
 final class LinkRoomPhysics {
+
     private int physicsModifier;
 
     int physicsModifier() {
@@ -20,19 +21,11 @@ final class LinkRoomPhysics {
 
     private long physicsRoomLoadToken = -1;
 
-    long physicsRoomLoadToken() {
-        return physicsRoomLoadToken;
-    }
-
     long physicsRoomLoadToken(long value) {
         return physicsRoomLoadToken = value;
     }
 
     private int physicsRoomMapId = -1;
-
-    int physicsRoomMapId() {
-        return physicsRoomMapId;
-    }
 
     int physicsRoomMapId(int value) {
         return physicsRoomMapId = value;
@@ -49,10 +42,6 @@ final class LinkRoomPhysics {
     }
 
     private int physicsRoomCategory = -1;
-
-    int physicsRoomCategory() {
-        return physicsRoomCategory;
-    }
 
     int physicsRoomCategory(int value) {
         return physicsRoomCategory = value;
@@ -110,7 +99,7 @@ final class LinkRoomPhysics {
             linkMotion.get().position().subX((linkMotion.get().position().romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT);
             linkMotion.get().position().subY(linkMotion.get().position().subY() - (8 << Link.SUB_PIXEL_SHIFT));
             status.motionState(LinkMotionState.UNSTUCKING);
-            this.physicsModifier(0);
+            physicsModifier = 0;
             linkAirborne.get().overworldLedgeFallActive(true);
             linkMotion.get().beginOverworldLedgeUnstuckingMotion();
         }
@@ -122,38 +111,38 @@ final class LinkRoomPhysics {
      * prior ladder or diving modifier cannot leak across the reload.
      */
     void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
-        if (this.physicsRoomLoadToken() == loadToken
-                && this.physicsRoomMapId() == mapId
-                && this.physicsRoomId() == roomId
-                && this.physicsRoomCategory() == mapCategory) {
+        if (physicsRoomLoadToken == loadToken
+                && physicsRoomMapId == mapId
+                && physicsRoomId == roomId
+                && physicsRoomCategory == mapCategory) {
             return;
         }
         linkGroundMotion.get().accessClearGroundEffects();
-        this.physicsModifier(mapCategory == 2 ? 0x01 : 0x00);
-        this.physicsRoomLoadToken(loadToken);
-        this.physicsRoomMapId(mapId);
-        this.physicsRoomId(roomId);
-        this.physicsRoomCategory(mapCategory);
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
         linkDamage.get().collisionDamageImmune = false;
     }
 
     /** Applies the room-entry physics default after a completed warp. */
     void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
         linkGroundMotion.get().accessClearGroundEffects();
-        this.physicsModifier(mapCategory == 2 ? 0x01 : 0x00);
-        this.physicsRoomLoadToken(loadToken);
-        this.physicsRoomMapId(mapId);
-        this.physicsRoomId(roomId);
-        this.physicsRoomCategory(mapCategory);
+        physicsModifier = mapCategory == 2 ? 0x01 : 0x00;
+        physicsRoomLoadToken = loadToken;
+        physicsRoomMapId = mapId;
+        physicsRoomId = roomId;
+        physicsRoomCategory = mapCategory;
         linkDamage.get().collisionDamageImmune = false;
     }
 
     /** Mirrors source ladder/diving updates to hLinkPhysicsModifier. */
     void setRomPhysicsModifier(int modifier) {
-        this.physicsModifier(modifier & 0xFF);
+        physicsModifier = modifier & 0xFF;
     }
 
     int accessRomPhysicsModifier() {
-        return this.physicsModifier() & 0xFF;
+        return physicsModifier & 0xFF;
     }
 }

@@ -10,6 +10,7 @@ import linksawakening.state.LinkMotionState;
 
 /** Jump integration and landing for ROM ApplyLinkGroundMotion ($02:4523). */
 final class LinkAirborne {
+
     private final LinkElevation elevation = new LinkElevation();
     private final LinkPitFall pit;
 

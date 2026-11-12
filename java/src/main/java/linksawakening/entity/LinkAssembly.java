@@ -54,7 +54,7 @@ final class LinkAssembly {
         linkSideViewDependencies.linkStateMachine = linkStateMachine;
         linkSideView.bind(new LinkSideView(linkSideViewDependencies));
         MotionDependencies linkStateMachineDependencies = new MotionDependencies();
-        linkStateMachineDependencies.dialogGotItemSequence = dialogGotItemSequence;
+
         linkStateMachineDependencies.linkAirborne = linkAirborne;
         linkStateMachineDependencies.linkAnimationState = linkAnimationState;
         linkStateMachineDependencies.linkAnimator = linkAnimator;
@@ -63,7 +63,7 @@ final class LinkAssembly {
         linkStateMachineDependencies.linkEntityEffects = linkEntityEffects;
         linkStateMachineDependencies.linkEquipment = linkEquipment;
         linkStateMachineDependencies.linkGroundMotion = linkGroundMotion;
-        linkStateMachineDependencies.linkItemState = linkItemState;
+
         linkStateMachineDependencies.linkMotion = linkMotion;
         linkStateMachineDependencies.linkServices = linkServices;
         linkStateMachineDependencies.linkSideView = linkSideView;
@@ -102,7 +102,7 @@ final class LinkAssembly {
         linkMotionDependencies.linkDamage = linkDamage;
         linkMotionDependencies.linkEntityEffects = linkEntityEffects;
         linkMotionDependencies.linkEquipment = linkEquipment;
-        linkMotionDependencies.linkGroundMotion = linkGroundMotion;
+
         linkMotionDependencies.linkItemState = linkItemState;
         linkMotionDependencies.linkServices = linkServices;
         linkMotionDependencies.linkSideView = linkSideView;
@@ -186,7 +186,7 @@ final class LinkAssembly {
     }
 
     static final class MotionDependencies {
-        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+
         LinkComponentRef<LinkAirborne> linkAirborne;
         LinkComponentRef<LinkAnimationState> linkAnimationState;
         LinkComponentRef<LinkAnimator> linkAnimator;
@@ -195,7 +195,7 @@ final class LinkAssembly {
         LinkComponentRef<LinkEntityEffects> linkEntityEffects;
         LinkComponentRef<LinkEquipment> linkEquipment;
         LinkComponentRef<LinkGroundMotion> linkGroundMotion;
-        LinkComponentRef<LinkItemState> linkItemState;
+
         LinkComponentRef<LinkMotion> linkMotion;
         LinkComponentRef<LinkServices> linkServices;
         LinkComponentRef<LinkSideView> linkSideView;

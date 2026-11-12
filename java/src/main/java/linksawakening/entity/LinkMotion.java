@@ -28,7 +28,7 @@ final class LinkMotion {
     private final LinkComponentRef<LinkDamage> linkDamage;
     private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
     private final LinkComponentRef<LinkEquipment> linkEquipment;
-    private final LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+
     private final LinkComponentRef<LinkItemState> linkItemState;
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkSideView> linkSideView;
@@ -42,7 +42,7 @@ final class LinkMotion {
         LinkComponentRef<LinkDamage> linkDamage;
         LinkComponentRef<LinkEntityEffects> linkEntityEffects;
         LinkComponentRef<LinkEquipment> linkEquipment;
-        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+
         LinkComponentRef<LinkItemState> linkItemState;
         LinkComponentRef<LinkServices> linkServices;
         LinkComponentRef<LinkSideView> linkSideView;
@@ -57,7 +57,7 @@ final class LinkMotion {
         linkDamage = dependencies.linkDamage;
         linkEntityEffects = dependencies.linkEntityEffects;
         linkEquipment = dependencies.linkEquipment;
-        linkGroundMotion = dependencies.linkGroundMotion;
+
         linkItemState = dependencies.linkItemState;
         linkServices = dependencies.linkServices;
         linkSideView = dependencies.linkSideView;

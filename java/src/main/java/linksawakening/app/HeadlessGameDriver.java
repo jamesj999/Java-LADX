@@ -207,7 +207,7 @@ public final class HeadlessGameDriver {
         }
 
         public boolean equals(Object value) {
-            return checkpoint.equals(value);
+            return value instanceof State other && checkpoint.equals(other.checkpoint);
         }
 
         public int hashCode() {

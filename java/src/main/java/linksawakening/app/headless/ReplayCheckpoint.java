@@ -1,5 +1,6 @@
 package linksawakening.app.headless;
 
+import java.util.Objects;
 import linksawakening.world.entity.EntityStatus;
 
 /**
@@ -228,16 +229,103 @@ public final class ReplayCheckpoint implements HeadlessState {
 
     @Override
     public boolean equals(Object value) {
-        return HeadlessStateValues.equal(this, value);
+        return value instanceof ReplayCheckpoint other
+                && frame == other.frame()
+                && map == other.map()
+                && room == other.room()
+                && x == other.x()
+                && y == other.y()
+                && dialog == other.dialog()
+                && pageWait == other.pageWait()
+                && Objects.equals(text, other.text())
+                && shield == other.shield()
+                && health == other.health()
+                && sword == other.sword()
+                && urchins == other.urchins()
+                && toadstool == other.toadstool()
+                && powder == other.powder()
+                && inventoryTick == other.inventoryTick()
+                && tarinX == other.tarinX()
+                && tarinY == other.tarinY()
+                && forestCleared == other.forestCleared()
+                && tailKey == other.tailKey()
+                && bgTick == other.bgTick()
+                && smallKeys == other.smallKeys()
+                && compass == other.compass()
+                && dungeonMap == other.dungeonMap()
+                && nightmareKey == other.nightmareKey()
+                && animation == other.animation()
+                && direction == other.direction()
+                && swordAnimation == other.swordAnimation()
+                && z == other.z()
+                && velocityZ == other.velocityZ()
+                && speedX == other.speedX()
+                && speedY == other.speedY()
+                && loading == other.loading()
+                && maxHearts == other.maxHearts()
+                && instrument1Flags == other.instrument1Flags();
     }
 
     @Override
     public int hashCode() {
-        return HeadlessStateValues.hash(this);
+        int hash = 0;
+        hash = 31 * hash + Integer.hashCode(frame);
+        hash = 31 * hash + Integer.hashCode(map);
+        hash = 31 * hash + Integer.hashCode(room);
+        hash = 31 * hash + Integer.hashCode(x);
+        hash = 31 * hash + Integer.hashCode(y);
+        hash = 31 * hash + Boolean.hashCode(dialog);
+        hash = 31 * hash + Boolean.hashCode(pageWait);
+        hash = 31 * hash + Objects.hashCode(text);
+        hash = 31 * hash + Integer.hashCode(shield);
+        hash = 31 * hash + Integer.hashCode(health);
+        hash = 31 * hash + Integer.hashCode(sword);
+        hash = 31 * hash + Integer.hashCode(urchins);
+        hash = 31 * hash + Boolean.hashCode(toadstool);
+        hash = 31 * hash + Integer.hashCode(powder);
+        hash = 31 * hash + Integer.hashCode(inventoryTick);
+        hash = 31 * hash + Integer.hashCode(tarinX);
+        hash = 31 * hash + Integer.hashCode(tarinY);
+        hash = 31 * hash + Boolean.hashCode(forestCleared);
+        hash = 31 * hash + Integer.hashCode(tailKey);
+        hash = 31 * hash + Integer.hashCode(bgTick);
+        hash = 31 * hash + Integer.hashCode(smallKeys);
+        hash = 31 * hash + Integer.hashCode(compass);
+        hash = 31 * hash + Integer.hashCode(dungeonMap);
+        hash = 31 * hash + Integer.hashCode(nightmareKey);
+        hash = 31 * hash + Integer.hashCode(animation);
+        hash = 31 * hash + Integer.hashCode(direction);
+        hash = 31 * hash + Integer.hashCode(swordAnimation);
+        hash = 31 * hash + Integer.hashCode(z);
+        hash = 31 * hash + Integer.hashCode(velocityZ);
+        hash = 31 * hash + Integer.hashCode(speedX);
+        hash = 31 * hash + Integer.hashCode(speedY);
+        hash = 31 * hash + Boolean.hashCode(loading);
+        hash = 31 * hash + Integer.hashCode(maxHearts);
+        hash = 31 * hash + Integer.hashCode(instrument1Flags);
+        return hash;
     }
 
     @Override
     public String toString() {
-        return HeadlessStateValues.text(this);
+        return "State[" + "frame=" + frame + ", map=" + map + ", room=" + room + ", x="
+                + x + ", y=" + y
+                + ", dialog=" + dialog + ", pageWait=" + pageWait + ", text=" + text
+                + ", shield=" + shield
+                + ", health=" + health + ", sword=" + sword + ", urchins=" + urchins
+                + ", toadstool=" + toadstool
+                + ", powder=" + powder + ", inventoryTick=" + inventoryTick + ", tarinX="
+                + tarinX + ", tarinY="
+                + tarinY + ", forestCleared=" + forestCleared + ", tailKey=" + tailKey
+                + ", bgTick=" + bgTick
+                + ", smallKeys=" + smallKeys + ", compass=" + compass + ", dungeonMap="
+                + dungeonMap
+                + ", nightmareKey=" + nightmareKey + ", animation=" + animation + ", direction="
+                + direction
+                + ", swordAnimation=" + swordAnimation + ", z=" + z + ", velocityZ=" + velocityZ
+                + ", speedX="
+                + speedX + ", speedY=" + speedY + ", loading=" + loading + ", maxHearts="
+                + maxHearts
+                + ", instrument1Flags=" + instrument1Flags + "]";
     }
 }

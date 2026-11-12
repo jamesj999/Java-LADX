@@ -79,7 +79,7 @@ final class SwordSpin {
         return state;
     }
 
-    private static final int SPIN_ATTACK_FRAMES = 0x20; // MAX_SWORD_CHARGE ($28) in the ROM
+    private static final int SPIN_ATTACK_FRAMES = 0x20; // wIsUsingSpinAttack initial countdown ($20)
     // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
     private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
         {

@@ -34,7 +34,6 @@ final class LinkStateMachine {
         return status;
     }
 
-    private final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
     private final LinkComponentRef<LinkAnimator> linkAnimator;
@@ -43,7 +42,7 @@ final class LinkStateMachine {
     private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
     private final LinkComponentRef<LinkEquipment> linkEquipment;
     private final LinkComponentRef<LinkGroundMotion> linkGroundMotion;
-    private final LinkComponentRef<LinkItemState> linkItemState;
+
     private final LinkComponentRef<LinkMotion> linkMotion;
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkSideView> linkSideView;
@@ -51,7 +50,7 @@ final class LinkStateMachine {
     private final LinkComponentRef<LinkSwimming> linkSwimming;
 
     LinkStateMachine(LinkAssembly.MotionDependencies dependencies) {
-        dialogGotItemSequence = dependencies.dialogGotItemSequence;
+
         linkAirborne = dependencies.linkAirborne;
         linkAnimationState = dependencies.linkAnimationState;
         linkAnimator = dependencies.linkAnimator;
@@ -60,7 +59,7 @@ final class LinkStateMachine {
         linkEntityEffects = dependencies.linkEntityEffects;
         linkEquipment = dependencies.linkEquipment;
         linkGroundMotion = dependencies.linkGroundMotion;
-        linkItemState = dependencies.linkItemState;
+
         linkMotion = dependencies.linkMotion;
         linkServices = dependencies.linkServices;
         linkSideView = dependencies.linkSideView;

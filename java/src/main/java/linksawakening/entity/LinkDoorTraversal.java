@@ -8,6 +8,7 @@ import linksawakening.state.LinkMotionState;
 
 /** Owns the timed pose and transition for ROM LinkMotionRevolvingDoor. */
 final class LinkDoorTraversal {
+
     private int revolvingDoorFrame;
 
     int revolvingDoorFrame() {
@@ -19,10 +20,6 @@ final class LinkDoorTraversal {
     }
 
     private boolean revolvingDoorTransitionPending;
-
-    boolean revolvingDoorTransitionPending() {
-        return revolvingDoorTransitionPending;
-    }
 
     boolean revolvingDoorTransitionPending(boolean value) {
         return revolvingDoorTransitionPending = value;
@@ -61,29 +58,29 @@ final class LinkDoorTraversal {
         linkMotion.get().position().subX((0x50 - 8) << Link.SUB_PIXEL_SHIFT);
         linkMotion.get().position().subY(0);
         linkAnimationState.get().movingThisFrame = false;
-        if (this.revolvingDoorFrame() == 0 || this.revolvingDoorFrame() == 0x28) this.revolvingDoorPaletteVariant(0);
-        if (this.revolvingDoorFrame() == 0x18) this.revolvingDoorPaletteVariant(1);
-        if (this.revolvingDoorFrame() < 0x38) {
+        if (revolvingDoorFrame == 0 || revolvingDoorFrame == 0x28) revolvingDoorPaletteVariant = 0;
+        if (revolvingDoorFrame == 0x18) revolvingDoorPaletteVariant = 1;
+        if (revolvingDoorFrame < 0x38) {
             linkAnimator
                     .get()
                     .romAnimationStateOverride(
-                            linkServices.get().linkMotionTables.revolvingDoorAnimation(this.revolvingDoorFrame()));
+                            linkServices.get().linkMotionTables.revolvingDoorAnimation(revolvingDoorFrame));
         }
-        if (this.revolvingDoorFrame(this.revolvingDoorFrame() + 1) >= 0x38) {
+        if ((revolvingDoorFrame = revolvingDoorFrame + 1) >= 0x38) {
             linkMotion.get().position().subY((-5 - 16) << Link.SUB_PIXEL_SHIFT);
             linkAnimationState.get().direction = Direction.UP;
             linkAnimator.get().romAnimationStateOverride(0x04);
         }
-        if (this.revolvingDoorFrame() == 0x48) {
+        if (revolvingDoorFrame == 0x48) {
             status.motionState(LinkMotionState.DEFAULT);
-            this.revolvingDoorPaletteVariant(-1);
-            this.revolvingDoorTransitionPending(true);
+            revolvingDoorPaletteVariant = -1;
+            revolvingDoorTransitionPending = true;
         }
     }
 
     boolean accessConsumeRevolvingDoorTransition() {
-        boolean pending = this.revolvingDoorTransitionPending();
-        this.revolvingDoorTransitionPending(false);
+        boolean pending = revolvingDoorTransitionPending;
+        revolvingDoorTransitionPending = false;
         return pending;
     }
 }

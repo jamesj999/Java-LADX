@@ -570,3 +570,17 @@ The two headless driver aliases also had implementation inheritance: State → H
 Temporary off-limits exceptions: GPU, RomTileLoader, SfxCpu, EntitySpritePainter (explicit coordinator correction), and EntitySpriteTileSnapshot.FrozenTile (additional immutable Tile subclass found by the compiled audit). All are in render/gpu/audio and assigned to that engineer. No owned package has an exception.
 
 Full suite: 2,897 tests, zero failures/errors, one skipped.
+
+## Whole-owner helper audit
+
+Audit scope includes all owned main packages plus app/gameplay; the requested filename patterns produce these three candidates before cleanup:
+
+| Candidate | Decision / responsibility |
+| --- | --- |
+| `HeadlessStateValues` | Removed: every method took the complete checkpoint solely to supply its equality/hash/text implementation. Those methods now live with private checkpoint fields in `ReplayCheckpoint`; the public driver State keeps its original State-only equality contract. |
+| `ChestItemValues` | Retained: a leaf ROM chest-variant constant table used by reward decoding; it has no methods or owner state argument. |
+| `SessionLifecycle` | Retained: the consumer-owned `requestStop()` interface connecting screen input to session shutdown; no implementation or owner state is hidden here. |
+
+The broader new-component audit found no whole-owner slicing helpers. Stateless `EntitySpriteGeometry` / `IntroPaletteMath` perform coordinate/color algorithms on their input values. Registration families build immutable recipes; `LinkPoseTables` holds animation lookup data. Published Link roles implement narrow contracts and retain the components each command uses, rather than taking Link. Small explicit shared state objects contain only their named phase/elevation/motion/probe state.
+
+Cleanup also removed 38 unused package-private component accessors, three unused dependency references, and accessor indirection within state owners. No behavioural branch or test assertion was removed. Full suite remains 2,897 tests, zero failures/errors, one skipped.
