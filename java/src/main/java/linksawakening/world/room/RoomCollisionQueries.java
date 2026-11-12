@@ -21,6 +21,10 @@ import linksawakening.world.transition.Warp;
 /** RoomCollisionQueries operations for the live room session. */
 final class RoomCollisionQueries {
     private final Dependencies dependencies;
+    private linksawakening.world.transition.RoomBoundaryInputs.Room boundaryRoom;
+    private final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
+    private final RoomEntityGroundInteraction.Result[] groundResults =
+            new RoomEntityGroundInteraction.Result[RoomEntity.SLOT_COUNT];
 
     RoomCollisionQueries(Dependencies dependencies) {
         this.dependencies = dependencies;
@@ -45,14 +49,23 @@ final class RoomCollisionQueries {
                                 .get(0)
                                 .status()
                         != EntityStatus.DISABLED;
+        var active = dependencies.location().activeRoom;
+        if (boundaryRoom == null
+                || boundaryRoom.mapCategory() != active.mapCategory()
+                || boundaryRoom.roomId() != active.roomId()
+                || boundaryRoom.indoorHasSouthEntrance() != active.indoorHasSouthEntrance()
+                || boundaryRoom.hasWarps() != active.hasWarps()
+                || boundaryRoom.shutterDoorMask() != dependencies.puzzles().closedShutterMask
+                || boundaryRoom.mapId() != active.mapId())
+            boundaryRoom = new linksawakening.world.transition.RoomBoundaryInputs.Room(
+                    dependencies.location().activeRoom.mapCategory(),
+                    dependencies.location().activeRoom.roomId(),
+                    dependencies.location().activeRoom.indoorHasSouthEntrance(),
+                    dependencies.location().activeRoom.hasWarps(),
+                    dependencies.puzzles().closedShutterMask,
+                    dependencies.location().activeRoom.mapId());
         return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
-                new linksawakening.world.transition.RoomBoundaryInputs.Room(
-                        dependencies.location().activeRoom.mapCategory(),
-                        dependencies.location().activeRoom.roomId(),
-                        dependencies.location().activeRoom.indoorHasSouthEntrance(),
-                        dependencies.location().activeRoom.hasWarps(),
-                        dependencies.puzzles().closedShutterMask,
-                        dependencies.location().activeRoom.mapId()),
+                boundaryRoom,
                 new linksawakening.world.transition.RoomBoundaryInputs.Link(
                         linkX, linkY, linkAirborne, linkPhysicsModifier, sideViewEntityActive)));
     }
@@ -60,15 +73,33 @@ final class RoomCollisionQueries {
     RoomEntityObjectSample entityObjectSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
                 dependencies.overworldCollision().groundInteractionSample(entity.x(), entity.y());
-        return new RoomEntityObjectSample(
-                sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
+        var previous = objectSamples[entity.slot()];
+        if (previous == null
+                || previous.objectId() != sample.objectId()
+                || previous.physicsFlag() != sample.physicsFlag()
+                || previous.objectLeft() != sample.objectLeft()
+                || previous.objectTop() != sample.objectTop()) {
+            previous = new RoomEntityObjectSample(
+                    sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
+            objectSamples[entity.slot()] = previous;
+        }
+        return previous;
     }
 
     RoomEntityObjectSample entityObjectIntersectionSample(RoomEntity entity) {
         OverworldCollision.GroundInteractionSample sample =
                 dependencies.overworldCollision().entityInteractionSample(entity.x(), entity.y());
-        return new RoomEntityObjectSample(
-                sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
+        var previous = objectSamples[entity.slot()];
+        if (previous == null
+                || previous.objectId() != sample.objectId()
+                || previous.physicsFlag() != sample.physicsFlag()
+                || previous.objectLeft() != sample.objectLeft()
+                || previous.objectTop() != sample.objectTop()) {
+            previous = new RoomEntityObjectSample(
+                    sample.objectId(), sample.physicsFlag(), sample.objectLeft(), sample.objectTop());
+            objectSamples[entity.slot()] = previous;
+        }
+        return previous;
     }
 
     boolean entityBackgroundCollision(RoomEntity entity, int direction, int nextX, int nextY) {
@@ -201,7 +232,17 @@ final class RoomCollisionQueries {
 
         RoomEntityGroundInteraction.PitTransition pit = RoomInteractionGeometry.pitTransitionFor(
                 entity, sample, dependencies.entityFrame().currentLinkMotionState);
-        return new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
+        var previous = groundResults[entity.slot()];
+        if (previous == null
+                || previous.entity() != updated
+                || previous.groundStatus() != groundStatus
+                || !java.util.Objects.equals(previous.pitTransition(), pit)
+                || previous.unloaded()
+                || previous.waterSplash() != splash) {
+            previous = new RoomEntityGroundInteraction.Result(updated, groundStatus, pit, false, splash);
+            groundResults[entity.slot()] = previous;
+        }
+        return previous;
     }
 
     boolean pairoddProjectileObjectCollision(RoomEntity entity) {

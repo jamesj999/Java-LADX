@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Inputs for EntitySlotLifecycle.collectIfNeeded. */
-public record EntityPickupFrame(
+record EntityPickupFrame(
         int frameCounter,
         int linkEntityX,
         int linkEntityY,
@@ -13,4 +13,5 @@ public record EntityPickupFrame(
         int swordX,
         int swordWidth,
         int swordY,
-        int swordHeight) {}
+        int swordHeight)
+        implements EntityPickupFrameInputs {}

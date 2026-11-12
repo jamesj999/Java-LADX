@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Inputs for EntityCombatResolver.resolveCombat. */
-public record EnemyCombatFrame(
+record EnemyCombatFrame(
         int frameCounter,
         int linkEntityX,
         int linkEntityY,
@@ -13,4 +13,5 @@ public record EnemyCombatFrame(
         int swordWidth,
         int swordY,
         int swordHeight,
-        EnemyAttackContext attackContext) {}
+        EnemyAttackContext attackContext)
+        implements EnemyCombatInputs {}

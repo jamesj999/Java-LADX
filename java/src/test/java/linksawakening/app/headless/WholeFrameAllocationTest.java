@@ -88,7 +88,15 @@ class WholeFrameAllocationTest {
             assertSame(output, session.headlessFrame(output));
         });
         System.out.println(label + " whole-frame bytes: " + bytes);
-        assertTrue(bytes <= 1_000_000, label + " whole-frame bytes: " + bytes);
+        // EA-off achieved 1072 idle, about 1029.1 walking, 720 inventory; +25% headroom.
+        int budget =
+                switch (label) {
+                    case "Idle" -> 1340;
+                    case "Walking" -> 1287;
+                    case "Inventory" -> 900;
+                    default -> throw new AssertionError(label);
+                };
+        assertTrue(bytes <= budget, label + " whole-frame bytes: " + bytes);
     }
 
     private GameSession newGame() throws Exception {

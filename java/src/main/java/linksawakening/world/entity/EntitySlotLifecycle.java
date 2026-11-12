@@ -63,7 +63,7 @@ public final class EntitySlotLifecycle {
                 0));
     }
 
-    EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
+    EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
         return entitySlotLifecycleFrameStep.run(this, inputs);
     }
 

@@ -9,7 +9,6 @@ import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.entity.event.ThrownBackgroundCollisionEvent;
 import linksawakening.world.transition.Warp;
 
 final class RoomEventTriggers {
@@ -23,8 +22,9 @@ final class RoomEventTriggers {
         if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
-        for (ThrownBackgroundCollisionEvent collision :
-                dependencies.entityBridge().get().entityRuntime.consumePendingThrownBackgroundCollisions()) {
+        var collisions = dependencies.entityBridge().get().entityRuntime.consumePendingThrownBackgroundCollisions();
+        for (int i = 0; i < collisions.size(); i++) {
+            var collision = collisions.get(i);
             int objectId = collision.objectId();
             if ((dependencies.puzzles().activeRoomEvent & EVENT_TRIGGER_MASK) == EVENT_TRIGGER_THROW_AT_DOOR
                     && objectId >= 0x35

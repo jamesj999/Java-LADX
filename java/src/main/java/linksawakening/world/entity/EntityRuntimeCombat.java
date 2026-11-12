@@ -52,33 +52,8 @@ interface EntityRuntimeCombat {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
-    default EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
-        boolean linkInteractive = inputs.linkInteractive();
-        int linkDirection = inputs.linkDirection();
-        int linkZ = inputs.linkZ();
-        boolean swordActive = inputs.swordActive();
-        int swordX = inputs.swordX();
-        int swordWidth = inputs.swordWidth();
-        int swordY = inputs.swordY();
-        int swordHeight = inputs.swordHeight();
-        return entityLifecycle()
-                .collectIfNeeded(new EntityPickupFrame(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkInteractive,
-                        linkDirection,
-                        linkZ,
-                        swordActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight));
+    default EntityPickupEvent collectIfNeeded(EntityPickupFrameInputs inputs) {
+        return entityLifecycle().collectIfNeeded(inputs);
     }
 
     /**
@@ -167,32 +142,7 @@ interface EntityRuntimeCombat {
                 attackContext));
     }
 
-    default List<EntityCombatEvent> resolveCombat(EnemyCombatFrame inputs) {
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
-        int linkVerticalVelocity = inputs.linkVerticalVelocity();
-        boolean linkInteractive = inputs.linkInteractive();
-        boolean swordCollisionActive = inputs.swordCollisionActive();
-        int swordX = inputs.swordX();
-        int swordWidth = inputs.swordWidth();
-        int swordY = inputs.swordY();
-        int swordHeight = inputs.swordHeight();
-        EnemyAttackContext attackContext = inputs.attackContext();
-        return entityCombat()
-                .resolveCombat(new EnemyCombatFrame(
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        linkAirborne,
-                        linkVerticalVelocity,
-                        linkInteractive,
-                        swordCollisionActive,
-                        swordX,
-                        swordWidth,
-                        swordY,
-                        swordHeight,
-                        attackContext));
+    default List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
+        return entityCombat().resolveCombat(inputs);
     }
 }

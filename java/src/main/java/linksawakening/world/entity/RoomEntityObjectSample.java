@@ -9,7 +9,9 @@ public record RoomEntityObjectSample(int objectId, int physicsFlag, int objectLe
         objectTop &= 0xF0;
     }
 
+    private static final RoomEntityObjectSample NONE = new RoomEntityObjectSample(0xFF, 0, 0, 0);
+
     public static RoomEntityObjectSample none() {
-        return new RoomEntityObjectSample(0xFF, 0, 0, 0);
+        return NONE;
     }
 }

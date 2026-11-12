@@ -51,7 +51,7 @@ final class EntityCombatResolver {
         EnemyContactRecoil.finishLeeverContactRecoil(this, moved);
     }
 
-    List<EntityCombatEvent> resolveCombat(EnemyCombatFrame inputs) {
+    List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
         return EntityCombatPass.resolveCombat(this, inputs);
     }
 }

@@ -16,7 +16,7 @@ import linksawakening.world.room.ChestContentsTable;
 /** Reused, reentrancy-safe scratch for EntitySlotLifecycle.collectIfNeeded; values are assigned in source order. */
 final class EntitySlotLifecycleFrameStep {
     private EntitySlotLifecycle owner;
-    private linksawakening.world.entity.EntityPickupFrame inputs;
+    private linksawakening.world.entity.EntityPickupFrameInputs inputs;
     private int frameCounter;
     private int linkEntityX;
     private int linkEntityY;
@@ -157,7 +157,7 @@ final class EntitySlotLifecycleFrameStep {
     private boolean inUse;
 
     linksawakening.world.entity.EntityPickupEvent run(
-            EntitySlotLifecycle owner, linksawakening.world.entity.EntityPickupFrame inputs) {
+            EntitySlotLifecycle owner, linksawakening.world.entity.EntityPickupFrameInputs inputs) {
         if (inUse) {
             return new EntitySlotLifecycleFrameStep().run(owner, inputs);
         }

@@ -23,6 +23,18 @@ public final class EntityPickupController {
     private final HeartPiecePickupMotion[] heartPiecePickup = new HeartPiecePickupMotion[EntityRoomLoader.MAX_ENTITIES];
     private int heartPiecesCount;
     private final int[] heartPieceMeterPairs = new int[20];
+    private final RoomEntityRuntime.CommonDroppableUpdate[] commonUpdates =
+            new RoomEntityRuntime.CommonDroppableUpdate[RoomEntity.SLOT_COUNT];
+
+    RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
+        var previous = commonUpdates[entity.slot()];
+        if (previous == null || previous.entity() != entity || previous.hidden() != hidden) {
+            previous = new RoomEntityRuntime.CommonDroppableUpdate(entity, hidden);
+            commonUpdates[entity.slot()] = previous;
+        }
+        return previous;
+    }
+
     final EntityPickupControllerServices runtime;
 
     EntityPickupController(EntityPickupControllerServices runtime) {
