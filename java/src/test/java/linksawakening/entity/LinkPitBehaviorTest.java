@@ -28,7 +28,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void startingPitFallPlaysLinkFallWaveEffectOnce() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
@@ -60,7 +60,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void fallingIntoPitUsesRomAnimationStatesAndBlocksMovement() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
@@ -100,7 +100,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void pitSlipCentersJavaTopLeftAtPitCellOriginBeforeFallNudge() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -130,7 +130,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void pitFallAnimationTakesPrecedenceOverItemAnimationOverride() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -203,7 +203,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
 
     @Test
     void pitWarpArrivalSpinsWithGlobalFramePhaseAndLocksInputUntilLanding() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, emptyRoomObjectsArea());
         link.position().setRoomEntryPixelPosition(64, 64);
         link.linkStateMachine.frameCounter = 0;
@@ -243,7 +243,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void walkingIntoPitMovesOntoPitThenStartsPitHandling() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
@@ -265,7 +265,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void walkingIntoPitWarpDoesNotUseNormalPitFallRecovery() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_INDOOR_PIT_WARP;
@@ -289,7 +289,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void walkingIntoNonPitSolidRemainsBlocked() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_TREE_TOP_LEFT;
@@ -307,7 +307,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void matchingDirectionalLedgeStartsAfterTwelveRomCollisionProbes() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
@@ -356,7 +356,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void directionalLedgeCountdownResetsAfterAProbeInAnotherDirection() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
@@ -397,7 +397,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void overworldLedgeEntersUnstuckingWithoutDirectionalCountdown() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
@@ -447,7 +447,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void outdoorHorizontalDirectionalLedgesUseTheRomHalfTileFilters() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
@@ -476,7 +476,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void pegasusDashStartsMatchingDirectionalLedgeJumpImmediatelyAndResetsDash() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
@@ -510,7 +510,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void rocsFeatherJumpCanClearPit() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_PIT;
@@ -534,7 +534,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void rocsFeatherDoesNotStartWhileAlreadyOverPit() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -551,7 +551,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void groundedLinkOverPitSlipsTowardPitCenterEveryFourthFrame() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -585,7 +585,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void normalPitFallDamagesHalfHeartAndRecoversToRoomEntryPosition() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -619,7 +619,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void normalPitFallRecoversToRoomEntryPositionNotLastSafeGroundNearPit() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -655,7 +655,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void pitRecoveryInvincibilityCountsDownOnSubsequentUpdates() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -688,7 +688,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void roomEntryPositionDoesNotUpdateWhileAirborneOrPitHandling() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
@@ -724,7 +724,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
     @Test
     void landingOnPitAfterJumpDoesNotLeaveLinkStandingThere() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         // Releasing direction preserves airborne momentum: land in column 4.

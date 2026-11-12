@@ -20,7 +20,7 @@ final class LinkPitBehaviorAdditionalTest extends LinkFixture {
     @Test
     void rocsFeatherDoesNotStartDuringPitFallStateEvenIfFeetMoveOffPit() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         // Releasing direction preserves airborne momentum: land in column 4.

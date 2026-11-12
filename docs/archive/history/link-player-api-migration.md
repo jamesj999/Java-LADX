@@ -593,3 +593,51 @@ All five round 4 steps are complete. Verification used the default test task
 with LA_ROM: 2,821 baseline → 2,822 final tests, zero failures/errors and one
 existing skip. No off-limits source or test files, fixtures, build configuration,
 ROMs or extracted assets changed.
+
+## Round 5 starting reference inventory
+
+Compiler-resolved references after merging develop. Includes implementation calls
+inside record builders, constructors and legacy dispatch layers; those are not
+external migration clients. The typed RoomPaletteLoader call is now used.
+
+| Deprecated member | Caller files |
+| --- | --- |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderTest.java` |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int,int[],byte[],int)` | `java/src/main/java/linksawakening/cutscene/IntroFrameSnapshot.java` |
+| `linksawakening.entity.LinkCommand.HinoxGrab.<init>(int,int,int,int,int,int,int,boolean,boolean)` | `java/src/main/java/linksawakening/entity/LinkCommand.java` |
+| `linksawakening.entity.LinkStateView.legacyRoles()` | `java/src/main/java/linksawakening/entity/LinkActionView.java`<br>`java/src/main/java/linksawakening/entity/LinkMovementView.java`<br>`java/src/main/java/linksawakening/entity/LinkRoomView.java`<br>`java/src/main/java/linksawakening/entity/LinkStateView.java` |
+| `linksawakening.gameplay.DialogTextLoader.loadFromRom(byte[])` | `java/src/test/java/linksawakening/render/DialogEmulatorCapture.java` |
+| `linksawakening.rom.Rom.<init>(byte[])` | `java/src/main/java/linksawakening/rom/Rom.java` |
+| `linksawakening.rom.RomTables.linkFineCollisionShape(int,int)` | `java/src/test/java/linksawakening/physics/OverworldCollisionTest.java` |
+| `linksawakening.rom.RomTables.loadFromRom(byte[])` | `java/src/test/java/linksawakening/entity/LinkAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkFixture.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpSoundTest.java`<br>`java/src/test/java/linksawakening/entity/LinkLedgeParityTest.java`<br>`java/src/test/java/linksawakening/entity/LinkPitBehaviorAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkPitBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkSideViewMotionTest.java`<br>`java/src/test/java/linksawakening/entity/LinkTest.java`<br>`java/src/test/java/linksawakening/entity/LinkWaterBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/MarinWakeUpLinkStateTest.java`<br>`java/src/test/java/linksawakening/equipment/SwordTest.java`<br>`java/src/test/java/linksawakening/physics/OverworldCollisionTest.java` |
+| `linksawakening.rom.RomTables.objectPhysicsFlag(int,int)` | `java/src/test/java/linksawakening/entity/LinkAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpSoundTest.java` |
+| `linksawakening.rom.RomTables.swordBladeXOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordBladeYOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordCollisionXOriginOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordCollisionYOriginOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordDirectionAnimState(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordDirectionFor(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordSpinAbsoluteDirection(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordSpinAnimationState(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordSpriteAttr(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordSpriteTile(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomUtil.decodeRgb555(int)` | `java/src/test/java/linksawakening/ui/InventoryInstrumentPanelTest.java` |
+| `linksawakening.rom.RomUtil.romOffset(int,int)` | `java/src/test/java/linksawakening/ui/InventoryInstrumentPanelTest.java` |
+| `linksawakening.startup.NewGameStartProfile.<init>(int,int,int,int,int,int,int,int,int,int,int,int)` | `java/src/main/java/linksawakening/startup/NewGameStartProfile.java` |
+| `linksawakening.state.PlayerInventoryCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerLifecycleCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerState.java` |
+| `linksawakening.state.PlayerProgressionCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.ammunition()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.chestRewards()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.equipmentLevels()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.inventory()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerInitialization()` | `java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerResources()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerRewards()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerSaveLoader()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerSounds()` | `java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.progression()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.vitals()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.wallet()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.ui.FileMenuFrameSnapshot.<init>(java.lang.String,int,boolean,boolean,int,int,int[],int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>)` | `java/src/main/java/linksawakening/ui/FileMenuFrameSnapshot.java`<br>`java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java` |

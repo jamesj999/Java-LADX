@@ -77,7 +77,7 @@ final class MarinWakeUpLinkStateTest {
 
     @Test
     void bedJumpLocksRightwardSpeedUntilLandingThenReturnsJoypadControl() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] room = new int[0x100];
         Arrays.fill(room, 0xFF);

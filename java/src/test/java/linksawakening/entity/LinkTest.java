@@ -28,7 +28,7 @@ final class LinkTest extends LinkFixture {
 
     @Test
     void solidContactSelectsPushPosesOnNextAnimationPassAndCountdownExpires() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState input = new InputState();
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
@@ -69,7 +69,7 @@ final class LinkTest extends LinkFixture {
 
     @Test
     void revolvingDoorPinsLinkThenRequestsTransitionAfterSeventyTwoFrames() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState input = new InputState();
         input.onKeyEvent(config.upKey(), GLFW_PRESS);
@@ -123,7 +123,7 @@ final class LinkTest extends LinkFixture {
             assertEquals(40 + 2 * i, link.position().pixelX());
         }
 
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         int[] room = emptyRoomObjectsArea();
         for (int row = 0; row < 8; row++)
             room[ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_TREE_TOP_LEFT;
@@ -171,7 +171,7 @@ final class LinkTest extends LinkFixture {
     @Test
     void exposesTheRomSpeedBytesWrittenBeforeEntityAnimation() throws IOException {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Link link = linkInRoom(inputConfig, romTables, emptyRoomObjectsArea());
 
         link.position().applyRomSpeed(0xF0, 0x08);
@@ -253,7 +253,7 @@ final class LinkTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
         playerState.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
         Link link = new LinkTestBuilder()
@@ -288,7 +288,7 @@ final class LinkTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         PlayerState playerState = new PlayerState();
         playerState.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = 0x00;
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -534,7 +534,7 @@ final class LinkTest extends LinkFixture {
 
     @Test
     void romInteractiveMotionBlockStopsOneFrameWithoutInventingAnAnimationState() throws Exception {
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = new LinkTestBuilder()
@@ -567,7 +567,7 @@ final class LinkTest extends LinkFixture {
 
     @Test
     void explicitRomFallenPoseUsesAnimationState6A() throws Exception {
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
@@ -590,7 +590,7 @@ final class LinkTest extends LinkFixture {
     @Test
     void applyRomFinalPositionBypassesBlockedCollisionAndKeepsFractionalPosition() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 5 * ROOM_OBJECT_ROW_STRIDE + 5] = OBJECT_TREE_TOP_LEFT;
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -619,7 +619,7 @@ final class LinkTest extends LinkFixture {
     @Test
     void sideViewPlatformContactPreservesFractionsWithoutForcingReleasedInput() throws Exception {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -715,7 +715,7 @@ final class LinkTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
         Link link = new LinkTestBuilder()

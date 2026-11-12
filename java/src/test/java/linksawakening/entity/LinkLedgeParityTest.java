@@ -177,7 +177,7 @@ final class LinkLedgeParityTest {
         try (var in = TestRom.open()) {
             rom = in.readAllBytes();
         }
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         int[] room = new int[256];

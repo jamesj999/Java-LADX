@@ -42,7 +42,7 @@ final class LinkAdditionalTest extends LinkFixture {
     void grabbingAndPullingHoldFacingAndPositionUntilReleased() throws Exception {
         InputState input = new InputState();
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setRoom(emptyRoomObjectsArea());
         Link link = new LinkTestBuilder()
@@ -138,7 +138,7 @@ final class LinkAdditionalTest extends LinkFixture {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
         Link link = new LinkTestBuilder()
@@ -187,7 +187,7 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void tallGrassUsesWorldFramePhaseAfterPausedLinkUpdates() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] objects = emptyRoomObjectsArea();
         objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
@@ -212,7 +212,7 @@ final class LinkAdditionalTest extends LinkFixture {
     @Test
     void tallGrassSlowsLinkMovement() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
 
         Link normal = linkInRoom(inputConfig, romTables, emptyRoomObjectsArea());
@@ -234,10 +234,10 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void lavaIsPassableAndStartsRecoveryWithoutFlippers() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         int lava = -1;
         for (int id = 0; id < 256; id++) {
-            if (tables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_INDOORS1, id) == PhysicsFlags.LAVA) {
+            if (tables.physicsTables().objectPhysicsFlag(RomTables.PHYSICS_TABLE_INDOORS1, id) == PhysicsFlags.LAVA) {
                 lava = id;
                 break;
             }
@@ -262,7 +262,7 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void recoveryUsesRomCountdownPosesDamageConditionAndMapEntry() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         for (int object : new int[] {6, OBJECT_DEEP_WATER}) {
             PlayerState player = new PlayerState();
@@ -291,7 +291,7 @@ final class LinkAdditionalTest extends LinkFixture {
     @Test
     void reportsRomCollisionTypeForEachBlockedDirectionAndResetsNextUpdate() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         CollisionAttempt[] attempts = {
             new CollisionAttempt(Direction.UP.javaIndex(), 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
@@ -343,7 +343,7 @@ final class LinkAdditionalTest extends LinkFixture {
     @Test
     void blocksLinkFromEnteringAMismatchedRaisedSwitchBlock() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
@@ -373,7 +373,7 @@ final class LinkAdditionalTest extends LinkFixture {
     @Test
     void allowsLinkToEnterAMatchingRaisedSwitchBlock() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
@@ -402,7 +402,7 @@ final class LinkAdditionalTest extends LinkFixture {
     @Test
     void standingOverrideLetsLinkLeaveAMismatchedSwitchBlock() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE] = 0xDC;
@@ -431,7 +431,7 @@ final class LinkAdditionalTest extends LinkFixture {
 
     @Test
     void singleProbeCollisionSlidesAlongCornersOnBothAxes() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         // direction, start X/Y, expected X/Y. One solid tile at (32,32).
         int[][] cases = {
             {Direction.DOWN.javaIndex(), 25, 16, 24, 16},

@@ -21,7 +21,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
     @Test
     void deepWaterStartsRecoveryWithoutFlippersAndSwimmingWithFlippers() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
@@ -55,7 +55,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
 
     @Test
     void waterEntryQueuesRomPositionSplashForBothBranchesAndGatesRecovery() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         for (boolean flippers : new boolean[] {false, true}) {
             PlayerState player = new PlayerState();
             player.progression().setHasFlippers(flippers);
@@ -85,7 +85,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
 
     @Test
     void raftAndSlowWaterCurrentBypassDrowningEntry() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         int[] objects = emptyRoomObjectsArea();
         objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects);
@@ -105,7 +105,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
     @Test
     void swimmingUsesRomMotionAnimationAndReturnsToDefaultOnNormalGround() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
@@ -135,7 +135,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
     @Test
     void newlyPressedBEntersTheRomDivingSwimmingAnimation() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         PlayerState playerState = new PlayerState();

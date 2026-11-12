@@ -72,9 +72,13 @@ final class LinkJumpSoundTest {
             int object = -1;
             for (int id = 0; id < 256; id++) {
                 if (id != 0x61
-                        && f.tables.objectPhysicsFlag(
-                                        indoor ? RomTables.PHYSICS_TABLE_INDOORS1 : RomTables.PHYSICS_TABLE_OVERWORLD,
-                                        id)
+                        && f.tables
+                                        .physicsTables()
+                                        .objectPhysicsFlag(
+                                                indoor
+                                                        ? RomTables.PHYSICS_TABLE_INDOORS1
+                                                        : RomTables.PHYSICS_TABLE_OVERWORLD,
+                                                id)
                                 == physics) {
                     object = id;
                     break;
@@ -133,7 +137,7 @@ final class LinkJumpSoundTest {
             try (var in = TestRom.open()) {
                 rom = in.readAllBytes();
             }
-            tables = RomTables.loadFromRom(rom);
+            tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
             var collision = new OverworldCollision(tables);
             if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
             Arrays.fill(room, 0xFF);
