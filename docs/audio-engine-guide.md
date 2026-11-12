@@ -329,8 +329,8 @@ When adding UI:
 
 ## Useful Files
 
-- Design spec: `docs/history/superpowers/specs/2026-04-28-music-engine-design.md`
-- Implementation plan history: `docs/history/superpowers/plans/2026-04-28-music-engine.md`
+- Design spec: `docs/archive/history/superpowers/specs/2026-04-28-music-engine-design.md`
+- Implementation plan history: `docs/archive/history/superpowers/plans/2026-04-28-music-engine.md`
 - Music package tests: `java/src/test/java/linksawakening/audio/music`
 - APU tests: `java/src/test/java/linksawakening/audio/apu`
 - Browser tests: `java/src/test/java/linksawakening/audio/browser`

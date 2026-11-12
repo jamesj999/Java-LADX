@@ -91,7 +91,7 @@ refer to the supported English DX v1.0 layout. Use symbols as described in
 
 ## Entities
 
-Room entity streams use bank `$16` pointer tables at `$4000`, `$4200`, `$4400`, and `$4600`. Preserve source order, sixteen slots, the first-eight cleared mask and unsigned types. Room sprite groups come from bank `$20`; standard sheets occupy VRAM tiles `$40`, `$50`, `$60`, `$70`. Object palettes start at `$21:5518`, followed by the conditional Eagle’s Tower entry. Unsupported handlers must remain explicit. See the [preserved verification log](history/reconstruction-log.md) for handler-specific tables and bounded verification results.
+Room entity streams use bank `$16` pointer tables at `$4000`, `$4200`, `$4400`, and `$4600`. Preserve source order, sixteen slots, the first-eight cleared mask and unsigned types. Room sprite groups come from bank `$20`; standard sheets occupy VRAM tiles `$40`, `$50`, `$60`, `$70`. Object palettes start at `$21:5518`, followed by the conditional Eagle’s Tower entry. Unsupported handlers must remain explicit. See the [preserved verification log](archive/history/reconstruction-log.md) for handler-specific tables and bounded verification results.
 
 ## Audio
 
