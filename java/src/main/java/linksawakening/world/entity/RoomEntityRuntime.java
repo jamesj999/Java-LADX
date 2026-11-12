@@ -30,9 +30,6 @@ public final class RoomEntityRuntime
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
     final EntityFrameExecution frameExecution = new EntityFrameExecution(this, null);
-    /** Compatibility for world.room.RoomEntityBridge. */
-    @Deprecated
-    public static final int BOOMERANG_SFX_COUNTER_PERIOD = EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
 
     private final EntityPlayerCommands playerCommands =
             new EntityPlayerCommands(EntityPlayerCommandsServices.bind(this));
@@ -154,56 +151,6 @@ public final class RoomEntityRuntime
 
     public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
         return new RoomEntityRuntimeBuilder(initial);
-    }
-
-    /** Compatibility for world.room.RoomSessionState1Test, RoomSessionProjectilesTest and RoomSessionTestSupport; use builder. */
-    @Deprecated
-    public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
-        return builder(initial).build();
-    }
-
-    /** Compatibility for world.room reward, story and door tests; use builder for new callers. */
-    @Deprecated
-    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
-        return builder(initial).indoorRoom(indoorRoom).build();
-    }
-
-    /** Compatibility for world.room.RoomSessionState1Test, RoomSessionProjectilesTest and RoomSessionTestSupport; use builder. */
-    @Deprecated
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables) {
-        return builder(initial)
-                .indoorRoom(indoorRoom)
-                .randomByteSupplier(randomByteSupplier)
-                .spriteHandlers(spriteHandlers)
-                .enemyCombatTables(enemyCombatTables)
-                .build();
-    }
-
-    /** Compatibility for world.room.RoomActiveRoomInitializer and RoomFollowerSynchronizer; use builder for new callers. */
-    @Deprecated(forRemoval = true)
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables,
-            ChestContentsTable chestContentsTable,
-            RomTables romTables,
-            byte[] romData) {
-        return builder(initial)
-                .indoorRoom(indoorRoom)
-                .randomByteSupplier(randomByteSupplier)
-                .spriteHandlers(spriteHandlers)
-                .enemyCombatTables(enemyCombatTables)
-                .chestContentsTable(chestContentsTable)
-                .romTables(romTables)
-                .rom(romData == null ? null : new Rom(romData))
-                .build();
     }
 
     /** Frame-only inputs using the runtime RNG, including its carried state. */

@@ -157,7 +157,9 @@ final class RoomSessionRewards2Test {
         }
         session.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                        .indoorRoom(true)
+                        .build());
         session.entities().tickEntities(0, 0x50, 0x50);
 
         assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
@@ -224,7 +226,9 @@ final class RoomSessionRewards2Test {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             dyingBossSlots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(dyingBossSlots), true);
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(dyingBossSlots))
+                .indoorRoom(true)
+                .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setGeniePrivateState1ForTest(runtime, 0, 1);
         session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
 

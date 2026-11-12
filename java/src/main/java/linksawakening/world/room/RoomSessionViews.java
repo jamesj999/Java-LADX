@@ -224,7 +224,7 @@ final class RoomSessionViews {
                     .get()
                     .entityRuntime
                     .debug()
-                    .setColorShellStateForTest(slot, state, transitionCountdown, direction, speedX, speedY);
+                    .setColorShellState(slot, state, transitionCountdown, direction, speedX, speedY);
         }
     }
 
@@ -237,7 +237,7 @@ final class RoomSessionViews {
 
     void setEntityIgnoreHitsCountdownForTest(int slot, int value) {
         if (dependencies.entityBridge().get().entityRuntime != null) {
-            dependencies.entityBridge().get().entityRuntime.debug().setEnemyIgnoreHitsCountdownForTest(slot, value);
+            dependencies.entityBridge().get().entityRuntime.debug().setEnemyIgnoreHitsCountdown(slot, value);
         }
     }
 
@@ -300,7 +300,7 @@ final class RoomSessionViews {
                 ? null
                 : dependencies.location().activeRoom.entities().slots().get(slot);
         return entity != null && EntityTypeRules.isDungeonWarpType(entity.type())
-                ? dependencies.entityBridge().get().entityRuntime.inspection().warpTransitionCountdownForTest(slot)
+                ? dependencies.entityBridge().get().entityRuntime.inspection().warpTransitionCountdown(slot)
                 : dependencies.entityBridge().get().entityRuntime.enemies().transitionCountdown(slot);
     }
 

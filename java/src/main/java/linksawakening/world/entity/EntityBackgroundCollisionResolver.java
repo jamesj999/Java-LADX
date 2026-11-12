@@ -3,7 +3,6 @@ package linksawakening.world.entity;
 import java.util.Objects;
 import linksawakening.rom.CollisionTables;
 import linksawakening.rom.EntityPropertyTables;
-import linksawakening.rom.RomTables;
 
 /** Resolves the ROM's entity/background collision result for one sampled object. */
 public final class EntityBackgroundCollisionResolver {
@@ -50,12 +49,6 @@ public final class EntityBackgroundCollisionResolver {
 
     private final CollisionTables collisionTables;
     private final EntityPropertyTables entityProperties;
-
-    /** @deprecated External caller: world.room.RoomSessionContext; pass the themed tables. */
-    @Deprecated(forRemoval = true)
-    public EntityBackgroundCollisionResolver(RomTables romTables) {
-        this(Objects.requireNonNull(romTables, "romTables").collisionTables(), romTables.entityPropertyTables());
-    }
 
     public EntityBackgroundCollisionResolver(CollisionTables collisionTables, EntityPropertyTables entityProperties) {
         this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");

@@ -247,8 +247,9 @@ final class GameplayRouteStage12 {
         route.session
                 .components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(
-                        RoomEntityRuntime.from(new RoomEntitySnapshot(route.clearedBossSlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(route.clearedBossSlots))
+                        .indoorRoom(true)
+                        .build());
         route.session.entities().tickEntities(route.frame++, route.link.pixelX(), route.link.pixelY());
         assertEquals(0, route.session.components.roomSessionViews().activeRoomEventForTest());
         route.link.setPixelPosition(0x50, 0x50);

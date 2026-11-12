@@ -56,7 +56,7 @@ final class RoomEntityBridge {
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay) {
             dependencies.entityFrame().boomerangSoundCounter = (dependencies.entityFrame().boomerangSoundCounter + 1)
-                    % RoomEntityRuntime.BOOMERANG_SFX_COUNTER_PERIOD;
+                    % linksawakening.world.entity.EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
         }
         // Main may run several world frames without an entity pass during a
         // transition. The next pass must use that clock without ticking twice.

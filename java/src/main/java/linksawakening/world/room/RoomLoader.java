@@ -26,7 +26,7 @@ public final class RoomLoader {
         this.parser = new RoomObjectParser(romData);
         this.tilemapBuilder = new RoomTilemapBuilder(romData);
         this.paletteLoader = new RoomPaletteLoader(romData);
-        this.entityLoader = new EntityRoomLoader(romData);
+        this.entityLoader = new EntityRoomLoader(romData == null ? null : new linksawakening.rom.Rom(romData));
         this.entitySpriteCatalog = new EntitySpriteCatalog(romData);
     }
 

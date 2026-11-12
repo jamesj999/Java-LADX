@@ -20,12 +20,6 @@ public final class RomEnemyCombatTables {
     private final int[] contactDamageByGroup;
     private final int[] bowWowEatableByEntity;
 
-    /** @deprecated External callers: world.room.RoomSessionContext and RoomSessionTestSupport; pass a Rom to the typed constructor. */
-    @Deprecated(forRemoval = true)
-    public RomEnemyCombatTables(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
-    }
-
     public RomEnemyCombatTables(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         healthGroupByEntity = loadUnsigned(romData, RomSymbols.HealthGroupForEntity, HEALTH_GROUP_COUNT);

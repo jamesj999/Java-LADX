@@ -38,7 +38,7 @@ final class RoomEntityCombatBridge {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .resolveCombat(
+                .resolveCombat(new linksawakening.world.entity.EnemyCombatFrame(
                         frameCounter,
                         linkEntityX,
                         linkEntityY,
@@ -50,7 +50,7 @@ final class RoomEntityCombatBridge {
                         swordWidth,
                         swordY,
                         swordHeight,
-                        attackContext);
+                        attackContext));
         dependencies
                 .location()
                 .activeRoom
@@ -168,7 +168,7 @@ final class RoomEntityCombatBridge {
                 .entityBridge()
                 .get()
                 .entityRuntime
-                .collectIfNeeded(
+                .collectIfNeeded(new linksawakening.world.entity.EntityPickupFrame(
                         frameCounter,
                         linkEntityX,
                         linkEntityY,
@@ -180,7 +180,7 @@ final class RoomEntityCombatBridge {
                         swordX,
                         swordWidth,
                         swordY,
-                        swordHeight);
+                        swordHeight));
         if (event == null) {
             return null;
         }

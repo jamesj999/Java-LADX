@@ -371,7 +371,9 @@ final class RoomSessionDoors1Test {
         }
         full.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(occupiedSlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(occupiedSlots))
+                        .indoorRoom(true)
+                        .build());
         for (int tick = 0; tick < 64; tick++) {
             assertTrue(full.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08));
         }
@@ -442,7 +444,9 @@ final class RoomSessionDoors1Test {
         }
         session.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                        .indoorRoom(true)
+                        .build());
 
         session.entities().tickEntities(0, 0x50, 0x50);
 
@@ -469,7 +473,9 @@ final class RoomSessionDoors1Test {
         }
         session.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                        .indoorRoom(true)
+                        .build());
 
         session.entities().tickEntities(0, 0x50, 0x50);
 
@@ -496,7 +502,9 @@ final class RoomSessionDoors1Test {
         }
         session.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(emptySlots))
+                        .indoorRoom(true)
+                        .build());
 
         session.entities().tickEntities(0, 0x50, 0x50);
 

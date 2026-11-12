@@ -53,7 +53,8 @@ final class RoomSessionProjectilesTest {
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         runtime.configuration().setGroundInteractionSideScrolling(true);
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0x3B);
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionSequenceCounterForTest(runtime, 0x04);

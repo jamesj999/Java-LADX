@@ -36,12 +36,6 @@ public final class EnemyDropResolver {
     private final int[] dropTableRandom;
     private final int[] thresholdLowHealthTable;
 
-    /** @deprecated External callers: world.room.RoomSessionContext and RoomSessionTestSupport; pass a Rom to the typed constructor. */
-    @Deprecated(forRemoval = true)
-    public EnemyDropResolver(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
-    }
-
     public EnemyDropResolver(Rom romData) {
         Objects.requireNonNull(romData, "ROM data cannot be null");
         destroyedHealthGroupOffsets = loadTable(

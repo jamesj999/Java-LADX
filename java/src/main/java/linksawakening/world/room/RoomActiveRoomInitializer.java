@@ -35,15 +35,15 @@ final class RoomActiveRoomInitializer {
         configureDoorAndEventState();
         dependencies.entityBridge().get().entityRuntime = entities == null
                 ? null
-                : RoomEntityRuntime.from(
-                        entities,
-                        dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                        dependencies.entityRandomByteSource(),
-                        dependencies.entitySpriteHandlerCatalog(),
-                        dependencies.enemyCombatTables(),
-                        dependencies.chestContentsTable(),
-                        dependencies.romTables(),
-                        dependencies.romData());
+                : RoomEntityRuntime.builder(entities)
+                        .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
+                        .randomByteSupplier(dependencies.entityRandomByteSource())
+                        .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
+                        .enemyCombatTables(dependencies.enemyCombatTables())
+                        .chestContentsTable(dependencies.chestContentsTable())
+                        .romTables(dependencies.romTables())
+                        .rom(dependencies.romData() == null ? null : new linksawakening.rom.Rom(dependencies.romData()))
+                        .build();
         if (dependencies.entityBridge().get().entityRuntime != null) {
             configureRuntimeWorld();
             configureRuntimeInputs();

@@ -326,36 +326,37 @@ final class RoomSessionRewards1Test {
     void harvestingHidingSlimeKeyPublishesItsLeafCountAndCompletesTheRoom() {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0xC6);
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(List.of(
-                new RoomEntity(
-                        0,
-                        0,
-                        0x3C,
-                        0x40,
-                        0x50,
-                        EntityStatus.INIT,
-                        EntitySpriteDefinition.unsupported(0x3C),
-                        -1,
-                        0,
-                        0,
-                        0,
-                        -1,
-                        false),
-                RoomEntity.disabled(1),
-                RoomEntity.disabled(2),
-                RoomEntity.disabled(3),
-                RoomEntity.disabled(4),
-                RoomEntity.disabled(5),
-                RoomEntity.disabled(6),
-                RoomEntity.disabled(7),
-                RoomEntity.disabled(8),
-                RoomEntity.disabled(9),
-                RoomEntity.disabled(10),
-                RoomEntity.disabled(11),
-                RoomEntity.disabled(12),
-                RoomEntity.disabled(13),
-                RoomEntity.disabled(14),
-                RoomEntity.disabled(15))));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(List.of(
+                        new RoomEntity(
+                                0,
+                                0,
+                                0x3C,
+                                0x40,
+                                0x50,
+                                EntityStatus.INIT,
+                                EntitySpriteDefinition.unsupported(0x3C),
+                                -1,
+                                0,
+                                0,
+                                0,
+                                -1,
+                                false),
+                        RoomEntity.disabled(1),
+                        RoomEntity.disabled(2),
+                        RoomEntity.disabled(3),
+                        RoomEntity.disabled(4),
+                        RoomEntity.disabled(5),
+                        RoomEntity.disabled(6),
+                        RoomEntity.disabled(7),
+                        RoomEntity.disabled(8),
+                        RoomEntity.disabled(9),
+                        RoomEntity.disabled(10),
+                        RoomEntity.disabled(11),
+                        RoomEntity.disabled(12),
+                        RoomEntity.disabled(13),
+                        RoomEntity.disabled(14),
+                        RoomEntity.disabled(15))))
+                .build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xC6);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0xCC, 0, 0x40, 0x50));
         session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
@@ -525,7 +526,9 @@ final class RoomSessionRewards1Test {
                 .toList();
         session.components
                 .roomSessionViews()
-                .replaceEntityRuntimeForTest(RoomEntityRuntime.from(new RoomEntitySnapshot(hazardsOnly), true));
+                .replaceEntityRuntimeForTest(RoomEntityRuntime.builder(new RoomEntitySnapshot(hazardsOnly))
+                        .indoorRoom(true)
+                        .build());
         session.entities().tickEntities(1, 56, 74);
         assertEquals(0, session.components.roomSessionViews().activeRoomEventForTest());
         assertEquals(0, session.rooms().activeRoom().shutterDoorMask());

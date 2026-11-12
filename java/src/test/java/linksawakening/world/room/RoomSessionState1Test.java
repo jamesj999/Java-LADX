@@ -79,7 +79,8 @@ final class RoomSessionState1Test {
                                     false)
                             : RoomEntity.disabled(slot));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(new RoomEntitySnapshot(slots));
+        RoomEntityRuntime runtime =
+                RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
         linksawakening.world.entity.EntityRuntimeTestAccess.setEntityRoomIdForTest(runtime, 0xCE);
         session.components.roomSessionViews().replaceEntityRuntimeForTest(runtime);
 

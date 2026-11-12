@@ -60,13 +60,16 @@ final class RoomSessionContext {
         values.roomTilemapBuilder = new RoomTilemapBuilder(romData);
         values.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
         values.followingNpcEntitySpawner = new FollowingNpcEntitySpawner(values.entitySpriteHandlerCatalog);
-        values.enemyCombatTables = new RomEnemyCombatTables(romData);
+        values.enemyCombatTables =
+                new RomEnemyCombatTables(romData == null ? null : new linksawakening.rom.Rom(romData));
         values.chestContentsTable = new ChestContentsTable(romData);
         values.dungeonRoomEventTable = new DungeonRoomEventTable(romData);
         values.romTables = RomTables.loadFromRom(romData);
-        values.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(values.romTables);
-        values.enemyDropResolver = new EnemyDropResolver(romData);
-        values.entityCollisionPointProbe = new EntityCollisionPointProbe(values.romTables);
+        values.entityBackgroundCollisionResolver = new EntityBackgroundCollisionResolver(
+                values.romTables.collisionTables(), values.romTables.entityPropertyTables());
+        values.enemyDropResolver = new EnemyDropResolver(romData == null ? null : new linksawakening.rom.Rom(romData));
+        values.entityCollisionPointProbe = new EntityCollisionPointProbe(
+                values.romTables.collisionTables(), values.romTables.entityPropertyTables());
         values.overworldBushInteraction = new OverworldBushInteraction(romData, values.romTables);
     }
 

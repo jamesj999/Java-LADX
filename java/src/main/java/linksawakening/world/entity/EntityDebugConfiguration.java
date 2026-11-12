@@ -15,22 +15,9 @@ public final class EntityDebugConfiguration {
         this.runtime = runtime;
     }
 
-    /** Compatibility for world.room.RoomSessionViews. */
-    @Deprecated
-    public void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
-        setEnemyIgnoreHitsCountdown(slot, value);
-    }
-
     public void setEnemyIgnoreHitsCountdown(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(slot, value);
-    }
-
-    /** Compatibility for world.room.RoomSessionViews. */
-    @Deprecated
-    public void setColorShellStateForTest(
-            int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        setColorShellState(slot, state, transitionCountdown, direction, speedX, speedY);
     }
 
     public void setColorShellState(

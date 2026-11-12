@@ -35,22 +35,6 @@ public final class FollowingNpcEntitySpawner {
         this.spriteHandlers = spriteHandlers;
     }
 
-    /** Compatibility for world.room.RoomFollowerSynchronizer; use FollowingNpcSpawn. */
-    @Deprecated
-    public Result synchronize(
-            RoomEntitySnapshot initial,
-            FollowingNpcRoomContext room,
-            FollowingNpcState requestedState,
-            int linkX,
-            int linkY,
-            int linkZ,
-            int entityYOffset,
-            int linkDirection,
-            LinkPositionHistory history) {
-        return synchronize(new FollowingNpcSpawn(
-                initial, room, requestedState, linkX, linkY, linkZ, entityYOffset, linkDirection, history));
-    }
-
     public Result synchronize(FollowingNpcSpawn inputs) {
         return followingNpcEntitySpawnerFrameStep.run(this, inputs);
     }

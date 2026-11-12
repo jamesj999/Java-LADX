@@ -34,7 +34,7 @@ final class RoomFollowerSynchronizer {
                 dependencies.location().activeRoom.roomId());
         FollowingNpcEntitySpawner.Result result = dependencies
                 .followingNpcEntitySpawner()
-                .synchronize(
+                .synchronize(new linksawakening.world.entity.FollowingNpcSpawn(
                         dependencies.location().activeRoom.entities(),
                         room,
                         dependencies.followers().followingNpcState,
@@ -43,19 +43,19 @@ final class RoomFollowerSynchronizer {
                         dependencies.followers().followingLinkZ,
                         dependencies.followers().followingEntityYOffset,
                         dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingLinkPositionHistory);
+                        dependencies.followers().followingLinkPositionHistory));
         dependencies.followers().followingNpcState = result.state();
         dependencies.followers().followingNpcRoomNeedsSync = false;
         dependencies.location().activeRoom.replaceEntities(result.snapshot());
-        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.from(
-                result.snapshot(),
-                dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                dependencies.entityRandomByteSource(),
-                dependencies.entitySpriteHandlerCatalog(),
-                dependencies.enemyCombatTables(),
-                dependencies.chestContentsTable(),
-                dependencies.romTables(),
-                dependencies.romData());
+        dependencies.entityBridge().get().entityRuntime = RoomEntityRuntime.builder(result.snapshot())
+                .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
+                .randomByteSupplier(dependencies.entityRandomByteSource())
+                .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
+                .enemyCombatTables(dependencies.enemyCombatTables())
+                .chestContentsTable(dependencies.chestContentsTable())
+                .romTables(dependencies.romTables())
+                .rom(dependencies.romData() == null ? null : new linksawakening.rom.Rom(dependencies.romData()))
+                .build();
         configureFollowerWorld();
         configureFollowerCollision();
         configureFollowerInputs();
