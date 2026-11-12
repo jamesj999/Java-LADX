@@ -2,6 +2,7 @@ package linksawakening.vfx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -9,7 +10,7 @@ final class TransientVfxPoofTest {
 
     @Test
     void decodesTheRomPoofFramesAndOamOrigin() {
-        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(sheet);
 
         var small = renderer.renderPoof(0x40, 0x50, 0x03);

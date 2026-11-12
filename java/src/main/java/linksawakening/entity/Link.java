@@ -4,15 +4,11 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import java.util.Objects;
 import linksawakening.equipment.ItemRegistry;
-import linksawakening.equipment.RocsFeather;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
-import linksawakening.state.Direction;
-import linksawakening.state.GroundStatus;
-import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 
 /**
@@ -26,41 +22,10 @@ import linksawakening.state.PlayerState;
  * <p>The 16x16 AABB used for both rendering and collision has its origin at
  * Link's top-left.
  */
-public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
-
-    /** @deprecated Use {@link Direction#DOWN}. */
-    @Deprecated(forRemoval = true)
-    public static final int DIRECTION_DOWN = 0;
-    /** @deprecated Use {@link Direction#UP}. */
-    @Deprecated(forRemoval = true)
-    public static final int DIRECTION_UP = 1;
-    /** @deprecated Use {@link Direction#LEFT}. */
-    @Deprecated(forRemoval = true)
-    public static final int DIRECTION_LEFT = 2;
-    /** @deprecated Use {@link Direction#RIGHT}. */
-    @Deprecated(forRemoval = true)
-    public static final int DIRECTION_RIGHT = 3;
+public final class Link implements linksawakening.equipment.RocsFeather.JumpTarget {
 
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
-    /** @deprecated Use {@link GroundStatus#NORMAL}. */
-    @Deprecated(forRemoval = true)
-    public static final int GROUND_STATUS_NORMAL = 0x00;
-    /** @deprecated Use {@link GroundStatus#PIT}. */
-    @Deprecated(forRemoval = true)
-    public static final int GROUND_STATUS_PIT = 0x07;
-    /** @deprecated Use {@link LinkMotionState#DEFAULT}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_DEFAULT = 0x00;
-    /** @deprecated Use {@link LinkMotionState#PASS_OUT}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_PASS_OUT = 0x07;
-    /** @deprecated Use {@link LinkMotionState#SWIMMING}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_SWIMMING = 0x01;
-    /** @deprecated Use {@link LinkMotionState#RECOVER}. */
-    @Deprecated(forRemoval = true)
-    public static final int LINK_MOTION_RECOVER = 0x08;
 
     public Link(
             InputState inputState,
@@ -76,10 +41,8 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
                 romTables,
                 collision,
                 spriteSheet,
-                playerState,
-                itemRegistry,
-                GameplaySoundSink.none(),
-                LinkTunicPalette.greenCompatibility());
+                new linksawakening.entity.Link.Services(
+                        playerState, itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.greenCompatibility()));
     }
 
     public Link(
@@ -97,30 +60,8 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
                 romTables,
                 collision,
                 spriteSheet,
-                playerState,
-                itemRegistry,
-                soundSink,
-                LinkTunicPalette.greenCompatibility());
-    }
-    /** @deprecated Use the Services argument bundle overload. */
-    @Deprecated(forRemoval = true)
-    public Link(
-            InputState inputState,
-            InputConfig inputConfig,
-            RomTables romTables,
-            OverworldCollision collision,
-            LinkSpriteSheet spriteSheet,
-            PlayerState playerState,
-            ItemRegistry itemRegistry,
-            GameplaySoundSink soundSink,
-            LinkTunicPalette tunicPalette) {
-        this(
-                inputState,
-                inputConfig,
-                romTables,
-                collision,
-                spriteSheet,
-                new Services(playerState, itemRegistry, soundSink, tunicPalette));
+                new linksawakening.entity.Link.Services(
+                        playerState, itemRegistry, soundSink, LinkTunicPalette.greenCompatibility()));
     }
 
     public Link(
@@ -130,7 +71,28 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             OverworldCollision collision,
             LinkSpriteSheet spriteSheet,
             Services arguments) {
-        super(new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+
+        assembly = new LinkAssembly(
+                new LinkServices(inputState, inputConfig, romTables, collision, spriteSheet, arguments));
+        linkAnimator = assembly.linkAnimator.get();
+        linkSideView = assembly.linkSideView.get();
+        linkStateMachine = assembly.linkStateMachine.get();
+        linkEquipment = assembly.linkEquipment.get();
+        linkEntityEffects = assembly.linkEntityEffects.get();
+        linkMotion = assembly.linkMotion.get();
+        linkAirborne = assembly.linkAirborne.get();
+        linkSwimming = assembly.linkSwimming.get();
+        linkDamage = assembly.linkDamage.get();
+        linkAnimationState = assembly.linkAnimationState.get();
+        linkItemState = assembly.linkItemState.get();
+        linkGroundMotion = assembly.linkGroundMotion.get();
+        linkSignals = assembly.linkSignals.get();
+        linkRecovery = assembly.linkRecovery.get();
+        linkServices = assembly.linkServices.get();
+        linkControls = assembly.linkControls.get();
+        dialogGotItemSequence = assembly.dialogGotItemSequence.get();
+
+        roles = new LinkRoles(assembly);
     }
     /** Immutable water splash values. */
     public record WaterSplash(int romX, int romY) {}
@@ -150,14 +112,6 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
         if ((value & ~0xFF) != 0) {
             throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
         }
-    }
-
-    static int romDirectionForJavaDirection(int javaDirection) {
-        return Direction.fromJava(javaDirection).romIndex();
-    }
-
-    static int javaDirectionForRomDirection(int romDirection) {
-        return Direction.fromRom(romDirection).javaIndex();
     }
 
     /** Arguments shared by Link operations. */
@@ -182,5 +136,74 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
             for (int i = 0; i < values.length; i++) values[i] = new GrabFlags(i >>> 2, (i & 2) != 0, (i & 1) != 0);
             return values;
         }
+    }
+
+    final LinkAssembly assembly;
+    final LinkAnimator linkAnimator;
+    final LinkSideView linkSideView;
+    final LinkStateMachine linkStateMachine;
+    final LinkEquipment linkEquipment;
+    final LinkEntityEffects linkEntityEffects;
+    final LinkMotion linkMotion;
+    final LinkAirborne linkAirborne;
+    final LinkSwimming linkSwimming;
+    final LinkDamage linkDamage;
+    final LinkAnimationState linkAnimationState;
+    final LinkItemState linkItemState;
+    final LinkGroundMotion linkGroundMotion;
+    final LinkSignals linkSignals;
+    final LinkRecovery linkRecovery;
+    final LinkServices linkServices;
+    final LinkControls linkControls;
+    final DialogGotItemSequence dialogGotItemSequence;
+    private final LinkRoles roles;
+
+    /** Advances one frame through the retained motion orchestration. */
+    public void update() {
+        motion().update();
+    }
+
+    // External compatibility: world/room/GameplayRouteStage1 still passes Link as JumpTarget.
+    /** @deprecated Use {@code airborne().useRocsFeather()} or pass {@code airborne()} as JumpTarget. */
+    @Deprecated(forRemoval = true)
+    @Override
+    public void useRocsFeather() {
+        airborne().useRocsFeather();
+    }
+
+    public LinkSideViewRole sideView() {
+        return roles.sideView();
+    }
+
+    public LinkMotionRole motion() {
+        return roles.motion();
+    }
+
+    public LinkStatusRole status() {
+        return roles.status();
+    }
+
+    public LinkEquipmentRole equipment() {
+        return roles.equipment();
+    }
+
+    public LinkAnimationRole animation() {
+        return roles.animation();
+    }
+
+    public LinkActionsRole actions() {
+        return roles.actions();
+    }
+
+    public LinkPositionRole position() {
+        return roles.position();
+    }
+
+    public LinkAirborneRole airborne() {
+        return roles.airborne();
+    }
+
+    public LinkControlsRole controls() {
+        return roles.controls();
     }
 }

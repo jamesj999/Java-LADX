@@ -3,7 +3,9 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -19,7 +21,8 @@ final class RoomPaletteLoaderTest {
         rom[RomBank.romOffset(0x21, 0x5000)] = 0x1F;
         rom[RomBank.romOffset(0x21, 0x5000) + 1] = 0x00;
 
-        int[][] palettes = new RoomPaletteLoader(rom).loadOverworld(0x92);
+        int[][] palettes =
+                new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom))).loadOverworld(0x92);
 
         assertEquals(0xFF0000, palettes[0][0]);
     }
@@ -32,7 +35,8 @@ final class RoomPaletteLoaderTest {
         rom[palette + 1] = 0x00;
         int[][] fallback = {{0x123456, 0, 0, 0}};
 
-        int[][] result = new RoomPaletteLoader(rom).loadIndoor(0xFF, 0x00, fallback);
+        int[][] result = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)))
+                .loadIndoor(0xFF, 0x00, fallback);
 
         assertEquals(RomBank.decodeRgb555(0x001F), result[0][0]);
     }
@@ -53,7 +57,7 @@ final class RoomPaletteLoaderTest {
         writeColor(rom, 0x74A0 + 0x40, 0x7FFF);
         writeColor(rom, 0x6000, 0x4210);
         writeColor(rom, 0x6000 + 0x40, 0x56B5);
-        RoomPaletteLoader loader = new RoomPaletteLoader(rom);
+        RoomPaletteLoader loader = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
 
         assertEquals(RomBank.decodeRgb555(0x001F), loader.loadIndoor(0x10, 0xA3, null, 0, 0)[0][0]);
         assertEquals(RomBank.decodeRgb555(0x4210), loader.loadIndoor(0x10, 0xA3, null, 0, 1)[0][0]);
@@ -75,7 +79,7 @@ final class RoomPaletteLoaderTest {
     void dungeonBackgroundUsesRomPointersForTopDownAndSideViewRatherThanPreviousRoomColors() {
         byte[] rom = new byte[RomBank.romOffset(0x22, 0x4000)];
         int[][] fallback = {{0x123456, 0, 0, 0}};
-        RoomPaletteLoader loader = new RoomPaletteLoader(rom);
+        RoomPaletteLoader loader = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         for (int map = 0; map <= 8; map++) {
             for (boolean sideView : new boolean[] {false, true}) {
                 int table = RomBank.romOffset(0x21, (sideView ? 0x4401 : 0x43EF) + map * 2);
@@ -101,7 +105,7 @@ final class RoomPaletteLoaderTest {
         try (var input = linksawakening.testing.TestRom.open()) {
             rom = input.readAllBytes();
         }
-        RoomPaletteLoader loader = new RoomPaletteLoader(rom);
+        RoomPaletteLoader loader = new RoomPaletteLoader((rom == null ? (Rom) null : TestRoms.partial(rom)));
         int[][] baseBg = loader.loadIndoor(0, 0x17, null);
         int[][] baseObj = loader.loadIndoorObjectPalettes(0, 0x17);
         var entrance = loader.indoorTransition(0, 0x17, 4, baseBg, baseObj, null, null);

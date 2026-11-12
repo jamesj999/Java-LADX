@@ -11,7 +11,7 @@ import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 
-/** Per-invocation scratch for GenieBodyBehavior.advanceGenieBody; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for GenieBodyBehavior.advanceGenieBody; values are assigned in source order. */
 final class GenieBodyStep {
     private linksawakening.world.entity.GenieEntityController owner;
     private linksawakening.world.entity.RoomEntity body;
@@ -25,20 +25,7 @@ final class GenieBodyStep {
     private int direction;
     private int boundary;
 
-    GenieBodyStep(
-            linksawakening.world.entity.GenieEntityController owner,
-            linksawakening.world.entity.RoomEntity body,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier) {
-        this.owner = owner;
-        this.body = body;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-    }
+    GenieBodyStep() {}
 
     void run() {
         if (!prepareBody()) return;
@@ -289,5 +276,42 @@ final class GenieBodyStep {
                     2 + (runtime.physicsTables().readEntityInertia(slot) & 1));
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.GenieEntityController owner,
+            linksawakening.world.entity.RoomEntity body,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier) {
+        if (inUse) {
+            new GenieBodyStep().run(owner, body, frameCounter, linkEntityX, linkEntityY, randomByteSupplier);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        moved = null;
+        direction = 0;
+        boundary = 0;
+        this.owner = owner;
+        this.body = body;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.body = null;
+            this.randomByteSupplier = null;
+            this.runtime = null;
+            this.moved = null;
+        }
     }
 }

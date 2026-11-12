@@ -3,7 +3,7 @@ package linksawakening.world.entity;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 
 /** Exact collision and sword-collection rules shared by static pickable handlers. */
-public final class RoomEntityPickupRules {
+final class RoomEntityPickupRules {
     private static final int FIRST_PICKABLE_TYPE = 0x2D;
     private static final int LAST_PICKABLE_TYPE = 0x3D;
     private static final int IRON_MASKS_MASK = 0x32;

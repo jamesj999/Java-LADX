@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -91,8 +92,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void ghiniFamilyCombatRulesUseRomHealthDamageAndHitboxEntries() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
 
         for (int type : new int[] {0x10, 0x11, 0x12}) {
             assertTrue(RoomEntityCombatRules.supportsEnemyCollision(type));
@@ -113,8 +114,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void hidingAndGiantGhinisStartHiddenAndSkipGroundAndCombat() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         for (int type : new int[] {0x10, 0x11}) {
             RoomEntityRuntime runtime = RoomEntityRuntime.builder(
@@ -145,8 +146,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void typedGhiniPresentationReachesNormalFlipAndGiantRectangleOutput() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
 
         RoomEntityRuntime normalRuntime = RoomEntityRuntime.builder(
                         snapshot(ghiniEntity(catalog, 0, 0x12, EntityStatus.ACTIVE)))
@@ -175,8 +176,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void allGhiniTypesUseTheSharedRecoilPath() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
 
         for (int type : new int[] {0x10, 0x11, 0x12}) {
@@ -215,8 +216,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
     @Test
     void GhiniOptionsDisableGroundInteractionAndWallCollisionForEveryVariant() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(
                         ghiniEntity(catalog, 0, 0x10, EntityStatus.ACTIVE),
                         ghiniEntity(catalog, 1, 0x11, EntityStatus.ACTIVE),

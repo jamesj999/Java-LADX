@@ -13,6 +13,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,10 +33,10 @@ final class RocsFeatherTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        button.equip(player, PlayerState.INVENTORY_ROCS_FEATHER);
+        button.equip(player, InventoryItem.ROCS_FEATHER.romValue());
         ItemRegistry registry = new ItemRegistry();
         RecordingJumpTarget link = new RecordingJumpTarget();
-        registry.register(PlayerState.INVENTORY_ROCS_FEATHER, new RocsFeather(link));
+        registry.register(InventoryItem.ROCS_FEATHER.romValue(), new RocsFeather(link));
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         input.onKeyEvent(button.glfwKey, GLFW_PRESS);
@@ -50,13 +51,13 @@ final class RocsFeatherTest {
         A(GLFW_KEY_A) {
             @Override
             void equip(PlayerState player, int inventoryId) {
-                player.setItemA(inventoryId);
+                player.inventory().setItemA(inventoryId);
             }
         },
         B(GLFW_KEY_B) {
             @Override
             void equip(PlayerState player, int inventoryId) {
-                player.setItemB(inventoryId);
+                player.inventory().setItemB(inventoryId);
             }
         };
 

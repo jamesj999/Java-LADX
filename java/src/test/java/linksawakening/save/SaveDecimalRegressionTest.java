@@ -10,11 +10,11 @@ final class SaveDecimalRegressionTest {
     @Test
     void writingPlayerStateEncodesRomPackedDecimalFields() {
         PlayerState player = new PlayerState();
-        player.initializeNewGame(60, 60, 40);
-        player.setArrowCount(29);
-        player.setBombCount(37);
-        player.setMagicPowderCount(19);
-        player.setSeashells(20);
+        player.playerInitialization().initializeNewGame(60, 60, 40);
+        player.ammunition().setArrowCount(29);
+        player.ammunition().setBombCount(37);
+        player.ammunition().setMagicPowderCount(19);
+        player.progression().setSeashells(20);
         SaveRamImage image = SaveRamImage.empty();
         image.writePlayerState(0, player);
         byte[] bytes = image.bytes();
@@ -52,16 +52,17 @@ final class SaveDecimalRegressionTest {
     @Test
     void reloadPreservesWitchPowderAndFloatingArrowsAboveCapacity() {
         PlayerState original = new PlayerState();
-        original.initializeNewGame(30, 30, 20);
-        original.setMagicPowderCount(10);
-        original.applyWitchMagicPowderReward();
-        original.setArrowCount(30);
-        original.applyFloatingItemPickup(0xE5, 5);
+        original.playerInitialization().initializeNewGame(30, 30, 20);
+        original.ammunition().setMagicPowderCount(10);
+        original.playerRewards().applyWitchMagicPowderReward();
+        original.ammunition().setArrowCount(30);
+        original.playerRewards().applyFloatingItemPickup(0xE5, 5);
         SaveRamImage image = SaveRamImage.empty();
         image.writePlayerState(0, original);
         PlayerState restored = new PlayerState();
-        restored.applySavedGame(image.readSlot(0));
-        assertEquals(original.magicPowderCount(), restored.magicPowderCount());
-        assertEquals(original.arrowCount(), restored.arrowCount());
+        restored.playerSaveLoader().applySavedGame(image.readSlot(0));
+        assertEquals(
+                original.ammunition().magicPowderCount(), restored.ammunition().magicPowderCount());
+        assertEquals(original.ammunition().arrowCount(), restored.ammunition().arrowCount());
     }
 }

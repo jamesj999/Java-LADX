@@ -45,7 +45,7 @@ class RecordingShortcutTest {
             for (int i = 0; i < 18; i++) game.headlessFrame();
             assertEquals(18, restarted.frameCount());
             // A recording remains stoppable after moving to another screen.
-            game.context.router().startTitleScreenWithoutIntro();
+            game.router().startTitleScreenWithoutIntro();
             game.onKeyEvent(KEY_F9, PRESS);
             assertNull(game.recorder);
             game.onKeyEvent(KEY_F9, PRESS);

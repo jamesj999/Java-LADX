@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
 
 /**
  * Link's OAM sprite sheet, sourced from {@code LinkCharacter2Tiles} (base bank
@@ -42,7 +43,7 @@ public final class LinkSpriteSheet {
         this.attrsTable = attrsTable;
     }
 
-    public static LinkSpriteSheet loadFromRom(byte[] romData) {
+    public static LinkSpriteSheet loadFromRom(Rom romData) {
         Tile[] tiles = new Tile[LINK_CHARACTER_2_TILES_COUNT];
         int tilesOffset = romOffset(LINK_CHARACTER_2_TILES_BANK, LINK_CHARACTER_2_TILES_ADDR);
         for (int t = 0; t < LINK_CHARACTER_2_TILES_COUNT; t++) {
@@ -52,19 +53,19 @@ public final class LinkSpriteSheet {
         int[] stateTable = new int[STATE_TABLE_LENGTH * 2];
         int stateOffset = romOffset(STATE_TABLE_BANK, STATE_TABLE_ADDR);
         for (int i = 0; i < stateTable.length; i++) {
-            stateTable[i] = new Rom(romData).u8(RomAddress.fromOffset(stateOffset + i));
+            stateTable[i] = romData.u8(RomAddress.fromOffset(stateOffset + i));
         }
 
         int[] attrsTable = new int[STATE_TABLE_LENGTH * 2];
         int attrsOffset = romOffset(STATE_TABLE_BANK, ATTRS_TABLE_ADDR);
         for (int i = 0; i < attrsTable.length; i++) {
-            attrsTable[i] = new Rom(romData).u8(RomAddress.fromOffset(attrsOffset + i));
+            attrsTable[i] = romData.u8(RomAddress.fromOffset(attrsOffset + i));
         }
 
         int[] walkingStates = new int[6 * 8];
         int walkingOffset = RomSymbols.LinkAnimationsLists.offset();
         for (int i = 0; i < walkingStates.length; i++)
-            walkingStates[i] = new Rom(romData).u8(RomAddress.fromOffset(walkingOffset + i));
+            walkingStates[i] = romData.u8(RomAddress.fromOffset(walkingOffset + i));
         return new LinkSpriteSheet(tiles, stateTable, attrsTable, walkingStates);
     }
 
@@ -123,11 +124,11 @@ public final class LinkSpriteSheet {
         return tiles[tileIndex];
     }
 
-    private static Tile decodeTile(byte[] romData, int offset) {
+    private static Tile decodeTile(Rom romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2));
-            int highByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2 + 1));
+            int lowByte = romData.u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = romData.u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -140,5 +141,11 @@ public final class LinkSpriteSheet {
 
     private static int romOffset(int bank, int address) {
         return new RomAddress(bank, address).offset();
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static LinkSpriteSheet loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

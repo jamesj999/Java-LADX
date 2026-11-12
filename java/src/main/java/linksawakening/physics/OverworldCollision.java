@@ -1,5 +1,7 @@
 package linksawakening.physics;
 
+import linksawakening.rom.CollisionTables;
+import linksawakening.rom.PhysicsTables;
 import linksawakening.rom.RomTables;
 import linksawakening.world.object.SwitchBlockLinkInteraction;
 
@@ -16,7 +18,8 @@ public final class OverworldCollision {
     private static final int OBJECTS_PER_ROW = 10;
     private static final int OBJECTS_PER_COLUMN = 8;
 
-    private final RomTables romTables;
+    private final PhysicsTables physicsTables;
+    private final CollisionTables collisionTables;
     private int[] roomObjectsArea;
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
     private int switchBlocksState;
@@ -32,7 +35,8 @@ public final class OverworldCollision {
     public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 
     public OverworldCollision(RomTables romTables) {
-        this.romTables = romTables;
+        this.physicsTables = romTables == null ? null : romTables.physicsTables();
+        this.collisionTables = romTables == null ? null : romTables.collisionTables();
     }
 
     public void setRoom(int[] roomObjectsArea) {
@@ -123,10 +127,10 @@ public final class OverworldCollision {
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
-            return romTables.objectPhysicsFlag(physicsTableIndex, 0xFF);
+            return physicsTables.objectPhysicsFlag(physicsTableIndex, 0xFF);
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
     }
 
     /** Returns the raw room object sampled at an entity collision point. */
@@ -147,19 +151,19 @@ public final class OverworldCollision {
      */
     public boolean linkOnSlowGround(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.slowsWalking(flag);
     }
 
     public boolean linkOnNormalPit(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.isNormalPit(flag);
     }
 
     public boolean linkOnDeepWater(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return flag == PhysicsFlags.DEEP_WATER;
     }
 
@@ -175,7 +179,7 @@ public final class OverworldCollision {
             return null;
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         if (flag != 0x50 && flag != 0x51) {
             return null;
         }
@@ -195,7 +199,7 @@ public final class OverworldCollision {
      */
     public boolean refreshLinkGroundInteraction(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int physicsFlag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(objectId, physicsFlag, switchBlocksState);
         return linkStandingOnSwitchBlock;
     }
@@ -230,7 +234,7 @@ public final class OverworldCollision {
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
         return new GroundInteractionSample(
-                objectId, romTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
+                objectId, physicsTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
     }
 
     /**
@@ -258,7 +262,7 @@ public final class OverworldCollision {
         }
         int objectId = roomObjectsArea[areaIndex] & 0xFF;
         return new GroundInteractionSample(
-                objectId, romTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
+                objectId, physicsTables.objectPhysicsFlag(physicsTableIndex, objectId), objectLeft, objectTop);
     }
 
     private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY, boolean hasFlippers) {
@@ -272,7 +276,7 @@ public final class OverworldCollision {
             return false;
         }
         int rawId = roomObjectsArea[areaIndex] & 0xFF;
-        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, rawId);
+        int physicsFlag = physicsTables.objectPhysicsFlag(physicsTableIndex, rawId);
 
         // Link's source path handles $7C..$8F through Data_002_49CA: bit 3
         // of each collision-point coordinate selects one of the object's four
@@ -281,7 +285,7 @@ public final class OverworldCollision {
         // $8E/$8F beyond the entity FineCollisionShapes label.
         if (physicsFlag >= 0x7C && physicsFlag < 0x90) {
             int quadrant = ((pixelX >>> 3) & 0x01) | ((pixelY >>> 2) & 0x02);
-            return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
+            return collisionTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
         }
 
         if (physicsFlag == PhysicsFlags.DEEP_WATER
@@ -303,7 +307,7 @@ public final class OverworldCollision {
             return false;
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.isNormalPit(flag);
     }
 
@@ -331,6 +335,6 @@ public final class OverworldCollision {
         if (id < 0 || id > 0xFF) {
             return false;
         }
-        return PhysicsFlags.blocksWalking(romTables.objectPhysicsFlag(physicsTableIndex, id));
+        return PhysicsFlags.blocksWalking(physicsTables.objectPhysicsFlag(physicsTableIndex, id));
     }
 }

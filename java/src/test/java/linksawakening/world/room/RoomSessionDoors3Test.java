@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -18,18 +18,43 @@ final class RoomSessionDoors3Test {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 0x17);
         int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
-        var frame = new LinkGroundFrame(40, 40, false, false, false, false, 0, 0, 0);
+        var frame = new LinkGroundFrame(
+                40, 40, false, false, false, false, linksawakening.world.room.LinkMotion.stateForRomByte(0), 0, 0, 0);
         session.terrain().tickCrackedFloor(frame, false); // seed the previous ground probe
         session.rooms().activeRoom().roomObjectsArea()[index] = 0xDF;
         var sounds = new java.util.ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
-                .tickCrackedFloor(new LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
+                .tickCrackedFloor(
+                        new LinkGroundFrame(
+                                40,
+                                40,
+                                false,
+                                true,
+                                false,
+                                false,
+                                linksawakening.world.room.LinkMotion.stateForRomByte(0),
+                                0,
+                                0,
+                                0),
+                        false));
         assertEquals(0, session.components.terrain().crackedFloorCounter);
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
-                .tickCrackedFloor(new LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
+                .tickCrackedFloor(
+                        new LinkGroundFrame(
+                                40,
+                                40,
+                                true,
+                                false,
+                                false,
+                                false,
+                                linksawakening.world.room.LinkMotion.stateForRomByte(0),
+                                0,
+                                0,
+                                0),
+                        false));
         assertEquals(39, session.components.terrain().crackedFloorCounter); // airborne bypass retains timer
         assertTrue(sounds.isEmpty());
         assertEquals(0xDF, session.rooms().activeRoom().roomObjectsArea()[index]);
@@ -51,12 +76,13 @@ final class RoomSessionDoors3Test {
         var sounds = new java.util.ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
         for (int tick = 0; tick < 63; tick++) {
-            session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+            session.doors()
+                    .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
         assertTrue(sounds.isEmpty());
-        session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         assertEquals(java.util.List.of(GameplaySoundEvent.BLOCK_PUSH), sounds);
-        session.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+        session.doors().tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         assertEquals(1, sounds.size());
 
         RoomSession blocked = newSession();
@@ -64,7 +90,8 @@ final class RoomSessionDoors3Test {
         blocked.entityState().setColorShellSoundSink(sounds::add);
         blocked.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
         for (int tick = 0; tick < 64; tick++) {
-            blocked.doors().tryPushIndoorBlock(0x15, 0x28, Link.DIRECTION_RIGHT, 0x08);
+            blocked.doors()
+                    .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
         assertEquals(1, sounds.size());
     }

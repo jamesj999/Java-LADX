@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
@@ -467,8 +468,8 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
     @Test
     void romBurningGibdoBecomesAnActiveStalfosAfterItsTimerExpires() throws IOException {
         byte[] rom = romWithSwordResult(0x1F, 0xFE);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(0x1F)

@@ -48,9 +48,9 @@ public final class ChestContentsTable {
     public static final int CHEST_MESSAGE = 0x21;
     public static final int CHEST_ZOL = 0x22;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    public ChestContentsTable(byte[] romData) {
+    public ChestContentsTable(Rom romData) {
         this.romData = Objects.requireNonNull(romData, "romData");
     }
 
@@ -81,12 +81,12 @@ public final class ChestContentsTable {
         }
         int offset = tableAddress.plus(roomId).offset();
         if (offset < 0
-                || offset >= romData.length
+                || offset >= romData.size()
                 || offset >= tableAddress.plus(tableSize).offset()) {
             throw new IllegalArgumentException(
                     "Chest table is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     /** Mirrors func_014_5900's upgraded-sword replacement for secret-shell chests. */
@@ -148,11 +148,11 @@ public final class ChestContentsTable {
     private int readBoundedByte(RomAddress address, int tableSize, int index, String tableName) {
         int offset = address.plus(index).offset();
         int end = address.plus(tableSize).offset();
-        if (offset < 0 || offset >= romData.length || offset >= end) {
+        if (offset < 0 || offset >= romData.size() || offset >= end) {
             throw new IllegalArgumentException(
                     tableName + " is truncated at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
-        return new Rom(romData).u8(RomAddress.fromOffset(offset));
+        return romData.u8(RomAddress.fromOffset(offset));
     }
 
     private static void validateByte(int value, String label) {

@@ -20,7 +20,7 @@ final class LinkPitBehaviorAdditionalTest extends LinkFixture {
     @Test
     void rocsFeatherDoesNotStartDuringPitFallStateEvenIfFeetMoveOffPit() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         int[] roomObjects = emptyRoomObjectsArea();
         // Releasing direction preserves airborne momentum: land in column 4.
@@ -38,24 +38,24 @@ final class LinkPitBehaviorAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
         for (int i = 0; i < 12; i++) {
-            link.update();
+            link.motion().update();
         }
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
         int guard = 0;
-        while (link.isAirborne() && guard++ < 80) {
-            link.update();
+        while (link.airborne().isAirborne() && guard++ < 80) {
+            link.motion().update();
         }
         runUntilPitFallStarts(link);
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
 
-        link.setPixelPosition(0x10, 0x20);
-        link.useRocsFeather();
+        link.position().setPixelPosition(0x10, 0x20);
+        link.airborne().useRocsFeather();
 
-        assertFalse(link.isAirborne());
-        assertEquals(0, link.zVelocity());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0, link.airborne().zVelocity());
     }
 }

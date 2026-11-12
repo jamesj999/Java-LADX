@@ -1,11 +1,13 @@
 package linksawakening.ui;
 
+import java.util.Arrays;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomUtil;
 
-/** Inventory tilemap loader behavior and state. */
+/** Loads InventoryTilemap and InventoryAttrmap draw commands and their palette tables. */
 public final class InventoryTilemapLoader {
 
     public static final int WIDTH = 20;
@@ -39,25 +41,24 @@ public final class InventoryTilemapLoader {
         this.ocarinaPopupOam = ocarinaPopupOam;
     }
 
-    public static InventoryTilemapLoader loadFromRom(byte[] romData) {
-        int[] tilemap =
-                RomUtil.decodeBackgroundFromRom(romData, INVENTORY_TILEMAP_BANK, INVENTORY_TILEMAP_ADDR, WIDTH, 0x7F);
-        int[] attrmap =
-                RomUtil.decodeBackgroundFromRom(romData, INVENTORY_ATTRMAP_BANK, INVENTORY_ATTRMAP_ADDR, WIDTH, 0x00);
+    public static InventoryTilemapLoader loadFromRom(Rom romData) {
+        int[] tilemap = RomUtil.decodeBackgroundFromRom(
+                romData, new RomAddress(INVENTORY_TILEMAP_BANK, INVENTORY_TILEMAP_ADDR), WIDTH, 0x7F);
+        int[] attrmap = RomUtil.decodeBackgroundFromRom(
+                romData, new RomAddress(INVENTORY_ATTRMAP_BANK, INVENTORY_ATTRMAP_ADDR), WIDTH, 0x00);
         int[][] palettes = RomUtil.loadPalettesFromRom(
-                romData, INVENTORY_PALETTES_BANK, INVENTORY_PALETTES_ADDR, INVENTORY_BG_PALETTE_COUNT);
+                romData, new RomAddress(INVENTORY_PALETTES_BANK, INVENTORY_PALETTES_ADDR), INVENTORY_BG_PALETTE_COUNT);
         int[][] objectPalettes = RomUtil.loadPalettesFromRom(
                 romData,
-                INVENTORY_PALETTES_BANK,
-                INVENTORY_PALETTES_ADDR + INVENTORY_OBJECT_PALETTE_OFFSET,
+                new RomAddress(INVENTORY_PALETTES_BANK, INVENTORY_PALETTES_ADDR + INVENTORY_OBJECT_PALETTE_OFFSET),
                 INVENTORY_OBJECT_PALETTE_COUNT);
         int[] ocarinaPopupOam = new int[OCARINA_POPUP_BYTE_COUNT];
-        int popupOffset = RomUtil.romOffset(OCARINA_POPUP_BANK, OCARINA_POPUP_ADDR);
-        if (popupOffset < 0 || popupOffset > romData.length - ocarinaPopupOam.length) {
+        int popupOffset = RomBank.romOffset(OCARINA_POPUP_BANK, OCARINA_POPUP_ADDR);
+        if (popupOffset < 0 || popupOffset > romData.size() - ocarinaPopupOam.length) {
             throw new IllegalArgumentException("Ocarina popup data exceeds ROM bounds");
         }
         for (int index = 0; index < ocarinaPopupOam.length; index++) {
-            ocarinaPopupOam[index] = new Rom(romData).u8(RomAddress.fromOffset(popupOffset + index));
+            ocarinaPopupOam[index] = romData.u8(RomAddress.fromOffset(popupOffset + index));
         }
 
         if (tilemap.length < WIDTH * HEIGHT) {
@@ -103,5 +104,18 @@ public final class InventoryTilemapLoader {
             padded[i] = i < source.length ? source[i] : filler;
         }
         return padded;
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static InventoryTilemapLoader loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
+    }
+    /** Replaces synchronous renderer scratch buffers, including zero padding. */
+    void copyInto(int[] tiles, int[] attributes) {
+        Arrays.fill(tiles, 0);
+        Arrays.fill(attributes, 0);
+        System.arraycopy(baseTilemap, 0, tiles, 0, Math.min(tiles.length, baseTilemap.length));
+        System.arraycopy(attrmap, 0, attributes, 0, Math.min(attributes.length, attrmap.length));
     }
 }

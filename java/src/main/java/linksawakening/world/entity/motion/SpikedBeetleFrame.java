@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 /** Inputs for one motion update. */
-public record SpikedBeetleFrame(
+record SpikedBeetleFrame(
         linksawakening.world.entity.RoomEntity entity,
         int frameCounter,
         int linkEntityX,

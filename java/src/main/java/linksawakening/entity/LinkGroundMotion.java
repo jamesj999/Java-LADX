@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.LinkMotionState;
 
-/** LinkGroundMotion owns its Link state and operations. */
+/** Link ground motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkGroundMotion {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkDamage> linkDamage;
@@ -43,16 +43,16 @@ final class LinkGroundMotion {
         // and scrolling reuse this result while ordinary Link updates pause.
         grassGroundEffectActive = linkServices.get().collision != null
                 && !linkSideView.get().sideScrolling
-                && !linkAirborne.get().airborne
-                && !linkAirborne.get().fallingIntoPit
-                && linkStateMachine.get().motionState != LinkMotionState.UNSTUCKING
-                && linkMotion.get().accessRomEntityY() < 0x88
+                && !linkAirborne.get().elevation().airborne()
+                && !linkAirborne.get().pit().fallingIntoPit()
+                && linkStateMachine.get().status().motionState() != LinkMotionState.UNSTUCKING
+                && linkMotion.get().position().romEntityY() < 0x88
                 && linkServices
                                 .get()
                                 .collision
                                 .objectPhysicsFlagAtPoint(
-                                        linkMotion.get().accessPixelX() + 8,
-                                        linkMotion.get().accessPixelY() + 12)
+                                        linkMotion.get().position().pixelX() + 8,
+                                        linkMotion.get().position().pixelY() + 12)
                         == linksawakening.physics.PhysicsFlags.GRASS;
     }
 
@@ -71,7 +71,8 @@ final class LinkGroundMotion {
                         .get()
                         .collision
                         .linkOnSlowGround(
-                                linkMotion.get().pixelX(), linkMotion.get().pixelY())) {
+                                linkMotion.get().position().pixelX(),
+                                linkMotion.get().position().pixelY())) {
             return true;
         }
         // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the

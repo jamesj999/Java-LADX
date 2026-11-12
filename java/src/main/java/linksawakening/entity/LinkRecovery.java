@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.LinkMotionState;
 
-/** LinkRecovery owns its Link state and operations. */
+/** Link recovery state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkRecovery {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
@@ -48,7 +48,7 @@ final class LinkRecovery {
     }
 
     int accessGameOverStage() {
-        return accessIsPassingOut() ? linkStateMachine.get().accessRomPhysicsModifier() : 0;
+        return accessIsPassingOut() ? linkStateMachine.get().roomPhysics().accessRomPhysicsModifier() : 0;
     }
 
     int accessGameOverCountdown() {
@@ -56,7 +56,7 @@ final class LinkRecovery {
     }
 
     void accessPresentGameOverStage(int stage, int countdown) {
-        linkStateMachine.get().physicsModifier = stage;
+        linkStateMachine.get().roomPhysics().physicsModifier(stage);
         gameOverCountdown = countdown;
     }
 
@@ -77,27 +77,26 @@ final class LinkRecovery {
     }
 
     void accessFinishGameOver() {
-        linkStateMachine.get().resetTransientStateForDebug();
         passOutCountdown = -1;
         passOutPaletteEffect = 0;
         gameOverCountdown = 0;
     }
 
     void accessBeginPassOut() {
-        linkStateMachine.get().motionState = LinkMotionState.PASS_OUT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.PASS_OUT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         if (linkServices.get().playerState != null)
-            linkServices.get().playerState.setInvincibilityCounter(0);
+            linkServices.get().playerState.vitals().setInvincibilityCounter(0);
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
         linkAnimationState.get().movingThisFrame = false;
     }
 
     void accessPresentPassOut(int countdown, int animationState, int paletteEffect) {
         passOutCountdown = countdown;
         passOutPaletteEffect = paletteEffect;
-        linkAnimator.get().romAnimationStateOverride = animationState;
+        linkAnimator.get().romAnimationStateOverride(animationState);
     }
 }

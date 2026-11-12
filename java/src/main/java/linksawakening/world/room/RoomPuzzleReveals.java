@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.world.transition.Warp;
 
 final class RoomPuzzleReveals {
@@ -76,7 +77,7 @@ final class RoomPuzzleReveals {
             RoomLocationState location,
             OverworldCollision overworldCollision,
             RoomPuzzleState puzzles,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomTileRedraw> roomTileRedraw,
             java.util.function.Supplier<RoomTransitionController> roomTransitionController) {}

@@ -23,6 +23,17 @@ final class HardwareFrameTest {
     }
 
     @Test
+    void copiedBackgroundKeepsItsTransformWhenScratchIsReused() {
+        var frame = new HardwareFrame(true);
+        var scratch = frame.backgroundScratch();
+        scratch.withPaletteTransform(color -> color + 3, () -> scratch.backgroundPixel(0, 0, 1, PALETTE, false));
+        frame.copyBackgroundRows(scratch, 1);
+        scratch.reset();
+        scratch.withPaletteTransform(color -> color * 7, () -> scratch.backgroundPixel(0, 0, 1, PALETTE, false));
+        assertEquals(25, frame.backgroundRgb(0));
+    }
+
+    @Test
     void priorityDependsOnColorIndexAndMasterSwitch() {
         for (boolean enabled : new boolean[] {false, true})
             for (boolean bgPriority : new boolean[] {false, true})
@@ -115,17 +126,21 @@ final class HardwareFrameTest {
         int pixel = 128 * Framebuffer.WIDTH + 71, at = pixel * 4;
         byte[] legacy = hardware.clone();
         legacy[at + 2] = 11;
-        org.junit.jupiter.api.Assertions.assertTrue(frame.diagnostics().explainsHudPriority(legacy, hardware, pixel));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                TestHardwareFrames.diagnostics(frame).explainsHudPriority(legacy, hardware, pixel));
         legacy[at] = 1;
-        org.junit.jupiter.api.Assertions.assertFalse(frame.diagnostics().explainsHudPriority(legacy, hardware, pixel));
+        org.junit.jupiter.api.Assertions.assertFalse(
+                TestHardwareFrames.diagnostics(frame).explainsHudPriority(legacy, hardware, pixel));
         legacy[at] = 0;
         frame.closedHudTile(solid(3), 0xA9, 2, 64, 128, PALETTE);
         frame.compose(hardware);
         legacy[at + 2] = 44;
-        org.junit.jupiter.api.Assertions.assertTrue(frame.diagnostics().explainsHudPriority(legacy, hardware, pixel));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                TestHardwareFrames.diagnostics(frame).explainsHudPriority(legacy, hardware, pixel));
         frame.closedHudTile(solid(3), 0xA9, 0x82, 64, 128, PALETTE);
         frame.compose(hardware);
-        org.junit.jupiter.api.Assertions.assertFalse(frame.diagnostics().explainsHudPriority(legacy, hardware, pixel));
+        org.junit.jupiter.api.Assertions.assertFalse(
+                TestHardwareFrames.diagnostics(frame).explainsHudPriority(legacy, hardware, pixel));
     }
 
     @Test
@@ -162,7 +177,8 @@ final class HardwareFrameTest {
         frame.compose(hardware);
         byte[] legacy = hardware.clone();
         legacy[2] = 44;
-        org.junit.jupiter.api.Assertions.assertFalse(frame.diagnostics().explainsHudPriority(legacy, hardware, 0));
+        org.junit.jupiter.api.Assertions.assertFalse(
+                TestHardwareFrames.diagnostics(frame).explainsHudPriority(legacy, hardware, 0));
     }
 
     @Test
@@ -184,10 +200,10 @@ final class HardwareFrameTest {
         byte[] legacy = hardware.clone();
         legacy[pixel * 4 + 2] = 33;
         org.junit.jupiter.api.Assertions.assertTrue(
-                frame.diagnostics().explainsInventoryHiding(legacy, hardware, pixel));
+                TestHardwareFrames.diagnostics(frame).explainsInventoryHiding(legacy, hardware, pixel));
         legacy[pixel * 4 + 2] = 44;
         org.junit.jupiter.api.Assertions.assertFalse(
-                frame.diagnostics().explainsInventoryHiding(legacy, hardware, pixel));
+                TestHardwareFrames.diagnostics(frame).explainsInventoryHiding(legacy, hardware, pixel));
     }
 
     @Test

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -19,8 +20,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void terminalEnemyDeathSpawnsTopDownDropInReverseFreeSlotAndPreservesItUntilNextTick() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         int sourceX = 0x44;
         int sourceY = 0x58;
         int sourceZ = 0x07;
@@ -39,7 +40,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2E);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -95,8 +97,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void terminalEnemyDeathSpawnsSideScrollHeartWithRomDropConfiguration() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
@@ -112,7 +114,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2D);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -136,8 +139,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
     @Test
     void fullEntitySlotsStillUnloadSourceWhenDropCannotBeSpawned() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
             entities.add(new RoomEntityBuilder()
@@ -164,7 +167,8 @@ final class EntityRuntimeLifecycle3Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2E);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));

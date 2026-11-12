@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for WingedOctorokMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for WingedOctorokMotion.advance; values are assigned in source order. */
 final class WingedOctorokStep {
-    private final WingedOctorokMotion owner;
+    private WingedOctorokMotion owner;
     private linksawakening.world.entity.motion.WingedOctorokInteractionFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -32,11 +32,7 @@ final class WingedOctorokStep {
     private boolean jumped;
     private linksawakening.world.entity.RoomEntity updated;
 
-    WingedOctorokStep(
-            WingedOctorokMotion owner, linksawakening.world.entity.motion.WingedOctorokInteractionFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    WingedOctorokStep() {}
 
     linksawakening.world.entity.motion.WingedOctorokMotion.Update run() {
         if (!prepareMotion()) return completedResult;
@@ -191,5 +187,57 @@ final class WingedOctorokStep {
 
         updated = EntitySnapshots.withMotion(entity, x, y, renderedVariant, entity.entityFlipAttribute(), z, -1, false);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.WingedOctorokMotion.Update run(
+            WingedOctorokMotion owner, linksawakening.world.entity.motion.WingedOctorokInteractionFrame inputs) {
+        if (inUse) {
+            return new WingedOctorokStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        transitionCountdown = 0;
+        ignoreHitsCountdown = 0;
+        actionButtonAHeld = false;
+        actionButtonBHeld = false;
+        linkItemA = 0;
+        linkItemB = 0;
+        slot = 0;
+        wasInitialized = false;
+        renderedVariant = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        moved = null;
+        z = 0;
+        landed = false;
+        stateTwoHandler = false;
+        rockSpawn = null;
+        jumped = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.moved = null;
+            this.rockSpawn = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

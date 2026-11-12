@@ -1,62 +1,53 @@
 package linksawakening.app.screen;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
-import linksawakening.ui.FileMenuFrameSnapshot;
 
-/** Gameplay screen lifecycle. Callbacks belong to its owning session. */
+/**
+ * Owns queued key edges and gameplay dispatch for one session. One instance is retained for the owning
+ * session.
+ */
 public final class GameplayScreen implements Screen {
-    private final Supplier<FileMenuFrameSnapshot> gameOver;
-    private final Runnable tick;
-    private final BiConsumer<Integer, Integer> keys;
-    private final BooleanSupplier interceptFrameInput;
+    private final GameplayScreenDriver driver;
 
-    private record KeyEvent(int key, int action) {}
+    private int[] pendingKeys = new int[16];
+    private int[] reusableKeys = new int[16];
+    private int pendingCount;
 
-    private final List<KeyEvent> pendingKeys = new ArrayList<>();
     private boolean fileSaveRequested;
 
-    public GameplayScreen(Runnable tick, BiConsumer<Integer, Integer> keys) {
-        this(tick, keys, () -> null);
-    }
-
-    public GameplayScreen(Runnable tick, BiConsumer<Integer, Integer> keys, Supplier<FileMenuFrameSnapshot> gameOver) {
-        this(tick, keys, gameOver, () -> false);
-    }
-
-    public GameplayScreen(
-            Runnable tick,
-            BiConsumer<Integer, Integer> keys,
-            Supplier<FileMenuFrameSnapshot> gameOver,
-            BooleanSupplier interceptFrameInput) {
-        this.interceptFrameInput = interceptFrameInput;
-        this.gameOver = gameOver;
-        this.tick = tick;
-        this.keys = keys;
+    public GameplayScreen(GameplayScreenDriver driver) {
+        this.driver = Objects.requireNonNull(driver);
     }
 
     @Override
     public void tick() {
         // GLFW supplies separate events for a chord. The ROM checks the entire
         // held-button mask before dispatching gameplay ($00:0E46-0E82).
-        if (interceptFrameInput.getAsBoolean()) {
-            pendingKeys.clear();
+        if (driver.interceptFrameInput()) {
+            pendingCount = 0;
             return;
         }
-        List<KeyEvent> events = List.copyOf(pendingKeys);
-        pendingKeys.clear();
-        for (KeyEvent event : events) keys.accept(event.key(), event.action());
-        tick.run();
+        int[] events = pendingKeys;
+        int count = pendingCount;
+        pendingKeys = reusableKeys == null ? new int[16] : reusableKeys;
+        reusableKeys = null;
+        pendingCount = 0;
+        try {
+            for (int i = 0; i < count; i += 2) driver.onKey(events[i], events[i + 1]);
+        } finally {
+            reusableKeys = events;
+        }
+        driver.tick();
     }
 
     @Override
     public void onKey(int key, int action) {
-        pendingKeys.add(new KeyEvent(key, action));
+        if (pendingCount + 2 > pendingKeys.length) pendingKeys = Arrays.copyOf(pendingKeys, pendingKeys.length * 2);
+        pendingKeys[pendingCount++] = key;
+        pendingKeys[pendingCount++] = action;
     }
 
     public void requestFileSave() {
@@ -70,13 +61,13 @@ public final class GameplayScreen implements Screen {
     }
 
     public void clearPendingInput() {
-        pendingKeys.clear();
+        pendingCount = 0;
         fileSaveRequested = false;
     }
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var snapshot = gameOver.get();
+        var snapshot = driver.gameOver();
         return snapshot == null
                 ? state
                 : GameFrameState.empty().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);

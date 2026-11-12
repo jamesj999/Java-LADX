@@ -52,7 +52,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
             byte[] legacy = new byte[rgba.length];
             byte[] hardware = rgba;
             LegacySceneReference.render(scene, legacy, gpu);
-            HardwareFrame model = scene.hardwareFrame(gpu, new HardwareFrameDiagnostics());
+            HardwareFrame model = TestHardwareFrames.hardwareFrame(scene, gpu, new HardwareFrameDiagnostics());
             byte[] rebuilt = new byte[rgba.length];
             model.compose(rebuilt);
             if (!Arrays.equals(hardware, rebuilt))
@@ -65,13 +65,13 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(legacy, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
-                if (model.diagnostics().explainsHudPriority(legacy, hardware, pixel)
-                        || model.diagnostics().explainsInventoryHiding(legacy, hardware, pixel)) {
+                if (TestHardwareFrames.diagnostics(model).explainsHudPriority(legacy, hardware, pixel)
+                        || TestHardwareFrames.diagnostics(model).explainsInventoryHiding(legacy, hardware, pixel)) {
                     expectedPixels++;
-                    evidence.add(model.diagnostics().hudEvidence(pixel));
-                    if (model.diagnostics().explainsInventoryHiding(legacy, hardware, pixel))
+                    evidence.add(TestHardwareFrames.diagnostics(model).hudEvidence(pixel));
+                    if (TestHardwareFrames.diagnostics(model).explainsInventoryHiding(legacy, hardware, pixel))
                         evidence.add("whole-entry inventory hiding: bank1.asm:$5F51-$5F67 rawY>=WY+8");
-                    String source = model.diagnostics().fidelitySource(pixel);
+                    String source = TestHardwareFrames.diagnostics(model).fidelitySource(pixel);
                     Group expected = expectedSources.computeIfAbsent(source, key -> new Group());
                     expected.pixels++;
                     if (sceneExpectedSources.add(source)) expected.scenes++;
@@ -80,13 +80,13 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
                     continue;
                 }
                 String detail = "pixel=" + pixel % 160 + "," + pixel / 160 + " "
-                        + model.diagnostics().hudEvidence(pixel);
+                        + TestHardwareFrames.diagnostics(model).hudEvidence(pixel);
                 if (!probe) {
                     rows.add(id + "\tMISMATCH\t" + detail);
                     throw new AssertionError(context.getDisplayName() + " scene " + id + ": " + detail);
                 }
                 mismatchPixels++;
-                String groupKey = model.diagnostics().mismatchGroup(pixel, legacy, hardware);
+                String groupKey = TestHardwareFrames.diagnostics(model).mismatchGroup(pixel, legacy, hardware);
                 Group group = groups.computeIfAbsent(groupKey, key -> new Group());
                 group.pixels++;
                 if (sceneGroups.add(groupKey)) group.scenes++;

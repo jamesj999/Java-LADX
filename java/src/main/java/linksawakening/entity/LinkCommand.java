@@ -6,25 +6,25 @@ public interface LinkCommand {
     /** Immutable facing values. */
     public record Facing(int romDirection, boolean preserveWalkingPhase) implements LinkCommand {
         public void applyTo(Link link) {
-            if (preserveWalkingPhase) link.faceRomDirectionPreservingWalkPhase(romDirection);
-            else link.setRomDirection(romDirection);
+            if (preserveWalkingPhase) link.animation().faceRomDirectionPreservingWalkPhase(romDirection);
+            else link.animation().setRomDirection(romDirection);
         }
     }
     /** Immutable final position values. */
     public record FinalPosition(boolean clearIncrement, boolean markPushing, boolean resetBoots)
             implements LinkCommand {
         public void applyTo(Link link) {
-            link.restoreRomFinalPosition();
-            if (clearIncrement) link.clearRomPositionIncrement();
-            if (markPushing) link.markRomLinkPushing(0x03);
-            if (resetBoots) link.resetPegasusBoots();
+            link.position().restoreRomFinalPosition();
+            if (clearIncrement) link.position().clearRomPositionIncrement();
+            if (markPushing) link.equipment().markRomLinkPushing(0x03);
+            if (resetBoots) link.motion().resetPegasusBoots();
         }
     }
     /** Immutable platform contact values. */
     public record PlatformContact(int horizontalDelta, int positionY, int speedY, boolean standing)
             implements LinkCommand {
         public void applyTo(Link link) {
-            link.applySideViewPlatformContact(horizontalDelta, positionY, speedY, standing);
+            link.sideView().applySideViewPlatformContact(horizontalDelta, positionY, speedY, standing);
         }
     }
     /** Immutable pot contact values. */
@@ -38,11 +38,11 @@ public interface LinkCommand {
             int speedY)
             implements LinkCommand {
         public void applyTo(Link link) {
-            if (restoreFinalX) link.restoreRomFinalPositionX();
-            if (resetBoots) link.resetPegasusBoots();
-            if (speedX != 0) link.applyRomSpeedX(speedX);
-            if (ignoreCollisionCountdown != 0) link.setCollisionIgnoreFrames(ignoreCollisionCountdown);
-            if (snapTop) link.applySideViewPotContact(positionY, speedY);
+            if (restoreFinalX) link.position().restoreRomFinalPositionX();
+            if (resetBoots) link.motion().resetPegasusBoots();
+            if (speedX != 0) link.position().applyRomSpeedX(speedX);
+            if (ignoreCollisionCountdown != 0) link.status().setCollisionIgnoreFrames(ignoreCollisionCountdown);
+            if (snapTop) link.sideView().applySideViewPotContact(positionY, speedY);
         }
     }
     /** Immutable motion block values. */
@@ -52,34 +52,34 @@ public interface LinkCommand {
         }
 
         public void applyTo(Link link) {
-            link.applyRomFinalPosition((deltaX * 16) & 0xFF, (deltaY * 16) & 0xFF);
-            link.writeRomInteractiveMotionBlock(value);
+            link.position().applyRomFinalPosition((deltaX * 16) & 0xFF, (deltaY * 16) & 0xFF);
+            link.motion().writeRomInteractiveMotionBlock(value);
         }
     }
     /** Immutable warp values. */
     public record Warp(int positionX, int visualPositionY, int immunityCountdown) implements LinkCommand {
         public void applyTo(Link link) {
-            link.applyWarpState3(positionX, visualPositionY, immunityCountdown);
+            link.actions().applyWarpState3(positionX, visualPositionY, immunityCountdown);
         }
     }
     /** Immutable held item pose values. */
     public record HeldItemPose(boolean powerUp) implements LinkCommand {
         public void applyTo(Link link) {
-            if (powerUp) link.showPowerUpPickupPose();
-            else link.showHeldItemPose();
+            if (powerUp) link.animation().showPowerUpPickupPose();
+            else link.animation().showHeldItemPose();
         }
     }
     /** Immutable sword spin pose values. */
     public record SwordSpinPose(int countdown) implements LinkCommand {
         public void applyTo(Link link) {
-            link.showSwordAcquisitionSpinPose(countdown);
+            link.animation().showSwordAcquisitionSpinPose(countdown);
         }
     }
     /** Immutable rooster flight values. */
     public record RoosterFlight(int positionZ, int velocityZ, int speedX, int speedY, int romDirection)
             implements LinkCommand {
         public void applyTo(Link link) {
-            link.applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
+            link.actions().applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
         }
     }
     /** Immutable hinox grab values. */
@@ -119,37 +119,38 @@ public interface LinkCommand {
         }
 
         public void applyTo(Link link) {
-            link.applyHinoxGrabState(
-                    positionX,
-                    positionY,
-                    positionZ,
-                    speedX,
-                    speedY,
-                    velocityZ,
-                    Link.GrabFlags.of(airborneState, motionBlocked, heldPose));
+            link.actions()
+                    .applyHinoxGrabState(
+                            positionX,
+                            positionY,
+                            positionZ,
+                            speedX,
+                            speedY,
+                            velocityZ,
+                            Link.GrabFlags.of(airborneState, motionBlocked, heldPose));
         }
     }
     /** Immutable capture values. */
     public record Capture(int positionX, int positionY, boolean pinPosition) implements LinkCommand {
         public void applyTo(Link link) {
-            link.applyLikeLikeCapture(positionX, positionY, pinPosition);
+            link.actions().applyLikeLikeCapture(positionX, positionY, pinPosition);
         }
     }
     /** Immutable contact recoil values. */
     public record ContactRecoil(int speedX, int speedY, int ignoreCollisionCountdown) implements LinkCommand {
         public void applyTo(Link link) {
-            link.applyRomSpeed(speedX, speedY);
-            link.setCollisionIgnoreFrames(ignoreCollisionCountdown);
+            link.position().applyRomSpeed(speedX, speedY);
+            link.status().setCollisionIgnoreFrames(ignoreCollisionCountdown);
         }
     }
     /** Immutable projectile response values. */
     public record ProjectileResponse(int speedX, int speedY, int ignoreCollisionCountdown, boolean immediatePosition)
             implements LinkCommand {
         public void applyTo(Link link) {
-            if (immediatePosition) link.applyRomFinalPosition(speedX, speedY);
+            if (immediatePosition) link.position().applyRomFinalPosition(speedX, speedY);
             else {
-                link.applyRomSpeed(speedX, speedY);
-                link.setCollisionIgnoreFrames(ignoreCollisionCountdown);
+                link.position().applyRomSpeed(speedX, speedY);
+                link.status().setCollisionIgnoreFrames(ignoreCollisionCountdown);
             }
         }
     }
@@ -164,12 +165,12 @@ public interface LinkCommand {
 
         public void applyTo(Link link) {
             switch (this) {
-                case BLOCK_MOTION -> link.blockNextRomMotionFrame();
-                case FALLEN_POSE -> link.showRomFallenPose();
-                case CLEAR_ATTACK -> link.clearRomAttackStepAnimationCountdown();
-                case START_ATTACK -> link.startRomItemAttackStep();
-                case SWORD_FINAL_POSE -> link.showSwordAcquisitionFinalPose();
-                case RELEASE_CAPTURE -> link.releaseLikeLikeCapture();
+                case BLOCK_MOTION -> link.motion().blockNextRomMotionFrame();
+                case FALLEN_POSE -> link.animation().showRomFallenPose();
+                case CLEAR_ATTACK -> link.equipment().clearRomAttackStepAnimationCountdown();
+                case START_ATTACK -> link.equipment().startRomItemAttackStep();
+                case SWORD_FINAL_POSE -> link.animation().showSwordAcquisitionFinalPose();
+                case RELEASE_CAPTURE -> link.actions().releaseLikeLikeCapture();
             }
         }
     }

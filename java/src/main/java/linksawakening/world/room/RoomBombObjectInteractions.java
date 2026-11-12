@@ -34,10 +34,10 @@ final class RoomBombObjectInteractions {
                             < dependencies
                                     .location()
                                     .activeRoom
-                                    .entities()
+                                    .entityView()
                                     .slots()
                                     .size()
-                    ? dependencies.location().activeRoom.entities().slots().get(event.bombSlot())
+                    ? dependencies.location().activeRoom.entityView().slots().get(event.bombSlot())
                     : null;
             if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 BombObjectInteraction.Candidate candidate =

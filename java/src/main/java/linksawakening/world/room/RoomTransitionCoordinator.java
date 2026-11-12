@@ -11,6 +11,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
+/** Orders ApplyCollisionWithDoor and LinkMotionMapFadeOutHandler before fallback edge clamping. */
 public final class RoomTransitionCoordinator {
     private final Dependencies dependencies;
     private final RoomBoundaryController boundaryController;
@@ -60,24 +61,24 @@ public final class RoomTransitionCoordinator {
         ActiveRoom room = dependencies.roomSessionViews().get().activeRoom();
 
         // $02:5136-5167 uses wWarp0, independent of the door warp positions.
-        if (link.pitWarpPending() && room.hasWarps()) {
-            link.consumePitWarp();
+        if (link.status().pitWarpPending() && room.hasWarps()) {
+            link.status().consumePitWarp();
             Warp source = room.firstWarp();
             boolean sideView = source.category() == Warp.CATEGORY_SIDESCROLL;
             Warp target = new Warp(
                     source.category(),
                     source.destMap(),
                     source.destRoom(),
-                    sideView ? link.romEntityY() : (link.romEntityX() & 0xF0) + 8,
-                    sideView ? source.destY() : link.romEntityY() & 0xF0,
+                    sideView ? link.position().romEntityY() : (link.position().romEntityX() & 0xF0) + 8,
+                    sideView ? source.destY() : link.position().romEntityY() & 0xF0,
                     source.tileLocation());
             transitionController.startFadeOut(() -> {
                 applyWarp(target, link);
-                link.setPitWarpArrival(sideView ? 0 : 0x70);
+                link.airborne().setPitWarpArrival(sideView ? 0 : 0x70);
             });
             return;
         }
-        if (link.isFallingIntoPit()) return;
+        if (link.airborne().isFallingIntoPit()) return;
 
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD && handleIndoorBoundary(link, room)) return;
 
@@ -89,7 +90,10 @@ public final class RoomTransitionCoordinator {
                 .roomTransitionController()
                 .get()
                 .pollStaircaseWarp(
-                        link.romEntityX(), link.romEntityY(), link.romEntityZ(), link.isCarryingLiftedObject());
+                        link.position().romEntityX(),
+                        link.position().romEntityY(),
+                        link.animation().romEntityZ(),
+                        link.actions().isCarryingLiftedObject());
         if (staircaseWarp != null) {
             startEntranceWarp(staircaseWarp, link);
             return;
@@ -97,12 +101,13 @@ public final class RoomTransitionCoordinator {
 
         // LinkMotionMapFadeOutHandler selects a record only after
         // ApplyCollisionWithDoor has requested the fade ($02:71BB).
-        if (!link.consumeDoorWarp()) return;
+        if (!link.position().consumeDoorWarp()) return;
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             startEntranceWarp(room.firstWarp(), link);
             return;
         }
-        int linkTile = Warp.packTileLocation(link.pixelX(), link.pixelY());
+        int linkTile =
+                Warp.packTileLocation(link.position().pixelX(), link.position().pixelY());
         for (Warp warp : room.warps()) {
             if (warp.tileLocation() == linkTile) {
                 final Warp target = warp;
@@ -122,12 +127,14 @@ public final class RoomTransitionCoordinator {
             return;
         }
 
-        int previousX = link.pixelX();
-        int previousY = link.pixelY();
-        RoomBoundaryDecision boundary = boundaryController.decide(
-                dependencies.roomCollisionQueries().get().boundaryState(previousX, previousY, link.isAirborne()));
+        int previousX = link.position().pixelX();
+        int previousY = link.position().pixelY();
+        RoomBoundaryDecision boundary = boundaryController.decide(dependencies
+                .roomCollisionQueries()
+                .get()
+                .boundaryState(previousX, previousY, link.airborne().isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
-            link.setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+            link.position().setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             if (boundary.direction() == ScrollController.UP
                     && dependencies.roomStoryState().get().shouldGetLostInMysteriousWoods()) {
                 dependencies
@@ -140,9 +147,10 @@ public final class RoomTransitionCoordinator {
                         .get()
                         .startAdjacentOverworldScroll(scrollController, boundary.direction(), previousX, previousY);
             }
-            scrollController.onCompletion(() -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
+            scrollController.onCompletion(
+                    () -> link.motion().finishRoomScroll(boundary.direction() == ScrollController.DOWN));
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
-            link.setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+            link.position().setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
         }
     }
 
@@ -182,14 +190,15 @@ public final class RoomTransitionCoordinator {
     private void applyWarp(Warp warp, Link link) {
         dependencies.roomTransitionController().get().loadWarpDestination(warp);
         ActiveRoom destination = dependencies.roomSessionViews().get().activeRoom();
-        link.setRoomPhysicsForRoom(
-                dependencies.roomSessionViews().get().roomLoadToken(),
-                destination.mapId(),
-                destination.roomId(),
-                destination.mapCategory());
+        link.motion()
+                .setRoomPhysicsForRoom(
+                        dependencies.roomSessionViews().get().roomLoadToken(),
+                        destination.mapId(),
+                        destination.roomId(),
+                        destination.mapCategory());
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
-        link.setRoomEntryPixelPosition(landingX, landingY);
+        link.position().setRoomEntryPixelPosition(landingX, landingY);
     }
 
     record Dependencies(
@@ -208,30 +217,38 @@ public final class RoomTransitionCoordinator {
 
     private boolean handleIndoorBoundary(Link link, ActiveRoom room) {
 
-        link.initializeRoomPhysicsForRoom(
-                dependencies.roomSessionViews().get().roomLoadToken(), room.mapId(), room.roomId(), room.mapCategory());
+        link.motion()
+                .initializeRoomPhysicsForRoom(
+                        dependencies.roomSessionViews().get().roomLoadToken(),
+                        room.mapId(),
+                        room.roomId(),
+                        room.mapCategory());
         Warp dungeonWarp = dependencies.roomTransitionController().get().consumeClearedDungeonWarp();
         if (dungeonWarp != null) {
             transitionController.startFadeOut(() -> applyWarp(dungeonWarp, link));
             return true;
         }
-        if (link.romMotionState() == 0x05) return true;
-        if (link.consumeRevolvingDoorTransition()) {
-            int previousX = link.pixelX();
-            int previousY = link.pixelY();
+        if (link.airborne().romMotionState() == 0x05) return true;
+        if (link.motion().consumeRevolvingDoorTransition()) {
+            int previousX = link.position().pixelX();
+            int previousY = link.position().pixelY();
             // $02:790B: 32 scroll steps * $3A / 16 = 116 pixels.
-            link.setRoomEntryPixelPosition(previousX, previousY + 116);
+            link.position().setRoomEntryPixelPosition(previousX, previousY + 116);
             dependencies
                     .roomTransitionController()
                     .get()
                     .startAdjacentIndoorScroll(scrollController, ScrollController.UP, previousX, previousY);
-            scrollController.onCompletion(() -> link.finishRoomScroll(false));
+            scrollController.onCompletion(() -> link.motion().finishRoomScroll(false));
             return true;
         }
         RoomBoundaryDecision boundary = boundaryController.decide(dependencies
                 .roomCollisionQueries()
                 .get()
-                .boundaryState(link.pixelX(), link.pixelY(), link.isAirborne(), link.romPhysicsModifier()));
+                .boundaryState(
+                        link.position().pixelX(),
+                        link.position().pixelY(),
+                        link.airborne().isAirborne(),
+                        link.motion().romPhysicsModifier()));
         if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_FRONT_DOOR_WARP) {
             Warp target = room.firstWarp();
             System.out.println("Indoor front-door exit → cat=" + target.category()
@@ -247,14 +264,15 @@ public final class RoomTransitionCoordinator {
             return true;
         }
         if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
-            int previousX = link.pixelX();
-            int previousY = link.pixelY();
-            link.setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
+            int previousX = link.position().pixelX();
+            int previousY = link.position().pixelY();
+            link.position().setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             dependencies
                     .roomTransitionController()
                     .get()
                     .startAdjacentIndoorScroll(scrollController, boundary.direction(), previousX, previousY);
-            scrollController.onCompletion(() -> link.finishRoomScroll(boundary.direction() == ScrollController.DOWN));
+            scrollController.onCompletion(
+                    () -> link.motion().finishRoomScroll(boundary.direction() == ScrollController.DOWN));
             return true;
         }
         return false;

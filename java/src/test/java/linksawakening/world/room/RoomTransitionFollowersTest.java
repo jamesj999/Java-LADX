@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ final class RoomTransitionFollowersTest {
     @Test
     void bowWowHideoutDirectRoomIdsMoveNorthByOneHexRow() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(TestRoms.partial(rom));
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
         session.rooms().loadIndoor(0x15, 0xF0);

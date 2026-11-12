@@ -3,7 +3,7 @@ package linksawakening.render;
 import linksawakening.gpu.GPU;
 
 /** Submits indexed data without writing the output buffer. */
-public interface HardwareRenderLayer extends RenderLayer {
+interface HardwareRenderLayer extends RenderLayer {
     @Override
     default void render(RenderContext context) {
         if (context == null || context.buffer() == null || context.gpu() == null)

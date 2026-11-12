@@ -2,7 +2,10 @@ package linksawakening.app.gameplay;
 
 import linksawakening.equipment.Sword;
 
-/** Ordered simulation with early exits belonging to the source frame lifecycle. */
+/**
+ * Ordered simulation with early exits belonging to the source frame lifecycle. Retained implementations
+ * support recording fakes for ordering tests.
+ */
 interface SimulationStages {
     boolean dialogStory();
 

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.DogFrame;
 import linksawakening.world.entity.motion.DogMotion;
 import linksawakening.world.entity.motion.MotionTestAccess;
@@ -22,7 +23,7 @@ final class DogRuntimeTest {
 
     @Test
     void decodesDogsFourRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
@@ -50,7 +51,7 @@ final class DogRuntimeTest {
     @Test
     void usesDogsRomMetadataAndHandlerHealthSeed() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_DOG)
@@ -61,7 +62,7 @@ final class DogRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
@@ -235,7 +236,7 @@ final class DogRuntimeTest {
     @Test
     void nonInteractiveLinkMotionSkipsDogTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_DOG)
@@ -246,7 +247,7 @@ final class DogRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         AtomicInteger terrainCalls = new AtomicInteger();
 
@@ -267,8 +268,8 @@ final class DogRuntimeTest {
     }
 
     private static RoomEntity dog(byte[] rom) {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(rom))
+                .forEntityType(ENTITY_DOG, EntityRoomLoader.RoomTable.OVERWORLD);
         return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_DOG)

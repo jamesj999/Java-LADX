@@ -9,9 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.*;
 import linksawakening.world.room.*;
 import org.junit.jupiter.api.Test;
@@ -36,8 +38,9 @@ final class OverworldBushInteractionTest {
     private static final int TARGET_LINK_Y = 0x4C;
 
     private static final byte[] ROM = loadRom();
-    private static final RomTables ROM_TABLES = RomTables.loadFromRom(ROM);
-    private static final OverworldBushInteraction INTERACTION = new OverworldBushInteraction(ROM, ROM_TABLES);
+    private static final RomTables ROM_TABLES = RomTables.load(TestRoms.partial(ROM));
+    private static final OverworldBushInteraction INTERACTION =
+            new OverworldBushInteraction((ROM == null ? (Rom) null : TestRoms.partial(ROM)), ROM_TABLES);
 
     @Test
     void plainBushRevealsShortGrassInNormalRoom() {
@@ -64,7 +67,7 @@ final class OverworldBushInteractionTest {
     @Test
     void tallGrassIsCutToShortGrass() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] mutableBackupObjects = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
@@ -74,7 +77,8 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_TALL_GRASS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -91,7 +95,7 @@ final class OverworldBushInteractionTest {
     @Test
     void tallGrassCutRequestsLeafScatterEffect() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
         int[] roomTileAttrs = emptyRoomTiles(-1);
@@ -107,7 +111,7 @@ final class OverworldBushInteractionTest {
     @Test
     void cuttableObjectsRequestCutGrassNoiseEffect() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
         int[] roomTileAttrs = emptyRoomTiles(-1);
@@ -123,7 +127,7 @@ final class OverworldBushInteractionTest {
     @Test
     void bombRevealUsesTheSameObjectResolverWithoutSwordSound() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
         int[] roomTileAttrs = emptyRoomTiles(-1);
@@ -140,7 +144,7 @@ final class OverworldBushInteractionTest {
     @Test
     void shortGrassIsNotCutAgain() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
         int[] roomTileAttrs = emptyRoomTiles(-1);
@@ -148,7 +152,8 @@ final class OverworldBushInteractionTest {
         roomObjectsArea[areaIndex] = OBJECT_SHORT_GRASS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -164,24 +169,37 @@ final class OverworldBushInteractionTest {
     @Test
     void inactiveSwordDoesNotReportAHitLocation() {
         assertEquals(
-                -1, INTERACTION.swordHitRoomObjectLocation(false, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+                -1,
+                INTERACTION.swordHitRoomObjectLocation(
+                        false, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y));
     }
 
     @Test
     void swordHitLocationMatchesStaticSwordCollisionMapInAllDirections() {
         assertEquals(
-                0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y));
+                0x54,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y));
         assertEquals(
-                0x53, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_LEFT, TARGET_LINK_X, TARGET_LINK_Y));
+                0x53,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true, Direction.fromJavaOrUnknown(Direction.LEFT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y));
         assertEquals(
-                0x43, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_UP, TARGET_LINK_X, TARGET_LINK_Y));
+                0x43,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y));
         assertEquals(
-                0x63, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_DOWN, TARGET_LINK_X, TARGET_LINK_Y));
+                0x63,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true, Direction.fromJavaOrUnknown(Direction.DOWN.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y));
     }
 
     @Test
     void rightFacingUsesStaticBushReachNotGroundItemReach() {
-        assertEquals(0x54, INTERACTION.swordHitRoomObjectLocation(true, Link.DIRECTION_RIGHT, 0x2A, TARGET_LINK_Y));
+        assertEquals(
+                0x54,
+                INTERACTION.swordHitRoomObjectLocation(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x2A, TARGET_LINK_Y));
     }
 
     @Test
@@ -201,7 +219,7 @@ final class OverworldBushInteractionTest {
     @Test
     void gbcMutableBackupObjectStaysSynchronized() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] mutableBackupObjects = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
@@ -211,7 +229,8 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -228,7 +247,7 @@ final class OverworldBushInteractionTest {
     @Test
     void roomTileAndAttrOutputRefreshAfterRevealInsteadOfRemainingStale() {
         int roomId = 0x40;
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
         int[] roomTileAttrs = emptyRoomTiles(-1);
@@ -240,7 +259,8 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -262,7 +282,7 @@ final class OverworldBushInteractionTest {
     }
 
     private static void assertPlainBushReveal(int roomId, int expectedReveal) {
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] mutableBackupObjects = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
@@ -276,7 +296,8 @@ final class OverworldBushInteractionTest {
         int[] beforeAttrs = roomTileAttrs.clone();
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -300,7 +321,7 @@ final class OverworldBushInteractionTest {
     }
 
     private static void assertBushCoveredStairsReveal(int roomId, int expectedReveal) {
-        int location = hitLocation(Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y);
+        int location = hitLocation(Direction.RIGHT.javaIndex(), TARGET_LINK_X, TARGET_LINK_Y);
         int[] roomObjectsArea = emptyRoomObjectsArea();
         int[] mutableBackupObjects = emptyRoomObjectsArea();
         int[] roomTileIds = emptyRoomTiles(-1);
@@ -310,7 +331,8 @@ final class OverworldBushInteractionTest {
         mutableBackupObjects[areaIndex] = OBJECT_BUSH_GROUND_STAIRS;
 
         boolean changed = INTERACTION.cutBush(new BushCutInputs(
-                new BushCutInputs.SwordProbe(true, Link.DIRECTION_RIGHT, TARGET_LINK_X, TARGET_LINK_Y),
+                new BushCutInputs.SwordProbe(
+                        true, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), TARGET_LINK_X, TARGET_LINK_Y),
                 roomId,
                 true,
                 roomObjectsArea,
@@ -330,7 +352,8 @@ final class OverworldBushInteractionTest {
     }
 
     private static int hitLocation(int direction, int linkPixelX, int linkPixelY) {
-        int hitLocation = INTERACTION.swordHitRoomObjectLocation(true, direction, linkPixelX, linkPixelY);
+        int hitLocation = INTERACTION.swordHitRoomObjectLocation(
+                true, Direction.fromJavaOrUnknown(direction), linkPixelX, linkPixelY);
         assertEquals(TARGET_LOCATION, hitLocation);
         return hitLocation;
     }

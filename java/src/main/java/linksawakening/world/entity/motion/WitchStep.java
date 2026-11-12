@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.*;
 
-/** Per-invocation scratch for WitchMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for WitchMotion.advance; values are assigned in source order. */
 final class WitchStep {
-    private final WitchMotion owner;
+    private WitchMotion owner;
     private linksawakening.world.entity.RoomEntity source;
     private int transitionCountdown;
     private linksawakening.world.entity.motion.WitchMotion.Input input;
@@ -22,16 +22,7 @@ final class WitchStep {
     private boolean exchangeStarted;
     private boolean grantMagicPowder;
 
-    WitchStep(
-            WitchMotion owner,
-            linksawakening.world.entity.RoomEntity source,
-            int transitionCountdown,
-            linksawakening.world.entity.motion.WitchMotion.Input input) {
-        this.owner = owner;
-        this.source = source;
-        this.transitionCountdown = transitionCountdown;
-        this.input = input;
-    }
+    WitchStep() {}
 
     linksawakening.world.entity.motion.WitchMotion.Update run() {
         if (source.type() != WitchMotion.ENTITY_TYPE) {
@@ -200,5 +191,47 @@ final class WitchStep {
         // Terminal source state.
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.WitchMotion.Update run(
+            WitchMotion owner,
+            linksawakening.world.entity.RoomEntity source,
+            int transitionCountdown,
+            linksawakening.world.entity.motion.WitchMotion.Input input) {
+        if (inUse) {
+            return new WitchStep().run(owner, source, transitionCountdown, input);
+        }
+        inUse = true;
+        slot = 0;
+        displayVariant = 0;
+        nextInertia = 0;
+        entity = null;
+        nextCountdown = 0;
+        blockLink = false;
+        motionBlockValue = 0;
+        dialog = 0;
+        music = 0;
+        jingle = 0;
+        clearedSlot = null;
+        exchangeStarted = false;
+        grantMagicPowder = false;
+        completedResult = null;
+        this.owner = owner;
+        this.source = source;
+        this.transitionCountdown = transitionCountdown;
+        this.input = input;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.source = null;
+            this.input = null;
+            this.entity = null;
+            this.clearedSlot = null;
+            this.completedResult = null;
+        }
     }
 }

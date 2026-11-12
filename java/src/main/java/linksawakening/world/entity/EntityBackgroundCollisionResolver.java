@@ -1,7 +1,8 @@
 package linksawakening.world.entity;
 
 import java.util.Objects;
-import linksawakening.rom.RomTables;
+import linksawakening.rom.CollisionTables;
+import linksawakening.rom.EntityPropertyTables;
 
 /** Resolves the ROM's entity/background collision result for one sampled object. */
 public final class EntityBackgroundCollisionResolver {
@@ -46,10 +47,12 @@ public final class EntityBackgroundCollisionResolver {
     private static final int FINE_QUADRANT_SHIFT = 3;
     private static final int FINE_QUADRANT_MASK = 0x01;
 
-    private final RomTables romTables;
+    private final CollisionTables collisionTables;
+    private final EntityPropertyTables entityProperties;
 
-    public EntityBackgroundCollisionResolver(RomTables romTables) {
-        this.romTables = Objects.requireNonNull(romTables, "romTables");
+    public EntityBackgroundCollisionResolver(CollisionTables collisionTables, EntityPropertyTables entityProperties) {
+        this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");
+        this.entityProperties = Objects.requireNonNull(entityProperties, "entityProperties");
     }
 
     EntityBackgroundCollisionResult resolve(
@@ -147,7 +150,7 @@ public final class EntityBackgroundCollisionResolver {
                 return passable(state);
             }
             int quadrant = fineCollisionQuadrant(sample);
-            return decision(romTables.entityFineCollisionShape(physicsFlag, quadrant) != 0 && !noWall, state);
+            return decision(collisionTables.entityFineCollisionShape(physicsFlag, quadrant) != 0 && !noWall, state);
         }
 
         if (isConservativeLedgePhysics(physicsFlag)) {
@@ -221,7 +224,7 @@ public final class EntityBackgroundCollisionResolver {
     }
 
     private boolean hasNoWallCollision(RoomEntity entity) {
-        return (romTables.entityOptions1(entity.type()) & ENTITY_OPTION_NO_WALL_COLLISION) != 0;
+        return (entityProperties.entityOptions1(entity.type()) & ENTITY_OPTION_NO_WALL_COLLISION) != 0;
     }
 
     private static boolean isWaterEntity(RoomEntity entity) {
@@ -231,7 +234,7 @@ public final class EntityBackgroundCollisionResolver {
     private boolean isSparkOrBoss(RoomEntity entity) {
         return entity.type() == ENTITY_SPARK_COUNTER_CLOCKWISE
                 || entity.type() == ENTITY_SPARK_CLOCKWISE
-                || (romTables.entityOptions1(entity.type()) & ENTITY_OPTION_BOSS) != 0;
+                || (entityProperties.entityOptions1(entity.type()) & ENTITY_OPTION_BOSS) != 0;
     }
 
     private static boolean isBombOrWreckingBall(RoomEntity entity) {

@@ -215,4 +215,6 @@ public final class HinoxMotion {
     record Vector(int x, int y) {}
 
     record Position(int x, int y) {}
+
+    final HinoxStep hinoxStep = new HinoxStep();
 }

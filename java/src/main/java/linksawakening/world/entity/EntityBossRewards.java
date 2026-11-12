@@ -285,4 +285,6 @@ public final class EntityBossRewards {
     int[] storageKillOrder() {
         return killOrder;
     }
+
+    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep();
 }

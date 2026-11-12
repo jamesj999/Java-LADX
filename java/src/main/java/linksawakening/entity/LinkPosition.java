@@ -1,205 +1,324 @@
 package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkMotion.*;
 
-import linksawakening.physics.PhysicsFlags;
-import linksawakening.state.Direction;
+/** Owns subpixel coordinates, speeds and shadows for ComputeLinkPosition / UpdateFinalLinkPosition. */
+final class LinkPosition {
 
-/** Shared state and dependency ownership for LinkMotion. */
-abstract class LinkPosition {
+    private int subX;
 
-    protected final LinkComponentRef<LinkAirborne> linkAirborne;
-    protected final LinkComponentRef<LinkAnimationState> linkAnimationState;
-    protected final LinkComponentRef<LinkAnimator> linkAnimator;
-    protected final LinkComponentRef<LinkControls> linkControls;
-    protected final LinkComponentRef<LinkDamage> linkDamage;
-    protected final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-    protected final LinkComponentRef<LinkEquipment> linkEquipment;
-    protected final LinkComponentRef<LinkGroundMotion> linkGroundMotion;
-    protected final LinkComponentRef<LinkItemState> linkItemState;
-    protected final LinkComponentRef<LinkServices> linkServices;
-    protected final LinkComponentRef<LinkSideView> linkSideView;
-    protected final LinkComponentRef<LinkStateMachine> linkStateMachine;
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-        LinkComponentRef<LinkEquipment> linkEquipment;
-        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSideView> linkSideView;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
+    int subX() {
+        return subX;
     }
 
-    int subX;
-    int subY;
-    int lastRomSpeedX;
-    int lastRomSpeedY;
-    boolean forcedSpeedPending;
-    boolean forcedSpeedXOnly;
-    int forcedSpeedX;
-    int forcedSpeedY;
-    int romCollisionType;
-    boolean doorWarpPending;
-    final int[] collisionProbePixelX = new int[4];
-    final int[] collisionProbePixelY = new int[4];
-
-    int lastSafeSubX;
-    int lastSafeSubY;
-    boolean hasLastSafePosition;
-    int romFinalSubX;
-    int romFinalSubY;
-    boolean hasRomFinalPosition;
-    int roomEntrySubX;
-    int roomEntrySubY;
-    boolean hasRoomEntryPosition;
-
-    LinkPosition(Dependencies dependencies) {
-        linkAirborne = dependencies.linkAirborne;
-        linkAnimationState = dependencies.linkAnimationState;
-        linkAnimator = dependencies.linkAnimator;
-        linkControls = dependencies.linkControls;
-        linkDamage = dependencies.linkDamage;
-        linkEntityEffects = dependencies.linkEntityEffects;
-        linkEquipment = dependencies.linkEquipment;
-        linkGroundMotion = dependencies.linkGroundMotion;
-        linkItemState = dependencies.linkItemState;
-        linkServices = dependencies.linkServices;
-        linkSideView = dependencies.linkSideView;
-        linkStateMachine = dependencies.linkStateMachine;
+    int subX(int value) {
+        return subX = value;
     }
 
-    static boolean isDirectionalLedgePhysics(int physicsFlag) {
-        return physicsFlag >= PhysicsFlags.CAT_LEDGE && physicsFlag <= PhysicsFlags.CAT_LEDGE + 3;
+    private int subY;
+
+    int subY() {
+        return subY;
     }
 
-    static int joypadBitForDirection(int direction) {
-        return switch (Direction.fromJavaOrUnknown(direction)) {
-            case DOWN -> LinkRomConstants.JOY_DOWN;
-            case UP -> LinkRomConstants.JOY_UP;
-            case LEFT -> LinkRomConstants.JOY_LEFT;
-            case RIGHT -> LinkRomConstants.JOY_RIGHT;
-            default -> 0;
-        };
+    int subY(int value) {
+        return subY = value;
     }
 
-    protected abstract void tryMoveAxis(int signedSpeed, boolean isXAxis);
+    private int lastRomSpeedX;
 
-    protected abstract boolean leadingEdgeBlocked(int spriteX, int spriteY, int dir);
+    int lastRomSpeedX() {
+        return lastRomSpeedX;
+    }
 
-    protected abstract int leadingEdgeCollisionMask(int spriteX, int spriteY, int dir);
+    int lastRomSpeedX(int value) {
+        return lastRomSpeedX = value;
+    }
 
-    protected abstract boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection);
+    private int lastRomSpeedY;
 
-    protected abstract boolean directionalLedgeHalfIsPassable(int physicsFlag, int pointX);
+    int lastRomSpeedY() {
+        return lastRomSpeedY;
+    }
 
-    protected abstract boolean applyOverworldLedgeCollision(int pointY);
+    int lastRomSpeedY(int value) {
+        return lastRomSpeedY = value;
+    }
 
-    protected abstract void beginOverworldLedgeUnstuckingMotion();
+    private boolean forcedSpeedPending;
 
-    protected abstract boolean ledgeUnstuckingPositionBlocked();
+    boolean forcedSpeedPending() {
+        return forcedSpeedPending;
+    }
 
-    protected abstract void setPixelPosition(int pixelX, int pixelY);
+    boolean forcedSpeedPending(boolean value) {
+        return forcedSpeedPending = value;
+    }
 
-    protected abstract void setRoomEntryPixelPosition(int pixelX, int pixelY);
+    private boolean forcedSpeedXOnly;
 
-    protected abstract void setRoomScrollEntryPixelPosition(int pixelX, int pixelY);
+    boolean forcedSpeedXOnly() {
+        return forcedSpeedXOnly;
+    }
 
-    protected abstract void markRoomEntryPosition();
+    boolean forcedSpeedXOnly(boolean value) {
+        return forcedSpeedXOnly = value;
+    }
 
-    protected abstract int roomEntryPixelX();
+    private int forcedSpeedX;
 
-    protected abstract int roomEntryPixelY();
+    int forcedSpeedX() {
+        return forcedSpeedX;
+    }
 
-    protected abstract int roomEntryRomPositionX();
+    int forcedSpeedX(int value) {
+        return forcedSpeedX = value;
+    }
 
-    protected abstract int roomEntryRomPositionY();
+    private int forcedSpeedY;
 
-    protected abstract void setRoomEntryRomPosition(int romPositionX, int romPositionY);
+    int forcedSpeedY() {
+        return forcedSpeedY;
+    }
 
-    protected abstract void applyRomSpeed(int speedX, int speedY);
+    int forcedSpeedY(int value) {
+        return forcedSpeedY = value;
+    }
 
-    protected abstract void applyRomSpeedX(int speedX);
+    private int lastSafeSubX;
 
-    protected abstract void applyRomFinalPosition(int speedX, int speedY);
+    int lastSafeSubX() {
+        return lastSafeSubX;
+    }
 
-    protected abstract void captureRomFinalPosition();
+    int lastSafeSubX(int value) {
+        return lastSafeSubX = value;
+    }
 
-    protected abstract void restoreRomFinalPosition();
+    private int lastSafeSubY;
 
-    protected abstract void restoreRomFinalPositionX();
+    int lastSafeSubY() {
+        return lastSafeSubY;
+    }
 
-    protected abstract int pixelX();
+    int lastSafeSubY(int value) {
+        return lastSafeSubY = value;
+    }
 
-    protected abstract int pixelY();
+    private boolean hasLastSafePosition;
 
-    protected abstract int romEntityX();
+    boolean hasLastSafePosition() {
+        return hasLastSafePosition;
+    }
 
-    protected abstract int romEntityY();
+    boolean hasLastSafePosition(boolean value) {
+        return hasLastSafePosition = value;
+    }
 
-    protected abstract int romFinalPositionX();
+    private int romFinalSubX;
 
-    protected abstract void clearRomPositionIncrement();
+    private int romFinalSubY;
 
-    protected abstract boolean accessConsumeDoorWarp();
+    private boolean hasRomFinalPosition;
 
-    protected abstract int accessRomCollisionType();
+    private int roomEntrySubX;
 
-    protected abstract int accessRomCollisionProbePixelX();
+    int roomEntrySubX() {
+        return roomEntrySubX;
+    }
 
-    protected abstract int accessRomCollisionProbePixelY();
+    int roomEntrySubX(int value) {
+        return roomEntrySubX = value;
+    }
 
-    protected abstract int accessRomSpeedX();
+    private int roomEntrySubY;
 
-    protected abstract int accessRomSpeedY();
+    int roomEntrySubY() {
+        return roomEntrySubY;
+    }
 
-    protected abstract int accessRomSwordCollisionY();
+    int roomEntrySubY(int value) {
+        return roomEntrySubY = value;
+    }
 
-    protected abstract void accessSetPixelPosition(int pixelX, int pixelY);
+    private boolean hasRoomEntryPosition;
 
-    protected abstract void accessSetRoomScrollEntryPixelPosition(int pixelX, int pixelY);
+    boolean hasRoomEntryPosition() {
+        return hasRoomEntryPosition;
+    }
 
-    protected abstract void accessSetRoomEntryPixelPosition(int pixelX, int pixelY);
+    boolean hasRoomEntryPosition(boolean value) {
+        return hasRoomEntryPosition = value;
+    }
 
-    protected abstract void accessMarkRoomEntryPosition();
+    private final LinkComponentRef<LinkSideView> linkSideView;
+    private final LinkCollisionState collisionState;
 
-    protected abstract int accessRoomEntryPixelX();
+    LinkPosition(LinkComponentRef<LinkSideView> linkSideView, LinkCollisionState collisionState) {
+        this.linkSideView = linkSideView;
+        this.collisionState = collisionState;
+    }
 
-    protected abstract int accessRoomEntryPixelY();
+    void setPixelPosition(int pixelX, int pixelY) {
+        subX = pixelX << Link.SUB_PIXEL_SHIFT;
+        subY = pixelY << Link.SUB_PIXEL_SHIFT;
+    }
 
-    protected abstract int accessRoomEntryRomPositionX();
+    void setRoomEntryPixelPosition(int pixelX, int pixelY) {
+        linkSideView.get().clearSideViewPlatformState();
+        setPixelPosition(pixelX, pixelY);
+        markRoomEntryPosition();
+    }
 
-    protected abstract int accessRoomEntryRomPositionY();
+    void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
+        linkSideView.get().clearSideViewPlatformState();
+        subX = subX + ((pixelX - pixelX()) << Link.SUB_PIXEL_SHIFT);
+        subY = subY + ((pixelY - pixelY()) << Link.SUB_PIXEL_SHIFT);
+        markRoomEntryPosition();
+    }
 
-    protected abstract void accessSetRoomEntryRomPosition(int romPositionX, int romPositionY);
+    void markRoomEntryPosition() {
+        collisionState.doorWarpPending(false);
+        roomEntrySubX = subX;
+        roomEntrySubY = subY;
+        hasRoomEntryPosition = true;
+    }
 
-    protected abstract void accessApplyRomSpeed(int speedX, int speedY);
+    /** Returns the Java top-left X coordinate recorded for the current room entry. */
+    int roomEntryPixelX() {
+        return hasRoomEntryPosition ? roomEntrySubX >> Link.SUB_PIXEL_SHIFT : pixelX();
+    }
 
-    protected abstract void accessApplyRomSpeedX(int speedX);
+    /** Returns the Java top-left Y coordinate recorded for the current room entry. */
+    int roomEntryPixelY() {
+        return hasRoomEntryPosition ? roomEntrySubY >> Link.SUB_PIXEL_SHIFT : pixelY();
+    }
 
-    protected abstract void accessApplyRomFinalPosition(int speedX, int speedY);
+    /**
+     * Returns the source {@code hLinkPositionX} value for the recorded entry.
+     * The Game Boy stores Link's OAM origin, which is eight pixels to the right
+     * of this host model's top-left sprite coordinate.
+     */
+    int roomEntryRomPositionX() {
+        return roomEntryPixelX() + 0x08;
+    }
 
-    protected abstract void accessCaptureRomFinalPosition();
+    /**
+     * Returns the source {@code hLinkPositionY} value for the recorded entry.
+     * The Game Boy stores the lower OAM origin, sixteen pixels below this host
+     * model's top-left sprite coordinate.
+     */
+    int roomEntryRomPositionY() {
+        return roomEntryPixelY() + 0x10;
+    }
 
-    protected abstract void accessRestoreRomFinalPosition();
+    /** Applies a source warp/save position (OAM origin) to the host model. */
+    void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
+        setRoomEntryPixelPosition(romPositionX - 0x08, romPositionY - 0x10);
+    }
 
-    protected abstract void accessRestoreRomFinalPositionX();
+    /**
+     * Applies the next-frame hLinkSpeedX/hLinkSpeedY values written by an
+     * entity handler such as the mirror-shield laser reflection path.
+     *
+     * <p>The ROM stores these as signed bytes in HRAM.  They are consumed by
+     * the following Link motion update, after AnimateEntities has finished
+     * writing them for the current frame.</p>
+     */
+    void applyRomSpeed(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link response speeds must be unsigned bytes");
+        }
+        forcedSpeedX = (byte) speedX;
+        forcedSpeedY = (byte) speedY;
+        forcedSpeedXOnly = false;
+        forcedSpeedPending = true;
+    }
 
-    protected abstract void accessClearRomPositionIncrement();
+    /** Applies only the hLinkSpeedX write emitted by a side-view pot push. */
+    void applyRomSpeedX(int speedX) {
+        Link.validateRomByte(speedX, "Link X speed");
+        forcedSpeedX = (byte) speedX;
+        // The pot handler leaves hLinkSpeedY untouched; Link computes its
+        // ordinary Y input on the next motion accessUpdate.
+        forcedSpeedXOnly = true;
+        forcedSpeedPending = true;
+    }
 
-    protected abstract int accessPixelX();
+    /**
+     * Applies the speed bytes written by a handler that immediately calls
+     * {@code UpdateFinalLinkPosition}, bypassing input and collision probes.
+     */
+    void applyRomFinalPosition(int speedX, int speedY) {
+        if ((speedX & ~0xFF) != 0 || (speedY & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Link final-position speeds must be unsigned bytes");
+        }
+        subY = subY + ((byte) speedY);
+        subX = subX + ((byte) speedX);
+    }
 
-    protected abstract int accessPixelY();
+    /** Captures hLinkPositionX/Y into the ROM's per-frame final-position shadow. */
+    void captureRomFinalPosition() {
+        romFinalSubX = subX;
+        romFinalSubY = subY;
+        hasRomFinalPosition = true;
+    }
 
-    protected abstract int accessRomEntityX();
+    /** Copies the captured ROM final position back over an entity push. */
+    void restoreRomFinalPosition() {
+        if (!hasRomFinalPosition) {
+            return;
+        }
+        subX = romFinalSubX;
+        subY = romFinalSubY;
+    }
 
-    protected abstract int accessRomFinalPositionX();
+    /** Copies only hLinkFinalPositionX back over a side-view pot push. */
+    void restoreRomFinalPositionX() {
+        if (hasRomFinalPosition) {
+            subX = romFinalSubX;
+        }
+    }
 
-    protected abstract int accessRomEntityY();
+    int pixelX() {
+        return subX >> Link.SUB_PIXEL_SHIFT;
+    }
+
+    int pixelY() {
+        return subY >> Link.SUB_PIXEL_SHIFT;
+    }
+
+    /** ROM hLinkPositionX: the first 8x16 OAM column's X origin. */
+    int romEntityX() {
+        return pixelX() + 0x08;
+    }
+
+    /** ROM hLinkPositionY before the separate vertical Z offset is applied. */
+    int romEntityY() {
+        return pixelY() + 0x10;
+    }
+
+    /** ROM hLinkFinalPositionX captured before the current Link update. */
+    int romFinalPositionX() {
+        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
+    }
+
+    /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */
+    void clearRomPositionIncrement() {
+        forcedSpeedX = 0;
+        forcedSpeedY = 0;
+        forcedSpeedPending = false;
+        forcedSpeedXOnly = false;
+        linkSideView.get().sideViewPlatformVerticalSpeedPending = -1;
+        lastRomSpeedX = 0;
+        lastRomSpeedY = 0;
+    }
+
+    int accessRomSpeedX() {
+        return lastRomSpeedX & 0xFF;
+    }
+
+    int accessRomSpeedY() {
+        return lastRomSpeedY & 0xFF;
+    }
 }

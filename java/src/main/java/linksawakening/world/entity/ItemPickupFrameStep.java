@@ -15,7 +15,7 @@ import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for ItemPickupBehavior.advanceSwordPickup; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for ItemPickupBehavior.advanceSwordPickup; values are assigned in source order. */
 final class ItemPickupFrameStep {
     private linksawakening.world.entity.EntityRewardController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -26,20 +26,7 @@ final class ItemPickupFrameStep {
     private linksawakening.world.entity.EntityRewardControllerServices runtime;
     private int slot;
 
-    ItemPickupFrameStep(
-            linksawakening.world.entity.EntityRewardController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.linkZ = linkZ;
-    }
+    ItemPickupFrameStep() {}
 
     void run() {
         runtime = owner.runtime;
@@ -144,5 +131,37 @@ final class ItemPickupFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityRewardController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ) {
+        if (inUse) {
+            new ItemPickupFrameStep().run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.linkZ = linkZ;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+        }
     }
 }

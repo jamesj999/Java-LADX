@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
 
     @Test
     void runtimePublishesArrowTransitionVariantsButLeavesRockVariantUnspun() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition arrowDefinition = catalog.forEntityType(0x0C, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         RoomEntityRuntime arrowRuntime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .type(0x0C)
@@ -115,7 +116,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         write(
                 rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
                 0x2A, 0x21);
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
@@ -163,7 +164,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void ordinaryPlayerArrowRunsTheRomEntityDamagePassBeforeMoving() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition octorokDefinition = pairDefinition(0x09, 8);
         RoomEntity octorok = new RoomEntityBuilder()
                 .slot(15)
@@ -228,7 +229,8 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
         int arrowSlot = runtime.spawnArrow(0x40, 0x50, 0, 0);
 
@@ -259,7 +261,7 @@ final class EntityRuntimeArrowsTest extends EntityRuntimeTestSupport {
         write(
                 rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
                 0x2A, 0x21);
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)

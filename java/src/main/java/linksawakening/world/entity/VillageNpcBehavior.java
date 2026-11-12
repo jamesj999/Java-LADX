@@ -14,7 +14,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 /** Focused behavior using the state owned by EntityStoryController. */
 final class VillageNpcBehavior {
     static void advanceVillageKid(EntityStoryController owner, RoomEntity entity, int frame, int linkX, int linkY) {
-        new VillageNpcFrameStep(owner, entity, frame, linkX, linkY).run();
+        owner.villageNpcFrameStep.run(owner, entity, frame, linkX, linkY);
     }
 
     static void advanceKidnapWarningKid(

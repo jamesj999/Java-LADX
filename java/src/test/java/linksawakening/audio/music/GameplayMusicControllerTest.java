@@ -20,22 +20,19 @@ final class GameplayMusicControllerTest {
                     new RecordingMusicTrackPlayer());
             controller.playDirect(0x49);
             var player = new linksawakening.state.PlayerState();
-            player.setHealth(24);
-            player.setActivePowerUp(1);
+            player.vitals().setHealth(24);
+            player.equipmentLevels().setActivePowerUp(1);
             boolean boss = scenario == 1;
             int defaultTrack = scenario == 2 ? 0x22 : MusicTrackIds.MUSIC_MABE_VILLAGE;
-            var event = new linksawakening.world.entity.event.EntityProjectileEvent(
-                    0,
-                    0x0A,
-                    linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE,
-                    0xFF,
-                    4,
-                    linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE,
-                    3,
-                    false,
-                    false);
+            var event = linksawakening.world.entity.event.EntityProjectileEvent.builder(
+                            0, 0x0A, linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE)
+                    .collisionValue(0xFF)
+                    .linkDamage(4)
+                    .soundChannel(linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE)
+                    .soundId(3)
+                    .build();
             for (int hit = 0; hit < 3; hit++) {
-                player.setInvincibilityCounter(0);
+                player.vitals().setInvincibilityCounter(0);
                 linksawakening.gameplay.EnemyProjectileEventConsumer.consume(
                         List.of(event),
                         player,
@@ -45,7 +42,7 @@ final class GameplayMusicControllerTest {
                         () -> controller.restoreAfterPowerUpEnds(boss, defaultTrack));
                 if (hit < 2) assertEquals(0x49, controller.currentTrackId());
             }
-            assertEquals(0, player.activePowerUp());
+            assertEquals(0, player.equipmentLevels().activePowerUp());
             assertEquals(scenario == 0 ? defaultTrack : 0x49, controller.currentTrackId());
             assertEquals(boss ? MusicTrackIds.MUSIC_NONE : defaultTrack, controller.nextDefaultMusicTrack());
         }

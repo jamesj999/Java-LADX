@@ -92,15 +92,16 @@ The audio implementation lives under `java/src/main/java/linksawakening/audio`.
 - `SoundEffectPlayer`: 60 Hz SFX playback facade.
 - `RomSoundEffectTables`: reads SFX handler pointers from ROM bank `0x1F`.
 - `RomSoundEffectEngine`: ROM memory/register bus, requests and channel ownership.
-- `SfxCpu`: decodes ROM SFX instructions.
-- `SfxCpuState`: reusable registers, stack, flags and arithmetic.
+- `SfxCpu`: one cohesive ROM instruction interpreter owning private registers,
+  reusable stack, flags and ALU operations. There is no interpreter superclass.
 
 `linksawakening.audio.browser`
 
 - `AudioBrowserMain`: standalone entry point.
-- `AudioBrowserFrame` / `BrowserPanels`: Swing view and panel assembly.
+- `AudioBrowserFrame`: package-local Swing view with its own private panel assembly;
+  `AudioBrowserMain` remains the public launcher entry point.
 - `MusicBrowserModel` / `BrowserTransportState`: headless search and transport state.
-  The frame retains its nested model names as source-compatible aliases.
+  The frame uses the standalone models directly; former nested aliases were removed.
 
 Gradle wiring:
 
@@ -110,10 +111,10 @@ Gradle wiring:
 
 The browser starts in `AudioBrowserMain`.
 
-1. Load `rom/azle.gbc` from resources.
-2. Build `MusicCatalog.fromRom(romData)`.
+1. Load the user ROM into `Rom.of(bytes)` at the input boundary.
+2. Build `MusicCatalog.fromRom(rom)`.
 3. Construct `GameBoyApu` at 48 kHz.
-4. Construct `MusicDriver(romData, apu)`.
+4. Construct `MusicDriver(rom, apu)`.
 5. Construct `OpenAlMusicPlayer(driver, apu)`.
 6. Show `AudioBrowserFrame`.
 
@@ -201,7 +202,7 @@ Important registers:
 - Channel 4: `NR41..NR44`
 - Mixer/master: `NR50..NR52`
 
-`GameBoyApu.render(frames)` returns interleaved signed 16-bit stereo samples. It is deterministic and safe to test directly. The mixer respects `NR51` routing and `NR50` volume.
+`GameBoyApu.renderInto(samples, offset, frames)` writes interleaved signed 16-bit stereo samples into caller-owned storage. It is deterministic and safe to test directly. The mixer respects `NR51` routing and `NR50` volume.
 
 Keep the APU independent from ROM parsing and OpenAL. It should know only registers, wave RAM, channels, and sample rate.
 
@@ -245,7 +246,7 @@ UI responsibilities:
 - channel activity labels
 - status line for OpenAL or playback errors
 
-`AudioBrowserFrame.TransportState` is deliberately separate from `OpenAlMusicPlayer`. It keeps Swing button state testable without requiring a native audio device.
+`BrowserTransportState` is deliberately separate from `OpenAlMusicPlayer`. It keeps Swing button state testable without requiring a native audio device.
 
 ## Testing
 
@@ -347,10 +348,10 @@ remain available to standalone clients, but are no longer session wiring.
 ## Allocation and compatibility contracts
 
 `GameBoyApu.renderInto(samples, offset, frames)` writes stereo samples into
-caller-owned storage, including clearing silent spans. `render(frames)` retains
-its allocating, owned-array API. `setPrimitiveRegisterObserver` observes integer
-register/value pairs without boxing; the original `setRegisterObserver(BiConsumer)`
-is retained as a diagnostic compatibility adapter. No observer is installed by default.
+caller-owned storage, including clearing silent spans. The allocating `render`
+and boxed observer adapters were removed after their owned callers migrated.
+Tests that need owned PCM use `TestPcm`; register traces use
+`setPrimitiveRegisterObserver`. No observer is installed by default.
 
 Browser streaming reuses PCM and direct upload storage and keeps native buffer
 ids in a primitive ring. The SFX interpreter reuses its CPU and stack, resetting
@@ -359,7 +360,7 @@ parse-position tuples in reusable primitive storage and retains zero-time-loop e
 Validated hot ROM byte reads avoid constructing temporary address wrappers.
 
 `ReusableFramePcmOutput` explicitly promises synchronous consumption without
-retaining caller storage. Desktop output implements it, allowing `FrameAudioPlayer`
+retaining caller storage. Desktop output and the default `HeadlessHost` discard output implement it, allowing `FrameAudioPlayer`
 to reuse its whole/fractional frame buffers. Other outputs retain the original
 fresh-array ownership behavior. One-shot audition returns owned storage and uses
 a single working buffer across its emulated ticks.
@@ -367,8 +368,51 @@ a single working buffer across its emulated ticks.
 `AudioGoldenTest` pins SHA-256 register streams and little-endian stereo PCM for
 three tracks and three SFX, each over 240 frames at 48 kHz. These hashes were
 captured before the refactor. `AudioAllocationTest` measures warmed-up synthetic
-music plus APU rendering with ThreadMXBean; its guard is below 256 bytes/tick.
+music plus APU rendering with ThreadMXBean; its guard is below 16 bytes/tick.
+It also guards `FrameAudioPlayer.update` with the default reusable headless output
+and the fractional browser sample clock. `SfxAllocationTest` measures an active
+synthetic interpreter handler. These paths measured 0.0 bytes per tick/frame/buffer
+with escape analysis both enabled and explicitly disabled in the test JVM.
 `FrameAudioMixerTest` checks original chunk/tick ordering at 48,000, 48,001 and
 30 Hz sample rates without native audio. Boundary tests reject LWJGL references
 outside `audio.openal` and anywhere in `input`; source checks also catch inlined
 GLFW constant imports. All these tests are headless.
+
+## Native output failures
+
+`OpenAlStream` reports `OpenAL unavailable: ...` and remains silent when device
+opening or native loading fails. Its startup opener is injectable for device-free
+failure tests. Native linkage errors during cleanup are retained as warnings while
+later cleanup continues, rather than escaping the fallback path.
+
+The engine still renders PCM for discarded headless output, preserving sample
+clocks and APU state. Only explicitly reusable outputs receive retained storage;
+third-party `PcmSoundOutput` implementations continue receiving fresh owned arrays.
+Frame pacing belongs to the app loop and is independent of these output contracts.
+
+
+## Structural boundaries after the round-4 review
+
+Implementation inheritance is absent from the audio packages. The former
+SfxCpu/SfxCpuState chain was one interpreter split for line limits, so it is now
+one 506-line class. BrowserPanels was a view slice reaching back into every
+AudioBrowserFrame widget; its assembly methods now belong to the 448-line view.
+Cohesion takes priority over file-length targets. MusicVoiceEmitter remains a
+collaborator because it owns waveform/NOISE_FF articulation state and ordered
+channel register emission; ParsePositions owns reusable cycle-detection storage.
+
+All remaining GPU byte-array migration delegates were removed after world callers
+migrated. Audio has no deprecated production members. A clean temporary
+`-Xlint:deprecation,removal` compile reports zero warnings in the owned platform
+main/test roots; the active music test now uses EntityProjectileEvent.builder.
+The normal headless suite retains the register/PCM golden tests and the allocation
+guards. No native device or Swing window is needed for verification.
+
+See [the structural audit](archive/history/platform-round-4.md) for the inheritance,
+helper-responsibility and public-visibility inventory. Platform main sources have
+zero project-class inheritance and 63 public top-level types after the review.
+
+After merging the interpreter, the final escape-analysis-disabled ROM-free check
+still measured 0.0 bytes/tick for music+APU and active SFX, and 0.0 bytes/frame or
+buffer for FrameAudioPlayer and FrameAudioMixer. The temporary test JVM argument
+was not added to build configuration.

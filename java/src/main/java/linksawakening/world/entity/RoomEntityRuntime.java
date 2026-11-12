@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
+import linksawakening.rom.EntityPropertyTables;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -19,24 +21,18 @@ import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.room.ChestContentsTable;
 
 /**
- * Mutable per-room entity state for the handler work that can be expressed by
- * the current room snapshot model. ROM display lists remain immutable; this
- * class only advances handler-owned status and sprite-variant fields.
+ * Per-room composition root for ExecuteEntities and EntityInitHandler.
+ * Owns shared slot tables, handler services and reusable frame scratch;
+ * entity-specific state belongs to motions. Slots remain immutable values.
  */
 public final class RoomEntityRuntime
         implements EntityRuntimeEffects, EntityRuntimeCombat, EntityRuntimeSpawns, EntityRuntimePlayerCommands {
     final EntityWarpController warpState = new EntityWarpController();
     final EntityRuntimeState entityState = new EntityRuntimeState();
-    /** Compatibility for world.room.RoomEntityBridge. */
-    @Deprecated
-    public static final int BOOMERANG_SFX_COUNTER_PERIOD = EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
+    final EntityFrameExecution frameExecution = new EntityFrameExecution(this, null);
 
     private final EntityPlayerCommands playerCommands =
             new EntityPlayerCommands(EntityPlayerCommandsServices.bind(this));
-
-    private void disableEntityWithoutPersistence(int slot) {
-        lifecycle.disableEntityWithoutPersistence(slot);
-    }
 
     final EntityRoomInitialization roomInitialization =
             new EntityRoomInitialization(EntityRoomInitializationServices.bind(this));
@@ -79,7 +75,7 @@ public final class RoomEntityRuntime
 
     final EntitySpriteTileSnapshot spriteTiles;
     final boolean indoorRoom;
-    private final RomTables romTables;
+    private final EntityPropertyTables entityProperties;
     final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
     final EntitySpriteHandlerCatalog spriteHandlers;
@@ -96,7 +92,6 @@ public final class RoomEntityRuntime
 
     final WarpMotion warpMotion;
 
-    /** Object-side effect emitted by MagicPowderSprinkleEntityHandler. */
     public EntityEnemyInspection enemies() {
         return enemyInspection;
     }
@@ -133,7 +128,7 @@ public final class RoomEntityRuntime
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
         ChestContentsTable chestContentsTable = builder.chestContentsTable();
         RomTables romTables = builder.romTables();
-        byte[] romData = builder.romData();
+        Rom romData = builder.rom();
 
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
@@ -146,7 +141,7 @@ public final class RoomEntityRuntime
         this.spriteHandlers = spriteHandlers;
         this.enemyCombatTables = enemyCombatTables;
         this.chestContentsTable = chestContentsTable;
-        this.romTables = romTables;
+        this.entityProperties = romTables == null ? null : romTables.entityPropertyTables();
         slimeEye.loadRom(romData);
         roomInitialization.initializeRomPresentation(romData);
         this.warpMotion = romData == null ? null : new WarpMotion(romData);
@@ -156,56 +151,6 @@ public final class RoomEntityRuntime
 
     public static RoomEntityRuntimeBuilder builder(RoomEntitySnapshot initial) {
         return new RoomEntityRuntimeBuilder(initial);
-    }
-
-    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
-    @Deprecated
-    public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
-        return builder(initial).build();
-    }
-
-    /** Compatibility for world.room.RoomSessionTest and RoomTransitionCoordinatorTest; use builder for new callers. */
-    @Deprecated
-    public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
-        return builder(initial).indoorRoom(indoorRoom).build();
-    }
-
-    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
-    @Deprecated
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables) {
-        return builder(initial)
-                .indoorRoom(indoorRoom)
-                .randomByteSupplier(randomByteSupplier)
-                .spriteHandlers(spriteHandlers)
-                .enemyCombatTables(enemyCombatTables)
-                .build();
-    }
-
-    /** Compatibility for world.room.RoomLoadCoordinator and RoomStoryState; use builder for new callers. */
-    @Deprecated
-    public static RoomEntityRuntime from(
-            RoomEntitySnapshot initial,
-            boolean indoorRoom,
-            IntSupplier randomByteSupplier,
-            EntitySpriteHandlerCatalog spriteHandlers,
-            RomEnemyCombatTables enemyCombatTables,
-            ChestContentsTable chestContentsTable,
-            RomTables romTables,
-            byte[] romData) {
-        return builder(initial)
-                .indoorRoom(indoorRoom)
-                .randomByteSupplier(randomByteSupplier)
-                .spriteHandlers(spriteHandlers)
-                .enemyCombatTables(enemyCombatTables)
-                .chestContentsTable(chestContentsTable)
-                .romTables(romTables)
-                .romData(romData)
-                .build();
     }
 
     /** Frame-only inputs using the runtime RNG, including its carried state. */
@@ -291,7 +236,7 @@ public final class RoomEntityRuntime
     boolean initializeBossBattle(RoomEntity entity) {
         int options = entityState.physicsTables.readEntityOptions1Override(entity.slot()) >= 0
                 ? entityState.physicsTables.readEntityOptions1Override(entity.slot())
-                : romTables == null ? 0 : romTables.entityOptions1(entity.type());
+                : entityProperties == null ? 0 : entityProperties.entityOptions1(entity.type());
         return initializeBossBattle(entity, options);
     }
 
@@ -311,7 +256,8 @@ public final class RoomEntityRuntime
         // Active spawns bypass the INIT dispatch; use their fresh ROM options,
         // not an override remaining from the previous occupant of this slot.
         if (slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(slots[slot], romTables == null ? 0 : romTables.entityOptions1(slots[slot].type()));
+            initializeBossBattle(
+                    slots[slot], entityProperties == null ? 0 : entityProperties.entityOptions1(slots[slot].type()));
         }
         entityState.combatTables.writeEnemyHealthGroup(
                 slot, enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type()));
@@ -361,7 +307,6 @@ public final class RoomEntityRuntime
             boolean unload,
             SlimeKeyRewardEvent reward) {}
 
-    /** Mirrors UpdateEntityTimers' shared dialog/inventory/ocarina early return. */
     @Override
     public EntityEffectConsumption entityEffects() {
         return effects;

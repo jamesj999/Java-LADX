@@ -11,6 +11,6 @@ import linksawakening.world.entity.motion.*;
 /** Focused behavior using the state owned by EntityBossRewards. */
 final class BossKeyDropBehavior {
     static void advanceBossKeyDropProducer(EntityBossRewards owner, RoomEntity source, IntSupplier randomByteSupplier) {
-        new BossKeyDropStep(owner, source, randomByteSupplier).run();
+        owner.bossKeyDropStep.run(owner, source, randomByteSupplier);
     }
 }

@@ -35,8 +35,8 @@ public final class SlimeEyeController {
         this.runtime = runtime;
     }
 
-    void loadRom(byte[] bytes) {
-        if (bytes != null) rom = new Rom(bytes);
+    void loadRom(Rom source) {
+        if (source != null) rom = source;
     }
 
     public void setScreenShakeCountdown(int value) {
@@ -230,4 +230,7 @@ public final class SlimeEyeController {
         int dy = Math.abs((byte) (e.y() - e.z() + read(RomSymbols.Data_004_4B12, box + 2) - y));
         return dx < read(RomSymbols.Data_004_4B12, box + 1) + w && dy < read(RomSymbols.Data_004_4B12, box + 3) + h;
     }
+
+    final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep();
+    final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep();
 }

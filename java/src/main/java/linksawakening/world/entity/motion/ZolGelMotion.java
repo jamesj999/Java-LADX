@@ -260,4 +260,6 @@ public final class ZolGelMotion {
     public record Split(int originalX, int originalY, int originalZ) {}
 
     record Vector(int x, int y) {}
+
+    final ZolGelStep zolGelStep = new ZolGelStep();
 }

@@ -12,6 +12,7 @@ package linksawakening.equipment;
  * <p>All methods have no-op defaults so implementations only override what
  * they need.
  */
+// Integer facing arguments preserve legacy unknown-value fallbacks at the equipment/render boundary.
 public interface EquipmentItem {
 
     /** The ROM weapon rectangle; item-specific records may retain their public names. */

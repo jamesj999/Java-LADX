@@ -19,8 +19,8 @@ final class InstrumentPickupBehavior {
             int linkEntityY,
             int linkZ,
             IntSupplier randomByteSupplier) {
-        new InstrumentPickupStep(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier)
-                .run();
+        owner.instrumentPickupStep.run(
+                owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
     }
 
     static void spawnInstrumentParticle(EntityRewardController owner, RoomEntity source, int offsetIndex, int variant) {
@@ -31,7 +31,7 @@ final class InstrumentPickupBehavior {
         }
         int[] xOffsets = {0x0A, -0x06};
         int[] speedX = {0x04, 0xFC};
-        EntitySpriteDefinition definition = runtime.spriteHandlers().forInstrumentShard();
+        EntitySpriteDefinition definition = runtime.spriteViews().forInstrumentShard();
         runtime.slots()[freeSlot] = new RoomEntity(
                 freeSlot,
                 -1,

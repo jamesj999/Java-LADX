@@ -6,7 +6,7 @@ import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityCombatRules;
 
-/** Per-invocation scratch for CuccoBehavior.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for CuccoBehavior.advance; values are assigned in source order. */
 final class CuccoStep {
     private linksawakening.world.entity.motion.CuccoMotion owner;
     private linksawakening.world.entity.motion.CuccoInteractionFrame inputs;
@@ -46,12 +46,7 @@ final class CuccoStep {
     private boolean linkCollision;
     private linksawakening.world.entity.RoomEntity updated;
 
-    CuccoStep(
-            linksawakening.world.entity.motion.CuccoMotion owner,
-            linksawakening.world.entity.motion.CuccoInteractionFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    CuccoStep() {}
 
     linksawakening.world.entity.motion.CuccoMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -284,5 +279,68 @@ final class CuccoStep {
             waveSoundId = CUCCO_HURT_WAVE_SFX;
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.CuccoMotion.Update run(
+            linksawakening.world.entity.motion.CuccoMotion owner,
+            linksawakening.world.entity.motion.CuccoInteractionFrame inputs) {
+        if (inUse) {
+            return new CuccoStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        transitionCountdown = 0;
+        flashCountdown = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkZ = 0;
+        linkInteractive = false;
+        powerBraceletHeld = false;
+        linkAttackStepActive = false;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        indoorRoom = false;
+        marinFollowing = false;
+        transitionSequenceCounter = 0;
+        angrySpawnSlotAvailable = false;
+        slot = 0;
+        frame = 0;
+        countdown = 0;
+        nextFlashCountdown = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        variant = 0;
+        renderedVariant = 0;
+        unloaded = false;
+        boomerangSound = false;
+        waveSoundId = 0;
+        dialogTableId = 0;
+        dialogLowId = 0;
+        spawnRequest = null;
+        landed = false;
+        collisionEntity = null;
+        linkCollision = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.spawnRequest = null;
+            this.collisionEntity = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

@@ -2,17 +2,18 @@ package linksawakening.equipment;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
+import linksawakening.rom.SwordTables;
 import linksawakening.state.Direction;
 
 /** Blade geometry and raster/OAM submission; attack timing remains in Sword. */
 final class SwordRenderer {
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;
-    private final RomTables romTables;
+    private final SwordTables swordTables;
     private final SwordSpriteSheet spriteSheet;
 
     SwordRenderer(RomTables romTables, SwordSpriteSheet spriteSheet) {
-        this.romTables = romTables;
+        this.swordTables = romTables == null ? null : romTables.swordTables();
         this.spriteSheet = spriteSheet;
     }
 
@@ -25,18 +26,18 @@ final class SwordRenderer {
             int[] palette,
             int offsetX,
             int offsetY) {
-        int romDir = toRomDirection(effectiveDirection);
-        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
+        int romDir = Direction.fromJavaOrDown(effectiveDirection).romIndex();
+        int swordDir = swordTables.swordDirectionFor(romDir, lookupState);
+        int bladeX = linkPixelX + swordTables.swordBladeXOffset(romDir, lookupState) + offsetX;
+        int bladeY = linkPixelY + swordTables.swordBladeYOffset(romDir, lookupState) + offsetY;
 
         // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
         // Tile $FF for the left half means only the right half is drawn
         // (the vertical blade cases).
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
+        int tile0 = swordTables.swordSpriteTile(swordDir, 0);
+        int tile1 = swordTables.swordSpriteTile(swordDir, 1);
+        int attr0 = swordTables.swordSpriteAttr(swordDir, 0);
+        int attr1 = swordTables.swordSpriteAttr(swordDir, 1);
         if (tile0 != 0xFF) {
             draw8x16(displayBuffer, tile0, bladeX, bladeY, attr0, palette);
         }
@@ -54,18 +55,18 @@ final class SwordRenderer {
             int[] palette,
             int offsetX,
             int offsetY) {
-        int romDir = toRomDirection(effectiveDirection);
-        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
+        int romDir = Direction.fromJavaOrDown(effectiveDirection).romIndex();
+        int swordDir = swordTables.swordDirectionFor(romDir, lookupState);
+        int bladeX = linkPixelX + swordTables.swordBladeXOffset(romDir, lookupState) + offsetX;
+        int bladeY = linkPixelY + swordTables.swordBladeYOffset(romDir, lookupState) + offsetY;
 
         // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
         // Tile $FF for the left half means only the right half is drawn
         // (the vertical blade cases).
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
+        int tile0 = swordTables.swordSpriteTile(swordDir, 0);
+        int tile1 = swordTables.swordSpriteTile(swordDir, 1);
+        int attr0 = swordTables.swordSpriteAttr(swordDir, 0);
+        int attr1 = swordTables.swordSpriteAttr(swordDir, 1);
         if (tile0 != 0xFF) {
             submit8x16(sink, tile0, bladeX, bladeY, attr0, palette);
         }
@@ -96,9 +97,5 @@ final class SwordRenderer {
         Tile bottom = spriteSheet.tile(flipY ? tileIndex : tileIndex + 1);
         ItemSpriteRenderer.drawTile(buffer, top, screenX, screenY, flipX, flipY, palette);
         ItemSpriteRenderer.drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
-    }
-
-    private static int toRomDirection(int direction) {
-        return Direction.fromJavaOrDown(direction).romIndex();
     }
 }

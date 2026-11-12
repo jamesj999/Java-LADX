@@ -10,7 +10,8 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import linksawakening.app.GameSession;
 import linksawakening.entity.Link;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import org.junit.jupiter.api.Test;
 
 /** Direct initial D3 setup, then normal buttons only for the entire encounter. */
@@ -26,29 +27,29 @@ final class SlimeEyeControlsTest {
         StringBuilder trace = new StringBuilder("frame\tbuttons\tlinkX\tlinkY\tlinkZ\thealth\trunning\teyes\n");
         try {
             game.initializeHeadlessNewGame();
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
             var d = game.diagnostics();
             var room = d.roomSession();
             var link = d.link();
             var player = d.playerState();
-            player.setSwordLevel(1);
-            player.setItemA(PlayerState.INVENTORY_SWORD);
-            player.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
-            player.setMaxHearts(6);
-            player.setHealth(48);
-            room.loadIndoor(2, 0x5A);
-            link.setRoomEntryRomPosition(72, 80);
-            link.setDirection(Link.DIRECTION_UP);
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
+            player.vitals().setMaxHearts(6);
+            player.vitals().setHealth(48);
+            room.rooms().loadIndoor(2, 0x5A);
+            link.position().setRoomEntryRomPosition(72, 80);
+            link.animation().setDirection(Direction.UP.javaIndex());
             d.scrollController().startScreenShake(7, 0);
-            var runtime = (RoomEntityRuntime) get(get(get(room, "context"), "entityBridge"), "entityRuntime");
+            var runtime = linksawakening.world.room.RoomFrameTestAccess.runtime(room);
             // All setup writes end here. Below this point only headlessButton/headlessFrame mutate gameplay.
             Set<String> pressed = new HashSet<>();
             boolean split = false, firstDeath = false, dead = false, reward = false, body = false;
             int splitFrame = -1, bodyHits = 0;
             int previousBodyStretch = 0;
             for (int frame = 0; frame < 9000; frame++) {
-                var eyes = room.activeRoom().entities().loadedEntities().stream()
+                var eyes = room.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .toList();
                 var active = eyes.stream()
@@ -74,7 +75,7 @@ final class SlimeEyeControlsTest {
                         split = true;
                         splitFrame = frame;
                     }
-                    if (player.runningWithPegasusBoots()) {
+                    if (player.equipmentLevels().runningWithPegasusBoots()) {
                         // Keep the blade out: the first half contact must end the run
                         // through the ROM Slime Eye sword response, not a test reset.
                         desired.add("a");
@@ -89,12 +90,12 @@ final class SlimeEyeControlsTest {
                     }
                 } else if (eyes.isEmpty()) {
                     dead = true;
-                    var heart = room.activeRoom().entities().loadedEntities().stream()
+                    var heart = room.rooms().activeRoom().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .findFirst()
                             .orElse(null);
                     if (heart != null) move(desired, link, heart.x(), heart.y(), -1);
-                    else if (player.maxHearts() >= 7) {
+                    else if (player.vitals().maxHearts() >= 7) {
                         reward = true;
                     }
                 }
@@ -102,22 +103,22 @@ final class SlimeEyeControlsTest {
                 for (String key : desired) if (!pressed.contains(key)) game.headlessButton(key, true);
                 pressed = desired;
                 byte[] rgba = game.headlessFrame();
-                var after = room.activeRoom().entities().loadedEntities().stream()
+                var after = room.rooms().activeRoom().entities().loadedEntities().stream()
                         .filter(e -> e.type() == 0x5B)
                         .toList();
                 trace.append(frame)
                         .append('\t')
                         .append(String.join("+", desired.stream().sorted().toList()))
                         .append('\t')
-                        .append(link.romEntityX())
+                        .append(link.position().romEntityX())
                         .append('\t')
-                        .append(link.romEntityY())
+                        .append(link.position().romEntityY())
                         .append('\t')
-                        .append(link.romEntityZ())
+                        .append(link.animation().romEntityZ())
                         .append('\t')
-                        .append(player.health())
+                        .append(player.vitals().health())
                         .append('\t')
-                        .append(player.runningWithPegasusBoots())
+                        .append(player.equipmentLevels().runningWithPegasusBoots())
                         .append('\t')
                         .append(after.stream()
                                 .map(e -> "%d,%d,%d,%d,%d,%d,%d,%d"
@@ -128,7 +129,7 @@ final class SlimeEyeControlsTest {
                                                 e.x(),
                                                 e.y(),
                                                 e.z(),
-                                                room.entityHealth(e.slot()),
+                                                room.entityState().entityHealth(e.slot()),
                                                 runtime.entityState.physicsTables.readEnemyTransitionCountdown(
                                                         e.slot())))
                                 .collect(java.util.stream.Collectors.joining(";")))
@@ -149,7 +150,7 @@ final class SlimeEyeControlsTest {
                     save(rgba, out.resolve("reward.png"));
                     break;
                 }
-                if (player.health() == 0) break;
+                if (player.vitals().health() == 0) break;
             }
             Files.writeString(out.resolve("engine.tsv"), trace);
             assertTrue(split, "Body must split via normal controls; hits=" + bodyHits);
@@ -157,14 +158,13 @@ final class SlimeEyeControlsTest {
             assertTrue(reward, "Reward must be collected via normal controls");
         } finally {
             Files.writeString(out.resolve("engine.tsv"), trace);
-            var close = GameSession.class.getDeclaredMethod("cleanup");
-            close.setAccessible(true);
-            close.invoke(game);
+            game.close();
         }
     }
 
     private int distance(Link link, int x, int y) {
-        return Math.abs(x - link.romEntityX()) + Math.abs(y - link.romEntityY());
+        return Math.abs(x - link.position().romEntityX())
+                + Math.abs(y - link.position().romEntityY());
     }
 
     private void approach(Set<String> desired, Link link, int x, int y, int frame, boolean body) {
@@ -175,7 +175,7 @@ final class SlimeEyeControlsTest {
         for (int[] pose : poses) {
             if (pose[0] < 24 || pose[0] > 136 || pose[1] < 32 || pose[1] > 112) continue;
             int cost = distance(link, pose[0], pose[1]);
-            if (pose[2] != romDirection(link.direction())) cost += 4;
+            if (pose[2] != romDirection(link.animation().direction())) cost += 4;
             if (cost < score) {
                 score = cost;
                 best = pose;
@@ -186,25 +186,14 @@ final class SlimeEyeControlsTest {
     }
 
     private void move(Set<String> desired, Link link, int x, int y, int facing) {
-        int dx = x - link.romEntityX(), dy = y - link.romEntityY();
+        int dx = x - link.position().romEntityX(), dy = y - link.position().romEntityY();
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2)
             desired.add(KEYS[Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 0 : 1) : (dy >= 0 ? 3 : 2)]);
-        else if (facing >= 0 && romDirection(link.direction()) != facing) desired.add(KEYS[facing]);
+        else if (facing >= 0 && romDirection(link.animation().direction()) != facing) desired.add(KEYS[facing]);
     }
 
     private int romDirection(int direction) {
-        return switch (direction) {
-            case Link.DIRECTION_RIGHT -> 0;
-            case Link.DIRECTION_LEFT -> 1;
-            case Link.DIRECTION_UP -> 2;
-            default -> 3;
-        };
-    }
-
-    private Object get(Object object, String name) throws Exception {
-        var field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(object);
+        return Direction.fromJavaOrDown(direction).romIndex();
     }
 
     private void set(Object object, String name, Object value) throws Exception {

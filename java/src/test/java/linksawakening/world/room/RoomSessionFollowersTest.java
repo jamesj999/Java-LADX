@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.state.Direction;
+import linksawakening.state.LinkMotionState;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.FollowingNpcState;
@@ -81,7 +82,7 @@ final class RoomSessionFollowersTest {
 
         RoomEntity marin = syntheticEntity(0xC1);
         assertNull(
-                RoomInteractionGeometry.pitTransitionFor(marin, pit, RoomSessionRules.LINK_MOTION_FALLING_DOWN),
+                RoomInteractionGeometry.pitTransitionFor(marin, pit, LinkMotionState.FALLING_DOWN.romValue()),
                 "Marin only falls through a well");
 
         OverworldCollision.GroundInteractionSample well =
@@ -90,7 +91,7 @@ final class RoomSessionFollowersTest {
                 marin, well, EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE));
         assertEquals(
                 new RoomEntityGroundInteraction.PitTransition(0x48, 0x60),
-                RoomInteractionGeometry.pitTransitionFor(marin, well, RoomSessionRules.LINK_MOTION_FALLING_DOWN));
+                RoomInteractionGeometry.pitTransitionFor(marin, well, LinkMotionState.FALLING_DOWN.romValue()));
     }
 
     @Test
@@ -127,8 +128,8 @@ final class RoomSessionFollowersTest {
 
         session.tickEntities(new EntityTickInputs(
                 0,
-                new LinkPosition(0, 0, 0, 0, 0),
-                new LinkMotion(false, 0, false, 0, 0, 0),
+                new LinkPosition(0, 0, 0, Direction.fromJavaOrUnknown(0), 0, 0),
+                new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
         session.components.entityBridge().outbox.consumeLinkFinalPositionRequests();
@@ -141,8 +142,8 @@ final class RoomSessionFollowersTest {
                     .orElseThrow();
             session.tickEntities(new EntityTickInputs(
                     frame++,
-                    new LinkPosition(npc.x(), npc.y(), npc.z(), 0, 0),
-                    new LinkMotion(false, 0, false, 0, 0, 0),
+                    new LinkPosition(npc.x(), npc.y(), npc.z(), Direction.fromJavaOrUnknown(0), 0, 0),
+                    new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                     1,
                     new SwordBox(false, 0, 0, 0, 0)));
 
@@ -220,21 +221,27 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.story().setBowWowState(0x80);
         session.rooms().loadIndoor(0x15, 0xE2);
-        session.entities().tickEntities(0, 0x20, 0x40, 0, Link.DIRECTION_RIGHT);
+        session.entities().tickEntities(0, 0x20, 0x40, 0, Direction.RIGHT.javaIndex());
         RoomEntity before = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();
         session.tickEntities(new EntityTickInputs(
                 1,
-                new LinkPosition(0x80, 0x40, 0, Link.DIRECTION_RIGHT, 1),
-                new LinkMotion(false, 0, false, 0, 0, 0),
+                new LinkPosition(
+                        0x80,
+                        0x40,
+                        0,
+                        Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()),
+                        1,
+                        Direction.RIGHT.javaIndex()),
+                new LinkMotion(false, linksawakening.world.room.LinkMotion.stateForRomByte(0), false, 0, 0, 0, 0),
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
         assertEquals(1, session.story().bowWowState());
         RoomEntity rescued = session.rooms().activeRoom().entities().slots().get(before.slot());
         session.entityState().setEntityDialogActive(true);
-        session.entities().tickEntities(2, 0x80, 0x40, 0, Link.DIRECTION_RIGHT);
+        session.entities().tickEntities(2, 0x80, 0x40, 0, Direction.RIGHT.javaIndex());
         RoomEntity after = session.rooms().activeRoom().entities().slots().get(before.slot());
         assertEquals(0x6D, after.type());
         assertEquals(before.sourceLoadOrder(), after.sourceLoadOrder());
@@ -257,9 +264,9 @@ final class RoomSessionFollowersTest {
         assertEquals(8, madam.spriteDefinition().variantCount());
 
         int linkY = madam.y() + 0x10;
-        session.entities().tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(0, madam.x(), linkY, 0, Direction.UP.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true);
-        session.entities().tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(1, madam.x(), linkY, 0, Direction.UP.javaIndex());
 
         assertEquals(
                 0x131,
@@ -280,7 +287,7 @@ final class RoomSessionFollowersTest {
                         0x50,
                         0,
                         0,
-                        Link.DIRECTION_DOWN);
+                        Direction.DOWN.javaIndex());
         session.rooms().loadIndoor(0x10, 0xA7);
         RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
@@ -288,16 +295,16 @@ final class RoomSessionFollowersTest {
                 .orElseThrow();
 
         int linkY = madam.y() + 0x10;
-        session.entities().tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(0, madam.x(), linkY, 0, Direction.UP.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true);
-        session.entities().tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(1, madam.x(), linkY, 0, Direction.UP.javaIndex());
 
         assertEquals(
                 0x12F,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(0, session.story().bowWowState());
         assertFalse(session.story().followingNpcState().bowWowFollowing());
-        assertEquals(0x10, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
+        assertEquals(0x10, RoomDebugFixture.of(session).entityTransitionCountdownForTest(madam.slot()));
         assertTrue(session.components
                 .entityBridge()
                 .outbox
@@ -306,13 +313,13 @@ final class RoomSessionFollowersTest {
 
         session.entityState().setEntityActionButtonsHeld(false);
         for (int frame = 2; frame <= 16; frame++) {
-            session.entities().tickEntities(frame, madam.x(), linkY, 0, Link.DIRECTION_UP);
+            session.entities().tickEntities(frame, madam.x(), linkY, 0, Direction.UP.javaIndex());
         }
 
         assertEquals(
                 List.of(new MadamMeowMeowFullHealRequest(madam.slot())),
                 session.components.entityBridge().outbox.consumeMadamMeowMeowFullHealRequests());
-        assertEquals(0, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
+        assertEquals(0, RoomDebugFixture.of(session).entityTransitionCountdownForTest(madam.slot()));
     }
 
     @Test
@@ -326,7 +333,7 @@ final class RoomSessionFollowersTest {
                         0x50,
                         0,
                         0,
-                        Link.DIRECTION_DOWN);
+                        Direction.DOWN.javaIndex());
         session.rooms().loadIndoor(0x10, 0xA7);
         RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
@@ -334,16 +341,16 @@ final class RoomSessionFollowersTest {
                 .orElseThrow();
 
         int linkY = madam.y() + 0x10;
-        session.entities().tickEntities(0, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(0, madam.x(), linkY, 0, Direction.UP.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true);
-        session.entities().tickEntities(1, madam.x(), linkY, 0, Link.DIRECTION_UP);
+        session.entities().tickEntities(1, madam.x(), linkY, 0, Direction.UP.javaIndex());
 
         assertEquals(
                 0x132,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(1, session.story().bowWowState());
         assertTrue(session.story().followingNpcState().bowWowFollowing());
-        assertEquals(0, session.components.roomSessionViews().entityTransitionCountdownForTest(madam.slot()));
+        assertEquals(0, RoomDebugFixture.of(session).entityTransitionCountdownForTest(madam.slot()));
         assertTrue(session.components
                 .entityBridge()
                 .outbox
@@ -362,10 +369,10 @@ final class RoomSessionFollowersTest {
                 .orElseThrow();
         int linkX = richard.x() + 0x0F;
 
-        session.entities().tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
-        session.entities().tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
+        session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 
         assertEquals(
                 0x12D,

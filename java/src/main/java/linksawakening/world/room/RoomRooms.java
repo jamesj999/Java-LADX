@@ -39,5 +39,8 @@ public interface RoomRooms {
 
     RoomRenderSnapshot renderSnapshot();
 
+    /** Reused read-only render projection, valid until the next tick or room change. */
+    RoomRenderSnapshot.View renderView();
+
     LiftedEntityState liftedEntityState();
 }

@@ -3,7 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.RoomEntity;
 
 /** Inputs for HinoxMotion.update. */
-public record HinoxResult(
+record HinoxResult(
         RoomEntity entity,
         int x,
         int y,

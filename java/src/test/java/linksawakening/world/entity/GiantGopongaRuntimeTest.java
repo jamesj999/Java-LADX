@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
@@ -24,7 +25,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void decodesGiantRectangleAndProjectilePairsFromBankSixRomDisplayLists() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
 
         EntitySpriteDefinition giant =
                 catalog.forEntityType(ENTITY_GIANT_GOPONGA_FLOWER, EntityRoomLoader.RoomTable.OVERWORLD);
@@ -79,7 +80,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void usesRomCombatValuesAndTheGiantFlowerHitbox() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
@@ -90,7 +91,7 @@ final class GiantGopongaRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
@@ -108,7 +109,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void advancesGiantStatesAndCreatesTheRomProjectileAtTheTimerSeam() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity giant = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_GIANT_GOPONGA_FLOWER)
@@ -139,7 +140,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void pushesLinkEvenWhenTheGiantFlowerSeesAnAirborneLink() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
@@ -150,7 +151,7 @@ final class GiantGopongaRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -170,7 +171,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void roomRuntimeInsertsTheProjectileAsAHighestFreeDynamicEntity() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_GIANT_GOPONGA_FLOWER)
@@ -181,7 +182,7 @@ final class GiantGopongaRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         for (int frame = 0; frame < 0xC8; frame++) {
@@ -203,7 +204,7 @@ final class GiantGopongaRuntimeTest {
     @Test
     void animatesAndMovesTheProjectileAccordingToItsHandlerTimers() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity projectile = new RoomEntityBuilder()
                 .type(ENTITY_GOPONGA_FLOWER_PROJECTILE)
                 .at(0x40, 0x40)

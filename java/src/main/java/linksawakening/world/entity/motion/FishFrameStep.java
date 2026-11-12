@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for FishMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for FishMotion.advance; values are assigned in source order. */
 final class FishFrameStep {
-    private final FishMotion owner;
+    private FishMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int transitionCountdown;
     private java.util.function.IntSupplier randomByteSupplier;
@@ -18,18 +18,7 @@ final class FishFrameStep {
     private boolean waterSplash;
     private linksawakening.world.entity.RoomEntity updated;
 
-    FishFrameStep(
-            FishMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int transitionCountdown,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
-        this.owner = owner;
-        this.entity = entity;
-        this.transitionCountdown = transitionCountdown;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundCollision = backgroundCollision;
-    }
+    FishFrameStep() {}
 
     linksawakening.world.entity.motion.FishMotion.Update run() {
         if ((entity.type() & 0xFF) != FishMotion.ENTITY_TYPE) {
@@ -129,5 +118,44 @@ final class FishFrameStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.FishMotion.Update run(
+            FishMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int transitionCountdown,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+        if (inUse) {
+            return new FishFrameStep().run(owner, entity, transitionCountdown, randomByteSupplier, backgroundCollision);
+        }
+        inUse = true;
+        slot = 0;
+        countdown = 0;
+        x = 0;
+        horizontalCollision = false;
+        z = 0;
+        variant = 0;
+        waterSplash = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.transitionCountdown = transitionCountdown;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundCollision = backgroundCollision;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

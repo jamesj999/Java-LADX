@@ -3,6 +3,8 @@ package linksawakening.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.EntityRoomLoader;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +13,7 @@ final class EntityNpcSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void owlStatueUsesRomPairAndOnePixelVisualYOffset() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
         EntitySpriteDefinition statue = catalog.forEntityType(0x42, EntityRoomLoader.RoomTable.INDOORS_A, 2);
         assertDefinition(statue, 0x18, 0x5DF7, EntitySpriteDefinition.Shape.DYNAMIC, 1, 0);
         var pair = statue.dynamicVariant(0);
@@ -30,8 +32,8 @@ final class EntityNpcSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void mapsWitchToHerFourFrameBankFiveRectangleDisplayList() throws Exception {
-        EntitySpriteDefinition witch =
-                new EntitySpriteHandlerCatalog(loadRom()).forEntityType(0x40, EntityRoomLoader.RoomTable.INDOORS_B);
+        EntitySpriteDefinition witch = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
+                .forEntityType(0x40, EntityRoomLoader.RoomTable.INDOORS_B);
 
         assertDefinition(witch, 0x05, 0x4780, EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
         assertEquals(4, witch.rectangleVariant(0).size());
@@ -48,7 +50,7 @@ final class EntityNpcSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void mapsFollowerDisplayListOverridesToTheirOwnRomTables() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
 
         assertDefinition(catalog.forFollowerEntityType(0x6D), 0x05, 0x401C, EntitySpriteDefinition.Shape.PAIR, 7, 0);
         assertDefinition(catalog.forFollowerEntityType(0xC1), 0x18, 0x59B8, EntitySpriteDefinition.Shape.PAIR, 11, 0);
@@ -58,7 +60,7 @@ final class EntityNpcSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void crystalSwitchUsesItsRomPairAndSingleDisplayListVariant() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition crystal = catalog.forEntityType(0x66, EntityRoomLoader.RoomTable.INDOORS_A);
 

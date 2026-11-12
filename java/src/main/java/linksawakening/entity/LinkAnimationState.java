@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.Direction;
 
-/** LinkAnimationState owns its Link state and operations. */
+/** Link animation state state and operations used by ROM {@code UpdateLinkAnimation}. */
 final class LinkAnimationState {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkMotion> linkMotion;
@@ -20,7 +20,7 @@ final class LinkAnimationState {
         LinkComponentRef<LinkMotion> linkMotion;
     }
 
-    int direction = Direction.DOWN.javaIndex();
+    Direction direction = Direction.DOWN;
     int walkTickCounter;
     int walkFrame;
     boolean movingThisFrame;
@@ -33,25 +33,25 @@ final class LinkAnimationState {
 
     boolean accessHasFacingCollision() {
         int flag =
-                switch (Direction.fromJavaOrUnknown(direction)) {
+                switch (direction) {
                     case UP -> COLLISION_TYPE_UP;
                     case DOWN -> COLLISION_TYPE_DOWN;
                     case LEFT -> COLLISION_TYPE_LEFT;
                     case RIGHT -> COLLISION_TYPE_RIGHT;
                     default -> 0;
                 };
-        return (linkMotion.get().romCollisionType & flag) != 0;
+        return (linkMotion.get().collisionState().romCollisionType() & flag) != 0;
     }
 
     int accessDirection() {
-        return direction;
+        return direction.javaIndex();
     }
 
     void accessSetDirection(int newDirection) {
         if (newDirection < Direction.DOWN.javaIndex() || newDirection > Direction.RIGHT.javaIndex()) {
             throw new IllegalArgumentException("Invalid Link direction: " + newDirection);
         }
-        direction = newDirection;
+        direction = Direction.fromJava(newDirection);
         walkTickCounter = 0;
         walkFrame = 0;
     }
@@ -61,7 +61,7 @@ final class LinkAnimationState {
     }
 
     void accessFaceRomDirectionPreservingWalkPhase(int romDirection) {
-        direction = Direction.fromRom(romDirection).javaIndex();
+        direction = Direction.fromRom(romDirection);
     }
 
     boolean accessGrassGroundEffectFlipX() {

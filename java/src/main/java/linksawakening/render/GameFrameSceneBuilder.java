@@ -10,11 +10,31 @@ public final class GameFrameSceneBuilder {
     private final HardwareFrame frame = new HardwareFrame(true);
     private final WorldSceneLayers world = new WorldSceneLayers();
 
+    private DialogWindowPainter dialogWindowPainter;
+    /** Uses alternate owned glyphs/window submission; null restores ROM-backed dialog rendering. */
+    void setDialogWindowPainter(DialogWindowPainter painter) {
+        dialogWindowPainter = painter;
+    }
+
     private FrameDrawObserver observer;
+    private final ReusableGameFrameState reusableInputs = new ReusableGameFrameState();
+    private final ReusableWorldLayers reusable = new ReusableWorldLayers();
+    private final FrameScene reusableScene = FrameScene.borrowed(reusable.layers, frame);
 
     /** Attaches optional inspection to scenes built by this session-local builder. */
-    public void setDrawObserver(FrameDrawObserver observer) {
+    void setDrawObserver(FrameDrawObserver observer) {
         this.observer = observer;
+    }
+
+    /** Compatibility bridge for app callers already holding an immutable frame; new room snapshots retain defensive-copy cost. */
+    public FrameScene buildReusable(GameFrameState state) {
+        return build(reusableInputs.copyFrom(state));
+    }
+
+    /** Refills a borrowed scene, valid until this builder's next build. Capture callers use immutable build(GameFrameState). */
+    public FrameScene build(ReusableGameFrameState state) {
+        reusable.fill(state, dialogWindowPainter);
+        return reusableScene.observedBy(observer);
     }
 
     public FrameScene build(GameFrameState state) {
@@ -29,12 +49,14 @@ public final class GameFrameSceneBuilder {
         }
 
         addDialogLayers(state);
-        if (state.link() != null && state.link().isPassingOut() && state.screen() == RenderScreen.OVERWORLD) {
+        if (state.link() != null && state.link().status().isPassingOut() && state.screen() == RenderScreen.OVERWORLD) {
             for (int i = 0; i < layers.size(); i++) {
                 RenderLayer layer = layers.get(i);
                 if (!(layer instanceof LinkRenderLayer)) {
                     layers.set(
-                            i, new PassOutPaletteRenderLayer(layer, state.link().passOutPaletteFrames()));
+                            i,
+                            new PassOutPaletteRenderLayer(
+                                    layer, state.link().status().passOutPaletteFrames()));
                 }
             }
         }
@@ -58,8 +80,10 @@ public final class GameFrameSceneBuilder {
                             || state.room().entities().spriteSelection() == null
                     ? null
                     : state.room().entities().spriteSelection().objectPalettes();
-            layers.add(new DialogRenderLayer(
-                    state.dialogController(), dialogPalette, dialogObjectPalettes, state.frameCounter()));
+            var dialog = new DialogRenderLayer(
+                    state.dialogController(), dialogPalette, dialogObjectPalettes, state.frameCounter());
+            dialog.windowPainter = dialogWindowPainter;
+            layers.add(dialog);
         }
         if (state.room() != null
                 && state.room().heartPiece() != null

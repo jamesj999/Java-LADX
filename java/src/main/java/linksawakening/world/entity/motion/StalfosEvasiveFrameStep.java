@@ -1,8 +1,8 @@
 package linksawakening.world.entity.motion;
 
-/** Per-invocation scratch for StalfosEvasiveMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for StalfosEvasiveMotion.advance; values are assigned in source order. */
 final class StalfosEvasiveFrameStep {
-    private final StalfosEvasiveMotion owner;
+    private StalfosEvasiveMotion owner;
     private linksawakening.world.entity.motion.StalfosEvasiveFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -25,10 +25,7 @@ final class StalfosEvasiveFrameStep {
     private int distanceY;
     private int variant;
 
-    StalfosEvasiveFrameStep(StalfosEvasiveMotion owner, linksawakening.world.entity.motion.StalfosEvasiveFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    StalfosEvasiveFrameStep() {}
 
     linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run() {
         if (!prepareCloneBranch()) return completedResult;
@@ -154,5 +151,51 @@ final class StalfosEvasiveFrameStep {
         }
         variant = (frame >>> 3) & 0x01;
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.StalfosEvasiveMotion.Update run(
+            StalfosEvasiveMotion owner, linksawakening.world.entity.motion.StalfosEvasiveFrame inputs) {
+        if (inUse) {
+            return new StalfosEvasiveFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        actionButtonsHeld = false;
+        transitionCountdown = 0;
+        ignoreHitsCountdown = 0;
+        randomByteSupplier = null;
+        backgroundCollision = null;
+        mapId = 0;
+        slot = 0;
+        cloneBranchReady = false;
+        frame = 0;
+        cloneRequest = null;
+        x = 0;
+        y = 0;
+        movement = null;
+        distanceX = 0;
+        distanceY = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.cloneRequest = null;
+            this.movement = null;
+            this.completedResult = null;
+        }
     }
 }

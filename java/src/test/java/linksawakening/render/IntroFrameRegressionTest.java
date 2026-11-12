@@ -10,6 +10,7 @@ import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import org.junit.jupiter.api.Test;
@@ -21,10 +22,10 @@ final class IntroFrameRegressionTest {
     void changingOnlyTheIntroFrameChangesTheRenderedOpeningFrame() {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence =
-                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        gpu.loadIntroSequenceTiles(Rom.of(rom));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(rom));
+        IntroSequence sequence = new IntroSequence(
+                Rom.of(rom), sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
 
         IntroFrameSnapshot initial = sequence.snapshot();

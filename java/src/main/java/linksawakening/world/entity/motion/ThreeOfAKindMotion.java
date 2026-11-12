@@ -89,18 +89,28 @@ public final class ThreeOfAKindMotion {
     }
 
     public PuzzleResult resolvePuzzle(List<RoomEntity> entities, java.util.function.IntUnaryOperator countdown) {
-        List<RoomEntity> cards = entities.stream()
-                .filter(entity -> entity.status() == EntityStatus.ACTIVE && entity.type() == ENTITY_TYPE)
-                .toList();
-        if (cards.size() != 3
-                || cards.stream()
-                        .anyMatch(entity -> state[entity.slot()] != 2 || countdown.applyAsInt(entity.slot()) != 0)) {
-            return PuzzleResult.NONE;
+        int first = -1, second = -1, third = -1, count = 0;
+        for (int i = 0; i < entities.size(); i++) {
+            RoomEntity entity = entities.get(i);
+            if (entity.status() != EntityStatus.ACTIVE || entity.type() != ENTITY_TYPE) continue;
+            if (count == 0) first = entity.slot();
+            if (count == 1) second = entity.slot();
+            if (count == 2) third = entity.slot();
+            count++;
         }
-        int face = direction[cards.getFirst().slot()];
-        boolean match = cards.stream().allMatch(entity -> direction[entity.slot()] == face);
-        if (!match) {
-            cards.forEach(entity -> state[entity.slot()] = 0);
+        // As in the ROM pass, inspect countdowns only after confirming exactly three cards.
+        if (count != 3
+                || state[first] != 2
+                || countdown.applyAsInt(first) != 0
+                || state[second] != 2
+                || countdown.applyAsInt(second) != 0
+                || state[third] != 2
+                || countdown.applyAsInt(third) != 0) return PuzzleResult.NONE;
+        int face = direction[first];
+        if (direction[second] != face || direction[third] != face) {
+            state[first] = 0;
+            state[second] = 0;
+            state[third] = 0;
             return PuzzleResult.MISMATCH;
         }
         return PuzzleResult.MATCH;

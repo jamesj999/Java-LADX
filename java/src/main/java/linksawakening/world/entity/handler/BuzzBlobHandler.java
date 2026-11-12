@@ -35,8 +35,7 @@ final class BuzzBlobHandler {
             RoomEntityBackgroundInteraction buzzBlobBackgroundInteraction =
                     state.background().interaction();
             if (buzzBlobBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                buzzBlobBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                buzzBlobBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             BuzzBlobMotion.Update buzzBlobUpdate = state.motion(BuzzBlobMotion.class, BuzzBlobMotion::new)
                     .advance(

@@ -20,6 +20,29 @@ Hosts supply native input, presentation and PCM output. Headless execution
 uses the same session simulation with a different host.
 See [BUILDING.md](BUILDING.md) for setup and local ROM configuration.
 
+## Design rules
+
+Use composition for implementation reuse. A main-source class may extend a
+JDK/framework type, or participate in a sealed hierarchy used polymorphically.
+Do not divide one object's implementation into a linear superclass chain.
+A collaborator owns its private state, receives the dependencies it actually
+uses, and has a responsibility that can be tested independently. Pass shared
+mutable data through small explicit state objects; do not share protected fields
+or give file-slice helpers the owner's complete state.
+
+Cohesion takes priority over line counts. A cohesive class of roughly 500 lines
+is acceptable. Merge artificial slices, and split only at a real responsibility
+boundary; moving methods into another file is not itself a design improvement.
+Stateless algorithms and immutable table data are valid separate responsibilities
+when their inputs describe that work rather than an owning object.
+
+`architecture.NoImplementationInheritanceTest` checks superclass and sealed
+permits metadata in every main class file. Owned packages have no exceptions.
+Its temporary render/gpu/audio exceptions belong to the concurrent migration
+and must be removed as those classes are converted. The field inventories,
+responsibilities and measured before/after sizes are recorded in
+[composition-redesign.md](archive/history/composition-redesign.md).
+
 ## Package map
 
 All names below are relative to `linksawakening` under
@@ -28,70 +51,138 @@ package placement does not imply that every pair is independent.
 
 ### `app`
 
-Session composition, input routing, screen selection, saves and render-state assembly.
-Key types: GameSession, SessionContext, SessionBootstrap, InputRouter, RenderStateAssembler.
+The root contains only `GameSession` and the public `HeadlessGameDriver` entry
+point. `GameSession` owns one desktop/headless frame loop and delegates to the
+objects built by `app.wiring.SessionWiring`.
 
-`GameSession` owns the frame clock, run loop and headless entry points.
-`SessionContext` is constructed once during initialization and wires the session.
-It retains one final `SessionBootstrap.Collaborators` object containing the
-ROM-backed services. The bootstrap snapshot validates its references at
-construction; services are not copied into dozens of session fields.
+| Package | Top-level types | Responsibility |
+| --- | ---: | --- |
+| `app` | 2 | Session and replay entry points |
+| `app.wiring` | 14 | Composition root, subsystem factories and equipment target adapters |
+| `app.services` | 8 | `SessionServices` and its seven subsystem bundles |
+| `app.state` | 11 | Mutable screen, scene, clock, story, input, debug, save and stop state |
+| `app.flow` | 9 | Navigation, persistence, shutdown and the completed session graph |
+| `app.input` | 7 | Host/headless keys, queued gameplay routing and input completion |
+| `app.audio` | 3 | Music selection and dialog-sound routing |
+| `app.presentation` | 2 | Frame-state assembly, composition and debug-overlay ordering |
+| `app.headless` | 4 | Diagnostic/checkpoint contracts and their owned snapshots |
+| `app.host` | 3 | Desktop/headless resources and native boundary |
+| `app.screen` | 13 | Five screens, their lifecycle ports and retained screen set |
+| `app.gameplay` | 14 | Ordered phases, transition/input gates and immutable input reuse |
+| `app.gameplay.entity` | 9 | Entity frame inputs, ordered result application and Link command adapters |
+| `app.gameplay.interaction` | 8 | Bushes, lifting, dialogs and their input gates |
+| `app.gameplay.recovery` | 5 | Pass-out animation, game-over presentation and recovery |
+| `app.story` | 4 | Opening-story state machines and music/restoration ports |
+| `app.debug` | 6 | Lazy editor/overlay ownership, teleportation and logging |
 
-`SceneState` owns the selected background maps and palettes. `ScreenState`
-owns the current screen, file-menu/save controllers and selected save slot.
-`DebugState` owns the no-clip flag and optional debug menu/overlay.
-Configuration and save-store replacement remain live for integration tests.
-The frame counter, opening motions and gameplay sound-sink bridge remain on
-`GameSession` because external integration tests access those fields directly.
-They are read at use time, not captured in a per-frame context record.
+`SessionWiring` runs once. `SubsystemWiring` builds ROM-backed services through
+`RomWiring`, `AudioWiring`, `UiWiring`, `WorldWiring` and `PlayerWiring` in dependency
+order. Equipment registration stays in its original order across
+`EquipmentWiring`, `CombatEquipment` and `ToolEquipment`; construction-only
+parameter records are nested in their factories. `GameplayWiring`, `FlowWiring`
+and `ScreenWiring` connect the retained application controllers and screens.
 
-Input/screen routing, saves, render-state assembly, opening story and
-bush/dialog/lift interactions are retained classes. Their accessors resolve
-live session state; functional callbacks are initialized once. Nullable state
-such as an inactive opening motion, closed menu or absent active sword remains
-explicitly nullable. Construction-validated service references need no
-per-frame null guards.
+`SessionServices` contains `RomServices`, `AudioServices`, `InputServices`,
+`WorldServices`, `PlayerServices`, `UiServices` and `VisualServices`.
+Collaborators receive the bundles or components they use. `SessionContext` is an
+immutable composition result containing services, state, frame-loop entry points,
+host and stop state. `FrameLoopServices` groups screens, presentation, key dispatch,
+shutdown, controllers and save storage. `SessionControllers` exposes the retained
+domain controllers for delegation and headless setup. These records own neither
+behavior nor functional callback fields.
 
-`HeadlessGameDriver.State` and `Diagnostics` are immutable snapshots with
-record-style accessors and value operations, constructed from their owner
-rather than long positional argument lists. The nine-argument
-`FileMenuScreen.Dependencies` constructor remains a compatibility exception:
-`MainFileMenuFlowTest` constructs it directly.
+`SessionState` groups live mutable holders. `FrameClock` owns the wrapping frame
+byte; `OpeningStoryState` owns wake-up/shield motions; `GameplaySounds` owns the
+replaceable sound sink. `SceneState` owns background maps and palettes.
+`ScreenState` owns the current screen, file-menu/save controllers and save slot.
+`DebugState` owns no-clip and the optional menu/overlay; `DebugTools` creates the
+latter lazily, at their original input/presentation gates. `GameplayInputState`
+tracks consumed input, `SessionOptions` holds live configuration, `SaveState`
+owns replaceable storage, and `RunState` handles stop requests. Headless setup
+uses typed accessors rather than reflection into private session fields.
 
-### `app.host`
+The enforceable construction rule is: only `app.wiring` constructs collaborators
+**across app domains**, where a domain is the first subpackage under `app`.
+Domain-local helpers may construct each other; state/service values, entry types
+and diagnostic snapshots are exempt. For example, gameplay phases own their
+local adapters and recovery presentations, while wiring connects gameplay to
+input, screens and audio. `app.gameplay`, `app.screen` and `app.story` cannot
+reference wiring. Only `app.host` may reference LWJGL. Top-level `gameplay` cannot
+depend on any `app` type. `architecture.AppPackageTest` checks these rules through
+the shared class-file reader, including constructor method references.
 
-Native lifecycle boundary and desktop/headless implementations.
-Key types: Host, DesktopHost, HeadlessHost.
+Consumer-owned ports express cross-domain dependencies: `ScreenNavigator`,
+`SaveActions`, `SessionLifecycle`, `InputCompletion`, `GameplayScreenDriver`,
+`MusicRequests`, `DialogSoundRouting`, `DialogBlockers`, `GameOverActions` and
+`DebugScroll`. `SessionNavigator` is the sole two-phase attachment: create it
+before ROM/UI/world wiring, then attach screens, routes and room-music selection
+once before publishing the session. `OpeningRestoration` remains for ordered
+save-restoration fakes. `GameplayFrame.Transitions`/`Simulation`,
+`SimulationStages`, `EntityFrameStages`, `EntityDialogRouting` and
+`LinkMotionDriver` retain recording fakes for ordering checks. `Host` and `Screen`
+have multiple implementations. The former local `DebugActions` and
+`TeleportTarget` interfaces had no cycle or fake and were removed.
+Legacy UI/host callback adaptation creates no session back-call fields; debug
+editor bindings still use functional reads/writes for editable values.
+
+`GameOverFlow`, `DialogBlockerPolicy`, `DebugTeleporter`, `SessionInput`,
+`FramePresentation` and `SessionShutdown` own their respective behavior.
+Required service references are validated at construction. Inactive story
+motions, closed menus and absent active swords remain nullable state.
+
+`HeadlessGameDriver` retains its public input/stepping API. Its nested `State`
+and `Diagnostics` implement the `HeadlessState` and `SessionDiagnostics`
+contracts and compose `ReplayCheckpoint` and `SessionDiagnosticSnapshot`.
+The checkpoint owns its values, equality, hashing and text format. Diagnostics
+retain live views with the captured frame number. These are composed public
+entry names, with no implementation superclass or separate value-method slice.
+Three **test-source** forwarding helpers preserve old static names used by tests
+outside the app ownership boundary; they add no production entry types.
+
+App/gameplay classes document their role and lifetime and follow the composition
+and cohesion rules above. Per-frame orchestration retains its collaborators;
+headless diagnostic snapshots are constructed only when requested.
 
 ### `app.screen`
 
-Screen lifecycle implementations for title, cutscene, file menus and gameplay.
-Key types: Screen, GameplayScreen, TitleScreen.
+`Screen` implementations own title, cutscene, file-menu, file-save and gameplay
+lifecycle. `app.input.GameplayScreenAdapter` connects gameplay to input
+interception, the retained frame runner and recovery presentation.
+`GameplayScreen` retains primitive key buffers: queued edges are detached before
+dispatch, new edges wait for the next frame, and save interception discards the
+pending batch. Input completion still happens only at its original frame gate.
 
 ### `app.gameplay`
 
-Ordered gameplay orchestration and adaptation of world requests to Link commands.
-Key types: GameplayFrame, GameplaySimulation, EntityPhase, LinkCommandAdapter.
+`GameplaySimulation`, its phase instances, `GameplayFrame` and `TransitionPhase`
+are built once. Phases read live state through simulation accessors.
+`GameplayFrame.tick()` runs transitions, simulation and input completion;
+`SimulationStages` preserves story/recovery early exits. `EntityFrameStages`
+ticks the world and then applies results in their original order, passing the
+same sword box and projectile events through consumers without dispatch-list
+or closure allocation.
 
-`GameplaySimulation` and its phase instances are retained for the session
-lifetime. `GameplayFrame` and `TransitionPhase` are also built once.
-The phases read the simulation's live accessors directly. `GameplayFrame.tick()`
-runs transitions, simulation and input completion. `SimulationStages` and
-`EntityFrameStages` are ordered runners shared by the retained production
-adapters and recording test doubles. They preserve early returns and pass the
-same sword box and projectile events through their consumers. They allocate no
-per-frame dispatch lists or closures.
+In `app.gameplay.entity`, `EntityFrameInputsFactory` captures a new immutable
+frame-number record and reuses unchanged immutable leaves through
+`EntityInputCache`. `FrameInputCache` similarly reuses ground, pickup and combat
+values; neither cache mutates a value already returned to a caller.
+`LinkWriteApplier` translates ordered Link requests, `EntityRewardApplier` drains
+synchronous reward batches, and `GameplayCombatEvents` implements damage outcomes
+and the room combat drain. `LinkCommandAdapter` is the world-to-Link command
+translation boundary. The world tick itself remains world-owned.
 
-`EntityFrameInputsFactory` constructs immutable inputs; `LinkWriteApplier`
-translates ordered Link requests, and `EntityRewardApplier` handles synchronous
-reward batches. `EntityDialogRouting` and `LinkMotionDriver` provide recording
-ports for music/dialog/warp ordering and final-position capture before motion.
-`RoomBombPlacement` owns the successful-placement Link animation write.
+`LinkEquipmentPhase` retains `ActiveLinkPhase` for lifting, equipment, motion,
+doors, pickup and transition work; `LinkGroundPhase` preserves pre/post-motion
+ground sampling. Interaction policy lives in `app.gameplay.interaction`, including
+`LiftButtons` for edge/B-slot priority. Pass-out animation and game-over dispatch
+live in `app.gameplay.recovery`. `app.wiring.RoomBombPlacement` adapts successful
+bomb placement to Link's animation write.
 
 ### `app.story`
 
-Opening-story coordination and presentation gates.
-Key types: OpeningStory.
+`OpeningStory` reads live clock/motion holders from `app.state` and delegates music
+through `MusicRequests`. `OpeningActions` names its dependencies;
+`OpeningRestoration` names the ordered save-restoration operations.
 
 ### `audio`
 
@@ -107,60 +198,93 @@ Key types: AppConfig, MiniJson.
 
 ### `cutscene`
 
-Scripted intro sequence, cutscene lifecycle and ROM-backed intro data.
-Key types: CutsceneManager, CutsceneScript, IntroSequence, IntroSequenceState.
+Scripted intro orchestration and ROM-backed intro data.
+Key types: CutsceneManager, IntroSequence, IntroRomData, IntroBeachActors,
+IntroWater, IntroSpriteComposer and IntroFramePublisher.
 
-The intro retains one state instance and one RNG. Lifecycle, scene motion,
-beach motion, transitions and rendering are bounded implementation sections
-sharing that state through the internal class hierarchy. Public IntroSequence
-constructors and constants remain the entry points. Published frame snapshots
-retain their immutable copies. Publishers reuse named snapshot builders; the
-record constructors remain deprecated compatibility entry points.
+IntroSequence is a final stage orchestrator. Beach actors own positions and
+motion timers; water owns wave fractions and offsets. Sprite composition owns
+its decoded tables, scratch lists and RNG, preserving original call order.
+Frame publication owns palettes, delayed scene snapshots and its retained
+builder. IntroPhaseState, IntroClock and IntroVideoMemory are small explicit
+state objects for shared stage, time and hardware-map/scroll data. Palette
+arithmetic and default-ROM construction have separate, stateless responsibilities.
+
+Entry points accept Rom with deprecated byte-array compatibility delegates.
+IntroRomData preserves its defensive copy and format bounds. Pre-update snapshot
+timing, frame counters and immutable published copies retain their original
+semantics; no collaborator receives the IntroSequence owner.
 
 ### `dialog`
 
 Dialog state, ROM text layout, font and box rendering.
-Key types: DialogController, DialogState, DialogLifecycle, DialogPaging,
-DialogTextFormatting, DialogRomLayout, DialogRenderer.
+Key types: DialogController, DialogText, DialogRomLayout and DialogRenderer.
 
-The controller's internal sections share one dialog state, preserving input
-edges, reveal timing, page scrolling, choice selection and sound ordering.
-The public controller and nested value types retain their existing names.
+DialogController owns the cohesive reveal/scroll/choice state machine and
+queued sound requests. DialogText owns name substitution and width-dependent
+layout, independently of dialog timing. Both are final and own private state;
+the former lifecycle/paging/formatting superclass layers are removed.
+Input edges, reveal timing, scrolling, selection and sound order are preserved.
+Font/layout readers use typed Rom values. Sound consumption reuses immutable
+single-event lists and copies multiple-event lists to preserve retention.
+ROM-free allocation guards exercise printing ticks and sound consumption.
 
 ### `entity`
 
-Link composition, motion, command application and shared sprite definitions.
+Link composition, motion, commands and shared sprite definitions.
 Room entity simulation lives in world.entity.
-Key types: Link, LinkAssembly, LinkPosition, LinkAnimationState, LinkItemState,
-LinkGroundMotion, LinkSignals, LinkRecovery, EntitySpriteCatalog.
+Key types: Link, LinkAssembly, LinkRoles, LinkPositionRole, LinkMotionRole,
+LinkAnimationRole, LinkActionsRole, LinkStatusRole and EntitySpriteCatalog.
 
-Link exposes the existing API through bounded compatibility views. Components
-own their position, animation, timers and status fields. Each behavior receives
-only its declared peer dependencies through typed assembly cells; no behavior
-retains Link. LinkAssembly binds the cyclic graph once before publishing the
-instance. LinkServices and the aggregate's component references are final.
-Position, collision, jumping, scripted poses and motion lifecycle use bounded
-implementation sections sharing their respective component's state.
+Link is a final aggregate with direct retained role accessors and no superclass.
+Nine narrow interfaces expose position, motion, animation, actions, status,
+equipment, airborne motion, side-view motion and controls. Their implementations
+receive components, never Link. LinkAssembly binds cyclic component references
+once before publication. Update delegates to the retained motion orchestration;
+the motion command role also coordinates aggregate debug reset. The remaining
+JumpTarget adapter is deprecated for the world-owned route fixture.
 
-LinkFrameMotion keeps ordered frame phases and a retained working-value holder.
-Direction conversions explicitly distinguish Java indices, ROM indices and
-legacy invalid-input fallbacks. Public integer constants remain deprecated
-constant expressions for external switch compatibility.
+LinkStateMachine dispatches frame phases and composes LinkDash, LinkRoomPhysics
+and LinkDoorTraversal. They own charge/rebound/shake, room defaults and door
+traversal respectively. LinkMotionStatus contains explicit shared mode/recovery
+gates. LinkMotion composes LinkPosition for XY subpixels, speeds and position
+shadows, plus LinkCollisionState for probe/mask/door-warp state. LinkAirborne
+owns jump/landing orchestration, LinkPitFall owns pit probing and fall timing,
+and LinkElevation is their explicit height/speed state. These state fields are
+private; no implementation superclass remains.
 
-Entity sprite registrations are short source-ordered groups, separate from
-lookup, dynamic/boss compositions and ROM decoding. The decoder owns one ROM
-view. LinkComponentOwnershipTest guards against facade back-references.
+LinkAnimator owns pose selection and scripted presentations. LinkSpriteComposer
+receives selected pose values and owns body tile composition/equipment draw
+order; LinkPoseTables holds fallback data. Animation facing is Direction;
+Java/ROM conversions are explicit. Raw snapshots and permissive equipment
+boundaries retain their integer representation and documented fallback behavior.
+
+EntitySpriteHandlerCatalog composes immutable registration recipes, their
+context-sensitive lookup and bounded ROM decoding. Sixteen family builders
+produce EntitySpriteRecipe values; EntitySpriteRegistrationData indexes them
+once. EntitySpriteDecoder owns ROM access. BossSpriteComposer, EntitySpriteStates
+and EntityEffectSprites own boss geometry, state-dependent selection and transient
+effect composition; EntitySpriteGeometry supplies pure OAM coordinate algorithms.
+First-match priority, map-byte selectors, bank bounds and palette/tile-source
+choices remain unchanged. EntitySpriteCatalog passes Rom directly to the
+world-owned RoomPaletteLoader. ROM-free allocation guards cover walking with
+repeated sword swings.
 
 ### `equipment`
 
 Equipped item behavior, activation and item sprite support.
-Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword,
-SwordState, SwordAttackMotion, SwordChargeMotion.
+Key types: EquipmentController, EquipmentItem, ItemRegistry, Sword, SwordSpin,
+SwordRenderer and SwordPalette.
 
-Sword implementation sections retain one attack/charge state. Equipment tick
-dispatch uses primitive frame counters with an explicit presence flag, retaining
-held/edge ordering without boxed per-frame counters. Inventory classification
-uses state.InventoryItem; raw inventory bytes still address the registry.
+Sword is a final swing/charge orchestrator with private animation and movement
+state. SwordSpin independently owns queued-start delay, spin frames, sector and
+base direction; it returns pose values and never receives Sword or its state.
+The existing renderer and palette objects handle blade presentation. Themed
+SwordTables and EquipmentTables retain ROM lookup boundaries. Primitive frame
+counters, held/input-edge priority and sound/RNG ordering are preserved.
+Owned player and Link callers use composed APIs. Sprite/palette loaders accept
+Rom; deprecated byte-array delegates retain external source and partial-buffer
+compatibility.
 
 ### `gameplay`
 
@@ -168,9 +292,29 @@ Gameplay integration contracts, dialog interactions, sound routing and event con
 Key types: EnemyCombatEventConsumer, EnemyProjectileEventConsumer, PcmSoundOutput.
 
 Owned consumers address focused PlayerState components. The sound boundary
-adapts resource requests to presentation events; the old PlayerState sound
-return type remains an isolated deprecated compatibility bridge. Signpost
-interaction has a named argument bundle alongside its legacy long signature.
+adapts resource requests to presentation events through PlayerSounds; PlayerState
+has no gameplay sound compatibility bridge. Signpost
+interaction uses its seven-argument entry point and `Interaction` bundle.
+`DamageConsequences` names the contact-hurt and power-up-ended effects requested
+by projectile consumption. Its app implementor is retained; the older callback
+parameter overloads remain for an off-limits audio test.
+
+`DialogTextLoader`, `SignpostDialogTable` and ROM-backed sound construction accept
+`Rom`. Dialog text retains its owned snapshot and bounds behavior. Only the dialog
+loader keeps a deprecated byte-array bridge, needed by `render/DialogEmulatorCapture`.
+App passes `Rom` wherever the callee supports it, including player/equipment,
+VFX, scene, UI and cutscene construction. Five byte-array bridges remain in
+`app.wiring.SubsystemWiring` and `WorldWiring` for the world-owned TransitionController,
+OverworldBushInteraction, RoomSessionConfig, RoomLoader and OverworldTilesetTable.
+Their packages own the remaining API migration.
+
+App/gameplay main and test callers use PlayerState's component APIs and Link's
+composed roles, including bound method references. Link construction uses
+`Link.Services`, and Roc's Feather targets the airborne role directly. No owned
+caller depends on the deprecated inheritance bridges; a full temporary
+`-Xlint:deprecation,removal` compile reports zero owned removal warnings.
+State enum values replace deprecated inventory, tunic, power-up and direction
+constants, with explicit ROM/engine index conversion at integer boundaries.
 
 ### `gpu`
 
@@ -186,10 +330,12 @@ Key types: InputConfig, InputState, KeyCodes.
 ### `physics`
 
 Room collision queries and physical flags.
-Key types: OverworldCollision, PhysicsFlags.
+Key types: OverworldCollision and PhysicsFlags.
 
-Physics remains input-free. StateDependencyTest scans this package for input
-dependencies as well as checking the player-state boundary.
+OverworldCollision retains themed PhysicsTables and CollisionTables from its
+existing injection boundary. Object-grid ownership, bounds, sub-pixel arithmetic
+and source collision ordering are unchanged. Physics remains input-free,
+enforced by StateDependencyTest.
 
 ### `render`
 
@@ -200,6 +346,13 @@ Key types: FrameScene, HardwareFrame, OamSink, OpenGlFramePresenter.
 
 Typed ROM addresses, symbols, bank mapping and shared tables.
 Key types: Rom, RomAddress, RomSymbols, GbcBanks.
+
+Rom construction uses validated `of` or explicitly alignment-unchecked
+`unchecked`; its constructor is private. Tests use `TestRoms.partial` for
+synthetic buffers. RomTables exposes themed table holders only: all deprecated
+aggregate methods and RomUtil delegates are removed. Five app wiring byte
+handoffs remain for the world entry-point migration; backing-array ownership
+and validation timing remain unchanged.
 
 ### `save`
 
@@ -212,59 +365,72 @@ Key types: SaveRamStore, SaveRamLayout, SaveRamImage, SaveSlotCodec, SaveSlotSta
 ### `scene`
 
 ROM-backed background scene catalog and loading.
-Key types: BackgroundSceneLoader, BackgroundSceneSpec, BackgroundSceneCatalog.
+Key types: BackgroundSceneLoader, BackgroundSceneSpec and BackgroundSceneCatalog.
 
-Scene loading supplies decoded ROM-backed backgrounds to the intro and menus;
-those controllers own their presentation state and snapshots.
+BackgroundSceneLoader retains Rom and uses typed draw-command and palette
+readers. Scene-specification address conversion retains the legacy file-offset
+semantics, including CPU-window aliases. Partial attrmap writes preserve selection-screen state for file copy
+and erase scenes. The legacy byte-array constructor remains a deprecated
+compatibility delegate. Intro and menu controllers own presentation state.
 
 ### `startup`
 
-New-game starting profile and wake-up/shield motion state machines.
-Key types: StartupCoordinator, NewGameStartProfile, MarinWakeUpMotion, TarinShieldMotion.
+New-game profiles and wake-up/shield motion state machines.
+Key types: StartupCoordinator, NewGameStartProfile, MarinWakeUpMotion and TarinShieldMotion.
 
-Startup uses focused player initialization and equipment state operations while
-retaining the source-shaped opening-motion timers and presentation contracts.
-NewGameStartProfile also offers a named builder alongside its canonical constructor.
+Startup calls PlayerState components and Link roles while preserving the
+opening-motion timers and presentation order. NewGameStartProfile supplies a
+named builder alongside its deprecated canonical constructor.
 
 ### `state`
 
-Player resources, progression, ROM value types and the Link-facing state contract.
-Key types: PlayerState, LinkPlayerState, Inventory, Vitals, Ammunition, Progression,
-EquipmentLevels, Wallet, Direction, InventoryItem, Tunic, PowerUp, OcarinaSong.
+Player resources, progression, ROM value types and save-value application.
+Key types: PlayerState, Inventory, Vitals, Ammunition, Progression, Wallet,
+EquipmentLevels, PlayerInitialization, PlayerSaveLoader and ResourceSound.
 
-PlayerState is the aggregate; deprecated compatibility sections forward old
-methods to the owning components. PlayerInitialization and PlayerSaveLoader
-preserve ordered initialization and load writes, including saved ammunition
-above ordinary pickup capacity. PlayerRewards and ChestRewards apply primitive
-reward values without importing world. Raw unknown inventory bytes survive
-classification and save round trips.
+PlayerState is a final aggregate with no superclass or deprecated members. It
+owns and directly exposes its components. The former LinkPlayerState interface
+and all PlayerState compatibility layers have been deleted; Link behavior
+addresses the components directly.
+The external migration work list is in
+[link-player-api-migration.md](archive/history/link-player-api-migration.md).
 
-Resource sounds use a single last-write-wins ResourceSound value. The legacy
-GameplaySoundEvent return type is confined to one deprecated bridge in
-PlayerResourceCompatibility. StateDependencyTest allows only state, rom and
-save dependencies outside that method, and rejects world imports entirely.
-Player components have focused boundary tests; reusable test builders provide
-named player and Link setup without hidden ROM loading.
+Initialization and save loading preserve write order and raw saved inventory
+bytes. Reward components accept state-owned values without world dependencies.
+Resource sounds are last-write-wins values mapped by the presentation consumer.
+StateDependencyTest enforces the state/rom/save boundary without exceptions and
+also checks that physics remains input-free. Composition guards require both
+aggregates to extend Object directly; the class-file inheritance guard applies
+the same composition rule to all main packages.
 
 ### `ui`
 
 Inventory, HUD and file-menu controllers and overlays.
 Key types: InventoryController, InventoryMenu, HudOverlay, FileMenuController,
-FileMenuState, FileMenuFlow, FileMenuEditing, TilemapRenderer.
+FileNameEntry and TilemapRenderer.
 
-File-menu implementation sections share one state instance. Inventory rendering
-retains row buffers and mutable call arguments consumed synchronously by the
-renderer. TilemapRenderer.Region groups geometry; legacy long signatures remain
-deprecated bridges. Public frame snapshots retain immutable ownership and use retained builders.
-OcarinaSong defines the flag-to-selection-index mapping used by the song menu.
+Inventory rendering and synchronous HardwareFrame submission reuse tile and
+attribute scratch buffers. Numeric and palette pairs use primitive values;
+region/row arguments are retained. Published closed-window snapshots still own
+independent arrays. ROM-free guards cover the fully open HUD/inventory update
+and submission path, including snapshot retention checks.
+
+UI ROM readers accept Rom. FileMenuRomData preserves its defensive copy,
+including support for legacy partial synthetic buffers. FileMenuController
+owns slot/copy/erase transitions and frame publication; its FileNameEntry
+collaborator owns character selection, insertion position and name bytes. Both
+are final with private state. Published frame snapshots remain immutable and
+use retained builders. OcarinaSong supplies typed flag and selection conversions.
 
 ### `vfx`
 
-Transient visual effects and cut-leaf presentation.
-Key types: TransientVfxSystem, TransientVfxSpriteSheet, CutLeavesEffectRenderer.
+Transient effects, source-shaped lifecycles and ROM-backed effect sprites.
+Key types: TransientVfxSystem and TransientVfxSpriteSheet.
 
-Slot collection uses an ordered loop without per-call stream/lambda allocation.
-Returned slot and sprite-placement snapshots retain their immutable semantics.
+Effect iteration retains source order. Sprite loading accepts Rom with a
+deprecated byte-array delegate for external callers. Published placement lists
+retain independent ownership; mutable scratch storage is used only where
+consumed synchronously.
 
 ### `world`
 
@@ -334,9 +500,18 @@ reads symbolic constant-pool references, including descriptors, generic
 signatures and field references. `WorldDependencyTest` uses this shared reader.
 It rejects world-to-app references, handler-to-room references and external
 use of motion/handlers, and checks the explicit app/world facade surface.
-Event dependencies must be event contracts or record/enum values.
+Event dependencies must be event contracts or record/enum values. The app
+allow-list names the used role views, boundary records and construction/resource
+facades. A second rule applies the same boundary to every non-world main client,
+with seven explicit stable sprite/OAM/physics contracts. A visibility check scans
+main and test constant pools: a public top-level world type needs a cross-package
+client or an explicit public-contract entry. Other implementation types stay
+package-private; Java subpackages still require public cross-package entity
+services. The reader accepts both main and test class roots.
 `AppBoundaryTest` checks entry-point/session ownership, screen lifecycle types,
-native dependency restrictions and the canonical bomb-placement role API.
+native dependency restrictions and the canonical bomb-placement role API. It also
+rejects session/composition references from domain collaborators and guards the
+eight-parameter limit. Structural class inspection never reads private runtime state.
 `GameplayFrameOrderTest`, `SimulationOrderTest`, `EntityFrameOrderTest` and
 `EntityFrameSessionTest` observe lifecycle order, early exits and consumer
 side effects. `RoomLinkWritesTest` checks descending merges and tie precedence;
@@ -351,22 +526,25 @@ These are specific guardrails, not a universal acyclic-package rule.
 
 ## Frame lifecycle
 
-`Host.pollEvents()` delivers keys to session input routing.
-`GameSession.update()` advances the byte-sized frame counter and begins the
+`Host.pollEvents()` delivers keys to `SessionInput`, which handles an open debug
+menu before `InputRouter`. An open debug menu pauses the update, including audio
+and RNG advancement. Ordinary screen input retains its original edge ownership.
+`GameSession.update()` advances `FrameClock` modulo 256 and begins the
 ROM random frame, then ticks `MusicDirector` before ticking the active screen.
 Thus sound requests produced during simulation are sequenced after this
 frame's audio advance; moving audio after entities changes timing.
 
 For gameplay, `GameplayFrame` executes TRANSITIONS, SIMULATION and
 INPUT_COMPLETION in that order. Simulation can return early at story gates;
-normal completion still advances input edges. Exceptions do not advance them.
+normal completion still advances input edges. `FrameInputCompletion` ticks edges
+before clearing the consumed-input flag. Exceptions do not advance them.
 `GameplaySimulation` runs dialog/story, Link/equipment, combat, entities,
 dialog gameplay cooldown and animated tiles in source order.
 Scrolling, transitions and inventory state gate entity ticking.
 
 The runtime iterates slots from highest index to zero. Each slot passes
 `EntitySlotPhase1` through `EntitySlotPhase5`; a phase can end that slot's work.
-`EntityPhase` builds immutable `EntityFrameInputs` from Link, player,
+`app.gameplay.entity.EntityPhase` builds immutable `EntityFrameInputs` from Link, player,
 UI, buttons and sword-box snapshots through `EntityFrameInputsFactory`.
 `LinkWriteApplier` applies ordered Link effects while `EntityPhase` orchestrates
 combat and presentation and delegates rewards to `EntityRewardApplier`.
@@ -391,22 +569,37 @@ queue clearing still precedes consumer effects. Snapshot-returning `consume`
 methods remain immutable for clients that retain results. The dialog boundary
 drains all requests before selecting the first one to open.
 
-After simulation, `RenderStateAssembler` supplies frame state to scene
-construction. Indexed layers and OAM entries feed hardware composition.
+After simulation, `FramePresentation` asks `RenderStateAssembler` for scene
+composition and then overlays the optional debug menu. The assembler supplies
+one `GameFrameState` value to scene construction, without chained intermediate copies. Indexed layers and OAM entries feed hardware composition.
 `FrameScene` composes RGBA, and the host presents the resulting pixels.
 Headless stepping composes the framebuffer without a native window.
 Package-private `GameSession.stepWithoutRender()` runs the same update,
 including audio and input completion, without assembling/composing pixels.
-`SessionAllocationTest` uses that path with 600 warm-up and 600 measured frames
-and `ThreadMXBean` allocation counters. Its limits are 5,248 bytes/frame for the
-opening-dialog idle sample and 18,944 for active gameplay after leaving the bed,
-with about 25% headroom over the round-3 measurements (4,205 and 15,154).
-Both include audio and world work; neither claims isolated app-only allocation.
-The active sample checks the normal-button bed-exit checkpoint. JFR sampling
-identifies entity snapshots/outbox channel machinery, shared sprite definitions,
-physics ground samples and audio PCM among remaining sources. Inputs stay
-immutable. Room effects reuse the first entity snapshot when all object-request
-channels are empty; a second snapshot still follows any object-interaction work.
+`SessionAllocationTest` uses that path through `AllocationProbe` with 600 warm-up
+frames and five 120-frame measurement windows. Its limits are 5,248 B/frame for
+opening-dialog idle and 13,575 for active gameplay after the normal-button bed
+exit. With escape analysis disabled using a temporary JVM argument, round-three
+measurements changed from 4,069 to 4,037 idle and 11,508 to 10,860 active B/frame.
+These totals include audio/world work and vary slightly with JVM warm-up.
+
+Separate phase probes cover input, dialog/story, Link/equipment, combat, entity
+input/result application (without the world tick), animated tiles and music.
+Entity input assembly fell from 368 to 40 B/frame, with a 50-byte guard. Queued
+input measured zero. JFR samples during measurement identify
+`audio.music.FrameAudioPlayer.update`, `world.entity.EntityCombatPass.resolveCombat`,
+`world.entity.EntityRoomQueries.snapshot`, `RoomEntitySnapshot` construction,
+`world.room.RoomCollisionQueries.entityObjectSample` and shared entity sprite
+construction among remaining external allocation sources.
+
+`RenderStateAllocationTest` measures actual frame-state assembly plus scene
+building before GPU composition. With escape analysis disabled, this path fell
+from 17,840 to 16,960 B/frame and is guarded at 21,200 (+25%). Its app-owned state
+assembly contributes 88 bytes, guarded at 100; world snapshot construction costs
+8,768 and render scene building 8,104 bytes. The full path cannot meet 512 bytes
+without changes to those external owners. `RoomRenderSnapshot` clones tile maps
+and palettes both at construction and on access; this refactor preserves that
+ownership contract instead of retaining stale room state. Inputs remain immutable.
 
 ```mermaid
 sequenceDiagram
@@ -442,8 +635,8 @@ sequenceDiagram
 composition has nine references, including four cohesive stores:
 `EntityPhysicsTables`, `EntityCombatTables`, `EntityRoomVariables` and
 `EntityPresentationState`. Their fields are private and accessed through slot
-or room methods. `EntityRomConstants` is a final, non-instantiable holder; the
-one deprecated facade alias remains for `RoomEntityBridge`.
+or room methods. `EntityRomConstants` is a final, non-instantiable holder; callers
+use it directly instead of facade aliases.
 
 Per-type state belongs to its motion or controller: for example Iron Mask,
 Moldorm, Rolling Bones and Moblin King retain their own slot latches, Genie
@@ -453,13 +646,16 @@ room through `get(MotionClass.class, MotionClass::new)`. Adding a motion does
 not add a field to central runtime state. Controllers receive narrowly scoped
 service interfaces; bindings connect those capabilities to the room facade.
 Stateless behavior helpers operate on their owner's state. Longer operations
-use private, per-invocation scratch and named state handlers; persistent slot
-state never lives in those invocation objects.
+use private, reusable scratch and named state handlers. Each scratch holder
+resets invocation values before use and releases input references afterward;
+a nested call uses a separate holder so callbacks cannot overwrite the outer
+invocation. Persistent slot state remains in the motion/controller owner.
 
 `EntitySlotOrchestrator` runs the five slot phases in descending slot order.
-`RoomEntity` is an immutable snapshot whose slot and load order are ROM
-identity. Lifecycle and spawn helpers preserve allocation, reset and early
-return sites. Do not compact slots, sort by type, add resets on slot reuse or
+`RoomEntity` remains an immutable record whose slot and load order are ROM
+identity. Snapshot helpers combine related field writes into one replacement
+and reuse unchanged values where fresh identity is not required. Lifecycle and
+spawn helpers preserve slot allocation, reset and early-return sites. Do not compact slots, sort by type, add resets on slot reuse or
 move RNG reads and byte writes across their original execution points.
 
 `EntityHandlerRegistry` has 256 type bindings for initialization, generic
@@ -480,24 +676,61 @@ establish the schedule.
 when changing Link state, collision services, RNG or interaction gates; service
 references retain their identity. `EntityFrameExecution` exposes operations,
 not public mutable fields. Its private scratch is grouped into frame inputs,
-timer gates, slot execution and presentation flags. Frame setup and commit
-remain separate from individual handler behavior.
+timer gates, slot execution and presentation flags. The runtime owns one
+reusable execution object; acquisition resets the frame inputs and gates,
+and each descending slot visit resets slot scratch and presentation flags.
+The orchestrator releases the frame in a finally block. Reentrant frame calls
+use separate execution state. Frame setup and commit remain separate from
+individual handler behavior.
+
+`EntityRoomInspection.snapshot()` captures an owned immutable copy for tests,
+retained state and consumers that require ownership. `view()` returns a cached
+read-only live `RoomEntitySnapshot` for immediate same-thread consumption.
+Its slot lists and presentation metadata follow the runtime; it must not be
+used as a historical frame or shared across threads. A `withX` operation on a
+live view materializes owned data before transforming it. Moldorm tail
+presentation similarly reuses immutable segment lists only while their
+coordinates are unchanged.
+
+`EntityTickAllocationTest` measures a ROM-free six-entity mix: roaming enemies,
+a projectile, active Moldorm, a droppable and an NPC, with three inspection
+reads per tick. It retains frame inputs and repositions the same slots without
+allocation, while motion state and timers continue advancing. Its 1,100-byte
+limit provides roughly 25% headroom over the optimized steady-state result.
+Measure with escape analysis both enabled and disabled using temporary local
+JVM arguments; do not commit test-runner configuration changes. Immutable
+changed entities, motion results and emitted events still allocate.
 
 Typed events and requests accumulate in the entity outbox rather than calling
 app orchestration from handlers. Room/app consumers apply Link, progression,
 dialog, music and transient effects. Source slots preserve the order of
-multiple Link writes in a frame. `EntityCombatEvent.builder` names optional
-combat effects without positional argument lists.
+multiple Link writes in a frame. Outbox channels are cached, index-based views;
+size, clear and append operations do not create iterators, predicates or channel
+wrappers per tick. Draining events still returns an owned result.
+`EntityCombatEvent.builder` and `EntityProjectileEvent.builder` name optional
+effects without positional argument lists.
+
+Entity ROM readers accept `linksawakening.rom.Rom` and use typed addresses and
+reads. Collision and property queries use `CollisionTables` and
+`EntityPropertyTables`. All entity byte-array delegates and aggregate-table
+adapters have been removed. The sprite-handler catalog outside this package
+still requires a documented `unsafeBytes()` handoff; the room loader and wiring
+make equivalent handoffs to the stable sprite catalogs. They preserve shared
+storage. Room-status arrays are mutable RAM state, not ROM buffers.
 
 Use `RoomEntityRuntime.builder(snapshot)` for runtime construction. Test-side
 `EntityRuntimeFixture`, inspection fixtures and `RoomEntityBuilder` provide
 setup and queries without production test hooks. Runtime tests are split by
-entity family and behavior. Three deprecated `ForTest` delegates remain only
-for `world.room.RoomSessionViews`; the externally used `from` overloads, frame
-constructor and combat/follower adapters also remain deprecated. Immutable
-record schemas retain their canonical constructor signatures and validation
-for source compatibility; these value schemas are the exception to the
-normal eight-parameter method limit.
+entity family and behavior. Room consumers now use runtime/frame builders,
+`EntityPickupFrame`, `EnemyCombatFrame`, `EntitySwordContactFrame` and
+`FollowingNpcSpawn`; the old `from`, `ForTest`, frame and wide operation adapters
+are deleted. The room simulation reuses its builder but emits an immutable
+`EntityFrameContext`, so retained frame inputs cannot change. Its default
+handler collision gate is derived from the projectile Link motion state.
+Four deprecated combat/projectile event constructors remain for external
+consumer tests. Immutable record schemas retain their canonical constructors
+and validation; value schemas are the exception to the normal eight-parameter
+method limit. See [Entity API migration](archive/history/entity-api-migration.md).
 
 To add an entity type:
 
@@ -528,11 +761,13 @@ interfaces; roles and frame adapters are composed. Boundary records, including
 `LinkGroundFrame`, `ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`,
 are top-level types. Construction takes `RoomSessionConfig`.
 
-The only deprecated methods are 26 direct bridges in one marked section for
-four off-limits entity test files. A seven-argument constructor and the private
-`context` reflection alias remain for those tests as well. No owned caller uses
-them. The exact member-to-caller and replacement inventory is in
-[room-facade-migration.md](archive/history/room-facade-migration.md).
+All 26 former entity-test bridges, the legacy constructor and the private
+reflection alias have been deleted. `RoomSession` has no deprecated members.
+Tests use role views and test-side `RoomDebugFixture` / `RoomFrameTestAccess`
+for internal setup and queries. Remaining source compatibility lives at the
+specific role/value/ROM boundary used by external clients, never in a facade
+inheritance chain. The exact member-to-caller inventory is in
+[the round-4 report](archive/history/room-seam-round-4.md#remaining-deprecated-boundaries).
 View implementations receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
@@ -542,11 +777,29 @@ room references until the room is wired.
 `RoomWorldState`, `RoomTransientState` and `RoomStoryState` separate persistent
 world concerns, transient state and story progression.
 `ActiveRoom` and `RoomRenderSnapshot` provide room information to consumers.
+Immediate room integration uses `EntityRoomInspection.view()` and the live
+`ActiveRoom.entityView()`. Public `ActiveRoom.entities()` and render snapshots
+retain owned immutable entity state; a bounded eight-presentation cache avoids
+copying recurring unchanged poses while preserving historical snapshots.
+
+`EntityFrameInputs` composes Link, player, UI, button and sword values. Link
+facings and motion dispatch use `Direction` and `LinkMotionState`. Raw values
+are retained alongside classifications where ROM gates accept unknown bytes.
+Inventory construction accepts `InventoryItem`, `Tunic` and `PowerUp`, retaining
+saved raw item bytes and the original flag-only inputs. Known ocarina selectors
+use `OcarinaSong`; unknown selections and song flags remain bytes. Entity ground
+codes are a separate ROM domain from Link's `GroundStatus` (entity water is
+`$02`), so they must not be converted by matching integer values.
 
 `RoomLoadCoordinator` coordinates room loading; `RoomLoader` reads room streams,
 `RoomObjectParser` decodes objects, and `RoomTilemapBuilder` constructs tilemaps.
 `RoomPaletteLoader` owns palette decoding. Pointer tables and tileset tables
-retain bank/page selection rather than flattening ROM addressing.
+retain bank/page selection rather than flattening ROM addressing. All internal
+ROM parameters, fields and reads use `Rom` and typed addresses. Six deprecated
+byte-array entry points remain solely for external clients: room config,
+room loader, tileset table, palette loader, bush interaction and transition ROM
+configuration. Their legacy `new Rom(bytes)` adaptation intentionally preserves
+partial-buffer validation timing; new callers pass the existing session `Rom`.
 See [ROM_FORMAT_NOTES.md](ROM_FORMAT_NOTES.md) for stream and macro details.
 
 `RoomTransitionCoordinator` and room transition collaborators connect room
@@ -562,7 +815,21 @@ Entity integration passes through room bridges, inputs and reward handling.
 the runtime, `RoomEntityAfterTick` applies ordered room effects,
 `RoomEntityCombatBridge` handles combat/pickup integration and
 `RoomEntityOutbox` owns queued outputs. The outbox uses a runtime supplier
-because loading a room replaces the runtime.
+because loading a room replaces the runtime. Results expose grouped Link,
+reward and presentation consumers. Link writes merge by descending source slot
+with the established cross-stream tie precedence; the application applies the
+ordered writes. Empty outbox drains and merges allocate zero bytes, guarded by
+`RoomLiveBoundaryTest`. Nonempty owned-list drains copy before clearing; reusable
+consumer drains retain their existing staged-clear and reentrancy behavior.
+
+The headless session allocation probe measured 3,312 idle and approximately
+7,457 active bytes/frame after this seam refactor, down from 3,979 and 11,080.
+`EntityTickAllocationTest` remains 874.43 bytes/tick for its six-entity mix.
+Immutable inputs and changed entities/events still allocate. A warmed JFR
+allocation-site diagnostic attributes the five largest remaining idle sites to
+PCM audio arrays, screen/dialog iterators and startup Marin result records,
+all outside `world`. The [round-4 report](archive/history/room-seam-round-4.md)
+records scope, exact sites and the separate diagnostic rates.
 Changing a visual tile alone is insufficient when collision or persistent room
 status also changes.
 

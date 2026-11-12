@@ -4,8 +4,9 @@ import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
+import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
 final class RoomChestInteractions {
@@ -16,9 +17,9 @@ final class RoomChestInteractions {
     }
 
     ChestOpenResult tryOpenChest(
-            int linkPixelX, int linkPixelY, int linkDirection, boolean actionPressed, int swordLevel) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, boolean actionPressed, int swordLevel) {
         if (!actionPressed
-                || linkDirection != Link.DIRECTION_UP
+                || linkDirection != Direction.UP
                 || dependencies.location().activeRoom == null
                 || dependencies.entityBridge().get().entityRuntime == null) {
             return new ChestOpenResult(false, -1, -1, -1);
@@ -26,8 +27,10 @@ final class RoomChestInteractions {
         if (linkPixelX < 0 || linkPixelY < 0 || linkPixelX >= ROOM_PIXEL_WIDTH || linkPixelY >= ROOM_PIXEL_HEIGHT) {
             return new ChestOpenResult(false, -1, -1, -1);
         }
-        int column = Math.floorDiv(linkPixelX + (dependencies.romData()[0x1F4B] & 0xFF), 0x10);
-        int row = Math.floorDiv(linkPixelY + (dependencies.romData()[0x1F4F] & 0xFF), 0x10);
+        int column = Math.floorDiv(
+                linkPixelX + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4B))), 0x10);
+        int row = Math.floorDiv(
+                linkPixelY + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4F))), 0x10);
         if (column < 0
                 || column >= RoomConstants.OBJECTS_PER_ROW
                 || row < 0
@@ -81,7 +84,7 @@ final class RoomChestInteractions {
                         .get()
                         .entityRuntime
                         .inspection()
-                        .snapshot());
+                        .view());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 
@@ -90,7 +93,7 @@ final class RoomChestInteractions {
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             RoomLocationState location,
             OverworldCollision overworldCollision,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews,
             RoomWorldState roomState,

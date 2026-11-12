@@ -14,9 +14,7 @@ class DebugMenuIntegrationTest {
     void menuPausesEditsTeleportsAndConsumesEscape() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -35,8 +33,8 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
         assertEquals(0x17, game.diagnostics().roomSession().rooms().currentRoomId());
         assertEquals(1, game.diagnostics().roomSession().rooms().mapCategory());
-        assertEquals(72, game.diagnostics().link().pixelX());
-        assertEquals(96, game.diagnostics().link().pixelY());
+        assertEquals(72, game.diagnostics().link().position().pixelX());
+        assertEquals(96, game.diagnostics().link().position().pixelY());
         // Exercise category changes and the separate Color Dungeon tables.
         teleport(game, menu, 2, 0, 0x19);
         assertEquals(2, game.diagnostics().roomSession().rooms().mapCategory());
@@ -51,17 +49,15 @@ class DebugMenuIntegrationTest {
                 .findFirst()
                 .orElseThrow();
         sword.write().accept(0);
-        assertEquals(0, game.diagnostics().playerState().itemA());
+        assertEquals(0, game.diagnostics().playerState().inventory().itemA());
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
-        game.diagnostics().playerState().applyEntityPickup(0x2E);
+        game.diagnostics().playerState().playerRewards().applyEntityPickup(0x2E);
         menu.entries().getFirst().write().accept(123);
-        assertEquals(123, game.diagnostics().playerState().rupees());
-        assertEquals(0, game.diagnostics().playerState().addRupeeBuffer());
+        assertEquals(123, game.diagnostics().playerState().wallet().rupees());
+        assertEquals(0, game.diagnostics().playerState().wallet().addRupeeBuffer());
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         assertFalse(menu.isOpen());
-        var running = SessionTestAccess.field(game, "running");
-        running.setAccessible(true);
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
         game.headlessFrame();
         assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
     }
@@ -70,9 +66,7 @@ class DebugMenuIntegrationTest {
     void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         // Keep the real Marin/Tarin wake-up sequence; do not skip it with F2.
         var before = game.diagnostics().headlessState();
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -84,7 +78,7 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
         assertEquals("DEBUG 2/5 INVENTORY", menu(game).title());
         game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
-        assertEquals(1, game.diagnostics().playerState().itemA());
+        assertEquals(1, game.diagnostics().playerState().inventory().itemA());
         game.headlessFrame();
         assertEquals(before.frame(), game.diagnostics().frameCounter());
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -97,20 +91,16 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         assertFalse(menu(game).isOpen());
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
-        var running = SessionTestAccess.field(game, "running");
-        running.setAccessible(true);
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
         game.headlessFrame(); // Wake-up blocks and discards the save request.
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
     }
 
     @Test
     void configDisablesMenu() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":false}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":false}"));
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
         assertNull(menu(game));
     }
@@ -119,9 +109,7 @@ class DebugMenuIntegrationTest {
     void menuWaitsForRoomTransitionsAndDialogs() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.diagnostics().transitionController().startFadeOut(() -> {});
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -142,8 +130,6 @@ class DebugMenuIntegrationTest {
     }
 
     private DebugMenu menu(GameSession game) throws Exception {
-        var field = SessionTestAccess.field(game, "debugMenu");
-        field.setAccessible(true);
-        return (DebugMenu) field.get(SessionTestAccess.owner(game, "debugMenu"));
+        return game.state().debug().debugMenu;
     }
 }

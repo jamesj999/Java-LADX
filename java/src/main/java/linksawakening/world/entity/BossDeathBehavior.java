@@ -139,7 +139,8 @@ final class BossDeathBehavior {
         runtime.motions().get(MoblinKingMotion.class, MoblinKingMotion::new).setLethalHitFrame(slot, 0);
         if (hitThisFrame) return;
         if (runtime.spriteHandlers() != null)
-            source = withDefinition(source, runtime.spriteHandlers().forMoblinKingState(12, -1, source.z() != 0), 0);
+            source = withDefinition(
+                    source, runtime.slotProperties().spriteViews().forMoblinKingState(12, -1, source.z() != 0), 0);
         runtime.slots()[slot] = withFlipAttribute(
                 source,
                 runtime.physicsTables().readBaseEntityFlipAttribute(slot)

@@ -2,11 +2,12 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomSessionRules.*;
 
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.state.Direction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.transition.Warp;
 
@@ -18,7 +19,7 @@ final class RoomDungeonKeyholes {
     }
 
     boolean tryUnlockTailCaveKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, boolean hasTailKey) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, boolean hasTailKey) {
         return dependencies
                 .roomDoorInteractions()
                 .get()
@@ -33,7 +34,7 @@ final class RoomDungeonKeyholes {
     }
 
     boolean tryUnlockKeyCavernKeyhole(
-            int linkPixelX, int linkPixelY, int linkDirection, int collisionType, int goldenLeavesCount) {
+            int linkPixelX, int linkPixelY, Direction linkDirection, int collisionType, int goldenLeavesCount) {
         return dependencies
                 .roomDoorInteractions()
                 .get()
@@ -50,7 +51,7 @@ final class RoomDungeonKeyholes {
     boolean tryUnlockOverworldDungeonKeyhole(
             int linkPixelX,
             int linkPixelY,
-            int linkDirection,
+            Direction linkDirection,
             int collisionType,
             int roomId,
             boolean hasKey,
@@ -58,7 +59,7 @@ final class RoomDungeonKeyholes {
         if (dependencies.location().activeRoom == null
                 || dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD
                 || dependencies.location().activeRoom.roomId() != roomId
-                || linkDirection != Link.DIRECTION_UP
+                || linkDirection != Direction.UP
                 || (collisionType & LINK_COLLISION_TYPE_UP) == 0
                 || (dependencies.roomState().overworldRoomStatus[roomId] & ROOM_STATUS_EVENT_1) != 0) {
             return false;
@@ -156,8 +157,8 @@ final class RoomDungeonKeyholes {
         }
         int frameIndex = (countdown >>> 3) & 0x02;
         int frameOffset = RomBank.romOffset(0x02, 0x5642) + frameIndex;
-        int topTile = dependencies.romData()[frameOffset] & 0xFF;
-        int bottomTile = dependencies.romData()[frameOffset + 1] & 0xFF;
+        int topTile = dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(frameOffset));
+        int bottomTile = dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(frameOffset + 1));
         int tileX = (TAIL_CAVE_GATE_LOCATION & 0x0F) * 2;
         int tileY = (TAIL_CAVE_GATE_LOCATION >>> 4) * 2;
         int topLeft = tileY * RoomConstants.ROOM_TILE_WIDTH + tileX;
@@ -186,7 +187,7 @@ final class RoomDungeonKeyholes {
             RoomLocationState location,
             OverworldCollision overworldCollision,
             RoomPuzzleState puzzles,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomDoorInteractions> roomDoorInteractions,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             RoomWorldState roomState) {}

@@ -5,6 +5,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
@@ -21,11 +22,13 @@ public final class InventoryMenu {
     private static final int SUBSCREEN_COLS = 2;
 
     private final InventoryTilemapLoader tilemapLoader;
+    private final int[] frameTiles = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
+    private final int[] frameAttributes = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final OcarinaSongMenu ocarinaSongMenu;
     private final OcarinaPopupRenderer ocarinaPopupRenderer;
-    private final byte[] romData;
+    private final Rom romData;
     private boolean ocarinaTilesLoaded;
     private final InventoryInstrumentPanel instrumentPanel;
     private final InventoryDungeonPanel dungeonPanel;
@@ -44,18 +47,15 @@ public final class InventoryMenu {
     private int cursorFrameCounter = 0;
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState) {
-        this(tilemapLoader, playerState, GameplaySoundSink.none(), null);
+        this(tilemapLoader, playerState, GameplaySoundSink.none(), (Rom) null);
     }
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink) {
-        this(tilemapLoader, playerState, soundSink, null);
+        this(tilemapLoader, playerState, soundSink, (Rom) null);
     }
 
     public InventoryMenu(
-            InventoryTilemapLoader tilemapLoader,
-            PlayerState playerState,
-            GameplaySoundSink soundSink,
-            byte[] romData) {
+            InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink, Rom romData) {
         this.tilemapLoader = tilemapLoader;
         this.playerState = playerState;
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
@@ -241,8 +241,9 @@ public final class InventoryMenu {
     public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
         if (romData != null)
             gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
-        int[] tilemap = tilemapLoader.copyBaseTilemap();
-        int[] attrmap = tilemapLoader.copyAttrmap();
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
         HudOverlay.apply(tilemap, attrmap, playerState);
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
@@ -316,8 +317,9 @@ public final class InventoryMenu {
     public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
         if (romData != null)
             gpu.updatePowderInventoryTiles(romData, playerState.ammunition().hasToadstool());
-        int[] tilemap = tilemapLoader.copyBaseTilemap();
-        int[] attrmap = tilemapLoader.copyAttrmap();
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
         HudOverlay.apply(tilemap, attrmap, playerState);
         boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
@@ -369,5 +371,15 @@ public final class InventoryMenu {
             gpu.loadSharedVfxTiles(romData);
             ocarinaTilesLoaded = false;
         }
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public InventoryMenu(
+            InventoryTilemapLoader tilemapLoader,
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            byte[] romData) {
+        this(tilemapLoader, playerState, soundSink, romData == null ? null : Rom.unchecked(romData));
     }
 }

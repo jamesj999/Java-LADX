@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.SandCrabMotion;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ final class SandCrabRuntimeTest {
 
     @Test
     void decodesSandCrabsTwoRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
@@ -43,7 +44,7 @@ final class SandCrabRuntimeTest {
     @Test
     void usesSandCrabsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_SAND_CRAB)
@@ -53,7 +54,7 @@ final class SandCrabRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_SAND_CRAB));
@@ -66,7 +67,7 @@ final class SandCrabRuntimeTest {
 
     @Test
     void movesBeforeStartingTheRomTimerAndUsesBankFifteenDirectionTables() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
         RoomEntity crab = new RoomEntityBuilder()
@@ -92,7 +93,7 @@ final class SandCrabRuntimeTest {
 
     @Test
     void blockedMovementTriggersTheRomTimerAndChoosesANewDirection() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_SAND_CRAB, EntityRoomLoader.RoomTable.OVERWORLD);
         SandCrabMotion motion = new SandCrabMotion();
         RoomEntity crab = new RoomEntityBuilder()
@@ -122,7 +123,7 @@ final class SandCrabRuntimeTest {
     @Test
     void nonInteractiveLinkMotionSkipsSandCrabTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_SAND_CRAB)
@@ -132,7 +133,7 @@ final class SandCrabRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         AtomicInteger groundCalls = new AtomicInteger();
         runtime.configuration().setGroundInteraction((entity, frameCounter, previousStatus, speedZ, sideScrolling) -> {

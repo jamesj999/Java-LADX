@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 
-/** Per-invocation scratch for RoamingEnemyMotion.advanceInternal; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for RoamingEnemyMotion.advanceInternal; values are assigned in source order. */
 final class RoamingEnemyFrameStep {
-    private final RoamingEnemyMotion owner;
+    private RoamingEnemyMotion owner;
     private linksawakening.world.entity.motion.RoamingEnemyFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int linkEntityX;
@@ -19,10 +19,7 @@ final class RoamingEnemyFrameStep {
     private int y;
     private int variant;
 
-    RoamingEnemyFrameStep(RoamingEnemyMotion owner, linksawakening.world.entity.motion.RoamingEnemyFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    RoamingEnemyFrameStep() {}
 
     linksawakening.world.entity.motion.RoamingEnemyMotion.Update run() {
         if (!prepareTimersAndMotion()) return completedResult;
@@ -131,5 +128,41 @@ final class RoamingEnemyFrameStep {
         owner.inertia[slot] = (owner.inertia[slot] + 1) & 0xFF;
         variant = RoamingEnemyMotion.VARIANT_BY_DIRECTION[owner.direction[slot]] | ((owner.inertia[slot] >>> 3) & 0x01);
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.RoamingEnemyMotion.Update run(
+            RoamingEnemyMotion owner, linksawakening.world.entity.motion.RoamingEnemyFrame inputs) {
+        if (inUse) {
+            return new RoamingEnemyFrameStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        randomByteSupplier = null;
+        backgroundInteraction = null;
+        ignoreHitsCountdown = 0;
+        frameCounter = 0;
+        creditsGameplay = false;
+        slot = 0;
+        x = 0;
+        y = 0;
+        variant = 0;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.completedResult = null;
+        }
     }
 }

@@ -5,7 +5,7 @@ import static linksawakening.state.PlayerState.*;
 
 import java.util.Objects;
 
-/** Inventory owns its player-state fields and their update rules. */
+/** Inventory storage and slot swaps used by ROM {@code wInventoryItems}. */
 public final class Inventory {
     int itemA = InventoryItem.SWORD.romValue();
     int itemB = InventoryItem.EMPTY.romValue();

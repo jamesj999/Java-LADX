@@ -11,7 +11,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /**
- * The home, kidnapped, and following motion states of bank-$05's Bow-Wow handler.
+ * The home, kidnapped, and following motion states of bank-$05's BowWowEntityHandler.
  *
  * <p>The original keeps Bow-Wow's setup state separate from the active
  * handler state. This class keeps those WRAM-like fields per entity slot so
@@ -36,7 +36,8 @@ public final class BowWowMotion {
 
     final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // wEntitiesPrivateState4Table: setup latch, separate from active handler state.
+    final int[] setupComplete = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -94,7 +95,7 @@ public final class BowWowMotion {
         chains[slot] = new BowWowChain();
         activeState[slot] = 0;
         selectedVariant[slot] = 0;
-        privateState4[slot] = 0;
+        setupComplete[slot] = 0;
         transitionCountdown[slot] = 0;
         privateCountdown1[slot] = 0;
         privateCountdown2[slot] = 0;
@@ -130,7 +131,7 @@ public final class BowWowMotion {
     }
 
     int privateState4(int slot) {
-        return privateState4[slot];
+        return setupComplete[slot];
     }
 
     public int transitionCountdown(int slot) {
@@ -192,7 +193,7 @@ public final class BowWowMotion {
         targetX[slot] = x;
         targetY[slot] = y;
         chains[slot].initialize(x, y - entity.z());
-        privateState4[slot] = 1;
+        setupComplete[slot] = 1;
         return withPositionAndVariant(entity, x, y, entity.z(), entity.spriteVariant());
     }
 
@@ -358,4 +359,6 @@ public final class BowWowMotion {
     public record TargetContact(int slot, int type) {}
 
     record Vector(int x, int y) {}
+
+    final BowWowStep bowWowStep = new BowWowStep();
 }

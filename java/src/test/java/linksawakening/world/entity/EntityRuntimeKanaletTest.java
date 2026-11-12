@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -61,8 +62,8 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void kanaletKnightTerminalDeathActuallySpawnsTheGoldenLeaf() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity knight = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(3)
@@ -77,7 +78,8 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(tables)
                 .build();
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
@@ -197,8 +199,8 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void bombExplosionTriggersTheKanaletWallMoblinHandler() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity wall = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x94)

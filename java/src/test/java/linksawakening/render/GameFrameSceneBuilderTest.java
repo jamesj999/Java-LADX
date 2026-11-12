@@ -51,20 +51,21 @@ final class GameFrameSceneBuilderTest {
         int[] tilemap = new int[32 * 32];
         int[] attrmap = new int[32 * 32];
         int[][] palettes = {{0, 0, 0, 0}};
-        IntroFrameSnapshot snapshot = new IntroFrameSnapshot(
-                "intro-sea",
-                "SEA",
-                3,
-                4,
-                0,
-                null,
-                0,
-                tilemap,
-                attrmap,
-                palettes,
-                palettes,
-                List.of(new IntroSprite(0, 0, 0, 0, false, false)),
-                0);
+        IntroFrameSnapshot snapshot = new IntroFrameSnapshot.Builder()
+                .sceneId("intro-sea")
+                .substate("SEA")
+                .frameCounter(3)
+                .scrollX(4)
+                .scrollY(0)
+                .lineScrollX(null)
+                .verticalWaveOffset(0)
+                .tilemap(tilemap)
+                .attrmap(attrmap)
+                .bgPalettes(palettes)
+                .objPalettes(palettes)
+                .sprites(List.of(new IntroSprite(0, 0, 0, 0, false, false)))
+                .titleRevealRows(0)
+                .build();
 
         FrameScene scene = builder.build(GameFrameState.empty()
                 .withScreen(RenderScreen.CUTSCENE)
@@ -102,7 +103,7 @@ final class GameFrameSceneBuilderTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        link.showMarinWakeUpBed(3);
+        link.animation().showMarinWakeUpBed(3);
 
         FrameScene scene = new GameFrameSceneBuilder()
                 .build(GameFrameState.empty()

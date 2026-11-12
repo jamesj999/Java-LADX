@@ -62,7 +62,8 @@ public final class EntityFrameExecution {
         return runtime;
     }
 
-    private final EntityFrameContext context;
+    private EntityFrameContext context;
+    private boolean inUse;
 
     public EntityFrameContext context() {
         return context;
@@ -71,6 +72,10 @@ public final class EntityFrameExecution {
     EntityFrameExecution(RoomEntityRuntime runtime, EntityFrameContext context) {
         this.runtime = runtime;
         this.context = context;
+    }
+
+    public EntitySpriteViews spriteViews() {
+        return runtime.slotProperties.spriteViews();
     }
 
     public linksawakening.entity.EntitySpriteHandlerCatalog sprites() {
@@ -283,5 +288,33 @@ public final class EntityFrameExecution {
 
     EntityHandlerRegistry handlers() {
         return runtime.entityHandlers;
+    }
+
+    EntityFrameExecution acquire(EntityFrameContext next) {
+        if (inUse) return new EntityFrameExecution(runtime, null).acquire(next);
+        inUse = true;
+        context = next;
+        inputs.reset();
+        gates.reset();
+        slotFrame.reset();
+        presentation.reset();
+        return this;
+    }
+
+    void release() {
+        context = null;
+        inUse = false;
+    }
+
+    private final EntityMotionRegistry scratch = new EntityMotionRegistry();
+
+    public <T> T scratch(Class<T> type, java.util.function.Supplier<? extends T> factory) {
+        return scratch.get(type, factory);
+    }
+
+    private final EntityFrameCollision collision = new EntityFrameCollision(this);
+
+    EntityFrameCollision collisionAdapters() {
+        return collision;
     }
 }

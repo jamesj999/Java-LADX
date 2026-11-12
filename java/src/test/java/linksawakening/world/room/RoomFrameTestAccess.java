@@ -6,6 +6,10 @@ import linksawakening.world.entity.event.HeartContainerRewardEvent;
 public final class RoomFrameTestAccess {
     private RoomFrameTestAccess() {}
 
+    public static linksawakening.world.entity.RoomEntityRuntime runtime(RoomSession room) {
+        return room.components.entityBridge().entityRuntime;
+    }
+
     public static void music(RoomSession room, int track) {
         room.components.entityBridge().outbox.pendingRoomMusicTrack = track;
     }

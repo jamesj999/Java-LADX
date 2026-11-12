@@ -1,6 +1,10 @@
 package linksawakening.world.entity;
 
-/** Presentation decisions retained across the ordered slot phases. */
+/**
+ * ExecuteEntities presentation decisions for one slot, retained across its ordered phase sites.
+ * EntityFrameExecution resets these flags before every slot, including unloaded slots.
+ * Setters return the assigned value so handler branch expressions retain their original order.
+ */
 public final class EntityPresentationFlags {
     private enum Kind {
         GHINI,

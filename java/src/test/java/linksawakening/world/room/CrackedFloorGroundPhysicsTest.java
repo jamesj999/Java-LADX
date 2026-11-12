@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.api.Test;
@@ -19,11 +21,11 @@ class CrackedFloorGroundPhysicsTest {
             rom = input.readAllBytes();
         }
         var session = new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
-                new OverworldCollision(RomTables.loadFromRom(rom)),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldCollision(RomTables.load(TestRoms.partial(rom))),
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
         session.rooms().loadIndoor(0, 0x17);
@@ -32,7 +34,17 @@ class CrackedFloorGroundPhysicsTest {
 
     private static LinkGroundFrame frame(
             int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
-        return new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
+        return new LinkGroundFrame(
+                x,
+                y,
+                airborne,
+                blocked,
+                dialog,
+                transition,
+                linksawakening.world.room.LinkMotion.stateForRomByte(0),
+                0,
+                0,
+                0);
     }
 
     private static LinkGroundFrame standing() {

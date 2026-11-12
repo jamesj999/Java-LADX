@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.motion.UrchinFrame;
@@ -21,7 +22,7 @@ final class UrchinRuntimeTest {
 
     @Test
     void decodesNormalAndCreditsRomSpritePairs() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         EntitySpriteDefinition normal = catalog.forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
         EntitySpriteDefinition credits = catalog.forUrchinState(true);
 
@@ -42,7 +43,7 @@ final class UrchinRuntimeTest {
     @Test
     void exposesUrchinRomMetadataAndBigBlockCollision() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_URCHIN)
@@ -52,7 +53,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_URCHIN));
@@ -67,7 +68,7 @@ final class UrchinRuntimeTest {
     @Test
     void normalContactUsesTheSharedEnemyDamagePath() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_URCHIN)
@@ -77,7 +78,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         List<EntityCombatEvent> events =
@@ -93,7 +94,7 @@ final class UrchinRuntimeTest {
     @Test
     void normalContactKeepsItsRomDamageWhenCombatTablesAreUnavailable() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_URCHIN)
@@ -182,7 +183,7 @@ final class UrchinRuntimeTest {
     @Test
     void runtimeEmitsPushJingleAndFinalPositionRequest() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_URCHIN)
@@ -192,7 +193,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -216,7 +217,7 @@ final class UrchinRuntimeTest {
         linksawakening.gameplay.EnemyCombatEventConsumer.consume(events, sounds::add);
         assertEquals(List.of(linksawakening.gameplay.GameplaySoundEvent.URCHIN_PUSH), sounds);
         var map = linksawakening.gameplay.GameplaySoundEffectMap.fromCatalog(
-                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(rom));
+                linksawakening.audio.sfx.SoundEffectCatalog.fromRom(EntityRomTestData.view(rom)));
         var effect = map.resolve(sounds.getFirst()).orElseThrow();
         assertEquals(linksawakening.audio.sfx.SoundEffectNamespace.JINGLE, effect.namespace());
         assertEquals(0x3E, effect.id());
@@ -225,7 +226,7 @@ final class UrchinRuntimeTest {
     @Test
     void runtimeRestoresLinkFinalPositionForNormalContactWithoutShieldPush() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_URCHIN)
@@ -235,7 +236,7 @@ final class UrchinRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -269,8 +270,8 @@ final class UrchinRuntimeTest {
     }
 
     private static RoomEntity urchin(byte[] rom) {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(rom).forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(rom))
+                .forEntityType(ENTITY_URCHIN, EntityRoomLoader.RoomTable.OVERWORLD);
         return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_URCHIN)

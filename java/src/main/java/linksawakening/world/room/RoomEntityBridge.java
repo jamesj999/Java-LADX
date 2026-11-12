@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -56,7 +57,7 @@ final class RoomEntityBridge {
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay) {
             dependencies.entityFrame().boomerangSoundCounter = (dependencies.entityFrame().boomerangSoundCounter + 1)
-                    % RoomEntityRuntime.BOOMERANG_SFX_COUNTER_PERIOD;
+                    % linksawakening.world.entity.EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
         }
         // Main may run several world frames without an entity pass during a
         // transition. The next pass must use that clock without ticking twice.
@@ -175,7 +176,7 @@ final class RoomEntityBridge {
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             RomRandomByteSource entityRandomByteSource,
             GPU gpu,
-            byte[] romData,
+            Rom romData,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator) {}
 

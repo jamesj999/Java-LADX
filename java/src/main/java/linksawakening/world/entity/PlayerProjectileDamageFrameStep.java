@@ -8,7 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for PlayerProjectileDamage.applyPlayerProjectileDamage; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for PlayerProjectileDamage.applyPlayerProjectileDamage; values are assigned in source order. */
 final class PlayerProjectileDamageFrameStep {
     private linksawakening.world.entity.EntityProjectileController owner;
     private linksawakening.world.entity.RoomEntity target;
@@ -24,18 +24,7 @@ final class PlayerProjectileDamageFrameStep {
     private linksawakening.world.entity.event.EntityCombatEvent.SoundChannel secondaryChannel;
     private int secondarySoundId;
 
-    PlayerProjectileDamageFrameStep(
-            linksawakening.world.entity.EntityProjectileController owner,
-            linksawakening.world.entity.RoomEntity target,
-            int damageType,
-            int speedX,
-            int speedY) {
-        this.owner = owner;
-        this.target = target;
-        this.damageType = damageType;
-        this.speedX = speedX;
-        this.speedY = speedY;
-    }
+    PlayerProjectileDamageFrameStep() {}
 
     void run() {
         if (!prepareDamage()) return;
@@ -112,8 +101,8 @@ final class PlayerProjectileDamageFrameStep {
             } else if (isZolGelType(target.type())) {
                 runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(targetSlot);
                 if (target.type() == EntityRomConstants.ENTITY_ZOL && runtime.spriteHandlers() != null) {
-                    runtime.slots()[targetSlot] =
-                            withDefinition(target, runtime.spriteHandlers().forZolSlimeEye(), target.spriteVariant());
+                    runtime.slots()[targetSlot] = withDefinition(
+                            target, runtime.slotProperties().spriteViews().forZolSlimeEye(), target.spriteVariant());
                 }
             }
             runtime.combatTables().writeEnemyFlashCountdown(targetSlot, 0x18);
@@ -138,5 +127,43 @@ final class PlayerProjectileDamageFrameStep {
                         .swordPokeVfx(null)
                         .build());
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityProjectileController owner,
+            linksawakening.world.entity.RoomEntity target,
+            int damageType,
+            int speedX,
+            int speedY) {
+        if (inUse) {
+            new PlayerProjectileDamageFrameStep().run(owner, target, damageType, speedX, speedY);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        targetSlot = 0;
+        damageResult = null;
+        rawDamage = 0;
+        enemyDamage = 0;
+        specialAction = 0;
+        secondaryChannel = null;
+        secondarySoundId = 0;
+        this.owner = owner;
+        this.target = target;
+        this.damageType = damageType;
+        this.speedX = speedX;
+        this.speedY = speedY;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.target = null;
+            this.runtime = null;
+            this.damageResult = null;
+            this.secondaryChannel = null;
+        }
     }
 }

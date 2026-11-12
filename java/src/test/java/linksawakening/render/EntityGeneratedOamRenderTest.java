@@ -8,6 +8,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
@@ -94,7 +95,7 @@ final class EntityGeneratedOamRenderTest {
             writeSolidTile(gpu, tile, 1);
         }
 
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
                 .forBushCrawlerCrawlState(EntityRoomLoader.RoomTable.OVERWORLD, 0);
         RoomEntity entity =
                 new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);

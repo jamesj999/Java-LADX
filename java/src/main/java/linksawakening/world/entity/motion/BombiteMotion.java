@@ -41,7 +41,7 @@ public final class BombiteMotion {
     }
 
     public Update advance(BombiteFrame inputs) {
-        return new BombiteStep(this, inputs).run();
+        return bombiteStep.run(this, inputs);
     }
 
     /** Starts the BouncingBombite state-$02 sword-recoil path. */
@@ -173,4 +173,6 @@ public final class BombiteMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final BombiteStep bombiteStep = new BombiteStep();
 }

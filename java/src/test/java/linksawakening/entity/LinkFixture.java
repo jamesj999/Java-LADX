@@ -19,6 +19,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.state.PlayerStateTestBuilder;
 
@@ -57,7 +58,7 @@ abstract class LinkFixture {
 
     protected static Link linkWithEmptyRoom(InputState inputState) throws IOException {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
         return new LinkTestBuilder()
@@ -73,7 +74,7 @@ abstract class LinkFixture {
 
     protected static Link pitLink(InputConfig inputConfig) throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -87,7 +88,7 @@ abstract class LinkFixture {
                 .player(new PlayerStateTestBuilder().build())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         return link;
     }
 
@@ -115,17 +116,17 @@ abstract class LinkFixture {
 
     protected static void assertJumpAnimation(int direction, int frame0, int frame1, int frame2) throws Exception {
         Link link = linkFacing(direction);
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
 
         assertEquals(frame0, resolvedAnimationState(link));
         int[] poses = {frame0, frame1, frame2};
         for (int frame = 0; frame < 24; frame++) {
-            link.update();
-            assertTrue(link.isAirborne(), "frame " + frame);
+            link.motion().update();
+            assertTrue(link.airborne().isAirborne(), "frame " + frame);
             assertEquals(poses[frame / 8], resolvedAnimationState(link), "frame " + frame);
         }
-        link.update();
-        assertTrue(link.isAirborne());
+        link.motion().update();
+        assertTrue(link.airborne().isAirborne());
         assertEquals(new int[] {0x01, 0x05, 0x07, 0x0B}[direction], resolvedAnimationState(link));
     }
 
@@ -134,18 +135,18 @@ abstract class LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerStateTestBuilder().build();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
-        switch (direction) {
-            case Link.DIRECTION_RIGHT:
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
+        switch (Direction.fromJavaOrUnknown(direction)) {
+            case RIGHT:
                 inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_UP:
+            case UP:
                 inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_DOWN:
+            case DOWN:
                 inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
                 break;
             default:
@@ -154,58 +155,58 @@ abstract class LinkFixture {
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(RomTables.loadFromRom(loadRom()))
+                .tables(RomTables.load(linksawakening.rom.Rom.of(loadRom())))
                 .collision(null)
                 .sprites(null)
                 .player(playerState)
                 .items(itemRegistry)
                 .build();
-        link.update();
+        link.motion().update();
         return link;
     }
 
     protected static int resolvedAnimationState(Link link) throws Exception {
-        return link.romAnimationState();
+        return link.animation().romAnimationState();
     }
 
     protected static int javaDirectionForRomDirection(int romDirection) {
         return switch (romDirection) {
-            case 0 -> Link.DIRECTION_RIGHT;
-            case 1 -> Link.DIRECTION_LEFT;
-            case 2 -> Link.DIRECTION_UP;
-            case 3 -> Link.DIRECTION_DOWN;
+            case 0 -> Direction.RIGHT.javaIndex();
+            case 1 -> Direction.LEFT.javaIndex();
+            case 2 -> Direction.UP.javaIndex();
+            case 3 -> Direction.DOWN.javaIndex();
             default -> throw new AssertionError(romDirection);
         };
     }
 
     protected static void runUntilPitFallStarts(Link link) {
         int guard = 0;
-        while (!link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (!link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
     }
 
     protected static void runUntilPitFallFinishes(Link link) {
         int guard = 0;
-        while (link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertFalse(link.isFallingIntoPit());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     protected static void pressDirection(InputState inputState, InputConfig inputConfig, int direction) {
-        switch (direction) {
-            case Link.DIRECTION_DOWN:
+        switch (Direction.fromJavaOrUnknown(direction)) {
+            case DOWN:
                 inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_UP:
+            case UP:
                 inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
                 break;
-            case Link.DIRECTION_RIGHT:
+            case RIGHT:
                 inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
                 break;
             default:
@@ -214,7 +215,7 @@ abstract class LinkFixture {
     }
 
     protected static void placeAtRoomEntry(Link link, int pixelX, int pixelY) {
-        link.setRoomEntryPixelPosition(pixelX, pixelY);
+        link.position().setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
     protected static int[] emptyRoomObjectsArea() {

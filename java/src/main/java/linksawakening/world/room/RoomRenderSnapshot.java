@@ -13,6 +13,41 @@ public record RoomRenderSnapshot(
         HeartPieceVisual heartPiece,
         int linkGrassPalette) {
 
+    /**
+     * Read-only same-thread render data. A cached view is valid only until the next
+     * simulation tick or room change; never retain it as a historical frame.
+     * Indexed access exposes no writable backing arrays. Use renderSnapshot() for ownership.
+     */
+    public interface View {
+        int tileCount();
+
+        int tileId(int index);
+
+        int attributeCount();
+
+        int tileAttribute(int index);
+
+        int paletteCount();
+
+        int colorCount(int palette);
+
+        int paletteColor(int palette, int color);
+
+        RoomEntitySnapshot entities();
+
+        int spritePaletteCount();
+
+        int spriteColorCount(int palette);
+
+        int spritePaletteColor(int palette, int color);
+
+        InstrumentWarpVisual instrumentWarp();
+
+        HeartPieceVisual heartPiece();
+
+        int linkGrassPalette();
+    }
+
     public RoomRenderSnapshot(
             int[] tiles,
             int[] attrs,
@@ -40,6 +75,7 @@ public record RoomRenderSnapshot(
         tileIds = tileIds.clone();
         tileAttrs = tileAttrs.clone();
         palettes = clonePalettes(palettes);
+        entities = entities == null ? null : entities.ownedCopy();
     }
 
     @Override

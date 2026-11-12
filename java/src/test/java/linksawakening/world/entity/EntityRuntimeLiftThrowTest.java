@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     @Test
     void villageChildrenThrowABallAndRetireItsSlot() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity kid = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x72)
@@ -32,7 +33,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x70, () -> 0));
         assertTrue(runtime.inspection().snapshot().slots().stream()
@@ -89,7 +90,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     @Test
     void liftableRockSmashUsesTheRomCountdownDisplayFramesAndNoise() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)
@@ -135,7 +136,7 @@ final class EntityRuntimeLiftThrowTest extends EntityRuntimeTestSupport {
     @Test
     void liftableRockRubbleUsesTheRomSilentPhysicsAndRockFrame() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         new RoomEntitySnapshot(new ArrayList<>(snapshot().slots())))
                 .indoorRoom(false)

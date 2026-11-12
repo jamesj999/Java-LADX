@@ -43,16 +43,15 @@ public final class SnakeMotion {
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision,
             int transitionCountdown) {
-        return new SnakeFrameStep(
-                        this,
-                        entity,
-                        frameCounter,
-                        linkEntityX,
-                        linkEntityY,
-                        randomByteSupplier,
-                        backgroundCollision,
-                        transitionCountdown)
-                .run();
+        return snakeFrameStep.run(
+                this,
+                entity,
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundCollision,
+                transitionCountdown);
     }
 
     public void clear(int slot) {
@@ -186,4 +185,6 @@ public final class SnakeMotion {
     record Position(int x, int y, boolean collided) {}
 
     public record Update(RoomEntity entity, int transitionCountdown) {}
+
+    final SnakeFrameStep snakeFrameStep = new SnakeFrameStep();
 }

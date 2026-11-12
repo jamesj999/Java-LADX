@@ -3,7 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
-/** LinkSignals owns its Link state and operations. */
+/** Link signals state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkSignals {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
@@ -22,7 +22,9 @@ final class LinkSignals {
     WaterSplash pendingWaterSplash;
 
     boolean accessRecoveryBlocksInput() {
-        return linkStateMachine.get().recoveringInWater || linkAirborne.get().fallingIntoPit || pitWarpPending;
+        return linkStateMachine.get().status().recoveringInWater()
+                || linkAirborne.get().pit().fallingIntoPit()
+                || pitWarpPending;
     }
 
     boolean accessConsumePitWarp() {

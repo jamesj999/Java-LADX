@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
     @Test
     void dynamicBowWowRunsItsRomSetupThenFollowerSpeedPhase() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(FollowingNpcEntitySpawner.ENTITY_BOW_WOW)
@@ -67,7 +68,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void rescuedSourceBowWowImmediatelyUsesTheFollowingSpriteTable() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
@@ -78,7 +79,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setBowWowState(0x80);
 
@@ -92,7 +93,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void kidnappedBowWowUsesFollowingTilesBeforeRescueEvenDuringDialog() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity bowWow = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x6D)
@@ -103,7 +104,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setBowWowState(0x80);
         runtime.configuration().setDialogActive(true);
@@ -197,7 +198,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void dynamicBowWowUsesTheRomEatableTableDuringTheLiveEntityTick() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition bowWowDefinition =
                 catalog.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW);
         EntitySpriteDefinition targetDefinition = catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD);
@@ -218,7 +219,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
 
@@ -231,8 +232,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void bowWowConsumesAnOrdinaryTargetThroughDidKillEnemy() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
@@ -254,7 +255,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
         runtime.configuration().setFollowingNpcState(new FollowingNpcState(false, 0, false, true, 0, 0, false));
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(6, EnemyDropResolver.ENTITY_NONE);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x44, 0x58, () -> 0));
@@ -279,8 +281,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void bowWowFlashesKikiWithoutConsumingIt() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)
@@ -327,8 +329,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
     @Test
     void bowWowOpensTheSecretShellDialogOnlyForAnActiveShell() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshotWithSlots(
                         new RoomEntityBuilder()
                                 .slot(5)

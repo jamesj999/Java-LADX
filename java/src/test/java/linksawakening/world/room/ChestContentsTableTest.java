@@ -3,6 +3,8 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -10,7 +12,8 @@ final class ChestContentsTableTest {
 
     @Test
     void decodesTheSharedRoomChestTableForOverworldAndIndoorRoomIds() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(ChestContentsTable.CHEST_RUPEES_50, table.itemForRoom(0x00, 0x04));
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, table.itemForRoom(0x10, 0x41));
@@ -19,14 +22,16 @@ final class ChestContentsTableTest {
 
     @Test
     void selectsTheIndoorATablePageForTailCave() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(ChestContentsTable.CHEST_SMALL_KEY, table.itemForRoom(0x00, 0x13, true));
     }
 
     @Test
     void selectsTheSeparateColorDungeonTable() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(
                 ChestContentsTable.CHEST_NIGHTMARE_KEY, table.itemForRoom(ChestContentsTable.MAP_COLOR_DUNGEON, 0x02));
@@ -36,7 +41,8 @@ final class ChestContentsTableTest {
 
     @Test
     void resolvesTheSourceSeashellFallbackWhenTheSwordIsAlreadyUpgraded() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(ChestContentsTable.CHEST_SEASHELL, table.itemForSpawn(0x00, 0x1D, 1));
         assertEquals(ChestContentsTable.CHEST_RUPEES_20, table.itemForSpawn(0x00, 0x1D, 2));
@@ -44,7 +50,8 @@ final class ChestContentsTableTest {
 
     @Test
     void decodesChestDialogAndPresentationSoundTablesFromBankSeven() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(0x90, table.dialogLowIdFor(ChestContentsTable.CHEST_POWER_BRACELET, 1, 1, 1, 0x00, 0x00));
         assertEquals(0xED, table.dialogLowIdFor(ChestContentsTable.CHEST_SHIELD, 2, 1, 1, 0x00, 0x00));
@@ -60,7 +67,8 @@ final class ChestContentsTableTest {
 
     @Test
     void rejectsRoomAndMapValuesOutsideTheSourceByteRanges() {
-        ChestContentsTable table = new ChestContentsTable(loadRom());
+        ChestContentsTable table =
+                new ChestContentsTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertThrows(IllegalArgumentException.class, () -> table.itemForRoom(-1, 0));
         assertThrows(IllegalArgumentException.class, () -> table.itemForRoom(0x100, 0));

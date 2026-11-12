@@ -157,6 +157,6 @@ final class PlayerProjectileDamage {
 
     static void applyPlayerProjectileDamage(
             EntityProjectileController owner, RoomEntity target, int damageType, int speedX, int speedY) {
-        new PlayerProjectileDamageFrameStep(owner, target, damageType, speedX, speedY).run();
+        owner.playerProjectileDamageFrameStep.run(owner, target, damageType, speedX, speedY);
     }
 }

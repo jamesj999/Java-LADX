@@ -5,9 +5,9 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class InventoryTileLoader {
-    private final RomTileLoader target;
+    private final Vram target;
 
-    InventoryTileLoader(RomTileLoader target) {
+    InventoryTileLoader(Vram target) {
         this.target = target;
     }
 
@@ -16,8 +16,14 @@ final class InventoryTileLoader {
     private static final int SHARED_VFX_TILES_BANK = GbcBanks.adjust(RomSymbols.CharacterVfxTiles.bank());
     private static final int SHARED_VFX_TILES_ADDR = RomSymbols.CharacterVfxTiles.address();
 
+    private boolean powderIconIsToadstool;
+
+    void resetPowderIcon() {
+        powderIconIsToadstool = false;
+    }
+
     public void updatePowderInventoryTiles(Rom romData, boolean hasToadstool) {
-        if (target.powderIconIsToadstool == hasToadstool) return;
+        if (powderIconIsToadstool == hasToadstool) return;
         target.loadTilesFromROM(
                 romData,
                 GbcBanks.adjust(RomSymbols.MushroomTiles.bank()),
@@ -26,7 +32,7 @@ final class InventoryTileLoader {
                         : RomSymbols.InventoryEquipmentItemsTiles.address() + 0xE0,
                 2,
                 0x08E);
-        target.powderIconIsToadstool = hasToadstool;
+        powderIconIsToadstool = hasToadstool;
     }
 
     public void replaceSlimeKeyTilesByGoldenLeaf(Rom romData) {

@@ -18,6 +18,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 /** Scalar expectations from bank2.asm, also checked in a local PyBoy 2.9.0 trace. */
@@ -27,32 +28,32 @@ final class LinkLedgeParityTest {
     void overworldCliffMatchesEveryFrameOfUnstuckingAndItsLandingPose() throws Exception {
         var fixture = fixture(false);
         Link link = fixture.link;
-        link.setPixelPosition(32, 40);
-        link.update();
-        assertEquals(2, link.romMotionState());
-        assertFalse(link.isAirborne());
-        assertEquals(40, link.pixelY(), "$02:6EDB restores the blocked Y axis");
+        link.position().setPixelPosition(32, 40);
+        link.motion().update();
+        assertEquals(2, link.airborne().romMotionState());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(40, link.position().pixelY(), "$02:6EDB restores the blocked Y axis");
         for (int frame = 1; frame <= 20; frame++) {
-            int previousY = link.pixelY() - link.zPixels();
-            link.update();
-            assertEquals(32, link.pixelX(), "X frame " + frame);
-            assertEquals(61, link.pixelY(), "Y frame " + frame);
+            int previousY = link.position().pixelY() - link.airborne().zPixels();
+            link.motion().update();
+            assertEquals(32, link.position().pixelX(), "X frame " + frame);
+            assertEquals(61, link.position().pixelY(), "Y frame " + frame);
             // $496A-$49A8 searches 24 pixels below, then subtracts 3 from Y.
             // $44FA adds signed Z velocity / 16 before subtracting 2.
             int z = Math.max(0, (24 * 16 - frame * (frame - 1)) >> 4);
-            assertEquals(z, link.romEntityZ(), "Z frame " + frame);
-            assertEquals(frame == 20 ? 0 : (-2 * frame) & 255, link.zVelocity(), "velocity frame " + frame);
-            assertEquals(Math.min(16, frame - 1), link.romSpeedY(), "speed frame " + frame);
-            assertEquals(frame == 20 ? 0 : 2, link.romMotionState(), "motion frame " + frame);
-            assertTrue(link.isAirborne(), "$49B6 writes airborne even on landing");
+            assertEquals(z, link.animation().romEntityZ(), "Z frame " + frame);
+            assertEquals(frame == 20 ? 0 : (-2 * frame) & 255, link.airborne().zVelocity(), "velocity frame " + frame);
+            assertEquals(Math.min(16, frame - 1), link.position().romSpeedY(), "speed frame " + frame);
+            assertEquals(frame == 20 ? 0 : 2, link.airborne().romMotionState(), "motion frame " + frame);
+            assertTrue(link.airborne().isAirborne(), "$49B6 writes airborne even on landing");
             int state = frame == 20 ? 0x64 : 0x64 + (frame - 1) / 8;
-            assertEquals(state, link.romAnimationState(), "animation frame " + frame);
+            assertEquals(state, link.animation().romAnimationState(), "animation frame " + frame);
             assertOam(fixture, state, previousY);
         }
-        link.update();
-        assertFalse(link.isAirborne());
-        assertEquals(62, link.pixelY());
-        assertEquals(1, link.romPhysicsModifier());
+        link.motion().update();
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(62, link.position().pixelY());
+        assertEquals(1, link.motion().romPhysicsModifier());
     }
 
     @Test
@@ -62,40 +63,43 @@ final class LinkLedgeParityTest {
         // probes in $498D search to row 6, giving initial Z=$38.
         for (int row = 4; row <= 5; row++) fixture.room[0x11 + row * 16 + 2] = 0x43;
         Link link = fixture.link;
-        link.setPixelPosition(32, 40);
-        link.update();
+        link.position().setPixelPosition(32, 40);
+        link.motion().update();
         for (int frame = 1; frame <= 31; frame++) {
-            link.update();
-            assertEquals(93, link.pixelY());
-            assertEquals(Math.max(0, (56 * 16 - frame * (frame - 1)) >> 4), link.romEntityZ());
+            link.motion().update();
+            assertEquals(93, link.position().pixelY());
+            assertEquals(
+                    Math.max(0, (56 * 16 - frame * (frame - 1)) >> 4),
+                    link.animation().romEntityZ());
             assertEquals(
                     frame == 31 ? 0x64 : 0x64 + Math.min(2, (frame - 1) / 8),
-                    link.romAnimationState(),
+                    link.animation().romAnimationState(),
                     "frame " + frame);
         }
-        assertEquals(0, link.romMotionState());
+        assertEquals(0, link.airborne().romMotionState());
     }
 
     @Test
     void directionalLedgeMatchesEveryFrameOfVelocityFlipAndLanding() throws Exception {
         var fixture = fixture(true);
         Link link = fixture.link;
-        link.setPixelPosition(32, 32);
+        link.position().setPixelPosition(32, 32);
         for (int frame = 0; frame < 5; frame++) {
-            link.update();
-            assertFalse(link.isAirborne());
+            link.motion().update();
+            assertFalse(link.airborne().isAirborne());
         }
         for (int frame = 1; frame <= 29; frame++) {
-            int previousY = link.pixelY() - link.zPixels();
-            link.update();
-            assertEquals(32, link.pixelX());
-            assertEquals(32 + frame - 1, link.pixelY(), "Y frame " + frame);
-            assertEquals((frame * (29 - frame)) >> 4, link.romEntityZ(), "Z frame " + frame);
-            assertEquals(frame == 29 ? 0 : (28 - 2 * frame) & 255, link.zVelocity());
-            assertEquals(16, link.romSpeedY());
-            assertEquals(frame < 29, link.isAirborne());
+            int previousY = link.position().pixelY() - link.airborne().zPixels();
+            link.motion().update();
+            assertEquals(32, link.position().pixelX());
+            assertEquals(32 + frame - 1, link.position().pixelY(), "Y frame " + frame);
+            assertEquals((frame * (29 - frame)) >> 4, link.animation().romEntityZ(), "Z frame " + frame);
+            assertEquals(
+                    frame == 29 ? 0 : (28 - 2 * frame) & 255, link.airborne().zVelocity());
+            assertEquals(16, link.position().romSpeedY());
+            assertEquals(frame < 29, link.airborne().isAirborne());
             int state = frame <= 24 ? 0x64 + (frame - 1) / 8 : 1;
-            assertEquals(state, link.romAnimationState(), "animation frame " + frame);
+            assertEquals(state, link.animation().romAnimationState(), "animation frame " + frame);
             assertOam(fixture, state, previousY);
         }
     }
@@ -105,16 +109,19 @@ final class LinkLedgeParityTest {
         var fixture = fixture(true);
         for (int direction = 0; direction < 4; direction++) {
             Link link = fixture.link;
-            link.linkAnimationState.direction = direction;
-            link.linkAirborne.airborne = true;
-            link.linkAnimator.jumpAnimationCounter = 0;
+            link.linkAnimationState.direction = linksawakening.state.Direction.fromJava(direction);
+            link.linkAirborne.elevation().airborne(true);
+            link.linkAnimator.jumpAnimationCounter(0);
             for (int frame = 0; frame < 24; frame++) {
                 link.linkAirborne.tickJumpAnimation();
-                int state = new Rom(fixture.rom)
+                int state = TestRoms.partial(fixture.rom)
                         .u8(new linksawakening.rom.RomAddress(0x02, 0x46B5)
-                                .plus(Link.romDirectionForJavaDirection(direction) * 4 + frame / 8));
-                assertEquals(state, link.romAnimationState());
-                assertOam(fixture, state, link.pixelY());
+                                .plus(linksawakening.state.Direction.fromJava(direction)
+                                                        .romIndex()
+                                                * 4
+                                        + frame / 8));
+                assertEquals(state, link.animation().romAnimationState());
+                assertOam(fixture, state, link.position().pixelY());
             }
         }
     }
@@ -122,32 +129,34 @@ final class LinkLedgeParityTest {
     private static void assertOam(Fixture fixture, int state, int y) {
         record Column(Tile top, Tile bottom, int x, int y, boolean fx, boolean fy) {}
         List<Column> columns = new ArrayList<>();
-        fixture.link.submitOam(
-                new OamSink() {
-                    @Override
-                    public void append(
-                            Tile tile, int x, int py, boolean fx, boolean fy, int[] palette, boolean behind) {
-                        fail("Expected 8x16 entries");
-                    }
+        fixture.link
+                .animation()
+                .submitOam(
+                        new OamSink() {
+                            @Override
+                            public void append(
+                                    Tile tile, int x, int py, boolean fx, boolean fy, int[] palette, boolean behind) {
+                                fail("Expected 8x16 entries");
+                            }
 
-                    @Override
-                    public void append8x16(
-                            Tile top,
-                            Tile bottom,
-                            int x,
-                            int py,
-                            boolean fx,
-                            boolean fy,
-                            int[] palette,
-                            boolean behind) {
-                        assertFalse(behind);
-                        columns.add(new Column(top, bottom, x, py, fx, fy));
-                    }
-                },
-                0,
-                0);
+                            @Override
+                            public void append8x16(
+                                    Tile top,
+                                    Tile bottom,
+                                    int x,
+                                    int py,
+                                    boolean fx,
+                                    boolean fy,
+                                    int[] palette,
+                                    boolean behind) {
+                                assertFalse(behind);
+                                columns.add(new Column(top, bottom, x, py, fx, fy));
+                            }
+                        },
+                        0,
+                        0);
         assertEquals(2, columns.size());
-        Rom rom = new Rom(fixture.rom);
+        Rom rom = TestRoms.partial(fixture.rom);
         for (int half = 0; half < 2; half++) {
             int tile = rom.u8(RomSymbols.LinkAnimationStateTable.plus(state * 2 + half));
             int attrs = rom.u8(RomSymbols.data_020_5407.plus(state * 2 + half));
@@ -159,7 +168,7 @@ final class LinkLedgeParityTest {
                     fixture.link.linkServices.spriteSheet.tile(tile + ((attrs & 0x40) != 0 ? 0 : 1)), actual.bottom());
             assertEquals((attrs & 0x20) != 0, actual.fx());
             assertEquals((attrs & 0x40) != 0, actual.fy());
-            assertEquals(fixture.link.pixelX() + half * 8, actual.x());
+            assertEquals(fixture.link.position().pixelX() + half * 8, actual.x());
             assertEquals(y, actual.y(), "DrawLinkSprite uses pre-motion wC145");
         }
     }
@@ -171,7 +180,7 @@ final class LinkLedgeParityTest {
         try (var in = TestRom.open()) {
             rom = in.readAllBytes();
         }
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         int[] room = new int[256];
@@ -187,7 +196,7 @@ final class LinkLedgeParityTest {
                         .config(config)
                         .tables(tables)
                         .collision(collision)
-                        .sprites(LinkSpriteSheet.loadFromRom(rom))
+                        .sprites(LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)))
                         .player(new PlayerState())
                         .items(new ItemRegistry())
                         .build(),

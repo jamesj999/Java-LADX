@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.PokeyMotion;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void decodesPokeysThreeRomDisplayStatesAndDetachedPair() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
 
         EntitySpriteDefinition main = catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD);
         assertEquals(0x15, main.bank());
@@ -63,7 +64,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void mainPokeyAnimatesAndUsesItsRomHealthOverride() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_POKEY)
@@ -73,7 +74,8 @@ final class PokeyRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
@@ -92,7 +94,7 @@ final class PokeyRuntimeTest {
     @Test
     void flashSeamSpawnsAHighSlotDetachedSegment() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_POKEY)
@@ -102,7 +104,7 @@ final class PokeyRuntimeTest {
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         // The runtime performs the shared pre-handler decrement first, so $15
@@ -137,7 +139,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void detachedSegmentsReverseOnWallsAndPoofAfterThreeHits() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntity segment = new RoomEntityBuilder()
                 .type(ENTITY_POKEY)
                 .at(0x40, 0x40)

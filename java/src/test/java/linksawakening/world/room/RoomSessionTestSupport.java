@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.EnemyDropResolver;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -50,7 +52,8 @@ final class RoomSessionTestSupport {
 
     static void tickInteractive(RoomSession session, int frame, int linkEntityX, int linkEntityY) {
         session.entities()
-                .tickEntitiesWithProjectileEvents(frame, linkEntityX, linkEntityY, 0, 0, Link.DIRECTION_DOWN, false);
+                .tickEntitiesWithProjectileEvents(
+                        frame, linkEntityX, linkEntityY, 0, 0, Direction.DOWN.javaIndex(), false);
     }
 
     static RoomSession newSession(RoomLoadListener roomLoadListener) {
@@ -63,12 +66,12 @@ final class RoomSessionTestSupport {
 
     static RoomSession newSession(TransientVfxSystem transientVfxSystem, RoomLoadListener roomLoadListener) {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(TestRoms.partial(rom));
         return new RoomSession(new RoomSessionConfig(
-                rom,
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
                 new OverworldCollision(romTables),
                 new RoomSessionConfig.Presentation(transientVfxSystem, null, roomLoadListener),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -121,7 +124,7 @@ final class RoomSessionTestSupport {
     }
 
     static RoomEntityRuntime runtimeWithKillOrder(byte[] rom, int... killOrder) {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
@@ -147,16 +150,20 @@ final class RoomSessionTestSupport {
                             -1,
                             false));
         }
-        RoomEntityRuntime runtime = RoomEntityRuntime.from(
-                new RoomEntitySnapshot(slots), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom));
+        RoomEntityRuntime runtime = RoomEntityRuntime.builder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom == null ? null : TestRoms.partial(rom)))
+                .build();
+        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom == null ? null : TestRoms.partial(rom)));
         int frame = 0;
         for (int sourceOrder : killOrder) {
             int slot = entitySlots[sourceOrder];
             RoomEntity target = runtime.inspection().snapshot().slots().get(slot);
             linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
-            List<EntityCombatEvent> hit =
-                    runtime.resolveCombat(frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10);
+            List<EntityCombatEvent> hit = runtime.resolveCombat(new linksawakening.world.entity.EntitySwordContactFrame(
+                    frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10));
             assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
             int deathDeadline = frame + 0x80;
             while (runtime.inspection().snapshot().slots().get(slot).loaded() && frame < deathDeadline) {

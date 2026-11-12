@@ -1,5 +1,7 @@
 package linksawakening.rom;
 /** Immutable copies of CollisionTables ROM lookup data. */
+// Direction arguments are collision-table selectors; retain their bounds and index semantics rather than treating them
+// as Link facing.
 public final class CollisionTables {
     private static final int ENTITY_FINE_COLLISION_SHAPES_FIRST_PHYSICS = 0x7C;
     private static final int ENTITY_FINE_COLLISION_SHAPES_LAST_PHYSICS = 0x8D;

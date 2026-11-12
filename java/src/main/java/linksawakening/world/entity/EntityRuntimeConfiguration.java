@@ -183,20 +183,17 @@ public final class EntityRuntimeConfiguration {
         EntitySlotValidation.validateByte(roomId, "Entity room id");
         runtime.roomVariables().writeEntityRoomId(roomId);
         for (RoomEntity entity : runtime.slots()) {
-            if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                runtime.motions()
-                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                        .ensureInitialized(entity.slot(), roomId);
-                runtime.physicsTables()
-                        .writeEntityOptions1Override(
-                                entity.slot(),
-                                runtime.motions()
-                                                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                        .privateState3(entity.slot())
-                                                != 0
-                                        ? EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1
-                                        : EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1);
-            }
+            if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) continue;
+            SecretSeashellMotion seashell =
+                    runtime.motions().get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+            seashell.ensureInitialized(entity.slot(), roomId);
+            boolean hidden = seashell.privateState3(entity.slot()) != 0;
+            runtime.physicsTables()
+                    .writeEntityOptions1Override(
+                            entity.slot(),
+                            hidden
+                                    ? EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1
+                                    : EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1);
         }
     }
 
@@ -254,7 +251,7 @@ public final class EntityRuntimeConfiguration {
         runtime.pickups().writeChestPowerBraceletLevel(powerBraceletLevel);
         runtime.pickups().writeChestPlayerLevelsKnown(true);
         if (runtime.spriteHandlers() != null) {
-            EntitySpriteDefinition pickupDefinition = runtime.spriteHandlers().forSwordShieldPickup(swordLevel == 0);
+            EntitySpriteDefinition pickupDefinition = runtime.spriteViews().forSwordShieldPickup(swordLevel == 0);
             for (int index = 0; index < runtime.slots().length; index++) {
                 if (runtime.slots()[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
                     runtime.slots()[index] = withDefinition(

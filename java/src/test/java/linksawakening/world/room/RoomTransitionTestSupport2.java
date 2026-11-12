@@ -19,6 +19,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.transition.ScrollController;
@@ -34,21 +35,23 @@ final class RoomTransitionTestSupport2 {
             PlayerState playerState,
             int joypadMask) {
         setDirectionalInput(inputState, inputConfig, joypadMask, GLFW_PRESS);
-        itemRegistry.lookup(playerState.itemA()).onPress();
-        assertTrue(link.isAirborne());
+        itemRegistry.lookup(playerState.inventory().itemA()).onPress();
+        assertTrue(link.airborne().isAirborne());
         boolean crossedPit = false;
         int deadline = 0x40;
-        while (link.isAirborne() && deadline-- > 0) {
-            link.update();
-            crossedPit |= collision.linkOnNormalPit(link.pixelX(), link.pixelY());
+        while (link.airborne().isAirborne() && deadline-- > 0) {
+            link.motion().update();
+            crossedPit |= collision.linkOnNormalPit(
+                    link.position().pixelX(), link.position().pixelY());
         }
         setDirectionalInput(inputState, inputConfig, joypadMask, GLFW_RELEASE);
         assertTrue(crossedPit);
-        assertFalse(link.isAirborne());
-        assertFalse(link.isFallingIntoPit());
-        assertFalse(collision.linkOnNormalPit(link.pixelX(), link.pixelY()));
-        link.update();
-        assertFalse(link.isFallingIntoPit());
+        assertFalse(link.airborne().isAirborne());
+        assertFalse(link.airborne().isFallingIntoPit());
+        assertFalse(collision.linkOnNormalPit(
+                link.position().pixelX(), link.position().pixelY()));
+        link.motion().update();
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     static List<int[]> reachableBoundaryPathWithFeather(
@@ -91,10 +94,10 @@ final class RoomTransitionTestSupport2 {
         ArrayDeque<int[]> queue = new ArrayDeque<>();
         queue.add(new int[] {clampedX, clampedY});
         int[][] moves = {
-            {0, -1, Link.DIRECTION_UP},
-            {0, 1, Link.DIRECTION_DOWN},
-            {-1, 0, Link.DIRECTION_LEFT},
-            {1, 0, Link.DIRECTION_RIGHT}
+            {0, -1, Direction.UP.javaIndex()},
+            {0, 1, Direction.DOWN.javaIndex()},
+            {-1, 0, Direction.LEFT.javaIndex()},
+            {1, 0, Direction.RIGHT.javaIndex()}
         };
         int[] jumpMasks = {0x00, 0x04, 0x08, 0x02, 0x01, 0x06, 0x05, 0x0A, 0x09};
 
@@ -141,15 +144,16 @@ final class RoomTransitionTestSupport2 {
                         int subY = position[1] << Link.SUB_PIXEL_SHIFT;
                         boolean crossedPit = false;
                         boolean blockedJump = false;
-                        int speedX = (byte) romTables.linkSpeedX(firstMask);
-                        int speedY = (byte) romTables.linkSpeedY(firstMask);
+                        int speedX = (byte) romTables.linkMotionTables().linkSpeedX(firstMask);
+                        int speedY = (byte) romTables.linkMotionTables().linkSpeedY(firstMask);
                         for (int frame = 0; frame < 33; frame++) {
                             int joypadMask = frame < 11 ? firstMask : frame < 22 ? secondMask : thirdMask;
                             if (speedX != 0) {
                                 int candidateSubX = subX + speedX;
                                 int nextX = candidateSubX >> Link.SUB_PIXEL_SHIFT;
                                 int y = subY >> Link.SUB_PIXEL_SHIFT;
-                                int moveDirection = speedX < 0 ? Link.DIRECTION_LEFT : Link.DIRECTION_RIGHT;
+                                int moveDirection =
+                                        speedX < 0 ? Direction.LEFT.javaIndex() : Direction.RIGHT.javaIndex();
                                 if (nextX >= 0
                                         && nextX < width
                                         && !leadingEdgeBlocked(collision, nextX, y, moveDirection, false)) {
@@ -163,7 +167,7 @@ final class RoomTransitionTestSupport2 {
                                 int candidateSubY = subY + speedY;
                                 int x = subX >> Link.SUB_PIXEL_SHIFT;
                                 int nextY = candidateSubY >> Link.SUB_PIXEL_SHIFT;
-                                int moveDirection = speedY < 0 ? Link.DIRECTION_UP : Link.DIRECTION_DOWN;
+                                int moveDirection = speedY < 0 ? Direction.UP.javaIndex() : Direction.DOWN.javaIndex();
                                 if (nextY >= 0
                                         && nextY < height
                                         && !leadingEdgeBlocked(collision, x, nextY, moveDirection, false)) {
@@ -178,10 +182,12 @@ final class RoomTransitionTestSupport2 {
                             crossedPit |= collision.linkOnNormalPit(x, y);
                             // ApplyLinkGroundMotion steers after XY; released axes coast.
                             if ((joypadMask & 3) != 0) {
-                                speedX += Integer.compare(romTables.airSpeedX(joypadMask & 3), speedX);
+                                speedX += Integer.compare(
+                                        romTables.linkMotionTables().airSpeedX(joypadMask & 3), speedX);
                             }
                             if ((joypadMask & 12) != 0) {
-                                speedY += Integer.compare(romTables.airSpeedY((joypadMask >>> 2) & 3), speedY);
+                                speedY += Integer.compare(
+                                        romTables.linkMotionTables().airSpeedY((joypadMask >>> 2) & 3), speedY);
                             }
                         }
                         int x = subX >> Link.SUB_PIXEL_SHIFT;
@@ -252,7 +258,7 @@ final class RoomTransitionTestSupport2 {
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);
         }
-        for (int direction = Link.DIRECTION_DOWN; direction <= Link.DIRECTION_RIGHT; direction++) {
+        for (int direction = Direction.DOWN.javaIndex(); direction <= Direction.RIGHT.javaIndex(); direction++) {
             int swordDirection = direction;
             List<int[]> path = reachablePositionPath(collision, startX, startY, (x, y) -> {
                 Sword.CollisionBox box = sword.enemyCollisionBox(x + 8, y + 16, swordDirection);
@@ -274,7 +280,7 @@ final class RoomTransitionTestSupport2 {
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);
         }
-        for (int direction = Link.DIRECTION_DOWN; direction <= Link.DIRECTION_RIGHT; direction++) {
+        for (int direction = Direction.DOWN.javaIndex(); direction <= Direction.RIGHT.javaIndex(); direction++) {
             int swordDirection = direction;
             List<int[]> path = reachablePositionPathWithFeather(collision, romTables, startX, startY, (x, y) -> {
                 Sword.CollisionBox box = sword.enemyCollisionBox(x + 8, y + 16, swordDirection);
@@ -333,10 +339,10 @@ final class RoomTransitionTestSupport2 {
         ArrayDeque<int[]> queue = new ArrayDeque<>();
         queue.add(new int[] {clampedX, clampedY});
         int[][] moves = {
-            {0, -1, Link.DIRECTION_UP},
-            {0, 1, Link.DIRECTION_DOWN},
-            {-1, 0, Link.DIRECTION_LEFT},
-            {1, 0, Link.DIRECTION_RIGHT}
+            {0, -1, Direction.UP.javaIndex()},
+            {0, 1, Direction.DOWN.javaIndex()},
+            {-1, 0, Direction.LEFT.javaIndex()},
+            {1, 0, Direction.RIGHT.javaIndex()}
         };
 
         while (!queue.isEmpty()) {
@@ -394,10 +400,10 @@ final class RoomTransitionTestSupport2 {
         ArrayDeque<int[]> queue = new ArrayDeque<>();
         queue.add(new int[] {clampedX, clampedY});
         int[][] moves = {
-            {0, -1, Link.DIRECTION_UP},
-            {0, 1, Link.DIRECTION_DOWN},
-            {-1, 0, Link.DIRECTION_LEFT},
-            {1, 0, Link.DIRECTION_RIGHT}
+            {0, -1, Direction.UP.javaIndex()},
+            {0, 1, Direction.DOWN.javaIndex()},
+            {-1, 0, Direction.LEFT.javaIndex()},
+            {1, 0, Direction.RIGHT.javaIndex()}
         };
 
         while (!queue.isEmpty()) {
@@ -456,10 +462,10 @@ final class RoomTransitionTestSupport2 {
         queue.add(new int[] {clampedX, clampedY});
 
         int[][] moves = {
-            {0, -1, Link.DIRECTION_UP},
-            {0, 1, Link.DIRECTION_DOWN},
-            {-1, 0, Link.DIRECTION_LEFT},
-            {1, 0, Link.DIRECTION_RIGHT}
+            {0, -1, Direction.UP.javaIndex()},
+            {0, 1, Direction.DOWN.javaIndex()},
+            {-1, 0, Direction.LEFT.javaIndex()},
+            {1, 0, Direction.RIGHT.javaIndex()}
         };
         while (!queue.isEmpty()) {
             int[] position = queue.removeFirst();
@@ -539,18 +545,18 @@ final class RoomTransitionTestSupport2 {
 
     static void runUntilPitFallStarts(Link link) {
         int guard = 0;
-        while (!link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (!link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
     }
 
     static void runUntilPitFallFinishes(Link link) {
         int guard = 0;
-        while (link.isFallingIntoPit() && guard++ < 128) {
-            link.update();
+        while (link.airborne().isFallingIntoPit() && guard++ < 128) {
+            link.motion().update();
         }
-        assertFalse(link.isFallingIntoPit());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 
     static byte[] loadRom() throws IOException {

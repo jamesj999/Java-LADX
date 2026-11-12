@@ -34,6 +34,7 @@ import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
 
+/** Bridges ExecuteEntities requests and room rewards; each consumer owns its drain timing. */
 final class RoomEntityOutbox {
     private final java.util.function.Supplier<RoomEntityRuntime> runtime;
     private final RoomRequestDrain<linksawakening.world.entity.event.EntityRequest> rewardDrain =
@@ -53,6 +54,19 @@ final class RoomEntityOutbox {
         var events =
                 runtime.get() == null ? List.<DialogRequest>of() : runtime.get().consumePendingDialogRequests();
         return first != null || events.isEmpty() ? first : events.getFirst();
+    }
+
+    /** Empty List.copyOf/addAll implementations can still allocate an array; avoid that boundary. */
+    static <T> void append(List<T> target, List<? extends T> source) {
+        if (!source.isEmpty()) target.addAll(source);
+    }
+
+    /** Copy before clearing: callers retain an immutable owned list. */
+    private static <T> List<T> take(List<T> pending) {
+        if (pending.isEmpty()) return List.of();
+        List<T> result = List.copyOf(pending);
+        pending.clear();
+        return result;
     }
 
     RoomEntityOutbox(java.util.function.Supplier<RoomEntityRuntime> runtime) {
@@ -159,63 +173,43 @@ final class RoomEntityOutbox {
     }
 
     List<ChestRewardEvent> consumeChestRewardEvents() {
-        List<ChestRewardEvent> rewards = List.copyOf(pendingChestRewardEvents);
-        pendingChestRewardEvents.clear();
-        return rewards;
+        return take(pendingChestRewardEvents);
     }
 
     List<KeyRewardEvent> consumeKeyRewardEvents() {
-        List<KeyRewardEvent> rewards = List.copyOf(pendingKeyRewardEvents);
-        pendingKeyRewardEvents.clear();
-        return rewards;
+        return take(pendingKeyRewardEvents);
     }
 
     List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
-        List<SlimeKeyRewardEvent> rewards = List.copyOf(pendingSlimeKeyRewardEvents);
-        pendingSlimeKeyRewardEvents.clear();
-        return rewards;
+        return take(pendingSlimeKeyRewardEvents);
     }
 
     List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
-        List<HeartContainerRewardEvent> rewards = List.copyOf(pendingHeartContainerRewards);
-        pendingHeartContainerRewards.clear();
-        return rewards;
+        return take(pendingHeartContainerRewards);
     }
 
     List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
-        List<MadamMeowMeowFullHealRequest> requests = List.copyOf(pendingMadamMeowMeowFullHealRequests);
-        pendingMadamMeowMeowFullHealRequests.clear();
-        return requests;
+        return take(pendingMadamMeowMeowFullHealRequests);
     }
 
     List<RichardProgressEvent> consumeRichardProgressEvents() {
-        List<RichardProgressEvent> events = List.copyOf(pendingRichardProgressEvents);
-        pendingRichardProgressEvents.clear();
-        return events;
+        return take(pendingRichardProgressEvents);
     }
 
     List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        List<SwordPickupRewardEvent> rewards = List.copyOf(pendingSwordPickupRewards);
-        pendingSwordPickupRewards.clear();
-        return rewards;
+        return take(pendingSwordPickupRewards);
     }
 
     List<ToadstoolRewardEvent> consumeToadstoolRewards() {
-        List<ToadstoolRewardEvent> rewards = List.copyOf(pendingToadstoolRewards);
-        pendingToadstoolRewards.clear();
-        return rewards;
+        return take(pendingToadstoolRewards);
     }
 
     List<WitchExchangeEvent> consumeWitchExchangeEvents() {
-        List<WitchExchangeEvent> events = List.copyOf(pendingWitchExchangeEvents);
-        pendingWitchExchangeEvents.clear();
-        return events;
+        return take(pendingWitchExchangeEvents);
     }
 
     List<WitchRewardEvent> consumeWitchRewardEvents() {
-        List<WitchRewardEvent> events = List.copyOf(pendingWitchRewardEvents);
-        pendingWitchRewardEvents.clear();
-        return events;
+        return take(pendingWitchRewardEvents);
     }
 
     int consumePendingMusicTrack() {
@@ -250,9 +244,7 @@ final class RoomEntityOutbox {
     }
 
     List<BombExplosionEvent> consumeBombExplosionEvents() {
-        List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
-        pendingBombExplosionEvents.clear();
-        return pending;
+        return take(pendingBombExplosionEvents);
     }
 
     void drainChestRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {

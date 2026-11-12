@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.gpu.GPU;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -64,18 +65,18 @@ final class DroppableRupeeSystemTest {
     void rupeeCannotBeCollectedUntilPickupDelayExpiresAndThenAddsOne() {
         DroppableRupeeSystem system = new DroppableRupeeSystem(4, queuedBytes(0x00, 0x00));
         PlayerState player = new PlayerState();
-        player.setRupees(17);
+        player.wallet().setRupees(17);
 
         assertTrue(system.maybeSpawnFromBush(OBJECT_BUSH, DROP_WORLD_X, DROP_WORLD_Y));
 
         for (int i = 0; i < 0x17; i++) {
             system.tick(0, 0, player);
         }
-        assertEquals(17, player.rupees());
+        assertEquals(17, player.wallet().rupees());
         assertEquals(1, system.activeCount());
 
         system.tick(DROP_WORLD_X - 8, DROP_WORLD_Y - 16, player);
-        assertEquals(18, player.rupees());
+        assertEquals(18, player.wallet().rupees());
         assertEquals(0, system.activeCount());
     }
 
@@ -97,7 +98,7 @@ final class DroppableRupeeSystemTest {
     void rupeeRenderUsesGameplaySpriteTilesLoadedFromRom() {
         DroppableRupeeSystem system = new DroppableRupeeSystem(4, queuedBytes(0x00, 0x00));
         GPU gpu = new GPU();
-        gpu.loadBaseOverworldTiles(ROM);
+        gpu.loadBaseOverworldTiles(TestRoms.partial(ROM));
         byte[] buffer = new byte[160 * 144 * 4];
 
         assertTrue(system.maybeSpawnFromBush(OBJECT_BUSH, DROP_WORLD_X, DROP_WORLD_Y));
@@ -122,7 +123,7 @@ final class DroppableRupeeSystemTest {
     void rupeeRenderUsesBlueGameplayPickupPalette() {
         DroppableRupeeSystem system = new DroppableRupeeSystem(4, queuedBytes(0x00, 0x00));
         GPU gpu = new GPU();
-        gpu.loadBaseOverworldTiles(ROM);
+        gpu.loadBaseOverworldTiles(TestRoms.partial(ROM));
         byte[] buffer = new byte[160 * 144 * 4];
 
         assertTrue(system.maybeSpawnFromBush(OBJECT_BUSH, DROP_WORLD_X, DROP_WORLD_Y));

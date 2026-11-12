@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -11,7 +12,8 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
 
     @Test
     void dynamicGhostRuntimeAdvancesZBobEvenWhenItsVariantIsUnchanged() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xD4);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(0xD4);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(0xD4)
                 .at(0x40, 0x40)
@@ -34,7 +36,8 @@ final class EntityRuntimeFollowersTest extends EntityRuntimeTestSupport {
 
     @Test
     void dynamicMarinRuntimeConsumesTheSharedLinkHistory() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(0xC1);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .type(0xC1)
                 .at(0x10, 0x20)

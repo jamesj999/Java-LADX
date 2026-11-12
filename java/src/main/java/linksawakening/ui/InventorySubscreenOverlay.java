@@ -14,6 +14,7 @@ import linksawakening.state.PlayerState;
  * we have no OAM layer yet, we render the same tiles through the BG
  * attrmap's flipX bit instead.
  */
+// Item IDs remain raw saved bytes so unknown inventory values preserve the ROM/UI fallback.
 public final class InventorySubscreenOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;
@@ -68,14 +69,14 @@ public final class InventorySubscreenOverlay {
     private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId, PlayerState player) {
         int itemIndex = itemId >= 0 && itemId < ITEM_TILES.length ? itemId : 0;
         int[] tiles = ITEM_TILES[itemIndex];
-        int[] paletteIndexes = InventoryItemPalettes.forItem(itemId, player);
+        int paletteIndexes = InventoryItemPalettes.palettePair(itemId, player);
         writeTile(tilemap, col, row, tiles[0]); // top-left icon
         writeTile(tilemap, col, row + 1, tiles[3]); // bottom-left icon (with L-glyph)
-        writeAttr(attrmap, col, row, paletteIndexes[0]);
-        writeAttr(attrmap, col, row + 1, paletteIndexes[1]);
-        int[] numbers = InventoryItemNumbers.tiles(itemId, player);
-        writeTile(tilemap, col + 1, row + 1, numbers[0]);
-        writeTile(tilemap, col + 2, row + 1, numbers[1]);
+        writeAttr(attrmap, col, row, paletteIndexes >>> 8);
+        writeAttr(attrmap, col, row + 1, paletteIndexes & 255);
+        long numbers = InventoryItemNumbers.tilePair(itemId, player);
+        writeTile(tilemap, col + 1, row + 1, (int) (numbers >> 32));
+        writeTile(tilemap, col + 2, row + 1, (int) numbers);
     }
 
     private static void drawCursor(int[] tilemap, int[] attrmap, int col, int row) {

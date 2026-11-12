@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -160,7 +161,7 @@ final class ArrowPauseTest {
             }
             rom = stream.readAllBytes();
         }
-        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         var slots = new ArrayList<RoomEntity>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));

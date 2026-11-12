@@ -5,8 +5,9 @@ import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
+import linksawakening.rom.Rom;
 
-/** Sfx gameplay sound sink behavior and state. */
+/** Session-owned sound-effect player and PCM staging buffer for gameplay requests. */
 public final class SfxGameplaySoundSink implements GameplaySoundSink {
     private static final int SAMPLE_RATE = 44_100;
 
@@ -19,7 +20,7 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
         this(new GameBoyApu(SAMPLE_RATE), output);
     }
 
-    public SfxGameplaySoundSink(byte[] romData, PcmSoundOutput output) {
+    public SfxGameplaySoundSink(Rom romData, PcmSoundOutput output) {
         this(new GameBoyApu(SAMPLE_RATE), romData, output);
     }
 
@@ -27,7 +28,7 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
         this(apu, new SoundEffectPlayer(apu), output);
     }
 
-    public SfxGameplaySoundSink(GameBoyApu apu, byte[] romData, PcmSoundOutput output) {
+    public SfxGameplaySoundSink(GameBoyApu apu, Rom romData, PcmSoundOutput output) {
         this(apu, new SoundEffectPlayer(apu, romData), output);
     }
 

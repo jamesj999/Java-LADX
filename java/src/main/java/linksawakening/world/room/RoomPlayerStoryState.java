@@ -33,7 +33,7 @@ final class RoomPlayerStoryState {
                                 .get()
                                 .entityRuntime
                                 .inspection()
-                                .snapshot());
+                                .view());
             }
         }
     }

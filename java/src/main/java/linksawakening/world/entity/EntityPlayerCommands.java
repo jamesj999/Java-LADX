@@ -16,6 +16,9 @@ import linksawakening.world.entity.motion.BombMotion;
 /** Player lift, throw, block movement and held-item presentation commands. */
 final class EntityPlayerCommands {
     private final EntityPlayerCommandsServices runtime;
+    // Marin's eight direction/walk variants repeat during the opening dialog.
+    // Cache complete immutable values only while every source field still matches.
+    private final RoomEntity[] marinPresentations = new RoomEntity[8];
 
     EntityPlayerCommands(EntityPlayerCommandsServices runtime) {
         this.runtime = runtime;
@@ -154,19 +157,40 @@ final class EntityPlayerCommands {
         for (int slot = 0; slot < runtime.slots().length; slot++) {
             RoomEntity entity = runtime.slots()[slot];
             if (entity.loaded() && entity.type() == 0x3E) {
-                runtime.slots()[slot] = EntitySnapshots.withMotion(
-                        entity,
-                        x & 0xFF,
-                        y & 0xFF,
-                        spriteVariant,
-                        entity.entityFlipAttribute(),
-                        entity.z(),
-                        entity.deathSpriteVariant(),
-                        entity.powerRecoilDeath());
+                runtime.slots()[slot] = marinPresentation(entity, x & 0xFF, y & 0xFF, spriteVariant);
                 return true;
             }
         }
         return false;
+    }
+
+    private RoomEntity marinPresentation(RoomEntity entity, int x, int y, int variant) {
+        if (entity.x() == x && entity.y() == y && entity.spriteVariant() == variant) return entity;
+        RoomEntity cached = variant >= 0 && variant < marinPresentations.length ? marinPresentations[variant] : null;
+        if (cached != null
+                && cached.slot() == entity.slot()
+                && cached.sourceLoadOrder() == entity.sourceLoadOrder()
+                && cached.type() == entity.type()
+                && cached.x() == x
+                && cached.y() == y
+                && cached.status() == entity.status()
+                && cached.spriteDefinition() == entity.spriteDefinition()
+                && cached.entityFlipAttribute() == entity.entityFlipAttribute()
+                && cached.spriteTileOffset() == entity.spriteTileOffset()
+                && cached.z() == entity.z()
+                && cached.deathSpriteVariant() == entity.deathSpriteVariant()
+                && cached.powerRecoilDeath() == entity.powerRecoilDeath()) return cached;
+        RoomEntity value = EntitySnapshots.withMotion(
+                entity,
+                x,
+                y,
+                variant,
+                entity.entityFlipAttribute(),
+                entity.z(),
+                entity.deathSpriteVariant(),
+                entity.powerRecoilDeath());
+        if (variant >= 0 && variant < marinPresentations.length) marinPresentations[variant] = value;
+        return value;
     }
 
     void updateHouseTarinPresentation(int linkX, int linkY) {

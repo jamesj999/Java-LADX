@@ -53,7 +53,7 @@ public final class EntityBombInteractions {
         if (runtime.spriteHandlers() != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
             runtime.slots()[slot] = withDefinition(
                     arrow,
-                    runtime.spriteHandlers().forBombArrow(),
+                    runtime.slotProperties().spriteViews().forBombArrow(),
                     runtime.motions()
                             .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
                             .direction(slot));

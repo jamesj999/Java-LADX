@@ -156,7 +156,7 @@ final class SlimeEyeBehavior {
     }
 
     static void advanceHalf(SlimeEyeController owner, EntityFrameExecution f) {
-        new SlimeEyeHalfStep(owner, f).run();
+        owner.slimeEyeHalfStep.run(owner, f);
     }
 
     static int spawn(SlimeEyeController owner, int type, int x, int y, int z) {
@@ -165,7 +165,7 @@ final class SlimeEyeBehavior {
         if (s < 0) return -1;
         runtime.lifecycle().disableEntityWithoutPersistence(s);
         var definition = type == 0x1B && runtime.spriteHandlers() != null
-                ? runtime.spriteHandlers().forZolSlimeEye()
+                ? runtime.slotProperties().spriteViews().forZolSlimeEye()
                 : runtime.slotProperties().spriteDefinitionFor(type);
         runtime.slots()[s] = new RoomEntity(
                 s,

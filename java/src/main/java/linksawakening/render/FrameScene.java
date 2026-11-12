@@ -13,14 +13,18 @@ public final class FrameScene {
     private FrameDrawObserver observer;
 
     private FrameScene(List<RenderLayer> layers) {
-        this.layers = List.copyOf(layers);
+        this(layers, false);
     }
 
-    public static FrameScene empty() {
+    private FrameScene(List<RenderLayer> layers, boolean borrowed) {
+        this.layers = borrowed ? layers : List.copyOf(layers);
+    }
+
+    static FrameScene empty() {
         return EMPTY;
     }
 
-    public static FrameScene of(List<RenderLayer> layers) {
+    static FrameScene of(List<RenderLayer> layers) {
         if (layers.isEmpty()) {
             return EMPTY;
         }
@@ -31,7 +35,7 @@ public final class FrameScene {
         drawTo(buffer, gpu, observer);
     }
 
-    public void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
+    void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
         hardwareFrame(gpu).compose(buffer);
         if (observer != null) observer.drawn(this, buffer, gpu);
     }
@@ -41,29 +45,36 @@ public final class FrameScene {
     }
 
     HardwareFrame hardwareFrame(GPU gpu) {
-        return hardwareFrame(gpu, null);
+        return hardwareFrame(gpu, (HardwareFrame) null);
     }
 
-    HardwareFrame hardwareFrame(GPU gpu, HardwareFrameDiagnostics diagnostics) {
-        for (RenderLayer layer : layers) {
+    HardwareFrame hardwareFrame(GPU gpu, HardwareFrame suppliedFrame) {
+        for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
+            RenderLayer layer = layers.get(layerIndex);
             if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
                 throw new IllegalStateException(
                         "Layer not migrated: " + layer.getClass().getName());
         }
         HardwareFrame frame;
-        if (diagnostics != null) frame = new HardwareFrame(true, diagnostics);
+        if (suppliedFrame != null) frame = suppliedFrame;
         else {
             if (reusableFrame == null) reusableFrame = new HardwareFrame(true);
             frame = reusableFrame;
             frame.reset();
         }
-        for (RenderLayer layer : layers) {
-            if (frame.diagnostics() != null)
-                frame.submittingLayer(layer.getClass().getSimpleName());
+        for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
+            RenderLayer layer = layers.get(layerIndex);
+            if (frame.observer() != null) frame.submittingLayer(layer.getClass().getSimpleName());
             else frame.objectVisibilitySource(layer);
             ((HardwareRenderLayer) layer).submit(frame, gpu);
         }
         return frame;
+    }
+
+    static FrameScene borrowed(List<RenderLayer> layers, HardwareFrame frame) {
+        FrameScene scene = new FrameScene(layers, true);
+        scene.reusableFrame = frame;
+        return scene;
     }
 
     static FrameScene of(List<RenderLayer> layers, HardwareFrame frame) {

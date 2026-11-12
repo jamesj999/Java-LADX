@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for SnakeMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for SnakeMotion.advance; values are assigned in source order. */
 final class SnakeFrameStep {
-    private final SnakeMotion owner;
+    private SnakeMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
     private int linkEntityX;
@@ -20,24 +20,7 @@ final class SnakeFrameStep {
     private linksawakening.world.entity.motion.SnakeMotion.Position moved;
     private linksawakening.world.entity.RoomEntity updated;
 
-    SnakeFrameStep(
-            SnakeMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            java.util.function.IntSupplier randomByteSupplier,
-            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
-            int transitionCountdown) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.randomByteSupplier = randomByteSupplier;
-        this.backgroundCollision = backgroundCollision;
-        this.transitionCountdown = transitionCountdown;
-    }
+    SnakeFrameStep() {}
 
     linksawakening.world.entity.motion.SnakeMotion.Update run() {
         if ((entity.type() & 0xFF) != SnakeMotion.ENTITY_SNAKE) {
@@ -135,5 +118,59 @@ final class SnakeFrameStep {
         owner.setAnimationVariant(slot, SnakeMotion.dashingAnimation(frameCounter));
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.SnakeMotion.Update run(
+            SnakeMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            java.util.function.IntSupplier randomByteSupplier,
+            linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision,
+            int transitionCountdown) {
+        if (inUse) {
+            return new SnakeFrameStep()
+                    .run(
+                            owner,
+                            entity,
+                            frameCounter,
+                            linkEntityX,
+                            linkEntityY,
+                            randomByteSupplier,
+                            backgroundCollision,
+                            transitionCountdown);
+        }
+        inUse = true;
+        slot = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        renderedVariant = 0;
+        moved = null;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.randomByteSupplier = randomByteSupplier;
+        this.backgroundCollision = backgroundCollision;
+        this.transitionCountdown = transitionCountdown;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundCollision = null;
+            this.moved = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

@@ -44,34 +44,34 @@ final class DialogGotItemSequenceTest {
     @Test
     void groundedUseStartsStateButDoesNotConsumeOwnershipOrChangePoseUntilNextPass() {
         var link = link();
-        link.presentToadstool();
-        assertTrue(link.dialogGotItemActive());
-        assertEquals(0x2A, link.dialogGotItemCountdown());
-        assertEquals(0, link.presentedDialogGotItem());
-        assertEquals(0, link.tickDialogGotItem(false));
-        assertEquals(0x6B, link.romAnimationState());
-        assertEquals(0x29, link.dialogGotItemCountdown());
-        assertTrue(link.isCollisionDamageImmune());
+        link.animation().presentToadstool();
+        assertTrue(link.animation().dialogGotItemActive());
+        assertEquals(0x2A, link.animation().dialogGotItemCountdown());
+        assertEquals(0, link.animation().presentedDialogGotItem());
+        assertEquals(0, link.airborne().tickDialogGotItem(false));
+        assertEquals(0x6B, link.animation().romAnimationState());
+        assertEquals(0x29, link.animation().dialogGotItemCountdown());
+        assertTrue(link.status().isCollisionDamageImmune());
     }
 
     @Test
     void nonzeroZRejectsUseAndHeldPoseUsesRomFractionalZGravity() {
         var link = link();
-        link.linkAirborne.zSubPixels = 16;
-        link.presentToadstool();
-        assertFalse(link.dialogGotItemActive());
-        link.linkAirborne.zSubPixels = 0;
-        link.linkAirborne.zVelocity = 0x12;
-        link.presentToadstool();
-        link.tickDialogGotItem(false);
-        assertEquals(0x12, link.linkAirborne.zSubPixels);
-        assertEquals(0x10, link.zVelocity());
-        assertEquals(0, link.linkAnimator.bedJumpRenderZ);
-        link.clearDialogGotItem();
-        assertFalse(link.dialogGotItemActive());
-        assertEquals(2, link.presentedDialogGotItem());
-        link.resetTransientStateForDebug();
-        assertEquals(0, link.presentedDialogGotItem());
+        link.linkAirborne.elevation().zSubPixels(16);
+        link.animation().presentToadstool();
+        assertFalse(link.animation().dialogGotItemActive());
+        link.linkAirborne.elevation().zSubPixels(0);
+        link.linkAirborne.elevation().zVelocity(0x12);
+        link.animation().presentToadstool();
+        link.airborne().tickDialogGotItem(false);
+        assertEquals(0x12, link.linkAirborne.elevation().zSubPixels());
+        assertEquals(0x10, link.airborne().zVelocity());
+        assertEquals(0, link.linkAnimator.bedJumpRenderZ());
+        link.animation().clearDialogGotItem();
+        assertFalse(link.animation().dialogGotItemActive());
+        assertEquals(2, link.animation().presentedDialogGotItem());
+        link.motion().resetTransientStateForDebug();
+        assertEquals(0, link.animation().presentedDialogGotItem());
     }
 
     private static Link link() {

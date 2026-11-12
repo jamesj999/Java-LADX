@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.stream.IntStream;
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -21,12 +24,14 @@ class EntityBossBattleFlagTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(null)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
-                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(rom))
-                .romTables(linksawakening.rom.RomTables.loadFromRom(rom))
-                .romData(rom)
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(
+                        (rom == null ? (Rom) null : TestRoms.partial(rom))))
+                .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
-        runtime.bossRewards.writeEnemyDropResolver(new EnemyDropResolver(rom));
+        runtime.bossRewards.writeEnemyDropResolver(
+                new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }
 

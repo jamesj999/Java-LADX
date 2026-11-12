@@ -10,7 +10,7 @@ import linksawakening.world.entity.RoomEntityRuntime.ProjectileObjectCollision;
 import linksawakening.world.entity.event.MagicRodObjectRequest;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for MagicRodBehavior.advanceMagicRodFireballEntity; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for MagicRodBehavior.advanceMagicRodFireballEntity; values are assigned in source order. */
 final class MagicRodFrameStep {
     private linksawakening.world.entity.EntityProjectileController owner;
     private int index;
@@ -28,20 +28,7 @@ final class MagicRodFrameStep {
     private linksawakening.world.entity.RoomEntityRuntime.ProjectileObjectCollision objectCollision;
     private linksawakening.world.entity.RoomEntity positioned;
 
-    MagicRodFrameStep(
-            linksawakening.world.entity.EntityProjectileController owner,
-            int index,
-            linksawakening.world.entity.RoomEntity entity,
-            int frame,
-            boolean handlerInteractive,
-            boolean timersInteractive) {
-        this.owner = owner;
-        this.index = index;
-        this.entity = entity;
-        this.frame = frame;
-        this.handlerInteractive = handlerInteractive;
-        this.timersInteractive = timersInteractive;
-    }
+    MagicRodFrameStep() {}
 
     void run() {
         if (!advanceProjectile()) return;
@@ -77,7 +64,7 @@ final class MagicRodFrameStep {
             }
             EntitySpriteDefinition fireDefinition = runtime.spriteHandlers() == null
                     ? entity.spriteDefinition()
-                    : runtime.spriteHandlers().forMagicRodFireState();
+                    : runtime.slotProperties().spriteViews().forMagicRodFireState();
             runtime.slots()[index] = withDefinition(entity, fireDefinition, variant);
             return false;
         }
@@ -137,5 +124,49 @@ final class MagicRodFrameStep {
         }
         runtime.slots()[index] = withVariant(positioned, variant);
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityProjectileController owner,
+            int index,
+            linksawakening.world.entity.RoomEntity entity,
+            int frame,
+            boolean handlerInteractive,
+            boolean timersInteractive) {
+        if (inUse) {
+            new MagicRodFrameStep().run(owner, index, entity, frame, handlerInteractive, timersInteractive);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        unloadOnHit = false;
+        variant = 0;
+        moved = null;
+        intersectionQuery = null;
+        object = null;
+        objectCollision = null;
+        positioned = null;
+        this.owner = owner;
+        this.index = index;
+        this.entity = entity;
+        this.frame = frame;
+        this.handlerInteractive = handlerInteractive;
+        this.timersInteractive = timersInteractive;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+            this.moved = null;
+            this.intersectionQuery = null;
+            this.object = null;
+            this.objectCollision = null;
+            this.positioned = null;
+        }
     }
 }

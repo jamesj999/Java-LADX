@@ -3,8 +3,7 @@ package linksawakening.world.room;
 import java.util.List;
 import linksawakening.world.transition.Warp;
 
-public record RoomObjectParseResult(
-        int[] roomObjectsArea, List<Warp> warps, int shutterDoorMask, int staircaseLocation) {
+record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps, int shutterDoorMask, int staircaseLocation) {
 
     public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps) {
         this(roomObjectsArea, warps, 0, -1);

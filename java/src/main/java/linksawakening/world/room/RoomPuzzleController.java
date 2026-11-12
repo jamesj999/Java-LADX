@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 
@@ -124,7 +125,7 @@ final class RoomPuzzleController {
             java.util.function.Supplier<RoomEntityInputs> entityInputs,
             GPU gpu,
             OverworldCollision overworldCollision,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomObjectMutations> roomObjectMutations,
             java.util.function.Supplier<RoomPuzzleController> roomPuzzleController,

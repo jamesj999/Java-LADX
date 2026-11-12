@@ -60,7 +60,7 @@ revolvingDoorPalettes=930d01137bd88b22d96200a6cf43d9b8c6b479642c014207a78344b09d
     void everyTableMatchesOriginalChecksum() throws Exception {
         try (var input = TestRom.open()) {
             Map<String, String> actual = new TreeMap<>();
-            collect(RomTables.loadFromRom(input.readAllBytes()), actual);
+            collect(RomTables.load(Rom.unchecked(input.readAllBytes())), actual);
             Map<String, String> expected = new TreeMap<>();
             for (String line : EXPECTED.strip().split("\n")) {
                 String[] pair = line.split("=");

@@ -2,8 +2,9 @@ package linksawakening.ui;
 
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
-import linksawakening.rom.RomUtil;
 
 /** LoadInstrumentsBG ($01:6BEA) and the palette cycle at $20:5EB5. */
 final class InventoryInstrumentPanel {
@@ -15,8 +16,8 @@ final class InventoryInstrumentPanel {
     private final int[][] cycleColors = new int[16][2];
     private final GPU tiles = new GPU();
 
-    InventoryInstrumentPanel(byte[] rom) {
-        var data = new linksawakening.rom.Rom(rom);
+    InventoryInstrumentPanel(Rom romData) {
+        var data = romData;
         for (int i = 0; i < 8; i++) {
             positions[i] =
                     0x100 + data.u8(linksawakening.rom.RomAddress.fromOffset(RomSymbols.Data_001_6BCF.offset() + i));
@@ -25,12 +26,12 @@ final class InventoryInstrumentPanel {
         }
         for (int i = 0; i < 32; i++) {
             int offset = RomSymbols.InventoryInstrumentCyclingColors.offset() + i * 2;
-            cycleColors[i / 2][i % 2] = RomUtil.decodeRgb555(data.u8(linksawakening.rom.RomAddress.fromOffset(offset))
+            cycleColors[i / 2][i % 2] = RomBank.decodeRgb555(data.u8(linksawakening.rom.RomAddress.fromOffset(offset))
                     | data.u8(linksawakening.rom.RomAddress.fromOffset(offset + 1)) << 8);
         }
         // Keep the inventory's ROM-loaded tiles separate from gameplay VRAM:
         // the menu must not overwrite the shared effects beneath its window.
-        tiles.loadBaseTiles(rom);
+        tiles.loadBaseTiles(romData);
         // CopySirenInstrumentTiles uses bank $0C without the CGB adjustment.
         int npcSource = RomSymbols.ColorDungeonNpcTiles.offset();
         for (int i = 0; i < 0x400; i++)

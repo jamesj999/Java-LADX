@@ -4,7 +4,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Inputs for CuccoMotion.advance. */
-public record CuccoFrame(
+record CuccoFrame(
         RoomEntity entity,
         int frameCounter,
         int transitionCountdown,

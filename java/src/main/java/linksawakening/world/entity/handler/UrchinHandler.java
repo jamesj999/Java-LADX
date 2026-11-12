@@ -39,8 +39,7 @@ final class UrchinHandler {
             RoomEntityBackgroundInteraction urchinBackgroundInteraction =
                     state.background().interaction();
             if (urchinBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                urchinBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                urchinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             UrchinMotion.Update urchinUpdate = state.motion(UrchinMotion.class, UrchinMotion::new)
                     .advance(new UrchinFrame(
@@ -75,7 +74,8 @@ final class UrchinHandler {
                         urchinUpdate.jingleId()));
             }
             if (state.sprites() != null) {
-                EntitySpriteDefinition urchinDefinition = state.sprites().forUrchinState(frameInput.creditsGameplay());
+                EntitySpriteDefinition urchinDefinition =
+                        state.spriteViews().forUrchinState(frameInput.creditsGameplay());
                 slotState.updated(withDefinition(
                         slotState.updated(),
                         urchinDefinition,

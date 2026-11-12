@@ -5,8 +5,7 @@ import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.Warp;
 
 /** Constructor inputs; LoadedRoom takes defensive copies at the same ownership boundary. */
-public record LoadedRoomSpec(
-        Identity identity, Objects objects, Graphics graphics, Exits exits, RoomEntitySnapshot entities) {
+record LoadedRoomSpec(Identity identity, Objects objects, Graphics graphics, Exits exits, RoomEntitySnapshot entities) {
     public record Identity(int roomId, int mapCategory, int mapId, int animatedTilesGroup) {}
 
     public record Objects(int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues) {}

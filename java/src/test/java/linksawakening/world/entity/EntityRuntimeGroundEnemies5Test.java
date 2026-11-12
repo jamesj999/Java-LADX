@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
@@ -353,7 +354,8 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
     @Test
     void waterTektiteAppliesBankSevenRecoilBeforeItsStateMovement() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -390,7 +392,8 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
     @Test
     void waterTektiteKeepsBankSevenRecoilWhenBackgroundBlocksTheStep() throws IOException {
         EntitySpriteDefinition definition = pairDefinition(0x99, 2);
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(loadRom());
+        RomEnemyCombatTables tables =
+                new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom()));
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -458,7 +461,7 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
 
     @Test
     void moblinLaunchUsesTheHighestDisabledSlotAndDoesNotTickItTwice() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
@@ -522,7 +525,7 @@ final class EntityRuntimeGroundEnemies5Test extends EntityRuntimeTestSupport {
 
     @Test
     void armosKnightDeathUsesItsRomBossCountdownsBeforeDidKillEnemy() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)

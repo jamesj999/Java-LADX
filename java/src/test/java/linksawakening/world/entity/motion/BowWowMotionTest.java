@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
@@ -198,8 +199,8 @@ final class BowWowMotionTest {
 
     @Test
     void setupUsesTheRomPrivateStateOffsetsAndSeedsBothTargets() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_BOW_WOW)
                 .at(0x40, 0x50)
@@ -219,8 +220,8 @@ final class BowWowMotionTest {
 
     @Test
     void followingBranchTargetsLinkVisualYAndLoadsTheBankFiveSpeedTables() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_BOW_WOW)
                 .at(0x40, 0x50)
@@ -242,8 +243,8 @@ final class BowWowMotionTest {
 
     @Test
     void movementUsesTheRomSixteenFrameFixedPointSpeedAndTargetCorrection() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_BOW_WOW)
                 .at(0x40, 0x50)
@@ -269,8 +270,8 @@ final class BowWowMotionTest {
 
     @Test
     void followingScanUsesTheRomCandidateFiltersAndLoadsTheTargetVector() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)
@@ -334,8 +335,8 @@ final class BowWowMotionTest {
 
     @Test
     void terminalFollowingPhaseReportsTheRomTargetContactWindow() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)
@@ -374,8 +375,8 @@ final class BowWowMotionTest {
 
     @Test
     void movingAttackChecksTheRomTargetContactWindowEveryFrame() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)
@@ -413,8 +414,8 @@ final class BowWowMotionTest {
 
     @Test
     void bowWowMovementSkipsTheRomBackgroundWallCollisionPath() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)
@@ -460,8 +461,8 @@ final class BowWowMotionTest {
 
     @Test
     void completedFollowingAttackReturnsToRomTargetSelectionState() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity bowWow = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)
@@ -507,8 +508,8 @@ final class BowWowMotionTest {
 
     @Test
     void completedWanderReturnsToRomTargetSelectionState() {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(new byte[0x100000]).forFollowerEntityType(ENTITY_BOW_WOW);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(new byte[0x100000]))
+                .forFollowerEntityType(ENTITY_BOW_WOW);
         RoomEntity current = new RoomEntityBuilder()
                 .slot(5)
                 .type(ENTITY_BOW_WOW)

@@ -20,7 +20,6 @@ import linksawakening.state.PlayerState;
 public final class DroppableRupeeSystem {
 
     private static final int OBJECT_BUSH = 0x5C;
-    private static final int OBJECT_BUSH_GROUND_STAIRS = 0xD3;
 
     private static final int RUPEE_TILE_INDEX = 0xA6;
     private static final int DROP_GATE_MASK = 0x07;
@@ -97,7 +96,7 @@ public final class DroppableRupeeSystem {
     }
 
     public boolean maybeSpawnFromBush(int originalObjectId, int worldX, int worldY) {
-        if (originalObjectId == OBJECT_BUSH_GROUND_STAIRS || originalObjectId != OBJECT_BUSH) {
+        if (originalObjectId != OBJECT_BUSH) {
             return false;
         }
         if ((nextRandomByte() & DROP_GATE_MASK) != 0) {
@@ -139,7 +138,7 @@ public final class DroppableRupeeSystem {
             }
 
             if (slot.pickupDelay == 0 && intersectsLink(slot, linkPixelX, linkPixelY)) {
-                playerState.setRupees(playerState.rupees() + 1);
+                playerState.wallet().setRupees(playerState.wallet().rupees() + 1);
                 slots[i] = null;
                 continue;
             }

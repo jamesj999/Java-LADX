@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void bombArrowCollisionIsHarmlessButSetsTheTargetTransitionCountdown() throws IOException {
         byte[] rom = loadRom();
-        RomEnemyCombatTables tables = new RomEnemyCombatTables(rom);
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition moblinDefinition = pairDefinition(0x0B, 8);
         RoomEntity moblin = new RoomEntityBuilder()
                 .slot(15)
@@ -57,7 +58,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void shootingWithinTheBombArrowWindowRemovesTheLatestBombAndMarksTheArrow() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(null)
@@ -120,7 +121,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
     @Test
     void bombArrowSpawnsTheSourceBombExplosionAfterAWallTransition() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(null)

@@ -11,7 +11,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for RichardBehavior.advanceRichard; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for RichardBehavior.advanceRichard; values are assigned in source order. */
 final class RichardStep {
     private linksawakening.world.entity.EntityStoryController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -27,20 +27,7 @@ final class RichardStep {
     private int variant;
     private linksawakening.world.entity.RoomEntity updated;
 
-    RichardStep(
-            linksawakening.world.entity.EntityStoryController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.linkAirborne = linkAirborne;
-    }
+    RichardStep() {}
 
     void run() {
         runtime = owner.runtime;
@@ -190,5 +177,42 @@ final class RichardStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityStoryController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne) {
+        if (inUse) {
+            new RichardStep().run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        xDistance = 0;
+        yDistance = 0;
+        variant = 0;
+        updated = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.linkAirborne = linkAirborne;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.runtime = null;
+            this.updated = null;
+        }
     }
 }

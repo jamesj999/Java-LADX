@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import java.util.Objects;
 
-/** Per-invocation scratch for DogMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for DogMotion.advance; values are assigned in source order. */
 final class DogStep {
-    private final DogMotion owner;
+    private DogMotion owner;
     private linksawakening.world.entity.motion.DogFrame inputs;
     private linksawakening.world.entity.RoomEntity entity;
     private int frameCounter;
@@ -28,10 +28,7 @@ final class DogStep {
     private int movementCollisionFlags;
     private linksawakening.world.entity.RoomEntity updated;
 
-    DogStep(DogMotion owner, linksawakening.world.entity.motion.DogFrame inputs) {
-        this.owner = owner;
-        this.inputs = inputs;
-    }
+    DogStep() {}
 
     linksawakening.world.entity.motion.DogMotion.Update run() {
         if (!prepareFrame()) return completedResult;
@@ -198,5 +195,51 @@ final class DogStep {
             default -> throw new IllegalStateException("Invalid Dog state: " + owner.state[slot]);
         }
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.DogMotion.Update run(
+            DogMotion owner, linksawakening.world.entity.motion.DogFrame inputs) {
+        if (inUse) {
+            return new DogStep().run(owner, inputs);
+        }
+        inUse = true;
+        entity = null;
+        frameCounter = 0;
+        transitionCountdown = 0;
+        physicsFlags = 0;
+        linkEntityX = 0;
+        linkEntityY = 0;
+        linkDirection = 0;
+        actionButtonAHeld = false;
+        dialogActive = false;
+        randomByteSupplier = null;
+        backgroundInteraction = null;
+        slot = 0;
+        countdown = 0;
+        nextPhysicsFlags = 0;
+        z = 0;
+        landed = false;
+        appliesBackgroundInteraction = false;
+        dialogRequested = false;
+        dialogLowId = 0;
+        movementCollisionFlags = 0;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.inputs = inputs;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.inputs = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.backgroundInteraction = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

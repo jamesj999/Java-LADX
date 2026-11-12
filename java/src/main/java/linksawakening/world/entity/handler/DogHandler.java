@@ -47,8 +47,7 @@ final class DogHandler {
             RoomEntityBackgroundInteraction dogBackgroundInteraction =
                     state.background().interaction();
             if (dogBackgroundInteraction == null && frameInput.backgroundCollision() != null) {
-                dogBackgroundInteraction =
-                        RoomEntityBackgroundInteraction.fromBoolean(frameInput.backgroundCollision());
+                dogBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
             }
             DogMotion.Update dogUpdate = state.motion(DogMotion.class, DogMotion::new)
                     .advance(new DogFrame(

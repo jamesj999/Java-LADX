@@ -46,7 +46,7 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
 /** One entity outbox and its stable typed channel views. */
-public final class EntityEventChannels {
+final class EntityEventChannels {
     final EntityOutbox outbox = new EntityOutbox();
     public final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
             outbox.channel(RoamingEnemyMotion.LaunchRequest.class, "projectileLaunchRequests");

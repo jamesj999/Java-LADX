@@ -10,33 +10,8 @@ public final class RomUtil {
 
     private RomUtil() {}
 
-    /** @deprecated Use {@link RomBank#romOffset(int, int)}. */
-    @Deprecated(forRemoval = true)
-    public static int romOffset(int bank, int address) {
-        return RomBank.romOffset(bank, address);
-    }
-
-    /** @deprecated Use {@link RomBank#decodeRgb555(int)}. */
-    @Deprecated(forRemoval = true)
-    public static int decodeRgb555(int color) {
-        return RomBank.decodeRgb555(color);
-    }
-
-    /** @deprecated Use {@link #loadPalettesFromRom(Rom, RomAddress, int)}. */
-    @Deprecated(forRemoval = true)
-    public static int[][] loadPalettesFromRom(byte[] romData, int bank, int address, int paletteCount) {
-        return loadPalettesFromRom(new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), paletteCount);
-    }
-
     public static int[][] loadPalettesFromRom(Rom rom, RomAddress address, int paletteCount) {
         return RomBank.loadPalettes(rom, address, paletteCount);
-    }
-
-    /** @deprecated Use {@link #decodeBackgroundFromRom(Rom, RomAddress, int, int)}. */
-    @Deprecated(forRemoval = true)
-    public static int[] decodeBackgroundFromRom(byte[] romData, int bank, int address, int tilemapWidth, int filler) {
-        return decodeBackgroundFromRom(
-                new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), tilemapWidth, filler);
     }
 
     public static int[] decodeBackgroundFromRom(Rom rom, RomAddress address, int tilemapWidth, int filler) {

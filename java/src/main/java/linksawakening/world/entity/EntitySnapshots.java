@@ -9,6 +9,7 @@ public final class EntitySnapshots {
     private EntitySnapshots() {}
 
     public static RoomEntity withStatus(RoomEntity entity, EntityStatus status) {
+        if (entity.status() == status) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -29,6 +30,8 @@ public final class EntitySnapshots {
 
     static RoomEntity withType(RoomEntity entity, int type, EntitySpriteDefinition definition) {
         int variant = definition.supported() ? definition.initialVariant() : -1;
+        if (entity.type() == type && entity.spriteDefinition() == definition && entity.spriteVariant() == variant)
+            return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -48,6 +51,7 @@ public final class EntitySnapshots {
     }
 
     public static RoomEntity withVariant(RoomEntity entity, int variant) {
+        if (entity.spriteVariant() == variant) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -86,6 +90,7 @@ public final class EntitySnapshots {
     }
 
     public static RoomEntity withZ(RoomEntity entity, int z) {
+        if (entity.z() == z) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -107,6 +112,7 @@ public final class EntitySnapshots {
     public static RoomEntity withDefinition(RoomEntity entity, EntitySpriteDefinition definition, int variant) {
         int selectedVariant =
                 definition.supported() ? Math.min(Math.max(variant, 0), definition.variantCount() - 1) : -1;
+        if (entity.spriteDefinition() == definition && entity.spriteVariant() == selectedVariant) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -129,6 +135,8 @@ public final class EntitySnapshots {
         if (source.status() != EntityStatus.DYING || rebuilt.status() != EntityStatus.DYING) {
             return rebuilt;
         }
+        if (source.deathSpriteVariant() == rebuilt.deathSpriteVariant()
+                && source.powerRecoilDeath() == rebuilt.powerRecoilDeath()) return rebuilt;
         return new RoomEntity(
                 rebuilt.slot(),
                 rebuilt.sourceLoadOrder(),
@@ -146,6 +154,7 @@ public final class EntitySnapshots {
     }
 
     static RoomEntity withDeathPresentation(RoomEntity entity, int variant, boolean powerRecoil) {
+        if (entity.deathSpriteVariant() == variant && entity.powerRecoilDeath() == powerRecoil) return entity;
         return new RoomEntity(
                 entity.slot(),
                 entity.sourceLoadOrder(),
@@ -163,6 +172,7 @@ public final class EntitySnapshots {
     }
 
     public static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
+        if (entity.x() == (x & 0xFF) && entity.y() == (y & 0xFF) && entity.spriteVariant() == variant) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -182,6 +192,7 @@ public final class EntitySnapshots {
     }
 
     static RoomEntity withSourceLoadOrder(RoomEntity entity, int sourceLoadOrder) {
+        if (entity.sourceLoadOrder() == sourceLoadOrder) return entity;
         return preserveDeathMetadata(
                 entity,
                 new RoomEntity(
@@ -210,6 +221,13 @@ public final class EntitySnapshots {
             int z,
             int deathVariant,
             boolean powerRecoilDeath) {
+        if (entity.x() == x
+                && entity.y() == y
+                && entity.spriteVariant() == variant
+                && entity.entityFlipAttribute() == flipAttribute
+                && entity.z() == z
+                && entity.deathSpriteVariant() == deathVariant
+                && entity.powerRecoilDeath() == powerRecoilDeath) return entity;
         return new RoomEntity(
                 entity.slot(),
                 entity.sourceLoadOrder(),
@@ -224,5 +242,27 @@ public final class EntitySnapshots {
                 z,
                 deathVariant,
                 powerRecoilDeath);
+    }
+
+    static RoomEntity withPresentation(RoomEntity entity, EntityStatus status, int variant, int flip) {
+        if (entity.status() == status
+                && entity.spriteVariant() == variant
+                && entity.entityFlipAttribute() == flip
+                && entity.deathSpriteVariant() == -1
+                && !entity.powerRecoilDeath()) return entity;
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                entity.x(),
+                entity.y(),
+                status,
+                entity.spriteDefinition(),
+                variant,
+                flip,
+                entity.spriteTileOffset(),
+                entity.z(),
+                -1,
+                false);
     }
 }

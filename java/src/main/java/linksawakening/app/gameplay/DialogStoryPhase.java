@@ -1,15 +1,15 @@
 package linksawakening.app.gameplay;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
 
+/** Advances dialog and opening-story gates before player motion. Retained for one simulation. */
 final class DialogStoryPhase {
     boolean tick(GameplaySimulation context) {
         if ((context.inventoryMenu().isFullyClosed())) {
-            context.playerState().latchFullHearts();
+            context.playerState().vitals().latchFullHearts();
         }
         {
             // $00:0F22 runs before world transitions and dialog gates.
@@ -26,19 +26,19 @@ final class DialogStoryPhase {
                     .tickDungeonTitleMessage(
                             context.dialogController().isActive(),
                             context.inventoryMenu().isFullyClosed(),
-                            context.link().romMotionState(),
+                            context.link().airborne().romMotionState(),
                             context.debugNoClip());
             if (dungeonTitle >= 0) {
                 context.dialogController()
                         .openPreformattedForLinkY(
                                 context.dialogTextLoader().load(new SignpostDialogRef(0, dungeonTitle)),
                                 LinkDialogPosition.dialogYFromTopLeft(
-                                        context.link().pixelY()));
+                                        context.link().position().pixelY()));
             }
         }
         {
             context.dialogController().tick();
-            context.dialogSounds().run();
+            context.dialogSounds().route();
         }
         context.story().updateNewGameMarinPresentation();
         if (context.story().tickNewGameWakeUp()) {

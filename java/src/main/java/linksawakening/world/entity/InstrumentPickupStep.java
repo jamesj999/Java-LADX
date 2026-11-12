@@ -15,7 +15,7 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.TransientVfxRequest;
 import linksawakening.world.entity.motion.*;
 
-/** Per-invocation scratch for InstrumentPickupBehavior.advanceInstrumentPickup; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for InstrumentPickupBehavior.advanceInstrumentPickup; values are assigned in source order. */
 final class InstrumentPickupStep {
     private linksawakening.world.entity.EntityRewardController owner;
     private linksawakening.world.entity.RoomEntity entity;
@@ -28,22 +28,7 @@ final class InstrumentPickupStep {
     private int slot;
     private linksawakening.world.entity.RoomEntity held;
 
-    InstrumentPickupStep(
-            linksawakening.world.entity.EntityRewardController owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            int linkZ,
-            java.util.function.IntSupplier randomByteSupplier) {
-        this.owner = owner;
-        this.entity = entity;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.linkZ = linkZ;
-        this.randomByteSupplier = randomByteSupplier;
-    }
+    InstrumentPickupStep() {}
 
     void run() {
         if (!prepareSparkles()) return;
@@ -181,5 +166,43 @@ final class InstrumentPickupStep {
         }
 
         return true;
+    }
+
+    private boolean inUse;
+
+    void run(
+            linksawakening.world.entity.EntityRewardController owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            int linkZ,
+            java.util.function.IntSupplier randomByteSupplier) {
+        if (inUse) {
+            new InstrumentPickupStep()
+                    .run(owner, entity, frameCounter, linkEntityX, linkEntityY, linkZ, randomByteSupplier);
+            return;
+        }
+        inUse = true;
+        runtime = null;
+        slot = 0;
+        held = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.linkZ = linkZ;
+        this.randomByteSupplier = randomByteSupplier;
+        try {
+            run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.randomByteSupplier = null;
+            this.runtime = null;
+            this.held = null;
+        }
     }
 }

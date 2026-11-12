@@ -3,7 +3,8 @@ package linksawakening.ui;
 import java.util.Arrays;
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
-import linksawakening.rom.RomUtil;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomBank;
 
 /** ROM CreateMinimapTilemap, LoadMinimap and the dungeon inventory draw commands. */
 final class InventoryDungeonPanel {
@@ -12,14 +13,14 @@ final class InventoryDungeonPanel {
 
     private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
-    private final byte[] rom;
+    private final Rom romData;
     private final linksawakening.rom.Rom data;
     private final GPU tiles = new GPU();
 
-    InventoryDungeonPanel(byte[] rom) {
-        this.rom = rom;
-        this.data = new linksawakening.rom.Rom(rom);
-        tiles.loadBaseTiles(rom);
+    InventoryDungeonPanel(Rom romData) {
+        this.romData = romData;
+        this.data = romData;
+        tiles.loadBaseTiles(romData);
         int items = linksawakening.rom.RomSymbols.InventoryIndoorItemsTiles.withGbcBank()
                 .offset();
         for (int i = 0; i < 0x300; i++)
@@ -32,7 +33,7 @@ final class InventoryDungeonPanel {
     }
 
     private int read(int bank, int address) {
-        return data.u8(linksawakening.rom.RomAddress.fromOffset(RomUtil.romOffset(bank, address)));
+        return data.u8(linksawakening.rom.RomAddress.fromOffset(RomBank.romOffset(bank, address)));
     }
 
     int minimapTile(int base, int status, boolean map, boolean compass) {

@@ -2,6 +2,7 @@ package linksawakening.equipment;
 
 import java.util.Arrays;
 import linksawakening.entity.EntitySpriteCatalog;
+import linksawakening.rom.Rom;
 
 /** ROM object palettes selected by the normal and fully charged sword. */
 public final class SwordPalette {
@@ -20,7 +21,7 @@ public final class SwordPalette {
     }
 
     /** Loads the normal and charged sword rows from the ROM object palette table. */
-    public static SwordPalette loadFromRom(byte[] romData) {
+    public static SwordPalette loadFromRom(Rom romData) {
         return new SwordPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
@@ -51,5 +52,11 @@ public final class SwordPalette {
             throw new IllegalArgumentException(description + " must contain four colors");
         }
         return Arrays.copyOf(row, row.length);
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static SwordPalette loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

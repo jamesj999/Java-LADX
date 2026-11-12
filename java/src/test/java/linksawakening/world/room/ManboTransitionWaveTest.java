@@ -2,7 +2,9 @@ package linksawakening.world.room;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.transition.ManboTransitionWave;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +14,7 @@ final class ManboTransitionWaveTest {
     @Test
     void followsTheRomPhaseTableAndOddFrameComplement() {
         byte[] rom = loadRom();
-        ManboTransitionWave wave = new ManboTransitionWave(rom);
+        ManboTransitionWave wave = new ManboTransitionWave((rom == null ? (Rom) null : TestRoms.partial(rom)));
 
         assertEquals(1, wave.offsetFor(0x20, 0));
         assertEquals(-1, wave.offsetFor(0x21, 0));

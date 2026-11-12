@@ -12,15 +12,15 @@ import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.motion.*;
-import linksawakening.world.entity.motion.ColorShellMotion;
-import linksawakening.world.entity.motion.HookshotChainMotion;
 
-/** Read-only views over ROM slot state for gameplay and diagnostics. */
+/** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
     private final EntityRoomInspectionServices runtime;
+    private final RoomEntitySnapshot liveView;
 
     EntityRoomInspection(EntityRoomInspectionServices runtime) {
         this.runtime = runtime;
+        this.liveView = RoomEntitySnapshot.liveView(runtime);
     }
 
     public LiftedEntityState liftedEntityState() {
@@ -156,12 +156,6 @@ public final class EntityRoomInspection {
         return runtime.story().readShouldGetLostInMysteriousWoods();
     }
 
-    /** Compatibility for world.room.RoomSessionViews. */
-    @Deprecated
-    public int warpTransitionCountdownForTest(int slot) {
-        return warpTransitionCountdown(slot);
-    }
-
     public int warpTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.warpState().readWarpTransitionCountdown(slot) & 0xFF;
@@ -268,7 +262,7 @@ public final class EntityRoomInspection {
             return entity;
         }
         boolean flying = ((frameCounter >>> 2) & 0x02) != 0;
-        return withDefinition(entity, runtime.spriteHandlers().forOwlEvent(flying), 0);
+        return withDefinition(entity, runtime.slotProperties().spriteViews().forOwlEvent(flying), 0);
     }
 
     int enemyDropHealthGroup(int slot) {
@@ -282,37 +276,32 @@ public final class EntityRoomInspection {
         return EntityRoomQueries.spriteDefinitionFor(runtime, entityType);
     }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int privateState1) {
-        if (runtime.spriteHandlers() == null) {
-            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        }
-        return runtime.spriteHandlers().forBushCrawlerState(privateState1, spriteRoomTable());
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerState(int disguiseState) {
+        return runtime.spriteHandlers() == null
+                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
+                : runtime.slotProperties().spriteViews().forBushCrawlerState(disguiseState, spriteRoomTable());
     }
 
     EntitySpriteDefinition spriteDefinitionForPokeySegment() {
         return runtime.spriteHandlers() == null
                 ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_POKEY)
-                : runtime.spriteHandlers().forPokeySegment();
+                : runtime.slotProperties().spriteViews().forPokeySegment();
     }
 
-    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int privateState4) {
-        if (runtime.spriteHandlers() == null) {
-            return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        }
-        return runtime.spriteHandlers().forBushCrawlerCrawlState(spriteRoomTable(), privateState4);
+    EntitySpriteDefinition spriteDefinitionForBushCrawlerCrawlState(int crawlState) {
+        return runtime.spriteHandlers() == null
+                ? EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_BUSH_CRAWLER)
+                : runtime.slotProperties().spriteViews().forBushCrawlerCrawlState(spriteRoomTable(), crawlState);
     }
 
     EntityRoomLoader.RoomTable spriteRoomTable() {
-        return runtime.presentationState().readSpriteSelection() == null
-                ? (runtime.indoorRoom() ? EntityRoomLoader.RoomTable.INDOORS_A : EntityRoomLoader.RoomTable.OVERWORLD)
-                : runtime.presentationState().readSpriteSelection().roomTable();
+        return EntityRoomQueries.spriteRoomTable(runtime);
     }
 
-    EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int privateState1) {
-        if (runtime.spriteHandlers() == null) {
-            return fallback;
-        }
-        return runtime.spriteHandlers().forStalfosEvasiveState(privateState1);
+    EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int evadeState) {
+        return runtime.spriteHandlers() == null
+                ? fallback
+                : runtime.slotProperties().spriteViews().forStalfosEvasiveState(evadeState);
     }
 
     RoomEntity refreshColorShellDisplay(RoomEntity entity, EntityStatus status) {
@@ -396,5 +385,9 @@ public final class EntityRoomInspection {
 
     EntityRoomInspectionServices inspectionServices() {
         return runtime;
+    }
+    /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */
+    public RoomEntitySnapshot view() {
+        return liveView;
     }
 }

@@ -3,6 +3,8 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -10,7 +12,8 @@ final class DungeonRoomEventTableTest {
 
     @Test
     void readsTheTailCaveOpeningEventsFromTheRomTable() throws IOException {
-        DungeonRoomEventTable table = new DungeonRoomEventTable(loadRom());
+        DungeonRoomEventTable table =
+                new DungeonRoomEventTable((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(0x63, table.eventFor(0x00, 0x13));
         assertEquals(0x21, table.eventFor(0x00, 0x12));

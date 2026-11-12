@@ -6,6 +6,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 
 /** Port of {@code UseShovel} and the Link-side shovel timer in bank $02. */
+// Integer facing inputs preserve table-selector/default behavior for unknown engine values.
 public final class Shovel implements EquipmentItem {
 
     public static final int ACTIVE_TIMER_END = 0x18;

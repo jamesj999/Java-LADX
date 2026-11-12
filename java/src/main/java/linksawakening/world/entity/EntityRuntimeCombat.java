@@ -52,36 +52,6 @@ interface EntityRuntimeCombat {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
-    /** Compatibility for world.room.RoomEntityBridge; use the frame input overload. */
-    @Deprecated
-    default EntityPickupEvent collectIfNeeded(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            int linkDirection,
-            int linkZ,
-            boolean swordActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return collectIfNeeded(new EntityPickupFrame(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                linkDirection,
-                linkZ,
-                swordActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight));
-    }
-
     default EntityPickupEvent collectIfNeeded(EntityPickupFrame inputs) {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
@@ -144,32 +114,6 @@ interface EntityRuntimeCombat {
                 EnemyAttackContext.standard()));
     }
 
-    /** Compatibility for world.room.RoomSessionTest; use the frame input overload. */
-    @Deprecated
-    default List<EntityCombatEvent> resolveCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight) {
-        return resolveCombat(new EntitySwordContactFrame(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkInteractive,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight));
-    }
-
     default List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.linkEntityX();
@@ -214,36 +158,6 @@ interface EntityRuntimeCombat {
                 linkEntityY,
                 linkAirborne,
                 0,
-                linkInteractive,
-                swordCollisionActive,
-                swordX,
-                swordWidth,
-                swordY,
-                swordHeight,
-                attackContext));
-    }
-
-    /** Compatibility for world.room.RoomEntityBridge; use the frame input overload. */
-    @Deprecated
-    default List<EntityCombatEvent> resolveCombat(
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            boolean swordCollisionActive,
-            int swordX,
-            int swordWidth,
-            int swordY,
-            int swordHeight,
-            EnemyAttackContext attackContext) {
-        return resolveCombat(new EnemyCombatFrame(
-                frameCounter,
-                linkEntityX,
-                linkEntityY,
-                linkAirborne,
-                linkVerticalVelocity,
                 linkInteractive,
                 swordCollisionActive,
                 swordX,

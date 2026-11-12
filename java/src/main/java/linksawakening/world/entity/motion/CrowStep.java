@@ -2,9 +2,9 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntitySnapshots;
 
-/** Per-invocation scratch for CrowMotion.advance; values are assigned in source order. */
+/** Reused, reentrancy-safe scratch for CrowMotion.advance; values are assigned in source order. */
 final class CrowStep {
-    private final CrowMotion owner;
+    private CrowMotion owner;
     private linksawakening.world.entity.RoomEntity entity;
     private int transitionCountdown;
     private int frameCounter;
@@ -22,24 +22,7 @@ final class CrowStep {
     private boolean unloaded;
     private linksawakening.world.entity.RoomEntity updated;
 
-    CrowStep(
-            CrowMotion owner,
-            linksawakening.world.entity.RoomEntity entity,
-            int transitionCountdown,
-            int frameCounter,
-            int linkEntityX,
-            int linkEntityY,
-            boolean allowLinkProximityTrigger,
-            boolean externalTakeoffTrigger) {
-        this.owner = owner;
-        this.entity = entity;
-        this.transitionCountdown = transitionCountdown;
-        this.frameCounter = frameCounter;
-        this.linkEntityX = linkEntityX;
-        this.linkEntityY = linkEntityY;
-        this.allowLinkProximityTrigger = allowLinkProximityTrigger;
-        this.externalTakeoffTrigger = externalTakeoffTrigger;
-    }
+    CrowStep() {}
 
     linksawakening.world.entity.motion.CrowMotion.Update run() {
         if (entity == null || (entity.type() & 0xFF) != CrowMotion.ENTITY_TYPE) {
@@ -171,5 +154,58 @@ final class CrowStep {
         unloaded = ((entity.y() - entity.z()) & 0xFF) >= 0x88 || entity.x() >= 0xA8;
 
         return true;
+    }
+
+    private boolean inUse;
+
+    linksawakening.world.entity.motion.CrowMotion.Update run(
+            CrowMotion owner,
+            linksawakening.world.entity.RoomEntity entity,
+            int transitionCountdown,
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean allowLinkProximityTrigger,
+            boolean externalTakeoffTrigger) {
+        if (inUse) {
+            return new CrowStep()
+                    .run(
+                            owner,
+                            entity,
+                            transitionCountdown,
+                            frameCounter,
+                            linkEntityX,
+                            linkEntityY,
+                            allowLinkProximityTrigger,
+                            externalTakeoffTrigger);
+        }
+        inUse = true;
+        slot = 0;
+        countdown = 0;
+        x = 0;
+        y = 0;
+        z = 0;
+        variant = 0;
+        boomerangSound = false;
+        unloaded = false;
+        updated = null;
+        completedResult = null;
+        this.owner = owner;
+        this.entity = entity;
+        this.transitionCountdown = transitionCountdown;
+        this.frameCounter = frameCounter;
+        this.linkEntityX = linkEntityX;
+        this.linkEntityY = linkEntityY;
+        this.allowLinkProximityTrigger = allowLinkProximityTrigger;
+        this.externalTakeoffTrigger = externalTakeoffTrigger;
+        try {
+            return run();
+        } finally {
+            inUse = false;
+            this.owner = null;
+            this.entity = null;
+            this.updated = null;
+            this.completedResult = null;
+        }
     }
 }

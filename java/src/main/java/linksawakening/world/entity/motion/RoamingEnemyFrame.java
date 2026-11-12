@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 /** Inputs for one motion update. */
-public record RoamingEnemyFrame(
+record RoamingEnemyFrame(
         linksawakening.world.entity.RoomEntity entity,
         int linkEntityX,
         int linkEntityY,

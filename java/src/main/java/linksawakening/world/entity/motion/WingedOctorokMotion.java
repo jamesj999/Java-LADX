@@ -78,7 +78,7 @@ public final class WingedOctorokMotion {
     }
 
     public Update advance(WingedOctorokInteractionFrame inputs) {
-        return new WingedOctorokStep(this, inputs).run();
+        return wingedOctorokStep.run(this, inputs);
     }
 
     public void decrementPrivateCountdown2(int slot) {
@@ -230,4 +230,6 @@ public final class WingedOctorokMotion {
     record Position(int x, int y, boolean collided) {}
 
     record Vector(int y, int x) {}
+
+    final WingedOctorokStep wingedOctorokStep = new WingedOctorokStep();
 }

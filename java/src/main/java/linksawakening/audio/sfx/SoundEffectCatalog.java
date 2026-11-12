@@ -185,9 +185,4 @@ public final class SoundEffectCatalog {
     private static String romAddr(int bank, int addr) {
         return String.format("%02X:%04X", bank & 0xFF, addr & 0xFFFF);
     }
-
-    @Deprecated(forRemoval = true)
-    public static SoundEffectCatalog fromRom(byte[] romData) {
-        return fromRom(new Rom(romData));
-    }
 }

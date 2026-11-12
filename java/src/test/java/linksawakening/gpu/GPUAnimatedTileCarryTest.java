@@ -2,6 +2,7 @@ package linksawakening.gpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +16,13 @@ final class GPUAnimatedTileCarryTest {
         }
         for (int group : new int[] {4, 6}) {
             GPU gpu = new GPU();
-            gpu.loadAnimatedTilesGroup(rom, 2);
-            for (int i = 0; i < 16; i++) gpu.tickAnimatedTiles(rom); // Linear offset $40.
-            gpu.loadAnimatedTilesGroup(rom, group);
-            for (int i = 0; i < 8; i++) gpu.tickAnimatedTiles(rom); // Ping-pong frame $C0.
+            gpu.loadAnimatedTilesGroup(Rom.of(rom), 2);
+            for (int i = 0; i < 16; i++) gpu.tickAnimatedTiles(Rom.of(rom)); // Linear offset $40.
+            gpu.loadAnimatedTilesGroup(Rom.of(rom), group);
+            for (int i = 0; i < 8; i++) gpu.tickAnimatedTiles(Rom.of(rom)); // Ping-pong frame $C0.
             assertFrame(rom, gpu, (group == 4 ? 0x6D00 : 0x6F00) + 0xC0);
-            gpu.loadAnimatedTilesGroup(rom, 2);
-            for (int i = 0; i < 8; i++) gpu.tickAnimatedTiles(rom);
+            gpu.loadAnimatedTilesGroup(Rom.of(rom), 2);
+            for (int i = 0; i < 8; i++) gpu.tickAnimatedTiles(Rom.of(rom));
             assertEquals(32, gpu.animatedTilesFrameCount());
             assertFrame(rom, gpu, 0x6B80); // Next linear frame is $80, not $00.
         }

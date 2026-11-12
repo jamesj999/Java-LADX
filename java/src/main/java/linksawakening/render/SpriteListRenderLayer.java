@@ -3,7 +3,7 @@ package linksawakening.render;
 import java.util.ArrayList;
 
 /** Draws a software OAM list in entry order, with transparent OBJ color zero. */
-public final class SpriteListRenderLayer implements HardwareRenderLayer {
+final class SpriteListRenderLayer implements HardwareRenderLayer {
     /** One tile entry with screen coordinates, palette selection, flips and hardware height. */
     public record Sprite(int tileIndex, int x, int y, int paletteIndex, boolean flipX, boolean flipY, int height) {}
 
@@ -35,8 +35,8 @@ public final class SpriteListRenderLayer implements HardwareRenderLayer {
                 int top = sprite.flipY() ? base + 1 : base;
                 int bottom = sprite.flipY() ? base : base + 1;
                 frame.append8x16(
-                        tiles == null ? gpu.getTile(top) : tiles.tile(top),
-                        tiles == null ? gpu.getTile(bottom) : tiles.tile(bottom),
+                        tiles == null ? gpu.getTile(top) : tiles.readOnlyTile(top),
+                        tiles == null ? gpu.getTile(bottom) : tiles.readOnlyTile(bottom),
                         sprite.x(),
                         sprite.y(),
                         sprite.flipX(),

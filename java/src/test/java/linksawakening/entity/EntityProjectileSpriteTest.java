@@ -3,6 +3,8 @@ package linksawakening.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.EntityRoomLoader;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +13,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void hookshotUsesTheInlineHookshotChainSpriteBytes() {
-        EntitySpriteDefinition hookshot = new EntitySpriteHandlerCatalog(syntheticRom())
+        EntitySpriteDefinition hookshot = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()))
                 .forEntityType(0x03, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertDefinition(hookshot, -1, -1, EntitySpriteDefinition.Shape.PAIR, 1, 0);
@@ -28,8 +30,8 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
                 rom, 0x03, 0x6BC6, 0x2E, 0x21, 0x2C, 0x21, 0x2C, 0x01, 0x2E, 0x01, 0x2A, 0x41, 0x2A, 0x61, 0x2A, 0x01,
                 0x2A, 0x21);
 
-        EntitySpriteDefinition arrow =
-                new EntitySpriteHandlerCatalog(rom).forEntityType(0x00, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition arrow = new EntitySpriteHandlerCatalog(TestRoms.partial(rom))
+                .forEntityType(0x00, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertDefinition(arrow, 0x03, 0x6BC6, EntitySpriteDefinition.Shape.PAIR, 4, 0);
         assertPairBytes(arrow, new int[][] {
@@ -47,8 +49,8 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
                 rom, 0x19, 0x4451, 0x38, 0x14, 0x38, 0x34, 0xA4, 0x14, 0xFF, 0xFF, 0x38, 0x54, 0x38, 0x74, 0xFF, 0xFF,
                 0xA4, 0x34);
 
-        EntitySpriteDefinition boomerang =
-                new EntitySpriteHandlerCatalog(rom).forEntityType(0x01, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition boomerang = new EntitySpriteHandlerCatalog(TestRoms.partial(rom))
+                .forEntityType(0x01, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertDefinition(boomerang, 0x19, 0x4451, EntitySpriteDefinition.Shape.PAIR, 4, 0);
         assertPairBytes(boomerang, new int[][] {
@@ -65,7 +67,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
         write(rom, 0x03, 0x69AA, 0x36, 0x02, 0x36, 0x22, 0x36, 0x03, 0x36, 0x23);
         write(rom, 0x03, 0x4C44, 0x34, 0x02, 0x34, 0x22, 0x34, 0x04, 0x34, 0x24);
 
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition fireball = catalog.forEntityType(0x04, EntityRoomLoader.RoomTable.OVERWORLD);
         EntitySpriteDefinition fire = catalog.forMagicRodFireState();
 
@@ -92,7 +94,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
         write(rom, 0x18, 0x795E, 0x6C, 0x74, 0x6D, 0x75);
         write(rom, 0x18, 0x7962, 0x64, 0x74, 0x65, 0x75);
 
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition sprinkle = catalog.forEntityType(0x08, EntityRoomLoader.RoomTable.OVERWORLD);
         EntitySpriteDefinition ignite = catalog.forMagicPowderTorchState(true);
         EntitySpriteDefinition expire = catalog.forMagicPowderTorchState(false);
@@ -110,7 +112,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void mapsBomberToItsBankEighteenRectangleDisplayList() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition bomber = catalog.forEntityType(0xBA, EntityRoomLoader.RoomTable.OVERWORLD);
 
@@ -125,7 +127,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void mapsEnemyProjectileHandlersToTheirDisassemblyDisplayLists() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition octorokRock = catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(octorokRock, 0x03, 0x6A1E, EntitySpriteDefinition.Shape.PAIR, 2, 0);
@@ -136,7 +138,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void decodesTheRomBurningFirePair() throws Exception {
-        EntitySpriteDefinition fire = new EntitySpriteHandlerCatalog(loadRom()).forBurningEntity();
+        EntitySpriteDefinition fire = new EntitySpriteHandlerCatalog(Rom.of(loadRom())).forBurningEntity();
 
         assertDefinition(fire, 0x03, 0x4C44, EntitySpriteDefinition.Shape.PAIR, 2, 0);
         assertEquals(0x34, fire.variant(0).first().tile());
@@ -149,7 +151,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void decodesEveryBombDisplayListFromTheShippedRom() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition bomb = catalog.forEntityType(0x02, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(bomb, 0x03, 0x652E, EntitySpriteDefinition.Shape.SINGLE, 1, 0);
@@ -193,7 +195,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void composesTheBombArrowHandlerPresentationFromTheTwoRomLists() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition arrow = catalog.forEntityType(0x00, EntityRoomLoader.RoomTable.OVERWORLD);
         EntitySpriteDefinition bombArrow = catalog.forBombArrow();
@@ -218,7 +220,7 @@ final class EntityProjectileSpriteTest extends EntitySpriteHandlerCatalogFixture
 
     @Test
     void enemyProjectileVariantsMatchAllShippedRomTileAndAttributeBytes() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         assertPairBytes(catalog.forEntityType(0x0A, EntityRoomLoader.RoomTable.OVERWORLD), new int[][] {
             {0x6C, 0x01, 0x6C, 0x21},

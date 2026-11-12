@@ -60,7 +60,7 @@ final class BowWowBehavior {
     }
 
     static BowWowMotion.Update advanceAfterTimers(BowWowMotion owner, BowWowCollisionFrame inputs) {
-        return new BowWowStep(owner, inputs).run();
+        return owner.bowWowStep.run(owner, inputs);
     }
 
     static int findTarget(

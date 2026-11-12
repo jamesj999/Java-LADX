@@ -4,6 +4,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -35,15 +36,15 @@ final class RoomActiveRoomInitializer {
         configureDoorAndEventState();
         dependencies.entityBridge().get().entityRuntime = entities == null
                 ? null
-                : RoomEntityRuntime.from(
-                        entities,
-                        dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                        dependencies.entityRandomByteSource(),
-                        dependencies.entitySpriteHandlerCatalog(),
-                        dependencies.enemyCombatTables(),
-                        dependencies.chestContentsTable(),
-                        dependencies.romTables(),
-                        dependencies.romData());
+                : RoomEntityRuntime.builder(entities)
+                        .indoorRoom(dependencies.location().activeRoom.mapCategory() != Warp.CATEGORY_OVERWORLD)
+                        .randomByteSupplier(dependencies.entityRandomByteSource())
+                        .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
+                        .enemyCombatTables(dependencies.enemyCombatTables())
+                        .chestContentsTable(dependencies.chestContentsTable())
+                        .romTables(dependencies.romTables())
+                        .rom(dependencies.romData())
+                        .build();
         if (dependencies.entityBridge().get().entityRuntime != null) {
             configureRuntimeWorld();
             configureRuntimeInputs();
@@ -70,7 +71,7 @@ final class RoomActiveRoomInitializer {
             RoomLocationState location,
             OwlEventDialogResolver owlEventDialogResolver,
             RoomPuzzleState puzzles,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

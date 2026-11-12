@@ -5,6 +5,7 @@ import static linksawakening.world.room.RoomSessionRules.*;
 import java.util.Map;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
@@ -182,7 +183,7 @@ final class RoomStoryState {
             FollowingNpcEntitySpawner followingNpcEntitySpawner,
             IndoorTorchPaletteEffect indoorTorchPaletteEffect,
             OwlEventDialogResolver owlEventDialogResolver,
-            byte[] romData,
+            Rom romData,
             RomTables romTables,
             java.util.function.Supplier<RoomCollisionQueries> roomCollisionQueries,
             java.util.function.Supplier<RoomLoadCoordinator> roomLoadCoordinator,

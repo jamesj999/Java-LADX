@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import linksawakening.app.GameSession;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import org.junit.jupiter.api.Test;
 
 /** Isolated D3 setup followed by the real GameSession update and framebuffer composition. */
@@ -28,22 +28,22 @@ final class SlimeEyeSessionTest {
         try {
             game.initializeHeadlessNewGame();
             // Disclosed setup: bypass the opening bed sequence, grant sword/boots, load D3 directly.
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
             var diagnostics = game.diagnostics();
             var room = diagnostics.roomSession();
             var link = diagnostics.link();
             var player = diagnostics.playerState();
-            player.setSwordLevel(1);
-            player.setItemA(PlayerState.INVENTORY_SWORD);
-            player.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
-            player.setMaxHearts(14);
-            player.setHealth(14 * 8);
-            room.loadIndoor(2, 0x5A);
-            link.setRoomEntryRomPosition(80, 96);
-            link.setDirection(Link.DIRECTION_UP);
-            GameplaySoundSink original = (GameplaySoundSink) get(game, "gameplaySoundSink");
-            set(game, "gameplaySoundSink", (GameplaySoundSink) sound -> {
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
+            player.vitals().setMaxHearts(14);
+            player.vitals().setHealth(14 * 8);
+            room.rooms().loadIndoor(2, 0x5A);
+            link.position().setRoomEntryRomPosition(80, 96);
+            link.animation().setDirection(Direction.UP.javaIndex());
+            GameplaySoundSink original = game.gameplaySounds().sink();
+            game.gameplaySounds().replace((GameplaySoundSink) sound -> {
                 sounds.add(sound);
                 original.play(sound);
             });
@@ -63,8 +63,8 @@ final class SlimeEyeSessionTest {
             // SlimeEyeControlsTest covers the whole encounter using buttons only.
             while (eyes(room).size() == 1 && ticks < 900) {
                 var eye = eyes(room).getFirst();
-                link.setRoomEntryRomPosition(eye.x(), eye.y() + 16);
-                link.setDirection(Link.DIRECTION_UP);
+                link.position().setRoomEntryRomPosition(eye.x(), eye.y() + 16);
+                link.animation().setDirection(Direction.UP.javaIndex());
                 int phase = ticks % 256;
                 game.headlessButton("a", phase >= 192 || phase % 24 < 8);
                 game.headlessButton("b", phase >= 192);
@@ -81,8 +81,8 @@ final class SlimeEyeSessionTest {
                         .findFirst()
                         .orElse(null);
                 if (target != null) {
-                    link.setRoomEntryRomPosition(target.x(), Math.min(112, target.y() + 16));
-                    link.setDirection(Link.DIRECTION_UP);
+                    link.position().setRoomEntryRomPosition(target.x(), Math.min(112, target.y() + 16));
+                    link.animation().setDirection(Direction.UP.javaIndex());
                 }
                 game.headlessButton("a", frame % 24 < 8);
                 game.headlessFrame();
@@ -91,7 +91,7 @@ final class SlimeEyeSessionTest {
             assertTrue(eyes(room).isEmpty());
             assertEquals(
                     1,
-                    room.activeRoom().entities().loadedEntities().stream()
+                    room.rooms().activeRoom().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .count());
             save(game.headlessFrame(), output.resolve("session-defeated.png"));
@@ -104,14 +104,12 @@ final class SlimeEyeSessionTest {
                     "Production GameSession with headless PCM; opening wake/shield skipped; sword/boots granted; max HP14; direct map02 room5A load; Link start80,96 facing up; scroll shake6 injected after180 frames; assisted fixture repositions Link below target each frame for body and halves, while actual sword input drives collision; no boss state or OAM writes.\nSounds="
                             + sounds + "\nPCM shorts=" + pcmSamples[0] + "\n");
         } finally {
-            var close = GameSession.class.getDeclaredMethod("cleanup");
-            close.setAccessible(true);
-            close.invoke(game);
+            game.close();
         }
     }
 
     private List<RoomEntity> eyes(linksawakening.world.room.RoomSession room) {
-        return room.activeRoom().entities().loadedEntities().stream()
+        return room.rooms().activeRoom().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x5B)
                 .toList();
     }

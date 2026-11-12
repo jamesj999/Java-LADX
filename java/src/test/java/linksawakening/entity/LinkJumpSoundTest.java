@@ -18,6 +18,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -26,7 +27,7 @@ final class LinkJumpSoundTest {
     void directionalLedgeRequestsFallJingleOnLaunchAndFootstepNoiseOnLanding() throws Exception {
         var f = new Fixture(true);
         f.room[0x11 + 3 * 16 + 2] = 0x21;
-        f.link.setPixelPosition(32, 32);
+        f.link.position().setPixelPosition(32, 32);
         f.input.onKeyEvent(f.config.downKey(), GLFW_PRESS);
         f.advance(35);
         assertEquals(List.of("5:LEDGE_FALL", "33:LINK_FOOTSTEP"), f.sounds);
@@ -36,7 +37,7 @@ final class LinkJumpSoundTest {
     void overworldCliffPreservesBothRomLandingNoiseWrites() throws Exception {
         var f = new Fixture(false);
         f.room[0x11 + 3 * 16 + 2] = 0x43;
-        f.link.setPixelPosition(32, 40);
+        f.link.position().setPixelPosition(32, 40);
         f.input.onKeyEvent(f.config.downKey(), GLFW_PRESS);
         f.advance(23);
         // $49B6 sets airborne again after $45AA on frame 20, so the
@@ -48,8 +49,8 @@ final class LinkJumpSoundTest {
     @Test
     void bedHopHasNoLaunchJingleAndLandsWithFootstepNoise() throws Exception {
         var f = new Fixture(true);
-        f.link.setPixelPosition(48, 36);
-        f.link.leaveMarinWakeUpBed();
+        f.link.position().setPixelPosition(48, 36);
+        f.link.actions().leaveMarinWakeUpBed();
         f.advance(22);
         assertEquals(List.of("19:LINK_FOOTSTEP"), f.sounds);
     }
@@ -57,8 +58,8 @@ final class LinkJumpSoundTest {
     @Test
     void featherUsesItsOwnLaunchJingleAndTheSharedLandingNoise() throws Exception {
         var f = new Fixture(false);
-        f.link.setPixelPosition(32, 32);
-        f.link.useRocsFeather();
+        f.link.position().setPixelPosition(32, 32);
+        f.link.airborne().useRocsFeather();
         f.advance(35);
         assertEquals(List.of("0:ROC_FEATHER_JUMP", "32:LINK_FOOTSTEP"), f.sounds);
     }
@@ -71,9 +72,13 @@ final class LinkJumpSoundTest {
             int object = -1;
             for (int id = 0; id < 256; id++) {
                 if (id != 0x61
-                        && f.tables.objectPhysicsFlag(
-                                        indoor ? RomTables.PHYSICS_TABLE_INDOORS1 : RomTables.PHYSICS_TABLE_OVERWORLD,
-                                        id)
+                        && f.tables
+                                        .physicsTables()
+                                        .objectPhysicsFlag(
+                                                indoor
+                                                        ? RomTables.PHYSICS_TABLE_INDOORS1
+                                                        : RomTables.PHYSICS_TABLE_OVERWORLD,
+                                                id)
                                 == physics) {
                     object = id;
                     break;
@@ -104,7 +109,7 @@ final class LinkJumpSoundTest {
     @Test
     void jumpEventsResolveToTheExactRomRequestRegistersAndIds() throws Exception {
         var f = new Fixture(false);
-        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(f.rom));
+        var map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(TestRoms.partial(f.rom)));
         assertEffect(map, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
         assertEffect(map, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
         assertEffect(map, GameplaySoundEvent.LINK_FOOTSTEP, SoundEffectNamespace.NOISE, 0x07);
@@ -132,7 +137,7 @@ final class LinkJumpSoundTest {
             try (var in = TestRom.open()) {
                 rom = in.readAllBytes();
             }
-            tables = RomTables.loadFromRom(rom);
+            tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
             var collision = new OverworldCollision(tables);
             if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
             Arrays.fill(room, 0xFF);
@@ -150,14 +155,14 @@ final class LinkJumpSoundTest {
         }
 
         void advance(int frames) {
-            for (int i = 0; i < frames; i++, frame++) link.update();
+            for (int i = 0; i < frames; i++, frame++) link.motion().update();
         }
 
         void landAt(int x, int y) {
-            link.setPixelPosition(x, y);
-            link.linkAirborne.airborne = true;
-            link.linkAirborne.zSubPixels = 16;
-            link.linkAirborne.zVelocity = -16;
+            link.position().setPixelPosition(x, y);
+            link.linkAirborne.elevation().airborne(true);
+            link.linkAirborne.elevation().zSubPixels(16);
+            link.linkAirborne.elevation().zVelocity(-16);
             advance(1);
         }
     }

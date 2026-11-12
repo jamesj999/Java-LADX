@@ -42,6 +42,8 @@ interface EntityStoryControllerServices {
 
     void presentWitchGotItem(int slot);
 
+    EntitySpriteViews spriteViews();
+
     static EntityStoryControllerServices bind(RoomEntityRuntime r) {
         return new Binding(() -> r);
     }
@@ -51,6 +53,10 @@ interface EntityStoryControllerServices {
 
         Binding(java.util.function.Supplier<RoomEntityRuntime> room) {
             this.room = room;
+        }
+
+        public EntitySpriteViews spriteViews() {
+            return room.get().slotProperties.spriteViews();
         }
 
         public EntityMotionRegistry motions() {

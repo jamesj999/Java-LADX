@@ -13,22 +13,22 @@ final class SaveRamImageTest {
     @Test
     void deathCountRollsBcdDigitsCapsAndRoundTripsThroughSave() {
         var player = new PlayerState();
-        player.setDeathCount(9);
-        player.incrementDeathCount();
-        assertEquals(0x10, player.deathCountBcd());
-        player.setDeathCount(99);
-        player.incrementDeathCount();
-        assertEquals(0x100, player.deathCountBcd());
-        player.setDeathCount(999);
-        player.incrementDeathCount();
-        assertEquals(999, player.deathCount());
-        assertEquals(0x999, player.deathCountBcd());
+        player.progression().setDeathCount(9);
+        player.progression().incrementDeathCount();
+        assertEquals(0x10, player.progression().deathCountBcd());
+        player.progression().setDeathCount(99);
+        player.progression().incrementDeathCount();
+        assertEquals(0x100, player.progression().deathCountBcd());
+        player.progression().setDeathCount(999);
+        player.progression().incrementDeathCount();
+        assertEquals(999, player.progression().deathCount());
+        assertEquals(0x999, player.progression().deathCountBcd());
         var image = SaveRamImage.empty();
         image.writePlayerState(0, player);
         assertEquals(0x999, image.readSlot(0).deathCountBcd());
         var restored = new PlayerState();
-        restored.applySavedGame(image.readSlot(0));
-        assertEquals(999, restored.deathCount());
+        restored.playerSaveLoader().applySavedGame(image.readSlot(0));
+        assertEquals(999, restored.progression().deathCount());
     }
 
     @Test
@@ -243,44 +243,44 @@ final class SaveRamImageTest {
         image = SaveRamImage.fromBytes(before);
 
         PlayerState player = new PlayerState();
-        player.initializeNewGame(0x30, 0x30, 0x20);
-        player.setItemA(PlayerState.INVENTORY_BOW);
-        player.setItemB(PlayerState.INVENTORY_HOOKSHOT);
-        player.setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-        player.setSeashells(37);
-        player.setHasFlippers(true);
-        player.setHasMedicine(true);
-        player.setTradeSequenceItem(0x0E);
-        player.setMedicineCount(2);
-        player.setTailKeyCount(1);
-        player.setAnglerKeyCount(2);
-        player.setFaceKeyCount(3);
-        player.setBirdKeyCount(4);
-        player.setGoldenLeavesCount(5);
-        player.setShieldLevel(2);
-        player.setSwordLevel(1);
-        player.setMaxArrows(40);
-        player.setArrowCount(17);
-        player.setMaxBombs(60);
-        player.setBombCount(23);
-        player.setMaxMagicPowder(32);
-        player.setMagicPowderCount(19);
-        player.setHasToadstool(true);
-        player.setMaxHearts(10);
-        player.setHealth(0);
-        player.setHeartPieces(2);
-        player.setRupees(509);
-        player.setPowerBraceletLevel(2);
-        player.setHasMedicine(true);
-        player.setOcarinaSongFlags(0x07);
-        player.setSelectedSongIndex(2);
-        player.setTunicType(PlayerState.TUNIC_BLUE);
+        player.playerInitialization().initializeNewGame(0x30, 0x30, 0x20);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.BOW.romValue());
+        player.inventory().setItemB(linksawakening.state.InventoryItem.HOOKSHOT.romValue());
+        player.inventory().setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        player.progression().setSeashells(37);
+        player.progression().setHasFlippers(true);
+        player.progression().setHasMedicine(true);
+        player.progression().setTradeSequenceItem(0x0E);
+        player.progression().setMedicineCount(2);
+        player.progression().setTailKeyCount(1);
+        player.progression().setAnglerKeyCount(2);
+        player.progression().setFaceKeyCount(3);
+        player.progression().setBirdKeyCount(4);
+        player.progression().setGoldenLeavesCount(5);
+        player.equipmentLevels().setShieldLevel(2);
+        player.equipmentLevels().setSwordLevel(1);
+        player.ammunition().setMaxArrows(40);
+        player.ammunition().setArrowCount(17);
+        player.ammunition().setMaxBombs(60);
+        player.ammunition().setBombCount(23);
+        player.ammunition().setMaxMagicPowder(32);
+        player.ammunition().setMagicPowderCount(19);
+        player.ammunition().setHasToadstool(true);
+        player.vitals().setMaxHearts(10);
+        player.vitals().setHealth(0);
+        player.progression().setHeartPieces(2);
+        player.wallet().setRupees(509);
+        player.equipmentLevels().setPowerBraceletLevel(2);
+        player.progression().setHasMedicine(true);
+        player.progression().setOcarinaSongFlags(0x07);
+        player.progression().setSelectedSongIndex(2);
+        player.equipmentLevels().setTunicType(linksawakening.state.Tunic.BLUE.romValue());
 
         image.writePlayerState(1, player);
 
         SaveSlotState state = image.readSlot(1);
-        assertEquals(PlayerState.INVENTORY_BOW, state.itemA());
-        assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemB());
+        assertEquals(linksawakening.state.InventoryItem.BOW.romValue(), state.itemA());
+        assertEquals(linksawakening.state.InventoryItem.HOOKSHOT.romValue(), state.itemB());
         assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, state.subscreen());
         assertEquals(37, state.seashells());
         assertEquals(1, state.hasFlippers());
@@ -308,7 +308,7 @@ final class SaveRamImageTest {
         assertEquals(509, state.rupees());
         assertEquals(0x07, state.ocarinaSongFlags());
         assertEquals(2, state.selectedSongIndex());
-        assertEquals(PlayerState.TUNIC_BLUE, state.tunicType());
+        assertEquals(linksawakening.state.Tunic.BLUE.romValue(), state.tunicType());
         assertEquals((byte) 0xA5, image.bytes()[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]);
         assertEquals(0, image.readSlot(1).deathCountBcd());
         assertEquals((byte) 0xC7, image.bytes()[slotStart + SaveRamLayout.dx3Offset() + 1]);
@@ -378,8 +378,8 @@ final class SaveRamImageTest {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);
         int main = slotStart + SaveRamLayout.mainOffset();
-        put(bytes, main, SaveRamLayout.MAIN_ITEM_B_OFFSET, PlayerState.INVENTORY_BOW);
-        put(bytes, main, SaveRamLayout.MAIN_ITEM_A_OFFSET, PlayerState.INVENTORY_HOOKSHOT);
+        put(bytes, main, SaveRamLayout.MAIN_ITEM_B_OFFSET, linksawakening.state.InventoryItem.BOW.romValue());
+        put(bytes, main, SaveRamLayout.MAIN_ITEM_A_OFFSET, linksawakening.state.InventoryItem.HOOKSHOT.romValue());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             put(bytes, main, SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot, 0x20 + slot);
         }
@@ -423,8 +423,8 @@ final class SaveRamImageTest {
         SaveSlotState state = SaveRamImage.fromBytes(bytes).readSlot(0);
 
         assertEquals(0, state.slot());
-        assertEquals(PlayerState.INVENTORY_BOW, state.itemB());
-        assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemA());
+        assertEquals(linksawakening.state.InventoryItem.BOW.romValue(), state.itemB());
+        assertEquals(linksawakening.state.InventoryItem.HOOKSHOT.romValue(), state.itemA());
         assertEquals(0x20, state.subscreen()[0]);
         assertEquals(17, state.seashells());
         assertEquals(1, state.hasFlippers());

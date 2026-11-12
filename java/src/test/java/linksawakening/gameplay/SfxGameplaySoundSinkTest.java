@@ -18,7 +18,8 @@ import org.junit.jupiter.api.Test;
 final class SfxGameplaySoundSinkTest {
     @Test
     void gameplaySoundMapResolvesImplementedEventsToRealLadxEffects() {
-        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         assertMapped(
                 map, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D, "JINGLE_FEATHER_JUMP");
@@ -67,7 +68,8 @@ final class SfxGameplaySoundSinkTest {
         SfxGameplaySoundSink sink = new SfxGameplaySoundSink(
                 apu,
                 new SoundEffectPlayer(apu),
-                GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom())),
+                GameplaySoundEffectMap.fromCatalog(
+                        SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))),
                 output);
 
         sink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);

@@ -258,7 +258,7 @@ final class MainOpeningRouteTest {
         assertEquals(0x1D, feather.room());
         assertTrue(feather.dialog());
         assertTrue(feather.text().contains("Roc's Feather"));
-        assertTrue(game.headlessHasInventoryItem(linksawakening.state.PlayerState.INVENTORY_ROCS_FEATHER));
+        assertTrue(game.headlessHasInventoryItem(linksawakening.state.InventoryItem.ROCS_FEATHER.romValue()));
         assertEquals(0x18, checkpoints.get(520).room());
         assertEquals(47, checkpoints.get(520).y());
         assertEquals(110, checkpoints.get(521).x());

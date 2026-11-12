@@ -36,7 +36,8 @@ final class EntityCollisionPointProbeTest {
             rom[pointsYOffset + index] = (byte) POINTS_Y[index];
         }
 
-        EntityCollisionPointProbe probe = new EntityCollisionPointProbe(RomTables.loadFromRom(rom));
+        EntityCollisionPointProbe probe =
+                collisionProbe(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)));
         int nextX = 0x80;
         int nextY = 0x90;
         for (int boxType = 0; boxType < 4; boxType++) {
@@ -56,5 +57,9 @@ final class EntityCollisionPointProbeTest {
                         nextY - 16 + POINTS_Y[tableIndex], sample.y(), "y box=" + boxType + " direction=" + direction);
             }
         }
+    }
+
+    private static EntityCollisionPointProbe collisionProbe(RomTables tables) {
+        return new EntityCollisionPointProbe(tables.collisionTables(), tables.entityPropertyTables());
     }
 }

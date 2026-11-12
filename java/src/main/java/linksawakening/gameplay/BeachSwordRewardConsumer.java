@@ -2,9 +2,10 @@ package linksawakening.gameplay;
 
 import java.util.Objects;
 import linksawakening.state.PlayerState;
+import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.room.RoomSession;
 
-/** Applies pending beach-sword room rewards at the gameplay state boundary. */
+/** Stateless application of pending beach-sword room rewards to player state. */
 public final class BeachSwordRewardConsumer {
     private BeachSwordRewardConsumer() {}
 
@@ -14,7 +15,7 @@ public final class BeachSwordRewardConsumer {
 
         var swordPickupRewards = roomSession.entityState().consumeSwordPickupRewards();
         for (int ignoredIndex = 0; ignoredIndex < swordPickupRewards.size(); ignoredIndex++) {
-            linksawakening.world.entity.event.SwordPickupRewardEvent ignored = swordPickupRewards.get(ignoredIndex);
+            SwordPickupRewardEvent ignored = swordPickupRewards.get(ignoredIndex);
 
             playerState.playerRewards().applyBeachSwordReward();
         }

@@ -234,4 +234,6 @@ public final class EntityPickupController {
     int[] storageHeartPieceMeterPairs() {
         return heartPieceMeterPairs;
     }
+
+    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep();
 }

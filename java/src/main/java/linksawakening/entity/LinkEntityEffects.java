@@ -73,25 +73,25 @@ final class LinkEntityEffects {
         }
         likeLikeCaptureSubX = ((romEntityX - 0x08) & 0xFF) << Link.SUB_PIXEL_SHIFT;
         likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << Link.SUB_PIXEL_SHIFT;
-        linkMotion.get().subX = likeLikeCaptureSubX;
-        linkMotion.get().subY = likeLikeCaptureSubY;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().fallingIntoPit = false;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkMotion.get().position().subX(likeLikeCaptureSubX);
+        linkMotion.get().position().subY(likeLikeCaptureSubY);
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkSwimming.get().swimmingSpeedX = 0;
         linkSwimming.get().swimmingSpeedY = 0;
         linkSwimming.get().swimmingFastCountdown = 0;
         linkSwimming.get().divingCountdown = 0;
         linkAnimationState.get().movingThisFrame = false;
-        linkMotion.get().romCollisionType = 0;
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkMotion.get().collisionState().romCollisionType(0);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     /** Releases Link when the swallowed Like Like handler accepts A or B. */
@@ -115,7 +115,7 @@ final class LinkEntityEffects {
         carryingLiftedObjectState = carryState;
         carryingLiftedObjectRomDirection = romDirection;
         if (carryState != 0) {
-            linkAnimationState.get().direction = Direction.fromRom(romDirection).javaIndex();
+            linkAnimationState.get().direction = Direction.fromRom(romDirection);
         }
     }
 
@@ -128,16 +128,16 @@ final class LinkEntityEffects {
             throw new IllegalArgumentException(
                     "Rooster ROM linkAnimationState.get().direction must be between 0 and 3");
         }
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().zVelocity = velocityZ & 0xFF;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels((positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT);
+        linkAirborne.get().elevation().zVelocity(velocityZ & 0xFF);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         roosterCarryActive = true;
-        linkAnimationState.get().direction = Direction.fromRom(romDirection).javaIndex();
-        linkMotion.get().applyRomSpeed(speedX, speedY);
+        linkAnimationState.get().direction = Direction.fromRom(romDirection);
+        linkMotion.get().position().applyRomSpeed(speedX, speedY);
     }
 
     /** Applies Hinox's held position; only the source's countdown sets blocking. */
@@ -178,19 +178,19 @@ final class LinkEntityEffects {
         Link.validateRomByte(speedY, "Hinox Link Y speed");
         Link.validateRomByte(velocityZ, "Hinox Link Z velocity");
         Link.validateRomByte(airborneState, "Hinox Link linkAirborne.get().airborne state");
-        linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
-        linkStateMachine.get().romInteractiveMotionBlocked = motionBlocked;
+        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
+        linkStateMachine.get().status().romInteractiveMotionBlocked(motionBlocked);
         if (applyHeldLinkPose) {
-            linkAnimator.get().romAnimationStateOverride = 0x6A;
+            linkAnimator.get().romAnimationStateOverride(0x6A);
         }
         linkAnimationState.get().movingThisFrame = false;
         if (applyHeldLinkPose) {
-            linkAirborne.get().zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
+            linkAirborne.get().elevation().zSubPixels((positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT);
         }
-        linkAirborne.get().zVelocity = velocityZ & 0xFF;
-        linkAirborne.get().airborne = airborneState != 0;
+        linkAirborne.get().elevation().zVelocity(velocityZ & 0xFF);
+        linkAirborne.get().elevation().airborne(airborneState != 0);
         if (speedX != 0 || speedY != 0) {
-            linkMotion.get().applyRomSpeed(speedX, speedY);
+            linkMotion.get().position().applyRomSpeed(speedX, speedY);
         }
     }
 
@@ -199,60 +199,60 @@ final class LinkEntityEffects {
         Link.validateRomByte(romPositionX, "Warp Link X");
         Link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
         Link.validateRomByte(immunityCountdown, "Warp Link immunity");
-        linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
-        linkAnimator.get().romAnimationStateOverride = -1;
+        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
+        linkAnimator.get().romAnimationStateOverride(-1);
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkAnimationState.get().movingThisFrame = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().fallingIntoPit = false;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         if (immunityCountdown != 0) {
             linkDamage.get().collisionDamageImmune = true;
         }
         if (linkServices.get().playerState != null) {
-            linkServices.get().playerState.setInvincibilityCounter(0);
-            linkServices.get().playerState.clearSubtractHealthBuffer();
+            linkServices.get().playerState.vitals().setInvincibilityCounter(0);
+            linkServices.get().playerState.vitals().clearSubtractHealthBuffer();
         }
     }
 
     /** Applies Marin's final writes when Link jumps out of the bed. */
     void leaveMarinWakeUpBed() {
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().romInteractiveMotionBlocked = false;
-        linkAnimator.get().romAnimationStateOverride = -1;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().status().romInteractiveMotionBlocked(false);
+        linkAnimator.get().romAnimationStateOverride(-1);
         // The entity handler has already drawn the bed on the launch frame.
         // Ordinary Link rendering takes over at the next physics accessUpdate.
-        linkAnimator.get().marinWakeUpBedVariant = 3;
+        linkAnimator.get().marinWakeUpBedVariant(3);
         marinBedJumpMotionLocked = true;
         linkAnimationState.get().movingThisFrame = false;
-        linkAirborne.get().airborne = true;
-        linkAirborne.get().zSubPixels = 1 << Link.SUB_PIXEL_SHIFT;
-        linkAirborne.get().zVelocity = 0x12;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
-        linkAnimationState.get().direction = Direction.RIGHT.javaIndex();
-        linkMotion.get().lastRomSpeedX = 0x0C;
-        linkMotion.get().lastRomSpeedY = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkAirborne.get().elevation().airborne(true);
+        linkAirborne.get().elevation().zSubPixels(1 << Link.SUB_PIXEL_SHIFT);
+        linkAirborne.get().elevation().zVelocity(0x12);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkAnimationState.get().direction = Direction.RIGHT;
+        linkMotion.get().position().lastRomSpeedX(0x0C);
+        linkMotion.get().position().lastRomSpeedY(0);
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     /** Ends Rooster's custom linkAirborne.airborne carry state when it is thrown or cleared. */
     void clearRoosterCarryState() {
         roosterCarryActive = false;
-        linkAirborne.get().airborne = false;
-        linkAirborne.get().zSubPixels = 0;
-        linkAirborne.get().zVelocity = 0;
-        linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkAirborne.get().fallingIntoPit = false;
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().physicsModifier = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkAirborne.get().elevation().airborne(false);
+        linkAirborne.get().elevation().zSubPixels(0);
+        linkAirborne.get().elevation().zVelocity(0);
+        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
+        linkAirborne.get().pit().fallingIntoPit(false);
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     boolean accessIsLikeLikeCaptured() {

@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +16,7 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
     @Test
     void dungeonWarpStaysHiddenUntilMinibossDefeatThenCyclesAllEightPhases() throws IOException {
         byte[] rom = loadRom();
-        var catalog = new EntitySpriteHandlerCatalog(rom);
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         var warp = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x61)
@@ -24,10 +27,10 @@ final class EntityRuntimeWarpTest extends EntityRuntimeTestSupport {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
-                .chestContentsTable(new ChestContentsTable(rom))
-                .romTables(linksawakening.rom.RomTables.loadFromRom(rom))
-                .romData(rom)
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
+                .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0);
         runtime.configuration().setEntityRoomId(0x11);

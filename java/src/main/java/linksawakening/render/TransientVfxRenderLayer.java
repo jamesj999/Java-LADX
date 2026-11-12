@@ -5,15 +5,15 @@ import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.ScrollController;
 
 /** TransientVfxRenderLayer supplies frame rendering inputs or composition. */
-public final class TransientVfxRenderLayer implements HardwareRenderLayer {
+final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;
 
-    private final TransientVfxSystem transientVfxSystem;
-    private final CutLeavesEffectRenderer cutLeavesEffectRenderer;
-    private final ScrollController scrollController;
-    private final int[] palette;
-    private final int frameCounter;
+    private TransientVfxSystem transientVfxSystem;
+    private CutLeavesEffectRenderer cutLeavesEffectRenderer;
+    private ScrollController scrollController;
+    private int[] palette;
+    private int frameCounter;
 
     public TransientVfxRenderLayer(
             TransientVfxSystem transientVfxSystem,
@@ -36,12 +36,45 @@ public final class TransientVfxRenderLayer implements HardwareRenderLayer {
         this.frameCounter = frameCounter & 0xFF;
     }
 
+    private VfxPoseCache poses;
+
+    void configure(
+            TransientVfxSystem system,
+            CutLeavesEffectRenderer renderer,
+            ScrollController scroll,
+            int[] palette,
+            int counter) {
+        if (poses == null || cutLeavesEffectRenderer != renderer) poses = new VfxPoseCache(renderer);
+        transientVfxSystem = system;
+        cutLeavesEffectRenderer = renderer;
+        scrollController = scroll;
+        this.palette = palette;
+        frameCounter = counter & 255;
+    }
+
     private void submitEffects(RenderContext context) {
         if (scrollController.isActive()) {
             return;
         }
         int shakeX = -scrollController.screenShakeHorizontal();
-        for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
+        var slots = transientVfxSystem.activeSlots();
+        for (int slotIndex = 0; slotIndex < slots.size(); slotIndex++) {
+            var slot = slots.get(slotIndex);
+            if (poses != null) {
+                var pose = poses.pose(slot, frameCounter);
+                for (int i = 0; i < pose.size(); i++) {
+                    var sprite = pose.get(i);
+                    OamDrawing.draw8(
+                            context,
+                            sprite.tile(),
+                            slot.worldX() + sprite.x() + shakeX,
+                            slot.worldY() + sprite.y(),
+                            (sprite.attributes() & ATTR_FLIP_X) != 0,
+                            (sprite.attributes() & ATTR_FLIP_Y) != 0,
+                            palette);
+                }
+                continue;
+            }
             var sprites =
                     switch (slot.type()) {
                         case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(

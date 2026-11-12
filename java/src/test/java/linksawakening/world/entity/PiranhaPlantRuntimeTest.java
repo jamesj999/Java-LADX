@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -16,7 +17,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void decodesPiranhaPlantsRomRectangleDisplayList() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
         assertEquals(0x36, definition.bank());
@@ -45,7 +46,7 @@ final class PiranhaPlantRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_PIRANHA_PLANT));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_PIRANHA_PLANT));
 
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -56,7 +57,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         assertEquals(0x14, runtime.enemies().physicsFlags(0));
@@ -67,7 +69,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void clearsSharedSwordRecoilBeforeRunningItsStateMachine() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -78,7 +80,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
@@ -97,7 +99,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void waitsForWorldGameplayAndTheStableTransitionSequence() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition =
                 catalog.forEntityType(ENTITY_PIRANHA_PLANT, EntityRoomLoader.RoomTable.INDOORS_A);
 
@@ -110,7 +112,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         creditsRuntime.tick(EntityTestFrames.frame(creditsRuntime, 0, 0x20, 0x40, () -> 0, true));
         assertEquals(0, creditsRuntime.enemies().transitionCountdown(0));
@@ -125,7 +127,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         EntityRuntimeFixture.debug(transitionRuntime).setTransitionSequenceCounterForTest(0x03);
         transitionRuntime.tick(EntityTestFrames.frame(transitionRuntime, 0, 0x20, 0x40, () -> 0));
@@ -137,7 +139,7 @@ final class PiranhaPlantRuntimeTest {
     @Test
     void hiddenPipeStateDoesNotRunEnemyDamageCollision() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -148,7 +150,7 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(rom))
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
         assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
@@ -157,7 +159,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void waitsUntilLinkLeavesItsPipeColumnBeforeStartingRise() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -169,7 +171,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x20, () -> 0));
@@ -191,7 +194,7 @@ final class PiranhaPlantRuntimeTest {
 
     @Test
     void risesThroughRomFramesThenReturnsToHiddenPosition() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_PIRANHA_PLANT)
@@ -203,7 +206,8 @@ final class PiranhaPlantRuntimeTest {
                 .indoorRoom(true)
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
-                .enemyCombatTables(new RomEnemyCombatTables(loadRom()))
+                .enemyCombatTables(
+                        new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(loadRom())))
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x00, 0x20, () -> 0));

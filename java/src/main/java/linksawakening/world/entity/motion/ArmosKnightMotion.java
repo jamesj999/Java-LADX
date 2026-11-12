@@ -57,7 +57,7 @@ public final class ArmosKnightMotion {
     }
 
     public Update advance(ArmosKnightFrame inputs) {
-        return new ArmosKnightStep(this, inputs).run();
+        return armosKnightStep.run(this, inputs);
     }
 
     public void clear(int slot) {
@@ -147,4 +147,6 @@ public final class ArmosKnightMotion {
     }
 
     record Vector(int x, int y) {}
+
+    final ArmosKnightStep armosKnightStep = new ArmosKnightStep();
 }
