@@ -11,6 +11,7 @@ import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
+import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -26,28 +27,30 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
 
         Link withoutFlippers = linkInRoom(inputConfig, romTables, roomObjects);
-        withoutFlippers.setRoomEntryPixelPosition(0x20, 0x20);
+        withoutFlippers.position().setRoomEntryPixelPosition(0x20, 0x20);
         for (int i = 0; i < 20; i++) {
-            withoutFlippers.update();
+            withoutFlippers.motion().update();
         }
 
         PlayerState playerState = new PlayerState();
-        playerState.setHasFlippers(true);
+        playerState.progression().setHasFlippers(true);
         Link withFlippers =
                 linkInRoom(inputConfig, romTables, roomObjects, playerState, RomTables.PHYSICS_TABLE_OVERWORLD);
-        withFlippers.setPixelPosition(0x20, 0x20);
-        for (int i = 0; i < 20 && !withFlippers.isSwimming(); i++) {
-            withFlippers.update();
+        withFlippers.position().setPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 20 && !withFlippers.motion().isSwimming(); i++) {
+            withFlippers.motion().update();
         }
 
-        assertEquals(Link.LINK_MOTION_RECOVER, withoutFlippers.romMotionState());
-        assertTrue(withoutFlippers.pixelX() > 0x24);
-        assertTrue(withFlippers.isSwimming());
-        assertEquals(0x01, withFlippers.romMotionState());
-        while (withoutFlippers.romMotionState() == Link.LINK_MOTION_RECOVER) withoutFlippers.update();
-        assertEquals(0x20, withoutFlippers.pixelX());
-        assertEquals(0x20, withoutFlippers.pixelY());
-        assertEquals(0x40, withoutFlippers.linkServices.playerState.invincibilityCounter());
+        assertEquals(
+                LinkMotionState.RECOVER.romValue(), withoutFlippers.airborne().romMotionState());
+        assertTrue(withoutFlippers.position().pixelX() > 0x24);
+        assertTrue(withFlippers.motion().isSwimming());
+        assertEquals(0x01, withFlippers.airborne().romMotionState());
+        while (withoutFlippers.airborne().romMotionState() == LinkMotionState.RECOVER.romValue())
+            withoutFlippers.motion().update();
+        assertEquals(0x20, withoutFlippers.position().pixelX());
+        assertEquals(0x20, withoutFlippers.position().pixelY());
+        assertEquals(0x40, withoutFlippers.linkServices.playerState.vitals().invincibilityCounter());
     }
 
     @Test
@@ -55,27 +58,27 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         RomTables tables = RomTables.loadFromRom(loadRom());
         for (boolean flippers : new boolean[] {false, true}) {
             PlayerState player = new PlayerState();
-            player.setHasFlippers(flippers);
+            player.progression().setHasFlippers(flippers);
             int[] objects = emptyRoomObjectsArea();
             objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
             Link link = linkInRoom(
                     new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_OVERWORLD);
-            link.setRoomEntryPixelPosition(16, 16);
-            link.setPixelPosition(32, 32);
+            link.position().setRoomEntryPixelPosition(16, 16);
+            link.position().setPixelPosition(32, 32);
             assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
-            Link.WaterSplash splash = link.consumeWaterSplash();
+            Link.WaterSplash splash = link.status().consumeWaterSplash();
             assertNotNull(splash);
             assertEquals(40, splash.romX());
             assertEquals(46, splash.romY());
-            assertEquals(null, link.consumeWaterSplash());
-            assertEquals(!flippers, link.recoveryBlocksInput());
+            assertEquals(null, link.status().consumeWaterSplash());
+            assertEquals(!flippers, link.status().recoveryBlocksInput());
             if (!flippers) {
                 for (int i = 0; i < 79; i++) {
-                    link.update();
-                    assertTrue(link.recoveryBlocksInput());
+                    link.motion().update();
+                    assertTrue(link.status().recoveryBlocksInput());
                 }
-                link.update();
-                assertFalse(link.recoveryBlocksInput());
+                link.motion().update();
+                assertFalse(link.status().recoveryBlocksInput());
             }
         }
     }
@@ -86,17 +89,17 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         int[] objects = emptyRoomObjectsArea();
         objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         link.linkStateMachine.itemUsageContext = 0x80;
         assertFalse(link.linkSwimming.enterSwimmingIfNeeded());
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         link.linkStateMachine.itemUsageContext = 0;
         link.linkStateMachine.slowWalkingSpeed = 1;
         link.linkStateMachine.physicsRoomId = 0x3E;
         assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
-        assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
-        assertEquals(0xFA, link.romSpeedX());
-        assertTrue(link.pixelX() < 0x20);
+        assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
+        assertEquals(0xFA, link.position().romSpeedX());
+        assertTrue(link.position().pixelX() < 0x20);
     }
 
     @Test
@@ -107,26 +110,26 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = OBJECT_DEEP_WATER;
         PlayerState playerState = new PlayerState();
-        playerState.setHasFlippers(true);
+        playerState.progression().setHasFlippers(true);
         Link link = linkInRoom(inputConfig, romTables, roomObjects, playerState, RomTables.PHYSICS_TABLE_OVERWORLD);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
         int guard = 0;
-        while (!link.isSwimming() && guard++ < 32) {
-            link.update();
+        while (!link.motion().isSwimming() && guard++ < 32) {
+            link.motion().update();
         }
-        assertTrue(link.isSwimming());
+        assertTrue(link.motion().isSwimming());
         assertEquals(0x47, resolvedAnimationState(link));
-        assertEquals(0x08, (byte) link.romSpeedX());
+        assertEquals(0x08, (byte) link.position().romSpeedX());
 
         // The room cell immediately beyond the water is empty, so continued
         // rightward motion must run the source's default-ground exit path.
-        while (link.isSwimming() && guard++ < 128) {
-            link.update();
+        while (link.motion().isSwimming() && guard++ < 128) {
+            link.motion().update();
         }
 
-        assertFalse(link.isSwimming());
-        assertEquals(0x00, link.romMotionState());
+        assertFalse(link.motion().isSwimming());
+        assertEquals(0x00, link.airborne().romMotionState());
     }
 
     @Test
@@ -136,7 +139,7 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         PlayerState playerState = new PlayerState();
-        playerState.setHasFlippers(true);
+        playerState.progression().setHasFlippers(true);
         int[] roomObjects = emptyRoomObjectsArea();
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 10; column++) {
@@ -154,15 +157,15 @@ final class LinkWaterBehaviorTest extends LinkFixture {
                 .player(playerState)
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
-        link.update();
+        link.position().setPixelPosition(0x20, 0x20);
+        link.motion().update();
 
         inputState.tickEdges();
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
 
-        assertTrue(link.isSwimming());
-        assertTrue(link.isDiving());
+        assertTrue(link.motion().isSwimming());
+        assertTrue(link.motion().isDiving());
         assertEquals(0x4E, resolvedAnimationState(link));
     }
 }

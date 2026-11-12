@@ -44,4 +44,21 @@ final class GlBoundaryTest {
             }
         }
     }
+
+    @Test
+    void productionRenderClassesDoNotReferencePixelEvidenceImplementation() throws Exception {
+        Path root = Path.of(RenderLayer.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .toURI())
+                .resolve("linksawakening/render");
+        try (var files = Files.walk(root)) {
+            for (Path file :
+                    files.filter(path -> path.toString().endsWith(".class")).toList()) {
+                String pool = new String(Files.readAllBytes(file), java.nio.charset.StandardCharsets.ISO_8859_1);
+                assertFalse(pool.contains("HardwareFrameDiagnostics"), file.toString());
+            }
+        }
+    }
 }

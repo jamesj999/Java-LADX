@@ -3,7 +3,7 @@ package linksawakening.state;
 import static linksawakening.state.PlayerNumbers.*;
 import static linksawakening.state.PlayerState.*;
 
-/** Progression owns its player-state fields and their update rules. */
+/** Persistent quest, collectible and song state used by ROM {@code wTradeSequenceItem}. */
 public final class Progression {
     int heartPieces;
     int seashells;

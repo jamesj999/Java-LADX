@@ -70,12 +70,12 @@ final class LinkEquipment {
                 || linkServices.get().playerState == null) {
             return false;
         }
-        boolean usingA = linkServices.get().playerState.itemA() == InventoryItem.SHIELD.romValue()
+        boolean usingA = linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
                 && linkServices
                         .get()
                         .inputState
                         .isDown(linkServices.get().inputConfig.aKey());
-        boolean usingB = linkServices.get().playerState.itemB() == InventoryItem.SHIELD.romValue()
+        boolean usingB = linkServices.get().playerState.inventory().itemB() == InventoryItem.SHIELD.romValue()
                 && linkServices
                         .get()
                         .inputState
@@ -110,14 +110,14 @@ final class LinkEquipment {
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemA());
+                .lookup(linkServices.get().playerState.inventory().itemA());
         if (a != null && itemBlocksMotion(a, beforeTopDownAnimation)) {
             return true;
         }
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemB());
+                .lookup(linkServices.get().playerState.inventory().itemB());
         return b != null && itemBlocksMotion(b, beforeTopDownAnimation);
     }
 
@@ -139,14 +139,14 @@ final class LinkEquipment {
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemA());
+                .lookup(linkServices.get().playerState.inventory().itemA());
         if (a != null && itemLocksFacing(a, beforeTopDownAnimation)) {
             return true;
         }
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemB());
+                .lookup(linkServices.get().playerState.inventory().itemB());
         return b != null && itemLocksFacing(b, beforeTopDownAnimation);
     }
 
@@ -163,7 +163,7 @@ final class LinkEquipment {
         return linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemA());
+                .lookup(linkServices.get().playerState.inventory().itemA());
     }
 
     EquipmentItem itemInSlotB() {
@@ -173,7 +173,7 @@ final class LinkEquipment {
         return linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemB());
+                .lookup(linkServices.get().playerState.inventory().itemB());
     }
 
     void tickRomAttackStepAnimationCountdown() {

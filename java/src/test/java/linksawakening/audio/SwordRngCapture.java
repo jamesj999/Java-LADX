@@ -4,8 +4,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import linksawakening.app.GameSession;
-import linksawakening.entity.Link;
-import linksawakening.state.PlayerState;
 import linksawakening.world.entity.RomRandomByteSource;
 
 /** Bounded fixed-input counterpart of the original-ROM isolated D3 setup. */
@@ -38,21 +36,21 @@ public final class SwordRngCapture {
         try (var trace = new PrintWriter(out.resolve("engine-rng.jsonl").toFile());
                 var states = new PrintWriter(out.resolve("engine-state.tsv").toFile())) {
             game.initializeHeadlessNewGame();
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
-            set(game, "frameCounter", 1);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
+            game.frameClock().seed(1);
             var d = game.diagnostics();
             var room = d.roomSession();
             var link = d.link();
             var player = d.playerState();
-            player.setSwordLevel(1);
-            player.setItemA(PlayerState.INVENTORY_SWORD);
-            player.setItemB(PlayerState.INVENTORY_PEGASUS_BOOTS);
-            player.setMaxHearts(6);
-            player.setHealth(48);
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(linksawakening.state.InventoryItem.PEGASUS_BOOTS.romValue());
+            player.vitals().setMaxHearts(6);
+            player.vitals().setHealth(48);
             room.rooms().loadIndoor(2, 0x5A);
-            link.setRoomEntryRomPosition(72, 80);
-            link.setDirection(Link.DIRECTION_UP);
+            link.position().setRoomEntryRomPosition(72, 80);
+            link.animation().setDirection(linksawakening.state.Direction.UP.javaIndex());
             d.scrollController().startScreenShake(7, 0);
             rng.reset();
             rng.setObserver(draw -> {
@@ -89,26 +87,24 @@ public final class SwordRngCapture {
                 Set<String> wanted = parts[1].isEmpty() ? Set.of() : Set.of(parts[1].split("\\+"));
                 for (String key : held) if (!wanted.contains(key)) game.headlessButton(key, false);
                 for (String key : wanted) if (!held.contains(key)) game.headlessButton(key, true);
-                int blockBefore = link.romInteractiveMotionBlockValue();
+                int blockBefore = link.motion().romInteractiveMotionBlockValue();
                 held = new HashSet<>(wanted);
                 game.headlessFrame();
                 states.printf(
                         "%d\t%d\t%s\t%b\t%d\t%d\t%d\t%d\t%d\t%d%n",
                         frame[0],
-                        (int) get(game, "frameCounter"),
+                        (int) game.frameClock().value(),
                         parts[1],
                         d.dialogController().isActive(),
                         sword.state(),
-                        link.romEntityX(),
-                        link.romEntityY(),
+                        link.position().romEntityX(),
+                        link.position().romEntityY(),
                         (int) state.invoke(boss, 0),
                         ((int[]) get(runtime, "slowTransitionCountdown"))[0],
                         blockBefore);
             }
         } finally {
-            var cleanup = GameSession.class.getDeclaredMethod("cleanup");
-            cleanup.setAccessible(true);
-            cleanup.invoke(game);
+            game.close();
         }
     }
 }

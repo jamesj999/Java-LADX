@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import linksawakening.gameplay.*;
 import linksawakening.input.*;
-import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 class GameOverMenuTest {
@@ -15,7 +15,7 @@ class GameOverMenuTest {
         bytes[0x4336] = 80;
         bytes[0x4337] = 96;
         bytes[0x4338] = 112;
-        var menu = new GameOverMenu(new Rom(bytes));
+        var menu = new GameOverMenu(TestRoms.partial(bytes));
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var sounds = new ArrayList<GameplaySoundEvent>();

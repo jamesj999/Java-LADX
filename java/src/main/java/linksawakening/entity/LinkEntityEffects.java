@@ -214,8 +214,8 @@ final class LinkEntityEffects {
             linkDamage.get().collisionDamageImmune = true;
         }
         if (linkServices.get().playerState != null) {
-            linkServices.get().playerState.setInvincibilityCounter(0);
-            linkServices.get().playerState.clearSubtractHealthBuffer();
+            linkServices.get().playerState.vitals().setInvincibilityCounter(0);
+            linkServices.get().playerState.vitals().clearSubtractHealthBuffer();
         }
     }
 

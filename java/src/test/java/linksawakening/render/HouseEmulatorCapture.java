@@ -9,10 +9,12 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -30,8 +32,8 @@ public final class HouseEmulatorCapture {
         Path out = Path.of(args[0]);
         byte[] rom = CaptureImageWriter.readRom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
-        var tables = RomTables.loadFromRom(rom);
+        gpu.loadBaseTiles(TestRoms.partial(rom));
+        var tables = RomTables.load(Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
                 rom,
@@ -48,7 +50,13 @@ public final class HouseEmulatorCapture {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var link = new Link(
-                input, config, tables, collision, LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
+                input,
+                config,
+                tables,
+                collision,
+                LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)),
+                player,
+                new ItemRegistry());
         var motion = new MarinWakeUpMotion();
         var marinSource = session.rooms().activeRoom().entities().slots().get(0);
         var clocks = Files.readAllLines(out.resolve("clocks.tsv"));
@@ -67,7 +75,7 @@ public final class HouseEmulatorCapture {
         }
         session.story().updateHouseTarinPresentation(0, 0x38, 0x34);
         var inventory = new InventoryController(
-                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), player));
         Path folder = out.resolve("ours");
         Files.createDirectories(folder);
         for (int f = 0; f < clocks.size(); f++) {
@@ -78,7 +86,7 @@ public final class HouseEmulatorCapture {
             }
             session.story().applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
             session.story().updateHouseTarinPresentation(frame, 0x38, 0x34);
-            link.showMarinWakeUpBed(wake.bedSpriteVariant());
+            link.animation().showMarinWakeUpBed(wake.bedSpriteVariant());
             byte[] pixels = new byte[160 * 144 * 4];
             new GameFrameSceneBuilder()
                     .build(GameFrameState.empty()

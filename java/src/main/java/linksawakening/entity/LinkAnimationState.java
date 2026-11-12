@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.Direction;
 
-/** LinkAnimationState owns its Link state and operations. */
+/** Link animation state state and operations used by ROM {@code UpdateLinkAnimation}. */
 final class LinkAnimationState {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkMotion> linkMotion;

@@ -13,8 +13,8 @@ final class HouseNpcReentryTest {
         game.initializeHeadlessNewGame();
         var player = game.diagnostics().playerState();
         var room = game.diagnostics().roomSession();
-        player.setSwordLevel(1);
-        player.setShieldLevel(1);
+        player.equipmentLevels().setSwordLevel(1);
+        player.equipmentLevels().setShieldLevel(1);
         room.story().setChestPlayerLevels(1, 1, 0);
         room.story().setTarinFlag(0);
         room.rooms().loadIndoorFromSavedPosition(0x10, 0xA3, 0);

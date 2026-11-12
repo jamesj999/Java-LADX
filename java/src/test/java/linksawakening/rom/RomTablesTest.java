@@ -15,11 +15,11 @@ final class RomTablesTest {
         rom[x + 0x11] = 0x14;
         rom[y + 5] = (byte) -0x0C;
         rom[y + 0x15] = (byte) -0x0F;
-        RomTables tables = RomTables.loadFromRom(rom);
-        assertEquals(0x10, tables.linkSpeedX(1));
-        assertEquals(0x14, tables.linkSpeedX(0x11));
-        assertEquals(-0x0C, tables.linkSpeedY(5));
-        assertEquals(-0x0F, tables.linkSpeedY(0x15));
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
+        assertEquals(0x10, tables.linkMotionTables().linkSpeedX(1));
+        assertEquals(0x14, tables.linkMotionTables().linkSpeedX(0x11));
+        assertEquals(-0x0C, tables.linkMotionTables().linkSpeedY(5));
+        assertEquals(-0x0F, tables.linkMotionTables().linkSpeedY(0x15));
     }
 
     @Test
@@ -32,11 +32,11 @@ final class RomTablesTest {
         rom[pointsXOffset + 2 * 4 + 1] = (byte) 0xFF;
         rom[pointsYOffset + 2 * 4 + 1] = (byte) 0xFE;
 
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
 
-        assertEquals(2, tables.entityCollisionBoxType(0x27));
-        assertEquals(-1, tables.entityCollisionPointX(2, 1));
-        assertEquals(-2, tables.entityCollisionPointY(2, 1));
+        assertEquals(2, tables.entityPropertyTables().entityCollisionBoxType(0x27));
+        assertEquals(-1, tables.collisionTables().entityCollisionPointX(2, 1));
+        assertEquals(-2, tables.collisionTables().entityCollisionPointY(2, 1));
     }
 
     @Test
@@ -48,12 +48,12 @@ final class RomTablesTest {
         rom[offset + rowOffset + 1] = 0x01;
         rom[offset + rowOffset + 2] = 0x00;
         rom[offset + rowOffset + 3] = (byte) 0x80;
-        RomTables tables = RomTables.loadFromRom(rom);
-        assertEquals(0xFF, tables.entityFineCollisionShape(0x80, 0));
-        assertEquals(0x01, tables.entityFineCollisionShape(0x80, 1));
-        assertEquals(0x00, tables.entityFineCollisionShape(0x80, 2));
-        assertEquals(0x80, tables.entityFineCollisionShape(0x80, 3));
-        assertEquals(0, tables.entityFineCollisionShape(0x8E, 0));
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
+        assertEquals(0xFF, tables.collisionTables().entityFineCollisionShape(0x80, 0));
+        assertEquals(0x01, tables.collisionTables().entityFineCollisionShape(0x80, 1));
+        assertEquals(0x00, tables.collisionTables().entityFineCollisionShape(0x80, 2));
+        assertEquals(0x80, tables.collisionTables().entityFineCollisionShape(0x80, 3));
+        assertEquals(0, tables.collisionTables().entityFineCollisionShape(0x8E, 0));
     }
 
     @Test
@@ -70,14 +70,14 @@ final class RomTablesTest {
         rom[entryXOffset] = 0x08;
         rom[entryYOffset + 0x03] = 0x08;
 
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
 
-        assertEquals(0x08, tables.swimmingSpeedX(0x01, false));
-        assertEquals(0x10, tables.swimmingSpeedX(0x01, true));
-        assertEquals(-0x08, tables.swimmingSpeedY(0x04, false));
-        assertEquals(-0x10, tables.swimmingSpeedY(0x04, true));
-        assertEquals(0x08, tables.swimmingEntrySpeedX(0));
-        assertEquals(0x08, tables.swimmingEntrySpeedY(3));
+        assertEquals(0x08, tables.linkMotionTables().swimmingSpeedX(0x01, false));
+        assertEquals(0x10, tables.linkMotionTables().swimmingSpeedX(0x01, true));
+        assertEquals(-0x08, tables.linkMotionTables().swimmingSpeedY(0x04, false));
+        assertEquals(-0x10, tables.linkMotionTables().swimmingSpeedY(0x04, true));
+        assertEquals(0x08, tables.linkMotionTables().swimmingEntrySpeedX(0));
+        assertEquals(0x08, tables.linkMotionTables().swimmingEntrySpeedY(3));
     }
 
     @Test
@@ -95,15 +95,15 @@ final class RomTablesTest {
         rom[attrOffset + 14] = 0x22;
         rom[attrOffset + 15] = 0x22;
 
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
 
-        assertEquals(0x0D, tables.magicRodXOffset(0));
-        assertEquals(-0x0B, tables.magicRodXOffset(7));
-        assertEquals(-0x0D, tables.magicRodYOffset(2));
-        assertEquals(0x06, tables.magicRodTile(4, 0));
-        assertEquals(0x08, tables.magicRodTile(4, 1));
-        assertEquals(0x22, tables.magicRodAttribute(7, 0));
-        assertEquals(0x22, tables.magicRodAttribute(7, 1));
+        assertEquals(0x0D, tables.equipmentTables().magicRodXOffset(0));
+        assertEquals(-0x0B, tables.equipmentTables().magicRodXOffset(7));
+        assertEquals(-0x0D, tables.equipmentTables().magicRodYOffset(2));
+        assertEquals(0x06, tables.equipmentTables().magicRodTile(4, 0));
+        assertEquals(0x08, tables.equipmentTables().magicRodTile(4, 1));
+        assertEquals(0x22, tables.equipmentTables().magicRodAttribute(7, 0));
+        assertEquals(0x22, tables.equipmentTables().magicRodAttribute(7, 1));
     }
 
     @Test
@@ -115,10 +115,10 @@ final class RomTablesTest {
             rom[offset + i] = (byte) states[i];
         }
 
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(Rom.unchecked(rom));
 
-        assertEquals(0x71, tables.shovelAnimationState(1, 0));
-        assertEquals(0x72, tables.shovelAnimationState(0x10, 0));
-        assertEquals(0x6E, tables.shovelAnimationState(0x10, 3));
+        assertEquals(0x71, tables.equipmentTables().shovelAnimationState(1, 0));
+        assertEquals(0x72, tables.equipmentTables().shovelAnimationState(0x10, 0));
+        assertEquals(0x6E, tables.equipmentTables().shovelAnimationState(0x10, 3));
     }
 }

@@ -2,6 +2,7 @@ package linksawakening.vfx;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
 
 /**
  * ROM-backed OAM graphics used by transient effects.
@@ -23,7 +24,7 @@ public final class TransientVfxSpriteSheet {
         this.vfxTiles = vfxTiles;
     }
 
-    public static TransientVfxSpriteSheet loadFromRom(byte[] romData) {
+    public static TransientVfxSpriteSheet loadFromRom(Rom romData) {
         Tile[] linkTiles = new Tile[CHARACTER_TILE_COUNT];
         Tile[] vfxTiles = new Tile[CHARACTER_TILE_COUNT];
         int linkOffset = romOffset(CHARACTER_VFX_BANK, LINK_CHARACTER_ADDR);
@@ -51,11 +52,11 @@ public final class TransientVfxSpriteSheet {
         return BASE_TILE_INDEX;
     }
 
-    private static Tile decodeTile(byte[] romData, int offset) {
+    private static Tile decodeTile(Rom romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2));
-            int highByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2 + 1));
+            int lowByte = romData.u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = romData.u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -68,5 +69,11 @@ public final class TransientVfxSpriteSheet {
 
     private static int romOffset(int bank, int address) {
         return new RomAddress(bank, address).offset();
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static TransientVfxSpriteSheet loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

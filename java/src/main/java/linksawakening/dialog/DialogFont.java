@@ -32,13 +32,13 @@ final class DialogFont {
             if (stream == null) {
                 throw new IllegalStateException("Missing classpath ROM resource " + ROM_RESOURCE);
             }
-            return loadFromRom(stream.readAllBytes());
+            return loadFromRom(Rom.of(stream.readAllBytes()));
         } catch (IOException exception) {
             throw new UncheckedIOException("Unable to read classpath ROM resource " + ROM_RESOURCE, exception);
         }
     }
 
-    static DialogFont loadFromRom(byte[] romData) {
+    static DialogFont loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required to load dialog font data");
         }
@@ -50,12 +50,11 @@ final class DialogFont {
         int tableOffset = RomBank.romOffset(CODEPOINT_TABLE_BANK, CODEPOINT_TABLE_ADDRESS);
         requireRange(romData, tableOffset, CODEPOINT_COUNT, "CodepointToTileMap bank 0x1C address 0x4641");
 
-        byte[] fontTiles = new byte[fontLength];
-        System.arraycopy(romData, fontOffset, fontTiles, 0, fontTiles.length);
+        byte[] fontTiles = romData.bytes(RomAddress.fromOffset(fontOffset), fontLength);
 
         int[] codepointToTile = new int[CODEPOINT_COUNT];
         for (int i = 0; i < codepointToTile.length; i++) {
-            codepointToTile[i] = new Rom(romData).u8(RomAddress.fromOffset(tableOffset + i));
+            codepointToTile[i] = romData.u8(RomAddress.fromOffset(tableOffset + i));
         }
         return new DialogFont(fontTiles, codepointToTile);
     }
@@ -73,11 +72,11 @@ final class DialogFont {
         return tile;
     }
 
-    private static void requireRange(byte[] romData, int offset, int length, String label) {
-        if (offset < 0 || length < 0 || offset > romData.length || romData.length - offset < length) {
+    private static void requireRange(Rom romData, int offset, int length, String label) {
+        if (offset < 0 || length < 0 || offset > romData.size() || romData.size() - offset < length) {
             throw new IllegalArgumentException(label + " requires ROM range 0x" + Integer.toHexString(offset)
                     + "..0x" + Integer.toHexString(offset + length)
-                    + " but ROM length is 0x" + Integer.toHexString(romData.length));
+                    + " but ROM length is 0x" + Integer.toHexString(romData.size()));
         }
     }
 }

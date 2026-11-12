@@ -5,8 +5,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import linksawakening.app.screen.Screen;
-import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 import linksawakening.testing.RequiresRom;
 import linksawakening.world.transition.ScrollController;
@@ -22,7 +20,7 @@ final class EscapeSaveScreenTest {
         game.headlessButton("escape", true);
         assertEquals(RenderScreen.OVERWORLD, screen(game));
         assertTrue(running(game));
-        assertFalse(field(game, "inputState", InputState.class).isDown(GLFW_KEY_ESCAPE));
+        assertFalse(game.services().input().inputState().isDown(GLFW_KEY_ESCAPE));
         game.headlessFrame();
         assertEquals(RenderScreen.FILE_SAVE, screen(game));
         game.headlessButton("escape", false);
@@ -63,7 +61,7 @@ final class EscapeSaveScreenTest {
                             state.roomSession().rooms().renderSnapshot(),
                             160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
-            case PASS_OUT -> state.link().beginPassOut();
+            case PASS_OUT -> state.link().status().beginPassOut();
         }
         press(game, "escape");
         assertEquals(RenderScreen.OVERWORLD, screen(game));
@@ -83,7 +81,7 @@ final class EscapeSaveScreenTest {
             }
             case SCROLL -> state.scrollController().tick(160);
             case TRANSITION -> frames(game, 40);
-            case PASS_OUT -> state.link().finishGameOver();
+            case PASS_OUT -> state.link().status().finishGameOver();
         }
         frames(game, 2);
         assertEquals(RenderScreen.OVERWORLD, screen(game), "Blocked request must be discarded");
@@ -203,16 +201,10 @@ final class EscapeSaveScreenTest {
     }
 
     private static RenderScreen screen(GameSession game) throws Exception {
-        return field(game, "currentScreen", Screen.class).renderScreen();
+        return game.state().screens().currentScreen.renderScreen();
     }
 
     private static boolean running(GameSession game) throws Exception {
-        return field(game, "running", Boolean.class);
-    }
-
-    private static <T> T field(GameSession game, String name, Class<T> type) throws Exception {
-        var field = SessionTestAccess.field(game, name);
-        field.setAccessible(true);
-        return type.cast(field.get(SessionTestAccess.owner(game, name)));
+        return game.lifecycle().running();
     }
 }

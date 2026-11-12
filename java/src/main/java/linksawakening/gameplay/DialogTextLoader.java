@@ -1,9 +1,11 @@
 package linksawakening.gameplay;
 
-import linksawakening.rom.*;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
-/** Dialog text loader behavior and state. */
+/** Retained ROM-backed decoder of dialog control bytes into formatted presentation text. */
 public final class DialogTextLoader {
 
     private static final int POINTER_TABLE_BANK = RomSymbols.DialogPointerTable.bank();
@@ -15,13 +17,20 @@ public final class DialogTextLoader {
     private static final int TERMINATOR = 0xFF;
     private static final int ASK = 0xFE;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    private DialogTextLoader(byte[] romData) {
-        this.romData = romData.clone();
+    private DialogTextLoader(Rom romData) {
+        this.romData = Rom.unchecked(romData.bytes(RomAddress.fromOffset(0), romData.size()));
     }
 
+    /** @deprecated Legacy capture tools still supply partial byte buffers; use the Rom overload. */
+    @Deprecated(forRemoval = true)
     public static DialogTextLoader loadFromRom(byte[] romData) {
+        if (romData == null) throw new IllegalArgumentException("ROM data is required");
+        return loadFromRom(Rom.unchecked(romData));
+    }
+
+    public static DialogTextLoader loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");
         }
@@ -41,15 +50,15 @@ public final class DialogTextLoader {
         }
         int dialogIndex = dialogRef.globalDialogId();
         int pointerOffset = RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR + dialogIndex * 2);
-        int address = new Rom(romData).u8(RomAddress.fromOffset(pointerOffset))
-                | (new Rom(romData).u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
+        int address = romData.u8(RomAddress.fromOffset(pointerOffset))
+                | (romData.u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
         int bankOffset = RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR + dialogIndex);
-        int bank = new Rom(romData).u8(RomAddress.fromOffset(bankOffset)) & ROM_BANK_MASK;
+        int bank = romData.u8(RomAddress.fromOffset(bankOffset)) & ROM_BANK_MASK;
         int textOffset = RomBank.romOffset(bank, address);
 
         StringBuilder text = new StringBuilder();
-        for (int offset = textOffset; offset < romData.length; offset++) {
-            int codepoint = new Rom(romData).u8(RomAddress.fromOffset(offset));
+        for (int offset = textOffset; offset < romData.size(); offset++) {
+            int codepoint = romData.u8(RomAddress.fromOffset(offset));
             text.append(decode(codepoint));
             if (codepoint == TERMINATOR || codepoint == ASK) {
                 return text.toString();
@@ -66,8 +75,8 @@ public final class DialogTextLoader {
         return (char) (codepoint & 0xFF);
     }
 
-    private static void requireRange(byte[] romData, int offset, int length, String label) {
-        if (offset < 0 || length < 0 || offset > romData.length || romData.length - offset < length) {
+    private static void requireRange(Rom romData, int offset, int length, String label) {
+        if (offset < 0 || length < 0 || offset > romData.size() || romData.size() - offset < length) {
             throw new IllegalArgumentException(label + " is outside the ROM data");
         }
     }

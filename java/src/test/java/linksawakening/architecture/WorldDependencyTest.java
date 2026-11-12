@@ -162,7 +162,7 @@ class WorldDependencyTest {
     void scanIncludesAppFacadesAndInternalImplementationClasses() throws Exception {
         var compiled = classes();
         Set<String> names = compiled.stream().map(CompiledType::name).collect(java.util.stream.Collectors.toSet());
-        assertTrue(names.contains("linksawakening/app/gameplay/EntityPhase"));
+        assertTrue(names.contains("linksawakening/app/gameplay/entity/EntityPhase"));
         assertTrue(names.contains("linksawakening/world/room/RoomSession"));
         assertTrue(names.contains("linksawakening/world/entity/handler/HinoxHandler"));
         assertTrue(compiled.stream()

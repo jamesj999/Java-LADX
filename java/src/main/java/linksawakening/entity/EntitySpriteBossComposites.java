@@ -4,12 +4,13 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/** EntitySpriteBossComposites behavior on the shared EntitySpriteHandlerCatalog state. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
-    protected EntitySpriteBossComposites(byte[] romData) {
+    protected EntitySpriteBossComposites(Rom romData) {
         super(romData);
     }
 

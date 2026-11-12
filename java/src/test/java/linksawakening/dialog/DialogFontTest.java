@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class DialogFontTest {
@@ -25,7 +26,7 @@ final class DialogFontTest {
         }
         System.arraycopy(expectedTile, 0, rom, FONT_OFFSET + 2 * TILE_SIZE, TILE_SIZE);
 
-        DialogFont font = DialogFont.loadFromRom(rom);
+        DialogFont font = DialogFont.loadFromRom(TestRoms.partial(rom));
 
         assertArrayEquals(expectedTile, font.tileFor('A'));
     }
@@ -43,7 +44,7 @@ final class DialogFontTest {
         byte[] rom = new byte[FONT_OFFSET + TILE_SIZE - 1];
 
         IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(TestRoms.partial(rom)));
 
         assertTrue(exception.getMessage().contains("FontTiles"));
     }
@@ -53,7 +54,7 @@ final class DialogFontTest {
         byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 255];
 
         IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(TestRoms.partial(rom)));
 
         assertTrue(exception.getMessage().contains("CodepointToTileMap"));
     }

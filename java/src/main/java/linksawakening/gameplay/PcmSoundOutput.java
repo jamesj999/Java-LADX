@@ -1,5 +1,9 @@
 package linksawakening.gameplay;
-/** Contract for pcm sound output. */
+
+/**
+ * Session-owned PCM destination. Implementations receive interleaved samples and release their resources on
+ * close.
+ */
 public interface PcmSoundOutput extends AutoCloseable {
 
     void play(short[] stereoPcm, int sampleRate);

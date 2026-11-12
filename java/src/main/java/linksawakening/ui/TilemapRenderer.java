@@ -4,7 +4,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 
-/** Tilemap renderer behavior and state. */
+/** Java tile-plane adapter for InventoryTilemap and file-menu draw-command results. */
 public final class TilemapRenderer {
     private static final ThreadLocal<Region> LEGACY_REGION = ThreadLocal.withInitial(() -> new Region(0, 0, 0, 0));
 

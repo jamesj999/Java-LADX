@@ -59,7 +59,7 @@ final class LinkDamage {
 
     void hurtBySpikes() {
         if (linkServices.get().playerState == null
-                || linkServices.get().playerState.invincibilityCounter() != 0) return;
+                || linkServices.get().playerState.vitals().invincibilityCounter() != 0) return;
         if (linkServices.get().itemRegistry != null
                 && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
@@ -73,8 +73,8 @@ final class LinkDamage {
         linkMotion.get().forcedSpeedPending = false;
         linkMotion.get().forcedSpeedXOnly = false;
         setCollisionIgnoreFrames(0x10);
-        linkServices.get().playerState.setInvincibilityCounter(0x30);
-        linkServices.get().playerState.addSubtractHealthBuffer(4);
+        linkServices.get().playerState.vitals().setInvincibilityCounter(0x30);
+        linkServices.get().playerState.vitals().addSubtractHealthBuffer(4);
         linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.LINK_HURT);
     }
 
@@ -133,12 +133,12 @@ final class LinkDamage {
 
     void tickInvincibility() {
         if (linkServices.get().playerState != null)
-            linkServices.get().playerState.tickInvincibility();
+            linkServices.get().playerState.vitals().tickInvincibility();
     }
 
     void applyPitDamage() {
-        linkServices.get().playerState.damage(PlayerState.HP_PER_HEART / 2);
-        linkServices.get().playerState.setInvincibilityCounter(0x40);
+        linkServices.get().playerState.vitals().damage(PlayerState.HP_PER_HEART / 2);
+        linkServices.get().playerState.vitals().setInvincibilityCounter(0x40);
     }
 
     void accessSetCollisionIgnoreFrames(int frames) {

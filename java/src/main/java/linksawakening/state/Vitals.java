@@ -3,7 +3,7 @@ package linksawakening.state;
 import static linksawakening.state.PlayerNumbers.*;
 import static linksawakening.state.PlayerState.*;
 
-/** Vitals owns its player-state fields and their update rules. */
+/** Hearts, damage and invincibility state used by ROM {@code wHealth}. */
 public final class Vitals {
     int maxHearts = 3;
     int health = 3 * HP_PER_HEART;

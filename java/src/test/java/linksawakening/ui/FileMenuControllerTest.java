@@ -21,6 +21,7 @@ import linksawakening.input.InputState;
 import linksawakening.rom.RomBank;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class FileMenuControllerTest {
@@ -304,7 +305,7 @@ final class FileMenuControllerTest {
         byte[] rom = syntheticRom();
         writeBytes(rom, 1, 0x4F3B, sequence(10, 0xB0));
         var menu = new FileMenuController(
-                new FileMenuRomData(rom),
+                new FileMenuRomData(TestRoms.partial(rom)),
                 id -> new BackgroundScene(
                         backgroundMap(), new int[1024], new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}),
                 2,
@@ -320,7 +321,7 @@ final class FileMenuControllerTest {
 
     private static FileMenuController newController(int saveMask, int[][] names) {
         return new FileMenuController(
-                new FileMenuRomData(syntheticRom()),
+                new FileMenuRomData(TestRoms.partial(syntheticRom())),
                 sceneId -> new BackgroundScene(
                         backgroundMap(), new int[32 * 32], new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}),
                 saveMask,

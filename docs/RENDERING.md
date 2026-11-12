@@ -87,8 +87,11 @@ transform IDs, OAM entries and background scratch retain capacity across frames.
 Palette scopes preserve inner-to-outer evaluation. A builder and its scenes are
 confined to one rendering thread; do not retain `hardwareFrame()` across draws.
 
-Production has no pixel provenance arrays. Tests attach `HardwareFrameDiagnostics`
-explicitly when rebuilding scenes. Layer class names are resolved only for those
+Production has no pixel provenance arrays or evidence implementation.
+`HardwareFrameDiagnostics` and `TestHardwareFrames` live exclusively in src/test.
+Tests attach them through the nullable `HardwareFrameObserver` submission interface
+when rebuilding scenes. A compiled-code guard rejects main-source references to
+the evidence implementation. Layer class names are resolved only for those
 frames; reserved OBJ source identity remains available for dialog hiding.
 `FrameScene.drawTo(buffer, gpu, observer)` accepts explicit completed-frame inspection.
 For session captures, `GameFrameSceneBuilder.setDrawObserver` attaches an optional
@@ -115,3 +118,24 @@ Explicit standalone observation measured 986 identical scenes with no unexplaine
 mismatches. This is a narrower observation scope than the former implicit service;
 method-local sessions outside render tests require their owner to attach the
 builder observer. The full default regression suite remains the behavioral gate.
+
+## ROM uploads and tile snapshot ownership
+
+Animation uploads copy directly from ROM into VRAM through range-checked
+`Rom.copyInto`; they no longer allocate a temporary byte array or address record
+on animation frames. The synthetic fast-animation guard measured 26 bytes/tick
+before this change and 0.0 afterward, including with escape analysis disabled.
+It asserts less than 16 bytes/tick.
+
+`Vram.snapshotEntityTiles` reuses an immutable snapshot while its actual pixels
+remain unchanged, including detecting direct mutable Tile writes. Room sheet
+loads invalidate identity even when pixels match. The stable-snapshot guard went
+from 18,992 bytes/call to 0.0. `tile()` still returns an independent mutable copy;
+`readOnlyTile()` returns a stable, mutation-rejecting tile for render submission.
+Old snapshots remain unchanged after subsequent VRAM or returned-copy mutations.
+
+OpenGL startup registers shader, VAO, VBO and texture ownership immediately.
+Any later initialization failure releases earlier resources; cleanup attempts all
+releases and is idempotent. Shader compile/link errors retain their driver log.
+Pure fake shader and ownership tests exercise these paths without a native context.
+These checks supplement the default regression gate, not independent emulator parity.

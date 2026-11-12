@@ -10,12 +10,12 @@ class RomValuesTest {
         PlayerState player = new PlayerState();
         for (int value : new int[] {Integer.MIN_VALUE, -1, 0, 1, 2, 3, 255, Integer.MAX_VALUE}) {
             int expected = Math.max(0, Math.min(2, value));
-            player.setTunicType(value);
-            player.setActivePowerUp(value);
-            assertEquals(expected, player.tunicType());
-            assertEquals(expected, player.activePowerUp());
-            assertEquals(Tunic.fromRom(expected), player.tunic());
-            assertEquals(PowerUp.fromRom(expected), player.powerUp());
+            player.equipmentLevels().setTunicType(value);
+            player.equipmentLevels().setActivePowerUp(value);
+            assertEquals(expected, player.equipmentLevels().tunicType());
+            assertEquals(expected, player.equipmentLevels().activePowerUp());
+            assertEquals(Tunic.fromRom(expected), player.equipmentLevels().tunic());
+            assertEquals(PowerUp.fromRom(expected), player.equipmentLevels().powerUp());
         }
     }
 
@@ -56,8 +56,8 @@ class RomValuesTest {
     void unknownInventoryBytesRemainAvailableToSaveCodec() {
         PlayerState player = new PlayerState();
         for (int raw = 14; raw <= 255; raw++) {
-            player.setItemA(raw);
-            assertEquals(raw, player.itemA());
+            player.inventory().setItemA(raw);
+            assertEquals(raw, player.inventory().itemA());
             assertEquals(InventoryItem.UNKNOWN, InventoryItem.fromRom(raw));
         }
     }

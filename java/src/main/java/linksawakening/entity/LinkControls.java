@@ -3,7 +3,7 @@ package linksawakening.entity;
 import static linksawakening.entity.Link.*;
 import static linksawakening.entity.LinkRomConstants.*;
 
-/** LinkControls owns its Link state and operations. */
+/** Link controls state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkControls {
     private final LinkComponentRef<LinkServices> linkServices;
 
@@ -23,7 +23,7 @@ final class LinkControls {
 
     boolean accessPlayerHasFlippers() {
         return linkServices.get().playerState != null
-                && linkServices.get().playerState.hasFlippers();
+                && linkServices.get().playerState.progression().hasFlippers();
     }
 
     int accessBuildJoypadMask() {

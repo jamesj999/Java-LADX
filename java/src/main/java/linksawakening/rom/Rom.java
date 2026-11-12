@@ -7,10 +7,19 @@ import java.util.Objects;
 public final class Rom {
     private final byte[] data;
 
-    /** @deprecated Use {@link #of(byte[])} for complete bank-aligned ROMs. Legacy partial buffers remain supported. */
+    /** @deprecated Use {@link #of(byte[])} for complete ROMs or {@link #unchecked(byte[])} for partial buffers. */
     @Deprecated(forRemoval = true)
     public Rom(byte[] data) {
         this.data = Objects.requireNonNull(data, "data");
+    }
+
+    /**
+     * Wraps caller-owned bytes without bank-alignment validation, for partial buffers and
+     * legacy loaders. Null validation and all read bounds checks still apply; no copy is made.
+     * Prefer {@link #of(byte[])} for complete ROMs.
+     */
+    public static Rom unchecked(byte[] data) {
+        return new Rom(data);
     }
 
     public static Rom of(byte[] data) {
@@ -54,14 +63,16 @@ public final class Rom {
         return Byte.toUnsignedInt(data[offset]) | (Byte.toUnsignedInt(data[offset + 1]) << 8);
     }
 
+    /** Copies a validated flat ROM span directly into caller-owned storage without allocation. */
+    public void copyInto(int offset, byte[] destination, int destinationOffset, int length) {
+        Objects.checkFromIndexSize(offset, length, data.length);
+        Objects.checkFromIndexSize(destinationOffset, length, destination.length);
+        System.arraycopy(data, offset, destination, destinationOffset, length);
+    }
+
     public byte[] bytes(RomAddress address, int length) {
         int offset = checkedOffset(address, length);
         return Arrays.copyOfRange(data, offset, offset + length);
-    }
-    /** @deprecated Use {@link #bytes(RomAddress, int)} for an explicitly owned copy. */
-    @Deprecated(forRemoval = true)
-    public byte[] slice(RomAddress address, int length) {
-        return bytes(address, length);
     }
 
     public RomSlice view(RomAddress address, int length) {

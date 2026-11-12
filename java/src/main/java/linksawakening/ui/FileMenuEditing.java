@@ -9,7 +9,7 @@ import linksawakening.cutscene.IntroSprite;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 
-/** FileMenuEditing behavior on the shared FileMenuController state. */
+/** File selection and name-entry state used by ROM {@code FileSelectionHandler}. */
 abstract class FileMenuEditing extends FileMenuFlow {
 
     protected FileMenuEditing(

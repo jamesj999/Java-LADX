@@ -1,203 +1,206 @@
 package linksawakening.entity;
 
 import static linksawakening.entity.Link.*;
-import static linksawakening.entity.LinkRomConstants.*;
 
-/** Source-compatible Link operations delegated to their state owners. */
+/** @deprecated Temporary external API migration layer. */
+@Deprecated(forRemoval = true)
 abstract class LinkMovementView extends LinkStateView {
-    LinkMovementView(LinkServices services) {
-        super(services);
-    }
 
+    /** @deprecated Use animation().direction instead. */
+    @Deprecated(forRemoval = true)
     public int direction() {
-        return linkAnimationState.accessDirection();
+        return legacyRoles().animation().direction();
     }
 
+    /** @deprecated Use status().isCollisionDamageImmune instead. */
+    @Deprecated(forRemoval = true)
     public boolean isCollisionDamageImmune() {
-        return linkDamage.accessIsCollisionDamageImmune();
+        return legacyRoles().status().isCollisionDamageImmune();
     }
 
+    /** @deprecated Use actions().isRoosterCarryActive instead. */
+    @Deprecated(forRemoval = true)
     public boolean isRoosterCarryActive() {
-        return linkEntityEffects.accessIsRoosterCarryActive();
+        return legacyRoles().actions().isRoosterCarryActive();
     }
 
-    public int carryingLiftedObjectState() {
-        return linkEntityEffects.accessCarryingLiftedObjectState();
-    }
-
+    /** @deprecated Use actions().isCarryingLiftedObject instead. */
+    @Deprecated(forRemoval = true)
     public boolean isCarryingLiftedObject() {
-        return linkEntityEffects.accessIsCarryingLiftedObject();
+        return legacyRoles().actions().isCarryingLiftedObject();
     }
 
+    /** @deprecated Use animation().setDirection instead. */
+    @Deprecated(forRemoval = true)
     public void setDirection(int newDirection) {
-        linkAnimationState.accessSetDirection(newDirection);
+        legacyRoles().animation().setDirection(newDirection);
     }
 
+    /** @deprecated Use animation().setRomDirection instead. */
+    @Deprecated(forRemoval = true)
     public void setRomDirection(int romDirection) {
-        linkAnimationState.accessSetRomDirection(romDirection);
+        legacyRoles().animation().setRomDirection(romDirection);
     }
 
-    public void faceRomDirectionPreservingWalkPhase(int romDirection) {
-        linkAnimationState.accessFaceRomDirectionPreservingWalkPhase(romDirection);
-    }
-
+    /** @deprecated Use airborne().isAirborne instead. */
+    @Deprecated(forRemoval = true)
     public boolean isAirborne() {
-        return linkAirborne.accessIsAirborne();
+        return legacyRoles().airborne().isAirborne();
     }
 
+    /** @deprecated Use airborne().zVelocity instead. */
+    @Deprecated(forRemoval = true)
     public int zVelocity() {
-        return linkAirborne.accessZVelocity();
+        return legacyRoles().airborne().zVelocity();
     }
 
+    /** @deprecated Use airborne().isFallingIntoPit instead. */
+    @Deprecated(forRemoval = true)
     public boolean isFallingIntoPit() {
-        return linkAirborne.accessIsFallingIntoPit();
+        return legacyRoles().airborne().isFallingIntoPit();
     }
 
+    /** @deprecated Use airborne().useRocsFeather instead. */
+    @Deprecated(forRemoval = true)
     public void useRocsFeather() {
-        linkAirborne.accessUseRocsFeather();
+        legacyRoles().airborne().useRocsFeather();
     }
 
+    /** @deprecated Use airborne().bounceFromGoomba instead. */
+    @Deprecated(forRemoval = true)
     public void bounceFromGoomba() {
-        linkAirborne.accessBounceFromGoomba();
+        legacyRoles().airborne().bounceFromGoomba();
     }
 
+    /** @deprecated Use motion().update instead. */
+    @Deprecated(forRemoval = true)
     public void update() {
-        linkGroundMotion.accessUpdate();
+        legacyRoles().motion().update();
     }
 
-    public boolean grassGroundEffectActive() {
-        return linkGroundMotion.accessGrassGroundEffectActive();
-    }
-
-    public boolean grassGroundEffectFlipX() {
-        return linkAnimationState.accessGrassGroundEffectFlipX();
-    }
-
-    public int romConsecutiveStepsCount() {
-        return linkAnimationState.accessRomConsecutiveStepsCount();
-    }
-
-    void clearGroundEffects() {
-        linkGroundMotion.accessClearGroundEffects();
-    }
-
+    /** @deprecated Use animation().tickAnimation instead. */
+    @Deprecated(forRemoval = true)
     public void tickAnimation() {
-        linkAnimationState.accessTickAnimation();
+        legacyRoles().animation().tickAnimation();
     }
 
+    /** @deprecated Use motion().consumeRevolvingDoorTransition instead. */
+    @Deprecated(forRemoval = true)
     public boolean consumeRevolvingDoorTransition() {
-        return linkStateMachine.accessConsumeRevolvingDoorTransition();
+        return legacyRoles().motion().consumeRevolvingDoorTransition();
     }
 
-    boolean shouldApplyGroundMotion() {
-        return linkGroundMotion.accessShouldApplyGroundMotion();
-    }
-
-    boolean buttonWasPressed(int key) {
-        return linkControls.accessButtonWasPressed(key);
-    }
-
-    boolean playerHasFlippers() {
-        return linkControls.accessPlayerHasFlippers();
-    }
-
-    int buildJoypadMask() {
-        return linkControls.accessBuildJoypadMask();
-    }
-
+    /** @deprecated Use controls().romPressedButtonsMask instead. */
+    @Deprecated(forRemoval = true)
     public int romPressedButtonsMask() {
-        return linkControls.accessRomPressedButtonsMask();
+        return legacyRoles().controls().romPressedButtonsMask();
     }
 
-    int zPixels() {
-        return linkAirborne.accessZPixels();
-    }
-
+    /** @deprecated Use animation().romAnimationState instead. */
+    @Deprecated(forRemoval = true)
     public int romAnimationState() {
-        return linkAnimator.accessRomAnimationState();
+        return legacyRoles().animation().romAnimationState();
     }
 
-    boolean isLiftTransitionBlockingMotion() {
-        return linkEntityEffects.accessIsLiftTransitionBlockingMotion();
-    }
-
+    /** @deprecated Use position().setPixelPosition instead. */
+    @Deprecated(forRemoval = true)
     public void setPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetPixelPosition(pixelX, pixelY);
+        legacyRoles().position().setPixelPosition(pixelX, pixelY);
     }
 
+    /** @deprecated Use position().setRoomScrollEntryPixelPosition instead. */
+    @Deprecated(forRemoval = true)
     public void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetRoomScrollEntryPixelPosition(pixelX, pixelY);
+        legacyRoles().position().setRoomScrollEntryPixelPosition(pixelX, pixelY);
     }
 
+    /** @deprecated Use position().setRoomEntryPixelPosition instead. */
+    @Deprecated(forRemoval = true)
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
-        linkMotion.accessSetRoomEntryPixelPosition(pixelX, pixelY);
+        legacyRoles().position().setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
-    public void markRoomEntryPosition() {
-        linkMotion.accessMarkRoomEntryPosition();
-    }
-
-    public int roomEntryPixelX() {
-        return linkMotion.accessRoomEntryPixelX();
-    }
-
+    /** @deprecated Use position().roomEntryPixelY instead. */
+    @Deprecated(forRemoval = true)
     public int roomEntryPixelY() {
-        return linkMotion.accessRoomEntryPixelY();
+        return legacyRoles().position().roomEntryPixelY();
     }
 
+    /** @deprecated Use position().roomEntryRomPositionX instead. */
+    @Deprecated(forRemoval = true)
     public int roomEntryRomPositionX() {
-        return linkMotion.accessRoomEntryRomPositionX();
+        return legacyRoles().position().roomEntryRomPositionX();
     }
 
+    /** @deprecated Use position().roomEntryRomPositionY instead. */
+    @Deprecated(forRemoval = true)
     public int roomEntryRomPositionY() {
-        return linkMotion.accessRoomEntryRomPositionY();
+        return legacyRoles().position().roomEntryRomPositionY();
     }
 
+    /** @deprecated Use position().setRoomEntryRomPosition instead. */
+    @Deprecated(forRemoval = true)
     public void setRoomEntryRomPosition(int romPositionX, int romPositionY) {
-        linkMotion.accessSetRoomEntryRomPosition(romPositionX, romPositionY);
+        legacyRoles().position().setRoomEntryRomPosition(romPositionX, romPositionY);
     }
 
+    /** @deprecated Use position().applyRomSpeed instead. */
+    @Deprecated(forRemoval = true)
     public void applyRomSpeed(int speedX, int speedY) {
-        linkMotion.accessApplyRomSpeed(speedX, speedY);
+        legacyRoles().position().applyRomSpeed(speedX, speedY);
     }
 
+    /** @deprecated Use position().applyRomSpeedX instead. */
+    @Deprecated(forRemoval = true)
     public void applyRomSpeedX(int speedX) {
-        linkMotion.accessApplyRomSpeedX(speedX);
+        legacyRoles().position().applyRomSpeedX(speedX);
     }
 
-    public void applyRomFinalPosition(int speedX, int speedY) {
-        linkMotion.accessApplyRomFinalPosition(speedX, speedY);
-    }
-
+    /** @deprecated Use position().captureRomFinalPosition instead. */
+    @Deprecated(forRemoval = true)
     public void captureRomFinalPosition() {
-        linkMotion.accessCaptureRomFinalPosition();
+        legacyRoles().position().captureRomFinalPosition();
     }
 
+    /** @deprecated Use position().restoreRomFinalPosition instead. */
+    @Deprecated(forRemoval = true)
     public void restoreRomFinalPosition() {
-        linkMotion.accessRestoreRomFinalPosition();
+        legacyRoles().position().restoreRomFinalPosition();
     }
 
+    /** @deprecated Use position().restoreRomFinalPositionX instead. */
+    @Deprecated(forRemoval = true)
     public void restoreRomFinalPositionX() {
-        linkMotion.accessRestoreRomFinalPositionX();
+        legacyRoles().position().restoreRomFinalPositionX();
     }
 
+    /** @deprecated Use position().clearRomPositionIncrement instead. */
+    @Deprecated(forRemoval = true)
     public void clearRomPositionIncrement() {
-        linkMotion.accessClearRomPositionIncrement();
+        legacyRoles().position().clearRomPositionIncrement();
     }
 
+    /** @deprecated Use position().pixelX instead. */
+    @Deprecated(forRemoval = true)
     public int pixelX() {
-        return linkMotion.accessPixelX();
+        return legacyRoles().position().pixelX();
     }
 
+    /** @deprecated Use position().pixelY instead. */
+    @Deprecated(forRemoval = true)
     public int pixelY() {
-        return linkMotion.accessPixelY();
+        return legacyRoles().position().pixelY();
     }
 
+    /** @deprecated Use position().romEntityX instead. */
+    @Deprecated(forRemoval = true)
     public int romEntityX() {
-        return linkMotion.accessRomEntityX();
+        return legacyRoles().position().romEntityX();
     }
 
+    /** @deprecated Use position().romFinalPositionX instead. */
+    @Deprecated(forRemoval = true)
     public int romFinalPositionX() {
-        return linkMotion.accessRomFinalPositionX();
+        return legacyRoles().position().romFinalPositionX();
     }
 }

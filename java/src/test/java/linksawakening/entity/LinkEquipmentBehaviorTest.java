@@ -16,7 +16,10 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -30,8 +33,8 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState player = new PlayerState();
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(tables, null);
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
-        player.setItemA(PlayerState.INVENTORY_SWORD);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(config)
@@ -41,12 +44,12 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(player)
                 .items(registry)
                 .build();
-        link.setDirection(Link.DIRECTION_RIGHT);
-        link.useRocsFeather();
+        link.animation().setDirection(Direction.RIGHT.javaIndex());
+        link.airborne().useRocsFeather();
         sword.onPress();
         for (int frame = 1; frame <= 24; frame++) {
             sword.tick(false);
-            link.update();
+            link.motion().update();
             if (frame == 15)
                 assertEquals(
                         0x0B,
@@ -63,7 +66,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new AnimationOverrideItem(0x22));
+        itemRegistry.register(playerState.inventory().itemA(), new AnimationOverrideItem(0x22));
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -74,7 +77,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .items(itemRegistry)
                 .build();
 
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
 
         assertEquals(0x22, resolvedAnimationState(link));
     }
@@ -94,11 +97,11 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();
-            link.setDirection(javaDirectionForRomDirection(baseRomDirection));
+            link.animation().setDirection(javaDirectionForRomDirection(baseRomDirection));
 
             int previousAnimationState = resolvedAnimationState(link);
             for (int countdown = 0x20; countdown >= 0; countdown--) {
-                link.showSwordAcquisitionSpinPose(countdown);
+                link.animation().showSwordAcquisitionSpinPose(countdown);
 
                 int sector = Math.min(7, countdown >> 2);
                 int tableIndex = 0x02 * 0x4000 + (0x46C9 - 0x4000) + baseRomDirection * 8 + sector;
@@ -115,7 +118,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                         "base=" + baseRomDirection + ", countdown=" + countdown);
                 assertEquals(
                         javaDirectionForRomDirection(absoluteDirection),
-                        link.direction(),
+                        link.animation().direction(),
                         "base=" + baseRomDirection + ", direction countdown=" + countdown);
                 previousAnimationState = expectedAnimationState;
             }
@@ -135,15 +138,15 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setDirection(Link.DIRECTION_RIGHT);
+        link.animation().setDirection(Direction.RIGHT.javaIndex());
 
-        link.showSwordAcquisitionSpinPose(0x20);
+        link.animation().showSwordAcquisitionSpinPose(0x20);
         int swordState = romTables.swordSpinAnimationState(0, 7);
         int absoluteDirection = romTables.swordSpinAbsoluteDirection(0, 7);
         int expectedAnimationState = romTables.swordDirectionAnimState(absoluteDirection, swordState);
 
-        link.blockNextRomMotionFrame();
-        link.showSwordAcquisitionSpinPose(0x1F);
+        link.motion().blockNextRomMotionFrame();
+        link.animation().showSwordAcquisitionSpinPose(0x1F);
 
         assertEquals(expectedAnimationState, resolvedAnimationState(link));
     }
@@ -153,25 +156,25 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         byte[] rom = loadRom();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
-        playerState.initializeNewGame(0, 0, 0);
+        playerState.playerInitialization().initializeNewGame(0, 0, 0);
         ItemRegistry itemRegistry = new ItemRegistry();
         RecordingRenderItem sword = new RecordingRenderItem();
-        itemRegistry.register(PlayerState.INVENTORY_SWORD, sword);
+        itemRegistry.register(InventoryItem.SWORD.romValue(), sword);
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(inputConfig)
                 .tables(RomTables.loadFromRom(rom))
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(playerState)
                 .items(itemRegistry)
                 .sounds(GameplaySoundSink.none())
-                .palette(LinkTunicPalette.loadFromRom(rom))
+                .palette(LinkTunicPalette.loadFromRom(Rom.of(rom)))
                 .build();
-        link.setPixelPosition(40, 40);
-        link.showSwordAcquisitionSpinPose(0x20);
+        link.position().setPixelPosition(40, 40);
+        link.animation().showSwordAcquisitionSpinPose(0x20);
 
-        link.render(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], 0, 0);
+        link.animation().render(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], 0, 0);
 
         assertEquals(1, sword.renderCalls);
     }
@@ -179,10 +182,11 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
     @Test
     void ocarinaPlaybackUsesTheRomBodyAnimationStates() throws Exception {
         PlayerState playerState = new PlayerState();
-        playerState.setItemA(PlayerState.INVENTORY_OCARINA);
+        playerState.inventory().setItemA(InventoryItem.OCARINA.romValue());
         ItemRegistry itemRegistry = new ItemRegistry();
         OcarinaAnimationTarget target = new OcarinaAnimationTarget();
-        itemRegistry.register(playerState.itemA(), new Ocarina(playerState, GameplaySoundSink.none(), target));
+        itemRegistry.register(
+                playerState.inventory().itemA(), new Ocarina(playerState, GameplaySoundSink.none(), target));
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
@@ -215,20 +219,20 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.showTarinShieldPresentation(new int[] {0, 1, 2, 3});
+        link.animation().showTarinShieldPresentation(new int[] {0, 1, 2, 3});
         assertEquals(0x6C, resolvedAnimationState(link));
 
-        link.showStandingShieldDownPose();
+        link.animation().showStandingShieldDownPose();
 
         assertEquals(0x22, resolvedAnimationState(link));
-        assertFalse(link.isTarinShieldPresentationVisible());
+        assertFalse(link.animation().isTarinShieldPresentationVisible());
     }
 
     @Test
     void itemAttackStepCountdownStartsAndDecrementsLikeRom() {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
@@ -239,21 +243,21 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .items(itemRegistry)
                 .build();
 
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
 
-        link.startRomItemAttackStep();
+        link.equipment().startRomItemAttackStep();
 
-        assertEquals(0x0C, link.romAttackStepAnimationCountdown());
-        link.update();
-        assertEquals(0x0B, link.romAttackStepAnimationCountdown());
+        assertEquals(0x0C, link.equipment().romAttackStepAnimationCountdown());
+        link.motion().update();
+        assertEquals(0x0B, link.equipment().romAttackStepAnimationCountdown());
 
         for (int i = 0; i < 0x0B; i++) {
-            link.update();
+            link.motion().update();
         }
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
 
-        link.update();
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        link.motion().update();
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
     }
 
     @Test
@@ -267,18 +271,18 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(null)
                 .items(null)
                 .build();
-        link.startRomMagicPowderAttackStep();
+        link.equipment().startRomMagicPowderAttackStep();
 
-        link.clearRomAttackStepAnimationCountdown();
+        link.equipment().clearRomAttackStepAnimationCountdown();
 
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
     }
 
     @Test
     void zeroDurationBitSevenAttackStepClearsTheFullRomByte() throws Exception {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
@@ -292,11 +296,11 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         countdown.setAccessible(true);
         countdown.setInt(link.linkItemState, 0x80);
 
-        assertEquals(0x80, link.romAttackStepAnimationCountdown());
+        assertEquals(0x80, link.equipment().romAttackStepAnimationCountdown());
 
-        link.update();
+        link.motion().update();
 
-        assertEquals(0, link.romAttackStepAnimationCountdown());
+        assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
     }
 
     @Test
@@ -304,7 +308,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
-        playerState.setItemA(PlayerState.INVENTORY_SHIELD);
+        playerState.inventory().setItemA(InventoryItem.SHIELD.romValue());
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -315,20 +319,20 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        assertEquals(0, link.romMotionState());
-        assertFalse(link.isUsingShield());
+        assertEquals(0, link.airborne().romMotionState());
+        assertFalse(link.equipment().isUsingShield());
 
         inputState.onKeyEvent(inputConfig.aKey(), GLFW_PRESS);
-        assertTrue(link.isUsingShield());
+        assertTrue(link.equipment().isUsingShield());
 
         inputState.onKeyEvent(inputConfig.aKey(), GLFW_RELEASE);
-        playerState.setItemA(PlayerState.INVENTORY_SWORD);
-        playerState.setItemB(PlayerState.INVENTORY_SHIELD);
+        playerState.inventory().setItemA(InventoryItem.SWORD.romValue());
+        playerState.inventory().setItemB(InventoryItem.SHIELD.romValue());
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_PRESS);
-        assertTrue(link.isUsingShield());
+        assertTrue(link.equipment().isUsingShield());
 
         inputState.onKeyEvent(inputConfig.bKey(), GLFW_RELEASE);
-        assertFalse(link.isUsingShield());
+        assertFalse(link.equipment().isUsingShield());
     }
 
     @Test
@@ -336,25 +340,25 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputState input = new InputState();
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState player = new PlayerState();
-        player.setShieldLevel(1);
-        player.setItemB(PlayerState.INVENTORY_SHIELD);
+        player.equipmentLevels().setShieldLevel(1);
+        player.inventory().setItemB(InventoryItem.SHIELD.romValue());
         Link link = new LinkTestBuilder()
                 .input(input)
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(loadRom()))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(loadRom())))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
         java.util.concurrent.atomic.AtomicBoolean dialogue = new java.util.concurrent.atomic.AtomicBoolean(true);
-        link.setShieldInputAllowed(() -> !dialogue.get());
+        link.equipment().setShieldInputAllowed(() -> !dialogue.get());
         int carryingPose = resolvedAnimationState(link);
         input.onKeyEvent(config.bKey(), GLFW_PRESS);
-        assertFalse(link.isUsingShield());
+        assertFalse(link.equipment().isUsingShield());
         assertEquals(carryingPose, resolvedAnimationState(link));
         dialogue.set(false);
-        assertTrue(link.isUsingShield());
+        assertTrue(link.equipment().isUsingShield());
         assertTrue(carryingPose != resolvedAnimationState(link));
     }
 
@@ -364,21 +368,21 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputState input = new InputState();
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
-        player.setItemB(PlayerState.INVENTORY_SHIELD);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
+        player.inventory().setItemB(InventoryItem.SHIELD.romValue());
         Link link = new LinkTestBuilder()
                 .input(input)
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
         for (int level : new int[] {1, 2}) {
-            player.setShieldLevel(level);
+            player.equipmentLevels().setShieldLevel(level);
             for (int direction = 0; direction < 4; direction++) {
-                link.setRomDirection(direction);
+                link.animation().setRomDirection(direction);
                 int table = level == 1 ? 0x4918 : 0x4928;
                 int offset = 2 * 0x4000 + table - 0x4000 + direction * 2;
                 assertEquals(rom[offset] & 0xFF, resolvedAnimationState(link));
@@ -387,8 +391,8 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 input.onKeyEvent(config.bKey(), GLFW_RELEASE);
             }
         }
-        player.setItemB(PlayerState.INVENTORY_MAGIC_POWDER);
-        link.setRomDirection(2);
+        player.inventory().setItemB(InventoryItem.MAGIC_POWDER.romValue());
+        link.animation().setRomDirection(2);
         assertEquals(rom[2 * 0x4000 + 0x0914] & 0xFF, resolvedAnimationState(link));
     }
 
@@ -397,9 +401,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         InputState inputState = new InputState();
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
-        playerState.setItemA(PlayerState.INVENTORY_SHIELD);
+        playerState.inventory().setItemA(InventoryItem.SHIELD.romValue());
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(PlayerState.INVENTORY_SHIELD, new Shield(GameplaySoundSink.none()));
+        itemRegistry.register(InventoryItem.SHIELD.romValue(), new Shield(GameplaySoundSink.none()));
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -413,10 +417,10 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         inputState.onKeyEvent(inputConfig.aKey(), GLFW_PRESS);
         assertEquals(0x24, resolvedAnimationState(link));
 
-        playerState.setShieldLevel(2);
+        playerState.equipmentLevels().setShieldLevel(2);
         assertEquals(0x26, resolvedAnimationState(link));
 
-        link.setDirection(Link.DIRECTION_RIGHT);
+        link.animation().setDirection(Direction.RIGHT.javaIndex());
         assertEquals(0x2E, resolvedAnimationState(link));
     }
 
@@ -427,7 +431,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState player = new PlayerState();
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
-        registry.register(player.itemA(), sword);
+        registry.register(player.inventory().itemA(), sword);
         RomTables tables = RomTables.loadFromRom(loadRom());
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setRoom(emptyRoomObjectsArea());
@@ -440,22 +444,22 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .player(player)
                 .items(registry)
                 .build();
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         sword.onPress();
         sword.tick(true);
-        link.update();
-        assertEquals(41, link.pixelX(), "Launch-frame XY precedes sword animation");
+        link.motion().update();
+        assertEquals(41, link.position().pixelX(), "Launch-frame XY precedes sword animation");
         sword.tick(true);
-        link.update();
-        assertEquals(41, link.pixelX());
-        link.useRocsFeather();
-        link.update();
-        assertEquals(42, link.pixelX());
-        assertTrue(link.isAirborne());
+        link.motion().update();
+        assertEquals(41, link.position().pixelX());
+        link.airborne().useRocsFeather();
+        link.motion().update();
+        assertEquals(42, link.position().pixelX());
+        assertTrue(link.airborne().isAirborne());
         assertTrue(sword.blocksMotion());
-        link.update();
-        assertEquals(43, link.pixelX());
+        link.motion().update();
+        assertEquals(43, link.position().pixelX());
     }
 
     @Test
@@ -477,7 +481,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
         Sword sword = new Sword(null, null);
-        itemRegistry.register(playerState.itemA(), sword);
+        itemRegistry.register(playerState.inventory().itemA(), sword);
         RomTables romTables = RomTables.loadFromRom(loadRom());
         Link link = new LinkTestBuilder()
                 .input(inputState)
@@ -490,8 +494,8 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .build();
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        link.update();
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        link.motion().update();
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -500,8 +504,8 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
         inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
 
-        assertEquals(Link.DIRECTION_RIGHT, link.direction());
+        assertEquals(Direction.RIGHT.javaIndex(), link.animation().direction());
     }
 }

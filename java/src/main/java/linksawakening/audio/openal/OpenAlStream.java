@@ -3,6 +3,7 @@ package linksawakening.audio.openal;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.function.LongSupplier;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryUtil;
@@ -26,8 +27,12 @@ final class OpenAlStream {
     }
 
     void initializeOpenAl() {
+        initializeOpenAl(() -> ALC10.alcOpenDevice((ByteBuffer) null));
+    }
+
+    void initializeOpenAl(LongSupplier openDevice) {
         try {
-            device = ALC10.alcOpenDevice((ByteBuffer) null);
+            device = openDevice.getAsLong();
             if (device == MemoryUtil.NULL) {
                 throw new IllegalStateException("could not open device");
             }
@@ -73,8 +78,8 @@ final class OpenAlStream {
             int sourceToDelete = source;
             try {
                 AL10.alDeleteSources(sourceToDelete);
-            } catch (RuntimeException e) {
-                failure = combine(failure, e);
+            } catch (RuntimeException | LinkageError e) {
+                failure = combine(failure, asRuntimeFailure(e));
             } finally {
                 source = 0;
             }
@@ -83,8 +88,8 @@ final class OpenAlStream {
             int[] buffersToDelete = buffers.clone();
             try {
                 AL10.alDeleteBuffers(buffersToDelete);
-            } catch (RuntimeException e) {
-                failure = combine(failure, e);
+            } catch (RuntimeException | LinkageError e) {
+                failure = combine(failure, asRuntimeFailure(e));
             } finally {
                 for (int i = 0; i < buffers.length; i++) {
                     buffers[i] = 0;
@@ -97,13 +102,13 @@ final class OpenAlStream {
             long contextToDestroy = context;
             try {
                 ALC10.alcMakeContextCurrent(MemoryUtil.NULL);
-            } catch (RuntimeException e) {
-                failure = combine(failure, e);
+            } catch (RuntimeException | LinkageError e) {
+                failure = combine(failure, asRuntimeFailure(e));
             }
             try {
                 ALC10.alcDestroyContext(contextToDestroy);
-            } catch (RuntimeException e) {
-                failure = combine(failure, e);
+            } catch (RuntimeException | LinkageError e) {
+                failure = combine(failure, asRuntimeFailure(e));
             } finally {
                 context = MemoryUtil.NULL;
             }
@@ -112,8 +117,8 @@ final class OpenAlStream {
             long deviceToClose = device;
             try {
                 ALC10.alcCloseDevice(deviceToClose);
-            } catch (RuntimeException e) {
-                failure = combine(failure, e);
+            } catch (RuntimeException | LinkageError e) {
+                failure = combine(failure, asRuntimeFailure(e));
             } finally {
                 device = MemoryUtil.NULL;
             }
@@ -182,9 +187,15 @@ final class OpenAlStream {
         try {
             operation.run();
             return first;
-        } catch (RuntimeException e) {
-            return combine(first, e);
+        } catch (RuntimeException | LinkageError e) {
+            return combine(first, asRuntimeFailure(e));
         }
+    }
+
+    private static RuntimeException asRuntimeFailure(Throwable failure) {
+        return failure instanceof RuntimeException runtime
+                ? runtime
+                : new IllegalStateException("OpenAL native cleanup failed: " + conciseMessage(failure), failure);
     }
 
     static RuntimeException combine(RuntimeException first, RuntimeException next) {
@@ -194,7 +205,7 @@ final class OpenAlStream {
         if (first == null) {
             return next;
         }
-        first.addSuppressed(next);
+        if (first != next) first.addSuppressed(next);
         return first;
     }
 

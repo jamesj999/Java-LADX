@@ -2,7 +2,7 @@ package linksawakening.dialog;
 
 import static linksawakening.dialog.DialogController.*;
 
-/** DialogTextFormatting behavior on the shared DialogController state. */
+/** Dialog text, timing and presentation used by ROM {@code DialogDrawNextCharacterHandler}. */
 abstract class DialogTextFormatting extends DialogPaging {
     protected DialogTextFormatting(int lineWidth) {
         super(lineWidth);

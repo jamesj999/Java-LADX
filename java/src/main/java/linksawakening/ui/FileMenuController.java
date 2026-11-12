@@ -4,7 +4,7 @@ import java.util.function.Function;
 import linksawakening.scene.BackgroundScene;
 
 /**
- * Input/state model for the ROM-backed file-selection and New Game screens.
+ * Input/state model for ROM {@code FileSelectionHandler} and the New Game screens.
  */
 public final class FileMenuController extends FileMenuEditing {
     /** Named mode values. */

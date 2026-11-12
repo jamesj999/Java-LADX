@@ -2,10 +2,14 @@ package linksawakening.audio;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.app.host.HeadlessHost;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.FrameAudioMixer;
+import linksawakening.audio.music.FrameAudioPlayer;
 import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrack;
+import linksawakening.audio.music.ReusableFramePcmOutput;
+import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.rom.Rom;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
@@ -36,6 +40,20 @@ final class AudioAllocationTest {
         assertTrue(driver.isPlaying(), "measurement must keep sequencing active");
         System.out.println("Frame mixer allocation bytes/buffer=" + bytes);
         assertTrue(bytes < 16, "Frame mixer allocated " + bytes + " bytes/buffer");
+    }
+
+    @Test
+    void reusableFrameOutputDoesNotAllocate() {
+        var output = new HeadlessHost().createPcmOutput();
+        assertTrue(output instanceof ReusableFramePcmOutput);
+        assertTrue(ReusableFramePcmOutput.class.isAssignableFrom(OpenAlPcmSoundOutput.class));
+        try (var player = new FrameAudioPlayer(Rom.of(syntheticRom()), 48001, output)) {
+            player.play(new MusicTrack(1, "frame allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
+            double bytes = AllocationProbe.bytesPerIteration(5000, 1000, player::update);
+            assertTrue(player.isMusicPlaying());
+            System.out.println("Frame audio allocation bytes/frame=" + bytes);
+            assertTrue(bytes < 16, "Frame audio allocated " + bytes + " bytes/frame");
+        }
     }
 
     private static byte[] syntheticRom() {

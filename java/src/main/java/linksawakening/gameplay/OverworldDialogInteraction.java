@@ -11,7 +11,7 @@ import linksawakening.entity.Link;
 import linksawakening.state.Direction;
 import linksawakening.world.transition.Warp;
 
-/** Overworld dialog interaction behavior and state. */
+/** Session-owned signpost interaction service that combines ROM lookup with live dialog gates. */
 public final class OverworldDialogInteraction {
 
     private static final int OBJECT_OWL_STATUE = 0x6F;
@@ -23,27 +23,6 @@ public final class OverworldDialogInteraction {
     public OverworldDialogInteraction(SignpostDialogTable signpostDialogTable, DialogTextLoader dialogTextLoader) {
         this.signpostDialogTable = Objects.requireNonNull(signpostDialogTable);
         this.dialogTextLoader = Objects.requireNonNull(dialogTextLoader);
-    }
-    /** @deprecated Use the Interaction argument bundle overload. */
-    @Deprecated(forRemoval = true)
-    public boolean tryOpenSignpostDialog(
-            int roomId,
-            int mapCategory,
-            int[] roomObjectsArea,
-            int linkPixelX,
-            int linkPixelY,
-            int linkDirection,
-            boolean actionPressed,
-            OverworldDialogBlockers blockers,
-            DialogController dialogController) {
-        return tryOpenSignpostDialog(
-                roomId,
-                mapCategory,
-                roomObjectsArea,
-                linkPixelX,
-                linkPixelY,
-                linkDirection,
-                new Interaction(actionPressed, blockers, dialogController));
     }
 
     public boolean tryOpenSignpostDialog(

@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -16,8 +18,8 @@ final class InventoryHudPaletteTest {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
-        var menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), new PlayerState());
+        gpu.loadBaseTiles(Rom.of(rom));
+        var menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), new PlayerState());
         int[][] roomPalettes = new int[8][4];
         for (int[] palette : roomPalettes) Arrays.fill(palette, 0x123456);
         byte[] pixels = new byte[160 * 144 * 4];

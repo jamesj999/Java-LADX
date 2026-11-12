@@ -6,7 +6,7 @@ import static linksawakening.entity.LinkStateMachine.*;
 
 import linksawakening.state.LinkMotionState;
 
-/** Shared state and dependency ownership for LinkStateMachine. */
+/** Link motion lifecycle state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkMotionLifecycle {
 
     protected final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;

@@ -1,32 +1,55 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
-import linksawakening.app.gameplay.BushInteraction;
-import linksawakening.app.gameplay.DialogInteractions;
+import linksawakening.app.flow.SaveCoordinator;
+import linksawakening.app.flow.ScreenRouter;
+import linksawakening.app.flow.SessionContext;
+import linksawakening.app.flow.SessionControllers;
 import linksawakening.app.gameplay.GameplaySimulation;
-import linksawakening.app.gameplay.LiftInteraction;
+import linksawakening.app.gameplay.interaction.BushInteraction;
+import linksawakening.app.gameplay.interaction.DialogInteractions;
+import linksawakening.app.gameplay.interaction.LiftInteraction;
+import linksawakening.app.input.InputRouter;
+import linksawakening.app.presentation.RenderStateAssembler;
+import linksawakening.app.services.SessionServices;
+import linksawakening.app.state.FrameClock;
+import linksawakening.app.state.GameplaySounds;
+import linksawakening.app.state.OpeningStoryState;
+import linksawakening.app.state.RunState;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.SessionState;
 import linksawakening.app.story.OpeningStory;
+import linksawakening.app.wiring.SessionWiring;
 import linksawakening.config.AppConfig;
-import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.StartupCoordinator;
-import linksawakening.startup.TarinShieldMotion;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.transition.Warp;
 
-public class GameSession {
-    GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
+/** Owns the desktop and headless frame loops and delegates to retained session flows. */
+public class GameSession implements AutoCloseable {
+    private final FrameClock clock = new FrameClock();
+    private final OpeningStoryState opening = new OpeningStoryState();
+    private final GameplaySounds sounds = new GameplaySounds();
 
-    MarinWakeUpMotion newGameWakeUpMotion;
+    public FrameClock frameClock() {
+        return clock;
+    }
 
-    TarinShieldMotion newGameTarinShieldMotion;
+    public OpeningStoryState openingState() {
+        return opening;
+    }
+
+    public GameplaySounds gameplaySounds() {
+        return sounds;
+    }
+
+    @Override
+    public void close() {
+        cleanup();
+    }
 
     PcmSoundOutput headlessPcm;
-
-    int frameCounter;
 
     final RomRandomByteSource random;
 
@@ -34,10 +57,30 @@ public class GameSession {
 
     SessionContext context;
 
+    public SessionState state() {
+        return context.state();
+    }
+
+    public SessionServices services() {
+        return context.services();
+    }
+
+    public SessionControllers flows() {
+        return context.runtime().flows();
+    }
+
+    public SaveState saveState() {
+        return context.runtime().saves();
+    }
+
+    public RunState lifecycle() {
+        return context.lifecycle();
+    }
+
     public byte[] headlessFrame() {
         update();
-        context.composeFrameBuffer();
-        return context.services.indexedDisplayBuffer().clone();
+        context.runtime().presentation().composeFrameBuffer();
+        return context.services().visual().indexedDisplayBuffer().clone();
     }
 
     void stepWithoutRender() {
@@ -46,24 +89,25 @@ public class GameSession {
 
     public void run(String[] args) {
         initialize(false);
-        if (StartupCoordinator.shouldStartIntroCutscene(context.currentAppConfig())) {
-            context.router().startIntroCutscene();
-        } else if (context.currentAppConfig().startMode() == AppConfig.StartMode.NORMAL
-                || !context.currentAppConfig().showTitleScreen()) {
-            context.router().startConfiguredGameplay();
+        if (StartupCoordinator.shouldStartIntroCutscene(
+                context.state().options().config())) {
+            context.runtime().flows().router().startIntroCutscene();
+        } else if (context.state().options().config().startMode() == AppConfig.StartMode.NORMAL
+                || !context.state().options().config().showTitleScreen()) {
+            context.runtime().flows().router().startConfiguredGameplay();
         } else {
-            context.router().startTitleScreenWithoutIntro();
+            context.runtime().flows().router().startTitleScreenWithoutIntro();
         }
 
-        context.host.open(context::onKeyEvent);
+        context.host().open(context.runtime().input()::onKeyEvent);
 
         long nextFrameNs = System.nanoTime();
 
-        while (!context.host.shouldClose() && context.running) {
-            context.host.pollEvents();
+        while (!context.host().shouldClose() && context.lifecycle().running()) {
+            context.host().pollEvents();
             update();
-            context.composeFrameBuffer();
-            context.host.present(context.services.indexedDisplayBuffer());
+            context.runtime().presentation().composeFrameBuffer();
+            context.host().present(context.services().visual().indexedDisplayBuffer());
 
             nextFrameNs += frameDurationNs;
             long sleepNs = nextFrameNs - System.nanoTime();
@@ -87,7 +131,7 @@ public class GameSession {
     }
 
     public void headlessButton(String button, boolean pressed) {
-        context.inputRouter().headlessButton(button, pressed);
+        context.runtime().flows().inputRouter().headlessButton(button, pressed);
     }
 
     public GameSession() {
@@ -106,84 +150,77 @@ public class GameSession {
     public void initializeHeadlessIntro() {
         if (context != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
-        context.router().startIntroCutscene();
+        context.runtime().flows().router().startIntroCutscene();
     }
 
     void update() {
-        if (context.debug.debugMenu != null && context.debug.debugMenu.isOpen()) return;
-        frameCounter = (frameCounter + 1) & 0xFF;
+        if (context.state().debug().debugMenu != null
+                && context.state().debug().debugMenu.isOpen()) return;
+        clock.advance();
         // The engine's frame boundary uses scanline zero for non-entity draws.
-        random.beginFrame(frameCounter, 0);
+        random.beginFrame(clock.value(), 0);
 
-        context.musicDirector.tick();
+        context.runtime().flows().music().tick();
 
-        context.screens.currentScreen.tick();
+        context.state().screens().currentScreen.tick();
     }
 
     void cleanup() {
-        context.host.releasePresentation();
-        if (context.services.dialogSoundOutput() != null) {
-            context.services.dialogSoundOutput().close();
-        }
-        if (context.services.musicPlayer() != null) {
-            context.services.musicPlayer().close();
-        }
-
-        context.host.close();
+        context.runtime().shutdown().close();
     }
 
     public void initializeHeadlessNewGame() {
         if (context != null) throw new IllegalStateException("Game already initialized");
         initialize(true);
-        context.services.dialogController().setPlayerName("A");
-        context.saves().startNewGame();
+        context.services().ui().dialogController().setPlayerName("A");
+        context.runtime().flows().saves().startNewGame();
     }
 
     private void initialize(boolean headless) {
-        context = new SessionContext(this, headless);
+        context = SessionWiring.build(random, headlessPcm, clock, opening, sounds, headless);
     }
 
     void onKeyEvent(int key, int action) {
-        context.onKeyEvent(key, action);
+        context.runtime().input().onKeyEvent(key, action);
     }
 
-    private void debugTeleport(Warp destination) {
-        context.debugTeleport(destination);
+    public void debugTeleport(Warp destination) {
+        context.runtime().flows().teleporter().teleport(destination);
     }
 
     SaveCoordinator saves() {
-        return context.saves();
+        return context.runtime().flows().saves();
     }
 
     ScreenRouter router() {
-        return context.router();
+        return context.runtime().flows().router();
     }
 
     RenderStateAssembler renderer() {
-        return context.renderer();
+        return context.runtime().flows().renderer();
     }
 
     InputRouter inputRouter() {
-        return context.inputRouter();
+        return context.runtime().flows().inputRouter();
     }
 
     OpeningStory openingStory() {
-        return context.openingStory();
+        return context.runtime().flows().interactions().story();
     }
 
     GameplaySimulation simulation() {
-        return context.simulation();
+        return context.runtime().flows().simulation();
     }
 
     BushInteraction bushes() {
-        return context.bushes();
+        return context.runtime().flows().interactions().bush();
     }
 
     DialogInteractions dialogs() {
-        return context.dialogs();
+        return context.runtime().flows().interactions().dialogs();
     }
 
     LiftInteraction lifting() {
-        return context.lifting();
+        return context.runtime().flows().interactions().lift();
     }
 }

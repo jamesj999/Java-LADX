@@ -2,7 +2,7 @@ package linksawakening.startup;
 
 import linksawakening.config.AppConfig;
 
-/** Startup coordinator behavior and state. */
+/** Coordinates the starting profile and opening motions associated with MarinEntityHandler and TarinEntityHandler. */
 public final class StartupCoordinator {
 
     public static final int NEW_GAME_START_ROOM_ID = 0x92;

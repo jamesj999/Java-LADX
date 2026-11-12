@@ -13,7 +13,8 @@ final class GameplaySoundEffectMapManboTest {
 
     @Test
     void mapsTheRomManboWarpJingle() throws IOException {
-        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.MANBO_WARP).orElseThrow();
 
