@@ -142,8 +142,8 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
         linkAirborne.elevation().zSubPixels(0);
         linkAirborne.elevation().zVelocity(0);
         linkAirborne.spinningPitWarpArrival(false);
-        linkMotion.forcedSpeedPending = false;
-        linkMotion.forcedSpeedXOnly = false;
+        linkMotion.position().forcedSpeedPending(false);
+        linkMotion.position().forcedSpeedXOnly(false);
         linkDamage.collisionIgnoreFramesRemaining = 0;
         linkItemState.romLinkPushing = 0;
         linkAnimator.pushingAnimationState(-1);

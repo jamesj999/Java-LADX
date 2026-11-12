@@ -470,3 +470,47 @@ Pose selection, overrides, jump/push animation counters and scripted presentatio
 | `UNSHIELDED_WALK_BASE` | `cachePushingAnimation` |
 
 Result: depth 3 → 0; LinkAnimator 449 lines, LinkSpriteComposer 284, LinkPoseTables 52. Pose state and tile buffers are private, and drawing receives selected pose values rather than the animator. Aggregate debug reset moved from frame dispatch to the existing motion command role; game-over completion invokes it before clearing recovery counters in the same order. Full suite: 2,891 tests, zero failures/errors, one skipped.
+
+## Link position and collision
+
+Original chain: LinkMotion → LinkCollisionMotion → LinkPosition.
+
+LinkPosition becomes a final coordinate/speed owner, including room-entry and final-position shadows. LinkCollisionState is the explicit probe/mask/door-warp state shared with room-entry commands. LinkMotion owns collision and ledge orchestration and composes the coordinate owner; no positional arithmetic moves into presentation or public role objects.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `linkAirborne` | `LinkPosition`, `tryMoveAxis`, `leadingEdgeCollisionMask`, `applyDirectionalLedgeCollision`, `applyOverworldLedgeCollision`, `beginOverworldLedgeUnstuckingMotion`, `accessRomSwordCollisionY` |
+| `linkAnimationState` | `LinkPosition`, `applyDirectionalLedgeCollision`, `accessRomCollisionProbePixelX`, `accessRomCollisionProbePixelY` |
+| `linkAnimator` | `LinkPosition`, `applyDirectionalLedgeCollision`, `applyOverworldLedgeCollision`, `beginOverworldLedgeUnstuckingMotion` |
+| `linkControls` | `LinkPosition`, `leadingEdgeCollisionMask`, `applyDirectionalLedgeCollision`, `ledgeUnstuckingPositionBlocked` |
+| `linkDamage` | `LinkPosition`, `leadingEdgeCollisionMask` |
+| `linkEntityEffects` | `LinkPosition`, `tryMoveAxis`, `leadingEdgeCollisionMask`, `applyOverworldLedgeCollision` |
+| `linkEquipment` | `LinkPosition`, `leadingEdgeCollisionMask` |
+| `linkGroundMotion` | `LinkPosition` |
+| `linkItemState` | `LinkPosition`, `leadingEdgeCollisionMask` |
+| `linkServices` | `LinkPosition`, `tryMoveAxis`, `leadingEdgeCollisionMask`, `applyDirectionalLedgeCollision`, `directionalLedgeHalfIsPassable`, `applyOverworldLedgeCollision`, `ledgeUnstuckingPositionBlocked` |
+| `linkSideView` | `LinkPosition`, `setRoomEntryPixelPosition`, `setRoomScrollEntryPixelPosition`, `clearRomPositionIncrement` |
+| `linkStateMachine` | `LinkPosition`, `tryMoveAxis`, `leadingEdgeCollisionMask`, `applyDirectionalLedgeCollision`, `applyOverworldLedgeCollision`, `beginOverworldLedgeUnstuckingMotion` |
+| `subX` | `tryMoveAxis`, `applyOverworldLedgeCollision`, `setPixelPosition`, `setRoomScrollEntryPixelPosition`, `markRoomEntryPosition`, `applyRomFinalPosition`, `captureRomFinalPosition`, `restoreRomFinalPosition`, `restoreRomFinalPositionX`, `pixelX` |
+| `subY` | `tryMoveAxis`, `applyOverworldLedgeCollision`, `beginOverworldLedgeUnstuckingMotion`, `setPixelPosition`, `setRoomScrollEntryPixelPosition`, `markRoomEntryPosition`, `applyRomFinalPosition`, `captureRomFinalPosition`, `restoreRomFinalPosition`, `pixelY` |
+| `lastRomSpeedX` | `applyDirectionalLedgeCollision`, `beginOverworldLedgeUnstuckingMotion`, `clearRomPositionIncrement`, `accessRomSpeedX` |
+| `lastRomSpeedY` | `applyDirectionalLedgeCollision`, `beginOverworldLedgeUnstuckingMotion`, `clearRomPositionIncrement`, `accessRomSpeedY` |
+| `forcedSpeedPending` | `applyRomSpeed`, `applyRomSpeedX`, `clearRomPositionIncrement` |
+| `forcedSpeedXOnly` | `applyRomSpeed`, `applyRomSpeedX`, `clearRomPositionIncrement` |
+| `forcedSpeedX` | `applyRomSpeed`, `applyRomSpeedX`, `clearRomPositionIncrement` |
+| `forcedSpeedY` | `applyRomSpeed`, `clearRomPositionIncrement` |
+| `romCollisionType` | `tryMoveAxis`, `accessRomCollisionType` |
+| `doorWarpPending` | `leadingEdgeCollisionMask`, `markRoomEntryPosition`, `accessConsumeDoorWarp` |
+| `collisionProbePixelX` | `tryMoveAxis`, `accessRomCollisionProbePixelX` |
+| `collisionProbePixelY` | `tryMoveAxis`, `accessRomCollisionProbePixelY` |
+| `lastSafeSubX` |  |
+| `lastSafeSubY` |  |
+| `hasLastSafePosition` |  |
+| `romFinalSubX` | `captureRomFinalPosition`, `restoreRomFinalPosition`, `restoreRomFinalPositionX`, `romFinalPositionX` |
+| `romFinalSubY` | `captureRomFinalPosition`, `restoreRomFinalPosition` |
+| `hasRomFinalPosition` | `captureRomFinalPosition`, `restoreRomFinalPosition`, `restoreRomFinalPositionX`, `romFinalPositionX` |
+| `roomEntrySubX` | `markRoomEntryPosition`, `roomEntryPixelX` |
+| `roomEntrySubY` | `markRoomEntryPosition`, `roomEntryPixelY` |
+| `hasRoomEntryPosition` | `markRoomEntryPosition`, `roomEntryPixelX`, `roomEntryPixelY` |
+
+Result: depth 2 → 0; LinkMotion 389 lines, LinkPosition 347, LinkCollisionState 38. Coordinate and collision fields are private. Two independent position tests check signed-byte integration, fractional final-position shadows and validation before mutation. Full suite: 2,893 tests, zero failures/errors, one skipped.

@@ -159,11 +159,17 @@ final class LinkAirborne {
             int mask = linkControls.get().accessBuildJoypadMask();
             if ((mask & (LinkRomConstants.JOY_RIGHT | LinkRomConstants.JOY_LEFT)) != 0) {
                 int target = linkServices.get().linkMotionTables.airSpeedX(mask & 3);
-                linkMotion.get().lastRomSpeedX = steerAirSpeed(linkMotion.get().lastRomSpeedX, target);
+                linkMotion
+                        .get()
+                        .position()
+                        .lastRomSpeedX(steerAirSpeed(linkMotion.get().position().lastRomSpeedX(), target));
             }
             if ((mask & (LinkRomConstants.JOY_UP | LinkRomConstants.JOY_DOWN)) != 0) {
                 int target = linkServices.get().linkMotionTables.airSpeedY((mask >>> 2) & 3);
-                linkMotion.get().lastRomSpeedY = steerAirSpeed(linkMotion.get().lastRomSpeedY, target);
+                linkMotion
+                        .get()
+                        .position()
+                        .lastRomSpeedY(steerAirSpeed(linkMotion.get().position().lastRomSpeedY(), target));
             }
         }
         // $02:4563 tests hLinkPositionZ, not its fractional byte wC149.
@@ -194,9 +200,9 @@ final class LinkAirborne {
         // ApplyLinkGroundMotion $02:4582-$45AA: room-bottom landings skip
         // ground effects; wells, deep water, lava and pits do not request
         // the footstep noise. Deep-water entry owns its splash request.
-        if (linkMotion.get().accessRomEntityY() >= 0x88) return;
-        int x = linkMotion.get().accessPixelX() + 8;
-        int y = linkMotion.get().accessPixelY() + 12;
+        if (linkMotion.get().position().romEntityY() >= 0x88) return;
+        int x = linkMotion.get().position().pixelX() + 8;
+        int y = linkMotion.get().position().pixelY() + 12;
         if (linkServices.get().collision != null) {
             if (linkServices.get().collision.objectIdAtPoint(x, y) == 0x61) return;
             int physics = linkServices.get().collision.objectPhysicsFlagAtPoint(x, y);
@@ -326,7 +332,7 @@ final class LinkAirborne {
         elevation.zSubPixels(z);
         linkAnimator.get().romAnimationStateOverride(0x6B);
         linkAnimationState.get().movingThisFrame = false;
-        linkMotion.get().lastRomSpeedX = linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().position().lastRomSpeedX(linkMotion.get().position().lastRomSpeedY(0));
         return openForItem;
     }
 }

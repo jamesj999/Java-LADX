@@ -82,17 +82,17 @@ final class LinkRoomPhysics {
 
     /** ApplyRoomTransition's completion path ($02:793D-$7977). */
     void finishRoomScroll(boolean downward) {
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
         linkAirborne.get().elevation().zVelocity(0);
         if (!downward || status.debugNoClip() || linkServices.get().collision == null) {
             return;
         }
         // Run the ordinary downward collision handler, including its ledge
         // half-tile filters, before applying the source's fallback.
-        int probeX = linkMotion.get().pixelX();
-        int probeY = linkMotion.get().pixelY();
-        linkMotion.get().lastRomSpeedY = 0x01;
+        int probeX = linkMotion.get().position().pixelX();
+        int probeY = linkMotion.get().position().pixelY();
+        linkMotion.get().position().lastRomSpeedY(0x01);
         boolean blocked = linkMotion.get().leadingEdgeBlocked(probeX, probeY, Direction.DOWN.javaIndex());
         int object = linkServices
                 .get()
@@ -107,8 +107,8 @@ final class LinkRoomPhysics {
                 && (object == 0xE1 || blocked)) {
             // func_002_6EAD aligns X and enters LINK_MOTION_UNSTUCKING.
             // This transition fallback does not play the ledge jingle.
-            linkMotion.get().subX = (linkMotion.get().romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
-            linkMotion.get().subY -= 8 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subX((linkMotion.get().position().romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT);
+            linkMotion.get().position().subY(linkMotion.get().position().subY() - (8 << Link.SUB_PIXEL_SHIFT));
             status.motionState(LinkMotionState.UNSTUCKING);
             this.physicsModifier(0);
             linkAirborne.get().overworldLedgeFallActive(true);

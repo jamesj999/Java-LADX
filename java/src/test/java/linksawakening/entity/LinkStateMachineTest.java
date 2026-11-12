@@ -20,8 +20,8 @@ final class LinkStateMachineTest {
                 .player(player)
                 .items(null)
                 .build();
-        link.linkMotion.lastRomSpeedX = 0x14;
-        link.linkMotion.lastRomSpeedY = 0xF1;
+        link.linkMotion.position().lastRomSpeedX(0x14);
+        link.linkMotion.position().lastRomSpeedY(0xF1);
         link.linkDamage.hurtBySpikes();
         assertEquals(0xEC, link.position().romSpeedX());
         assertEquals(0x0F, link.position().romSpeedY());
@@ -67,13 +67,17 @@ final class LinkStateMachineTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;
-        link.linkMotion.subY = (80 << Link.SUB_PIXEL_SHIFT) + 5;
+        link.linkMotion.position().subX((148 << Link.SUB_PIXEL_SHIFT) + 10);
+        link.linkMotion.position().subY((80 << Link.SUB_PIXEL_SHIFT) + 5);
         link.position().setRoomScrollEntryPixelPosition(3, 80);
-        assertEquals((3 << Link.SUB_PIXEL_SHIFT) + 10, link.linkMotion.subX);
-        assertEquals((80 << Link.SUB_PIXEL_SHIFT) + 5, link.linkMotion.subY);
-        assertEquals(link.linkMotion.subX, link.linkMotion.roomEntrySubX);
-        assertEquals(link.linkMotion.subY, link.linkMotion.roomEntrySubY);
+        assertEquals(
+                (3 << Link.SUB_PIXEL_SHIFT) + 10, link.linkMotion.position().subX());
+        assertEquals(
+                (80 << Link.SUB_PIXEL_SHIFT) + 5, link.linkMotion.position().subY());
+        assertEquals(
+                link.linkMotion.position().subX(), link.linkMotion.position().roomEntrySubX());
+        assertEquals(
+                link.linkMotion.position().subY(), link.linkMotion.position().roomEntrySubY());
         assertEquals(11, link.position().roomEntryRomPositionX());
         assertEquals(96, link.position().roomEntryRomPositionY());
     }
@@ -99,7 +103,7 @@ final class LinkStateMachineTest {
         assertEquals(1, player.vitals().invincibilityCounter());
         assertEquals(64, link.position().pixelX());
         assertEquals(0, link.position().romSpeedX());
-        assertTrue(link.linkMotion.forcedSpeedPending);
+        assertTrue(link.linkMotion.position().forcedSpeedPending());
     }
 
     @Test

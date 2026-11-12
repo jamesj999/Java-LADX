@@ -130,8 +130,8 @@ final class LinkDash {
             this.pegasusBootsChargeMeter(this.pegasusBootsChargeMeter() + 1);
             if (this.pegasusBootsChargeMeter() == LinkRomConstants.PEGASUS_BOOTS_MAX_CHARGE) {
                 linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(true);
-                linkMotion.get().forcedSpeedPending = false;
-                linkMotion.get().forcedSpeedXOnly = false;
+                linkMotion.get().position().forcedSpeedPending(false);
+                linkMotion.get().position().forcedSpeedXOnly(false);
                 break;
             }
         }
@@ -157,18 +157,18 @@ final class LinkDash {
     void handlePegasusBootsCollision() {
         if (linkServices.get().playerState == null
                 || !linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
-                || (linkMotion.get().romCollisionType & 0x0F) == 0) {
+                || (linkMotion.get().collisionState().romCollisionType() & 0x0F) == 0) {
             return;
         }
 
-        int reflectedSpeedX = (-Link.signedByte(linkMotion.get().lastRomSpeedX)) >> 2;
-        int reflectedSpeedY = (-Link.signedByte(linkMotion.get().lastRomSpeedY)) >> 2;
+        int reflectedSpeedX = (-Link.signedByte(linkMotion.get().position().lastRomSpeedX())) >> 2;
+        int reflectedSpeedY = (-Link.signedByte(linkMotion.get().position().lastRomSpeedY())) >> 2;
         resetPegasusBoots();
-        linkMotion.get().forcedSpeedX = reflectedSpeedX;
-        linkMotion.get().forcedSpeedY = reflectedSpeedY;
-        linkMotion.get().forcedSpeedPending = true;
-        linkMotion.get().lastRomSpeedX = reflectedSpeedX & 0xFF;
-        linkMotion.get().lastRomSpeedY = reflectedSpeedY & 0xFF;
+        linkMotion.get().position().forcedSpeedX(reflectedSpeedX);
+        linkMotion.get().position().forcedSpeedY(reflectedSpeedY);
+        linkMotion.get().position().forcedSpeedPending(true);
+        linkMotion.get().position().lastRomSpeedX(reflectedSpeedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(reflectedSpeedY & 0xFF);
         linkAirborne.get().elevation().airborne(true);
         linkAirborne.get().elevation().zSubPixels(0);
         linkAirborne.get().elevation().zVelocity(LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z);
@@ -176,8 +176,8 @@ final class LinkDash {
         int romDirection = linkAnimationState.get().direction.romIndex();
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
-        this.pegasusBootsCollisionPosX((linkMotion.get().romEntityX() + xOffsets[romDirection]) & 0xFF);
-        this.pegasusBootsCollisionPosY((linkMotion.get().romEntityY() + yOffsets[romDirection]) & 0xFF);
+        this.pegasusBootsCollisionPosX((linkMotion.get().position().romEntityX() + xOffsets[romDirection]) & 0xFF);
+        this.pegasusBootsCollisionPosY((linkMotion.get().position().romEntityY() + yOffsets[romDirection]) & 0xFF);
         this.pegasusBootsCollisionCountdown(LinkRomConstants.PEGASUS_BOOTS_COLLISION_COUNTDOWN);
         this.pendingPegasusScreenShakeCountdown(LinkRomConstants.PEGASUS_BOOTS_COLLISION_SHAKE);
         this.pendingPegasusScreenShakePhase((romDirection & 0x02) << 1);

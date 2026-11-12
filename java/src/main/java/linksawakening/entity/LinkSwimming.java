@@ -51,7 +51,8 @@ final class LinkSwimming {
                 .get()
                 .collision
                 .objectPhysicsFlagAtPoint(
-                        linkMotion.get().accessPixelX() + 8, linkMotion.get().accessPixelY() + 12);
+                        linkMotion.get().position().pixelX() + 8,
+                        linkMotion.get().position().pixelY() + 12);
         if (flag != 7 && flag != 0x0B) return false;
         if (linkStateMachine.get().status().slowWalkingSpeed() != 0) {
             applyWaterCurrent();
@@ -64,15 +65,17 @@ final class LinkSwimming {
                 .get()
                 .collision
                 .objectIdAtPoint(
-                        linkMotion.get().accessPixelX() + 8, linkMotion.get().accessPixelY() + 12);
+                        linkMotion.get().position().pixelX() + 8,
+                        linkMotion.get().position().pixelY() + 12);
         linkSignals.get().pendingWaterSplash = new Link.WaterSplash(
-                linkMotion.get().accessRomEntityX(), (linkMotion.get().accessRomEntityY() - 2) & 0xFF);
+                linkMotion.get().position().romEntityX(),
+                (linkMotion.get().position().romEntityY() - 2) & 0xFF);
         linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
         if (object == 6 || !linkControls.get().accessPlayerHasFlippers()) {
             linkStateMachine.get().status().recoverCountdown(0x50);
             linkStateMachine.get().status().motionState(LinkMotionState.RECOVER);
             linkStateMachine.get().roomPhysics().physicsModifier(object);
-            linkMotion.get().subY += 2 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subY(linkMotion.get().position().subY() + (2 << Link.SUB_PIXEL_SHIFT));
             linkStateMachine.get().status().recoveringInWater(true);
             return true;
         }
@@ -92,8 +95,8 @@ final class LinkSwimming {
                 .get()
                 .linkMotionTables
                 .swimmingEntrySpeedY(linkAnimationState.get().direction.romIndex());
-        linkMotion.get().lastRomSpeedX = swimmingSpeedX & 0xFF;
-        linkMotion.get().lastRomSpeedY = swimmingSpeedY & 0xFF;
+        linkMotion.get().position().lastRomSpeedX(swimmingSpeedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(swimmingSpeedY & 0xFF);
         return true;
     }
 
@@ -103,7 +106,8 @@ final class LinkSwimming {
                 .get()
                 .collision
                 .objectIdAtPoint(
-                        linkMotion.get().accessPixelX() + 8, linkMotion.get().accessPixelY() + 12);
+                        linkMotion.get().position().pixelX() + 8,
+                        linkMotion.get().position().pixelY() + 12);
         int index = object - 0xE7;
         if (object == 0x0E) {
             index = switch (linkStateMachine.get().roomPhysics().physicsRoomId()) {
@@ -116,8 +120,8 @@ final class LinkSwimming {
         if (index < 0) return;
         int x = linkServices.get().linkMotionTables.waterCurrentSpeedX(index);
         int y = linkServices.get().linkMotionTables.waterCurrentSpeedY(index);
-        linkMotion.get().lastRomSpeedX = x & 255;
-        linkMotion.get().lastRomSpeedY = y & 255;
+        linkMotion.get().position().lastRomSpeedX(x & 255);
+        linkMotion.get().position().lastRomSpeedY(y & 255);
         if (x != 0) linkMotion.get().tryMoveAxis(x, true);
         if (y != 0) linkMotion.get().tryMoveAxis(y, false);
     }
@@ -126,7 +130,7 @@ final class LinkSwimming {
         if (linkServices.get().itemRegistry != null
                 && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
-        linkMotion.get().lastRomSpeedX = linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().position().lastRomSpeedX(linkMotion.get().position().lastRomSpeedY(0));
         linkAnimationState.get().movingThisFrame = false;
         if (linkStateMachine.get().status().recoverCountdown() > 0)
             linkStateMachine
@@ -149,13 +153,13 @@ final class LinkSwimming {
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         if (!linkServices.get().collision.usesIndoorPhysicsTable()
                 && linkStateMachine.get().roomPhysics().physicsRoomId() == 0x2B) {
-            linkMotion.get().roomEntrySubX = (0x48 - 8) << Link.SUB_PIXEL_SHIFT;
-            linkMotion.get().roomEntrySubY = (0x30 - 16) << Link.SUB_PIXEL_SHIFT;
-            linkMotion.get().hasRoomEntryPosition = true;
+            linkMotion.get().position().roomEntrySubX((0x48 - 8) << Link.SUB_PIXEL_SHIFT);
+            linkMotion.get().position().roomEntrySubY((0x30 - 16) << Link.SUB_PIXEL_SHIFT);
+            linkMotion.get().position().hasRoomEntryPosition(true);
         }
-        if (linkMotion.get().hasRoomEntryPosition) {
-            linkMotion.get().subX = linkMotion.get().roomEntrySubX;
-            linkMotion.get().subY = linkMotion.get().roomEntrySubY;
+        if (linkMotion.get().position().hasRoomEntryPosition()) {
+            linkMotion.get().position().subX(linkMotion.get().position().roomEntrySubX());
+            linkMotion.get().position().subY(linkMotion.get().position().roomEntrySubY());
         }
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkAnimator.get().romAnimationStateOverride(-1);
@@ -167,7 +171,8 @@ final class LinkSwimming {
                         .get()
                         .collision
                         .linkOnDeepWater(
-                                linkMotion.get().pixelX(), linkMotion.get().pixelY())) {
+                                linkMotion.get().position().pixelX(),
+                                linkMotion.get().position().pixelY())) {
             leaveSwimming();
             return;
         }
@@ -213,8 +218,8 @@ final class LinkSwimming {
             linkAnimationState.get().movingThisFrame = false;
             linkAnimationState.get().walkTickCounter = 0;
             linkAnimationState.get().walkFrame = 0;
-            linkMotion.get().lastRomSpeedX = 0;
-            linkMotion.get().lastRomSpeedY = 0;
+            linkMotion.get().position().lastRomSpeedX(0);
+            linkMotion.get().position().lastRomSpeedY(0);
             return;
         }
 
@@ -222,11 +227,11 @@ final class LinkSwimming {
     }
 
     private void advanceSwimmingMotion(int mask) {
-        if (linkMotion.get().forcedSpeedPending) {
-            swimmingSpeedX = linkMotion.get().forcedSpeedX;
-            swimmingSpeedY = linkMotion.get().forcedSpeedY;
-            linkMotion.get().forcedSpeedPending = false;
-            linkMotion.get().forcedSpeedXOnly = false;
+        if (linkMotion.get().position().forcedSpeedPending()) {
+            swimmingSpeedX = linkMotion.get().position().forcedSpeedX();
+            swimmingSpeedY = linkMotion.get().position().forcedSpeedY();
+            linkMotion.get().position().forcedSpeedPending(false);
+            linkMotion.get().position().forcedSpeedXOnly(false);
         } else if ((linkStateMachine.get().status().frameCounter() & 0x01) == 0) {
             boolean fast = swimmingFastCountdown >= 0x10;
             int targetX = linkServices.get().linkMotionTables.swimmingSpeedX(mask, fast);
@@ -235,8 +240,8 @@ final class LinkSwimming {
             swimmingSpeedY = approachSignedSpeed(swimmingSpeedY, targetY);
         }
 
-        linkMotion.get().lastRomSpeedX = swimmingSpeedX & 0xFF;
-        linkMotion.get().lastRomSpeedY = swimmingSpeedY & 0xFF;
+        linkMotion.get().position().lastRomSpeedX(swimmingSpeedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(swimmingSpeedY & 0xFF);
         linkAnimationState.get().movingThisFrame = swimmingSpeedX != 0 || swimmingSpeedY != 0;
         if (swimmingSpeedX != 0) {
             linkMotion.get().tryMoveAxis(swimmingSpeedX, true);
@@ -248,7 +253,9 @@ final class LinkSwimming {
         if (!linkServices
                 .get()
                 .collision
-                .linkOnDeepWater(linkMotion.get().pixelX(), linkMotion.get().pixelY())) {
+                .linkOnDeepWater(
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY())) {
             leaveSwimming();
             return;
         }

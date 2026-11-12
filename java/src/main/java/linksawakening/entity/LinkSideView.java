@@ -72,10 +72,14 @@ final class LinkSideView {
         if (!linkAirborne.get().elevation().airborne() && linkEquipment.get().itemsBlockMotion()) return;
         boolean recoiling = linkDamage.get().collisionIgnoreFramesRemaining > 0;
         boolean ladderFrame = sideViewModifier == 1;
-        if (linkMotion.get().forcedSpeedPending) {
-            sideViewSpeedX = linkMotion.get().forcedSpeedX;
-            if (!linkMotion.get().forcedSpeedXOnly) sideViewSpeedY = linkMotion.get().forcedSpeedY;
-            linkMotion.get().forcedSpeedPending = linkMotion.get().forcedSpeedXOnly = false;
+        if (linkMotion.get().position().forcedSpeedPending()) {
+            sideViewSpeedX = linkMotion.get().position().forcedSpeedX();
+            if (!linkMotion.get().position().forcedSpeedXOnly())
+                sideViewSpeedY = linkMotion.get().position().forcedSpeedY();
+            linkMotion
+                    .get()
+                    .position()
+                    .forcedSpeedPending(linkMotion.get().position().forcedSpeedXOnly(false));
         }
         if (recoiling) {
             linkDamage.get().collisionIgnoreFramesRemaining--;
@@ -108,7 +112,8 @@ final class LinkSideView {
 
     private void finishSideViewMotion(int platformSpeedY, int mask, boolean recoiling, boolean ladderFrame) {
         if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
-        int oldX = linkMotion.get().subX, oldY = linkMotion.get().subY;
+        int oldX = linkMotion.get().position().subX(),
+                oldY = linkMotion.get().position().subY();
         moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
         int centerPhysics = linkServices.get().collision == null
                 ? 0
@@ -116,7 +121,8 @@ final class LinkSideView {
                         .get()
                         .collision
                         .objectPhysicsFlagAtPoint(
-                                linkMotion.get().romEntityX(), linkMotion.get().romEntityY() - 5);
+                                linkMotion.get().position().romEntityX(),
+                                linkMotion.get().position().romEntityY() - 5);
         if (!recoiling) {
             if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
             else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0) sideViewModifier = 1;
@@ -149,9 +155,10 @@ final class LinkSideView {
             linkServices.get().soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
         }
         linkAirborne.get().elevation().zSubPixels(linkAirborne.get().elevation().zVelocity(0));
-        linkMotion.get().lastRomSpeedX = sideViewSpeedX & 255;
-        linkMotion.get().lastRomSpeedY = sideViewSpeedY & 255;
-        linkAnimationState.get().movingThisFrame = linkMotion.get().subX != oldX || linkMotion.get().subY != oldY;
+        linkMotion.get().position().lastRomSpeedX(sideViewSpeedX & 255);
+        linkMotion.get().position().lastRomSpeedY(sideViewSpeedY & 255);
+        linkAnimationState.get().movingThisFrame = linkMotion.get().position().subX() != oldX
+                || linkMotion.get().position().subY() != oldY;
         if (linkAnimationState.get().movingThisFrame) linkAnimationState.get().accessTickAnimation();
         else linkAnimationState.get().walkTickCounter = linkAnimationState.get().walkFrame = 0;
         // Side-view falling uses the normal airborne pose, not a Z-axis flip.
@@ -159,21 +166,26 @@ final class LinkSideView {
     }
 
     void moveSideViewAndCollide(int speedX, int speedY, int mask) {
-        int oldX = linkMotion.get().subX, oldY = linkMotion.get().subY;
-        linkMotion.get().subX += speedX;
-        linkMotion.get().subY += speedY;
+        int oldX = linkMotion.get().position().subX(),
+                oldY = linkMotion.get().position().subY();
+        linkMotion.get().position().subX(linkMotion.get().position().subX() + (speedX));
+        linkMotion.get().position().subY(linkMotion.get().position().subY() + (speedY));
         sideViewGrounded = standingOnSideViewEntity;
         if (linkServices.get().collision == null
-                || linkMotion.get().romEntityX() < 4
-                || linkMotion.get().romEntityX() >= 156
-                || linkMotion.get().romEntityY() < 12
-                || linkMotion.get().romEntityY() >= 128) return;
-        int x = linkMotion.get().romEntityX(), y = linkMotion.get().romEntityY();
+                || linkMotion.get().position().romEntityX() < 4
+                || linkMotion.get().position().romEntityX() >= 156
+                || linkMotion.get().position().romEntityY() < 12
+                || linkMotion.get().position().romEntityY() >= 128) return;
+        int x = linkMotion.get().position().romEntityX(),
+                y = linkMotion.get().position().romEntityY();
         if (speedX != 0
                 && (sideViewSolidAt(x + (speedX > 0 ? 3 : -3), y - 8)
                         || linkServices.get().collision.objectIdAtPoint(x + (speedX > 0 ? 3 : -3), y - 8) == 0xFF)) {
-            linkMotion.get().subX = oldX;
-            linkMotion.get().romCollisionType |= speedX > 0 ? 1 : 2;
+            linkMotion.get().position().subX(oldX);
+            linkMotion
+                    .get()
+                    .collisionState()
+                    .romCollisionType(linkMotion.get().collisionState().romCollisionType() | (speedX > 0 ? 1 : 2));
         }
         int sampleY = y + (speedY < 0 ? -12 : 0);
         int object = linkServices.get().collision.objectIdAtPoint(x, sampleY);
@@ -183,13 +195,23 @@ final class LinkSideView {
                 && (object == 0x62 || object == 0x64 || object == 0x66);
         if (sideViewSolidAt(x, sampleY) || ladderTop) {
             if (speedY >= 0) {
-                linkMotion.get().subY = (((y & ~15) - 16) << Link.SUB_PIXEL_SHIFT) | (linkMotion.get().subY & 15);
+                linkMotion
+                        .get()
+                        .position()
+                        .subY((((y & ~15) - 16) << Link.SUB_PIXEL_SHIFT)
+                                | (linkMotion.get().position().subY() & 15));
                 sideViewSpeedY = 0;
                 sideViewGrounded = true;
-                linkMotion.get().romCollisionType |= 8;
+                linkMotion
+                        .get()
+                        .collisionState()
+                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | (8));
             } else {
-                linkMotion.get().subY = oldY;
-                linkMotion.get().romCollisionType |= 4;
+                linkMotion.get().position().subY(oldY);
+                linkMotion
+                        .get()
+                        .collisionState()
+                        .romCollisionType(linkMotion.get().collisionState().romCollisionType() | (4));
             }
         }
     }
@@ -207,17 +229,25 @@ final class LinkSideView {
         Link.validateRomByte(romPositionY, "Side-view platform Link Y");
         Link.validateRomByte(romSpeedY, "Side-view platform Link Y speed");
 
-        int currentRomX = linkMotion.get().romEntityX() & 0xFF;
+        int currentRomX = linkMotion.get().position().romEntityX() & 0xFF;
         int nextRomX = (currentRomX + horizontalDelta) & 0xFF;
         int nextTopLeftX = (nextRomX - 0x08) & 0xFF;
         int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
-        linkMotion.get().subX = (nextTopLeftX << Link.SUB_PIXEL_SHIFT) | (linkMotion.get().subX & 0x0F);
-        linkMotion.get().subY = (nextTopLeftY << Link.SUB_PIXEL_SHIFT) | (linkMotion.get().subY & 0x0F);
+        linkMotion
+                .get()
+                .position()
+                .subX((nextTopLeftX << Link.SUB_PIXEL_SHIFT)
+                        | (linkMotion.get().position().subX() & 0x0F));
+        linkMotion
+                .get()
+                .position()
+                .subY((nextTopLeftY << Link.SUB_PIXEL_SHIFT)
+                        | (linkMotion.get().position().subY() & 0x0F));
         standingOnSideViewEntity = standing;
         // The platform handler writes hLinkSpeedY as an HRAM observation for
         // this frame and for one subsequent vertical movement attempt. It
         // never queues horizontal movement.
-        linkMotion.get().lastRomSpeedY = romSpeedY & 0xFF;
+        linkMotion.get().position().lastRomSpeedY(romSpeedY & 0xFF);
         sideViewPlatformVerticalSpeedPending = standing ? romSpeedY & 0xFF : -1;
     }
 
@@ -241,9 +271,13 @@ final class LinkSideView {
         Link.validateRomByte(romPositionY, "Side-view pot Link Y");
         Link.validateRomByte(romSpeedY, "Side-view pot Link Y speed");
         int nextTopLeftY = (romPositionY - 0x10) & 0xFF;
-        linkMotion.get().subY = (nextTopLeftY << Link.SUB_PIXEL_SHIFT) | (linkMotion.get().subY & 0x0F);
+        linkMotion
+                .get()
+                .position()
+                .subY((nextTopLeftY << Link.SUB_PIXEL_SHIFT)
+                        | (linkMotion.get().position().subY() & 0x0F));
         standingOnSideViewEntity = true;
-        linkMotion.get().lastRomSpeedY = romSpeedY;
+        linkMotion.get().position().lastRomSpeedY(romSpeedY);
         sideViewPlatformVerticalSpeedPending = romSpeedY;
     }
 

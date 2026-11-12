@@ -73,8 +73,8 @@ final class LinkEntityEffects {
         }
         likeLikeCaptureSubX = ((romEntityX - 0x08) & 0xFF) << Link.SUB_PIXEL_SHIFT;
         likeLikeCaptureSubY = ((romEntityY - 0x10) & 0xFF) << Link.SUB_PIXEL_SHIFT;
-        linkMotion.get().subX = likeLikeCaptureSubX;
-        linkMotion.get().subY = likeLikeCaptureSubY;
+        linkMotion.get().position().subX(likeLikeCaptureSubX);
+        linkMotion.get().position().subY(likeLikeCaptureSubY);
         linkAirborne.get().elevation().airborne(false);
         linkAirborne.get().elevation().zSubPixels(0);
         linkAirborne.get().elevation().zVelocity(0);
@@ -87,11 +87,11 @@ final class LinkEntityEffects {
         linkSwimming.get().swimmingFastCountdown = 0;
         linkSwimming.get().divingCountdown = 0;
         linkAnimationState.get().movingThisFrame = false;
-        linkMotion.get().romCollisionType = 0;
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkMotion.get().collisionState().romCollisionType(0);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     /** Releases Link when the swallowed Like Like handler accepts A or B. */
@@ -137,7 +137,7 @@ final class LinkEntityEffects {
         linkStateMachine.get().roomPhysics().physicsModifier(0);
         roosterCarryActive = true;
         linkAnimationState.get().direction = Direction.fromRom(romDirection);
-        linkMotion.get().applyRomSpeed(speedX, speedY);
+        linkMotion.get().position().applyRomSpeed(speedX, speedY);
     }
 
     /** Applies Hinox's held position; only the source's countdown sets blocking. */
@@ -178,7 +178,7 @@ final class LinkEntityEffects {
         Link.validateRomByte(speedY, "Hinox Link Y speed");
         Link.validateRomByte(velocityZ, "Hinox Link Z velocity");
         Link.validateRomByte(airborneState, "Hinox Link linkAirborne.get().airborne state");
-        linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
+        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(motionBlocked);
         if (applyHeldLinkPose) {
             linkAnimator.get().romAnimationStateOverride(0x6A);
@@ -190,7 +190,7 @@ final class LinkEntityEffects {
         linkAirborne.get().elevation().zVelocity(velocityZ & 0xFF);
         linkAirborne.get().elevation().airborne(airborneState != 0);
         if (speedX != 0 || speedY != 0) {
-            linkMotion.get().applyRomSpeed(speedX, speedY);
+            linkMotion.get().position().applyRomSpeed(speedX, speedY);
         }
     }
 
@@ -199,7 +199,7 @@ final class LinkEntityEffects {
         Link.validateRomByte(romPositionX, "Warp Link X");
         Link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
         Link.validateRomByte(immunityCountdown, "Warp Link immunity");
-        linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
+        linkMotion.get().position().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         linkAnimator.get().romAnimationStateOverride(-1);
         linkItemState.get().romAttackStepAnimationCountdown = 0;
@@ -235,10 +235,10 @@ final class LinkEntityEffects {
         linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
         linkAirborne.get().pit().fallingIntoPit(false);
         linkAnimationState.get().direction = Direction.RIGHT;
-        linkMotion.get().lastRomSpeedX = 0x0C;
-        linkMotion.get().lastRomSpeedY = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkMotion.get().position().lastRomSpeedX(0x0C);
+        linkMotion.get().position().lastRomSpeedY(0);
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     /** Ends Rooster's custom linkAirborne.airborne carry state when it is thrown or cleared. */
@@ -251,8 +251,8 @@ final class LinkEntityEffects {
         linkAirborne.get().pit().fallingIntoPit(false);
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkStateMachine.get().roomPhysics().physicsModifier(0);
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().forcedSpeedXOnly(false);
     }
 
     boolean accessIsLikeLikeCaptured() {

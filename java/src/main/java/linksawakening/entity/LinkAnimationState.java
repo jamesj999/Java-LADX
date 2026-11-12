@@ -40,7 +40,7 @@ final class LinkAnimationState {
                     case RIGHT -> COLLISION_TYPE_RIGHT;
                     default -> 0;
                 };
-        return (linkMotion.get().romCollisionType & flag) != 0;
+        return (linkMotion.get().collisionState().romCollisionType() & flag) != 0;
     }
 
     int accessDirection() {

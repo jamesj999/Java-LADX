@@ -88,9 +88,9 @@ final class LinkRecovery {
         if (linkServices.get().playerState != null)
             linkServices.get().playerState.vitals().setInvincibilityCounter(0);
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
         linkAnimationState.get().movingThisFrame = false;
     }
 

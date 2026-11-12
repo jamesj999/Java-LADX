@@ -105,7 +105,7 @@ final class LinkStateMachine {
                 .ledgeJumpRenderY(
                         linkAirborne.get().overworldLedgeFallActive()
                                         || linkAirborne.get().directionalLedgeJumpMotionLocked()
-                                ? linkMotion.get().accessPixelY()
+                                ? linkMotion.get().position().pixelY()
                                         - linkAirborne.get().accessZPixels()
                                 : Integer.MIN_VALUE);
         status.frameCounter((status.frameCounter() + 1) & 0xFF);
@@ -113,13 +113,13 @@ final class LinkStateMachine {
             dash.pegasusBootsCollisionCountdown(dash.pegasusBootsCollisionCountdown() - 1);
         }
         linkEquipment.get().tickRomAttackStepAnimationCountdown();
-        frame.carriedSpeedX = (byte) linkMotion.get().lastRomSpeedX;
-        frame.carriedSpeedY = (byte) linkMotion.get().lastRomSpeedY;
+        frame.carriedSpeedX = (byte) linkMotion.get().position().lastRomSpeedX();
+        frame.carriedSpeedY = (byte) linkMotion.get().position().lastRomSpeedY();
         frame.featherLaunchFrame = linkAnimationState.get().topDownFeatherStarted;
         linkAnimationState.get().topDownFeatherStarted = false;
-        linkMotion.get().romCollisionType = 0;
-        linkMotion.get().lastRomSpeedX = 0;
-        linkMotion.get().lastRomSpeedY = 0;
+        linkMotion.get().collisionState().romCollisionType(0);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
         frame.platformVerticalSpeedForThisUpdate = linkSideView.get().sideViewPlatformVerticalSpeedPending;
         linkSideView.get().sideViewPlatformVerticalSpeedPending = -1;
         linkDamage.get().tickInvincibility();
@@ -171,8 +171,8 @@ final class LinkStateMachine {
             // $02:4511 clears XY increments; $02:478C selects facing globally.
             linkAnimationState.get().direction = Direction.fromRom(
                     linkServices.get().linkMotionTables.pitWarpArrivalDirection(status.frameCounter()));
-            linkMotion.get().forcedSpeedPending = false;
-            linkMotion.get().forcedSpeedXOnly = false;
+            linkMotion.get().position().forcedSpeedPending(false);
+            linkMotion.get().position().forcedSpeedXOnly(false);
             linkAnimationState.get().movingThisFrame = false;
             linkAirborne.get().tickJump();
             return false;
@@ -188,8 +188,8 @@ final class LinkStateMachine {
 
     private boolean advanceHazardMotion() {
         if (linkEntityEffects.get().likeLikeCaptured && linkEntityEffects.get().likeLikeCapturePinsPosition) {
-            linkMotion.get().subX = linkEntityEffects.get().likeLikeCaptureSubX;
-            linkMotion.get().subY = linkEntityEffects.get().likeLikeCaptureSubY;
+            linkMotion.get().position().subX(linkEntityEffects.get().likeLikeCaptureSubX);
+            linkMotion.get().position().subY(linkEntityEffects.get().likeLikeCaptureSubY);
             linkAirborne.get().elevation().airborne(false);
             linkAirborne.get().elevation().zSubPixels(0);
             linkAirborne.get().elevation().zVelocity(0);
@@ -205,8 +205,8 @@ final class LinkStateMachine {
         }
 
         if (linkAirborne.get().overworldLedgeFallActive()) {
-            linkMotion.get().lastRomSpeedX = frame.carriedSpeedX & 0xFF;
-            linkMotion.get().lastRomSpeedY = frame.carriedSpeedY & 0xFF;
+            linkMotion.get().position().lastRomSpeedX(frame.carriedSpeedX & 0xFF);
+            linkMotion.get().position().lastRomSpeedY(frame.carriedSpeedY & 0xFF);
             if (roomPhysics.physicsModifier() == 0) linkMotion.get().beginOverworldLedgeUnstuckingMotion();
             linkAirborne.get().tickOverworldLedgeFall();
             return false;
@@ -304,13 +304,13 @@ final class LinkStateMachine {
                 && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
             frame.speedX = dash.pegasusRunningSpeedX();
             frame.speedY = dash.pegasusRunningSpeedY();
-        } else if (linkMotion.get().forcedSpeedPending) {
-            frame.speedX = linkMotion.get().forcedSpeedX;
-            frame.speedY = linkMotion.get().forcedSpeedXOnly
+        } else if (linkMotion.get().position().forcedSpeedPending()) {
+            frame.speedX = linkMotion.get().position().forcedSpeedX();
+            frame.speedY = linkMotion.get().position().forcedSpeedXOnly()
                     ? (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(frame.mask))
-                    : linkMotion.get().forcedSpeedY;
-            linkMotion.get().forcedSpeedPending = false;
-            linkMotion.get().forcedSpeedXOnly = false;
+                    : linkMotion.get().position().forcedSpeedY();
+            linkMotion.get().position().forcedSpeedPending(false);
+            linkMotion.get().position().forcedSpeedXOnly(false);
         } else if (linkAirborne.get().elevation().airborne() && !frame.featherLaunchFrame) {
             // $02:4402 skips the ground speed lookup while airborne.
             // ApplyLinkGroundMotion steers these retained speeds after XY.
@@ -342,8 +342,8 @@ final class LinkStateMachine {
             linkAnimator.get().bedJumpRenderZ(linkAirborne.get().accessZPixels());
             linkAirborne.get().tickJump();
         }
-        linkMotion.get().lastRomSpeedX = frame.speedX & 0xFF;
-        linkMotion.get().lastRomSpeedY = frame.speedY & 0xFF;
+        linkMotion.get().position().lastRomSpeedX(frame.speedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(frame.speedY & 0xFF);
         linkAnimationState.get().movingThisFrame = (frame.speedX != 0 || frame.speedY != 0);
         boolean applyGroundMotion = status.gelClinging()
                 ? (status.gelMotionFrame() & 3) == 0
@@ -408,11 +408,11 @@ final class LinkStateMachine {
         }
         int speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(mask));
         int speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(mask));
-        linkMotion.get().lastRomSpeedX = speedX & 0xFF;
-        linkMotion.get().lastRomSpeedY = speedY & 0xFF;
+        linkMotion.get().position().lastRomSpeedX(speedX & 0xFF);
+        linkMotion.get().position().lastRomSpeedY(speedY & 0xFF);
         linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;
-        linkMotion.get().subX += speedX;
-        linkMotion.get().subY += speedY;
+        linkMotion.get().position().subX(linkMotion.get().position().subX() + (speedX));
+        linkMotion.get().position().subY(linkMotion.get().position().subY() + (speedY));
         if (linkAnimationState.get().movingThisFrame) {
             linkAnimationState.get().walkTickCounter++;
             if (linkAnimationState.get().walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {

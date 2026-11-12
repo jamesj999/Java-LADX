@@ -114,7 +114,9 @@ final class LinkPitFall {
                 && linkServices
                         .get()
                         .collision
-                        .linkOnPit(linkMotion.get().pixelX(), linkMotion.get().pixelY());
+                        .linkOnPit(
+                                linkMotion.get().position().pixelX(),
+                                linkMotion.get().position().pixelY());
     }
 
     void refreshGroundStatus() {
@@ -123,7 +125,8 @@ final class LinkPitFall {
                     .get()
                     .collision
                     .refreshLinkGroundInteraction(
-                            linkMotion.get().pixelX(), linkMotion.get().pixelY());
+                            linkMotion.get().position().pixelX(),
+                            linkMotion.get().position().pixelY());
         }
         // ApplyLinkGroundPhysics ($02:75CA-75D4) bypasses the solid
         // physics byte for OBJECT_WELL and enters the fall without slipping.
@@ -133,8 +136,8 @@ final class LinkPitFall {
                                 .get()
                                 .collision
                                 .objectUnderLinkFeet(
-                                        linkMotion.get().accessPixelX(),
-                                        linkMotion.get().accessPixelY())
+                                        linkMotion.get().position().pixelX(),
+                                        linkMotion.get().position().pixelY())
                         == 0x61) {
             if (!this.fallingIntoPit()) {
                 this.pitSlipPhysicsFlag(PhysicsFlags.SOLID);
@@ -157,7 +160,8 @@ final class LinkPitFall {
                             .get()
                             .collision
                             .normalPitUnderLink(
-                                    linkMotion.get().pixelX(), linkMotion.get().pixelY());
+                                    linkMotion.get().position().pixelX(),
+                                    linkMotion.get().position().pixelY());
             if (pit != null) {
                 this.pitSlipTargetTopLeftX(pit.targetTopLeftX());
                 this.pitSlipTargetTopLeftY(pit.targetTopLeftY());
@@ -179,21 +183,21 @@ final class LinkPitFall {
             return;
         }
 
-        int x = linkMotion.get().pixelX();
-        int y = linkMotion.get().pixelY();
+        int x = linkMotion.get().position().pixelX();
+        int y = linkMotion.get().position().pixelY();
         if (x < this.pitSlipTargetTopLeftX()) {
-            linkMotion.get().subX += 1 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subX(linkMotion.get().position().subX() + (1 << Link.SUB_PIXEL_SHIFT));
         } else if (x > this.pitSlipTargetTopLeftX()) {
-            linkMotion.get().subX -= 1 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subX(linkMotion.get().position().subX() - (1 << Link.SUB_PIXEL_SHIFT));
         }
         if (y < this.pitSlipTargetTopLeftY()) {
-            linkMotion.get().subY += 1 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subY(linkMotion.get().position().subY() + (1 << Link.SUB_PIXEL_SHIFT));
         } else if (y > this.pitSlipTargetTopLeftY()) {
-            linkMotion.get().subY -= 1 << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subY(linkMotion.get().position().subY() - (1 << Link.SUB_PIXEL_SHIFT));
         }
 
-        if (Math.abs(linkMotion.get().pixelX() - this.pitSlipTargetTopLeftX()) <= 1
-                && Math.abs(linkMotion.get().pixelY() - this.pitSlipTargetTopLeftY()) <= 1) {
+        if (Math.abs(linkMotion.get().position().pixelX() - this.pitSlipTargetTopLeftX()) <= 1
+                && Math.abs(linkMotion.get().position().pixelY() - this.pitSlipTargetTopLeftY()) <= 1) {
             startPitFall();
         }
     }
@@ -213,7 +217,8 @@ final class LinkPitFall {
         linkAnimationState.get().walkTickCounter = 0;
         linkAnimationState.get().walkFrame = 0;
         linkAnimationState.get().movingThisFrame = false;
-        if (slipping) linkMotion.get().subY += 3 << Link.SUB_PIXEL_SHIFT;
+        if (slipping)
+            linkMotion.get().position().subY(linkMotion.get().position().subY() + (3 << Link.SUB_PIXEL_SHIFT));
         linkServices.get().soundSink.play(GameplaySoundEvent.PIT_FALL);
     }
 
@@ -237,12 +242,12 @@ final class LinkPitFall {
         if (linkServices.get().playerState != null) {
             linkDamage.get().applyPitDamage();
         }
-        if (linkMotion.get().hasRoomEntryPosition) {
-            linkMotion.get().subX = linkMotion.get().roomEntrySubX;
-            linkMotion.get().subY = linkMotion.get().roomEntrySubY;
-        } else if (linkMotion.get().hasLastSafePosition) {
-            linkMotion.get().subX = linkMotion.get().lastSafeSubX;
-            linkMotion.get().subY = linkMotion.get().lastSafeSubY;
+        if (linkMotion.get().position().hasRoomEntryPosition()) {
+            linkMotion.get().position().subX(linkMotion.get().position().roomEntrySubX());
+            linkMotion.get().position().subY(linkMotion.get().position().roomEntrySubY());
+        } else if (linkMotion.get().position().hasLastSafePosition()) {
+            linkMotion.get().position().subX(linkMotion.get().position().lastSafeSubX());
+            linkMotion.get().position().subY(linkMotion.get().position().lastSafeSubY());
         }
     }
 
@@ -250,8 +255,8 @@ final class LinkPitFall {
         if (elevation.airborne() || this.fallingIntoPit() || this.groundStatus() == GroundStatus.PIT || linkOverPit()) {
             return;
         }
-        linkMotion.get().lastSafeSubX = linkMotion.get().subX;
-        linkMotion.get().lastSafeSubY = linkMotion.get().subY;
-        linkMotion.get().hasLastSafePosition = true;
+        linkMotion.get().position().lastSafeSubX(linkMotion.get().position().subX());
+        linkMotion.get().position().lastSafeSubY(linkMotion.get().position().subY());
+        linkMotion.get().position().hasLastSafePosition(true);
     }
 }

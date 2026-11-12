@@ -46,13 +46,13 @@ final class LinkGroundMotion {
                 && !linkAirborne.get().elevation().airborne()
                 && !linkAirborne.get().pit().fallingIntoPit()
                 && linkStateMachine.get().status().motionState() != LinkMotionState.UNSTUCKING
-                && linkMotion.get().accessRomEntityY() < 0x88
+                && linkMotion.get().position().romEntityY() < 0x88
                 && linkServices
                                 .get()
                                 .collision
                                 .objectPhysicsFlagAtPoint(
-                                        linkMotion.get().accessPixelX() + 8,
-                                        linkMotion.get().accessPixelY() + 12)
+                                        linkMotion.get().position().pixelX() + 8,
+                                        linkMotion.get().position().pixelY() + 12)
                         == linksawakening.physics.PhysicsFlags.GRASS;
     }
 
@@ -71,7 +71,8 @@ final class LinkGroundMotion {
                         .get()
                         .collision
                         .linkOnSlowGround(
-                                linkMotion.get().pixelX(), linkMotion.get().pixelY())) {
+                                linkMotion.get().position().pixelX(),
+                                linkMotion.get().position().pixelY())) {
             return true;
         }
         // GROUND_STATUS_SLOW ($03) uses the same frame-counter mask in the

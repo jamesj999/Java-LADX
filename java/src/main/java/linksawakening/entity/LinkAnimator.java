@@ -172,8 +172,8 @@ final class LinkAnimator {
                                 .get()
                                 .collision
                                 .linkOnSlowGround(
-                                        linkMotion.get().accessPixelX(),
-                                        linkMotion.get().accessPixelY()))) {
+                                        linkMotion.get().position().pixelX(),
+                                        linkMotion.get().position().pixelY()))) {
             int frame = (linkAnimationState.get().romConsecutiveStepsCount >> 3) & 1;
             pushingAnimationState = linkServices.get().spriteSheet != null
                     ? linkServices
@@ -216,7 +216,7 @@ final class LinkAnimator {
         linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         romAnimationStateOverride = 0x6B;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
-        linkMotion.get().forcedSpeedPending = false;
+        linkMotion.get().position().forcedSpeedPending(false);
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkAnimationState.get().movingThisFrame = false;
     }
@@ -298,7 +298,7 @@ final class LinkAnimator {
     int renderY() {
         return ledgeJumpRenderY != Integer.MIN_VALUE
                 ? ledgeJumpRenderY
-                : linkMotion.get().accessPixelY()
+                : linkMotion.get().position().pixelY()
                         - (bedJumpRenderZ >= 0
                                 ? bedJumpRenderZ
                                 : linkAirborne.get().accessZPixels());

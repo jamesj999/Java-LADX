@@ -70,7 +70,7 @@ final class LinkSpriteComposer {
         boolean rightFlipX = linkServices.get().spriteSheet.rightHalfFlipX(animationState);
         boolean rightFlipY = linkServices.get().spriteSheet.rightHalfFlipY(animationState);
 
-        int originX = linkMotion.get().pixelX() + offsetX;
+        int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
         int[] palette = linkServices.get().playerState != null
@@ -129,8 +129,8 @@ final class LinkSpriteComposer {
         if (a != null) {
             a.render(
                     displayBuffer,
-                    linkMotion.get().pixelX(),
-                    linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
                     linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
@@ -142,8 +142,8 @@ final class LinkSpriteComposer {
         if (b != null && b != a) {
             b.render(
                     displayBuffer,
-                    linkMotion.get().pixelX(),
-                    linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
                     linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
@@ -157,8 +157,9 @@ final class LinkSpriteComposer {
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(
                         displayBuffer,
-                        linkMotion.get().pixelX(),
-                        linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY()
+                                - linkAirborne.get().accessZPixels(),
                         linkAnimationState.get().direction.javaIndex(),
                         offsetX,
                         offsetY);
@@ -183,7 +184,7 @@ final class LinkSpriteComposer {
         boolean rightFlipX = linkServices.get().spriteSheet.rightHalfFlipX(animationState);
         boolean rightFlipY = linkServices.get().spriteSheet.rightHalfFlipY(animationState);
 
-        int originX = linkMotion.get().accessPixelX() + offsetX;
+        int originX = linkMotion.get().position().pixelX() + offsetX;
         int renderY = bodyY;
         int originY = renderY + offsetY;
         int[] palette = linkServices.get().playerState != null
@@ -245,8 +246,8 @@ final class LinkSpriteComposer {
         if (a != null) {
             a.submitOam(
                     sink,
-                    linkMotion.get().accessPixelX(),
-                    linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
                     linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
@@ -258,8 +259,8 @@ final class LinkSpriteComposer {
         if (b != null && b != a) {
             b.submitOam(
                     sink,
-                    linkMotion.get().accessPixelX(),
-                    linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
                     linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
@@ -273,8 +274,9 @@ final class LinkSpriteComposer {
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.submitOam(
                         sink,
-                        linkMotion.get().accessPixelX(),
-                        linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY()
+                                - linkAirborne.get().accessZPixels(),
                         linkAnimationState.get().direction.javaIndex(),
                         offsetX,
                         offsetY);

@@ -58,8 +58,8 @@ final class LinkDoorTraversal {
     }
 
     void tickRevolvingDoor() {
-        linkMotion.get().subX = (0x50 - 8) << Link.SUB_PIXEL_SHIFT;
-        linkMotion.get().subY = 0;
+        linkMotion.get().position().subX((0x50 - 8) << Link.SUB_PIXEL_SHIFT);
+        linkMotion.get().position().subY(0);
         linkAnimationState.get().movingThisFrame = false;
         if (this.revolvingDoorFrame() == 0 || this.revolvingDoorFrame() == 0x28) this.revolvingDoorPaletteVariant(0);
         if (this.revolvingDoorFrame() == 0x18) this.revolvingDoorPaletteVariant(1);
@@ -70,7 +70,7 @@ final class LinkDoorTraversal {
                             linkServices.get().linkMotionTables.revolvingDoorAnimation(this.revolvingDoorFrame()));
         }
         if (this.revolvingDoorFrame(this.revolvingDoorFrame() + 1) >= 0x38) {
-            linkMotion.get().subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
+            linkMotion.get().position().subY((-5 - 16) << Link.SUB_PIXEL_SHIFT);
             linkAnimationState.get().direction = Direction.UP;
             linkAnimator.get().romAnimationStateOverride(0x04);
         }
