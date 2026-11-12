@@ -5,7 +5,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 
 /** OwlStatueEntityHandler and bank-$36 GetOwlStatueDialogId's ROM lookup. */
-public final class OwlStatueDialogResolver {
+final class OwlStatueDialogResolver {
     private static final int BANK = 0x36;
     private final Rom romData;
 

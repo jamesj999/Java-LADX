@@ -6,7 +6,7 @@ import linksawakening.rom.RomSymbols;
 import linksawakening.world.transition.Warp;
 
 /** Resolves the five-byte destination copied by {@code TeleportToManboPond}. */
-public final class ManboWarpResolver {
+final class ManboWarpResolver {
     private static final int MANBO_WARP_TABLE_ENTRIES = 0x10;
     private static final int MANBO_WARP_RECORD_SIZE = 5;
     private static final int MAP_COLOR_DUNGEON = 0xFF;

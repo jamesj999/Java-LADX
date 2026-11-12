@@ -1,6 +1,6 @@
 package linksawakening.world.entity.motion;
 /** Inputs for one motion update. */
-public record BomberFrame(
+record BomberFrame(
         linksawakening.world.entity.RoomEntity entity,
         int transitionCountdown,
         int linkEntityX,

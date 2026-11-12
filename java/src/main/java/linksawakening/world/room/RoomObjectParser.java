@@ -8,7 +8,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
-public final class RoomObjectParser {
+final class RoomObjectParser {
     private final Dependencies dependencies;
     private final RoomObjectMacroDecoder roomObjectMacroDecoder;
     private final RoomObjectStreamDecoder roomObjectStreamDecoder;

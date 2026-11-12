@@ -1,6 +1,6 @@
 package linksawakening.world.object;
 
-public record BushCutInputs(
+record BushCutInputs(
         SwordProbe sword,
         int roomId,
         boolean isGbcOverworld,

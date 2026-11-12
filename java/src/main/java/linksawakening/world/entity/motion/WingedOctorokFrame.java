@@ -4,7 +4,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Inputs for WingedOctorokMotion.advance. */
-public record WingedOctorokFrame(
+record WingedOctorokFrame(
         RoomEntity entity,
         int frameCounter,
         int linkEntityX,

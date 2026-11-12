@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Inputs for EntityEnemySpawns.spawnEnemyBomb. */
-public record EnemyBombSpawn(
+record EnemyBombSpawn(
         int entityX,
         int entityY,
         int entityZ,

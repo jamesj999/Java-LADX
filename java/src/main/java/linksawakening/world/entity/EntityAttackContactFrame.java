@@ -1,7 +1,7 @@
 package linksawakening.world.entity;
 
 /** Inputs for RoomEntityRuntime.resolveCombat. */
-public record EntityAttackContactFrame(
+record EntityAttackContactFrame(
         int frameCounter,
         int linkEntityX,
         int linkEntityY,

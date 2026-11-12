@@ -6,7 +6,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 
 /** ROM-backed view of {@code DungeonEventsTable} and {@code ColorDungeonEventsTable}. */
-public final class DungeonRoomEventTable {
+final class DungeonRoomEventTable {
 
     private static final int ROOM_TABLE_SIZE = 0x100;
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x20;

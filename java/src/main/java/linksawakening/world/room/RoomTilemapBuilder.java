@@ -6,7 +6,7 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
 import linksawakening.rom.RomSymbols;
 
-public final class RoomTilemapBuilder {
+final class RoomTilemapBuilder {
     private int readRomByte(int offset) {
         return romData.u8(RomAddress.fromOffset(offset));
     }

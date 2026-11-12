@@ -4,7 +4,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Inputs for BowWowMotion.advanceAfterTimers. */
-public record BowWowFrame(
+record BowWowFrame(
         RoomEntity entity,
         int frameCounter,
         int linkEntityX,

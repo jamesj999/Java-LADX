@@ -21,8 +21,12 @@ final class ClassFileReferences {
     record CompiledType(String name, List<String> references, List<FieldReference> fields) {}
 
     static List<CompiledType> classes() throws Exception {
+        return classes(ROOT);
+    }
+
+    static List<CompiledType> classes(Path root) throws Exception {
         List<CompiledType> result = new ArrayList<>();
-        try (var paths = Files.walk(ROOT)) {
+        try (var paths = Files.walk(root)) {
             for (Path path : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
                 List<String> references = new ArrayList<>();
                 List<FieldReference> fields = new ArrayList<>();
@@ -63,7 +67,7 @@ final class ClassFileReferences {
                 }
                 result.add(new CompiledType(
                         "linksawakening/"
-                                + ROOT.relativize(path)
+                                + root.relativize(path)
                                         .toString()
                                         .replace('\\', '/')
                                         .replace(".class", ""),
