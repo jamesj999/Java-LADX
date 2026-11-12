@@ -26,8 +26,8 @@ final class SlimeEyeControlsTest {
         StringBuilder trace = new StringBuilder("frame\tbuttons\tlinkX\tlinkY\tlinkZ\thealth\trunning\teyes\n");
         try {
             game.initializeHeadlessNewGame();
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
             var d = game.diagnostics();
             var room = d.roomSession();
             var link = d.link();
@@ -157,9 +157,7 @@ final class SlimeEyeControlsTest {
             assertTrue(reward, "Reward must be collected via normal controls");
         } finally {
             Files.writeString(out.resolve("engine.tsv"), trace);
-            var close = GameSession.class.getDeclaredMethod("cleanup");
-            close.setAccessible(true);
-            close.invoke(game);
+            game.close();
         }
     }
 

@@ -160,13 +160,20 @@ class FileMenuBehaviorTest {
             var calls = new ArrayList<String>();
             s.c.story()
                     .restoreNewGameHouseRuntimeIfNeeded(
-                            store.readSlot(0),
-                            m -> {
-                                assertTrue(m.complete());
-                                calls.add("wake");
-                            },
-                            m -> calls.add("shield"),
-                            () -> calls.add("presentation"));
+                            store.readSlot(0), new linksawakening.app.story.OpeningRestoration() {
+                                public void restoreWake(linksawakening.startup.MarinWakeUpMotion m) {
+                                    assertTrue(m.complete());
+                                    calls.add("wake");
+                                }
+
+                                public void restoreShield(linksawakening.startup.TarinShieldMotion m) {
+                                    calls.add("shield");
+                                }
+
+                                public void refreshPresentation() {
+                                    calls.add("presentation");
+                                }
+                            });
             assertEquals(List.of("wake", "presentation", "shield"), calls);
             s.c.saves().startSavedGame(store.readSlot(0));
             assertNotNull(s.c.newGameTarinShieldMotion());

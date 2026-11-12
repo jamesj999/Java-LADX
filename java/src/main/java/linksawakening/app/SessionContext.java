@@ -98,7 +98,7 @@ public final class SessionContext {
                         host)
                 .build(headless);
         services = built;
-        session.gameplaySoundSink = built.gameplaySoundSink();
+        session.gameplaySounds().replace(built.gameplaySoundSink());
         scene.bgPalettes = built.bgPalettes();
         scene.objPalettes = built.objPalettes();
         appConfig = built.appConfig();
@@ -141,29 +141,24 @@ public final class SessionContext {
         };
         routerClearFileMenuController = () -> screens.fileMenuController = null;
         routerClearFileSaveController = () -> screens.fileSaveController = null;
-        routerClearNewGameWakeUpMotion = () -> session.newGameWakeUpMotion = null;
-        routerClearNewGameTarinShieldMotion = () -> session.newGameTarinShieldMotion = null;
+        routerClearNewGameWakeUpMotion = () -> session.openingState().wakeUp(null);
+        routerClearNewGameTarinShieldMotion = () -> session.openingState().shield(null);
         savesEnterGameplay = () -> {
             screens.fileMenuController = null;
             screens.fileSaveController = null;
             screens.currentScreen = gameplayScreen;
         };
         savesClearOpening = () -> {
-            session.newGameWakeUpMotion = null;
-            session.newGameTarinShieldMotion = null;
+            session.openingState().wakeUp(null);
+            session.openingState().shield(null);
         };
         savesInitializeOpening = () -> {
-            session.newGameWakeUpMotion = new MarinWakeUpMotion();
-            session.newGameTarinShieldMotion = new TarinShieldMotion();
+            session.openingState().wakeUp(new MarinWakeUpMotion());
+            session.openingState().shield(new TarinShieldMotion());
         };
         savesPlayHouseMusic = () -> musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack());
         savesRefreshOpening = () -> openingStory().updateNewGameMarinPresentation();
-        savesRestoreOpening = saved -> openingStory()
-                .restoreNewGameHouseRuntimeIfNeeded(
-                        saved,
-                        motion -> session.newGameWakeUpMotion = motion,
-                        motion -> session.newGameTarinShieldMotion = motion,
-                        () -> openingStory().updateNewGameMarinPresentation());
+        savesRestoreOpening = saved -> openingStory().restoreNewGameHouseRuntimeIfNeeded(saved);
         savesEnterFileSave = () -> {
             screens.currentScreen = fileSaveScreen;
             screens.fileMenuController = null;
@@ -220,7 +215,7 @@ public final class SessionContext {
     }
 
     public int frameCounter() {
-        return session.frameCounter;
+        return session.frameClock().value();
     }
 
     public int roomPixelHeight() {
@@ -260,7 +255,7 @@ public final class SessionContext {
     }
 
     public GameplaySoundSink gameplaySoundSink() {
-        return session.gameplaySoundSink;
+        return session.gameplaySounds().sink();
     }
 
     public FrameMusicPlayer musicPlayer() {
@@ -581,12 +576,16 @@ public final class SessionContext {
         return screens.currentScreen;
     }
 
+    public OpeningStoryState openingState() {
+        return session.openingState();
+    }
+
     public MarinWakeUpMotion newGameWakeUpMotion() {
-        return session.newGameWakeUpMotion;
+        return session.openingState().wakeUp();
     }
 
     public TarinShieldMotion newGameTarinShieldMotion() {
-        return session.newGameTarinShieldMotion;
+        return session.openingState().shield();
     }
 
     public int[] newGameTarinShieldPalette() {
@@ -738,8 +737,8 @@ public final class SessionContext {
 
     void debugTeleport(Warp destination) {
         services().roomSession().transitions().loadWarpDestination(destination);
-        session.newGameWakeUpMotion = null;
-        session.newGameTarinShieldMotion = null;
+        session.openingState().wakeUp(null);
+        session.openingState().shield(null);
         services().link().resetTransientStateForDebug();
         services().link().setDebugNoClip(debug.debugNoClip);
         services().link().setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);

@@ -3,7 +3,6 @@ package linksawakening.app.story;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import linksawakening.app.SessionContext;
 import linksawakening.audio.music.MusicTrackIds;
@@ -24,7 +23,7 @@ import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.RoomSession;
 
-public final class OpeningStory {
+public final class OpeningStory implements OpeningRestoration {
     private final SessionContext context;
 
     public OpeningStory(SessionContext context) {
@@ -279,18 +278,30 @@ public final class OpeningStory {
         return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
     }
 
-    public void restoreNewGameHouseRuntimeIfNeeded(
-            SaveSlotState saved,
-            Consumer<MarinWakeUpMotion> wakeMotion,
-            Consumer<TarinShieldMotion> shieldMotion,
-            Runnable refreshPresentation) {
+    public void restoreWake(MarinWakeUpMotion motion) {
+        context.openingState().wakeUp(motion);
+    }
+
+    public void restoreShield(TarinShieldMotion motion) {
+        context.openingState().shield(motion);
+    }
+
+    public void refreshPresentation() {
+        updateNewGameMarinPresentation();
+    }
+
+    public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved) {
+        restoreNewGameHouseRuntimeIfNeeded(saved, this);
+    }
+
+    public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved, OpeningRestoration target) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
             if (playerState().swordLevel() == 0) {
-                wakeMotion.accept(MarinWakeUpMotion.postWake());
-                refreshPresentation.run();
+                target.restoreWake(MarinWakeUpMotion.postWake());
+                target.refreshPresentation();
             }
             if (playerState().shieldLevel() == 0) {
-                shieldMotion.accept(new TarinShieldMotion());
+                target.restoreShield(new TarinShieldMotion());
             }
         }
     }

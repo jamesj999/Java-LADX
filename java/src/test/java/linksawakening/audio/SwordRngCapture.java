@@ -38,9 +38,9 @@ public final class SwordRngCapture {
         try (var trace = new PrintWriter(out.resolve("engine-rng.jsonl").toFile());
                 var states = new PrintWriter(out.resolve("engine-state.tsv").toFile())) {
             game.initializeHeadlessNewGame();
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
-            set(game, "frameCounter", 1);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
+            game.frameClock().seed(1);
             var d = game.diagnostics();
             var room = d.roomSession();
             var link = d.link();
@@ -95,7 +95,7 @@ public final class SwordRngCapture {
                 states.printf(
                         "%d\t%d\t%s\t%b\t%d\t%d\t%d\t%d\t%d\t%d%n",
                         frame[0],
-                        (int) get(game, "frameCounter"),
+                        (int) game.frameClock().value(),
                         parts[1],
                         d.dialogController().isActive(),
                         sword.state(),
@@ -106,9 +106,7 @@ public final class SwordRngCapture {
                         blockBefore);
             }
         } finally {
-            var cleanup = GameSession.class.getDeclaredMethod("cleanup");
-            cleanup.setAccessible(true);
-            cleanup.invoke(game);
+            game.close();
         }
     }
 }

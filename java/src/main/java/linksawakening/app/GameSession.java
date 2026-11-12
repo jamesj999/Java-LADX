@@ -9,24 +9,34 @@ import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.app.gameplay.LiftInteraction;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.config.AppConfig;
-import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.StartupCoordinator;
-import linksawakening.startup.TarinShieldMotion;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.transition.Warp;
 
-public class GameSession {
-    GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
+public class GameSession implements AutoCloseable {
+    private final FrameClock clock = new FrameClock();
+    private final OpeningStoryState opening = new OpeningStoryState();
+    private final GameplaySounds sounds = new GameplaySounds();
 
-    MarinWakeUpMotion newGameWakeUpMotion;
+    public FrameClock frameClock() {
+        return clock;
+    }
 
-    TarinShieldMotion newGameTarinShieldMotion;
+    public OpeningStoryState openingState() {
+        return opening;
+    }
+
+    public GameplaySounds gameplaySounds() {
+        return sounds;
+    }
+
+    @Override
+    public void close() {
+        cleanup();
+    }
 
     PcmSoundOutput headlessPcm;
-
-    int frameCounter;
 
     final RomRandomByteSource random;
 
@@ -111,9 +121,9 @@ public class GameSession {
 
     void update() {
         if (context.debug.debugMenu != null && context.debug.debugMenu.isOpen()) return;
-        frameCounter = (frameCounter + 1) & 0xFF;
+        clock.advance();
         // The engine's frame boundary uses scanline zero for non-entity draws.
-        random.beginFrame(frameCounter, 0);
+        random.beginFrame(clock.value(), 0);
 
         context.musicDirector.tick();
 
