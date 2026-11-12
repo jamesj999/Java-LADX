@@ -278,27 +278,27 @@ public final class EntityDebugConfiguration {
 
     void setGeniePrivateState1ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.entityState.geniePrivateState1[slot] = value;
+        runtime.genie.setGeniePrivateState1(slot, value);
     }
 
     void setGenieActiveStateForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.entityState.genieActiveState[slot] = value;
+        runtime.genie.setGenieActiveState(slot, value);
     }
 
     void setGeniePrivateState3ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.entityState.geniePrivateState3[slot] = value;
+        runtime.genie.setGeniePrivateState3(slot, value);
     }
 
     void setGeniePrivateCountdown1ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.entityState.geniePrivateCountdown1[slot] = value;
+        runtime.genie.setGeniePrivateCountdown1(slot, value);
     }
 
     void setGeniePrivateState4ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.entityState.geniePrivateState4[slot] = value;
+        runtime.genie.setGeniePrivateState4(slot, value);
     }
 
     void setPhysicsFlagsForTest(int slot, int value) {

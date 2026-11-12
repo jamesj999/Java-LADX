@@ -555,7 +555,7 @@ public final class RoomEntityRuntime {
         state.runtime.entityState.events.projectileLaunchRequests.clear();
         Arrays.fill(state.runtime.entityState.enemyProjectileSpawnedThisFrame, false);
         Arrays.fill(state.runtime.entityState.dynamicEntitySpawnedThisFrame, false);
-        Arrays.fill(state.runtime.entityState.genieImpactRegisteredThisFrame, false);
+        state.runtime.genie.beginFrame();
         Arrays.fill(state.runtime.entityState.wingedSwordAttackThisFrame, false);
         Arrays.fill(state.runtime.entityState.wingedStateTwoThisFrame, false);
         state.runtime.entityState.events.transientVfxRequests.clear();

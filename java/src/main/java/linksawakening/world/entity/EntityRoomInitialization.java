@@ -258,9 +258,9 @@ final class EntityRoomInitialization {
             }
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_GENIE) {
                 GenieMotion.JarState jar = runtime.entityState.genieMotion.initialize(entity.slot());
-                runtime.entityState.genieActiveState[entity.slot()] = 0;
-                runtime.entityState.geniePrivateState1[entity.slot()] = jar.privateState1();
-                runtime.entityState.geniePrivateState3[entity.slot()] = 0;
+                runtime.genie.setGenieActiveState(entity.slot(), 0);
+                runtime.genie.setGeniePrivateState1(entity.slot(), jar.privateState1());
+                runtime.genie.setGeniePrivateState3(entity.slot(), 0);
                 runtime.entityState.enemyHealth[entity.slot()] = jar.health();
                 runtime.entityState.enemyPhysicsFlags[entity.slot()] = jar.physicsFlags();
                 runtime.entityState.enemyHitboxFlags[entity.slot()] = jar.hitboxFlags();

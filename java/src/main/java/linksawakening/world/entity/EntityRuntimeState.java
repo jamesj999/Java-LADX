@@ -240,44 +240,6 @@ final class EntityRuntimeState {
 
     final GenieMotion genieMotion = new GenieMotion();
 
-    final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-
-    final boolean[] genieImpactRegisteredThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
-
-    int genieControllerSlot = -1;
-
-    int genieSharedBodySpeedX;
-
-    int genieSharedBodySpeedY;
-
     int bossAgonySfxCountdown;
 
     int bossAgonySourceSlot;

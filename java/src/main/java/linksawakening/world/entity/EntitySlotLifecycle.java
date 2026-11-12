@@ -177,24 +177,24 @@ public final class EntitySlotLifecycle {
         runtime.entityState.sideViewPlatformMotion.clear(slot);
         runtime.entityState.sideViewPotMotion.clear(slot);
         runtime.entityState.genieMotion.clear(slot);
-        if (runtime.entityState.genieControllerSlot == slot) {
-            runtime.entityState.genieControllerSlot = -1;
+        if (runtime.genie.genieControllerSlot() == slot) {
+            runtime.genie.setGenieControllerSlot(-1);
         }
-        runtime.entityState.genieActiveState[slot] = 0;
-        runtime.entityState.geniePrivateState1[slot] = 0;
-        runtime.entityState.geniePrivateState2[slot] = 0;
-        runtime.entityState.geniePrivateState3[slot] = 0;
-        runtime.entityState.geniePrivateState4[slot] = 0;
-        runtime.entityState.geniePrivateCountdown1[slot] = 0;
-        runtime.entityState.geniePrivateCountdown2[slot] = 0;
-        runtime.entityState.genieDirection[slot] = 0;
-        runtime.entityState.genieDeathInitialized[slot] = false;
-        runtime.entityState.genieSpeedX[slot] = 0;
-        runtime.entityState.genieSpeedY[slot] = 0;
-        runtime.entityState.genieSpeedZ[slot] = 0;
-        runtime.entityState.genieSpeedXAccumulator[slot] = 0;
-        runtime.entityState.genieSpeedYAccumulator[slot] = 0;
-        runtime.entityState.genieSpeedZAccumulator[slot] = 0;
+        runtime.genie.setGenieActiveState(slot, 0);
+        runtime.genie.setGeniePrivateState1(slot, 0);
+        runtime.genie.setGeniePrivateState2(slot, 0);
+        runtime.genie.setGeniePrivateState3(slot, 0);
+        runtime.genie.setGeniePrivateState4(slot, 0);
+        runtime.genie.setGeniePrivateCountdown1(slot, 0);
+        runtime.genie.setGeniePrivateCountdown2(slot, 0);
+        runtime.genie.setGenieDirection(slot, 0);
+        runtime.genie.setGenieDeathInitialized(slot, false);
+        runtime.genie.setGenieSpeedX(slot, 0);
+        runtime.genie.setGenieSpeedY(slot, 0);
+        runtime.genie.setGenieSpeedZ(slot, 0);
+        runtime.genie.setGenieSpeedXAccumulator(slot, 0);
+        runtime.genie.setGenieSpeedYAccumulator(slot, 0);
+        runtime.genie.setGenieSpeedZAccumulator(slot, 0);
         RoomEntity entity = runtime.slots[slot];
         runtime.bombFinalPresentationPending[slot] = false;
         runtime.entityState.enemyHitboxFlags[slot] = 0;
@@ -512,24 +512,24 @@ public final class EntitySlotLifecycle {
         runtime.entityState.sideViewPlatformMotion.clear(slot);
         runtime.entityState.sideViewPotMotion.clear(slot);
         runtime.entityState.genieMotion.clear(slot);
-        if (runtime.entityState.genieControllerSlot == slot) {
-            runtime.entityState.genieControllerSlot = -1;
+        if (runtime.genie.genieControllerSlot() == slot) {
+            runtime.genie.setGenieControllerSlot(-1);
         }
-        runtime.entityState.genieActiveState[slot] = 0;
-        runtime.entityState.geniePrivateState1[slot] = 0;
-        runtime.entityState.geniePrivateState2[slot] = 0;
-        runtime.entityState.geniePrivateState3[slot] = 0;
-        runtime.entityState.geniePrivateState4[slot] = 0;
-        runtime.entityState.geniePrivateCountdown1[slot] = 0;
-        runtime.entityState.geniePrivateCountdown2[slot] = 0;
-        runtime.entityState.genieDirection[slot] = 0;
-        runtime.entityState.genieDeathInitialized[slot] = false;
-        runtime.entityState.genieSpeedX[slot] = 0;
-        runtime.entityState.genieSpeedY[slot] = 0;
-        runtime.entityState.genieSpeedZ[slot] = 0;
-        runtime.entityState.genieSpeedXAccumulator[slot] = 0;
-        runtime.entityState.genieSpeedYAccumulator[slot] = 0;
-        runtime.entityState.genieSpeedZAccumulator[slot] = 0;
+        runtime.genie.setGenieActiveState(slot, 0);
+        runtime.genie.setGeniePrivateState1(slot, 0);
+        runtime.genie.setGeniePrivateState2(slot, 0);
+        runtime.genie.setGeniePrivateState3(slot, 0);
+        runtime.genie.setGeniePrivateState4(slot, 0);
+        runtime.genie.setGeniePrivateCountdown1(slot, 0);
+        runtime.genie.setGeniePrivateCountdown2(slot, 0);
+        runtime.genie.setGenieDirection(slot, 0);
+        runtime.genie.setGenieDeathInitialized(slot, false);
+        runtime.genie.setGenieSpeedX(slot, 0);
+        runtime.genie.setGenieSpeedY(slot, 0);
+        runtime.genie.setGenieSpeedZ(slot, 0);
+        runtime.genie.setGenieSpeedXAccumulator(slot, 0);
+        runtime.genie.setGenieSpeedYAccumulator(slot, 0);
+        runtime.genie.setGenieSpeedZAccumulator(slot, 0);
         runtime.entityState.secretSeashellMotion.clear(slot);
         runtime.entityState.slowTransitionCountdown[slot] = 0;
         runtime.entityState.slowTimerInitialized[slot] = false;

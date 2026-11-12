@@ -271,8 +271,17 @@ sequenceDiagram
 
 ## Entity system
 
-`RoomEntityRuntime` owns slot orchestration; `EntityRuntimeState` holds slot
-arrays and room handler state. `RoomEntity` represents an occupied entity.
+`RoomEntityRuntime` owns slot orchestration and contains an `EntityRuntimeState`;
+the facade does not inherit its mutable state. `EntityRomConstants` is a final,
+non-instantiable holder. Public constant aliases on `RoomEntityRuntime` preserve
+existing callers; entity implementation code references the constants holder.
+`EntityRuntimeState` still holds shared slot arrays and room handler state.
+Mask-removal state and the Moldorm, Rolling Bones and Moblin King hit/death
+latches live privately in their motion owners. `GenieEntityController` owns
+its jar, body and projectile arrays and room-wide coordination values.
+Lifecycle code retains the original reset sites through slot accessors; moving
+ownership must not add resets when a slot is reused.
+`RoomEntity` represents an occupied entity.
 Slots preserve ROM identity and ordering; they are not an unordered collection.
 Lifecycle and spawn helpers coordinate replacement and allocation.
 Do not compact slots or sort entities by type during a refactor.
