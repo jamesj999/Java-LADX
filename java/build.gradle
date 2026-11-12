@@ -143,12 +143,12 @@ tasks.withType(Test).configureEach {
 tasks.register('romFreeTest', Test) {
     description = 'Run only tests independent of the user ROM'
     testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
+    classpath = sourceSets.test.runtimeClasspath + files(layout.buildDirectory.dir('test-rom'))
 }
 tasks.register('knownGapTest', Test) {
     description = 'Run tests for documented, not-yet-ported ROM parity gaps (expected to fail)'
     testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
+    classpath = sourceSets.test.runtimeClasspath + files(layout.buildDirectory.dir('test-rom'))
 }
 tasks.register('verifyRom') {
     doLast {
