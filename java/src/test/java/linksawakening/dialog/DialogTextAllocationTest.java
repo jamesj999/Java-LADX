@@ -34,6 +34,6 @@ class DialogTextAllocationTest {
         assertEquals(expected, retained);
         assertTrue(expected.length() >= 16);
         System.out.println("Static dialog text bytes/read=" + bytes);
-        assertTrue(bytes <= 100, "bytes/read=" + bytes);
+        assertTrue(bytes <= 0, "bytes/read=" + bytes);
     }
 }

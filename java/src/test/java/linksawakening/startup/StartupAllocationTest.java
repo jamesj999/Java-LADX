@@ -18,6 +18,6 @@ class StartupAllocationTest {
         });
         assertFalse(motion.complete());
         System.out.println("Startup bed/presentation bytes/tick=" + bytes);
-        assertTrue(bytes <= 80, "bytes/tick=" + bytes);
+        assertTrue(bytes <= 0, "bytes/tick=" + bytes);
     }
 }
