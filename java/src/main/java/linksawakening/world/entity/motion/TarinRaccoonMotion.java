@@ -1,6 +1,5 @@
 package linksawakening.world.entity.motion;
 
-import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
@@ -9,8 +8,8 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 /** Bank-$05 outdoor {@code TarinEntityHandler}, including the raccoon transformation. */
 public final class TarinRaccoonMotion {
     public static final int ENTITY_TYPE = 0x3F;
-    private static final int NO_EVENT = -1;
-    private static final int[] TRANSFORMATION_VARIANTS = {0, 4, 5, 6, 7, 1};
+    static final int NO_EVENT = -1;
+    static final int[] TRANSFORMATION_VARIANTS = {0, 4, 5, 6, 7, 1};
 
     public record Input(
             int frameCounter,
@@ -124,7 +123,7 @@ public final class TarinRaccoonMotion {
             boolean nearLinkLatch) {}
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -137,173 +136,11 @@ public final class TarinRaccoonMotion {
     final boolean[] nearLinkLatch = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, Input input) {
-        return advance(source, input, null);
+        return TarinRaccoonBehavior.advance(this, source, input);
     }
 
     public Update advance(RoomEntity source, Input input, RoomEntityBackgroundInteraction backgroundInteraction) {
-        checkType(source);
-        int slot = source.slot();
-        int slowCountdown = input.slowTransitionCountdown();
-        int transitionCountdown = input.transitionCountdown();
-        int variant = source.spriteVariant();
-        boolean shouldGetLost = false;
-        int dialog = NO_EVENT;
-        boolean blockLink = false;
-        boolean clearAttack = false;
-        int linkFacing = NO_EVENT;
-        boolean pushLink = false;
-        boolean roomChanged = false;
-        boolean tarinFlag = false;
-        int soundId = NO_EVENT;
-        boolean spawnBomb = false;
-        int collisionFlags = 0;
-        RoomEntity entity = source;
-
-        switch (state[slot]) {
-            case 0 -> {
-                variant = (input.frameCounter() >>> 4) & 1;
-                if ((input.linkY() & 0xFF) < 0x30) {
-                    shouldGetLost = true;
-                    variant = 2 + ((input.frameCounter() >>> 3) & 1);
-                } else {
-                    warningShown[slot] = false;
-                }
-                entity = withVariant(source, variant);
-                if (!input.dialogActive() && !input.inventoryAppearing()) {
-                    if ((input.linkY() & 0xFF) < 0x20 && !warningShown[slot]) {
-                        warningShown[slot] = true;
-                        dialog = 0x021;
-                    } else if (input.actionHeld()
-                            && nearbyAndFacing(entity, input)
-                            && input.linkAttackStepAnimationCountdown() == 0
-                            && !input.linkAirborne()
-                            && input.dialogCooldown() == 0
-                            && input.windowY() == 0x80) {
-                        dialog = 0x00D;
-                    }
-                }
-            }
-            case 1 -> {
-                blockLink = true;
-                clearAttack = true;
-                linkFacing = directionToLink(source, input.linkX(), input.linkY()) ^ 0x01;
-
-                int animationSum = animationAccumulator[slot] + animationInertia[slot];
-                animationAccumulator[slot] = animationSum & 0xFF;
-                if (animationSum > 0xFF) {
-                    animationIndex[slot] = (animationIndex[slot] + 1) % 6;
-                }
-                variant = TRANSFORMATION_VARIANTS[animationIndex[slot]];
-                entity = withVariant(source, variant);
-
-                if (slowCountdown == 0) {
-                    speedZ[slot] = 0;
-                    state[slot] = 2;
-                    variant = 9;
-                    entity = withVariant(entity, variant);
-                    spawnBomb = true;
-                    roomChanged = true;
-                    tarinFlag = true;
-                    break;
-                }
-
-                if ((input.frameCounter() & 1) == 0 && animationInertia[slot] < 0xF0) {
-                    animationInertia[slot]++;
-                }
-                Movement moved = moveWithBackground(entity, backgroundInteraction, slot);
-                entity = withPositionAndVariant(entity, moved.x(), moved.y(), variant);
-                collisionFlags = moved.collisionFlags();
-
-                if (slowCountdown < 6) {
-                    if ((entity.y() & 0xFF) < 0x30) {
-                        slowCountdown = 8;
-                    } else {
-                        speedZ[slot] = (speedZ[slot] + 1) & 0xFF;
-                        speedX[slot] = dampTowardsZero(speedX[slot]);
-                        speedY[slot] = dampTowardsZero(speedY[slot]);
-                        entity = withZ(entity, addSpeedToPosition(entity.z(), speedZ[slot], accumulatorZ, slot));
-                        break;
-                    }
-                }
-
-                if ((collisionFlags & 0x03) != 0) {
-                    speedX[slot] = (-signedByte(speedX[slot])) & 0xFF;
-                    soundId = 0x09;
-                }
-                if ((collisionFlags & 0x0C) != 0) {
-                    speedY[slot] = (-signedByte(speedY[slot])) & 0xFF;
-                    soundId = 0x09;
-                }
-                if (slowCountdown < 0x60 && (input.frameCounter() & 3) == 0) {
-                    speedX[slot] = accelerateToLimit(speedX[slot]);
-                    speedY[slot] = accelerateToLimit(speedY[slot]);
-                }
-            }
-            case 2 -> {
-                blockLink = true;
-                int z = addSpeedToPosition(entity.z(), speedZ[slot], accumulatorZ, slot);
-                speedZ[slot] = (speedZ[slot] - 1) & 0xFF;
-                entity = withZ(entity, z);
-                if ((z & 0x80) != 0) {
-                    entity = withZ(entity, 0);
-                    soundId = 0x23;
-                    transitionCountdown = 0x40;
-                    variant = 8 + directionToLink(entity, input.linkX(), input.linkY());
-                    entity = withVariant(entity, variant);
-                    nearLinkLatch[slot] = withinSignedWindow(input.linkX() - entity.x(), 0x12)
-                            && withinSignedWindow(input.linkY() - entity.y(), 0x12);
-                    state[slot] = 3;
-                }
-            }
-            case 3 -> {
-                if (transitionCountdown == 1) {
-                    dialog = 0x00A;
-                    break;
-                }
-                if (transitionCountdown != 0) {
-                    blockLink = true;
-                    break;
-                }
-                if ((input.frameCounter() & 0x1F) == 0) {
-                    variant = 8 + directionToLink(entity, input.linkX(), input.linkY());
-                    entity = withVariant(entity, variant);
-                }
-                pushLink = !nearLinkLatch[slot];
-                if (!input.dialogActive()
-                        && !input.inventoryAppearing()
-                        && input.actionHeld()
-                        && nearbyAndFacing(entity, input)
-                        && !input.linkAirborne()
-                        && input.dialogCooldown() == 0
-                        && input.windowY() == 0x80) {
-                    dialog = 0x00B;
-                }
-            }
-            default -> throw new IllegalStateException("Invalid Tarin state: " + state[slot]);
-        }
-
-        return new Update(
-                entity,
-                state[slot],
-                entity.spriteVariant(),
-                shouldGetLost,
-                dialog,
-                blockLink,
-                clearAttack,
-                linkFacing,
-                pushLink,
-                roomChanged,
-                tarinFlag,
-                soundId < 0 ? NO_EVENT : 0,
-                soundId,
-                spawnBomb,
-                slowCountdown,
-                transitionCountdown,
-                speedX[slot] & 0xFF,
-                speedY[slot] & 0xFF,
-                speedZ[slot] & 0xFF,
-                collisionFlags,
-                nearLinkLatch[slot]);
+        return TarinRaccoonBehavior.advance(this, source, input, backgroundInteraction);
     }
 
     public int state(int slot) {
@@ -316,34 +153,11 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    private Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
-        int x = addSpeedToPosition(entity.x(), speedX[slot], accumulatorX, slot);
-        int y = addSpeedToPosition(entity.y(), speedY[slot], accumulatorY, slot);
-        int flags = 0;
-        if (interaction != null && x != entity.x()) {
-            int direction = signedByte(speedX[slot]) < 0
-                    ? EntityBackgroundCollisionResult.LEFT
-                    : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, entity.y());
-            if (result.blocked()) {
-                flags |= result.collisionFlag();
-                x = entity.x();
-            }
-        }
-        if (interaction != null && y != entity.y()) {
-            int direction = signedByte(speedY[slot]) < 0
-                    ? EntityBackgroundCollisionResult.UP
-                    : EntityBackgroundCollisionResult.DOWN;
-            EntityBackgroundCollisionResult result = interaction.probe(entity, direction, x, y);
-            if (result.blocked()) {
-                flags |= result.collisionFlag();
-                y = entity.y();
-            }
-        }
-        return new Movement(x & 0xFF, y & 0xFF, flags & 0x0F);
+    Movement moveWithBackground(RoomEntity entity, RoomEntityBackgroundInteraction interaction, int slot) {
+        return TarinRaccoonBehavior.moveWithBackground(this, entity, interaction, slot);
     }
 
-    private static int accelerateToLimit(int value) {
+    static int accelerateToLimit(int value) {
         int unsigned = value & 0xFF;
         if (unsigned == 0x30 || unsigned == 0xD0) {
             return unsigned;
@@ -351,12 +165,12 @@ public final class TarinRaccoonMotion {
         return (unsigned + (signedByte(unsigned) < 0 ? -1 : 1)) & 0xFF;
     }
 
-    private static int dampTowardsZero(int value) {
+    static int dampTowardsZero(int value) {
         int signed = signedByte(value);
         return signed == 0 ? 0 : (signed + (signed < 0 ? 1 : -1)) & 0xFF;
     }
 
-    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+    static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
         int fractionalSum = accumulator[slot] + ((speed & 0x0F) << 4);
         accumulator[slot] = fractionalSum & 0xFF;
         int delta = signedByte(speed) >> 4;
@@ -366,7 +180,7 @@ public final class TarinRaccoonMotion {
         return (position + delta) & 0xFF;
     }
 
-    private static boolean nearbyAndFacing(RoomEntity entity, Input input) {
+    static boolean nearbyAndFacing(RoomEntity entity, Input input) {
         int yWindow = (input.linkY() - entity.y() + 0x14) & 0xFF;
         if (yWindow >= 0x28) {
             return false;
@@ -376,7 +190,7 @@ public final class TarinRaccoonMotion {
                 && directionToLink(entity, input.linkX(), input.linkY()) == (input.linkDirection() ^ 0x01);
     }
 
-    private static int directionToLink(RoomEntity entity, int linkX, int linkY) {
+    static int directionToLink(RoomEntity entity, int linkX, int linkY) {
         int distanceX = signedByte(linkX - entity.x());
         int distanceY = signedByte(linkY - entity.y());
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
@@ -385,11 +199,11 @@ public final class TarinRaccoonMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    private static boolean withinSignedWindow(int value, int radius) {
+    static boolean withinSignedWindow(int value, int radius) {
         return ((value + radius) & 0xFF) < radius * 2;
     }
 
-    private static RoomEntity withPositionAndVariant(RoomEntity source, int x, int y, int variant) {
+    static RoomEntity withPositionAndVariant(RoomEntity source, int x, int y, int variant) {
         return EntitySnapshots.withMotion(
                 source,
                 x,
@@ -401,11 +215,11 @@ public final class TarinRaccoonMotion {
                 source.powerRecoilDeath());
     }
 
-    private static RoomEntity withVariant(RoomEntity source, int variant) {
+    static RoomEntity withVariant(RoomEntity source, int variant) {
         return withPositionAndVariant(source, source.x(), source.y(), variant);
     }
 
-    private static RoomEntity withZ(RoomEntity source, int z) {
+    static RoomEntity withZ(RoomEntity source, int z) {
         return EntitySnapshots.withMotion(
                 source,
                 source.x(),
@@ -417,7 +231,7 @@ public final class TarinRaccoonMotion {
                 source.powerRecoilDeath());
     }
 
-    private static void checkType(RoomEntity source) {
+    static void checkType(RoomEntity source) {
         if (source == null || source.type() != ENTITY_TYPE) {
             throw new IllegalArgumentException("Entity is not Tarin");
         }
@@ -429,10 +243,10 @@ public final class TarinRaccoonMotion {
         }
     }
 
-    private static int signedByte(int value) {
+    static int signedByte(int value) {
         int unsigned = value & 0xFF;
         return unsigned < 0x80 ? unsigned : unsigned - 0x100;
     }
 
-    private record Movement(int x, int y, int collisionFlags) {}
+    record Movement(int x, int y, int collisionFlags) {}
 }
