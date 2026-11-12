@@ -151,3 +151,138 @@ IntroResources supplies the compatibility resource-loading entry point. None rec
 IntroSequence or a whole-owner state object. New ROM-free actor tests exercise cadence,
 clock reset and the title-transition gate independently. Default suite: 2,884 → 2,886
 tests, zero failures/errors, one existing skip.
+
+## Entity sprite catalog
+
+Original chain: EntitySpriteHandlerCatalog → EntitySpriteDecodeGeometry → EntitySpriteRomDecoding → EntitySpriteDynamicComposites → EntitySpriteBossComposites → EntitySpriteLookup → EntitySpriteDecodeState.
+
+Immutable registration recipes are selected without a ROM or catalog reference. EntitySpriteDecoder owns ROM reads and validation; boss, object-state and effect composers receive that decoder only (object states also receive registration data). The public catalog composes these pieces.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `ENTITY_ARROW` | `forBombArrow` |
+| `ENTITY_BOOMERANG` |  |
+| `ENTITY_MAGIC_ROD_FIREBALL` | `forMagicRodFireState` |
+| `ENTITY_MAGIC_POWDER_SPRINKLE` | `forMagicPowderTorchState` |
+| `ENTITY_MUSICAL_NOTE` |  |
+| `ENTITY_SWORD_BEAM` |  |
+| `ENTITY_BOMB` | `forBombRightBeforeExploding`, `forBombExplosion`, `forBombArrow` |
+| `ENTITY_BUTTERFLY` |  |
+| `ENTITY_HOOKSHOT_CHAIN` |  |
+| `ENTITY_CRYSTAL_SWITCH` |  |
+| `ENTITY_OCTOROK` |  |
+| `ENTITY_OCTOROK_ROCK` |  |
+| `ENTITY_MOBLIN` |  |
+| `ENTITY_IRON_MASK` | `forIronMaskState` |
+| `ENTITY_MOBLIN_ARROW` |  |
+| `ENTITY_BOUNCING_BOMBITE` |  |
+| `ENTITY_TIMER_BOMBITE` |  |
+| `ENTITY_MAD_BOMBER` |  |
+| `ENTITY_BOMBER` |  |
+| `ENTITY_MOBLIN_SWORD` |  |
+| `ENTITY_TEKTITE` |  |
+| `ENTITY_LEEVER` |  |
+| `ENTITY_ANTI_FAIRY` |  |
+| `ENTITY_SPARK_COUNTER_CLOCKWISE` |  |
+| `ENTITY_SPARK_CLOCKWISE` |  |
+| `ENTITY_ZOL` |  |
+| `ENTITY_GEL` |  |
+| `ENTITY_HIDING_ZOL` |  |
+| `ENTITY_STALFOS_AGGRESSIVE` |  |
+| `ENTITY_STALFOS_EVASIVE` | `forStalfosEvasiveState` |
+| `ENTITY_GIBDO` |  |
+| `ENTITY_LIKE_LIKE` |  |
+| `ENTITY_PEAHAT` |  |
+| `ENTITY_WIZROBE` |  |
+| `ENTITY_WIZROBE_PROJECTILE` |  |
+| `ENTITY_ARMOS_STATUE` |  |
+| `ENTITY_ARMOS_KNIGHT` |  |
+| `ENTITY_HIDING_GHINI` |  |
+| `ENTITY_GIANT_GHINI` |  |
+| `ENTITY_GHINI` |  |
+| `ENTITY_POLS_VOICE` |  |
+| `ENTITY_KEESE` |  |
+| `ENTITY_GOOMBA` |  |
+| `ENTITY_SNAKE` |  |
+| `ENTITY_HARDHAT_BEETLE` |  |
+| `ENTITY_SPIKED_BEETLE` |  |
+| `ENTITY_LASER` |  |
+| `ENTITY_LASER_BEAM` |  |
+| `ENTITY_SPIKE_TRAP` |  |
+| `ENTITY_PAIRODD` |  |
+| `ENTITY_PAIRODD_PROJECTILE` |  |
+| `ENTITY_WATER_TEKTITE` |  |
+| `ENTITY_FISH` |  |
+| `ENTITY_BOW_WOW` | `forFollowerEntityType` |
+| `ENTITY_DOG` |  |
+| `ENTITY_KID_70` |  |
+| `ENTITY_KID_71` |  |
+| `ENTITY_KID_72` |  |
+| `ENTITY_KID_73` |  |
+| `ENTITY_MADAM_MEOWMEOW` |  |
+| `ENTITY_CROW` |  |
+| `ENTITY_BOO_BUDDY` |  |
+| `ENTITY_DROPPABLE_HEART` |  |
+| `ENTITY_DROPPABLE_RUPEE` |  |
+| `ENTITY_DROPPABLE_FAIRY` |  |
+| `ENTITY_SWORD_SHIELD_PICKUP` | `forSwordShieldPickup` |
+| `ENTITY_IRON_MASKS_MASK` |  |
+| `ENTITY_PIECE_OF_POWER` |  |
+| `ENTITY_GUARDIAN_ACORN` |  |
+| `ENTITY_HEART_PIECE` |  |
+| `ENTITY_HEART_CONTAINER` |  |
+| `ENTITY_DROPPABLE_ARROWS` |  |
+| `ENTITY_DROPPABLE_BOMBS` |  |
+| `ENTITY_SLEEPY_TOADSTOOL` |  |
+| `ENTITY_DROPPABLE_MAGIC_POWDER` |  |
+| `ENTITY_HIDING_SLIME_KEY` |  |
+| `ENTITY_DROPPABLE_SECRET_SEASHELL` |  |
+| `ENTITY_FLOATING_ITEM` | `forFloatingItemOverlay` |
+| `ENTITY_FLOATING_ITEM_2` | `decodeFloatingItemMain` |
+| `ENTITY_MARIN` |  |
+| `ENTITY_TARIN` |  |
+| `ENTITY_GRANDPA_ULRIRA` |  |
+| `ENTITY_MARIN_AT_THE_SHORE` | `forFollowerEntityType` |
+| `ENTITY_MARIN_AT_TAL_TAL_HEIGHTS` |  |
+| `ENTITY_COLOR_SHELL_RED` | `isColorShellType`, `forColorShellState` |
+| `ENTITY_COLOR_SHELL_BLUE` | `isColorShellType` |
+| `COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES` | `forColorShellState` |
+| `COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES` | `forColorShellState` |
+| `romData` | `EntitySpriteDecodeState`, `EntitySpriteLookup`, `EntitySpriteBossComposites`, `EntitySpriteDynamicComposites`, `EntitySpriteRomDecoding`, `decodePair`, `decodeSingle`, `EntitySpriteDecodeGeometry`, `decodeRectangleVariants`, `validateDisplayList`, `readByte`, `EntitySpriteHandlerCatalog`, `EntitySpriteHandlerCatalog` |
+| `ENTITY_LIFTABLE_ROCK` | `decodeLiftableRock`, `appendDynamicRectangleVariants` |
+| `ENTITY_CHEST_WITH_ITEM` | `forChestState` |
+| `ENTITY_KEY_DROP_POINT` |  |
+| `ENTITY_STAR` |  |
+| `ENTITY_BLOOPER` |  |
+| `ENTITY_WINGED_OCTOROK` |  |
+| `ENTITY_PINCER` |  |
+| `ENTITY_BUSH_CRAWLER` | `forBushCrawlerState`, `forBushCrawlerCrawlState` |
+| `ENTITY_MIMIC` |  |
+| `ENTITY_MINI_MOLDORM` | `forMiniMoldormState` |
+| `ENTITY_MOLDORM` | `forMoldormPresentation` |
+| `ENTITY_ROLLING_BONES` |  |
+| `ENTITY_ROLLING_BONES_BAR` | `forRollingBonesBar` |
+| `ENTITY_THREE_OF_A_KIND` |  |
+| `ENTITY_MASKED_MIMIC_GORIYA` |  |
+| `ENTITY_HINOX` |  |
+| `ENTITY_CUCCO` |  |
+| `ENTITY_GOPONGA_FLOWER` |  |
+| `ENTITY_GIANT_GOPONGA_FLOWER` |  |
+| `ENTITY_GOPONGA_FLOWER_PROJECTILE` |  |
+| `ENTITY_POKEY` | `forPokeyState`, `forPokeySegment` |
+| `ENTITY_PIRANHA_PLANT` |  |
+| `ENTITY_ZORA` |  |
+| `ENTITY_ZOMBIE` |  |
+| `ENTITY_BUZZ_BLOB` |  |
+| `ENTITY_SAND_CRAB` |  |
+| `ENTITY_URCHIN` | `forUrchinState` |
+| `ENTITY_WITCH_RAT` |  |
+| `ENTITY_WITCH` |  |
+| `LIFTABLE_ROCK_INTACT_ROCK_VARIANT` | `decodeLiftableRock` |
+| `LIFTABLE_ROCK_INTACT_BUSH_VARIANT` | `decodeLiftableRock` |
+| `LIFTABLE_ROCK_SMASHED_ROCK_VARIANT_BASE` |  |
+| `LIFTABLE_ROCK_CUT_LEAVES_VARIANT_BASE` |  |
+| `LIFTABLE_ROCK_CUT_LEAVES_SWAMP_VARIANT_BASE` |  |
+| `ENTITY_INSTRUMENT_OF_THE_SIRENS` | `forInstrumentShard` |
+
+Result: project inheritance depth 6 → 0; catalog facade 411 lines. Immutable family recipes and their indexed registration data are independent of ROM decoding. EntitySpriteDecoder owns the ROM; EntitySpriteStates, BossSpriteComposer and EntityEffectSprites compose that decoder for state selection, boss geometry and transient effects respectively. EntitySpriteGeometry contains only coordinate algorithms. Two ROM-free tests cover registration priority/arbitrary map selectors and bounded OAM decoding. Full suite: 2,888 tests, zero failures/errors, one skipped.

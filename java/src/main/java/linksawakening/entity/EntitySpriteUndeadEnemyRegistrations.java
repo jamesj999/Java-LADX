@@ -27,18 +27,17 @@ final class EntitySpriteUndeadEnemyRegistrations {
 
     private EntitySpriteUndeadEnemyRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_ZOMBIE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, ZOMBIE_SPRITE_VARIANTS.bank(), ZOMBIE_SPRITE_VARIANTS.address(), 5, 0);
         }
         if (entityType == ENTITY_BOO_BUDDY) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, BOO_BUDDY_ENTITY_HANDLER.bank(), BOO_BUDDY_ENTITY_HANDLER.address(), 8, 0);
         }
         if (entityType == ENTITY_STALFOS_AGGRESSIVE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     STALFOS_AGGRESSIVE_SPRITE_VARIANTS.bank(),
                     STALFOS_AGGRESSIVE_SPRITE_VARIANTS.address(),
@@ -46,7 +45,7 @@ final class EntitySpriteUndeadEnemyRegistrations {
                     0);
         }
         if (entityType == ENTITY_STALFOS_EVASIVE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     STALFOS_EVASIVE2_SPRITE_VARIANTS.bank(),
                     STALFOS_EVASIVE2_SPRITE_VARIANTS.address(),
@@ -54,7 +53,7 @@ final class EntitySpriteUndeadEnemyRegistrations {
                     0);
         }
         if (entityType == ENTITY_GIBDO) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     GIBDO_TURTLE_ROCK_SPRITE_VARIANTS.bank(),
                     mapId == 0x07 ? GIBDO_TURTLE_ROCK_SPRITE_VARIANTS.address() : GIBDO_SPRITE_VARIANTS.address(),
@@ -62,10 +61,11 @@ final class EntitySpriteUndeadEnemyRegistrations {
                     0);
         }
         if (entityType == ENTITY_HIDING_GHINI || entityType == ENTITY_GHINI) {
-            return catalog.decodePair(entityType, GHINI_SPRITE_VARIANTS.bank(), GHINI_SPRITE_VARIANTS.address(), 2, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, GHINI_SPRITE_VARIANTS.bank(), GHINI_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_GIANT_GHINI) {
-            return catalog.decodeRectangle(
+            return EntitySpriteRecipe.rectangle(
                     entityType,
                     GIANT_GHINI_SPRITE_RECT_VARIANTS.bank(),
                     GIANT_GHINI_SPRITE_RECT_VARIANTS.address(),

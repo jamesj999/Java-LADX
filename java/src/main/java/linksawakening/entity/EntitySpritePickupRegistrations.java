@@ -42,10 +42,9 @@ final class EntitySpritePickupRegistrations {
 
     private EntitySpritePickupRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     SIRENS_INSTRUMENT2_SPRITE_VARIANTS.bank(),
                     SIRENS_INSTRUMENT2_SPRITE_VARIANTS.address(),
@@ -53,59 +52,59 @@ final class EntitySpritePickupRegistrations {
                     mapId < 0 ? 0 : mapId & 0x03);
         }
         if (entityType == ENTITY_DROPPABLE_HEART) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, DROPPABLE_HEART_SPRITE.bank(), DROPPABLE_HEART_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_RUPEE) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, DROPPABLE_RUPEE_SPRITE.bank(), DROPPABLE_RUPEE_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_FAIRY) {
-            return catalog.decodePair(entityType, DATA_003_6157.bank(), DATA_003_6157.address(), 2, 0);
+            return EntitySpriteRecipe.pair(entityType, DATA_003_6157.bank(), DATA_003_6157.address(), 2, 0);
         }
         if (entityType == ENTITY_KEY_DROP_POINT) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, KEY_DROP_SPRITE_TABLE.bank(), KEY_DROP_SPRITE_TABLE.address(), 6, 0);
         }
         if (entityType == ENTITY_SWORD_SHIELD_PICKUP) {
-            return catalog.decodeSingle(entityType, DATA_003_5B95.bank(), DATA_003_5B95.address(), 1, 0);
+            return EntitySpriteRecipe.single(entityType, DATA_003_5B95.bank(), DATA_003_5B95.address(), 1, 0);
         }
         if (entityType == ENTITY_PIECE_OF_POWER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, PIECE_OF_POWER_SPRITE_VARIANTS.bank(), PIECE_OF_POWER_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_GUARDIAN_ACORN) {
-            return catalog.decodeSingle(entityType, DATA_003_5B5B.bank(), DATA_003_5B5B.address(), 1, 0);
+            return EntitySpriteRecipe.single(entityType, DATA_003_5B5B.bank(), DATA_003_5B5B.address(), 1, 0);
         }
         if (entityType == ENTITY_HEART_PIECE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, HEART_PIECE_ENTITY_SPRITE.bank(), HEART_PIECE_ENTITY_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_HEART_CONTAINER) {
-            return catalog.decodePair(entityType, ENTITY13_HANDLER.bank(), ENTITY13_HANDLER.address(), 1, 0);
+            return EntitySpriteRecipe.pair(entityType, ENTITY13_HANDLER.bank(), ENTITY13_HANDLER.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_ARROWS) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, DROPPABLE_ARROW_SPRITE.bank(), DROPPABLE_ARROW_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_BOMBS) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, DROPPABLE_BOMBS_SPRITE.bank(), DROPPABLE_BOMBS_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_SLEEPY_TOADSTOOL) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, SLEEPY_TOADSTOOL_SPRITE.bank(), SLEEPY_TOADSTOOL_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_MAGIC_POWDER) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, DROPPABLE_MAGIC_POWDER_SPRITE.bank(), DROPPABLE_MAGIC_POWDER_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_HIDING_SLIME_KEY) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, HIDING_SLIME_KEY_SPRITE.bank(), HIDING_SLIME_KEY_SPRITE.address(), 1, 0);
         }
         if (entityType == ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return catalog.decodeSingle(
+            return EntitySpriteRecipe.single(
                     entityType, DROPPABLE_SEASHELL_SPRITE.bank(), DROPPABLE_SEASHELL_SPRITE.address(), 1, 0);
         }
         return null;

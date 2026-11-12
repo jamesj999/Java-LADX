@@ -1,17 +1,18 @@
 package linksawakening.entity;
 
+import static linksawakening.entity.EntitySpriteGeometry.*;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.rom.Rom;
-import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 
-/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
-abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
-    protected EntitySpriteBossComposites(Rom romData) {
-        super(romData);
+/** Boss body, segment, weapon and shadow composition from decoded source display lists. */
+final class BossSpriteComposer {
+    private final EntitySpriteDecoder decoder;
+
+    BossSpriteComposer(EntitySpriteDecoder decoder) {
+        this.decoder = decoder;
     }
 
     /**
@@ -25,7 +26,7 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
         if (headVariant < 0 || headVariant > 7) {
             throw new IllegalArgumentException("Mini Moldorm head variant must be 0..7: " + headVariant);
         }
-        EntitySpriteDefinition pairs = decodePair(ENTITY_MINI_MOLDORM, 0x04, 0x5A49, 10, 0);
+        EntitySpriteDefinition pairs = decoder.decodePair(ENTITY_MINI_MOLDORM, 0x04, 0x5A49, 10, 0);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(6);
         appendDynamicPairAtOffset(sprites, pairs.variant(headVariant), 0, 0);
         appendDynamicPairAtOffset(
@@ -71,8 +72,8 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
             return EntitySpriteDefinition.unsupported(ENTITY_MOLDORM);
         }
 
-        EntitySpriteDefinition head = decodeRectangle(ENTITY_MOLDORM, 0x04, 0x57F2, 8, 8, headVariant);
-        EntitySpriteDefinition tail = decodePair(ENTITY_MOLDORM, 0x04, 0x58F2, 4, 0);
+        EntitySpriteDefinition head = decoder.decodeRectangle(ENTITY_MOLDORM, 0x04, 0x57F2, 8, 8, headVariant);
+        EntitySpriteDefinition tail = decoder.decodePair(ENTITY_MOLDORM, 0x04, 0x58F2, 4, 0);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(16);
         int headYOffset = signedByte(headY - renderBaseY);
         int headXOffset = signedByte(headX - renderBaseX);
@@ -109,7 +110,8 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
                 half ? linksawakening.rom.RomSymbols.Data_004_4FEE : linksawakening.rom.RomSymbols.Data_004_4D9D;
         int variants = half ? 2 : 7;
         if (variant < 0 || variant >= variants) return EntitySpriteDefinition.unsupported(0x5B);
-        var body = decodeRectangle(0x5B, bodyAddress.bank(), bodyAddress.address(), variants, half ? 8 : 16, variant);
+        var body = decoder.decodeRectangle(
+                0x5B, bodyAddress.bank(), bodyAddress.address(), variants, half ? 8 : 16, variant);
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>();
         for (var sprite : body.rectangleVariant(variant)) {
             if (sprite.oam().tile() == 0xFF) continue;
@@ -121,7 +123,8 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
                     true));
         }
         if (z != 0) {
-            var shadow = decodeRectangle(0x5B, shadowAddress.bank(), shadowAddress.address(), 1, half ? 4 : 6, 0);
+            var shadow =
+                    decoder.decodeRectangle(0x5B, shadowAddress.bank(), shadowAddress.address(), 1, half ? 4 : 6, 0);
             for (var sprite : shadow.rectangleVariant(0))
                 sprites.add(new EntitySpriteDefinition.DynamicSprite(
                         signedByte(sprite.yOffset() + z - (half ? 2 : 8)),
@@ -144,7 +147,7 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
         if (privateState1 < 0 || privateState1 > 5) {
             throw new IllegalArgumentException("Rolling Bones bar private state must be 0..5: " + privateState1);
         }
-        EntitySpriteDefinition pair = decodePair(ENTITY_ROLLING_BONES_BAR, 0x06, 0x6ED5, 2, 0);
+        EntitySpriteDefinition pair = decoder.decodePair(ENTITY_ROLLING_BONES_BAR, 0x06, 0x6ED5, 2, 0);
         int selectedVariant = spriteVariant & 0x01;
         int pairCount = 6 - privateState1;
         List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(pairCount * 2);
@@ -155,46 +158,26 @@ abstract class EntitySpriteBossComposites extends EntitySpriteLookup {
         return EntitySpriteDefinition.dynamic(ENTITY_ROLLING_BONES_BAR, 0x06, 0x6ED5, 0, List.of(List.copyOf(sprites)));
     }
 
-    /**
-     * Selects the bank-$20 rectangle list used by bank-$36's
-     * {@code func_036_69D9}. States below six while ACTIVE use the animated
-     * eight-variant list; all other status/state combinations use the
-     * four-variant inactive list.
-     */
-    public EntitySpriteDefinition forColorShellState(int entityType, int state, EntityStatus status) {
-        if (!isColorShellType(entityType)) {
-            throw new IllegalArgumentException("Not a Color Shell entity type: 0x" + Integer.toHexString(entityType));
+    /** Builds func_015_4AC9's body, optional weapon, and airborne shadow layers. */
+    public EntitySpriteDefinition forMoblinKingState(int bodyVariant, int weaponVariant, boolean airborne) {
+        if (bodyVariant < 0 || bodyVariant >= 14) {
+            throw new IllegalArgumentException("Moblin King body variant must be 0..13");
         }
-        if (state < 0 || state > 0x0D) {
-            throw new IllegalArgumentException("Color Shell state out of range: " + state);
+        if (weaponVariant < -1 || weaponVariant >= 4) {
+            throw new IllegalArgumentException("Moblin King weapon variant must be -1..3");
         }
-        if (status == null) {
-            throw new IllegalArgumentException("Entity status cannot be null");
+        EntitySpriteDefinition body = decoder.decodeRectangle(0xE4, 0x15, 0x4A15, 14, 3, 0);
+        EntitySpriteDefinition weapon = decoder.decodeRectangle(0xE4, 0x15, 0x49E5, 4, 3, 0);
+        EntitySpriteDefinition shadow = decoder.decodeRectangle(0xE4, 0x15, 0x4ABD, 1, 3, 0);
+        List<EntitySpriteDefinition.DynamicSprite> sprites = new ArrayList<>(9);
+        if (weaponVariant >= 0) {
+            appendRectangleSprites(sprites, weapon.rectangleVariant(weaponVariant));
         }
-        int color = entityType - ENTITY_COLOR_SHELL_RED;
-        boolean activeList = status == EntityStatus.ACTIVE && state < 0x06;
-        int address =
-                (activeList ? COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES : COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES)[color];
-        return decodeRectangle(entityType, 0x20, address, activeList ? 8 : 4, 3, 0);
-    }
-
-    /** The bank-$03 fire pair rendered over entities in {@code BURNING} status. */
-    public EntitySpriteDefinition forBurningEntity() {
-        return decodePair(0x00, 0x03, 0x4C44, 2, 0);
-    }
-
-    /** EntityFallHandler's three single frames followed by Unknown020's pair. */
-    public EntitySpriteDefinition forFallingEntity() {
-        EntitySpriteDefinition singles = decodeSingle(0x00, 0x03, 0x4CAC, 3, 0);
-        EntitySpriteDefinition pair = decodePair(0x00, 0x03, 0x4CB2, 1, 0);
-        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(4);
-        for (EntitySpriteDefinition.Variant variant : singles.variants()) {
-            variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(
-                    0, 0, variant.first(), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true)));
+        // func_015_4AC9 allocates weapon OAM first, so it wins overlaps with the body.
+        appendRectangleSprites(sprites, body.rectangleVariant(bodyVariant));
+        if (airborne) {
+            appendRectangleSprites(sprites, shadow.rectangleVariant(0));
         }
-        List<EntitySpriteDefinition.DynamicSprite> finalPair = new ArrayList<>(2);
-        appendDynamicPair(finalPair, pair.variant(0), EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
-        variants.add(List.copyOf(finalPair));
-        return EntitySpriteDefinition.dynamic(0x00, 0x03, 0x4CAC, 0, variants);
+        return EntitySpriteDefinition.dynamic(0xE4, 0x15, 0x4A15, 0, List.of(List.copyOf(sprites)));
     }
 }

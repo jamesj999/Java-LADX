@@ -33,25 +33,24 @@ final class EntitySpriteVillageNpcRegistrations {
 
     private EntitySpriteVillageNpcRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_WITCH_RAT) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, WITCH_RAT_SPRITE_VARIANTS.bank(), WITCH_RAT_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_WITCH) {
-            return catalog.decodeRectangle(entityType, DATA_005_4780.bank(), DATA_005_4780.address(), 4, 4, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_005_4780.bank(), DATA_005_4780.address(), 4, 4, 0);
         }
         if (entityType == ENTITY_MARIN) {
             return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
                             || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
-                    ? catalog.decodePair(
+                    ? EntitySpriteRecipe.pair(
                             entityType,
                             MARIN_INDOOR_SPRITE_VARIANTS.bank(),
                             MARIN_INDOOR_SPRITE_VARIANTS.address(),
                             8,
                             6)
-                    : catalog.decodePair(
+                    : EntitySpriteRecipe.pair(
                             entityType,
                             MARIN_CREDITS_SPRITE_VARIANTS.bank(),
                             MARIN_CREDITS_SPRITE_VARIANTS.address(),
@@ -61,13 +60,13 @@ final class EntitySpriteVillageNpcRegistrations {
         if (entityType == ENTITY_TARIN) {
             return roomTable == EntityRoomLoader.RoomTable.INDOORS_A
                             || roomTable == EntityRoomLoader.RoomTable.INDOORS_B
-                    ? catalog.decodePair(
+                    ? EntitySpriteRecipe.pair(
                             entityType, TARIN3_SPRITE_VARIANTS.bank(), TARIN3_SPRITE_VARIANTS.address(), 4, 0)
-                    : catalog.decodePair(
+                    : EntitySpriteRecipe.pair(
                             entityType, TARIN1_SPRITE_VARIANTS.bank(), TARIN1_SPRITE_VARIANTS.address(), 12, 0);
         }
         if (entityType == ENTITY_MARIN_AT_TAL_TAL_HEIGHTS) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS.bank(),
                     MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS.address(),
@@ -75,10 +74,11 @@ final class EntitySpriteVillageNpcRegistrations {
                     0);
         }
         if (entityType == ENTITY_KID_70 || entityType == ENTITY_KID_73) {
-            return catalog.decodePair(entityType, KID71_SPRITE_VARIANTS.bank(), KID71_SPRITE_VARIANTS.address(), 4, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, KID71_SPRITE_VARIANTS.bank(), KID71_SPRITE_VARIANTS.address(), 4, 0);
         }
         if (entityType == ENTITY_KID_71 || entityType == ENTITY_KID_72) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     KID71_SPRITE_VARIANTS.bank(),
                     entityType == ENTITY_KID_71 ? KID71_SPRITE_VARIANTS.address() : KID72_SPRITE_VARIANTS.address(),
@@ -86,7 +86,7 @@ final class EntitySpriteVillageNpcRegistrations {
                     0);
         }
         if (entityType == ENTITY_MADAM_MEOWMEOW) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     MADAM_MEOW_MEOW_SPRITE_VARIANTS.bank(),
                     MADAM_MEOW_MEOW_SPRITE_VARIANTS.address(),
@@ -97,13 +97,13 @@ final class EntitySpriteVillageNpcRegistrations {
             // GrandmaUlriraEntityHandler $18:4D36/4D58 supplies this pair
             // list before PushLinkOutOfEntity_18 ($18:4D69).
             var variants = linksawakening.rom.RomSymbols.GrandmaUlrira1SpriteVariants;
-            return catalog.decodePair(entityType, variants.bank(), variants.address(), 3, 0);
+            return EntitySpriteRecipe.pair(entityType, variants.bank(), variants.address(), 3, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
-            return catalog.decodeRectangle(entityType, DATA_006_5C51.bank(), DATA_006_5C51.address(), 2, 4, 0);
+            return EntitySpriteRecipe.rectangle(entityType, DATA_006_5C51.bank(), DATA_006_5C51.address(), 2, 4, 0);
         }
         if (entityType == ENTITY_MARIN_AT_THE_SHORE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType,
                     MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS.bank(),
                     MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS.address(),

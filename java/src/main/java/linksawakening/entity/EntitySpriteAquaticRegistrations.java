@@ -18,28 +18,28 @@ final class EntitySpriteAquaticRegistrations {
 
     private EntitySpriteAquaticRegistrations() {}
 
-    static EntitySpriteDefinition lookup(
-            EntitySpriteDecodeState catalog, int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    static EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == ENTITY_ZORA) {
-            return catalog.decodePair(entityType, ZORA_SPRITE_VARIANTS.bank(), ZORA_SPRITE_VARIANTS.address(), 5, 0);
+            return EntitySpriteRecipe.pair(
+                    entityType, ZORA_SPRITE_VARIANTS.bank(), ZORA_SPRITE_VARIANTS.address(), 5, 0);
         }
         if (entityType == ENTITY_SAND_CRAB) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, SAND_CRAB_SPRITE_VARIANTS.bank(), SAND_CRAB_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_URCHIN) {
-            return catalog.forUrchinState(false);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.URCHIN, entityType);
         }
         if (entityType == ENTITY_BLOOPER) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, BLOOPER_SPRITE_VARIANTS.bank(), BLOOPER_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_WATER_TEKTITE) {
-            return catalog.decodePair(
+            return EntitySpriteRecipe.pair(
                     entityType, WATER_TEKTITE_SPRITE_VARIANTS.bank(), WATER_TEKTITE_SPRITE_VARIANTS.address(), 2, 0);
         }
         if (entityType == ENTITY_FISH) {
-            return catalog.decodeFish(entityType);
+            return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.FISH, entityType);
         }
         return null;
     }
