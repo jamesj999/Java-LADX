@@ -45,13 +45,13 @@ final class LinkScrollVisibilityTest {
     }
 
     private static long visiblePixels(Link link, ScrollController scroll) {
-        var frame = new HardwareFrame(true);
+        var frame = new HardwareFrame(true, new HardwareFrameDiagnostics());
         frame.withLayerSource("LinkRenderLayer", () -> new LinkRenderLayer(link, scroll).submit(frame, new GPU()));
         byte[] buffer = new byte[160 * 144 * 4];
         frame.compose(buffer);
         long count = 0;
         for (int pixel = 0; pixel < 160 * 144; pixel++) {
-            if (frame.fidelitySource(pixel).startsWith("OBJ=LinkRenderLayer ")) count++;
+            if (frame.diagnostics().fidelitySource(pixel).startsWith("OBJ=LinkRenderLayer ")) count++;
         }
         return count;
     }

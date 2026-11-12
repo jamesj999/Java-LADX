@@ -37,7 +37,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             byte[] legacy = new byte[rgba.length];
             byte[] hardware = rgba;
             LegacySceneReference.render(scene, legacy, gpu);
-            HardwareFrame model = scene.hardwareFrame(gpu);
+            HardwareFrame model = scene.hardwareFrame(gpu, new HardwareFrameDiagnostics());
             byte[] rebuilt = new byte[rgba.length];
             model.compose(rebuilt);
             if (!Arrays.equals(hardware, rebuilt))
@@ -50,13 +50,13 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(legacy, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
-                if (model.explainsHudPriority(legacy, hardware, pixel)
-                        || model.explainsInventoryHiding(legacy, hardware, pixel)) {
+                if (model.diagnostics().explainsHudPriority(legacy, hardware, pixel)
+                        || model.diagnostics().explainsInventoryHiding(legacy, hardware, pixel)) {
                     expectedPixels++;
-                    evidence.add(model.hudEvidence(pixel));
-                    if (model.explainsInventoryHiding(legacy, hardware, pixel))
+                    evidence.add(model.diagnostics().hudEvidence(pixel));
+                    if (model.diagnostics().explainsInventoryHiding(legacy, hardware, pixel))
                         evidence.add("whole-entry inventory hiding: bank1.asm:$5F51-$5F67 rawY>=WY+8");
-                    String source = model.fidelitySource(pixel);
+                    String source = model.diagnostics().fidelitySource(pixel);
                     Group expected = expectedSources.computeIfAbsent(source, key -> new Group());
                     expected.pixels++;
                     if (sceneExpectedSources.add(source)) expected.scenes++;
@@ -64,13 +64,14 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                         expected.example = "scene=" + id + " pixel=" + pixel % 160 + "," + pixel / 160;
                     continue;
                 }
-                String detail = "pixel=" + pixel % 160 + "," + pixel / 160 + " " + model.hudEvidence(pixel);
+                String detail = "pixel=" + pixel % 160 + "," + pixel / 160 + " "
+                        + model.diagnostics().hudEvidence(pixel);
                 if (!probe) {
                     rows.add(id + "\tMISMATCH\t" + detail);
                     throw new AssertionError(context.getDisplayName() + " scene " + id + ": " + detail);
                 }
                 mismatchPixels++;
-                String groupKey = model.mismatchGroup(pixel, legacy, hardware);
+                String groupKey = model.diagnostics().mismatchGroup(pixel, legacy, hardware);
                 Group group = groups.computeIfAbsent(groupKey, key -> new Group());
                 group.pixels++;
                 if (sceneGroups.add(groupKey)) group.scenes++;

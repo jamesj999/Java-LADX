@@ -65,12 +65,16 @@ public final class FrameScene {
     }
 
     HardwareFrame hardwareFrame(GPU gpu) {
+        return hardwareFrame(gpu, null);
+    }
+
+    HardwareFrame hardwareFrame(GPU gpu, HardwareFrameDiagnostics diagnostics) {
         for (RenderLayer layer : layers) {
             if (!(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
                 throw new IllegalStateException(
                         "Layer not migrated: " + layer.getClass().getName());
         }
-        HardwareFrame frame = new HardwareFrame(true);
+        HardwareFrame frame = new HardwareFrame(true, diagnostics);
         for (RenderLayer layer : layers) {
             frame.submittingLayer(layer.getClass().getSimpleName());
             ((HardwareRenderLayer) layer).submit(frame, gpu);
