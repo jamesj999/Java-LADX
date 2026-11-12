@@ -5,13 +5,14 @@ import java.util.function.BooleanSupplier;
 import java.util.function.IntPredicate;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
 
 /** ROM music stream sequencing at the original frame cadence. */
 public final class MusicDriver {
     private static final int CHANNEL_COUNT = 4;
     private static final int HEADER_SIZE = 11;
-    private final Rom romData;
+    // Rom's typed reads currently require an allocated RomAddress. These real-time reads
+    // retain its caller-owned bytes without copying or mutation and check ranges below.
+    private final byte[] romBytes;
     private final GameBoyApu apu;
     private final MusicVoiceEmitter voice;
     private final MusicChannelState[] channels = {
@@ -43,7 +44,7 @@ public final class MusicDriver {
     private int musicTranspose;
 
     public MusicDriver(Rom romData, GameBoyApu apu) {
-        this.romData = Objects.requireNonNull(romData, "romData");
+        romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();
         this.apu = Objects.requireNonNull(apu, "apu");
         voice = new MusicVoiceEmitter(this, apu);
     }
@@ -60,7 +61,7 @@ public final class MusicDriver {
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
-        musicTranspose = romData.s8(RomAddress.fromOffset(headerOffset));
+        musicTranspose = romBytes[headerOffset];
         speedTablePointer = readWordAtOffset(headerOffset + 1);
         for (int channel = 1; channel <= CHANNEL_COUNT; channel++) {
             int streamPointer = readWordAtOffset(headerOffset + 1 + (channel * 2));
@@ -231,7 +232,7 @@ public final class MusicDriver {
         // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
         int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
         requireReadable(offset, 1, bank, address);
-        return romData.u8(RomAddress.fromOffset(offset));
+        return Byte.toUnsignedInt(romBytes[offset]);
     }
 
     private int readWord(int bank, int address) {
@@ -243,11 +244,11 @@ public final class MusicDriver {
     }
 
     private int readWordAtOffset(int offset) {
-        return romData.u16le(RomAddress.fromOffset(offset));
+        return Byte.toUnsignedInt(romBytes[offset]) | (Byte.toUnsignedInt(romBytes[offset + 1]) << 8);
     }
 
     private void requireReadable(int offset, int length, int bank, int address) {
-        if (offset < 0 || offset + length > romData.size()) {
+        if (offset < 0 || offset + length > romBytes.length) {
             throw new IllegalStateException(
                     "Music ROM read out of range: bank " + hex(bank) + " address " + hex(address));
         }

@@ -30,7 +30,7 @@ final class AudioAllocationTest {
             apu.renderInto(samples, 0, 800);
         });
         System.out.println("Audio allocation bytes/tick=" + bytes);
-        assertTrue(bytes < 256);
+        assertTrue(bytes < 16, "Audio allocated " + bytes + " bytes/tick");
     }
 
     private static void word(byte[] data, int at, int value) {
