@@ -111,7 +111,7 @@ final class LinkLedgeParityTest {
             Link link = fixture.link;
             link.linkAnimationState.direction = linksawakening.state.Direction.fromJava(direction);
             link.linkAirborne.elevation().airborne(true);
-            link.linkAnimator.jumpAnimationCounter = 0;
+            link.linkAnimator.jumpAnimationCounter(0);
             for (int frame = 0; frame < 24; frame++) {
                 link.linkAirborne.tickJumpAnimation();
                 int state = TestRoms.partial(fixture.rom)

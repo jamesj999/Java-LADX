@@ -184,8 +184,8 @@ final class LinkAirborne {
         }
         elevation.zSubPixels(0);
         elevation.zVelocity(0);
-        linkAnimator.get().jumpAnimationCounter = 0;
-        linkAnimator.get().jumpAnimationFrame = 0;
+        linkAnimator.get().jumpAnimationCounter(0);
+        linkAnimator.get().jumpAnimationFrame(0);
         pit.refreshGroundStatus();
         playLandingSound();
     }
@@ -232,12 +232,13 @@ final class LinkAirborne {
         // updates; phase 3 stops overriding the normal walking animation.
         // The unstucking handler does not refresh walking animation, so it
         // retains the final flip pose until landing ($02:49AA-$49C7).
-        if (linkAnimator.get().jumpAnimationCounter < 3 * LinkRomConstants.JUMP_FRAME_TICKS) {
-            linkAnimator.get().jumpAnimationFrame =
-                    linkAnimator.get().jumpAnimationCounter / LinkRomConstants.JUMP_FRAME_TICKS;
-            linkAnimator.get().jumpAnimationCounter++;
+        if (linkAnimator.get().jumpAnimationCounter() < 3 * LinkRomConstants.JUMP_FRAME_TICKS) {
+            linkAnimator
+                    .get()
+                    .jumpAnimationFrame(linkAnimator.get().jumpAnimationCounter() / LinkRomConstants.JUMP_FRAME_TICKS);
+            linkAnimator.get().jumpAnimationCounter(linkAnimator.get().jumpAnimationCounter() + 1);
         } else if (!overworldLedgeFallActive) {
-            linkAnimator.get().jumpAnimationFrame = 3;
+            linkAnimator.get().jumpAnimationFrame(3);
         }
     }
 
@@ -286,8 +287,8 @@ final class LinkAirborne {
         elevation.airborne(true);
         elevation.zSubPixels(0);
         elevation.zVelocity(0x20);
-        linkAnimator.get().jumpAnimationCounter = 0;
-        linkAnimator.get().jumpAnimationFrame = 0;
+        linkAnimator.get().jumpAnimationCounter(0);
+        linkAnimator.get().jumpAnimationFrame(0);
         linkServices.get().soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
     }
 
@@ -308,7 +309,7 @@ final class LinkAirborne {
         if (dialogGotItemSequence.get().presentedItem() == 0) return openForItem;
         // ApplyGotItem caches body Y before func_21E1 updates Z; the held OAM
         // entry uses the updated Z. Preserve the fractional position at ground.
-        linkAnimator.get().bedJumpRenderZ = accessZPixels();
+        linkAnimator.get().bedJumpRenderZ(accessZPixels());
         if (linkServices.get().itemRegistry != null
                 && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
                         instanceof linksawakening.equipment.Sword sword) {
@@ -323,7 +324,7 @@ final class LinkAirborne {
             elevation.zVelocity(0);
         }
         elevation.zSubPixels(z);
-        linkAnimator.get().romAnimationStateOverride = 0x6B;
+        linkAnimator.get().romAnimationStateOverride(0x6B);
         linkAnimationState.get().movingThisFrame = false;
         linkMotion.get().lastRomSpeedX = linkMotion.get().lastRomSpeedY = 0;
         return openForItem;

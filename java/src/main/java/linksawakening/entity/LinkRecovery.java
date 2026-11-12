@@ -77,7 +77,6 @@ final class LinkRecovery {
     }
 
     void accessFinishGameOver() {
-        linkStateMachine.get().resetTransientStateForDebug();
         passOutCountdown = -1;
         passOutPaletteEffect = 0;
         gameOverCountdown = 0;
@@ -98,6 +97,6 @@ final class LinkRecovery {
     void accessPresentPassOut(int countdown, int animationState, int paletteEffect) {
         passOutCountdown = countdown;
         passOutPaletteEffect = paletteEffect;
-        linkAnimator.get().romAnimationStateOverride = animationState;
+        linkAnimator.get().romAnimationStateOverride(animationState);
     }
 }

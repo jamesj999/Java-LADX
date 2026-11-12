@@ -181,7 +181,7 @@ final class LinkEntityEffects {
         linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(motionBlocked);
         if (applyHeldLinkPose) {
-            linkAnimator.get().romAnimationStateOverride = 0x6A;
+            linkAnimator.get().romAnimationStateOverride(0x6A);
         }
         linkAnimationState.get().movingThisFrame = false;
         if (applyHeldLinkPose) {
@@ -201,7 +201,7 @@ final class LinkEntityEffects {
         Link.validateRomByte(immunityCountdown, "Warp Link immunity");
         linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
         linkStateMachine.get().status().romInteractiveMotionBlocked(true);
-        linkAnimator.get().romAnimationStateOverride = -1;
+        linkAnimator.get().romAnimationStateOverride(-1);
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkAnimationState.get().movingThisFrame = false;
@@ -223,10 +223,10 @@ final class LinkEntityEffects {
     void leaveMarinWakeUpBed() {
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkStateMachine.get().status().romInteractiveMotionBlocked(false);
-        linkAnimator.get().romAnimationStateOverride = -1;
+        linkAnimator.get().romAnimationStateOverride(-1);
         // The entity handler has already drawn the bed on the launch frame.
         // Ordinary Link rendering takes over at the next physics accessUpdate.
-        linkAnimator.get().marinWakeUpBedVariant = 3;
+        linkAnimator.get().marinWakeUpBedVariant(3);
         marinBedJumpMotionLocked = true;
         linkAnimationState.get().movingThisFrame = false;
         linkAirborne.get().elevation().airborne(true);

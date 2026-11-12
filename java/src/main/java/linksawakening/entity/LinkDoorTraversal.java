@@ -64,13 +64,15 @@ final class LinkDoorTraversal {
         if (this.revolvingDoorFrame() == 0 || this.revolvingDoorFrame() == 0x28) this.revolvingDoorPaletteVariant(0);
         if (this.revolvingDoorFrame() == 0x18) this.revolvingDoorPaletteVariant(1);
         if (this.revolvingDoorFrame() < 0x38) {
-            linkAnimator.get().romAnimationStateOverride =
-                    linkServices.get().linkMotionTables.revolvingDoorAnimation(this.revolvingDoorFrame());
+            linkAnimator
+                    .get()
+                    .romAnimationStateOverride(
+                            linkServices.get().linkMotionTables.revolvingDoorAnimation(this.revolvingDoorFrame()));
         }
         if (this.revolvingDoorFrame(this.revolvingDoorFrame() + 1) >= 0x38) {
             linkMotion.get().subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
             linkAnimationState.get().direction = Direction.UP;
-            linkAnimator.get().romAnimationStateOverride = 0x04;
+            linkAnimator.get().romAnimationStateOverride(0x04);
         }
         if (this.revolvingDoorFrame() == 0x48) {
             status.motionState(LinkMotionState.DEFAULT);

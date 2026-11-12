@@ -66,7 +66,7 @@ final class DialogGotItemSequenceTest {
         link.airborne().tickDialogGotItem(false);
         assertEquals(0x12, link.linkAirborne.elevation().zSubPixels());
         assertEquals(0x10, link.airborne().zVelocity());
-        assertEquals(0, link.linkAnimator.bedJumpRenderZ);
+        assertEquals(0, link.linkAnimator.bedJumpRenderZ());
         link.animation().clearDialogGotItem();
         assertFalse(link.animation().dialogGotItemActive());
         assertEquals(2, link.animation().presentedDialogGotItem());

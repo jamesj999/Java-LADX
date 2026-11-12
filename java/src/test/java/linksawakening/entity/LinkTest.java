@@ -51,7 +51,7 @@ final class LinkTest extends LinkFixture {
             int previousSteps = link.linkAnimationState.romConsecutiveStepsCount;
             link.motion().update();
             assertTrue(link.equipment().isRomLinkPushing());
-            if (frame == 0) assertEquals(-1, link.linkAnimator.pushingAnimationState);
+            if (frame == 0) assertEquals(-1, link.linkAnimator.pushingAnimationState());
             else assertEquals(0x20 + ((previousSteps >> 3) & 1), link.linkAnimator.resolveAnimationState());
         }
         input.onKeyEvent(config.rightKey(), GLFW_RELEASE);

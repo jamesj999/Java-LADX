@@ -23,7 +23,7 @@ final class LinkMotion extends LinkCollisionMotion {
         }
 
         linkStateMachine.get().dash().resetPegasusBoots();
-        linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
+        linkAnimator.get().ledgeJumpRenderY(pixelY() - linkAirborne.get().accessZPixels());
         subX = (accessRomEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
         linkStateMachine.get().status().motionState(LinkMotionState.UNSTUCKING);
@@ -58,8 +58,8 @@ final class LinkMotion extends LinkCollisionMotion {
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
         linkAirborne.get().elevation().airborne(true);
         linkAirborne.get().elevation().zVelocity(0);
-        linkAnimator.get().jumpAnimationCounter = 0;
-        linkAnimator.get().jumpAnimationFrame = 0;
+        linkAnimator.get().jumpAnimationCounter(0);
+        linkAnimator.get().jumpAnimationFrame(0);
     }
 
     protected boolean ledgeUnstuckingPositionBlocked() {

@@ -135,7 +135,7 @@ final class LinkSwimming {
                     .recoverCountdown(linkStateMachine.get().status().recoverCountdown() - 1);
         int countdown = linkStateMachine.get().status().recoverCountdown();
         if (countdown != 0) {
-            linkAnimator.get().romAnimationStateOverride = countdown >= 0x40 ? 0x4C : countdown >= 0x30 ? 0x4E : 0xFF;
+            linkAnimator.get().romAnimationStateOverride(countdown >= 0x40 ? 0x4C : countdown >= 0x30 ? 0x4E : 0xFF);
             if (countdown == 0x40)
                 linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.LINK_HURT);
             return;
@@ -158,7 +158,7 @@ final class LinkSwimming {
             linkMotion.get().subY = linkMotion.get().roomEntrySubY;
         }
         linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
-        linkAnimator.get().romAnimationStateOverride = -1;
+        linkAnimator.get().romAnimationStateOverride(-1);
     }
 
     void updateSwimming() {

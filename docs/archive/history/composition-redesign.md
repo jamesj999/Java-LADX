@@ -428,3 +428,45 @@ Jump steering, gravity, landing and scripted jump commands are one responsibilit
 | `directionalLedgeCollisionCounter` |  |
 
 Result: depth 2 → 0; original three chain files (508 lines) → LinkAirborne (331), LinkPitFall (257), LinkElevation (34). State is private; pit and jump callers use their respective components, with the existing fall, jump, ledge and sound assertions unchanged. Full suite: 2,891 tests, zero failures/errors, one skipped.
+
+## Link animation
+
+Original chain: LinkAnimator → LinkAnimationSelection → LinkSpriteRendering → LinkPoseState.
+
+Pose selection, overrides, jump/push animation counters and scripted presentations form LinkAnimator. LinkSpriteComposer owns the reusable decoded tile buffer and body/equipment drawing; it receives selected pose values rather than an animator/back-reference. LinkPoseTables holds immutable fallback animation table data, separate from selection and drawing.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `dialogGotItemSequence` | `LinkPoseState`, `accessDialogGotItemActive`, `accessDialogGotItem`, `accessDialogGotItemCountdown`, `accessPresentedDialogGotItem`, `accessPresentToadstool`, `accessClearDialogGotItem` |
+| `linkAirborne` | `LinkPoseState`, `renderEquippedItems`, `resolveAnimationState`, `resolveNormalAnimation`, `submitEquippedOam`, `renderY` |
+| `linkAnimationState` | `LinkPoseState`, `renderEquippedItems`, `resolveAnimationState`, `resolveNormalAnimation`, `cachePushingAnimation`, `queryOverride`, `showRomFallenPose`, `showHeldItemPose`, `showPowerUpPickupPose`, `showStandingShieldDownPose`, `showSwordAcquisitionSpinPose`, `showSwordAcquisitionFinalPose`, `submitEquippedOam`, `accessPresentToadstool` |
+| `linkDamage` | `LinkPoseState`, `showPowerUpPickupPose` |
+| `linkEntityEffects` | `LinkPoseState`, `render`, `resolveAnimationState`, `resolveNormalAnimation`, `submitOam` |
+| `linkEquipment` | `LinkPoseState`, `resolveNormalAnimation` |
+| `linkItemState` | `LinkPoseState`, `cachePushingAnimation`, `showHeldItemPose`, `showPowerUpPickupPose` |
+| `linkMotion` | `LinkPoseState`, `render`, `renderEquippedItems`, `cachePushingAnimation`, `showPowerUpPickupPose`, `submitOam`, `submitEquippedOam`, `renderY` |
+| `linkServices` | `LinkPoseState`, `render`, `renderEquippedItems`, `resolveNormalAnimation`, `cachePushingAnimation`, `showSwordAcquisitionSpinPose`, `submitOam`, `submitEquippedOam` |
+| `linkStateMachine` | `LinkPoseState`, `render`, `resolveAnimationState`, `resolveNormalAnimation`, `showRomFallenPose`, `showHeldItemPose`, `showPowerUpPickupPose`, `showStandingShieldDownPose`, `showSwordAcquisitionSpinPose`, `showSwordAcquisitionFinalPose`, `submitOam` |
+| `ANIMATION_STATE` | `resolveNormalAnimation` |
+| `SHIELD_USE_ANIMATION_STATE` | `resolveNormalAnimation` |
+| `MIRROR_SHIELD_USE_ANIMATION_STATE` | `resolveNormalAnimation` |
+| `LIFTING_ANIMATION_STATE` | `resolveNormalAnimation` |
+| `SWIMMING_ANIMATION_STATE` | `resolveAnimationState` |
+| `DIVING_ANIMATION_STATE` | `resolveAnimationState` |
+| `JUMP_ANIMATION_STATE` | `resolveNormalAnimation` |
+| `FALL_ANIMATION_STATE` | `resolveAnimationState` |
+| `composedTiles` | `render`, `submitOam` |
+| `tarinShieldPresentation` | `showTarinShieldPresentation`, `clearTarinShieldPresentation`, `showStandingShieldDownPose`, `accessIsTarinShieldPresentationVisible` |
+| `tarinShieldPalette` | `showTarinShieldPresentation`, `accessTarinShieldPalette` |
+| `romAnimationStateOverride` | `resolveAnimationState`, `showRomFallenPose`, `showHeldItemPose`, `showPowerUpPickupPose`, `showStandingShieldDownPose`, `showSwordAcquisitionSpinPose`, `showSwordAcquisitionFinalPose` |
+| `swordAcquisitionBaseRomDirection` | `showSwordAcquisitionSpinPose`, `showSwordAcquisitionFinalPose` |
+| `swordAcquisitionAnimationState` | `renderEquippedItems`, `resolveAnimationState`, `showSwordAcquisitionSpinPose`, `showSwordAcquisitionFinalPose`, `submitEquippedOam` |
+| `marinWakeUpBedVariant` | `showMarinWakeUpBed`, `accessIsMarinWakeUpBedVisible`, `accessMarinWakeUpBedVariant` |
+| `bedJumpRenderZ` | `renderY` |
+| `ledgeJumpRenderY` | `resolveNormalAnimation`, `renderY` |
+| `jumpAnimationCounter` |  |
+| `jumpAnimationFrame` | `resolveNormalAnimation` |
+| `pushingAnimationState` | `resolveNormalAnimation`, `cachePushingAnimation` |
+| `UNSHIELDED_WALK_BASE` | `cachePushingAnimation` |
+
+Result: depth 3 → 0; LinkAnimator 449 lines, LinkSpriteComposer 284, LinkPoseTables 52. Pose state and tile buffers are private, and drawing receives selected pose values rather than the animator. Aggregate debug reset moved from frame dispatch to the existing motion command role; game-over completion invokes it before clearing recovery counters in the same order. Full suite: 2,891 tests, zero failures/errors, one skipped.

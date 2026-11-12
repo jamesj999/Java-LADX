@@ -202,9 +202,9 @@ abstract class LinkCollisionMotion extends LinkPosition {
         linkAirborne.get().elevation().airborne(true);
         linkAirborne.get().elevation().zSubPixels(0);
         linkAirborne.get().elevation().zVelocity(0x1C);
-        linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
-        linkAnimator.get().jumpAnimationCounter = 0;
-        linkAnimator.get().jumpAnimationFrame = 0;
+        linkAnimator.get().ledgeJumpRenderY(pixelY() - linkAirborne.get().accessZPixels());
+        linkAnimator.get().jumpAnimationCounter(0);
+        linkAnimator.get().jumpAnimationFrame(0);
         linkServices.get().soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
     }

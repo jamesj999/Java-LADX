@@ -5,10 +5,12 @@ import static linksawakening.entity.Link.*;
 /** Delegates status operations to state owners used by ROM {@code ApplyLinkMotionState}. */
 final class DefaultLinkStatusRole implements LinkStatusRole {
     private final LinkDamage linkDamage;
+    private final LinkMotionRole motion;
     private final LinkRecovery linkRecovery;
     private final LinkSignals linkSignals;
 
-    DefaultLinkStatusRole(LinkAssembly assembly) {
+    DefaultLinkStatusRole(LinkAssembly assembly, LinkMotionRole motion) {
+        this.motion = motion;
         linkDamage = assembly.linkDamage.get();
         linkRecovery = assembly.linkRecovery.get();
         linkSignals = assembly.linkSignals.get();
@@ -75,6 +77,7 @@ final class DefaultLinkStatusRole implements LinkStatusRole {
     }
 
     public void finishGameOver() {
+        motion.resetTransientStateForDebug();
         linkRecovery.accessFinishGameOver();
     }
 

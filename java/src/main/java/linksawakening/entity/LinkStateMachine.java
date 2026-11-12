@@ -99,11 +99,15 @@ final class LinkStateMachine {
             linkAnimationState.get().movingThisFrame = false;
             return false;
         }
-        linkAnimator.get().bedJumpRenderZ = -1;
-        linkAnimator.get().ledgeJumpRenderY = linkAirborne.get().overworldLedgeFallActive()
-                        || linkAirborne.get().directionalLedgeJumpMotionLocked()
-                ? linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels()
-                : Integer.MIN_VALUE;
+        linkAnimator.get().bedJumpRenderZ(-1);
+        linkAnimator
+                .get()
+                .ledgeJumpRenderY(
+                        linkAirborne.get().overworldLedgeFallActive()
+                                        || linkAirborne.get().directionalLedgeJumpMotionLocked()
+                                ? linkMotion.get().accessPixelY()
+                                        - linkAirborne.get().accessZPixels()
+                                : Integer.MIN_VALUE);
         status.frameCounter((status.frameCounter() + 1) & 0xFF);
         if (dash.pegasusBootsCollisionCountdown() > 0) {
             dash.pegasusBootsCollisionCountdown(dash.pegasusBootsCollisionCountdown() - 1);
@@ -124,9 +128,9 @@ final class LinkStateMachine {
         status.romInteractiveMotionBlocked(false);
         status.romInteractiveMotionBlockValue(0);
         if (!interactiveMotionBlocked) {
-            linkAnimator.get().romAnimationStateOverride = -1;
-            linkAnimator.get().swordAcquisitionBaseRomDirection = -1;
-            linkAnimator.get().swordAcquisitionAnimationState = -1;
+            linkAnimator.get().romAnimationStateOverride(-1);
+            linkAnimator.get().swordAcquisitionBaseRomDirection(-1);
+            linkAnimator.get().swordAcquisitionAnimationState(-1);
         }
         if (interactiveMotionBlocked
                 && !(linkSideView.get().sideScrolling
@@ -324,14 +328,18 @@ final class LinkStateMachine {
     private void applyMotion() {
         boolean bedJumpFrame = linkEntityEffects.get().marinBedJumpMotionLocked;
         if (bedJumpFrame) {
-            linkAnimator.get().marinWakeUpBedVariant = -1;
+            linkAnimator.get().marinWakeUpBedVariant(-1);
             // Marin sets wIsLinkInTheAir=2, so UpdateLinkAnimation skips
             // the feather/ledge flip. Walking animation precedes gravity:
             // first pose $0A, then $0B, including the landing frame.
-            linkAnimator.get().romAnimationStateOverride = LinkAnimator.ANIMATION_STATE[
-                    linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().movingThisFrame ? 1 : 0];
+            linkAnimator
+                    .get()
+                    .romAnimationStateOverride(
+                            LinkPoseTables.ANIMATION_STATE[
+                                    linkAnimationState.get().direction.javaIndex()][
+                                    linkAnimationState.get().movingThisFrame ? 1 : 0]);
             // ApplyGotItem caches wC145 before this frame changes Z.
-            linkAnimator.get().bedJumpRenderZ = linkAirborne.get().accessZPixels();
+            linkAnimator.get().bedJumpRenderZ(linkAirborne.get().accessZPixels());
             linkAirborne.get().tickJump();
         }
         linkMotion.get().lastRomSpeedX = frame.speedX & 0xFF;
@@ -427,63 +435,6 @@ final class LinkStateMachine {
             linkAirborne.get().elevation().zSubPixels(0);
             linkAirborne.get().elevation().zVelocity(0);
         }
-    }
-
-    /** Clears scripted presentation/capture state before a debug game reset. */
-    void resetTransientStateForDebug() {
-        dialogGotItemSequence.get().reset();
-        status.debugNoClip(false);
-        linkGroundMotion.get().accessClearGroundEffects();
-        linkAnimationState.get().romConsecutiveStepsCount = 7;
-        status.romInteractiveMotionBlocked(false);
-        status.romInteractiveMotionBlockValue(0);
-        linkSideView.get().standingOnSideViewEntity = false;
-        linkSideView.get().sideViewPlatformVerticalSpeedPending = -1;
-        linkDamage.get().collisionDamageImmune = false;
-        linkAnimator.get().romAnimationStateOverride = -1;
-        linkAnimator.get().swordAcquisitionBaseRomDirection = -1;
-        linkAnimator.get().swordAcquisitionAnimationState = -1;
-        linkAnimator.get().tarinShieldPresentation = false;
-        linkAnimator.get().tarinShieldPalette = null;
-        linkAnimator.get().marinWakeUpBedVariant = -1;
-        linkEntityEffects.get().marinBedJumpMotionLocked = false;
-        linkAnimator.get().bedJumpRenderZ = -1;
-        linkAnimator.get().ledgeJumpRenderY = Integer.MIN_VALUE;
-        linkAirborne.get().directionalLedgeJumpMotionLocked(false);
-        linkAirborne.get().overworldLedgeFallActive(false);
-        linkEntityEffects.get().likeLikeCaptured = false;
-        linkEntityEffects.get().likeLikeCapturePinsPosition = false;
-        linkAirborne.get().pit().fallingIntoPit(false);
-        linkEntityEffects.get().carryingLiftedObjectState = 0;
-        linkAnimationState.get().topDownFeatherStarted = false;
-        linkEntityEffects.get().roosterCarryActive = false;
-        linkAirborne.get().elevation().airborne(false);
-        linkAirborne.get().pit().groundStatus(GroundStatus.NORMAL);
-        status.motionState(LinkMotionState.DEFAULT);
-        door.revolvingDoorFrame(0);
-        door.revolvingDoorTransitionPending(false);
-        door.revolvingDoorPaletteVariant(-1);
-        roomPhysics.physicsModifier(0);
-        status.recoverCountdown(0);
-        status.recoveringInWater(false);
-        linkSignals.get().pendingWaterSplash = null;
-        linkSignals.get().pitWarpPending = false;
-        roomPhysics.physicsRoomLoadToken(-1);
-        roomPhysics.physicsRoomMapId(-1);
-        roomPhysics.physicsRoomId(-1);
-        roomPhysics.physicsRoomCategory(-1);
-        linkAirborne.get().elevation().zSubPixels(0);
-        linkAirborne.get().elevation().zVelocity(0);
-        linkAirborne.get().spinningPitWarpArrival(false);
-        linkMotion.get().forcedSpeedPending = false;
-        linkMotion.get().forcedSpeedXOnly = false;
-        linkDamage.get().collisionIgnoreFramesRemaining = 0;
-        linkItemState.get().romLinkPushing = 0;
-        linkAnimator.get().pushingAnimationState = -1;
-        linkItemState.get().romAttackStepAnimationCountdown = 0;
-        linkAnimationState.get().movingThisFrame = false;
-        linkAnimationState.get().walkTickCounter = 0;
-        linkAnimationState.get().walkFrame = 0;
     }
 
     boolean accessIsDiving() {
