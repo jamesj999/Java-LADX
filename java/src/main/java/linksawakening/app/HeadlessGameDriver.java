@@ -1,8 +1,12 @@
 package linksawakening.app;
 
+import linksawakening.app.flow.SessionContext;
+import linksawakening.app.headless.HeadlessState;
+import linksawakening.app.headless.SessionDiagnostics;
+
 /**
- * Owns an isolated, window-free game session for input replay and capture.
- * Frames use the same input, simulation and composition paths as the desktop.
+ * Owns an isolated, window-free game session for input replay and capture. Frames use the same input,
+ * simulation and composition paths as the desktop. One instance is retained for the owning session.
  */
 public final class HeadlessGameDriver {
     private final GameSession session = new GameSession();
@@ -49,7 +53,7 @@ public final class HeadlessGameDriver {
 
     /** Immutable checkpoint, retained under the driver's original public name. */
     public static final class State extends HeadlessState {
-        State(SessionDiagnostics snapshot) {
+        public State(SessionDiagnostics snapshot) {
             super(snapshot);
         }
     }

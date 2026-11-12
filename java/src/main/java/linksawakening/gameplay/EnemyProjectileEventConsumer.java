@@ -7,7 +7,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.state.PowerUp;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
-/** Applies one frame of ROM enemy-projectile events at the gameplay boundary. */
+/** Stateless application of each frame’s enemy-projectile damage and sound requests in source order. */
 public final class EnemyProjectileEventConsumer {
     private static final int SHIELD_TING_ID = 0x16;
     private static final int ENEMY_BUMP_ID = 0x09;
@@ -94,6 +94,15 @@ public final class EnemyProjectileEventConsumer {
             return;
         }
 
+        applyDamage(event, playerState, link, soundSink, consequences);
+    }
+
+    private static void applyDamage(
+            EntityProjectileEvent event,
+            PlayerState playerState,
+            Link link,
+            GameplaySoundSink soundSink,
+            DamageConsequences consequences) {
         // The enemy-bomb handler doubles the existing Link speed even
         // when ApplyLinkCollisionWithEnemy rejects the new damage due to
         // invincibility. It is a motion response, not another hit.

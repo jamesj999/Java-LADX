@@ -1,13 +1,16 @@
 package linksawakening.app.screen;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import java.util.Objects;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
-/** Owns title-screen input edges and advances title presentation. */
+/**
+ * Owns title-screen input edges and advances title presentation. One instance is retained for the owning
+ * session.
+ */
 public final class TitleScreen implements Screen {
     /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {
@@ -33,8 +36,7 @@ public final class TitleScreen implements Screen {
 
     @Override
     public void onKey(int key, int action) {
-        if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
-            dependencies.navigator().startFileSelection();
+        if (key == KEY_ENTER && action == PRESS) dependencies.navigator().startFileSelection();
     }
 
     @Override

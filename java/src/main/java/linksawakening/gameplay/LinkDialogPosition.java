@@ -2,7 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.entity.Link;
 
-/** Link dialog position behavior and state. */
+/** Stateless conversion from Link’s top-left position to the ROM dialog placement coordinate. */
 public final class LinkDialogPosition {
 
     private LinkDialogPosition() {}

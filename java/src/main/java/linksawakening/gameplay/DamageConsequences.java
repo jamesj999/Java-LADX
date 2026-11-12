@@ -1,6 +1,6 @@
 package linksawakening.gameplay;
 
-/** Side effects following accepted enemy damage, in the order requested by the consumer. */
+/** Caller-supplied damage side effects, retained by combat consumers and invoked in source order. */
 public interface DamageConsequences {
     void contactHurt();
 

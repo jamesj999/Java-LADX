@@ -18,7 +18,10 @@ final class ClassFileReferences {
 
     record FieldReference(String owner, String name) {}
 
-    record CompiledType(String name, List<String> references, List<FieldReference> fields) {}
+    record MethodReference(String owner, String name) {}
+
+    record CompiledType(
+            String name, List<String> references, List<FieldReference> fields, List<MethodReference> methods) {}
 
     static List<CompiledType> classes() throws Exception {
         List<CompiledType> result = new ArrayList<>();
@@ -26,6 +29,7 @@ final class ClassFileReferences {
             for (Path path : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
                 List<String> references = new ArrayList<>();
                 List<FieldReference> fields = new ArrayList<>();
+                List<MethodReference> methods = new ArrayList<>();
                 try (var input = new DataInputStream(Files.newInputStream(path))) {
                     if (input.readInt() != 0xCAFEBABE) throw new IllegalArgumentException(path.toString());
                     input.readUnsignedShort();
@@ -35,6 +39,7 @@ final class ClassFileReferences {
                     int[] classNames = new int[count];
                     int[][] nameAndTypes = new int[count][];
                     List<int[]> fieldRefs = new ArrayList<>();
+                    List<int[]> methodRefs = new ArrayList<>();
                     for (int i = 1; i < count; i++) {
                         switch (input.readUnsignedByte()) {
                             case 1 -> {
@@ -52,10 +57,15 @@ final class ClassFileReferences {
                             case 12 -> nameAndTypes[i] =
                                     new int[] {input.readUnsignedShort(), input.readUnsignedShort()};
                             case 8, 16, 19, 20 -> input.skipNBytes(2);
-                            case 10, 11, 17, 18 -> input.skipNBytes(4);
+                            case 10, 11 -> methodRefs.add(
+                                    new int[] {input.readUnsignedShort(), input.readUnsignedShort()});
+                            case 17, 18 -> input.skipNBytes(4);
                             case 15 -> input.skipNBytes(3);
                             default -> throw new IllegalArgumentException("Unknown constant-pool tag: " + path);
                         }
+                    }
+                    for (int[] method : methodRefs) {
+                        methods.add(new MethodReference(utf8[classNames[method[0]]], utf8[nameAndTypes[method[1]][0]]));
                     }
                     for (int[] field : fieldRefs) {
                         fields.add(new FieldReference(utf8[classNames[field[0]]], utf8[nameAndTypes[field[1]][0]]));
@@ -68,7 +78,8 @@ final class ClassFileReferences {
                                         .replace('\\', '/')
                                         .replace(".class", ""),
                         references,
-                        fields));
+                        fields,
+                        methods));
             }
         }
         assertTrue(!result.isEmpty(), "No compiled world classes found");

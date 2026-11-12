@@ -1,6 +1,7 @@
 package linksawakening.app.debug;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.app.input.ApplicationKeys.*;
+import static linksawakening.input.KeyCodes.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +12,14 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
-/** Game-thread-only editor. No save I/O; changes use the ordinary save path. */
+/**
+ * Game-thread-only editor. No save I/O; changes use the ordinary save path. One instance is retained for the
+ * owning session.
+ */
 public final class DebugMenu {
     private static final String[] PAGES = {"TELEPORT", "INVENTORY", "RESOURCES", "QUEST", "DUNGEONS"};
     private final List<List<Entry>> pages = new ArrayList<>();
-    private final TeleportTarget teleport;
+    private final DebugTeleporter teleport;
     private boolean open, shift;
     private int page, selected, category, map, room, x, y, dungeon;
     private String message = "";
@@ -32,7 +36,7 @@ public final class DebugMenu {
         }
     }
 
-    public DebugMenu(PlayerState p, RoomSession world, TeleportTarget teleport) {
+    public DebugMenu(PlayerState p, RoomSession world, DebugTeleporter teleport) {
         this.teleport = teleport;
         for (String ignored : PAGES) pages.add(new ArrayList<>());
         add(0, "Type", () -> category, v -> category = v, 0, 2, v -> new String[] {"Overworld", "Indoor", "Side view"}
@@ -109,35 +113,35 @@ public final class DebugMenu {
     }
 
     public static boolean isToggle(int key, int action) {
-        return key == GLFW_KEY_F4 && action == GLFW_PRESS;
+        return key == KEY_F4 && action == PRESS;
     }
 
     public void key(int key, int action) {
-        if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
-            shift = action != GLFW_RELEASE;
+        if (key == KEY_LEFT_SHIFT || key == KEY_RIGHT_SHIFT) {
+            shift = action != RELEASE;
             return;
         }
         key(key, action, shift);
     }
 
     public void key(int key, int action, boolean fast) {
-        if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
-        if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_F4) {
+        if (action != PRESS && action != REPEAT) return;
+        if (key == KEY_ESCAPE || key == KEY_F4) {
             open = false;
             return;
         }
-        if (key == GLFW_KEY_TAB || key == GLFW_KEY_PAGE_DOWN || key == GLFW_KEY_PAGE_UP) {
-            page = Math.floorMod(page + (key == GLFW_KEY_PAGE_UP ? -1 : 1), pages.size());
+        if (key == KEY_TAB || key == KEY_PAGE_DOWN || key == KEY_PAGE_UP) {
+            page = Math.floorMod(page + (key == KEY_PAGE_UP ? -1 : 1), pages.size());
             selected = 0;
-        } else if (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) {
-            selected = Math.floorMod(
-                    selected + (key == GLFW_KEY_UP ? -1 : 1), entries().size());
-        } else if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
-            entries().get(selected).change((key == GLFW_KEY_LEFT ? -1 : 1) * (fast ? 16 : 1));
-        } else if (key == GLFW_KEY_HOME || key == GLFW_KEY_END) {
+        } else if (key == KEY_UP || key == KEY_DOWN) {
+            selected =
+                    Math.floorMod(selected + (key == KEY_UP ? -1 : 1), entries().size());
+        } else if (key == KEY_LEFT || key == KEY_RIGHT) {
+            entries().get(selected).change((key == KEY_LEFT ? -1 : 1) * (fast ? 16 : 1));
+        } else if (key == KEY_HOME || key == KEY_END) {
             Entry entry = entries().get(selected);
-            entry.write().accept(key == GLFW_KEY_HOME ? entry.min() : entry.max());
-        } else if (key == GLFW_KEY_ENTER && page == 0) {
+            entry.write().accept(key == KEY_HOME ? entry.min() : entry.max());
+        } else if (key == KEY_ENTER && page == 0) {
             try {
                 teleport.teleport(destination(category, map, room, x, y));
                 message = "Teleported. F4 resumes.";

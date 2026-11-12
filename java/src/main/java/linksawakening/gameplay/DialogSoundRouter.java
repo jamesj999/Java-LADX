@@ -2,7 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.dialog.DialogController;
 
-/** Dialog sound router behavior and state. */
+/** Stateless drain of pending dialog sounds into the supplied session audio sink. */
 public final class DialogSoundRouter {
 
     private DialogSoundRouter() {}

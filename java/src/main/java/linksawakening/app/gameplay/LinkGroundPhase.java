@@ -2,7 +2,10 @@ package linksawakening.app.gameplay;
 
 import linksawakening.world.room.LinkGroundFrame;
 
-/** Ground sampling at the pre- and post-motion ROM positions. */
+/**
+ * Ground sampling at the pre- and post-motion ROM positions. Stateless utility; no session state is
+ * retained.
+ */
 final class LinkGroundPhase {
     private LinkGroundPhase() {}
 
@@ -27,16 +30,6 @@ final class LinkGroundPhase {
     }
 
     static LinkGroundFrame groundFrame(GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
-        return new LinkGroundFrame(
-                pixelX,
-                pixelY,
-                context.link().airborne().isAirborne(),
-                interactionBlocked,
-                context.dialogController().isActive(),
-                context.scrollController().isActive()
-                        || context.transitionController().isInputBlocked(),
-                context.link().airborne().romMotionState(),
-                context.link().motion().romSlowWalkingSpeed(),
-                context.link().motion().romItemUsageContext());
+        return context.frameInputs().ground(context, pixelX, pixelY, interactionBlocked);
     }
 }

@@ -1,11 +1,25 @@
 package linksawakening.app;
 
 import java.util.Objects;
-import linksawakening.app.gameplay.BushInteraction;
-import linksawakening.app.gameplay.DialogInteractions;
+import linksawakening.app.flow.SaveCoordinator;
+import linksawakening.app.flow.ScreenRouter;
+import linksawakening.app.flow.SessionContext;
+import linksawakening.app.flow.SessionControllers;
 import linksawakening.app.gameplay.GameplaySimulation;
-import linksawakening.app.gameplay.LiftInteraction;
+import linksawakening.app.gameplay.interaction.BushInteraction;
+import linksawakening.app.gameplay.interaction.DialogInteractions;
+import linksawakening.app.gameplay.interaction.LiftInteraction;
+import linksawakening.app.input.InputRouter;
+import linksawakening.app.presentation.RenderStateAssembler;
+import linksawakening.app.services.SessionServices;
+import linksawakening.app.state.FrameClock;
+import linksawakening.app.state.GameplaySounds;
+import linksawakening.app.state.OpeningStoryState;
+import linksawakening.app.state.RunState;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.SessionState;
 import linksawakening.app.story.OpeningStory;
+import linksawakening.app.wiring.SessionWiring;
 import linksawakening.config.AppConfig;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.startup.StartupCoordinator;
@@ -51,7 +65,7 @@ public class GameSession implements AutoCloseable {
         return context.services();
     }
 
-    public SessionFlows flows() {
+    public SessionControllers flows() {
         return context.runtime().flows();
     }
 
@@ -163,7 +177,7 @@ public class GameSession implements AutoCloseable {
     }
 
     private void initialize(boolean headless) {
-        context = SessionAssembly.build(this, headless);
+        context = SessionWiring.build(random, headlessPcm, clock, opening, sounds, headless);
     }
 
     void onKeyEvent(int key, int action) {

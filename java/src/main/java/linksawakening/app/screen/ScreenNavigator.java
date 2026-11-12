@@ -2,7 +2,10 @@ package linksawakening.app.screen;
 
 import linksawakening.scene.BackgroundScene;
 
-/** Navigation requests used by input, saves and screen lifecycle implementations. */
+/**
+ * Navigation requests used by input, saves and screen lifecycle implementations. Implementations are
+ * connected when the owning session is wired.
+ */
 public interface ScreenNavigator {
     Screen current();
 

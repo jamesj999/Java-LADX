@@ -6,6 +6,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
 
+/** Advances player resources, equipment and Link motion in ROM order. Retained for one simulation. */
 final class LinkEquipmentPhase {
     private final ActiveLinkPhase active;
 

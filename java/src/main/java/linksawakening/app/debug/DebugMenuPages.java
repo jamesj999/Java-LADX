@@ -1,11 +1,14 @@
 package linksawakening.app.debug;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static linksawakening.input.KeyCodes.*;
 
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 
-/** Entry definitions for player-editing pages, separate from keyboard navigation. */
+/**
+ * Entry definitions for player-editing pages, separate from keyboard navigation. Stateless utility; no
+ * session state is retained.
+ */
 final class DebugMenuPages {
     private DebugMenuPages() {}
 

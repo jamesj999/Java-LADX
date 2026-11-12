@@ -5,7 +5,7 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.room.RoomSession;
 
-/** Applies pending beach-sword room rewards at the gameplay state boundary. */
+/** Stateless application of pending beach-sword room rewards to player state. */
 public final class BeachSwordRewardConsumer {
     private BeachSwordRewardConsumer() {}
 

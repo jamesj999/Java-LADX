@@ -37,7 +37,7 @@ class AppBoundaryTest {
                     || type.name().startsWith("linksawakening/app/gameplay/");
             for (var ref : type.references()) {
                 if (isolated) assertFalse(ref.startsWith("org/lwjgl/"), type.name() + " -> " + ref);
-                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/SessionAssembly"))
+                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/wiring/SessionWiring"))
                     assertFalse(ref.startsWith("linksawakening/audio/openal/"), type.name() + " -> " + ref);
             }
         }
@@ -54,7 +54,8 @@ class AppBoundaryTest {
 
     @Test
     void domainCollaboratorsCannotCallBackIntoSessionComposition() throws Exception {
-        var direct = List.of("InputRouter", "ScreenRouter", "SaveCoordinator", "RenderStateAssembler");
+        var direct = List.of(
+                "input/InputRouter", "flow/ScreenRouter", "flow/SaveCoordinator", "presentation/RenderStateAssembler");
         for (var type : ClassFileReferences.classes()) {
             boolean domain = type.name().startsWith("linksawakening/app/gameplay/")
                     || type.name().startsWith("linksawakening/app/story/")
@@ -62,7 +63,7 @@ class AppBoundaryTest {
                     || direct.stream().anyMatch(n -> type.name().equals("linksawakening/app/" + n));
             if (domain) {
                 assertFalse(type.references().contains("linksawakening/app/GameSession"), type.name());
-                assertFalse(type.references().contains("linksawakening/app/SessionContext"), type.name());
+                assertFalse(type.references().contains("linksawakening/app/flow/SessionContext"), type.name());
             }
         }
     }

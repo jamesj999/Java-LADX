@@ -2,7 +2,10 @@ package linksawakening.app.screen;
 
 import linksawakening.ui.FileMenuFrameSnapshot;
 
-/** Gameplay lifecycle operations consumed by the input-queue screen. */
+/**
+ * Gameplay lifecycle operations consumed by the input-queue screen. Implementations are connected when the
+ * owning session is wired.
+ */
 public interface GameplayScreenDriver {
     boolean interceptFrameInput();
 

@@ -1,11 +1,11 @@
 package linksawakening.app.story;
 
 import java.util.Objects;
-import linksawakening.app.InputServices;
-import linksawakening.app.PlayerServices;
-import linksawakening.app.SessionState;
-import linksawakening.app.UiServices;
-import linksawakening.app.WorldServices;
+import linksawakening.app.services.InputServices;
+import linksawakening.app.services.PlayerServices;
+import linksawakening.app.services.UiServices;
+import linksawakening.app.services.WorldServices;
+import linksawakening.app.state.SessionState;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
@@ -18,7 +18,10 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
 
-/** Runs Marin wake-up and Tarin shield state machines against live session state. */
+/**
+ * Runs Marin wake-up and Tarin shield state machines against live session state. One instance is retained
+ * for the owning session.
+ */
 public final class OpeningStory implements OpeningRestoration {
     private final PlayerServices player;
     private final WorldServices world;

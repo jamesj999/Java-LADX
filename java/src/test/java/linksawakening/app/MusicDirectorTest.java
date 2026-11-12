@@ -3,6 +3,7 @@ package linksawakening.app;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.app.audio.MusicDirector;
 import linksawakening.audio.music.*;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
