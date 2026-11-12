@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomUtil;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
@@ -23,8 +22,8 @@ final class InventoryInstrumentPanelTest {
             assertArrayEquals(new int[] {tile, tile + 1, tile + 16, tile + 17}, panel.tilemapForInstrument(i, 2));
         }
         // Confirm layout values are read from the ROM, not duplicated literals.
-        rom[RomUtil.romOffset(1, 0x6BCF)] = 0x11;
-        rom[RomUtil.romOffset(1, 0x6BD7)] = (byte) 0xB9;
+        rom[linksawakening.rom.RomBank.romOffset(1, 0x6BCF)] = 0x11;
+        rom[linksawakening.rom.RomBank.romOffset(1, 0x6BD7)] = (byte) 0xB9;
         var changed = new InventoryInstrumentPanel(Rom.of(rom));
         assertEquals(0x111, changed.position(0));
         assertEquals(0xB9, changed.tilemapForInstrument(0, 0)[3]);
@@ -35,13 +34,13 @@ final class InventoryInstrumentPanelTest {
         byte[] rom = rom();
         var panel = new InventoryInstrumentPanel(Rom.of(rom));
         var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
-        assertEquals(RomUtil.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
+        assertEquals(linksawakening.rom.RomBank.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 7)[7]);
         assertFalse(java.util.Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 128)[7]);
         assertArrayEquals(base[0], panel.palettes(base, 8)[0]);
         assertEquals(
-                RomUtil.decodeRgb555(0x001F),
+                linksawakening.rom.RomBank.decodeRgb555(0x001F),
                 InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).objectPalettes()[6][2]);
     }
 

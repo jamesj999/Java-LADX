@@ -40,7 +40,7 @@ public final class EntitySpriteCatalog {
         }
         this.romData = romData;
         this.entitySpriteHandlerCatalog = new EntitySpriteHandlerCatalog(romData);
-        this.roomPaletteLoader = new RoomPaletteLoader(romData.unsafeBytes());
+        this.roomPaletteLoader = new RoomPaletteLoader(romData);
     }
 
     public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId) {

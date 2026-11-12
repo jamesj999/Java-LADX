@@ -4,6 +4,7 @@ import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
 /** Palette indexes from the ROM's {@code InventoryItemPaletteIndexes} table. */
+// Item IDs remain raw saved bytes: unknown values deliberately use the empty-item palette.
 final class InventoryItemPalettes {
 
     private static final int[][] INDEXES = {

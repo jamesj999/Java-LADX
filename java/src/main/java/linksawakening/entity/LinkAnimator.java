@@ -26,7 +26,7 @@ final class LinkAnimator extends LinkAnimationSelection {
                     sink,
                     linkMotion.get().accessPixelX(),
                     linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction,
+                    linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
         }
@@ -39,7 +39,7 @@ final class LinkAnimator extends LinkAnimationSelection {
                     sink,
                     linkMotion.get().accessPixelX(),
                     linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction,
+                    linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
         }
@@ -54,7 +54,7 @@ final class LinkAnimator extends LinkAnimationSelection {
                         sink,
                         linkMotion.get().accessPixelX(),
                         linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
-                        linkAnimationState.get().direction,
+                        linkAnimationState.get().direction.javaIndex(),
                         offsetX,
                         offsetY);
             }

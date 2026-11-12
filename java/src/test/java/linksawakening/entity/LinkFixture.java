@@ -58,7 +58,7 @@ abstract class LinkFixture {
 
     protected static Link linkWithEmptyRoom(InputState inputState) throws IOException {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(romTables);
         collision.setRoom(emptyRoomObjectsArea());
         return new LinkTestBuilder()
@@ -74,7 +74,7 @@ abstract class LinkFixture {
 
     protected static Link pitLink(InputConfig inputConfig) throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_PIT;
         OverworldCollision collision = new OverworldCollision(romTables);
@@ -155,7 +155,7 @@ abstract class LinkFixture {
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(RomTables.loadFromRom(loadRom()))
+                .tables(RomTables.load(linksawakening.rom.Rom.of(loadRom())))
                 .collision(null)
                 .sprites(null)
                 .player(playerState)

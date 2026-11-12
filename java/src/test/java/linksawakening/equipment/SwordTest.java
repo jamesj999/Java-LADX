@@ -299,7 +299,9 @@ final class SwordTest {
     @Test
     void fullyChargedReleaseFrameRendersSameSwordPoseAsHolding() throws Exception {
         byte[] romData = loadRom();
-        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(Rom.of(romData)));
+        Sword sword = new Sword(
+                RomTables.load(linksawakening.rom.Rom.unchecked(romData)),
+                SwordSpriteSheet.loadFromRom(Rom.of(romData)));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -326,7 +328,7 @@ final class SwordTest {
         byte[] romData = loadRom();
         SwordPalette palette = SwordPalette.loadFromRom(Rom.of(romData));
         Sword sword = new Sword(
-                RomTables.loadFromRom(romData),
+                RomTables.load(linksawakening.rom.Rom.unchecked(romData)),
                 SwordSpriteSheet.loadFromRom(Rom.of(romData)),
                 GameplaySoundSink.none(),
                 () -> 0,
@@ -356,7 +358,7 @@ final class SwordTest {
     @Test
     void holdingSwordRendersUsingRomHoldingEntry() throws Exception {
         byte[] romData = loadRom();
-        RomTables romTables = RomTables.loadFromRom(romData);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(romData));
         SwordSpriteSheet spriteSheet = SwordSpriteSheet.loadFromRom(Rom.of(romData));
         Sword sword = new Sword(romTables, spriteSheet);
 
@@ -377,7 +379,7 @@ final class SwordTest {
 
     @Test
     void heldSwordRetainsEnemyCollisionWhileRunningWithPegasusBoots() throws Exception {
-        var tables = RomTables.loadFromRom(loadRom());
+        var tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Sword sword = new Sword(tables, null);
         sword.onPress();
         for (int i = 0; i < 32 && sword.state() != Sword.STATE_HOLDING; i++) sword.tick(true);
@@ -385,13 +387,13 @@ final class SwordTest {
         assertFalse(sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex()).active());
         var box = sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex(), true);
         assertTrue(box.active());
-        assertEquals(80 + tables.swordCollisionXOriginOffset(2, Sword.STATE_HOLDING), box.x());
-        assertEquals(96 + tables.swordCollisionYOriginOffset(2, Sword.STATE_HOLDING), box.y());
+        assertEquals(80 + tables.swordTables().swordCollisionXOriginOffset(2, Sword.STATE_HOLDING), box.x());
+        assertEquals(96 + tables.swordTables().swordCollisionYOriginOffset(2, Sword.STATE_HOLDING), box.y());
     }
 
     @Test
     void enemyCollisionBoxUsesTheRomNormalSwingTables() throws Exception {
-        Sword sword = new Sword(RomTables.loadFromRom(loadRom()), null);
+        Sword sword = new Sword(RomTables.load(linksawakening.rom.Rom.of(loadRom())), null);
         sword.onPress();
         for (int frame = 0; frame < 4; frame++) {
             sword.tick(false);
@@ -431,7 +433,7 @@ final class SwordTest {
 
     @Test
     void spinAttackCollisionWalksEveryRomSwordDirection() throws Exception {
-        Sword sword = new Sword(RomTables.loadFromRom(loadRom()), null);
+        Sword sword = new Sword(RomTables.load(linksawakening.rom.Rom.of(loadRom())), null);
         Set<Integer> collisionIndices = new HashSet<>();
 
         sword.onPress();
@@ -563,13 +565,13 @@ final class SwordTest {
             int javaDirection,
             int swordState) {
         int romDirection = toRomDirection(javaDirection);
-        int swordDir = romTables.swordDirectionFor(romDirection, swordState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDirection, swordState);
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDirection, swordState);
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
+        int swordDir = romTables.swordTables().swordDirectionFor(romDirection, swordState);
+        int bladeX = linkPixelX + romTables.swordTables().swordBladeXOffset(romDirection, swordState);
+        int bladeY = linkPixelY + romTables.swordTables().swordBladeYOffset(romDirection, swordState);
+        int tile0 = romTables.swordTables().swordSpriteTile(swordDir, 0);
+        int tile1 = romTables.swordTables().swordSpriteTile(swordDir, 1);
+        int attr0 = romTables.swordTables().swordSpriteAttr(swordDir, 0);
+        int attr1 = romTables.swordTables().swordSpriteAttr(swordDir, 1);
         if (tile0 != 0xFF) {
             draw8x16Alpha(buffer, spriteSheet, tile0, bladeX, bladeY, attr0);
         }

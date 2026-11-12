@@ -28,7 +28,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
     @Test
     void swordSwingPausesJumpFlipCounterUntilAfterItsFinalAnimationFrame() throws Exception {
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState player = new PlayerState();
         ItemRegistry registry = new ItemRegistry();
@@ -85,7 +85,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
     @Test
     void swordAcquisitionSpinUsesRomDirectionAndAnimationTables() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         for (int baseRomDirection : new int[] {0, 3}) {
             Link link = new LinkTestBuilder()
@@ -107,7 +107,8 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 int tableIndex = 0x02 * 0x4000 + (0x46C9 - 0x4000) + baseRomDirection * 8 + sector;
                 int swordState = Byte.toUnsignedInt(rom[tableIndex]);
                 int absoluteDirection = Byte.toUnsignedInt(rom[tableIndex + 0x20]);
-                int expectedAnimationState = romTables.swordDirectionAnimState(absoluteDirection, swordState);
+                int expectedAnimationState =
+                        romTables.swordTables().swordDirectionAnimState(absoluteDirection, swordState);
                 if (expectedAnimationState == 0xFF) {
                     expectedAnimationState = previousAnimationState;
                 }
@@ -127,7 +128,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
 
     @Test
     void swordAcquisitionSpinOverridesAQueuedMotionBlockedButtPose() throws Exception {
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = new LinkTestBuilder()
                 .input(new InputState())
@@ -141,9 +142,9 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         link.animation().setDirection(Direction.RIGHT.javaIndex());
 
         link.animation().showSwordAcquisitionSpinPose(0x20);
-        int swordState = romTables.swordSpinAnimationState(0, 7);
-        int absoluteDirection = romTables.swordSpinAbsoluteDirection(0, 7);
-        int expectedAnimationState = romTables.swordDirectionAnimState(absoluteDirection, swordState);
+        int swordState = romTables.swordTables().swordSpinAnimationState(0, 7);
+        int absoluteDirection = romTables.swordTables().swordSpinAbsoluteDirection(0, 7);
+        int expectedAnimationState = romTables.swordTables().swordDirectionAnimState(absoluteDirection, swordState);
 
         link.motion().blockNextRomMotionFrame();
         link.animation().showSwordAcquisitionSpinPose(0x1F);
@@ -163,7 +164,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         Link link = new LinkTestBuilder()
                 .input(new InputState())
                 .config(inputConfig)
-                .tables(RomTables.loadFromRom(rom))
+                .tables(RomTables.load(linksawakening.rom.Rom.unchecked(rom)))
                 .collision(null)
                 .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(playerState)
@@ -432,7 +433,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         ItemRegistry registry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         registry.register(player.inventory().itemA(), sword);
-        RomTables tables = RomTables.loadFromRom(loadRom());
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setRoom(emptyRoomObjectsArea());
         Link link = new LinkTestBuilder()
@@ -482,7 +483,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
         ItemRegistry itemRegistry = new ItemRegistry();
         Sword sword = new Sword(null, null);
         itemRegistry.register(playerState.inventory().itemA(), sword);
-        RomTables romTables = RomTables.loadFromRom(loadRom());
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)

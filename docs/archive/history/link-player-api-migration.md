@@ -1,6 +1,10 @@
 # Link and player API migration
 
-Round 4: composed API and the current external migration work list (following round 3). Public inherited Object operations retain their Java contract. External caller lists resolve Java receiver types and overload signatures with the compiler, including method references, constructors and static field references. Reflection/string-based access is not inferred. Nested public value types remain source-compatible.
+**Round 5 status: aggregate-layer removal complete.** Link and PlayerState have
+no superclass. See the final section for the current remaining external work;
+earlier tables are historical checkpoints, not the current API surface.
+
+Round 4 historical checkpoint (superseded by the Round 5 completion below). Public inherited Object operations retain their Java contract. External caller lists resolve Java receiver types and overload signatures with the compiler, including method references, constructors and static field references. Reflection/string-based access is not inferred. Nested public value types remain source-compatible.
 
 | Aggregate | Public member | Decision and replacement | External caller files |
 | --- | --- | --- | --- |
@@ -593,3 +597,212 @@ All five round 4 steps are complete. Verification used the default test task
 with LA_ROM: 2,821 baseline → 2,822 final tests, zero failures/errors and one
 existing skip. No off-limits source or test files, fixtures, build configuration,
 ROMs or extracted assets changed.
+
+## Round 5 starting reference inventory
+
+Compiler-resolved references after merging develop. Includes implementation calls
+inside record builders, constructors and legacy dispatch layers; those are not
+external migration clients. The typed RoomPaletteLoader call is now used.
+
+| Deprecated member | Caller files |
+| --- | --- |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderTest.java` |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int,int[],byte[],int)` | `java/src/main/java/linksawakening/cutscene/IntroFrameSnapshot.java` |
+| `linksawakening.entity.LinkCommand.HinoxGrab.<init>(int,int,int,int,int,int,int,boolean,boolean)` | `java/src/main/java/linksawakening/entity/LinkCommand.java` |
+| `linksawakening.entity.LinkStateView.legacyRoles()` | `java/src/main/java/linksawakening/entity/LinkActionView.java`<br>`java/src/main/java/linksawakening/entity/LinkMovementView.java`<br>`java/src/main/java/linksawakening/entity/LinkRoomView.java`<br>`java/src/main/java/linksawakening/entity/LinkStateView.java` |
+| `linksawakening.gameplay.DialogTextLoader.loadFromRom(byte[])` | `java/src/test/java/linksawakening/render/DialogEmulatorCapture.java` |
+| `linksawakening.rom.Rom.<init>(byte[])` | `java/src/main/java/linksawakening/rom/Rom.java` |
+| `linksawakening.rom.RomTables.linkFineCollisionShape(int,int)` | `java/src/test/java/linksawakening/physics/OverworldCollisionTest.java` |
+| `linksawakening.rom.RomTables.loadFromRom(byte[])` | `java/src/test/java/linksawakening/entity/LinkAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkFixture.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpSoundTest.java`<br>`java/src/test/java/linksawakening/entity/LinkLedgeParityTest.java`<br>`java/src/test/java/linksawakening/entity/LinkPitBehaviorAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkPitBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/LinkSideViewMotionTest.java`<br>`java/src/test/java/linksawakening/entity/LinkTest.java`<br>`java/src/test/java/linksawakening/entity/LinkWaterBehaviorTest.java`<br>`java/src/test/java/linksawakening/entity/MarinWakeUpLinkStateTest.java`<br>`java/src/test/java/linksawakening/equipment/SwordTest.java`<br>`java/src/test/java/linksawakening/physics/OverworldCollisionTest.java` |
+| `linksawakening.rom.RomTables.objectPhysicsFlag(int,int)` | `java/src/test/java/linksawakening/entity/LinkAdditionalTest.java`<br>`java/src/test/java/linksawakening/entity/LinkJumpSoundTest.java` |
+| `linksawakening.rom.RomTables.swordBladeXOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordBladeYOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordCollisionXOriginOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordCollisionYOriginOffset(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordDirectionAnimState(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordDirectionFor(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordSpinAbsoluteDirection(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordSpinAnimationState(int,int)` | `java/src/test/java/linksawakening/entity/LinkEquipmentBehaviorTest.java` |
+| `linksawakening.rom.RomTables.swordSpriteAttr(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomTables.swordSpriteTile(int,int)` | `java/src/test/java/linksawakening/equipment/SwordTest.java` |
+| `linksawakening.rom.RomUtil.decodeRgb555(int)` | `java/src/test/java/linksawakening/ui/InventoryInstrumentPanelTest.java` |
+| `linksawakening.rom.RomUtil.romOffset(int,int)` | `java/src/test/java/linksawakening/ui/InventoryInstrumentPanelTest.java` |
+| `linksawakening.startup.NewGameStartProfile.<init>(int,int,int,int,int,int,int,int,int,int,int,int)` | `java/src/main/java/linksawakening/startup/NewGameStartProfile.java` |
+| `linksawakening.state.PlayerInventoryCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerLifecycleCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerState.java` |
+| `linksawakening.state.PlayerProgressionCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.<init>()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.ammunition()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.chestRewards()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.equipmentLevels()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.inventory()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerInitialization()` | `java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerResources()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerRewards()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerSaveLoader()` | `java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.playerSounds()` | `java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.progression()` | `java/src/main/java/linksawakening/state/PlayerInventoryCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerLifecycleCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.vitals()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.state.PlayerResourceCompatibility.wallet()` | `java/src/main/java/linksawakening/state/PlayerProgressionCompatibility.java`<br>`java/src/main/java/linksawakening/state/PlayerResourceCompatibility.java` |
+| `linksawakening.ui.FileMenuFrameSnapshot.<init>(java.lang.String,int,boolean,boolean,int,int,int[],int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>)` | `java/src/main/java/linksawakening/ui/FileMenuFrameSnapshot.java`<br>`java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java` |
+
+## Round 5 aggregate flattening
+
+- Link: superclass depth 4 → 0; source lines 249 → 218; declared public methods 10 → 12.
+- PlayerState: superclass depth 4 → 0; source lines 139 → 84; declared public methods 12 → 12.
+- Deprecated aggregate bridge methods 205 → 1; constants 22 → 0; constructor 1 → 0.
+- Eight compatibility layer classes deleted. PlayerState has no deprecated members.
+- Link.useRocsFeather remains only for `java/src/test/java/linksawakening/world/room/GameplayRouteStage1.java`, which passes Link as JumpTarget. World must pass `link.airborne()` instead.
+- Link.update remains as genuine aggregate frame orchestration through its retained motion role.
+- Boundary tests now enforce direct Object inheritance and the exact single bridge exception; state has no gameplay dependency exemption.
+
+## Round 5 inheritance audit
+
+After aggregate flattening, 35 non-framework inheritance relationships remain in the owned main packages. No exception or sealed hierarchy was included. These internal algorithm/state hierarchies are retained; they do not reintroduce aggregate compatibility shelves. A future composition conversion can isolate their mutable phase dependencies, but is not required for deleting the external migration API.
+
+| Relationship | Reason retained |
+| --- | --- |
+| `FileMenuFlow extends FileMenuState` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `FileMenuController extends FileMenuEditing` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `FileMenuEditing extends FileMenuFlow` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `State extends HeadlessState` | Public HeadlessGameDriver.State preserves the immutable HeadlessState value contract and external replay source compatibility; it adds no state or dispatch layer. |
+| `Diagnostics extends SessionDiagnostics` | Public HeadlessGameDriver.Diagnostics preserves the externally named SessionDiagnostics live-view subtype; it adds no state or dispatch layer. |
+| `LinkAnimator extends LinkAnimationSelection` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkSpriteRendering extends LinkPoseState` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkAirborne extends LinkJumpMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkRoomMotion extends LinkFrameMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteDynamicComposites extends EntitySpriteBossComposites` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `LinkBootsMotion extends LinkRoomMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkAnimationSelection extends LinkSpriteRendering` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkFrameMotion extends LinkMotionLifecycle` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteBossComposites extends EntitySpriteLookup` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteRomDecoding extends EntitySpriteDynamicComposites` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteHandlerCatalog extends EntitySpriteDecodeGeometry` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteLookup extends EntitySpriteDecodeState` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `LinkMotion extends LinkCollisionMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkStateMachine extends LinkBootsMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkJumpMotion extends LinkAirborneState` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkCollisionMotion extends LinkPosition` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `DialogLifecycle extends DialogState` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogTextFormatting extends DialogPaging` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogController extends DialogTextFormatting` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogPaging extends DialogLifecycle` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `IntroSequence extends IntroSceneRendering` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroBeachMotion extends IntroSceneMotion` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneMotion extends IntroLifecycle` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroLifecycle extends IntroSequenceState` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneRendering extends IntroSceneTransitions` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneTransitions extends IntroBeachMotion` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `Sword extends SwordChargeMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+| `SwordAttackMotion extends SwordState` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+| `SwordChargeMotion extends SwordAttackMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+
+## Round 5 ROM cleanup
+
+Deprecated ROM members 23 → 0: private Rom constructor; 20 RomTables delegates and two RomUtil delegates removed. RomBank already has no deprecated members. Compiler audit found no callers outside the constructor’s own factories. Typed/unchecked factories preserve validation policy.
+
+Remaining unsafeBytes call sites (including tests and off-limits code):
+
+- `java/src/main/java/linksawakening/audio/music/MusicDriver.java:47`: `romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();`
+- `java/src/main/java/linksawakening/audio/sfx/RomSoundEffectEngine.java:32`: `romBytes = Objects.requireNonNull(romData, "romData").unsafeBytes();`
+- `java/src/main/java/linksawakening/app/wiring/SubsystemWiring.java:45`: `transition.setRomData(rom.unsafeBytes());`
+- `java/src/main/java/linksawakening/app/wiring/SubsystemWiring.java:58`: `var bushes = new OverworldBushInteraction(rom.unsafeBytes(), tables);`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:53`: `romData.unsafeBytes(),`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:55`: `new RoomLoader(romData.unsafeBytes()),`
+- `java/src/main/java/linksawakening/app/wiring/WorldWiring.java:56`: `new OverworldTilesetTable(romData.unsafeBytes()),`
+- `java/src/test/java/linksawakening/rom/RomReadTest.java:16`: `assertSame(data, rom.unsafeBytes());`
+- `java/src/test/java/linksawakening/rom/RomReadTest.java:36`: `assertSame(data, rom.unsafeBytes());`
+
+## Round 5 enum plumbing
+
+Closed Link animation facing storage now uses Direction, including all direct writes; Java indices are produced only at existing array/API boundaries. Joypad-facing dispatch accepts Direction. Removed two Link and four sword conversion helpers in favor of explicit Direction conversion policies. Tunic and power-up storage was already enum-backed.
+
+Exact `int direction/itemId/tunic/motionState` source occurrences (including return declarations and local loop/menu counters): 37 → 34. Closed facing fields 1 → 0; closed joypad direction parameters 1 → 0. Remaining values are raw snapshot/ROM values, permissive equipment input contracts, collision table indices or signed menu deltas; source comments identify the preservation rules. Saved item bytes must not collapse unknown IDs to an enum fallback.
+
+Remaining audited occurrences:
+
+- `java/src/main/java/linksawakening/ui/HudOverlay.java:53`: `private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:27`: `static int[] forItem(int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:41`: `static int[] forItem(int itemId) {`
+- `java/src/main/java/linksawakening/ui/InventoryItemPalettes.java:45`: `static int palettePair(int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/ui/OcarinaSongMenu.java:115`: `public boolean moveSelection(int direction) {`
+- `java/src/main/java/linksawakening/ui/InventorySubscreenOverlay.java:69`: `private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId, PlayerState player) {`
+- `java/src/main/java/linksawakening/entity/DefaultLinkAnimationRole.java:35`: `public int direction() {`
+- `java/src/main/java/linksawakening/entity/EntitySpriteRomDecoding.java:51`: `for (int direction = 0; direction < 4; direction++) {`
+- `java/src/main/java/linksawakening/entity/LinkAnimationRole.java:17`: `int direction();`
+- `java/src/main/java/linksawakening/vfx/CutLeavesEffectRenderer.java:196`: `int direction = variant & 0x03;`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:36`: `public int entityCollisionPointX(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:42`: `public int entityCollisionPointY(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/rom/CollisionTables.java:73`: `private static int collisionPointIndex(int collisionBoxType, int direction) {`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:171`: `public abstract int overrideAnimationState(int direction, int walkFrame);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:173`: `public abstract void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:176`: `linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY);`
+- `java/src/main/java/linksawakening/equipment/SwordState.java:201`: `protected abstract int effectiveDirection(int direction);`
+- `java/src/main/java/linksawakening/equipment/MagicRod.java:122`: `public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/MagicRod.java:154`: `int direction,`
+- `java/src/main/java/linksawakening/equipment/Ocarina.java:67`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/SwordAttackMotion.java:198`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/SwordAttackMotion.java:216`: `public void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:36`: `default CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int direction) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:80`: `default int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:92`: `byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {}`
+- `java/src/main/java/linksawakening/equipment/EquipmentItem.java:98`: `int direction,`
+- `java/src/main/java/linksawakening/equipment/SwordChargeMotion.java:43`: `public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {`
+- `java/src/main/java/linksawakening/equipment/SwordChargeMotion.java:173`: `protected int effectiveDirection(int direction) {`
+- `java/src/main/java/linksawakening/equipment/Shovel.java:81`: `public int overrideAnimationState(int direction, int walkFrame) {`
+- `java/src/main/java/linksawakening/app/input/InputRouter.java:187`: `int direction = input.inputState().isDown(input.inputConfig().leftKey())`
+- `java/src/main/java/linksawakening/app/gameplay/FrameInputCache.java:51`: `EntityPickupInputs.Link pickup(int x, int y, boolean airborne, boolean interactive, int direction, int z) {`
+- `java/src/main/java/linksawakening/app/headless/HeadlessState.java:36`: `private final int direction;`
+- `java/src/main/java/linksawakening/app/headless/HeadlessState.java:193`: `public int direction() {`
+- `java/src/main/java/linksawakening/app/gameplay/entity/EntityInputCache.java:30`: `LinkPosition linkPosition(int x, int y, int z, int direction, int collisionType) {`
+
+## Round 5 completion and remaining owners
+
+All six ordered steps are complete. Link/PlayerState inheritance depth is zero,
+eight layers are deleted, and rom has zero deprecated members. The default
+suite contains 2,872 tests, zero failures/errors and one existing skip. No
+off-limits source, test, fixture or build configuration was changed.
+
+The following deprecated APIs still have off-limits clients; those engineers
+must migrate the listed files before deletion (including interface adaptation):
+
+| Member | Remaining caller / owner |
+| --- | --- |
+| `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderTest.java` |
+| `linksawakening.entity.Link.useRocsFeather()` | `java/src/test/java/linksawakening/world/room/GameplayRouteStage1.java` |
+| `linksawakening.gameplay.DialogTextLoader.loadFromRom(byte[])` | `java/src/test/java/linksawakening/render/DialogEmulatorCapture.java` |
+| `linksawakening.ui.FileMenuFrameSnapshot.<init>(java.lang.String,int,boolean,boolean,int,int,int[],int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>)` | `java/src/test/java/linksawakening/render/GameFrameSceneBuilderFileMenuTest.java` |
+
+Other deprecated signatures outside this round's targeted aggregate/ROM
+removal scope remain listed below. Record canonical constructors are required
+implementation endpoints for their builders; uncalled loader/value delegates
+can be pruned separately. None creates an aggregate inheritance layer.
+
+- `linksawakening.cutscene.CutsceneManager.startIntro(byte[],java.util.function.Function<java.lang.String,linksawakening.scene.BackgroundScene>)`
+- `linksawakening.cutscene.IntroFrameSnapshot.<init>(java.lang.String,java.lang.String,int,int,int,int[],int,int[],int[],int[][],int[][],java.util.List<linksawakening.cutscene.IntroSprite>,int,int[],byte[],int)`
+- `linksawakening.entity.EntitySpriteCatalog.<init>(byte[])`
+- `linksawakening.entity.EntitySpriteHandlerCatalog.<init>(byte[])`
+- `linksawakening.entity.EntitySpriteSelection.<init>(linksawakening.world.entity.EntityRoomLoader.RoomTable,int,int,int[],boolean,int[][],java.util.Map<java.lang.Integer,linksawakening.entity.EntitySpriteDefinition>,java.util.Map<java.lang.Integer,linksawakening.entity.EntitySpriteDefinition>,linksawakening.entity.EntitySpriteDefinition,linksawakening.entity.EntitySpriteDefinition,linksawakening.entity.EntitySpriteDefinition)`
+- `linksawakening.entity.LinkCommand.HinoxGrab.<init>(int,int,int,int,int,int,int,boolean,boolean)`
+- `linksawakening.entity.LinkSpriteSheet.loadFromRom(byte[])`
+- `linksawakening.entity.LinkTunicPalette.loadFromRom(byte[])`
+- `linksawakening.equipment.SwordPalette.loadFromRom(byte[])`
+- `linksawakening.equipment.SwordSpriteSheet.loadFromRom(byte[])`
+- `linksawakening.scene.BackgroundSceneLoader.<init>(byte[])`
+- `linksawakening.startup.NewGameStartProfile.<init>(int,int,int,int,int,int,int,int,int,int,int,int)`
+- `linksawakening.ui.FileMenuRomData.<init>(byte[])`
+- `linksawakening.ui.InventoryMenu.<init>(linksawakening.ui.InventoryTilemapLoader,linksawakening.state.PlayerState,linksawakening.gameplay.GameplaySoundSink,byte[])`
+- `linksawakening.ui.InventoryTilemapLoader.loadFromRom(byte[])`
+- `linksawakening.ui.OcarinaSongMenu.songFlagForIndex(int)`
+- `linksawakening.ui.TilemapRenderer.render(byte[],linksawakening.gpu.GPU,int[],int[],int[][],int,int,int,int)`
+- `linksawakening.ui.TilemapRenderer.submit(linksawakening.render.HardwareFrame,linksawakening.gpu.GPU,int[],int[],int[][],int,int,int,int)`
+- `linksawakening.vfx.TransientVfxSpriteSheet.loadFromRom(byte[])`
+
+The inheritance audit above justifies every retained non-framework relationship
+individually (35 total). The integer audit records 37 → 34 exact occurrences;
+raw-byte compatibility is intentional, not an incomplete enum classification.
+Five app wiring unsafeBytes sites await the world entry-point migration; two
+audio internals and two backing-array ownership assertions also remain.
+
+Final compiled API metrics (`javap -public`, excluding constructors and nested types): Link 209 lines / 12 declared public methods; PlayerState 84 lines / 12 declared public methods. This corrects the step-2 commit message’s source-pattern count of 17 for Link, which included nested declarations.

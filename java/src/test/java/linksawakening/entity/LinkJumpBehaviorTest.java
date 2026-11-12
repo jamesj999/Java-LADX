@@ -87,7 +87,7 @@ final class LinkJumpBehaviorTest extends LinkFixture {
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
-                .tables(RomTables.loadFromRom(loadRom()))
+                .tables(RomTables.load(linksawakening.rom.Rom.of(loadRom())))
                 .collision(null)
                 .sprites(null)
                 .player(playerState)
@@ -145,7 +145,7 @@ final class LinkJumpBehaviorTest extends LinkFixture {
     @Test
     void rocsFeatherCannotCrossAMismatchedRaisedSwitchBlock() throws Exception {
         byte[] rom = loadRom();
-        RomTables romTables = RomTables.loadFromRom(rom);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);

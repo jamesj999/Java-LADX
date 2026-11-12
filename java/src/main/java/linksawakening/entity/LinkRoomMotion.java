@@ -27,7 +27,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
         }
         if (++revolvingDoorFrame >= 0x38) {
             linkMotion.get().subY = (-5 - 16) << Link.SUB_PIXEL_SHIFT;
-            linkAnimationState.get().direction = Direction.UP.javaIndex();
+            linkAnimationState.get().direction = Direction.UP;
             linkAnimator.get().romAnimationStateOverride = 0x04;
         }
         if (revolvingDoorFrame == 0x48) {
@@ -55,7 +55,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
         int mask = linkControls.get().accessBuildJoypadMask();
         int newDirection = LinkRomConstants.JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1) {
-            linkAnimationState.get().direction = newDirection;
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
         int speedX = (byte) linkServices.get().linkMotionTables.linkSpeedX(groundSpeedIndex(mask));
         int speedY = (byte) linkServices.get().linkMotionTables.linkSpeedY(groundSpeedIndex(mask));
@@ -123,7 +123,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
     }
 
     protected int pegasusRunningSpeedX() {
-        return switch (Direction.fromJavaOrUnknown(linkAnimationState.get().direction)) {
+        return switch (linkAnimationState.get().direction) {
             case LEFT -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             case RIGHT -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
@@ -131,7 +131,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
     }
 
     protected int pegasusRunningSpeedY() {
-        return switch (Direction.fromJavaOrUnknown(linkAnimationState.get().direction)) {
+        return switch (linkAnimationState.get().direction) {
             case UP -> -LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             case DOWN -> LinkRomConstants.PEGASUS_BOOTS_RUNNING_SPEED;
             default -> 0;
@@ -158,8 +158,7 @@ abstract class LinkRoomMotion extends LinkFrameMotion {
         linkAirborne.get().zSubPixels = 0;
         linkAirborne.get().zVelocity = LinkRomConstants.PEGASUS_BOOTS_COLLISION_VELOCITY_Z;
 
-        int romDirection =
-                Direction.fromJava(linkAnimationState.get().direction).romIndex();
+        int romDirection = linkAnimationState.get().direction.romIndex();
         int[] xOffsets = {0x10, 0xF0, 0x08, 0x08};
         int[] yOffsets = {0x0C, 0x0C, 0xF0, 0x10};
         pegasusBootsCollisionPosX = (linkMotion.get().romEntityX() + xOffsets[romDirection]) & 0xFF;

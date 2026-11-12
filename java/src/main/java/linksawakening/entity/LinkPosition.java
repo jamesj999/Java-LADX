@@ -79,8 +79,8 @@ abstract class LinkPosition {
         return physicsFlag >= PhysicsFlags.CAT_LEDGE && physicsFlag <= PhysicsFlags.CAT_LEDGE + 3;
     }
 
-    static int joypadBitForDirection(int direction) {
-        return switch (Direction.fromJavaOrUnknown(direction)) {
+    static int joypadBitForDirection(Direction direction) {
+        return switch (direction) {
             case DOWN -> LinkRomConstants.JOY_DOWN;
             case UP -> LinkRomConstants.JOY_UP;
             case LEFT -> LinkRomConstants.JOY_LEFT;

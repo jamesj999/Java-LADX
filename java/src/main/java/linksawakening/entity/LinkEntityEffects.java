@@ -115,7 +115,7 @@ final class LinkEntityEffects {
         carryingLiftedObjectState = carryState;
         carryingLiftedObjectRomDirection = romDirection;
         if (carryState != 0) {
-            linkAnimationState.get().direction = Direction.fromRom(romDirection).javaIndex();
+            linkAnimationState.get().direction = Direction.fromRom(romDirection);
         }
     }
 
@@ -136,7 +136,7 @@ final class LinkEntityEffects {
         linkAirborne.get().fallingIntoPit = false;
         linkStateMachine.get().physicsModifier = 0;
         roosterCarryActive = true;
-        linkAnimationState.get().direction = Direction.fromRom(romDirection).javaIndex();
+        linkAnimationState.get().direction = Direction.fromRom(romDirection);
         linkMotion.get().applyRomSpeed(speedX, speedY);
     }
 
@@ -234,7 +234,7 @@ final class LinkEntityEffects {
         linkAirborne.get().zVelocity = 0x12;
         linkAirborne.get().groundStatus = GroundStatus.NORMAL;
         linkAirborne.get().fallingIntoPit = false;
-        linkAnimationState.get().direction = Direction.RIGHT.javaIndex();
+        linkAnimationState.get().direction = Direction.RIGHT;
         linkMotion.get().lastRomSpeedX = 0x0C;
         linkMotion.get().lastRomSpeedY = 0;
         linkMotion.get().forcedSpeedPending = false;

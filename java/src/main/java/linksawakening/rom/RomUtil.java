@@ -10,18 +10,6 @@ public final class RomUtil {
 
     private RomUtil() {}
 
-    /** @deprecated Use {@link RomBank#romOffset(int, int)}. */
-    @Deprecated(forRemoval = true)
-    public static int romOffset(int bank, int address) {
-        return RomBank.romOffset(bank, address);
-    }
-
-    /** @deprecated Use {@link RomBank#decodeRgb555(int)}. */
-    @Deprecated(forRemoval = true)
-    public static int decodeRgb555(int color) {
-        return RomBank.decodeRgb555(color);
-    }
-
     public static int[][] loadPalettesFromRom(Rom rom, RomAddress address, int paletteCount) {
         return RomBank.loadPalettes(rom, address, paletteCount);
     }

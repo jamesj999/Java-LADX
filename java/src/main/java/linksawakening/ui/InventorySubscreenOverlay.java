@@ -14,6 +14,7 @@ import linksawakening.state.PlayerState;
  * we have no OAM layer yet, we render the same tiles through the BG
  * attrmap's flipX bit instead.
  */
+// Item IDs remain raw saved bytes so unknown inventory values preserve the ROM/UI fallback.
 public final class InventorySubscreenOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;

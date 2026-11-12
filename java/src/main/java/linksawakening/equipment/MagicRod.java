@@ -12,6 +12,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 
 /** Port of {@code UseMagicRod} and {@code label_002_5310}. */
+// Integer facing inputs preserve the legacy default-direction rendering behavior.
 public final class MagicRod implements EquipmentItem {
     public static final int ATTACK_STEP_MAGIC_ROD = 0x8E;
 

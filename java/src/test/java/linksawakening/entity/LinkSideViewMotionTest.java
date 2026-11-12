@@ -24,7 +24,7 @@ final class LinkSideViewMotionTest {
         try (var stream = linksawakening.testing.TestRom.open()) {
             rom = stream.readAllBytes();
         }
-        var tables = RomTables.loadFromRom(rom);
+        var tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         collision.setRoom(objects);

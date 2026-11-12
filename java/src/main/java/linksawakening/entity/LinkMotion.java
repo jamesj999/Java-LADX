@@ -244,13 +244,13 @@ final class LinkMotion extends LinkCollisionMotion {
 
     protected int accessRomCollisionProbePixelX() {
         return linkAnimationState.get().accessHasFacingCollision()
-                ? this.collisionProbePixelX[linkAnimationState.get().direction]
+                ? this.collisionProbePixelX[linkAnimationState.get().direction.javaIndex()]
                 : this.pixelX();
     }
 
     protected int accessRomCollisionProbePixelY() {
         return linkAnimationState.get().accessHasFacingCollision()
-                ? this.collisionProbePixelY[linkAnimationState.get().direction]
+                ? this.collisionProbePixelY[linkAnimationState.get().direction.javaIndex()]
                 : this.pixelY();
     }
 

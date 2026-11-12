@@ -3,6 +3,7 @@ package linksawakening.ui;
 import linksawakening.state.PlayerState;
 
 /** Applies InventoryItemTiles and live player quantities to the two HUD tile rows. */
+// Item IDs remain raw saved bytes so unknown inventory values preserve the HUD fallback.
 public final class HudOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;

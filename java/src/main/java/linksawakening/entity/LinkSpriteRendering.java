@@ -6,7 +6,6 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.equipment.EquipmentItem;
 import linksawakening.gpu.Tile;
-import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.Tunic;
@@ -91,7 +90,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                     displayBuffer,
                     linkMotion.get().pixelX(),
                     linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction,
+                    linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
         }
@@ -104,7 +103,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                     displayBuffer,
                     linkMotion.get().pixelX(),
                     linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction,
+                    linkAnimationState.get().direction.javaIndex(),
                     offsetX,
                     offsetY);
         }
@@ -119,7 +118,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                         displayBuffer,
                         linkMotion.get().pixelX(),
                         linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
-                        linkAnimationState.get().direction,
+                        linkAnimationState.get().direction.javaIndex(),
                         offsetX,
                         offsetY);
             }
@@ -143,13 +142,13 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         if (linkStateMachine.get().motionState == LinkMotionState.SWIMMING) {
             return linkStateMachine.get().physicsModifier != 0
                     ? LinkAnimator.DIVING_ANIMATION_STATE[linkAnimationState.get().walkFrame]
-                    : LinkAnimator.SWIMMING_ANIMATION_STATE[linkAnimationState.get().direction][
-                            linkAnimationState.get().walkFrame];
+                    : LinkAnimator.SWIMMING_ANIMATION_STATE[
+                            linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
         }
 
         if (linkEntityEffects.get().grabbingObject) {
             return 0x36
-                    + 2 * Direction.fromJava(linkAnimationState.get().direction).romIndex()
+                    + 2 * linkAnimationState.get().direction.romIndex()
                     + (linkEntityEffects.get().pullingObject ? 1 : 0);
         }
         // func_002_4338 copies the intermediate ROM carry animation state
@@ -169,10 +168,11 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                                 && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
                 ? 1
                 : linkAnimationState.get().walkFrame;
-        int baseState = LinkAnimator.ANIMATION_STATE[linkAnimationState.get().direction][normalFrame];
+        int baseState =
+                LinkAnimator.ANIMATION_STATE[linkAnimationState.get().direction.javaIndex()][normalFrame];
         if (linkEntityEffects.get().carryingLiftedObjectState == 1) {
-            return LinkAnimator.LIFTING_ANIMATION_STATE[linkAnimationState.get().direction][
-                    linkAnimationState.get().walkFrame];
+            return LinkAnimator.LIFTING_ANIMATION_STATE[
+                    linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
         }
         int override = queryOverride(linkEquipment.get().itemInSlotA());
         if (override >= 0) {
@@ -186,7 +186,8 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                 && !linkAirborne.get().spinningPitWarpArrival
                 && jumpAnimationFrame < 3
                 && !linkAirborne.get().swordSuppressesJumpAnimation()) {
-            return LinkAnimator.JUMP_ANIMATION_STATE[linkAnimationState.get().direction][jumpAnimationFrame];
+            return LinkAnimator.JUMP_ANIMATION_STATE[
+                    linkAnimationState.get().direction.javaIndex()][jumpAnimationFrame];
         }
         if (pushingAnimationState >= 0) return pushingAnimationState;
         if (linkServices.get().spriteSheet != null) {
@@ -205,8 +206,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                     .get()
                     .spriteSheet
                     .walkingAnimationState(
-                            Direction.fromJava(linkAnimationState.get().direction)
-                                    .romIndex(),
+                            linkAnimationState.get().direction.romIndex(),
                             normalFrame,
                             carriedShield,
                             linkEquipment.get().isUsingShield());
@@ -218,7 +218,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                     linkServices.get().playerState.equipmentLevels().shieldLevel() >= 2
                             ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE
                             : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
-            return shieldTable[linkAnimationState.get().direction][normalFrame];
+            return shieldTable[linkAnimationState.get().direction.javaIndex()][normalFrame];
         }
         return baseState;
     }

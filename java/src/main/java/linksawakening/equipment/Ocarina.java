@@ -10,6 +10,7 @@ import linksawakening.state.PlayerState;
  * Song menu navigation is owned by the inventory layer; this item consumes
  * the selected song state and hands the playback countdown to the room.
  */
+// Integer facing inputs preserve the legacy animation override contract for unknown engine values.
 public final class Ocarina implements EquipmentItem {
     /** Contract for playback target. */
     public interface PlaybackTarget {

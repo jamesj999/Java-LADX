@@ -159,9 +159,11 @@ abstract class LinkCollisionMotion extends LinkPosition {
         int ledgeDirection =
                 Direction.fromRomOrUnknown(physicsFlag - PhysicsFlags.CAT_LEDGE).javaIndex();
         if (linkAirborne.get().airborne
-                || linkAnimationState.get().direction != ledgeDirection
+                || linkAnimationState.get().direction.javaIndex() != ledgeDirection
                 || moveDirection != ledgeDirection
-                || (linkControls.get().accessBuildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
+                || (linkControls.get().accessBuildJoypadMask()
+                                & joypadBitForDirection(Direction.fromJavaOrUnknown(ledgeDirection)))
+                        == 0) {
             linkAirborne.get().directionalLedgeCollisionCounter = 0;
             return true;
         }

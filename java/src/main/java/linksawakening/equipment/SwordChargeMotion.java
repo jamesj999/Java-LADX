@@ -61,10 +61,10 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
     public int staticCollisionMapIndex(int linkDirection) {
         lastKnownDirection = linkDirection;
         if (!spinAttackActive()) {
-            return toRomDirection(linkDirection);
+            return Direction.fromJavaOrDown(linkDirection).romIndex();
         }
         int effectiveDirection = effectiveDirection(linkDirection);
-        int romDirection = toRomDirection(effectiveDirection);
+        int romDirection = Direction.fromJavaOrDown(effectiveDirection).romIndex();
         int swordDirection = swordTables.swordDirectionFor(romDirection, spinAnimationState());
         return 4 + (swordDirection & 0x07);
     }
@@ -133,7 +133,7 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
             return new Sword.CollisionBox(true, linkEntityX + 0x08, 0x18, linkEntityY + 0x08, 0x18);
         }
 
-        int romDirection = toRomDirection(linkDirection);
+        int romDirection = Direction.fromJavaOrDown(linkDirection).romIndex();
         if (!swordTables.swordEnemyCollisionEnabled(romDirection, state)) {
             return Sword.CollisionBox.inactive();
         }
@@ -172,18 +172,23 @@ abstract class SwordChargeMotion extends SwordAttackMotion {
         if (!spinAttackActive()) {
             return direction;
         }
-        int baseDirection = toSpinDirectionIndex(spinBaseDirection);
+        int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
         return swordTables == null
                 ? SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[baseDirection][spinSector()]
-                : fromRomDirection(
-                        swordTables.swordSpinAbsoluteDirection(toRomDirection(spinBaseDirection), spinSector()));
+                : Direction.fromRom((swordTables.swordSpinAbsoluteDirection(
+                                        Direction.fromJavaOrDown(spinBaseDirection)
+                                                .romIndex(),
+                                        spinSector()))
+                                & 0x03)
+                        .javaIndex();
     }
 
     protected int spinAnimationState() {
-        int baseDirection = toSpinDirectionIndex(spinBaseDirection);
+        int baseDirection = Direction.fromJavaOrDown(spinBaseDirection).romIndex();
         return swordTables == null
                 ? SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[baseDirection][spinSector()]
-                : swordTables.swordSpinAnimationState(toRomDirection(spinBaseDirection), spinSector());
+                : swordTables.swordSpinAnimationState(
+                        Direction.fromJavaOrDown(spinBaseDirection).romIndex(), spinSector());
     }
 
     protected int spinSector() {

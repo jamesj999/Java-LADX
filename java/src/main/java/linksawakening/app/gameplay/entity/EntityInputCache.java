@@ -13,6 +13,7 @@ import linksawakening.world.room.SwordBox;
 import linksawakening.world.room.UiInputs;
 
 /** Session-local reuse of unchanged immutable input values; previously returned frames remain snapshots. */
+// Direction and motion values remain raw snapshot inputs; preserve unknown ROM values alongside world classifications.
 final class EntityInputCache {
     private LinkPosition linkPosition;
     private LinkMotion linkMotion;

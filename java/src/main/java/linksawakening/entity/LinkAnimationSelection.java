@@ -34,10 +34,8 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
                             .get()
                             .spriteSheet
                             .pushingAnimationState(
-                                    Direction.fromJava(linkAnimationState.get().direction)
-                                            .romIndex(),
-                                    frame)
-                    : UNSHIELDED_WALK_BASE[linkAnimationState.get().direction] + frame;
+                                    linkAnimationState.get().direction.romIndex(), frame)
+                    : UNSHIELDED_WALK_BASE[linkAnimationState.get().direction.javaIndex()] + frame;
         }
     }
 
@@ -45,7 +43,8 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         if (item == null) {
             return -1;
         }
-        return item.overrideAnimationState(linkAnimationState.get().direction, linkAnimationState.get().walkFrame);
+        return item.overrideAnimationState(
+                linkAnimationState.get().direction.javaIndex(), linkAnimationState.get().walkFrame);
     }
 
     /** Applies the ROM's explicit hLinkAnimationState=$6A fallen-pose write. */
@@ -59,7 +58,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
     protected void showHeldItemPose() {
         linkStateMachine.get().romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6C;
-        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkAnimationState.get().direction = Direction.DOWN;
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkAnimationState.get().movingThisFrame = false;
     }
@@ -93,7 +92,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         tarinShieldPresentation = false;
         romAnimationStateOverride = 0x22;
         linkStateMachine.get().romInteractiveMotionBlocked = false;
-        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkAnimationState.get().direction = Direction.DOWN;
         linkAnimationState.get().movingThisFrame = false;
     }
 
@@ -107,7 +106,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         }
         if (swordAcquisitionBaseRomDirection < 0) {
             swordAcquisitionBaseRomDirection =
-                    Direction.fromJava(linkAnimationState.get().direction).romIndex();
+                    linkAnimationState.get().direction.romIndex();
             swordAcquisitionAnimationState = resolveAnimationState();
         }
         // The spin handler writes a fresh hLinkAnimationState. Do not let a
@@ -126,8 +125,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
             swordAcquisitionAnimationState = animationState;
         }
         linkStateMachine.get().romInteractiveMotionBlocked = true;
-        linkAnimationState.get().direction =
-                Direction.fromRom(absoluteRomDirection).javaIndex();
+        linkAnimationState.get().direction = Direction.fromRom(absoluteRomDirection);
         linkAnimationState.get().movingThisFrame = false;
     }
 
@@ -137,7 +135,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
         romAnimationStateOverride = 0x6B;
-        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkAnimationState.get().direction = Direction.DOWN;
         linkAnimationState.get().movingThisFrame = false;
     }
 
