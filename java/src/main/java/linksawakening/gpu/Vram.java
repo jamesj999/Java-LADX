@@ -7,8 +7,8 @@ public final class Vram {
     public static final int VRAM_SIZE = 0x2000;
     public static final int TILE_COUNT = 384;
     public static final int TILE_DATA_SIZE = 16;
-    final byte[] vram;
-    final Tile[] tiles;
+    private final byte[] vram;
+    private final Tile[] tiles;
 
     public Vram() {
         vram = new byte[VRAM_SIZE];

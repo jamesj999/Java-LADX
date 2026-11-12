@@ -3,10 +3,13 @@ package linksawakening.audio.browser;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -15,10 +18,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
@@ -90,16 +97,14 @@ public final class AudioBrowserFrame extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    private final BrowserPanels panels = new BrowserPanels(this);
-
     private void configureWindow() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(760, 420));
         setLayout(new BorderLayout(8, 8));
-        add(panels.buildSearchPanel(), BorderLayout.NORTH);
-        add(panels.buildBrowserTabs(), BorderLayout.CENTER);
-        add(panels.buildDetailsPanel(), BorderLayout.EAST);
-        add(panels.buildStatusPanel(), BorderLayout.SOUTH);
+        add(buildSearchPanel(), BorderLayout.NORTH);
+        add(buildBrowserTabs(), BorderLayout.CENTER);
+        add(buildDetailsPanel(), BorderLayout.EAST);
+        add(buildStatusPanel(), BorderLayout.SOUTH);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent event) {
@@ -347,5 +352,97 @@ public final class AudioBrowserFrame extends JFrame {
             }
             return this;
         }
+    }
+
+    private JPanel buildSearchPanel() {
+        JPanel panel = new JPanel(new BorderLayout(6, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+        panel.add(new JLabel("Search"), BorderLayout.WEST);
+        panel.add(searchField, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JScrollPane buildTrackPanel() {
+        JScrollPane scrollPane = new JScrollPane(trackList);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Tracks"));
+        return scrollPane;
+    }
+
+    private JTabbedPane buildBrowserTabs() {
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Music", buildTrackPanel());
+        tabs.addTab("SFX", buildSoundEffectPanel());
+        return tabs;
+    }
+
+    private JPanel buildSoundEffectPanel() {
+        JPanel panel = new JPanel(new BorderLayout(6, 6));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        JPanel searchPanel = new JPanel(new BorderLayout(6, 0));
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 0, 6));
+        searchPanel.add(new JLabel("Search"), BorderLayout.WEST);
+        searchPanel.add(soundEffectSearchField, BorderLayout.CENTER);
+        panel.add(searchPanel, BorderLayout.NORTH);
+
+        JScrollPane listScrollPane = new JScrollPane(soundEffectList);
+        listScrollPane.setBorder(BorderFactory.createTitledBorder("Sound Effects"));
+        panel.add(listScrollPane, BorderLayout.CENTER);
+
+        JPanel detailsPanel = new JPanel(new BorderLayout(4, 4));
+        detailsPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 6));
+        detailsPanel.add(playSoundEffectButton, BorderLayout.NORTH);
+        soundEffectMetadataArea.setEditable(false);
+        soundEffectMetadataArea.setLineWrap(true);
+        soundEffectMetadataArea.setWrapStyleWord(true);
+        detailsPanel.add(new JScrollPane(soundEffectMetadataArea), BorderLayout.CENTER);
+        panel.add(detailsPanel, BorderLayout.EAST);
+        return panel;
+    }
+
+    private JPanel buildDetailsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(6, 6));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+        panel.add(buildTransportPanel(), BorderLayout.NORTH);
+
+        metadataArea.setEditable(false);
+        metadataArea.setLineWrap(true);
+        metadataArea.setWrapStyleWord(true);
+        panel.add(new JScrollPane(metadataArea), BorderLayout.CENTER);
+        panel.add(buildChannelPanel(), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel buildTransportPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 1, 4, 4));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        buttons.add(playButton);
+        buttons.add(pauseResumeButton);
+        buttons.add(stopButton);
+        panel.add(buttons);
+        panel.add(loopCheckBox);
+        volumeSlider.setMajorTickSpacing(25);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setPaintLabels(true);
+        panel.add(new JLabel("Volume"));
+        panel.add(volumeSlider);
+        return panel;
+    }
+
+    private JPanel buildChannelPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 4, 4));
+        panel.setBorder(BorderFactory.createTitledBorder("Channels"));
+        for (JLabel channelLabel : channelLabels) {
+            channelLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(channelLabel);
+        }
+        return panel;
+    }
+
+    private JPanel buildStatusPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
+        panel.add(statusLabel, BorderLayout.CENTER);
+        return panel;
     }
 }

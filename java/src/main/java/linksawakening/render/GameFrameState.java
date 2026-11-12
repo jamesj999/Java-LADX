@@ -34,7 +34,7 @@ public record GameFrameState(
         int frameCounter,
         IntroFrameSnapshot introFrameSnapshot,
         FileMenuFrameSnapshot fileMenuFrame)
-        implements GameFrameInputs, GameFrameStateUpdates {
+        implements GameFrameInputs {
     private static final GameFrameState EMPTY = new GameFrameState(
             RenderScreen.TITLE,
             null,
@@ -58,5 +58,285 @@ public record GameFrameState(
 
     public static GameFrameState empty() {
         return EMPTY;
+    }
+
+    public GameFrameState withScreen(RenderScreen screen) {
+        return new GameFrameState(
+                screen,
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withBackground(int[] tilemap, int[] attrmap, int[][] bgPalettes, int[][] objPalettes) {
+        return new GameFrameState(
+                screen(),
+                tilemap,
+                attrmap,
+                bgPalettes,
+                objPalettes,
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withCutsceneManager(CutsceneManager cutsceneManager) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager,
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withRoom(
+            RoomRenderSnapshot room, ScrollController scrollController, TransitionController transitionController) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room,
+                scrollController,
+                transitionController,
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withLink(Link link) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link,
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withTransientVfx(
+            TransientVfxSystem transientVfxSystem,
+            CutLeavesEffectRenderer cutLeavesEffectRenderer,
+            int[] transientVfxPalette) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem,
+                cutLeavesEffectRenderer,
+                transientVfxPalette,
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withDroppableRupees(DroppableRupeeSystem droppableRupeeSystem) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem,
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withInventoryController(InventoryController inventoryController) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController,
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withDialogController(DialogController dialogController) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController,
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withFrameCounter(int frameCounter) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter & 0xFF,
+                introFrameSnapshot(),
+                fileMenuFrame());
+    }
+
+    public GameFrameState withIntroFrameSnapshot(IntroFrameSnapshot introFrameSnapshot) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot,
+                fileMenuFrame());
+    }
+
+    public GameFrameState withFileMenuFrame(FileMenuFrameSnapshot fileMenuFrame) {
+        return new GameFrameState(
+                screen(),
+                tilemap(),
+                attrmap(),
+                bgPalettes(),
+                objPalettes(),
+                cutsceneManager(),
+                room(),
+                scrollController(),
+                transitionController(),
+                link(),
+                transientVfxSystem(),
+                cutLeavesEffectRenderer(),
+                transientVfxPalette(),
+                droppableRupeeSystem(),
+                inventoryController(),
+                dialogController(),
+                frameCounter(),
+                introFrameSnapshot(),
+                fileMenuFrame);
     }
 }
