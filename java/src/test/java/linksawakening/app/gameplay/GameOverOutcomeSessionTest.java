@@ -3,7 +3,6 @@ package linksawakening.app.gameplay;
 import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.app.GameSession;
-import linksawakening.save.SaveRamStore;
 import linksawakening.testing.RequiresRom;
 import linksawakening.world.transition.Warp;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,13 +24,9 @@ class GameOverOutcomeSessionTest {
         game.headlessButton("right", true);
         for (int i = 0; i < 32; i++) game.headlessFrame();
         game.headlessButton("right", false);
-        var storeField = linksawakening.app.SessionTestAccess.field(game, "saveRamStore");
-        storeField.setAccessible(true);
-        var store = (SaveRamStore) storeField.get(linksawakening.app.SessionTestAccess.owner(game, "saveRamStore"));
+        var store = game.saveState().saveRamStore;
         store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
-        var slot = linksawakening.app.SessionTestAccess.field(game, "currentSaveSlot");
-        slot.setAccessible(true);
-        slot.setInt(linksawakening.app.SessionTestAccess.owner(game, "currentSaveSlot"), 0);
+        game.state().screens().currentSaveSlot = 0;
         var room = game.diagnostics().roomSession();
         room.transitions().loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
         room.rooms().loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
@@ -68,11 +63,8 @@ class GameOverOutcomeSessionTest {
         assertEquals(0, player.activePowerUp());
         assertEquals(0, player.powerUpHits());
         if (option == 1) {
-            var screen = linksawakening.app.SessionTestAccess.field(game, "currentScreen");
-            screen.setAccessible(true);
             assertInstanceOf(
-                    linksawakening.app.screen.FileMenuScreen.class,
-                    screen.get(linksawakening.app.SessionTestAccess.owner(game, "currentScreen")));
+                    linksawakening.app.screen.FileMenuScreen.class, game.state().screens().currentScreen);
         } else {
             assertEquals(0x92, room.rooms().currentRoomId());
             assertEquals(0, room.rooms().mapCategory());

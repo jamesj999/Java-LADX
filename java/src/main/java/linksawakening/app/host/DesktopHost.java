@@ -18,6 +18,12 @@ public final class DesktopHost implements Host {
     }
 
     private long window;
+
+    /** Native handle for the package-local viewport check. */
+    long windowHandle() {
+        return window;
+    }
+
     private OpenGlFramePresenter framePresenter;
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;

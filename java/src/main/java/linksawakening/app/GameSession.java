@@ -44,6 +44,22 @@ public class GameSession implements AutoCloseable {
 
     SessionContext context;
 
+    public SessionState state() {
+        return context.state();
+    }
+
+    public SessionServices services() {
+        return context.services();
+    }
+
+    public SessionFlows flows() {
+        return context.runtime().flows();
+    }
+
+    public SaveState saveState() {
+        return context.runtime().saves();
+    }
+
     public RunState lifecycle() {
         return context.lifecycle();
     }
@@ -155,7 +171,7 @@ public class GameSession implements AutoCloseable {
         context.runtime().input().onKeyEvent(key, action);
     }
 
-    private void debugTeleport(Warp destination) {
+    public void debugTeleport(Warp destination) {
         context.runtime().flows().teleporter().teleport(destination);
     }
 

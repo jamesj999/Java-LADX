@@ -3,7 +3,6 @@ package linksawakening.app;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
-import linksawakening.app.screen.Screen;
 import linksawakening.render.RenderScreen;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
@@ -26,10 +25,10 @@ final class SaveRoundTripTest {
             // Marin house's exit record in IndoorsA3: outside A2, ($58,$52).
             store.writeSpawnLocation(0, 0, 0, 0xA2, 0x58, 0x52, 0);
             store.writeTarinFlag(0, 1);
-            set(game, "saveRamStore", store);
-            call(game, "router", ScreenRouter.class).startFileSelection();
+            game.saveState().saveRamStore = store;
+            game.flows().router().startFileSelection();
             press(game, "a");
-            RoomSession room = get(game, "roomSession", RoomSession.class);
+            RoomSession room = game.services().world().roomSession();
             for (int frame = 0; frame < 40; frame++) game.headlessFrame();
             assertEquals(0, room.rooms().mapCategory());
             assertEquals(0xA2, room.rooms().currentRoomId());
@@ -42,7 +41,7 @@ final class SaveRoundTripTest {
             assertEquals(1, room.rooms().mapCategory());
             assertEquals(0xA3, room.rooms().currentRoomId());
         } finally {
-            call(game, "cleanup", Void.class);
+            game.close();
         }
     }
 
@@ -72,22 +71,19 @@ final class SaveRoundTripTest {
         game.initializeHeadlessIntro();
         try {
             Path path = directory.resolve("azle.sav");
-            set(game, "saveRamStore", SaveRamStore.open(path));
-            call(game, "router", ScreenRouter.class).startFileSelection();
+            game.saveState().saveRamStore = SaveRamStore.open(path);
+            game.flows().router().startFileSelection();
             press(game, "a");
             press(game, "start");
             assertEquals(
-                    RenderScreen.FILE_MENU,
-                    get(game, "currentScreen", Screen.class).renderScreen());
+                    RenderScreen.FILE_MENU, game.state().screens().currentScreen.renderScreen());
             SaveRamStore reopened = SaveRamStore.open(path);
             assertEquals(0, reopened.saveFilesMask());
             assertArrayEquals(new int[5], reopened.savedNames()[0]);
             press(game, "a");
-            assertTrue(get(game, "fileMenuController", linksawakening.ui.FileMenuController.class)
-                    .snapshot()
-                    .creation());
+            assertTrue(game.state().screens().fileMenuController.snapshot().creation());
         } finally {
-            call(game, "cleanup", Void.class);
+            game.close();
         }
     }
 
@@ -96,27 +92,25 @@ final class SaveRoundTripTest {
         game.initializeHeadlessIntro();
         try {
             SaveRamStore store = SaveRamStore.open(path);
-            set(game, "saveRamStore", store);
-            call(game, "router", ScreenRouter.class).startFileSelection();
+            game.saveState().saveRamStore = store;
+            game.flows().router().startFileSelection();
             press(game, "a"); // empty file -> name entry
             press(game, "a"); // enter first ROM character
             press(game, "start");
             assertEquals(
-                    RenderScreen.FILE_MENU,
-                    get(game, "currentScreen", Screen.class).renderScreen());
+                    RenderScreen.FILE_MENU, game.state().screens().currentScreen.renderScreen());
             press(game, "a");
             assertEquals(
-                    RenderScreen.OVERWORLD,
-                    get(game, "currentScreen", Screen.class).renderScreen());
-            PlayerState player = get(game, "playerState", PlayerState.class);
-            RoomSession room = get(game, "roomSession", RoomSession.class);
+                    RenderScreen.OVERWORLD, game.state().screens().currentScreen.renderScreen());
+            PlayerState player = game.services().player().playerState();
+            RoomSession room = game.services().world().roomSession();
             // Represent progress made during play; exercise the session snapshot, not just the codec.
             player.setShieldLevel(1);
             player.setItemB(PlayerState.INVENTORY_SHIELD);
             player.setRupees(237);
             room.story().setTarinFlag(1);
             game.headlessFrame();
-            SaveCoordinator saves = call(game, "saves", SaveCoordinator.class);
+            SaveCoordinator saves = game.flows().saves();
             if (gameOverOption < 0) {
                 playWakeUpPrefix(game);
                 String chord = gameOverOption == -2 ? "select+b+a+start" : "start+a+b+select";
@@ -126,7 +120,7 @@ final class SaveRoundTripTest {
                 game.headlessFrame();
                 assertEquals(
                         RenderScreen.FILE_SAVE,
-                        get(game, "currentScreen", Screen.class).renderScreen());
+                        game.state().screens().currentScreen.renderScreen());
                 press(game, "down");
                 press(game, "a");
             } else {
@@ -143,23 +137,21 @@ final class SaveRoundTripTest {
             GameSession relaunched = new GameSession();
             relaunched.initializeHeadlessIntro();
             try {
-                set(relaunched, "saveRamStore", reopened);
-                call(relaunched, "router", ScreenRouter.class).startFileSelection();
+                relaunched.saveState().saveRamStore = reopened;
+                relaunched.flows().router().startFileSelection();
                 press(relaunched, "a");
                 assertEquals(
                         RenderScreen.OVERWORLD,
-                        get(relaunched, "currentScreen", Screen.class).renderScreen());
-                PlayerState restored = get(relaunched, "playerState", PlayerState.class);
+                        relaunched.state().screens().currentScreen.renderScreen());
+                PlayerState restored = relaunched.services().player().playerState();
                 assertEquals(expected.rupees(), restored.rupees());
                 assertEquals(expected.health(), restored.health());
                 assertEquals(expected.itemB(), restored.itemB());
                 assertEquals(expected.shieldLevel(), restored.shieldLevel());
                 assertEquals(
                         expected.tarinFlag(),
-                        get(relaunched, "roomSession", RoomSession.class)
-                                .story()
-                                .tarinFlag());
-                RoomSession restoredRoom = get(relaunched, "roomSession", RoomSession.class);
+                        relaunched.services().world().roomSession().story().tarinFlag());
+                RoomSession restoredRoom = relaunched.services().world().roomSession();
                 assertArrayEquals(
                         expected.overworldRoomStatus(), restoredRoom.dungeon().overworldRoomStatusSnapshot());
                 assertArrayEquals(
@@ -175,15 +167,15 @@ final class SaveRoundTripTest {
                         expected.colorDungeonItemFlags(), restoredRoom.dungeon().colorDungeonItemFlagsSnapshot());
                 assertArrayEquals(
                         expected.dungeonProgressFlags(), restoredRoom.dungeon().dungeonProgressFlagsSnapshot());
-                var restoredLink = get(relaunched, "link", linksawakening.entity.Link.class);
+                var restoredLink = relaunched.services().player().link();
                 assertEquals(expected.spawnPositionX(), restoredLink.roomEntryRomPositionX());
                 assertEquals(expected.spawnPositionY(), restoredLink.roomEntryRomPositionY());
                 assertEquals(expected.spawnMapRoom(), restoredRoom.rooms().currentRoomId());
             } finally {
-                call(relaunched, "cleanup", Void.class);
+                relaunched.close();
             }
         } finally {
-            call(game, "cleanup", Void.class);
+            game.close();
         }
     }
 
@@ -202,8 +194,7 @@ final class SaveRoundTripTest {
             if (held > 0) game.headlessButton(fields[0], false);
             for (int frame = 0; frame < idle; frame++) game.headlessFrame();
         }
-        assertFalse(get(game, "dialogController", linksawakening.dialog.DialogController.class)
-                .isActive());
+        assertFalse(game.services().ui().dialogController().isActive());
     }
 
     private static void press(GameSession game, String button) {
@@ -211,23 +202,5 @@ final class SaveRoundTripTest {
         game.headlessFrame();
         game.headlessButton(button, false);
         game.headlessFrame();
-    }
-
-    private static void set(GameSession game, String name, Object value) throws Exception {
-        var field = SessionTestAccess.field(game, name);
-        field.setAccessible(true);
-        field.set(SessionTestAccess.owner(game, name), value);
-    }
-
-    private static <T> T get(GameSession game, String name, Class<T> type) throws Exception {
-        var field = SessionTestAccess.field(game, name);
-        field.setAccessible(true);
-        return type.cast(field.get(SessionTestAccess.owner(game, name)));
-    }
-
-    private static <T> T call(GameSession game, String name, Class<T> type) throws Exception {
-        var method = GameSession.class.getDeclaredMethod(name);
-        method.setAccessible(true);
-        return type.cast(method.invoke(game));
     }
 }

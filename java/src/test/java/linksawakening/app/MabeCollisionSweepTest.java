@@ -80,12 +80,10 @@ final class MabeCollisionSweepTest {
         List<String> invisible = new ArrayList<>();
         int cases = 0, entityBlocks = 0;
         try {
-            var teleport = GameSession.class.getDeclaredMethod("debugTeleport", Warp.class);
-            teleport.setAccessible(true);
-            Link link = field(game, "link", Link.class);
-            RoomSession session = field(game, "roomSession", RoomSession.class);
+            Link link = game.services().player().link();
+            RoomSession session = game.services().world().roomSession();
             for (int roomId : ROOMS) {
-                teleport.invoke(game, new Warp(0, 0, roomId, 80, 96, -1));
+                game.debugTeleport(new Warp(0, 0, roomId, 80, 96, -1));
                 var loaded = new RoomLoader(bytes).loadOverworld(roomId);
                 for (int y = 8; y <= 104; y += 8)
                     for (int x = 8; x <= 136; x += 8) {
@@ -94,7 +92,7 @@ final class MabeCollisionSweepTest {
                             if (!passableProbes(rom, loaded, x + DX[dir], y + DY[dir], dir)) continue;
                             if (session.rooms().currentRoomId() != roomId
                                     || session.rooms().mapCategory() != 0)
-                                teleport.invoke(game, new Warp(0, 0, roomId, 80, 96, -1));
+                                game.debugTeleport(new Warp(0, 0, roomId, 80, 96, -1));
                             link.resetTransientStateForDebug();
                             link.setRoomEntryPixelPosition(x, y);
                             game.headlessButton(BUTTON[dir], true);
@@ -128,16 +126,8 @@ final class MabeCollisionSweepTest {
                     + "; invisible blockers=" + invisible);
             assertTrue(invisible.isEmpty(), invisible.toString());
         } finally {
-            var cleanup = GameSession.class.getDeclaredMethod("cleanup");
-            cleanup.setAccessible(true);
-            cleanup.invoke(game);
+            game.close();
         }
-    }
-
-    private static <T> T field(GameSession game, String name, Class<T> type) throws Exception {
-        var field = SessionTestAccess.field(game, name);
-        field.setAccessible(true);
-        return type.cast(field.get(SessionTestAccess.owner(game, name)));
     }
 
     private static boolean walkable(Rom rom, LoadedRoom room, int x, int y) {
