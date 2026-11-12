@@ -5,7 +5,6 @@ import static linksawakening.world.room.RoomConstants.*;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
-import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.MusicDirector;
 import linksawakening.app.SessionContext;
@@ -210,10 +209,6 @@ public final class GameplaySimulation {
 
     public BooleanSupplier debugScroll() {
         return context.simulationDebugScroll();
-    }
-
-    public IntUnaryOperator direction() {
-        return context.direction();
     }
 
     public Runnable dialogSounds() {

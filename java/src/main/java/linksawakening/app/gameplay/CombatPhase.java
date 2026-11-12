@@ -6,6 +6,7 @@ import static linksawakening.world.room.RoomConstants.*;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -35,7 +36,7 @@ final class CombatPhase {
                     sword != null && sword.spinAttackActive(),
                     context.playerState().runningWithPegasusBoots(),
                     context.link().isUsingShield(),
-                    context.direction().applyAsInt(context.link().direction()),
+                    Direction.fromJava(context.link().direction()).romIndex(),
                     context.link().romEntityZ());
             var combatEvents = context.roomSession()
                     .entities()

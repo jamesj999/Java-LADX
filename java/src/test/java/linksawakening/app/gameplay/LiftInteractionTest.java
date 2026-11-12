@@ -16,7 +16,7 @@ final class LiftInteractionTest {
         var player = new PlayerState();
         player.setItemA(PlayerState.INVENTORY_POWER_BRACELET);
         player.setItemB(PlayerState.INVENTORY_POWER_BRACELET);
-        var lift = new LiftInteraction(input, config, player, null, null, d -> d);
+        var lift = new LiftInteraction(input, config, player, null, null);
         input.onKeyEvent(config.aKey(), GLFW_PRESS);
         assertFalse(lift.isPowerBraceletButtonHeld());
         assertFalse(lift.isThrowButtonPressed(false));

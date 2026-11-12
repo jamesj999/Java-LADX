@@ -2,11 +2,11 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.world.room.RoomConstants.*;
 
-import java.util.function.IntUnaryOperator;
 import linksawakening.app.SessionContext;
 import linksawakening.entity.Link;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
 
@@ -17,31 +17,22 @@ public final class LiftInteraction {
     private final PlayerState playerState;
     private final Link link;
     private final RoomSession roomSession;
-    private final IntUnaryOperator direction;
 
     public LiftInteraction(
             InputState inputState,
             InputConfig inputConfig,
             PlayerState playerState,
             Link link,
-            RoomSession roomSession,
-            IntUnaryOperator direction) {
+            RoomSession roomSession) {
         this.inputState = inputState;
         this.inputConfig = inputConfig;
         this.playerState = playerState;
         this.link = link;
         this.roomSession = roomSession;
-        this.direction = direction;
     }
 
     public LiftInteraction(SessionContext context) {
-        this(
-                context.inputState(),
-                context.inputConfig(),
-                context.playerState(),
-                context.link(),
-                context.roomSession(),
-                context.liftingDirection());
+        this(context.inputState(), context.inputConfig(), context.playerState(), context.link(), context.roomSession());
     }
 
     public InputState inputState() {
@@ -62,10 +53,6 @@ public final class LiftInteraction {
 
     public RoomSession roomSession() {
         return roomSession;
-    }
-
-    public IntUnaryOperator direction() {
-        return direction;
     }
 
     public boolean isPowerBraceletButtonHeld() {
@@ -108,7 +95,8 @@ public final class LiftInteraction {
             if (link.isRoosterCarryActive()) {
                 link.clearRoosterCarryState();
             }
-            link.setCarryingLiftedObjectState(0, direction.applyAsInt(link.direction()));
+            link.setCarryingLiftedObjectState(
+                    0, Direction.fromJava(link.direction()).romIndex());
         }
     }
 }

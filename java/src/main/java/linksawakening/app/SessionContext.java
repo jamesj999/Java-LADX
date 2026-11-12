@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
-import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.debug.DebugMenu;
 import linksawakening.app.debug.DebugMenuOverlay;
@@ -96,8 +95,7 @@ public final class SessionContext {
                                 room -> musicDirector.selectMusicForLoadedRoom(
                                         room,
                                         services().playerState(),
-                                        services().roomSession()),
-                                this::romDirectionForLink),
+                                        services().roomSession())),
                         host)
                 .build(headless);
         services = built;
@@ -112,7 +110,6 @@ public final class SessionContext {
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         simulationGameOverOutcome = this::finishGameOver;
         simulationDialogBlockers = this::currentOverworldDialogBlockers;
-        simulationDirection = this::romDirectionForLink;
         simulationDialogSounds = this::routeDialogSounds;
         inputRouterStop = () -> running = false;
         inputRouterScreen = () -> screens.currentScreen;
@@ -131,9 +128,7 @@ public final class SessionContext {
         openingStoryBlockers = this::currentOverworldDialogBlockers;
         openingStoryMusic = musicDirector::playDirectMusic;
         openingStoryHouseMusic = MusicDirector::newGameHouseMusicTrack;
-        openingStoryRomDirection = this::romDirectionForLink;
         dialogsBlockers = this::currentOverworldDialogBlockers;
-        liftingDirection = this::romDirectionForLink;
         simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
         inputRouterToggleDebug = () -> {
             debug.debugNoClip = !debug.debugNoClip;
@@ -329,12 +324,6 @@ public final class SessionContext {
 
     public BooleanSupplier simulationDebugScroll() {
         return simulationDebugScroll;
-    }
-
-    private final IntUnaryOperator simulationDirection;
-
-    public IntUnaryOperator direction() {
-        return simulationDirection;
     }
 
     private final Runnable simulationDialogSounds;
@@ -627,12 +616,6 @@ public final class SessionContext {
         return openingStoryHouseMusic;
     }
 
-    private final IntUnaryOperator openingStoryRomDirection;
-
-    public IntUnaryOperator romDirection() {
-        return openingStoryRomDirection;
-    }
-
     public OverworldBushInteraction overworldBushInteraction() {
         return services().overworldBushInteraction();
     }
@@ -645,12 +628,6 @@ public final class SessionContext {
 
     public Supplier<OverworldDialogBlockers> dialogsBlockers() {
         return dialogsBlockers;
-    }
-
-    private final IntUnaryOperator liftingDirection;
-
-    public IntUnaryOperator liftingDirection() {
-        return liftingDirection;
     }
 
     final GameplayFrame gameplayFrame;
@@ -798,16 +775,6 @@ public final class SessionContext {
 
     void routeDialogSounds() {
         DialogSoundRouter.routePending(services().dialogController(), services().dialogSoundSink());
-    }
-
-    int romDirectionForLink(int javaDirection) {
-        return switch (javaDirection) {
-            case Link.DIRECTION_RIGHT -> 0;
-            case Link.DIRECTION_LEFT -> 1;
-            case Link.DIRECTION_UP -> 2;
-            case Link.DIRECTION_DOWN -> 3;
-            default -> throw new IllegalArgumentException("Link direction out of range: " + javaDirection);
-        };
     }
 
     OverworldDialogBlockers currentOverworldDialogBlockers() {

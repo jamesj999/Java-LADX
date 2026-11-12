@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
-import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.SessionContext;
 import linksawakening.audio.music.MusicTrackIds;
@@ -21,6 +20,7 @@ import linksawakening.input.InputState;
 import linksawakening.save.SaveSlotState;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
@@ -87,10 +87,6 @@ public final class OpeningStory {
 
     public IntSupplier houseMusic() {
         return context.houseMusic();
-    }
-
-    public IntUnaryOperator romDirection() {
-        return context.romDirection();
     }
 
     public boolean tickNewGameWakeUp() {
@@ -177,7 +173,7 @@ public final class OpeningStory {
                             entity.y(),
                             link().romEntityX(),
                             link().romEntityY(),
-                            romDirectionForLink(link().direction()),
+                            Direction.fromJava(link().direction()).romIndex(),
                             link().isAirborne(),
                             true,
                             dialogController().isActive())) {
@@ -219,7 +215,7 @@ public final class OpeningStory {
                                     entity.y(),
                                     link().romEntityX(),
                                     link().romEntityY(),
-                                    romDirectionForLink(link().direction()),
+                                    Direction.fromJava(link().direction()).romIndex(),
                                     link().isAirborne(),
                                     true,
                                     dialogController().isActive())) {
@@ -287,10 +283,6 @@ public final class OpeningStory {
 
     private int newGameHouseMusicTrack() {
         return houseMusic().getAsInt();
-    }
-
-    private int romDirectionForLink(int direction) {
-        return romDirection().applyAsInt(direction);
     }
 
     public void restoreNewGameHouseRuntimeIfNeeded(

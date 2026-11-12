@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.IntUnaryOperator;
 import linksawakening.app.host.Host;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
@@ -59,6 +58,7 @@ import linksawakening.save.SaveRamStore;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
@@ -83,8 +83,7 @@ import linksawakening.world.transition.TransitionController;
 
 /** Builds a session's ROM-backed collaborators before any frames run. */
 public final class SessionBootstrap {
-    public record Callbacks(
-            Consumer<String> cutsceneScene, Consumer<ActiveRoom> roomMusic, IntUnaryOperator romDirection) {}
+    public record Callbacks(Consumer<String> cutsceneScene, Consumer<ActiveRoom> roomMusic) {}
 
     public static final class Collaborators {
         private final int[][] bgPalettes;
@@ -656,7 +655,7 @@ public final class SessionBootstrap {
                 new Bomb(
                         playerState,
                         gameplaySoundSink,
-                        new RoomBombPlacement(link, roomSession.playerItems(), callbacks.romDirection()),
+                        new RoomBombPlacement(link, roomSession.playerItems()),
                         link::canUseItems));
         itemRegistry.register(
                 PlayerState.INVENTORY_BOW,
@@ -713,7 +712,7 @@ public final class SessionBootstrap {
                                 link.romEntityX(),
                                 link.romEntityY(),
                                 link.romEntityZ(),
-                                callbacks.romDirection().applyAsInt(link.direction()),
+                                Direction.fromJava(link.direction()).romIndex(),
                                 link.isAirborne(),
                                 link.isRomLinkPushing());
             }
