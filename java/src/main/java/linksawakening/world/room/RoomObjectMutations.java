@@ -139,7 +139,7 @@ final class RoomObjectMutations {
             session.context.entityBridge.entityRuntime.spawnLiftableRockSmash(
                     ((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
             // Link runs before the entity tick, which clears its frame outbox.
-            session.context.entityBridge.pendingRoomEntityEvents.addAll(
+            session.context.entityBridge.outbox.pendingRoomEntityEvents.addAll(
                     session.context.entityBridge.entityRuntime.consumePendingEntityEvents());
         }
         return true;
@@ -234,7 +234,7 @@ final class RoomObjectMutations {
                 session.context.transientVfxSystem.spawn(
                         TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
-            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
                     request.sourceSlot(), 0x01, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
             session.refreshOverworldCollisionAfterObjectMutation();
         }
@@ -284,7 +284,7 @@ final class RoomObjectMutations {
                 session.context.transientVfxSystem.spawn(
                         TransientVfxType.SMOKE, request.objectLeft() + 0x08, request.objectTop() + 0x10);
             }
-            session.context.entityBridge.pendingRoomEntityEvents.add(new EntityCombatEvent(
+            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
                     request.sourceSlot(), 0x04, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
             if (session.context.activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 session.refreshOverworldCollisionAfterObjectMutation();
@@ -574,7 +574,7 @@ final class RoomObjectMutations {
     }
 
     void queuePuzzleSolvedJingle(int sourceSlot) {
-        session.context.entityBridge.pendingRoomEntityEvents.add(
+        session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
                 new EntityCombatEvent(sourceSlot, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
     }
 

@@ -44,7 +44,7 @@ final class RoomEntityRewards {
             }
             session.markActiveRoomCompleted();
         }
-        session.context.entityBridge.pendingKeyRewardEvents.addAll(rewards);
+        session.context.entityBridge.outbox.pendingKeyRewardEvents.addAll(rewards);
     }
 
     void harvestHeartContainerRewards() {
@@ -57,7 +57,7 @@ final class RoomEntityRewards {
             return;
         }
         session.markHeartContainerCollected();
-        session.context.entityBridge.pendingHeartContainerRewards.addAll(rewards);
+        session.context.entityBridge.outbox.pendingHeartContainerRewards.addAll(rewards);
     }
 
     void harvestSwordPickupRewards() {
@@ -70,12 +70,12 @@ final class RoomEntityRewards {
             return;
         }
         session.markActiveRoomCompleted();
-        session.context.entityBridge.pendingSwordPickupRewards.addAll(rewards);
+        session.context.entityBridge.outbox.pendingSwordPickupRewards.addAll(rewards);
     }
 
     void harvestToadstoolRewards() {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.pendingToadstoolRewards.addAll(
+            session.context.entityBridge.outbox.pendingToadstoolRewards.addAll(
                     session.context.entityBridge.entityRuntime.consumePendingToadstoolRewards());
         }
     }
@@ -129,14 +129,14 @@ final class RoomEntityRewards {
                 session.context.entityInputs.entityGoldenLeavesCount = event.goldenLeavesCount();
             }
         }
-        session.context.entityBridge.pendingRichardProgressEvents.addAll(events);
+        session.context.entityBridge.outbox.pendingRichardProgressEvents.addAll(events);
     }
 
     void harvestWitchEvents() {
         if (session.context.entityBridge.entityRuntime != null) {
-            session.context.entityBridge.pendingWitchExchangeEvents.addAll(
+            session.context.entityBridge.outbox.pendingWitchExchangeEvents.addAll(
                     session.context.entityBridge.entityRuntime.consumePendingWitchExchangeEvents());
-            session.context.entityBridge.pendingWitchRewardEvents.addAll(
+            session.context.entityBridge.outbox.pendingWitchRewardEvents.addAll(
                     session.context.entityBridge.entityRuntime.consumePendingWitchRewardEvents());
         }
     }
@@ -166,6 +166,6 @@ final class RoomEntityRewards {
             session.context.entityInputs.entityGoldenLeavesCount = reward.goldenLeavesCount();
             session.markActiveRoomCompleted();
         }
-        session.context.entityBridge.pendingSlimeKeyRewardEvents.addAll(rewards);
+        session.context.entityBridge.outbox.pendingSlimeKeyRewardEvents.addAll(rewards);
     }
 }

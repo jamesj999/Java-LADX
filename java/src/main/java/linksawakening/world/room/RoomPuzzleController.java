@@ -136,7 +136,7 @@ final class RoomPuzzleController {
                 session.indoorStatusTableForMap(session.context.activeRoom.mapId())[
                         session.context.activeRoom.roomId()] |= 0x20;
                 session.context.entityBridge.entityRuntime.configuration().setDungeonMinibossReady(true);
-                session.context.entityBridge.pendingRoomEntityEvents.add(
+                session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
                         new EntityCombatEvent(0, 0x61, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x1B));
             }
             session.context.activeRoomEvent = 0;

@@ -145,7 +145,7 @@ final class RoomPlayerItemActions {
         } else if (normalizedTimer == session.SHOVEL_FINISH_TIMER) {
             if (session.context.shovelUseState == session.SHOVEL_STATE_DUG
                     && session.context.followingNpcState.marinFollowing()) {
-                session.context.entityBridge.pendingRoomDialogRequests.add(
+                session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
                         new DialogRequest(session.SHOVEL_DIALOG_TABLE, session.SHOVEL_DIALOG_ID));
             }
             session.context.shovelUseState = 0;

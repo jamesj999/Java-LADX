@@ -1498,31 +1498,31 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Returns and clears entity side-effect events emitted by the last tick. */
     public List<EntityCombatEvent> consumeEntityEvents() {
-        return context.entityBridge.consumeEntityEvents();
+        return context.entityBridge.outbox.consumeEntityEvents();
     }
 
     public boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        return context.entityBridge.deferContactRecoil(slot, linkX, linkY);
+        return context.entityBridge.combat.deferContactRecoil(slot, linkX, linkY);
     }
     /** Returns and clears handlers that restore Link's pre-entity final position. */
     public List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
-        return context.entityBridge.consumeLinkFinalPositionRequests();
+        return context.entityBridge.outbox.consumeLinkFinalPositionRequests();
     }
     /** Returns and clears Rooster's Link HRAM writes from the last entity tick. */
     public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return context.entityBridge.consumeRoosterLinkStateRequests();
+        return context.entityBridge.outbox.consumeRoosterLinkStateRequests();
     }
     /** Returns and clears handlers that block Link's next interactive motion frame. */
     public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return context.entityBridge.consumeLinkMotionBlockRequests();
+        return context.entityBridge.outbox.consumeLinkMotionBlockRequests();
     }
     /** Returns and clears side-view platform Link writes from the last entity tick. */
     public List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
-        return context.entityBridge.consumeSideViewPlatformLinkRequests();
+        return context.entityBridge.outbox.consumeSideViewPlatformLinkRequests();
     }
     /** Returns state-0 side-view pot Link writes from the last entity tick. */
     public List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
-        return context.entityBridge.consumeSideViewPotLinkRequests();
+        return context.entityBridge.outbox.consumeSideViewPotLinkRequests();
     }
     /** Returns entity-$61 WarpState3 Link writes and clears supported session actions. */
     public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
@@ -1530,15 +1530,15 @@ public final class RoomSession extends RoomSessionRules {
     }
     /** Returns and clears Hinox grab/throw writes for the last entity tick. */
     public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return context.entityBridge.consumeHinoxLinkEffectRequests();
+        return context.entityBridge.outbox.consumeHinoxLinkEffectRequests();
     }
     /** Returns and clears explicit ROM Link fallen-pose requests. */
     public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return context.entityBridge.consumeLinkFallenPoseRequests();
+        return context.entityBridge.outbox.consumeLinkFallenPoseRequests();
     }
     /** Returns and clears a motion block emitted by a world handler rather than an entity. */
     public void setFreeMovementMode(boolean enabled) {
-        context.entityBridge.setFreeMovementMode(enabled);
+        context.entityBridge.outbox.setFreeMovementMode(enabled);
     }
 
     public boolean consumeWorldLinkMotionBlockRequest() {
@@ -1546,103 +1546,103 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return context.entityBridge.consumeLinkFacingRequests();
+        return context.entityBridge.outbox.consumeLinkFacingRequests();
     }
 
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return context.entityBridge.consumeLinkAttackClearRequests();
+        return context.entityBridge.outbox.consumeLinkAttackClearRequests();
     }
     /** Returns lifted-throw attack-step writes for Main's post-entity phase. */
     public List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
-        return context.entityBridge.consumeLinkAttackStepRequests();
+        return context.entityBridge.outbox.consumeLinkAttackStepRequests();
     }
 
     public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return context.entityBridge.consumeLinkHeldItemPoseRequests();
+        return context.entityBridge.outbox.consumeLinkHeldItemPoseRequests();
     }
 
     public boolean gotItemPresentationActive() {
-        return context.entityBridge.gotItemPresentationActive();
+        return context.entityBridge.outbox.gotItemPresentationActive();
     }
 
     public boolean powerUpPickupSequenceActive() {
-        return context.entityBridge.powerUpPickupSequenceActive();
+        return context.entityBridge.outbox.powerUpPickupSequenceActive();
     }
 
     public boolean swordPickupSequenceActive() {
-        return context.entityBridge.swordPickupSequenceActive();
+        return context.entityBridge.outbox.swordPickupSequenceActive();
     }
 
     public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return context.entityBridge.consumeLinkSwordSpinPoseRequests();
+        return context.entityBridge.outbox.consumeLinkSwordSpinPoseRequests();
     }
 
     public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return context.entityBridge.consumeLinkSwordFinalPoseRequests();
+        return context.entityBridge.outbox.consumeLinkSwordFinalPoseRequests();
     }
     /** Returns and clears ROM screen-shake requests emitted by the last entity tick. */
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return context.entityBridge.consumeScreenShakeRequests();
+        return context.entityBridge.outbox.consumeScreenShakeRequests();
     }
     /** Returns and clears chest reward applications emitted by the last entity tick(s). */
     public List<ChestRewardEvent> consumeChestRewardEvents() {
-        return context.entityBridge.consumeChestRewardEvents();
+        return context.entityBridge.outbox.consumeChestRewardEvents();
     }
     /** Returns and clears key or hookshot rewards emitted by key-drop entities. */
     public List<KeyRewardEvent> consumeKeyRewardEvents() {
-        return context.entityBridge.consumeKeyRewardEvents();
+        return context.entityBridge.outbox.consumeKeyRewardEvents();
     }
     /** Returns and clears Hiding Slime Key leaf-count updates emitted by entity handlers. */
     public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
-        return context.entityBridge.consumeSlimeKeyRewardEvents();
+        return context.entityBridge.outbox.consumeSlimeKeyRewardEvents();
     }
     /** Returns and clears completed boss heart-container rewards. */
     public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
-        return context.entityBridge.consumeHeartContainerRewards();
+        return context.entityBridge.outbox.consumeHeartContainerRewards();
     }
 
     public List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
-        return context.entityBridge.consumeMadamMeowMeowFullHealRequests();
+        return context.entityBridge.outbox.consumeMadamMeowMeowFullHealRequests();
     }
 
     public List<RichardProgressEvent> consumeRichardProgressEvents() {
-        return context.entityBridge.consumeRichardProgressEvents();
+        return context.entityBridge.outbox.consumeRichardProgressEvents();
     }
 
     public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        return context.entityBridge.consumeSwordPickupRewards();
+        return context.entityBridge.outbox.consumeSwordPickupRewards();
     }
 
     public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
-        return context.entityBridge.consumeToadstoolRewards();
+        return context.entityBridge.outbox.consumeToadstoolRewards();
     }
 
     public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
-        return context.entityBridge.consumeWitchExchangeEvents();
+        return context.entityBridge.outbox.consumeWitchExchangeEvents();
     }
 
     public List<WitchRewardEvent> consumeWitchRewardEvents() {
-        return context.entityBridge.consumeWitchRewardEvents();
+        return context.entityBridge.outbox.consumeWitchRewardEvents();
     }
     /** Returns the raw music-track request emitted by a chest, or {@code -1}. */
     public int consumePendingMusicTrack() {
-        return context.entityBridge.consumePendingMusicTrack();
+        return context.entityBridge.outbox.consumePendingMusicTrack();
     }
 
     public int consumePendingMusicFadeOutCountdown() {
-        return context.entityBridge.consumePendingMusicFadeOutCountdown();
+        return context.entityBridge.outbox.consumePendingMusicFadeOutCountdown();
     }
     /** Returns and clears Like Like capture/release requests from the last tick. */
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return context.entityBridge.consumeLikeLikeEvents();
+        return context.entityBridge.outbox.consumeLikeLikeEvents();
     }
     /** Returns and clears ROM dialog requests emitted by the last entity tick. */
     public List<DialogRequest> consumeEntityDialogRequests() {
-        return context.entityBridge.consumeEntityDialogRequests();
+        return context.entityBridge.outbox.consumeEntityDialogRequests();
     }
     /** Returns and clears source-shaped bomb-explosion interaction requests from the last tick. */
     public List<BombExplosionEvent> consumeBombExplosionEvents() {
-        return context.entityBridge.consumeBombExplosionEvents();
+        return context.entityBridge.outbox.consumeBombExplosionEvents();
     }
     /** Advances the ROM's VBlank tile path, including switch blocks. */
     public void tickGameplayVBlank() {
@@ -1664,7 +1664,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1689,7 +1689,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1716,7 +1716,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordY,
             int swordHeight,
             EnemyAttackContext attackContext) {
-        return context.entityBridge.resolveEntityCombat(
+        return context.entityBridge.combat.resolveEntityCombat(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
@@ -1732,7 +1732,7 @@ public final class RoomSession extends RoomSessionRules {
     }
 
     public int clearEntity(int slot) {
-        return context.entityBridge.clearEntity(slot);
+        return context.entityBridge.combat.clearEntity(slot);
     }
     /**
      * Applies the ROM pickup collision cadence to the active room entities.
@@ -1742,7 +1742,7 @@ public final class RoomSession extends RoomSessionRules {
     /** Link coordinates use ROM entity origins, not sprite top-left; direction uses Link constants. */
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
@@ -1753,7 +1753,7 @@ public final class RoomSession extends RoomSessionRules {
             boolean linkAirborne,
             boolean linkInteractive,
             int linkDirection) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
 
@@ -1765,7 +1765,7 @@ public final class RoomSession extends RoomSessionRules {
             boolean linkInteractive,
             int linkDirection,
             int linkZ) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
@@ -1782,7 +1782,7 @@ public final class RoomSession extends RoomSessionRules {
             int swordWidth,
             int swordY,
             int swordHeight) {
-        return context.entityBridge.collectEntityIfNeeded(
+        return context.entityBridge.combat.collectEntityIfNeeded(
                 frameCounter,
                 linkEntityX,
                 linkEntityY,

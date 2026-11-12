@@ -108,7 +108,7 @@ final class RoomDoorInteractions {
                 return false;
             }
             if (session.context.roomState.dungeonItemState.currentFlag(DungeonItemState.NIGHTMARE_KEY_INDEX) == 0) {
-                session.context.entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x07));
+                session.context.entityBridge.outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0x07));
                 return true;
             }
             session.context.indoorBossDoorOpening = true;
@@ -340,7 +340,7 @@ final class RoomDoorInteractions {
         if (statue != null) {
             session.context.entityBridge.entityRuntime.beginLift(
                     statue.slot(), session.romDirectionForProjectileCollision(linkDirection));
-            session.context.entityBridge.pendingRoomEntityEvents.add(
+            session.context.entityBridge.outbox.pendingRoomEntityEvents.add(
                     new linksawakening.world.entity.event.EntityCombatEvent(
                             statue.slot(),
                             0x9D,
@@ -424,7 +424,7 @@ final class RoomDoorInteractions {
         }
         if (session.context.roomState.dungeonItemState.currentFlag(DungeonItemState.SMALL_KEYS_INDEX) == 0) {
             session.context.pushBlockContactTicks = 0;
-            session.context.entityBridge.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
+            session.context.entityBridge.outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0x8C));
             return true;
         }
         session.context.pushBlockContactTicks++;
@@ -496,7 +496,7 @@ final class RoomDoorInteractions {
             return false;
         }
         if (!hasKey) {
-            session.context.entityBridge.pendingRoomDialogRequests.add(
+            session.context.entityBridge.outbox.pendingRoomDialogRequests.add(
                     new DialogRequest(session.KEYHOLE_DIALOG_TABLE, dialogLowId));
             return true;
         }
@@ -504,7 +504,7 @@ final class RoomDoorInteractions {
         session.context.roomState.overworldRoomStatus[roomId] |= (byte) session.ROOM_STATUS_EVENT_1;
         session.context.tailCaveKeyholeCountdown = session.TAIL_CAVE_RUMBLE_INITIAL_COUNTDOWN;
         session.context.tailCaveResumeMusicTrack = session.context.entityDefaultMusicTrack;
-        session.context.entityBridge.pendingRoomMusicTrack = 0x00;
+        session.context.entityBridge.outbox.pendingRoomMusicTrack = 0x00;
         return true;
     }
 
@@ -590,7 +590,7 @@ final class RoomDoorInteractions {
         }
         session.context.nextWorldMusicTrackCountdown--;
         if (session.context.nextWorldMusicTrackCountdown == 0) {
-            session.context.entityBridge.pendingRoomMusicTrack = session.context.tailCaveResumeMusicTrack;
+            session.context.entityBridge.outbox.pendingRoomMusicTrack = session.context.tailCaveResumeMusicTrack;
         }
     }
 }
