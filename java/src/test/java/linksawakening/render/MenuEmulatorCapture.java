@@ -19,9 +19,9 @@ final class MenuEmulatorCapture {
             boolean saved = mask != 0;
             GPU gpu = new GPU();
             gpu.loadMenuTiles(rom);
-            var loader = new BackgroundSceneLoader(rom);
+            var loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
             var menu = new FileMenuController(
-                    new FileMenuRomData(rom),
+                    new FileMenuRomData(new linksawakening.rom.Rom(rom)),
                     id -> loader.load(BackgroundSceneCatalog.forFileMenuScene(id)),
                     mask,
                     saved

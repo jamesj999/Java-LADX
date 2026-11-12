@@ -68,7 +68,7 @@ final class CutsceneManagerTest {
         List<String> loadedScenes = new ArrayList<>();
         CutsceneManager manager = new CutsceneManager(dialog, loadedScenes::add);
 
-        manager.startIntro(loadRom(), CutsceneManagerTest::backgroundFor);
+        manager.startIntro(new linksawakening.rom.Rom(loadRom()), CutsceneManagerTest::backgroundFor);
 
         assertEquals(IntroCutsceneScript.SCENE_SEA, manager.frameSnapshot().sceneId());
         assertEquals(0, manager.frameSnapshot().frameCounter());

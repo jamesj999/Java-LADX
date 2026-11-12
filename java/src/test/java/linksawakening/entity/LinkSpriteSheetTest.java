@@ -18,7 +18,7 @@ final class LinkSpriteSheetTest {
         romData[romOffset(0x20, 0x5319)] = 0x00;
         romData[romOffset(0x20, 0x531A)] = 0x02;
 
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(romData);
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData));
         Tile[] resolved = new Tile[4];
 
         spriteSheet.resolveTiles(0, resolved);
@@ -33,7 +33,7 @@ final class LinkSpriteSheetTest {
         romData[stateOffset] = 0x12;
         romData[stateOffset + 1] = 0x14;
 
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(romData);
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData));
         Tile[] resolved = new Tile[4];
 
         spriteSheet.resolveTiles(0x75, resolved);

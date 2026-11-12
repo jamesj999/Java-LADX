@@ -29,8 +29,8 @@ final class TarinShieldRenderLayerTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        link.setPixelPosition(0x30, 0x50);
-        link.showTarinShieldPresentation(palettes[7]);
+        link.position().setPixelPosition(0x30, 0x50);
+        link.animation().showTarinShieldPresentation(palettes[7]);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
 

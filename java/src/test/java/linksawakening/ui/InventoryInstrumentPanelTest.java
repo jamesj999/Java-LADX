@@ -32,7 +32,8 @@ final class InventoryInstrumentPanelTest {
     void paletteCyclesEveryEightTicksAndLeavesTheOtherPalettesUnchanged() throws Exception {
         byte[] rom = rom();
         var panel = new InventoryInstrumentPanel(linksawakening.rom.Rom.of(rom));
-        var base = InventoryTilemapLoader.loadFromRom(rom).palettes();
+        var base = InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom))
+                .palettes();
         assertEquals(RomUtil.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 7)[7]);
         assertFalse(java.util.Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
@@ -40,7 +41,8 @@ final class InventoryInstrumentPanelTest {
         assertArrayEquals(base[0], panel.palettes(base, 8)[0]);
         assertEquals(
                 RomUtil.decodeRgb555(0x001F),
-                InventoryTilemapLoader.loadFromRom(rom).objectPalettes()[6][2]);
+                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom))
+                        .objectPalettes()[6][2]);
     }
 
     @Test
@@ -49,10 +51,10 @@ final class InventoryInstrumentPanelTest {
         GPU gpu = new GPU();
         gpu.loadBaseTiles(rom);
         var menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(rom),
+                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom)),
                 new PlayerState(),
                 linksawakening.gameplay.GameplaySoundSink.none(),
-                rom);
+                new linksawakening.rom.Rom(rom));
         menu.requestToggle();
         for (int i = 0; i < 60; i++) menu.tick();
         byte[] flags = new byte[8];

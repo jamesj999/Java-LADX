@@ -22,9 +22,10 @@ final class IntroFrameRegressionTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
         gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence =
-                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        IntroSequence sequence = new IntroSequence(
+                new linksawakening.rom.Rom(rom),
+                sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
 
         IntroFrameSnapshot initial = sequence.snapshot();

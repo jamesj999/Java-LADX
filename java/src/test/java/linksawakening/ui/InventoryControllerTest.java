@@ -26,7 +26,8 @@ final class InventoryControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState playerState = new PlayerState();
-        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(loadRom()), playerState);
+        InventoryMenu menu = new InventoryMenu(
+                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(loadRom())), playerState);
         InventoryController controller = new InventoryController(input, inputConfig, menu);
 
         input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);

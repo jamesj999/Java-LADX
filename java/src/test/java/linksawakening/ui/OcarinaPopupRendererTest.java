@@ -15,7 +15,7 @@ final class OcarinaPopupRendererTest {
     @Test
     void loaderKeepsTheRomOamFramesAndInventoryObjectPalettes() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom));
 
         int popupOffset = linksawakening.rom.RomBank.romOffset(0x20, 0x604B);
         int[] popup = loader.ocarinaPopupOam();
@@ -28,7 +28,7 @@ final class OcarinaPopupRendererTest {
     @Test
     void frameZeroUsesTheRomOamCoordinatesAndObjectPalette() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom));
         GPU gpu = new GPU();
         gpu.loadOcarinaSymbolsTiles(rom);
         writeSolidTile(gpu, 0x22, 1);

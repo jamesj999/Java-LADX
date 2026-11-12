@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 final class EntityDeathRenderTest {
     @Test
     void sharedDeathCloudResetsBodyTileOffsetAndFacingForOctorokAndOtherEnemies() throws Exception {
-        var catalog = new EntitySpriteHandlerCatalog(loadRom());
+        var catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
         GPU gpu = new GPU();
         int[][] pattern = new int[8][8];
         for (int y = 0; y < 8; y++)

@@ -18,7 +18,7 @@ final class FileMenuRomDataTest {
         writeBytes(rom, 0x01, 0x4BB0, 0x4C, 0x54, 0x5C, 0x64, 0x6C);
         writeBytes(rom, 0x1C, 0x4641, sequence(0x100, 0xA0));
 
-        FileMenuRomData data = new FileMenuRomData(rom);
+        FileMenuRomData data = new FileMenuRomData(new linksawakening.rom.Rom(rom));
 
         assertArrayEquals(new int[] {0x3B, 0x53, 0x6B, 0x83}, data.selectionCursorYPositions());
         assertArrayEquals(sequence(0x40, 0x10), data.nameEntryCharacterTable());
@@ -38,7 +38,7 @@ final class FileMenuRomDataTest {
         writeBytes(rom, 0x01, 0x4BB0, 0x4C, 0x54, 0x5C, 0x64, 0x6C);
         writeBytes(rom, 0x1C, 0x4641, sequence(0x100, 0xA0));
 
-        FileMenuRomData data = new FileMenuRomData(rom);
+        FileMenuRomData data = new FileMenuRomData(new linksawakening.rom.Rom(rom));
         int[] first = data.selectionCursorYPositions();
         int[] second = data.selectionCursorYPositions();
         int[] chars = data.nameEntryCharacterTable();

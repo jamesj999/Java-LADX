@@ -192,7 +192,7 @@ final class LinkLedgeParityTest {
                         .config(config)
                         .tables(tables)
                         .collision(collision)
-                        .sprites(LinkSpriteSheet.loadFromRom(rom))
+                        .sprites(LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)))
                         .player(new PlayerState())
                         .items(new ItemRegistry())
                         .build(),

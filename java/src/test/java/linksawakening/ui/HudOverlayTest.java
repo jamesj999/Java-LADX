@@ -34,7 +34,8 @@ final class HudOverlayTest {
             InventoryItem.EMPTY.romValue()
         });
 
-        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player);
+        InventoryMenu menu =
+                new InventoryMenu(InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom)), player);
         menu.requestToggle();
         for (int frame = 0; frame < 16; frame++) {
             menu.tick();

@@ -348,8 +348,8 @@ final class LinkTest extends LinkFixture {
     @Test
     void renderUsesTheSelectedRomTunicPaletteAtTheSameBodyPixels() throws Exception {
         byte[] rom = loadRom();
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);
-        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(rom);
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom));
+        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(new linksawakening.rom.Rom(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState inputState = new InputState();
         PlayerState playerState = new PlayerState();
@@ -391,8 +391,8 @@ final class LinkTest extends LinkFixture {
     @Test
     void renderUsesTheRomFlashPaletteOnInvincibilityBitTwo() throws Exception {
         byte[] rom = loadRom();
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(rom);
-        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(rom);
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom));
+        LinkTunicPalette tunicPalette = LinkTunicPalette.loadFromRom(new linksawakening.rom.Rom(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         Link link = new LinkTestBuilder()

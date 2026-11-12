@@ -10,7 +10,8 @@ final class TransientVfxMovingSparkleTest {
 
     @Test
     void rendersTheRomSparklePairAndDirectionalMotion() {
-        CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(loadRom()));
+        CutLeavesEffectRenderer renderer =
+                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom())));
 
         var initial = renderer.renderMovingSparkle(0x40, 0x50, 0x22, 0);
         assertEquals(2, initial.size());

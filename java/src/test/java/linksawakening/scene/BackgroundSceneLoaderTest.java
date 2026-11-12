@@ -58,7 +58,7 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void decodedBackgroundsPreserveFullGameBoyBgMap() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(loadRom()));
 
         BackgroundScene title = loader.load(BackgroundSceneCatalog.TITLE);
 
@@ -72,7 +72,7 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void decodedBackgroundsExposeObjectPalettesAfterBgPalettes() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(loadRom()));
 
         BackgroundScene beach = loader.load(BackgroundSceneCatalog.INTRO_BEACH);
 
@@ -86,7 +86,7 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void shippedRomFileMenuScenesDecodeToFullMapsAndPaletteBlocks() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(loadRom()));
 
         BackgroundScene selection = loader.load(BackgroundSceneCatalog.FILE_SELECTION);
         BackgroundScene commands = loader.load(BackgroundSceneCatalog.FILE_SELECTION_COMMANDS);
@@ -105,7 +105,7 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void partialFileMenuAttrmapsPreserveSelectionHeartAndBorderColors() {
-        var loader = new BackgroundSceneLoader(loadRom());
+        var loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(loadRom()));
         // Observed in original CGB VRAM after navigating selection -> erase/copy.
         for (var spec :
                 new BackgroundSceneSpec[] {BackgroundSceneCatalog.FILE_ERASE, BackgroundSceneCatalog.FILE_COPY}) {

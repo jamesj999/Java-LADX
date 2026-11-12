@@ -65,7 +65,8 @@ final class GPUEntityTilesTest {
     @Test
     void shippedRoom92UsesAdjustedGbcNpcBanksAndSixteenTileDestinations() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteSelection selection = new EntitySpriteCatalog(rom).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        EntitySpriteSelection selection = new EntitySpriteCatalog(new linksawakening.rom.Rom(rom))
+                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         GPU gpu = new GPU();
         gpu.loadEntitySpriteSheets(rom, selection.sheetValues());
 

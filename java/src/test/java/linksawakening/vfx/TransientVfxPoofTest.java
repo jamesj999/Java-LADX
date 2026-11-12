@@ -9,7 +9,7 @@ final class TransientVfxPoofTest {
 
     @Test
     void decodesTheRomPoofFramesAndOamOrigin() {
-        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(sheet);
 
         var small = renderer.renderPoof(0x40, 0x50, 0x03);

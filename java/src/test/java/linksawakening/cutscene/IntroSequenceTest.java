@@ -101,7 +101,9 @@ final class IntroSequenceTest {
         assertEquals(0, intro.titleRevealRows());
 
         tick(intro, 2); // queued row becomes visible on the next VBlank
-        IntroRomData.TitleRow firstRow = new IntroRomData(loadRom()).titleRows().get(0);
+        IntroRomData.TitleRow firstRow = new IntroRomData(new linksawakening.rom.Rom(loadRom()))
+                .titleRows()
+                .get(0);
         assertEquals(2, intro.titleRevealRows());
         assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(), firstRow.tileTargetAddress()));
         assertArrayEquals(
@@ -147,7 +149,7 @@ final class IntroSequenceTest {
 
     private static IntroSequence newIntro() {
         byte[] rom = loadRom();
-        return new IntroSequence(rom, IntroSequenceTest::backgroundFor);
+        return new IntroSequence(new linksawakening.rom.Rom(rom), IntroSequenceTest::backgroundFor);
     }
 
     private static BackgroundScene backgroundFor(String sceneId) {

@@ -18,7 +18,7 @@ final class IntroShippedRomTest {
     @Test
     void shippedRomRecordsAndInitialFrameMatchTheIntroTables() {
         byte[] rom = loadRom();
-        IntroRomData data = new IntroRomData(rom);
+        IntroRomData data = new IntroRomData(new linksawakening.rom.Rom(rom));
 
         assertEquals(6, data.shipTiles().size());
         assertEquals(0x1C, data.shipTiles().get(0).tileIndex());
@@ -34,9 +34,10 @@ final class IntroShippedRomTest {
                 },
                 data.titleRows().get(0).tileBytes());
 
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence =
-                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        IntroSequence sequence = new IntroSequence(
+                new linksawakening.rom.Rom(rom),
+                sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         assertEquals(22, sequence.snapshot().sprites().size());
         assertEquals(0x1C, sequence.snapshot().sprites().get(0).tileIndex());
         sequence.tick();
@@ -46,9 +47,10 @@ final class IntroShippedRomTest {
     @Test
     void lightningAppliesRomDefinedSeaPaletteModifierToTheDynamicSnapshot() {
         byte[] rom = loadRom();
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence =
-                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        IntroSequence sequence = new IntroSequence(
+                new linksawakening.rom.Rom(rom),
+                sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         int[][] initial = sequence.snapshot().bgPalettes();
 
         for (int frame = 0; frame < 130; frame++) {
@@ -62,9 +64,9 @@ final class IntroShippedRomTest {
     @Test
     void animatedFrameKeepsStaticBackgroundMapAndChangesOnlyAnimatedState() {
         byte[] rom = loadRom();
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
         BackgroundScene scene = loader.load(BackgroundSceneCatalog.INTRO_SEA);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> scene);
+        IntroSequence sequence = new IntroSequence(new linksawakening.rom.Rom(rom), sceneId -> scene);
         int[] initialMap = sequence.snapshot().tilemap();
 
         sequence.tick();
@@ -75,9 +77,10 @@ final class IntroShippedRomTest {
     @Test
     void titleDxFadeUsesTheRomPaletteRowsInTheDynamicSnapshot() {
         byte[] rom = loadRom();
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence =
-                new IntroSequence(rom, sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        IntroSequence sequence = new IntroSequence(
+                new linksawakening.rom.Rom(rom),
+                sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
 
         for (int frame = 0;
                 frame < 5000 && !"TITLE_DX".equals(sequence.snapshot().substate());

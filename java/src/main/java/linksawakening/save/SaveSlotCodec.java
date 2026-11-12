@@ -19,42 +19,69 @@ final class SaveSlotCodec {
         int slotOffset = SaveRamLayout.slotOffset(slot);
         int main = slotOffset + SaveRamLayout.mainOffset();
 
-        int deaths = playerState.deathCountBcd();
+        int deaths = playerState.progression().deathCountBcd();
         bytes[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET] = (byte) deaths;
         bytes[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 1] = (byte) (deaths >>> 8);
-        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) playerState.itemB();
-        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) playerState.itemA();
+        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] =
+                (byte) playerState.inventory().itemB();
+        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] =
+                (byte) playerState.inventory().itemA();
         for (int index = 0; index < SaveRamLayout.SUBSCREEN_SLOT_COUNT; index++) {
-            bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index] = (byte) playerState.subscreenItem(index);
+            bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index] =
+                    (byte) playerState.inventory().subscreenItem(index);
         }
-        bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] = (byte) (playerState.hasFlippers() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = (byte) (playerState.hasMedicine() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] = (byte) playerState.tradeSequenceItem();
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) encodeBcd(playerState.seashells());
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] = (byte) playerState.medicineCount();
-        bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = (byte) playerState.tailKeyCount();
-        bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] = (byte) playerState.anglerKeyCount();
-        bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = (byte) playerState.faceKeyCount();
-        bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET] = (byte) playerState.birdKeyCount();
-        bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET] = (byte) playerState.goldenLeavesCount();
-        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = (byte) playerState.powerBraceletLevel();
-        bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
-        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) encodeBcd(playerState.arrowCount());
-        bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET] = (byte) encodeBcd(playerState.magicPowderCount());
-        bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET] = (byte) (playerState.hasToadstool() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) encodeBcd(playerState.bombCount());
-        bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = (byte) playerState.swordLevel();
+        bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] =
+                (byte) (playerState.progression().hasFlippers() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] =
+                (byte) (playerState.progression().hasMedicine() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] =
+                (byte) playerState.progression().tradeSequenceItem();
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] =
+                (byte) encodeBcd(playerState.progression().seashells());
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] =
+                (byte) playerState.progression().medicineCount();
+        bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] =
+                (byte) playerState.progression().tailKeyCount();
+        bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] =
+                (byte) playerState.progression().anglerKeyCount();
+        bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] =
+                (byte) playerState.progression().faceKeyCount();
+        bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET] =
+                (byte) playerState.progression().birdKeyCount();
+        bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET] =
+                (byte) playerState.progression().goldenLeavesCount();
+        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] =
+                (byte) playerState.equipmentLevels().powerBraceletLevel();
+        bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] =
+                (byte) playerState.equipmentLevels().shieldLevel();
+        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().arrowCount());
+        bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().magicPowderCount());
+        bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET] =
+                (byte) (playerState.ammunition().hasToadstool() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().bombCount());
+        bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] =
+                (byte) playerState.equipmentLevels().swordLevel();
         bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = (byte) savedHealth(playerState);
-        bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = (byte) playerState.maxHearts();
-        bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = (byte) playerState.heartPieces();
-        writeRupees(main, playerState.rupees());
-        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] = (byte) encodeBcd(playerState.maxMagicPowder());
-        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) encodeBcd(playerState.maxBombs());
-        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) encodeBcd(playerState.maxArrows());
-        bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] = (byte) (playerState.ocarinaSongFlags() & 0x07);
+        bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] =
+                (byte) playerState.vitals().maxHearts();
+        bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] =
+                (byte) playerState.progression().heartPieces();
+        writeRupees(main, playerState.wallet().rupees());
+        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().maxMagicPowder());
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().maxBombs());
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] =
+                (byte) encodeBcd(playerState.ammunition().maxArrows());
+        bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] =
+                (byte) (playerState.progression().ocarinaSongFlags() & 0x07);
         bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET] =
-                (byte) Math.max(0, Math.min(2, playerState.selectedSongIndex()));
-        bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET] = (byte) playerState.tunicType();
+                (byte) Math.max(0, Math.min(2, playerState.progression().selectedSongIndex()));
+        bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET] =
+                (byte) playerState.equipmentLevels().tunicType();
     }
 
     public SaveSlotState readSlot(int slot) {
@@ -143,8 +170,8 @@ final class SaveSlotCodec {
     }
 
     private static int savedHealth(PlayerState playerState) {
-        if (playerState.health() != 0) {
-            return playerState.health();
+        if (playerState.vitals().health() != 0) {
+            return playerState.vitals().health();
         }
         int[] startingHealthByMaxHearts = {
             3 * PlayerState.HP_PER_HEART,
@@ -164,7 +191,7 @@ final class SaveSlotCodec {
             10 * PlayerState.HP_PER_HEART
         };
         return startingHealthByMaxHearts[
-                Math.min(Math.max(playerState.maxHearts(), 0), startingHealthByMaxHearts.length - 1)];
+                Math.min(Math.max(playerState.vitals().maxHearts(), 0), startingHealthByMaxHearts.length - 1)];
     }
 
     static int unsigned(byte value) {

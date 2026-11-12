@@ -142,7 +142,7 @@ final class InventoryMenuSoundTest {
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
         try (InputStream stream = linksawakening.testing.TestRom.open()) {
-            return InventoryTilemapLoader.loadFromRom(stream.readAllBytes());
+            return InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(stream.readAllBytes()));
         }
     }
 

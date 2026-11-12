@@ -37,8 +37,9 @@ final class IntroEmulatorParityTest {
                 "Emulator fixtures are tied to the shipped ROM revision");
         GPU gpu = new GPU();
         gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        IntroSequence sequence = new IntroSequence(
+                new linksawakening.rom.Rom(rom), id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
         int last = golden.keySet().stream().mapToInt(Integer::intValue).max().orElseThrow();
         for (int frame = 0; frame <= last; frame++) {

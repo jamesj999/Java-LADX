@@ -29,10 +29,10 @@ final class RenderPipelineGpuUploadsTest {
         }
         var player = new PlayerState();
         var menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(bytes),
+                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(bytes)),
                 player,
                 linksawakening.gameplay.GameplaySoundSink.none(),
-                bytes);
+                new linksawakening.rom.Rom(bytes));
         var controller = new InventoryController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), menu);
         GPU gpu = new GPU();
         gpu.loadBaseTiles(bytes);
@@ -40,10 +40,10 @@ final class RenderPipelineGpuUploadsTest {
         var observer = TestDrawObservers.CURRENT.get();
         TestDrawObservers.CURRENT.remove();
         try {
-            player.setHasToadstool(true);
+            player.ammunition().setHasToadstool(true);
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
             assertUpload(gpu, bytes, RomSymbols.MushroomTiles);
-            player.setHasToadstool(false);
+            player.ammunition().setHasToadstool(false);
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
             assertUpload(gpu, bytes, RomSymbols.InventoryEquipmentItemsTiles.plus(0xE0));
         } finally {

@@ -76,10 +76,8 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
                 romTables,
                 collision,
                 spriteSheet,
-                playerState,
-                itemRegistry,
-                GameplaySoundSink.none(),
-                LinkTunicPalette.greenCompatibility());
+                new linksawakening.entity.Link.Services(
+                        playerState, itemRegistry, GameplaySoundSink.none(), LinkTunicPalette.greenCompatibility()));
     }
 
     public Link(
@@ -97,10 +95,8 @@ public final class Link extends LinkRoomView implements RocsFeather.JumpTarget {
                 romTables,
                 collision,
                 spriteSheet,
-                playerState,
-                itemRegistry,
-                soundSink,
-                LinkTunicPalette.greenCompatibility());
+                new linksawakening.entity.Link.Services(
+                        playerState, itemRegistry, soundSink, LinkTunicPalette.greenCompatibility()));
     }
     /** @deprecated Use the Services argument bundle overload. */
     @Deprecated(forRemoval = true)

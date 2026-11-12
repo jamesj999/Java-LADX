@@ -17,7 +17,7 @@ final class InventoryDungeonPanelTest {
     @Test
     void tailCavePanelMatchesTheRealEmulatorsTilemapAndAttributes() throws Exception {
         byte[] rom = rom();
-        var loader = InventoryTilemapLoader.loadFromRom(rom);
+        var loader = InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom));
         int[] map = loader.copyBaseTilemap(), attrs = loader.copyAttrmap();
         var lines = Files.readAllLines(Path.of("src/test/resources/opening/tail-cave-inventory/panel.tsv")).stream()
                 .filter(line -> !line.startsWith("#"))

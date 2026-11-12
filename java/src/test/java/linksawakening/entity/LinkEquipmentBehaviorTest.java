@@ -164,11 +164,11 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(inputConfig)
                 .tables(RomTables.loadFromRom(rom))
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)))
                 .player(playerState)
                 .items(itemRegistry)
                 .sounds(GameplaySoundSink.none())
-                .palette(LinkTunicPalette.loadFromRom(rom))
+                .palette(LinkTunicPalette.loadFromRom(new linksawakening.rom.Rom(rom)))
                 .build();
         link.position().setPixelPosition(40, 40);
         link.animation().showSwordAcquisitionSpinPose(0x20);
@@ -346,7 +346,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(loadRom()))
+                .sprites(LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom())))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
@@ -374,7 +374,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();

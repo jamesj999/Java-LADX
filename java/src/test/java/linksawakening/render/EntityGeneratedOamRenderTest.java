@@ -94,7 +94,7 @@ final class EntityGeneratedOamRenderTest {
             writeSolidTile(gpu, tile, 1);
         }
 
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()))
                 .forBushCrawlerCrawlState(EntityRoomLoader.RoomTable.OVERWORLD, 0);
         RoomEntity entity =
                 new RoomEntity(0, 0, 0xBB, 0x40, 0x40, EntityStatus.ACTIVE, definition, 0, 0, 0, 0, -1, false);
