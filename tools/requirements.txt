@@ -1,3 +1,4 @@
 numpy
 Pillow
-pyboy
+# 2.9.0 changes input timing and breaks the recorded opening routes.
+pyboy==2.8.1

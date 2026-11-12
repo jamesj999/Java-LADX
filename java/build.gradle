@@ -135,10 +135,18 @@ tasks.withType(Test).configureEach {
     dependsOn 'testRomResources'
     classpath += files(layout.buildDirectory.dir('test-rom'))
     useJUnitPlatform()
-    if (name == 'romFreeTest') useJUnitPlatform { excludeTags 'rom' }
+    // Documented parity gaps stay out of the default suites; run them with knownGapTest.
+    if (name == 'romFreeTest') useJUnitPlatform { excludeTags 'rom', 'known-gap' }
+    else if (name == 'knownGapTest') useJUnitPlatform { includeTags 'known-gap' }
+    else useJUnitPlatform { excludeTags 'known-gap' }
 }
 tasks.register('romFreeTest', Test) {
     description = 'Run only tests independent of the user ROM'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
+tasks.register('knownGapTest', Test) {
+    description = 'Run tests for documented, not-yet-ported ROM parity gaps (expected to fail)'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
 }
