@@ -128,70 +128,43 @@ final class EntityPhase {
                             swordBoxForEntityTick.width(),
                             swordBoxForEntityTick.y(),
                             swordBoxForEntityTick.height())));
+            var results = roomSession.entityFrameResults();
             if (link != null) {
                 link.clearStandingOnSideViewEntity();
             }
-            var platformRequests = roomSession.consumeSideViewPlatformLinkRequests();
-            var potContactRequests = roomSession.consumeSideViewPotLinkRequests();
-            var finalPositionRequests = roomSession.consumeLinkFinalPositionRequests();
-            int platformRequestIndex = 0;
-            int potContactRequestIndex = 0;
-            int finalPositionRequestIndex = 0;
-            // AnimateEntities processes slots in descending order. Merge
-            // all Link-position writers to preserve source order.
-            while (platformRequestIndex < platformRequests.size()
-                    || potContactRequestIndex < potContactRequests.size()
-                    || finalPositionRequestIndex < finalPositionRequests.size()) {
-                int nextStream = -1;
-                int nextSlot = -1;
-                if (platformRequestIndex < platformRequests.size()
-                        && platformRequests.get(platformRequestIndex).sourceSlot() > nextSlot) {
-                    nextStream = 0;
-                    nextSlot = platformRequests.get(platformRequestIndex).sourceSlot();
-                }
-                if (finalPositionRequestIndex < finalPositionRequests.size()
-                        && finalPositionRequests.get(finalPositionRequestIndex).sourceSlot() > nextSlot) {
-                    nextStream = 1;
-                    nextSlot =
-                            finalPositionRequests.get(finalPositionRequestIndex).sourceSlot();
-                }
-                if (potContactRequestIndex < potContactRequests.size()
-                        && potContactRequests.get(potContactRequestIndex).sourceSlot() >= nextSlot) {
-                    // Equal-slot emission is not expected; keep D6's
-                    // explicit writes as the most specific one.
-                    nextStream = 2;
-                }
-                if (nextStream == 0) {
-                    var request = platformRequests.get(platformRequestIndex++);
-                    if (link != null && request.standing()) {
-                        link.apply(LinkCommandAdapter.from(request));
-                        roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
-                        roomTransitionCoordinator.handleOverworldBoundary(link);
-                        if (scrollController.isActive() || transitionController.isInputBlocked()) {
-                            link.clearSideViewPlatformState();
+            for (var write : results.link().consumePositionWrites()) {
+                switch (write) {
+                    case RoomSession.LinkWrite.PlatformWrite value -> {
+                        var request = value.request();
+                        if (link != null && request.standing()) {
+                            link.apply(LinkCommandAdapter.from(request));
+                            roomTransitionCoordinator.handleWarpAndIndoorBoundaries(link);
+                            roomTransitionCoordinator.handleOverworldBoundary(link);
+                            if (scrollController.isActive() || transitionController.isInputBlocked()) {
+                                link.clearSideViewPlatformState();
+                            }
                         }
                     }
-                } else if (nextStream == 1) {
-                    var request = finalPositionRequests.get(finalPositionRequestIndex++);
-                    if (link != null) {
-                        link.apply(LinkCommandAdapter.from(request));
+                    case RoomSession.LinkWrite.FinalPositionWrite value -> {
+                        var request = value.request();
+                        if (link != null) link.apply(LinkCommandAdapter.from(request));
+                        if (request.resetPegasusBoots() && link == null && playerState != null) {
+                            playerState.setRunningWithPegasusBoots(false);
+                        }
                     }
-                    if (request.resetPegasusBoots() && link == null && playerState != null) {
-                        playerState.setRunningWithPegasusBoots(false);
+                    case RoomSession.LinkWrite.PotWrite value -> {
+                        var request = value.request();
+                        if (link != null) link.apply(LinkCommandAdapter.from(request));
                     }
-                } else {
-                    var request = potContactRequests.get(potContactRequestIndex++);
-                    if (link != null) {
-                        link.apply(LinkCommandAdapter.from(request));
-                    }
+                    default -> throw new IllegalStateException("Unexpected position write: " + write);
                 }
             }
-            for (var request : roomSession.consumeLinkMotionBlockRequests()) {
+            for (var request : results.link().consumeLinkMotionBlockRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
             }
-            for (var request : roomSession.consumeWarpLinkStateRequests()) {
+            for (var request : results.link().consumeWarpLinkStateRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
@@ -200,48 +173,33 @@ final class EntityPhase {
                     warpSword.resetSpinAttack();
                 }
             }
-            if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {
+            if (results.link().consumeWorldLinkMotionBlockRequest() && link != null) {
                 link.apply(linksawakening.entity.LinkCommand.Action.BLOCK_MOTION);
             }
-            for (var request : roomSession.consumeLinkFallenPoseRequests()) {
+            for (var request : results.link().consumeLinkFallenPoseRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
             }
-            for (var request : roomSession.consumeLinkFacingRequests()) {
+            for (var request : results.link().consumeLinkFacingRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
             }
-            var linkAttackClearRequests = roomSession.consumeLinkAttackClearRequests();
-            var linkAttackStepRequests = roomSession.consumeLinkAttackStepRequests();
-            int linkAttackClearIndex = 0;
-            int linkAttackStepIndex = 0;
-            // A slot cannot emit both writes in one handler pass. If a
-            // future bridge does produce a tie, the throw write wins.
-            while (linkAttackClearIndex < linkAttackClearRequests.size()
-                    || linkAttackStepIndex < linkAttackStepRequests.size()) {
-                boolean applyClear = linkAttackStepIndex >= linkAttackStepRequests.size()
-                        || (linkAttackClearIndex < linkAttackClearRequests.size()
-                                && linkAttackClearRequests
-                                                .get(linkAttackClearIndex)
-                                                .sourceSlot()
-                                        > linkAttackStepRequests
-                                                .get(linkAttackStepIndex)
-                                                .sourceSlot());
-                if (applyClear) {
-                    var request = linkAttackClearRequests.get(linkAttackClearIndex++);
-                    if (link != null) {
-                        link.apply(LinkCommandAdapter.from(request));
+            for (var write : results.link().consumeAttackWrites()) {
+                switch (write) {
+                    case RoomSession.LinkWrite.AttackClearWrite value -> {
+                        var request = value.request();
+                        if (link != null) link.apply(LinkCommandAdapter.from(request));
                     }
-                } else {
-                    var request = linkAttackStepRequests.get(linkAttackStepIndex++);
-                    if (link != null) {
-                        link.apply(LinkCommandAdapter.from(request));
+                    case RoomSession.LinkWrite.AttackStepWrite value -> {
+                        var request = value.request();
+                        if (link != null) link.apply(LinkCommandAdapter.from(request));
                     }
+                    default -> throw new IllegalStateException("Unexpected attack write: " + write);
                 }
             }
-            for (var request : roomSession.consumeLinkHeldItemPoseRequests()) {
+            for (var request : results.link().consumeLinkHeldItemPoseRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
@@ -250,7 +208,7 @@ final class EntityPhase {
                     heldPoseSword.resetSpinAttack();
                 }
             }
-            for (var request : roomSession.consumeLinkSwordSpinPoseRequests()) {
+            for (var request : results.link().consumeLinkSwordSpinPoseRequests()) {
                 int acquisitionBaseDirection = link == null ? Link.DIRECTION_DOWN : link.direction();
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
@@ -266,7 +224,7 @@ final class EntityPhase {
                     }
                 }
             }
-            for (var request : roomSession.consumeLinkSwordFinalPoseRequests()) {
+            for (var request : results.link().consumeLinkSwordFinalPoseRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
@@ -274,7 +232,7 @@ final class EntityPhase {
                     sword.resetSpinAttack();
                 }
             }
-            for (var request : roomSession.consumeScreenShakeRequests()) {
+            for (var request : results.presentation().consumeScreenShakeRequests()) {
                 scrollController.startScreenShake(request.countdown(), request.phase());
             }
             EnemyProjectileEventConsumer.consume(
@@ -284,7 +242,7 @@ final class EntityPhase {
                     gameplaySoundSink,
                     roomSession::resetGuardianAcornCounterOnHurt,
                     () -> musicDirector.restoreMusicAfterPowerUpEnds(roomSession));
-            var entityCombatEvents = roomSession.consumeEntityEvents();
+            var entityCombatEvents = results.presentation().consumeEntityEvents();
             EnemyCombatEventConsumer.consume(entityCombatEvents, gameplaySoundSink, transientVfxSystem);
             for (var event : entityCombatEvents) {
                 if (link != null
@@ -293,44 +251,44 @@ final class EntityPhase {
                     link.apply(LinkCommandAdapter.from(event));
                 }
             }
-            int musicFadeOutCountdown = roomSession.consumePendingMusicFadeOutCountdown();
+            int musicFadeOutCountdown = results.presentation().consumePendingMusicFadeOutCountdown();
             if (musicFadeOutCountdown != 0 && gameplayMusicController != null) {
                 gameplayMusicController.requestFadeOut(musicFadeOutCountdown);
             }
-            for (var reward : roomSession.consumeChestRewardEvents()) {
+            for (var reward : results.rewards().consumeChestRewardEvents()) {
                 if (playerState != null) {
                     playerState.applyChestReward(reward.itemType());
                 }
             }
-            for (var reward : roomSession.consumeKeyRewardEvents()) {
+            for (var reward : results.rewards().consumeKeyRewardEvents()) {
                 if (playerState != null) {
                     playerState.applyChestReward(reward.itemType());
                 }
             }
-            for (var reward : roomSession.consumeSlimeKeyRewardEvents()) {
+            for (var reward : results.rewards().consumeSlimeKeyRewardEvents()) {
                 if (playerState != null) {
                     playerState.setGoldenLeavesCount(reward.goldenLeavesCount());
                 }
             }
-            for (var update : roomSession.consumeHeartPieceUpdates()) {
+            for (var update : results.rewards().consumeHeartPieceUpdates()) {
                 dialogController.setInteractionLocked(update.interactionLocked());
                 if (update.incrementPiece()) playerState.setHeartPieces(playerState.heartPieces() + 1);
                 if (update.newContainer()) playerState.completeHeartPieceContainer();
                 if (update.tilesCommand() != 0) gpu.updateHeartPieceMeterTiles(romData, update.tilesCommand());
                 if (update.complete()) gpu.updateTradingItemTiles(romData, playerState.tradeSequenceItem());
             }
-            for (var reward : roomSession.consumeHeartContainerRewards()) {
+            for (var reward : results.rewards().consumeHeartContainerRewards()) {
                 if (playerState != null) {
                     playerState.applyHeartContainerReward();
                 }
                 musicDirector.playDirectMusic(0x18);
             }
-            for (var request : roomSession.consumeMadamMeowMeowFullHealRequests()) {
+            for (var request : results.rewards().consumeMadamMeowMeowFullHealRequests()) {
                 if (playerState != null) {
                     playerState.requestFullHeal();
                 }
             }
-            for (var event : roomSession.consumeRichardProgressEvents()) {
+            for (var event : results.rewards().consumeRichardProgressEvents()) {
                 if (playerState != null && event.kind() == RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
                     playerState.setGoldenLeavesCount(event.goldenLeavesCount());
                     if (gpu != null && romData != null) {
@@ -339,12 +297,12 @@ final class EntityPhase {
                 }
             }
             BeachSwordRewardConsumer.consume(roomSession, playerState);
-            for (var reward : roomSession.consumeToadstoolRewards()) {
+            for (var reward : results.rewards().consumeToadstoolRewards()) {
                 if (playerState != null) {
                     playerState.applyToadstoolReward();
                 }
             }
-            for (var event : roomSession.consumeWitchExchangeEvents()) {
+            for (var event : results.rewards().consumeWitchExchangeEvents()) {
                 if (playerState != null) {
                     playerState.beginWitchToadstoolExchange(event.inventorySlot());
                     // Only the B-slot branch clears wDialogGotItem/C1A8.
@@ -353,18 +311,18 @@ final class EntityPhase {
                     if (event.inventorySlot() == 0 && link != null) link.clearDialogGotItem();
                 }
             }
-            for (var reward : roomSession.consumeWitchRewardEvents()) {
+            for (var reward : results.rewards().consumeWitchRewardEvents()) {
                 if (playerState != null) {
                     playerState.applyWitchMagicPowderReward();
                 }
             }
             roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
             roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
-            int chestMusicTrack = roomSession.consumePendingMusicTrack();
+            int chestMusicTrack = results.presentation().consumePendingMusicTrack();
             if (chestMusicTrack >= 0) {
                 musicDirector.playDirectMusic(chestMusicTrack);
             }
-            for (var event : roomSession.consumeLikeLikeEvents()) {
+            for (var event : results.presentation().consumeLikeLikeEvents()) {
                 if (event.kind() == linksawakening.world.entity.event.LikeLikeEvent.Kind.CAPTURE) {
                     if (event.stolenInventorySlot() == 0) {
                         playerState.setItemB(PlayerState.INVENTORY_EMPTY);
@@ -416,12 +374,12 @@ final class EntityPhase {
                     reflectedSword.resetSpinAttack();
                 }
             }
-            for (var request : roomSession.consumeRoosterLinkStateRequests()) {
+            for (var request : results.link().consumeRoosterLinkStateRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }
             }
-            for (var request : roomSession.consumeHinoxLinkEffectRequests()) {
+            for (var request : results.link().consumeHinoxLinkEffectRequests()) {
                 if (link != null) {
                     link.apply(LinkCommandAdapter.from(request));
                 }

@@ -176,6 +176,169 @@ public final class RoomSession extends RoomSessionRules {
                 inputs.link().motion().speedY());
     }
 
+    /** Ordered writes at one of the original Link consumption boundaries. */
+    public sealed interface LinkWrite {
+        record PlatformWrite(SideViewPlatformLinkRequest request) implements LinkWrite {}
+
+        record FinalPositionWrite(LinkFinalPositionRequest request) implements LinkWrite {}
+
+        record PotWrite(SideViewPotLinkRequest request) implements LinkWrite {}
+
+        record AttackClearWrite(LinkAttackClearRequest request) implements LinkWrite {}
+
+        record AttackStepWrite(LinkAttackStepRequest request) implements LinkWrite {}
+    }
+    /** Drains only the position channels: applying these can load a different room. */
+    public List<LinkWrite> consumePositionWrites() {
+        var platforms = consumeSideViewPlatformLinkRequests();
+        var pots = consumeSideViewPotLinkRequests();
+        var positions = consumeLinkFinalPositionRequests();
+        return RoomLinkWrites.positions(platforms, pots, positions);
+    }
+
+    public List<LinkWrite> consumeAttackWrites() {
+        return RoomLinkWrites.attacks(consumeLinkAttackClearRequests(), consumeLinkAttackStepRequests());
+    }
+
+    /** Frame outbox views. Drain at the original consumer boundaries: Link writes may load a room. */
+    public record EntityFrameResults(LinkOutputs link, RewardOutputs rewards, PresentationOutputs presentation) {}
+
+    public EntityFrameResults entityFrameResults() {
+        return new EntityFrameResults(new LinkOutputs(this), new RewardOutputs(this), new PresentationOutputs(this));
+    }
+
+    public static final class LinkOutputs {
+        private final RoomSession session;
+
+        private LinkOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<LinkWrite> consumePositionWrites() {
+            return session.consumePositionWrites();
+        }
+
+        public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
+            return session.consumeLinkMotionBlockRequests();
+        }
+
+        public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
+            return session.consumeWarpLinkStateRequests();
+        }
+
+        public boolean consumeWorldLinkMotionBlockRequest() {
+            return session.consumeWorldLinkMotionBlockRequest();
+        }
+
+        public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
+            return session.consumeLinkFallenPoseRequests();
+        }
+
+        public List<LinkFacingRequest> consumeLinkFacingRequests() {
+            return session.consumeLinkFacingRequests();
+        }
+
+        public List<LinkWrite> consumeAttackWrites() {
+            return session.consumeAttackWrites();
+        }
+
+        public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
+            return session.consumeLinkHeldItemPoseRequests();
+        }
+
+        public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
+            return session.consumeLinkSwordSpinPoseRequests();
+        }
+
+        public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
+            return session.consumeLinkSwordFinalPoseRequests();
+        }
+
+        public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
+            return session.consumeRoosterLinkStateRequests();
+        }
+
+        public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
+            return session.consumeHinoxLinkEffectRequests();
+        }
+    }
+
+    public static final class RewardOutputs {
+        private final RoomSession session;
+
+        private RewardOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<ChestRewardEvent> consumeChestRewardEvents() {
+            return session.consumeChestRewardEvents();
+        }
+
+        public List<KeyRewardEvent> consumeKeyRewardEvents() {
+            return session.consumeKeyRewardEvents();
+        }
+
+        public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
+            return session.consumeSlimeKeyRewardEvents();
+        }
+
+        public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
+            return session.consumeHeartPieceUpdates();
+        }
+
+        public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
+            return session.consumeHeartContainerRewards();
+        }
+
+        public List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
+            return session.consumeMadamMeowMeowFullHealRequests();
+        }
+
+        public List<RichardProgressEvent> consumeRichardProgressEvents() {
+            return session.consumeRichardProgressEvents();
+        }
+
+        public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
+            return session.consumeToadstoolRewards();
+        }
+
+        public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
+            return session.consumeWitchExchangeEvents();
+        }
+
+        public List<WitchRewardEvent> consumeWitchRewardEvents() {
+            return session.consumeWitchRewardEvents();
+        }
+    }
+
+    public static final class PresentationOutputs {
+        private final RoomSession session;
+
+        private PresentationOutputs(RoomSession session) {
+            this.session = session;
+        }
+
+        public List<ScreenShakeRequest> consumeScreenShakeRequests() {
+            return session.consumeScreenShakeRequests();
+        }
+
+        public List<EntityCombatEvent> consumeEntityEvents() {
+            return session.consumeEntityEvents();
+        }
+
+        public int consumePendingMusicFadeOutCountdown() {
+            return session.consumePendingMusicFadeOutCountdown();
+        }
+
+        public int consumePendingMusicTrack() {
+            return session.consumePendingMusicTrack();
+        }
+
+        public List<LikeLikeEvent> consumeLikeLikeEvents() {
+            return session.consumeLikeLikeEvents();
+        }
+    }
+
     final RoomSessionContext context;
     static long nextRoomSessionId;
 

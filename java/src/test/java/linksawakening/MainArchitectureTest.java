@@ -81,7 +81,7 @@ final class MainArchitectureTest {
 
     @Test
     void mainAppliesTarinLinkWritesAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "LinkCommandAdapter.from", "Link.apply");
+        check("EntityPhase", "tick", "consumeAttackWrites", "LinkCommandAdapter.from", "Link.apply");
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Facing")
                 .contains("faceRomDirectionPreservingWalkPhase"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$Action")
@@ -90,8 +90,13 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesLinkAttackWritesInDescendingEntitySlotOrder() throws Exception {
-        check("EntityPhase", "tick", "consumeLinkAttackClearRequests", "consumeLinkAttackStepRequests");
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("sourceSlot"));
+        CompiledCode.calls(
+                "linksawakening.world.room.RoomSession",
+                "consumeAttackWrites",
+                "consumeLinkAttackClearRequests",
+                "consumeLinkAttackStepRequests",
+                "RoomLinkWrites.attacks");
+        assertTrue(CompiledCode.code("linksawakening.world.room.RoomLinkWrites").contains("sourceSlot"));
     }
 
     @Test
@@ -109,7 +114,13 @@ final class MainArchitectureTest {
 
     @Test
     void mainMergesSideViewPotContactWithOtherDescendingLinkWrites() throws Exception {
-        check("EntityPhase", "tick", "consumeSideViewPotLinkRequests", "consumeLinkFinalPositionRequests");
+        CompiledCode.calls(
+                "linksawakening.world.room.RoomSession",
+                "consumePositionWrites",
+                "consumeSideViewPlatformLinkRequests",
+                "consumeSideViewPotLinkRequests",
+                "consumeLinkFinalPositionRequests",
+                "RoomLinkWrites.positions");
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("LinkCommandAdapter.from"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$PotContact")
                 .contains("applySideViewPotContact"));
@@ -142,7 +153,7 @@ final class MainArchitectureTest {
     @Test
     void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
         check("LinkEquipmentPhase", "tick", "throwLiftedEntity");
-        check("EntityPhase", "tick", "tickEntities", "consumeLinkAttackStepRequests");
+        check("EntityPhase", "tick", "tickEntities", "consumeAttackWrites");
     }
 
     @Test
