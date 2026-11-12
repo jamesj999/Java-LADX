@@ -35,7 +35,7 @@ public final class PlayerResources {
         if (vitals.onLowHealth) {
             vitals.timeToNextLowHealthSound = (vitals.timeToNextLowHealthSound - 1) & 0xFF;
             if (vitals.timeToNextLowHealthSound == 0xFF) {
-                playerSounds.resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS);
+                playerSounds.resourceSounds.add(ResourceSound.LOW_HEARTS);
                 vitals.timeToNextLowHealthSound = 0x30;
             }
         }

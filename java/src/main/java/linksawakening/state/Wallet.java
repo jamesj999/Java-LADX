@@ -34,7 +34,7 @@ public final class Wallet {
         if (addRupeeBuffer == 0) {
             return;
         }
-        playerSounds.resourceSounds.add(linksawakening.gameplay.GameplaySoundEvent.RUPEE);
+        playerSounds.resourceSounds.add(ResourceSound.RUPEE);
         int step = Math.min(9, (addRupeeBuffer >> 5) + 1);
         addRupeeBuffer -= step;
         rupees = Math.min(MAX_RUPEES, rupees + step);

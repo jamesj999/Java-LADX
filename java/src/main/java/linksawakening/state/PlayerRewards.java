@@ -3,8 +3,6 @@ package linksawakening.state;
 import static linksawakening.state.PlayerNumbers.*;
 import static linksawakening.state.PlayerState.*;
 
-import linksawakening.world.entity.event.FloatingItemPickupEffect;
-
 /** PlayerRewards owns its player-state fields and their update rules. */
 public final class PlayerRewards {
 
@@ -85,7 +83,7 @@ public final class PlayerRewards {
     }
 
     public void applyFloatingItemPickup(int entityType, int sourceVariant) {
-        switch (FloatingItemPickupEffect.pickupEffect(entityType, sourceVariant)) {
+        switch (FloatingPickup.pickupEffect(entityType, sourceVariant)) {
             case TEN_RUPEES -> wallet.addRupeeBuffer = 10;
             case MAGIC_POWDER -> {
                 inventory.giveInventoryItem(InventoryItem.MAGIC_POWDER.romValue());

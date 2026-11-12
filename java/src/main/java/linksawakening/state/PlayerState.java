@@ -175,7 +175,13 @@ public final class PlayerState implements LinkPlayerState {
     /** @deprecated Use {@link #playerSounds()}. */
     @Deprecated(forRemoval = true)
     public linksawakening.gameplay.GameplaySoundEvent takeResourceSound() {
-        return playerSounds.takeResourceSound();
+        ResourceSound sound = playerSounds.takeResourceSound();
+        if (sound == null) return null;
+        return switch (sound) {
+            case LOW_HEARTS -> linksawakening.gameplay.GameplaySoundEvent.LOW_HEARTS;
+            case HEART_PICKED_UP -> linksawakening.gameplay.GameplaySoundEvent.HEART_PICKED_UP;
+            case RUPEE -> linksawakening.gameplay.GameplaySoundEvent.RUPEE;
+        };
     }
 
     /** @deprecated Use {@link #playerInitialization()}. */
