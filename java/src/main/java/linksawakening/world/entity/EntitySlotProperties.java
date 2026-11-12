@@ -34,8 +34,8 @@ public final class EntitySlotProperties {
     }
 
     void resolveThreeOfAKindPuzzle() {
-        ThreeOfAKindMotion.PuzzleResult result = runtime.threeOfAKindMotion.resolvePuzzle(
-                Arrays.asList(runtime.slots), runtime.enemyTransitionCountdown);
+        ThreeOfAKindMotion.PuzzleResult result = runtime.entityState.threeOfAKindMotion.resolvePuzzle(
+                Arrays.asList(runtime.slots), runtime.entityState.enemyTransitionCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
@@ -46,9 +46,9 @@ public final class EntitySlotProperties {
                 .findFirst()
                 .orElse(0);
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? runtime.threeOfAKindMotion.matchedJingle(coordinatorSlot)
+                ? runtime.entityState.threeOfAKindMotion.matchedJingle(coordinatorSlot)
                 : 0x1D;
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
                 0,
@@ -64,15 +64,15 @@ public final class EntitySlotProperties {
                 continue;
             }
             int slot = entity.slot();
-            runtime.droppedItemBySlot[slot] = runtime.threeOfAKindMotion.matchedDrop(slot);
-            runtime.dyingCountdown[slot] = 0x1F;
-            runtime.enemyHealth[slot] = 0;
-            runtime.enemyPhysicsFlags[slot] = 0x04;
+            runtime.entityState.droppedItemBySlot[slot] = runtime.entityState.threeOfAKindMotion.matchedDrop(slot);
+            runtime.entityState.dyingCountdown[slot] = 0x1F;
+            runtime.entityState.enemyHealth[slot] = 0;
+            runtime.entityState.enemyPhysicsFlags[slot] = 0x04;
             runtime.slots[index] = withStatus(entity, EntityStatus.DYING);
         }
         // The source writes the shared noise register once per card in the
         // same handler pass; only the final register value is audible.
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
                 EntityRomConstants.ENTITY_THREE_OF_A_KIND,
                 0,
@@ -91,8 +91,8 @@ public final class EntitySlotProperties {
 
     public RoomEntity advanceMusicalNoteEntity(RoomEntity entity) {
         int slot = entity.slot();
-        int inertia = (runtime.musicalNoteInertia[slot] - 1) & 0xFF;
-        runtime.musicalNoteInertia[slot] = inertia;
+        int inertia = (runtime.entityState.musicalNoteInertia[slot] - 1) & 0xFF;
+        runtime.entityState.musicalNoteInertia[slot] = inertia;
         if (inertia == 0) {
             runtime.clearEntity(slot);
             return null;
@@ -100,21 +100,22 @@ public final class EntitySlotProperties {
 
         int speedXAdjustment = (inertia & 0x10) != 0 ? -1 : 1;
         if ((inertia & 0x01) == 0) {
-            runtime.musicalNoteSpeedX[slot] = (runtime.musicalNoteSpeedX[slot] + speedXAdjustment) & 0xFF;
+            runtime.entityState.musicalNoteSpeedX[slot] =
+                    (runtime.entityState.musicalNoteSpeedX[slot] + speedXAdjustment) & 0xFF;
         }
-        int x = (entity.x() + signedByte(runtime.musicalNoteSpeedX[slot])) & 0xFF;
-        int y = (entity.y() + signedByte(runtime.musicalNoteSpeedY[slot])) & 0xFF;
+        int x = (entity.x() + signedByte(runtime.entityState.musicalNoteSpeedX[slot])) & 0xFF;
+        int y = (entity.y() + signedByte(runtime.entityState.musicalNoteSpeedY[slot])) & 0xFF;
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     void updateHookshotChainOam(int linkEntityX, int linkEntityY, int frameCounter) {
         int slot = runtime.inspection().hookshotSlot();
         if (slot < 0 || !runtime.slots[slot].loaded()) {
-            runtime.hookshotChainOam = List.of();
+            runtime.entityState.hookshotChainOam = List.of();
             return;
         }
         RoomEntity chain = runtime.slots[slot];
-        runtime.hookshotChainOam =
+        runtime.entityState.hookshotChainOam =
                 HookshotChainOam.entries(chain.x(), chain.y(), linkEntityX, linkEntityY, frameCounter);
     }
 
@@ -122,25 +123,26 @@ public final class EntitySlotProperties {
         List<BowWowChain.Entry> entries = new ArrayList<>();
         // The handler's dialogue/inventory/transition branches still run the
         // chain. Its sequence check only returns early on the unpaused path.
-        if (runtime.transitionSequenceCounter != 4
-                && !runtime.roomTransitionActive
-                && !runtime.linkState.dialogActive
-                && !runtime.linkState.inventoryAppearing
+        if (runtime.entityState.transitionSequenceCounter != 4
+                && !runtime.entityState.roomTransitionActive
+                && !runtime.entityState.linkState.dialogActive
+                && !runtime.entityState.linkState.inventoryAppearing
                 && !runtime.inspection().witchGotItemPresentationActive()) {
-            runtime.bowWowChainOam = List.of();
+            runtime.entityState.bowWowChainOam = List.of();
             return;
         }
-        boolean moving = (runtime.linkState.currentLinkSpeedX
-                        | runtime.linkState.currentLinkSpeedY
-                        | runtime.linkState.currentLinkVelocityZ)
+        boolean moving = (runtime.entityState.linkState.currentLinkSpeedX
+                        | runtime.entityState.linkState.currentLinkSpeedY
+                        | runtime.entityState.linkState.currentLinkVelocityZ)
                 != 0;
         for (int slot = 0; slot < runtime.slots.length; slot++) {
             RoomEntity entity = runtime.slots[slot];
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            runtime.slots[slot] = runtime.bowWowMotion.advanceChain(entity, runtime.bowWowState, moving);
-            entries.addAll(runtime.bowWowMotion.chainEntries(slot, runtime.bowWowState, frame));
+            runtime.slots[slot] =
+                    runtime.entityState.bowWowMotion.advanceChain(entity, runtime.entityState.bowWowState, moving);
+            entries.addAll(runtime.entityState.bowWowMotion.chainEntries(slot, runtime.entityState.bowWowState, frame));
         }
-        runtime.bowWowChainOam = List.copyOf(entries);
+        runtime.entityState.bowWowChainOam = List.copyOf(entries);
     }
 
     void updatePincerBodyOam() {
@@ -151,13 +153,13 @@ public final class EntitySlotProperties {
             }
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
-                    runtime.pincerMotion.holeX(entity.slot()),
-                    runtime.pincerMotion.holeY(entity.slot()),
+                    runtime.entityState.pincerMotion.holeX(entity.slot()),
+                    runtime.entityState.pincerMotion.holeY(entity.slot()),
                     entity.x(),
                     entity.y(),
-                    runtime.pincerMotion.state(entity.slot())));
+                    runtime.entityState.pincerMotion.state(entity.slot())));
         }
-        runtime.pincerBodyOam = List.copyOf(entries);
+        runtime.entityState.pincerBodyOam = List.copyOf(entries);
     }
 
     void updateWingedOctorokOam() {
@@ -168,12 +170,12 @@ public final class EntitySlotProperties {
             }
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    runtime.wingedOctorokMotion.privateState2(entity.slot()),
+                    runtime.entityState.wingedOctorokMotion.privateState2(entity.slot()),
                     entity.x(),
                     entity.y(),
                     entity.z()));
         }
-        runtime.wingedOctorokOam = List.copyOf(entries);
+        runtime.entityState.wingedOctorokOam = List.copyOf(entries);
     }
 
     public boolean kanaletCrowTakeoffTriggered(RoomEntity crow) {
@@ -182,8 +184,8 @@ public final class EntitySlotProperties {
                 continue;
             }
             if (candidate.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
-                    && runtime.liftableRockSmashActive[candidate.slot()]
-                    && runtime.liftableRockSmashSourceVariant[candidate.slot()]
+                    && runtime.entityState.liftableRockSmashActive[candidate.slot()]
+                    && runtime.entityState.liftableRockSmashSourceVariant[candidate.slot()]
                             == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_ROCK) {
                 int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
                 int distanceY = signedByte(((crow.y() - crow.z()) - candidate.y()) & 0xFF);
@@ -195,8 +197,8 @@ public final class EntitySlotProperties {
             if (candidate.type() != EntityRomConstants.ENTITY_BOMB) {
                 continue;
             }
-            int countdown = runtime.enemyTransitionCountdown[candidate.slot()] & 0xFF;
-            if (runtime.enemyFlashCountdown[candidate.slot()] == 0 || countdown >= 0x22) {
+            int countdown = runtime.entityState.enemyTransitionCountdown[candidate.slot()] & 0xFF;
+            if (runtime.entityState.enemyFlashCountdown[candidate.slot()] == 0 || countdown >= 0x22) {
                 continue;
             }
             int distanceX = Math.abs(signedByte((crow.x() - candidate.x()) & 0xFF));
@@ -231,18 +233,18 @@ public final class EntitySlotProperties {
         if (runtime.spriteHandlers == null) {
             return EntitySpriteDefinition.unsupported(EntityRomConstants.ENTITY_CHEST_WITH_ITEM);
         }
-        int roomId = runtime.spriteSelection == null ? -1 : runtime.spriteSelection.roomId();
-        if (runtime.entityMapId >= 0 && roomId >= 0) {
-            return runtime.spriteHandlers.forChestState(runtime.entityMapId, roomId, itemType);
+        int roomId = runtime.entityState.spriteSelection == null ? -1 : runtime.entityState.spriteSelection.roomId();
+        if (runtime.entityState.entityMapId >= 0 && roomId >= 0) {
+            return runtime.spriteHandlers.forChestState(runtime.entityState.entityMapId, roomId, itemType);
         }
         return runtime.spriteHandlers.forEntityType(
                 EntityRomConstants.ENTITY_CHEST_WITH_ITEM,
-                runtime.spriteSelection == null
+                runtime.entityState.spriteSelection == null
                         ? (runtime.indoorRoom
                                 ? EntityRoomLoader.RoomTable.INDOORS_A
                                 : EntityRoomLoader.RoomTable.OVERWORLD)
-                        : runtime.spriteSelection.roomTable(),
-                runtime.entityMapId);
+                        : runtime.entityState.spriteSelection.roomTable(),
+                runtime.entityState.entityMapId);
     }
 
     EntitySpriteDefinition spriteDefinitionForEvasiveState(EntitySpriteDefinition fallback, int privateState1) {
@@ -257,8 +259,8 @@ public final class EntitySlotProperties {
         if (slot < 0 || slot >= runtime.slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
-        if (runtime.entityOptions1Override[slot] >= 0) {
-            return runtime.entityOptions1Override[slot];
+        if (runtime.entityState.entityOptions1Override[slot] >= 0) {
+            return runtime.entityState.entityOptions1Override[slot];
         }
         if (isGhiniType(runtime.slots[slot].type())) {
             return EntityRomConstants.GHINI_OPTIONS1;

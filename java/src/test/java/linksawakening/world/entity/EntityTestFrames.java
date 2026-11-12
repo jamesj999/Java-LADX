@@ -268,8 +268,8 @@ public final class EntityTestFrames {
                 0,
                 0,
                 0,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -327,8 +327,8 @@ public final class EntityTestFrames {
                 swordWidth,
                 swordY,
                 swordHeight,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -366,8 +366,8 @@ public final class EntityTestFrames {
                 swordWidth,
                 swordY,
                 swordHeight,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -410,8 +410,8 @@ public final class EntityTestFrames {
                 swordWidth,
                 swordY,
                 swordHeight,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -536,8 +536,8 @@ public final class EntityTestFrames {
                 0,
                 0,
                 0,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -578,8 +578,8 @@ public final class EntityTestFrames {
                 swordWidth,
                 swordY,
                 swordHeight,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }
@@ -621,8 +621,8 @@ public final class EntityTestFrames {
                 swordWidth,
                 swordY,
                 swordHeight,
-                runtime.linkState.currentLinkSpeedX,
-                runtime.linkState.currentLinkSpeedY,
+                runtime.entityState.linkState.currentLinkSpeedX,
+                runtime.entityState.linkState.currentLinkSpeedY,
                 false,
                 projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
     }

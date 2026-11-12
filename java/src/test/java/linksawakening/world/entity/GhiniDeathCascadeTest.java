@@ -37,17 +37,17 @@ class GhiniDeathCascadeTest {
         runtime.slots[12] = entity(12, 0x11, EntityStatus.STUNNED);
         runtime.slots[9] = entity(9, 0x10, EntityStatus.DISABLED);
         runtime.slots[7] = entity(7, 0x10, EntityStatus.ACTIVE);
-        runtime.ghiniMotion.initialize(7, 0x10); // Hidden state 1 is excluded.
+        runtime.entityState.ghiniMotion.initialize(7, 0x10); // Hidden state 1 is excluded.
         runtime.slots[3] = entity(3, 0x12, EntityStatus.ACTIVE);
         var draws = new AtomicInteger();
         runtime.bossRewards.cascadeGhiniDeath(killed, draws::getAndIncrement);
         assertEquals(2, draws.get());
-        assertEquals(0x2D, runtime.droppedItemBySlot[15]);
-        assertEquals(0x2E, runtime.droppedItemBySlot[12]);
-        assertEquals(0x2E, runtime.droppedItemBySlot[8]);
+        assertEquals(0x2D, runtime.entityState.droppedItemBySlot[15]);
+        assertEquals(0x2E, runtime.entityState.droppedItemBySlot[12]);
+        assertEquals(0x2E, runtime.entityState.droppedItemBySlot[8]);
         for (int slot : new int[] {15, 12}) {
             assertEquals(EntityStatus.DYING, runtime.slots[slot].status());
-            assertEquals(0x1F, runtime.dyingCountdown[slot]);
+            assertEquals(0x1F, runtime.entityState.dyingCountdown[slot]);
         }
         assertEquals(EntityStatus.ACTIVE, runtime.slots[7].status());
         assertEquals(EntityStatus.ACTIVE, runtime.slots[3].status());

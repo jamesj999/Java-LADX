@@ -129,7 +129,7 @@ final class SlimeEyeControlsTest {
                                                 e.y(),
                                                 e.z(),
                                                 room.entityHealth(e.slot()),
-                                                runtime.enemyTransitionCountdown[e.slot()]))
+                                                runtime.entityState.enemyTransitionCountdown[e.slot()]))
                                 .collect(java.util.stream.Collectors.joining(";")))
                         .append('\n');
                 if (!body

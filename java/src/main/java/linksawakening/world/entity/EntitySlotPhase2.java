@@ -32,7 +32,7 @@ final class EntitySlotPhase2 {
             RoomEntity thrown = state.runtime.liftThrow.advanceThrownEntity(
                     state.entity,
                     state.backgroundCollision,
-                    state.runtime.groundInteractionSideScrolling,
+                    state.runtime.entityState.groundInteractionSideScrolling,
                     state.romLinkDirection,
                     state.frame);
             state.runtime.slots[state.index] = thrown;
@@ -47,9 +47,9 @@ final class EntitySlotPhase2 {
                 state.runtime.lifecycle.disableEntityWithoutPersistence(state.entity.slot());
                 return false;
             }
-            int renderFlipAttribute = state.runtime.baseEntityFlipAttribute[state.entity.slot()];
-            if (state.runtime.enemyFlashCountdown[state.entity.slot()] > 0) {
-                renderFlipAttribute ^= (state.runtime.enemyFlashCountdown[state.entity.slot()] << 2) & 0x10;
+            int renderFlipAttribute = state.runtime.entityState.baseEntityFlipAttribute[state.entity.slot()];
+            if (state.runtime.entityState.enemyFlashCountdown[state.entity.slot()] > 0) {
+                renderFlipAttribute ^= (state.runtime.entityState.enemyFlashCountdown[state.entity.slot()] << 2) & 0x10;
             }
             state.runtime.slots[state.index] = new RoomEntity(
                     falling.slot(),
@@ -75,20 +75,20 @@ final class EntitySlotPhase2 {
                 state.runtime.bossRewards.advanceBossKeyDropProducer(state.entity, state.randomByteSupplier);
                 return false;
             }
-            if (state.runtime.dyingCountdown[state.entity.slot()] == 0) {
+            if (state.runtime.entityState.dyingCountdown[state.entity.slot()] == 0) {
                 state.runtime.bossRewards.handleTerminalEnemyDeath(state.entity, state.randomByteSupplier);
             } else {
                 int slot = state.entity.slot();
-                int presentationCountdown = state.runtime.dyingCountdown[slot];
+                int presentationCountdown = state.runtime.entityState.dyingCountdown[slot];
                 // EntityDeathHandler ($03:557D): the initial counter is a
                 // ceiling, not a fixed wait. Begin destruction once the
                 // hit recoil has expired; bosses use their handlers above.
-                if (presentationCountdown >= 0x20 && state.runtime.enemyIgnoreHitsCountdown[slot] == 0) {
-                    state.runtime.dyingCountdown[slot] = 0x1F;
-                    state.runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                if (presentationCountdown >= 0x20 && state.runtime.entityState.enemyIgnoreHitsCountdown[slot] == 0) {
+                    state.runtime.entityState.dyingCountdown[slot] = 0x1F;
+                    state.runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot, state.entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
                 }
-                RoomEntity updated = state.runtime.enemyIgnoreHitsCountdown[slot] > 0
+                RoomEntity updated = state.runtime.entityState.enemyIgnoreHitsCountdown[slot] > 0
                         ? state.runtime
                                 .backgroundMechanics
                                 .applyEnemyRecoilIfNeeded(state.entity, state.backgroundCollision)
@@ -98,11 +98,11 @@ final class EntitySlotPhase2 {
                 state.runtime.slots[state.index] = withDeathPresentation(
                         updated,
                         EntityMotionMath.deathSpriteVariantForCountdown(presentationCountdown),
-                        state.runtime.powerRecoilDeath[slot]);
+                        state.runtime.entityState.powerRecoilDeath[slot]);
             }
             return false;
         } else if (state.status == EntityStatus.BURNING) {
-            if (state.runtime.enemyTransitionCountdown[state.entity.slot()] == 0) {
+            if (state.runtime.entityState.enemyTransitionCountdown[state.entity.slot()] == 0) {
                 state.runtime.lifecycle.finishBurning(state.entity);
             } else {
                 state.runtime.slots[state.index] =
@@ -111,10 +111,10 @@ final class EntitySlotPhase2 {
             return false;
         } else if (state.status == EntityStatus.STUNNED) {
             if (!state.runtime.entityHandlers.tick(EntityTickStage.PHASE_2_BOMB_2, state)) return false;
-            if (state.runtime.linkState.powerBraceletButtonHeld
+            if (state.runtime.entityState.linkState.powerBraceletButtonHeld
                     && isLiftableEntity(state.entity)
                     && (state.entity.type() == EntityRomConstants.ENTITY_BOMB
-                            || (state.runtime.enemyPhysicsFlags[state.entity.slot()]
+                            || (state.runtime.entityState.enemyPhysicsFlags[state.entity.slot()]
                                             & EntityRomConstants.ENTITY_PHYSICS_GRABBABLE)
                                     != 0)
                     && RoomEntityPickupRules.overlapsLink(state.entity, state.linkEntityX, state.linkEntityY)) {
@@ -128,7 +128,7 @@ final class EntitySlotPhase2 {
                 }
                 return false;
             }
-            if (state.runtime.enemyStunnedCountdown[state.entity.slot()] == 0) {
+            if (state.runtime.entityState.enemyStunnedCountdown[state.entity.slot()] == 0) {
                 state.runtime.slots[state.index] = state.runtime.slotProperties.refreshColorShellDisplay(
                         withStatus(state.entity, EntityStatus.ACTIVE), EntityStatus.ACTIVE);
             } else {
@@ -166,7 +166,7 @@ final class EntitySlotPhase2 {
                 state.runtime.lifecycle.decrementSlowTransitionCountdown(state.entity.slot(), state.frame);
             }
             if (state.runtime.lifecycle.shouldDisappear(state.entity)) {
-                if (state.runtime.slowTransitionCountdown[state.entity.slot()] == 0) {
+                if (state.runtime.entityState.slowTransitionCountdown[state.entity.slot()] == 0) {
                     state.runtime.clearEntity(state.entity.slot());
                     return false;
                 }
@@ -193,13 +193,13 @@ final class EntitySlotPhase2 {
                 && !state.wasInitializing
                 && (usesSharedRecoil(state.entity.type())
                         || (state.entity.type() == EntityRomConstants.ENTITY_POKEY
-                                && state.runtime.pokeyMotion.isSegment(state.entity.slot())
+                                && state.runtime.entityState.pokeyMotion.isSegment(state.entity.slot())
                                 && state.handlerLinkCollisionEnabled))
                 && state.entity.type() != EntityRomConstants.ENTITY_ROLLING_BONES
                 && state.entity.type() != EntityRomConstants.ENTITY_MINI_MOLDORM
                 && state.entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
                 && (state.entity.type() != EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA
-                        || state.runtime.entityMapId != 0x1F)
+                        || state.runtime.entityState.entityMapId != 0x1F)
                 && ((state.entity.type() != EntityRomConstants.ENTITY_STAR
                                 && state.entity.type() != EntityRomConstants.ENTITY_BLOOPER)
                         || state.handlerLinkCollisionEnabled)

@@ -14,7 +14,7 @@ final class EntityBossInspection {
     }
 
     int armosKnightState(int slot) {
-        return runtime.armosKnightMotion.state(slot);
+        return runtime.entityState.armosKnightMotion.state(slot);
     }
 
     int armosKnightTransitionCountdown(int slot) {
@@ -22,97 +22,97 @@ final class EntityBossInspection {
     }
 
     int armosKnightSpeedX(int slot) {
-        return runtime.armosKnightMotion.speedX(slot);
+        return runtime.entityState.armosKnightMotion.speedX(slot);
     }
 
     int armosKnightSpeedY(int slot) {
-        return runtime.armosKnightMotion.speedY(slot);
+        return runtime.entityState.armosKnightMotion.speedY(slot);
     }
 
     int armosKnightSpeedZ(int slot) {
-        return runtime.armosKnightMotion.speedZ(slot);
+        return runtime.entityState.armosKnightMotion.speedZ(slot);
     }
 
     int armosKnightPrivateCountdown1(int slot) {
-        return runtime.armosKnightMotion.privateCountdown1(slot);
+        return runtime.entityState.armosKnightMotion.privateCountdown1(slot);
     }
 
     int armosKnightInertia(int slot) {
-        return runtime.armosKnightMotion.inertia(slot);
+        return runtime.entityState.armosKnightMotion.inertia(slot);
     }
 
     int geniePrivateState1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.geniePrivateState1[slot] & 0xFF;
+        return runtime.entityState.geniePrivateState1[slot] & 0xFF;
     }
 
     int genieActiveStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genieActiveState[slot] & 0xFF;
+        return runtime.entityState.genieActiveState[slot] & 0xFF;
     }
 
     int geniePrivateState3ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.geniePrivateState3[slot] & 0xFF;
+        return runtime.entityState.geniePrivateState3[slot] & 0xFF;
     }
 
     int geniePrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.geniePrivateCountdown1[slot] & 0xFF;
+        return runtime.entityState.geniePrivateCountdown1[slot] & 0xFF;
     }
 
     int geniePrivateCountdown2ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.geniePrivateCountdown2[slot] & 0xFF;
+        return runtime.entityState.geniePrivateCountdown2[slot] & 0xFF;
     }
 
     int genieSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genieSpeedX[slot] & 0xFF;
+        return runtime.entityState.genieSpeedX[slot] & 0xFF;
     }
 
     int genieSpeedZForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genieSpeedZ[slot] & 0xFF;
+        return runtime.entityState.genieSpeedZ[slot] & 0xFF;
     }
 
     int geniePrivateState4ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.geniePrivateState4[slot] & 0xFF;
+        return runtime.entityState.geniePrivateState4[slot] & 0xFF;
     }
 
     int rollingBonesBarStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.rollingBonesMotion.barState(slot);
+        return runtime.entityState.rollingBonesMotion.barState(slot);
     }
 
     int rollingBonesBarSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.rollingBonesMotion.barSpeedX(slot);
+        return runtime.entityState.rollingBonesMotion.barSpeedX(slot);
     }
 
     int moldormHeadSpriteVariant(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.moldormMotion.headSpriteVariant(slot);
+        return runtime.entityState.moldormMotion.headSpriteVariant(slot);
     }
 
     int moldormTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.entityState.enemyTransitionCountdown[slot];
     }
 
     int moldormPrivateCountdown2(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.moldormMotion.privateCountdown2(slot);
+        return runtime.entityState.moldormMotion.privateCountdown2(slot);
     }
 
     int moldormDestructionState(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.bossDeathProducerState[slot];
+        return runtime.entityState.bossDeathProducerState[slot];
     }
 
     int moldormInertia(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.moldormMotion.inertia(slot);
+        return runtime.entityState.moldormMotion.inertia(slot);
     }
 }

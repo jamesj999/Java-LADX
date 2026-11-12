@@ -39,34 +39,34 @@ final class EntitySlotPhase4 {
                 && !state.wasInitializing
                 && (isDynamicFollowingNpc(state.entity) || state.entity.type() == EntityRomConstants.ENTITY_BOW_WOW)) {
             if (state.entity.type() == EntityRomConstants.ENTITY_BOW_WOW) {
-                BowWowMotion.Update bowWowUpdate = state.runtime.bowWowMotion.advanceAfterTimers(
+                BowWowMotion.Update bowWowUpdate = state.runtime.entityState.bowWowMotion.advanceAfterTimers(
                         state.entity,
                         state.frame,
                         state.linkEntityX,
                         state.linkEntityY,
-                        state.runtime.linkState.followingLinkZ,
+                        state.runtime.entityState.linkState.followingLinkZ,
                         state.randomByteSupplier,
                         state.backgroundCollision,
                         Arrays.asList(state.runtime.slots),
                         state.runtime.enemyCombatTables == null
                                 ? type -> false
                                 : state.runtime.enemyCombatTables::canBowWowEatEntity,
-                        state.runtime.bowWowState);
+                        state.runtime.entityState.bowWowState);
                 state.updated = bowWowUpdate.entity();
                 if (bowWowUpdate.targetContact() != null) {
                     state.runtime.lifecycle.handleBowWowTargetContact(
                             state.entity, bowWowUpdate.targetContact(), state.randomByteSupplier);
                 }
             } else {
-                state.updated = state.runtime.followingNpcMotion.advance(
+                state.updated = state.runtime.entityState.followingNpcMotion.advance(
                         state.entity,
                         state.frame,
                         state.linkEntityX,
                         state.linkEntityY,
-                        state.runtime.linkState.followingLinkZ,
-                        state.runtime.linkState.followingLinkDirection,
-                        state.runtime.linkState.followingEntityYOffset,
-                        state.runtime.followingLinkPositionHistory,
+                        state.runtime.entityState.linkState.followingLinkZ,
+                        state.runtime.entityState.linkState.followingLinkDirection,
+                        state.runtime.entityState.linkState.followingEntityYOffset,
+                        state.runtime.entityState.followingLinkPositionHistory,
                         state.backgroundCollision);
             }
         }

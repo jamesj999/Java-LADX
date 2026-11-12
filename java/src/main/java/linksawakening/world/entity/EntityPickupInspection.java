@@ -15,58 +15,58 @@ final class EntityPickupInspection {
 
     int keyDropTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.entityState.enemyTransitionCountdown[slot];
     }
 
     int colorShellState(int slot) {
-        return runtime.colorShellMotion.state(slot);
+        return runtime.entityState.colorShellMotion.state(slot);
     }
 
     int bombiteState(int slot) {
-        return runtime.bombiteMotion.state(slot);
+        return runtime.entityState.bombiteMotion.state(slot);
     }
 
     int bombitePrivateCountdown1(int slot) {
-        return runtime.bombPrivateCountdown1[slot];
+        return runtime.entityState.bombPrivateCountdown1[slot];
     }
 
     int bombiteSpeedX(int slot) {
-        return runtime.bombiteMotion.speedX(slot);
+        return runtime.entityState.bombiteMotion.speedX(slot);
     }
 
     int bombiteSpeedY(int slot) {
-        return runtime.bombiteMotion.speedY(slot);
+        return runtime.entityState.bombiteMotion.speedY(slot);
     }
 
     int colorShellPhysicsFlags(int slot) {
-        return runtime.colorShellMotion.physicsFlags(slot);
+        return runtime.entityState.colorShellMotion.physicsFlags(slot);
     }
 
     int secretSeashellPrivateState3(int slot) {
-        return runtime.secretSeashellMotion.privateState3(slot);
+        return runtime.entityState.secretSeashellMotion.privateState3(slot);
     }
 
     int secretSeashellPrivateState4(int slot) {
-        return runtime.secretSeashellMotion.privateState4(slot);
+        return runtime.entityState.secretSeashellMotion.privateState4(slot);
     }
 
     int secretSeashellPrivateCountdown1(int slot) {
-        return runtime.secretSeashellMotion.privateCountdown1(slot);
+        return runtime.entityState.secretSeashellMotion.privateCountdown1(slot);
     }
 
     int secretSeashellSlowTransitionCountdown(int slot) {
-        return runtime.secretSeashellMotion.slowTransitionCountdown(slot);
+        return runtime.entityState.secretSeashellMotion.slowTransitionCountdown(slot);
     }
 
     int secretSeashellSpeedX(int slot) {
-        return runtime.secretSeashellMotion.speedX(slot);
+        return runtime.entityState.secretSeashellMotion.speedX(slot);
     }
 
     int secretSeashellSpeedY(int slot) {
-        return runtime.secretSeashellMotion.speedY(slot);
+        return runtime.entityState.secretSeashellMotion.speedY(slot);
     }
 
     int secretSeashellSpeedZ(int slot) {
-        return runtime.secretSeashellMotion.speedZ(slot);
+        return runtime.entityState.secretSeashellMotion.speedZ(slot);
     }
 }

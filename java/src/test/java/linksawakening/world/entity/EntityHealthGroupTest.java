@@ -36,17 +36,17 @@ class EntityHealthGroupTest {
                 .toList();
         var runtime = RoomEntityRuntime.from(
                 new RoomEntitySnapshot(slots), false, () -> 0, null, new RomEnemyCombatTables(rom));
-        runtime.enemyDropResolver = new EnemyDropResolver(rom);
+        runtime.entityState.enemyDropResolver = new EnemyDropResolver(rom);
         return runtime;
     }
 
     @Test
     void initializesResetsAndReinitializesSlotGroup() throws IOException {
         var runtime = runtime();
-        assertEquals(runtime.enemyCombatTables.healthGroup(0x09), runtime.slotView.healthGroup(0));
-        runtime.slotView.setHealthGroup(0, 12);
+        assertEquals(runtime.enemyCombatTables.healthGroup(0x09), runtime.entityState.slotView.healthGroup(0));
+        runtime.entityState.slotView.setHealthGroup(0, 12);
         runtime.lifecycle.disableEntityWithoutPersistence(0);
-        assertEquals(0, runtime.slotView.healthGroup(0));
+        assertEquals(0, runtime.entityState.slotView.healthGroup(0));
         runtime.slots[0] = new RoomEntity(
                 0,
                 0,
@@ -62,7 +62,7 @@ class EntityHealthGroupTest {
                 -1,
                 false);
         runtime.initializeHealthGroup(0);
-        assertEquals(12, runtime.slotView.healthGroup(0));
+        assertEquals(12, runtime.entityState.slotView.healthGroup(0));
     }
 
     @Test
@@ -83,16 +83,16 @@ class EntityHealthGroupTest {
                 0,
                 -1,
                 false);
-        runtime.slotView.setHealthGroup(0, 0);
+        runtime.entityState.slotView.setHealthGroup(0, 0);
         runtime.lifecycle.finishBurning(runtime.slots[0]);
-        assertEquals(runtime.enemyCombatTables.healthGroup(0x1E), runtime.slotView.healthGroup(0));
+        assertEquals(runtime.enemyCombatTables.healthGroup(0x1E), runtime.entityState.slotView.healthGroup(0));
     }
 
     @Test
     void mutatedGroupChangesContactAndSwordDamageWithoutChangingType() throws IOException {
         var runtime = runtime();
         assertEquals(4, runtime.contactDamage(0));
-        runtime.slotView.setHealthGroup(0, 12);
+        runtime.entityState.slotView.setHealthGroup(0, 12);
         assertEquals(8, runtime.contactDamage(0));
         // Find a ROM group with different sword damage, then exercise combat itself.
         var attack = new EnemyAttackContext(1, false, false, false, false);
@@ -104,8 +104,8 @@ class EntityHealthGroupTest {
                         != original)
                 .findFirst()
                 .orElseThrow();
-        runtime.slotView.setHealthGroup(0, group);
-        runtime.enemyHealth[0] = 100;
+        runtime.entityState.slotView.setHealthGroup(0, group);
+        runtime.entityState.enemyHealth[0] = 100;
         var events = runtime.resolveCombat(1, 100, 100, false, true, true, 48, 32, 64, 32);
         assertEquals(1, events.size());
         assertEquals(
@@ -120,7 +120,7 @@ class EntityHealthGroupTest {
         normal.bossRewards.handleTerminalEnemyDeath(normal.slots[0], () -> 0);
         assertTrue(normal.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var changed = runtime();
-        changed.slotView.setHealthGroup(0, 12); // Destroyed group offset zero: no drop.
+        changed.entityState.slotView.setHealthGroup(0, 12); // Destroyed group offset zero: no drop.
         changed.bossRewards.handleTerminalEnemyDeath(changed.slots[0], () -> 0);
         assertTrue(changed.inspection().snapshot().loadedEntities().isEmpty());
     }

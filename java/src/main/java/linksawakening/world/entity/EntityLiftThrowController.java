@@ -23,31 +23,31 @@ public final class EntityLiftThrowController {
     public RoomEntity advanceLiftedEntity(
             RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, int romLinkDirection) {
         int slot = entity.slot();
-        if (!runtime.liftedStateInitialized[slot]) {
-            runtime.liftedPhase[slot] = 0;
-            runtime.liftedSourceDirection[slot] = romLinkDirection;
-            runtime.liftedStateInitialized[slot] = true;
-            runtime.liftedEffectiveDirection = romLinkDirection;
-            runtime.enemyTransitionCountdown[slot] = 0x02;
+        if (!runtime.entityState.liftedStateInitialized[slot]) {
+            runtime.entityState.liftedPhase[slot] = 0;
+            runtime.entityState.liftedSourceDirection[slot] = romLinkDirection;
+            runtime.entityState.liftedStateInitialized[slot] = true;
+            runtime.entityState.liftedEffectiveDirection = romLinkDirection;
+            runtime.entityState.enemyTransitionCountdown[slot] = 0x02;
         }
 
         LiftedEntityMotion.Update update = LiftedEntityMotion.advance(
-                runtime.liftedPhase[slot],
-                runtime.enemyTransitionCountdown[slot],
-                runtime.liftedSourceDirection[slot],
+                runtime.entityState.liftedPhase[slot],
+                runtime.entityState.enemyTransitionCountdown[slot],
+                runtime.entityState.liftedSourceDirection[slot],
                 romLinkDirection,
                 byteValue(linkEntityX),
                 byteValue(linkEntityY),
                 byteValue(linkZ),
-                runtime.liftedLinkC13B,
+                runtime.entityState.liftedLinkC13B,
                 entity.type(),
-                runtime.groundInteractionSideScrolling,
-                runtime.chestPowerBraceletLevel >= 2 || runtime.linkState.fastLiftTransition,
+                runtime.entityState.groundInteractionSideScrolling,
+                runtime.entityState.chestPowerBraceletLevel >= 2 || runtime.entityState.linkState.fastLiftTransition,
                 entity.z());
-        runtime.liftedPhase[slot] = update.phase();
-        runtime.enemyTransitionCountdown[slot] = update.transitionCountdown();
-        runtime.liftedCarryState = update.carryState();
-        runtime.liftedEffectiveDirection = update.effectiveDirection();
+        runtime.entityState.liftedPhase[slot] = update.phase();
+        runtime.entityState.enemyTransitionCountdown[slot] = update.transitionCountdown();
+        runtime.entityState.liftedCarryState = update.carryState();
+        runtime.entityState.liftedEffectiveDirection = update.effectiveDirection();
         return new RoomEntity(
                 entity.slot(),
                 entity.sourceLoadOrder(),
@@ -68,7 +68,7 @@ public final class EntityLiftThrowController {
         if (entity.type() != 0x9D || entity.spriteDefinition().shape() != EntitySpriteDefinition.Shape.SINGLE)
             return false;
         if (!interactive) return true;
-        var update = runtime.thrownEntityMotion.advance(entity, false, null);
+        var update = runtime.entityState.thrownEntityMotion.advance(entity, false, null);
         runtime.slots[entity.slot()] = update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity();
         return true;
     }
@@ -100,18 +100,18 @@ public final class EntityLiftThrowController {
                         -1,
                         false);
                 runtime.initializeHealthGroup(slot);
-                runtime.enemyPhysicsFlags[slot] = 0xC1;
-                runtime.enemyHitboxFlags[slot] = 0;
-                runtime.dynamicEntitySpawnedThisFrame[slot] = true;
-                runtime.thrownEntityMotion.startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
+                runtime.entityState.enemyPhysicsFlags[slot] = 0xC1;
+                runtime.entityState.enemyHitboxFlags[slot] = 0;
+                runtime.entityState.dynamicEntitySpawnedThisFrame[slot] = true;
+                runtime.entityState.thrownEntityMotion.startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
             }
         }
         int visualY = (entity.y() - entity.z()) & 255;
-        runtime.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+        runtime.entityState.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
                 linksawakening.vfx.TransientVfxType.POOF, entity.x(), visualY));
-        runtime.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
+        runtime.entityState.events.transientVfxRequests.add(new linksawakening.world.entity.event.TransientVfxRequest(
                 linksawakening.vfx.TransientVfxType.POOF, entity.x(), (visualY - 16) & 255));
-        runtime.events.pendingEntityEvents.add(
+        runtime.entityState.events.pendingEntityEvents.add(
                 new EntityCombatEvent(entity.slot(), 0x9D, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x29));
     }
 
@@ -122,13 +122,13 @@ public final class EntityLiftThrowController {
             int romLinkDirection,
             int frame) {
         int slot = entity.slot();
-        if (!runtime.thrownMotionInitialized[slot]) {
-            runtime.thrownDirection[slot] = romLinkDirection;
-            runtime.thrownEntityMotion.start(slot, romLinkDirection, entity.type(), sideScrolling);
-            runtime.thrownMotionInitialized[slot] = true;
+        if (!runtime.entityState.thrownMotionInitialized[slot]) {
+            runtime.entityState.thrownDirection[slot] = romLinkDirection;
+            runtime.entityState.thrownEntityMotion.start(slot, romLinkDirection, entity.type(), sideScrolling);
+            runtime.entityState.thrownMotionInitialized[slot] = true;
         }
-        ThrownEntityMotion.Update update = runtime.thrownEntityMotion.advance(
-                entity, sideScrolling, backgroundCollision, frame, runtime.entityGroundStatus[slot]);
+        ThrownEntityMotion.Update update = runtime.entityState.thrownEntityMotion.advance(
+                entity, sideScrolling, backgroundCollision, frame, runtime.entityState.entityGroundStatus[slot]);
         RoomEntity updated = update.entity();
         if (entity.type() == EntityRomConstants.ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
             updated = runtime.genie.registerGenieJarImpact(updated);
@@ -138,8 +138,8 @@ public final class EntityLiftThrowController {
         }
         if (entity.type() == 0x9D && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             runtime.slots[slot] = RoomEntity.disabled(slot);
-            runtime.thrownEntityMotion.clear(slot);
-            runtime.thrownMotionInitialized[slot] = false;
+            runtime.entityState.thrownEntityMotion.clear(slot);
+            runtime.entityState.thrownMotionInitialized[slot] = false;
             smashStatue(updated);
             return runtime.slots[slot];
         }
@@ -147,15 +147,16 @@ public final class EntityLiftThrowController {
                 && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             collideThrownEntityWithEntities(updated, frame);
             runtime.slots[slot] = RoomEntity.disabled(slot);
-            runtime.thrownEntityMotion.clear(slot);
-            runtime.thrownMotionInitialized[slot] = false;
+            runtime.entityState.thrownEntityMotion.clear(slot);
+            runtime.entityState.thrownMotionInitialized[slot] = false;
             runtime.spawnLiftableRockSmash(updated.x(), updated.y(), entity.spriteVariant());
             return runtime.slots[slot];
         }
-        if (runtime.thrownEntityMotion.speedX(slot) == 0 && runtime.thrownEntityMotion.speedY(slot) == 0) {
-            runtime.thrownEntityMotion.clear(slot);
-            runtime.thrownMotionInitialized[slot] = false;
-            runtime.enemyStunnedCountdown[slot] = 0xFF;
+        if (runtime.entityState.thrownEntityMotion.speedX(slot) == 0
+                && runtime.entityState.thrownEntityMotion.speedY(slot) == 0) {
+            runtime.entityState.thrownEntityMotion.clear(slot);
+            runtime.entityState.thrownMotionInitialized[slot] = false;
+            runtime.entityState.enemyStunnedCountdown[slot] = 0xFF;
             updated = withStatus(updated, EntityStatus.STUNNED);
         }
         return updated;
@@ -165,31 +166,39 @@ public final class EntityLiftThrowController {
             RoomEntity original, RoomEntity moved, RoomEntityBackgroundCollision fallback, int frame) {
         int slot = original.slot();
         boolean blocked = false;
-        if (runtime.sideViewPotMotion.speedX(slot) != 0) {
-            int direction = (runtime.sideViewPotMotion.speedX(slot) & 0x80) != 0
+        if (runtime.entityState.sideViewPotMotion.speedX(slot) != 0) {
+            int direction = (runtime.entityState.sideViewPotMotion.speedX(slot) & 0x80) != 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
-            if (runtime.backgroundInteraction != null) {
-                blocked |= runtime.backgroundInteraction
+            if (runtime.entityState.backgroundInteraction != null) {
+                blocked |= runtime.entityState
+                        .backgroundInteraction
                         .probe(
                                 original,
                                 direction,
                                 moved.x(),
                                 original.y(),
-                                runtime.enemyIgnoreHitsCountdown[slot],
+                                runtime.entityState.enemyIgnoreHitsCountdown[slot],
                                 frame)
                         .blocked();
             } else if (fallback != null) {
                 blocked |= fallback.blocks(original, direction, moved.x(), original.y());
             }
         }
-        if (runtime.sideViewPotMotion.speedY(slot) != 0) {
-            int direction = (runtime.sideViewPotMotion.speedY(slot) & 0x80) != 0
+        if (runtime.entityState.sideViewPotMotion.speedY(slot) != 0) {
+            int direction = (runtime.entityState.sideViewPotMotion.speedY(slot) & 0x80) != 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
-            if (runtime.backgroundInteraction != null) {
-                blocked |= runtime.backgroundInteraction
-                        .probe(original, direction, moved.x(), moved.y(), runtime.enemyIgnoreHitsCountdown[slot], frame)
+            if (runtime.entityState.backgroundInteraction != null) {
+                blocked |= runtime.entityState
+                        .backgroundInteraction
+                        .probe(
+                                original,
+                                direction,
+                                moved.x(),
+                                moved.y(),
+                                runtime.entityState.enemyIgnoreHitsCountdown[slot],
+                                frame)
                         .blocked();
             } else if (fallback != null) {
                 blocked |= fallback.blocks(original, direction, moved.x(), moved.y());
@@ -208,70 +217,73 @@ public final class EntityLiftThrowController {
             RoomEntity target = runtime.slots[targetSlot];
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.enemyPhysicsFlags[targetSlot] & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
+                    || (runtime.entityState.enemyPhysicsFlags[targetSlot]
+                                    & EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP)
                             != 0
                     || target.spriteVariant() < 0
                     || unsignedByteAbs(thrown.x() - target.x()) >= 0x0C
                     || unsignedByteAbs(sourceVisualY - ((target.y() - target.z()) & 0xFF)) >= 0x0C
-                    || (runtime.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
-                    || runtime.enemyIgnoreHitsCountdown[targetSlot] != 0) {
+                    || (runtime.entityState.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
+                    || runtime.entityState.enemyIgnoreHitsCountdown[targetSlot] != 0) {
                 continue;
             }
             runtime.projectiles.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_THROW_AT,
-                    runtime.thrownEntityMotion.speedX(sourceSlot),
-                    runtime.thrownEntityMotion.speedY(sourceSlot));
+                    runtime.entityState.thrownEntityMotion.speedX(sourceSlot),
+                    runtime.entityState.thrownEntityMotion.speedY(sourceSlot));
         }
     }
 
     public RoomEntity advancePlacedBombEntity(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = entity.slot();
-        if (!runtime.placedBombMotionInitialized[slot]) {
-            int direction = runtime.bombDirection[slot];
+        if (!runtime.entityState.placedBombMotionInitialized[slot]) {
+            int direction = runtime.entityState.bombDirection[slot];
             if (direction < ThrownEntityMotion.ROM_DIRECTION_RIGHT
                     || direction > ThrownEntityMotion.ROM_DIRECTION_DOWN) {
                 // A room-loaded type-$02 entity has no SpawnPlayerProjectile direction.
                 // Preserve its static source state instead of inventing a table index.
                 return entity;
             }
-            runtime.thrownEntityMotion.startPlacedBomb(slot, runtime.bombDirection[slot]);
-            runtime.placedBombMotionInitialized[slot] = true;
+            runtime.entityState.thrownEntityMotion.startPlacedBomb(slot, runtime.entityState.bombDirection[slot]);
+            runtime.entityState.placedBombMotionInitialized[slot] = true;
         }
-        return runtime.thrownEntityMotion
+        return runtime.entityState
+                .thrownEntityMotion
                 .advance(
                         entity,
-                        runtime.groundInteractionSideScrolling,
+                        runtime.entityState.groundInteractionSideScrolling,
                         backgroundCollision,
                         frame,
-                        runtime.entityGroundStatus[slot])
+                        runtime.entityState.entityGroundStatus[slot])
                 .entity();
     }
 
     public RoomEntity advanceEnemyBombEntity(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = entity.slot();
-        if (!runtime.enemyBombMotionInitialized[slot]) {
+        if (!runtime.entityState.enemyBombMotionInitialized[slot]) {
             // Room-loaded type-$02 entities and legacy test-created enemy
             // bombs have no source speed tables to advance.
             return entity;
         }
-        return runtime.thrownEntityMotion
+        return runtime.entityState
+                .thrownEntityMotion
                 .advance(
                         entity,
-                        runtime.groundInteractionSideScrolling,
+                        runtime.entityState.groundInteractionSideScrolling,
                         backgroundCollision,
                         frame,
-                        runtime.entityGroundStatus[slot])
+                        runtime.entityState.entityGroundStatus[slot])
                 .entity();
     }
 
     public boolean cuccoPowerBraceletHeld() {
-        if (runtime.linkState.linkItemB == 0x03) {
-            return runtime.linkState.actionButtonBHeld;
+        if (runtime.entityState.linkState.linkItemB == 0x03) {
+            return runtime.entityState.linkState.actionButtonBHeld;
         }
-        return runtime.linkState.linkItemA == 0x03 && runtime.linkState.actionButtonAHeld;
+        return runtime.entityState.linkState.linkItemA == 0x03 && runtime.entityState.linkState.actionButtonAHeld;
     }
 
     public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) {
@@ -290,9 +302,9 @@ public final class EntityLiftThrowController {
         carried = withType(carried, EntityRomConstants.ENTITY_LIFTABLE_ROCK, rockDefinition);
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
         runtime.slots[slot] = carried;
-        runtime.fallingVisualYOffset[slot] = 0;
-        runtime.bushCrawlerMotion.clear(slot);
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.entityState.fallingVisualYOffset[slot] = 0;
+        runtime.entityState.bushCrawlerMotion.clear(slot);
+        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
         int freeSlot = runtime.findFreeEntitySlot();
@@ -318,25 +330,25 @@ public final class EntityLiftThrowController {
                 false);
         runtime.slots[freeSlot] = replacement;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = -1;
-        runtime.enemyTransitionCountdown[freeSlot] = 0x40;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.fallingVisualYOffset[freeSlot] = 0;
-        runtime.bushCrawlerMotion.initializeSpecial(freeSlot);
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = -1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0x40;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BUSH_CRAWLER);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER);
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.fallingVisualYOffset[freeSlot] = 0;
+        runtime.entityState.bushCrawlerMotion.initializeSpecial(freeSlot);
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return true;
     }
 
     public void advanceLiftableRockSmash(int index, RoomEntity entity, int frameCounter) {
         int slot = entity.slot();
-        int countdown = runtime.liftableRockSmashCountdown[slot] & 0xFF;
+        int countdown = runtime.entityState.liftableRockSmashCountdown[slot] & 0xFF;
         if (countdown <= 1) {
             // LiftableRockEntityHandler unloads on the countdown-$01 frame,
             // before the display-list helper gets a chance to render it.
@@ -344,11 +356,11 @@ public final class EntityLiftThrowController {
             return;
         }
 
-        int sourceVariant = runtime.liftableRockSmashSourceVariant[slot];
+        int sourceVariant = runtime.entityState.liftableRockSmashSourceVariant[slot];
         boolean swampLeaves = !runtime.indoorRoom
-                && runtime.spriteSelection != null
-                && runtime.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
-                && runtime.spriteSelection.roomId() == 0x32;
+                && runtime.entityState.spriteSelection != null
+                && runtime.entityState.spriteSelection.roomTable() == EntityRoomLoader.RoomTable.OVERWORLD
+                && runtime.entityState.spriteSelection.roomId() == 0x32;
         int variant = EntityMotionMath.liftableRockSmashVariant(sourceVariant, swampLeaves, countdown);
         if (sourceVariant == EntityRomConstants.LIFTABLE_ROCK_SMASH_MODE_GRASS && ((frameCounter ^ slot) & 0x01) != 0) {
             // The $FF tall-grass path in func_019_7C50 only emits OAM on
@@ -365,7 +377,7 @@ public final class EntityLiftThrowController {
                     ? withVariant(entity, (frameCounter >>> 2) & 0x01)
                     : entity;
         }
-        runtime.enemyFlashCountdown[entity.slot()] = 0;
+        runtime.entityState.enemyFlashCountdown[entity.slot()] = 0;
         return withDefinition(entity, runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB), 0);
     }
 
@@ -380,14 +392,14 @@ public final class EntityLiftThrowController {
             int linkEntityY,
             int linkZ,
             int romLinkDirection) {
-        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.linkState.bombButtonHeld) {
+        if (decision.phase() != BombMotion.Phase.NORMAL || !runtime.entityState.linkState.bombButtonHeld) {
             return false;
         }
         RoomEntity entity = runtime.slots[index];
         if (!entity.loaded()
                 || entity.type() != EntityRomConstants.ENTITY_BOMB
-                || runtime.bombPrivateState4[entity.slot()] != 0
-                || runtime.bombPrivateCountdown1[entity.slot()] != 0
+                || runtime.entityState.bombPrivateState4[entity.slot()] != 0
+                || runtime.entityState.bombPrivateCountdown1[entity.slot()] != 0
                 || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
             return false;
         }
@@ -400,23 +412,23 @@ public final class EntityLiftThrowController {
     }
 
     public boolean sideViewPotLiftDelay(int slot) {
-        return runtime.liftedPhase[slot] == 0 && runtime.enemyTransitionCountdown[slot] != 0;
+        return runtime.entityState.liftedPhase[slot] == 0 && runtime.entityState.enemyTransitionCountdown[slot] != 0;
     }
 
     public boolean sideViewPotPowerBraceletHeld() {
-        if (!runtime.linkState.linkInventoryConfigured) {
-            return runtime.linkState.powerBraceletButtonHeld;
+        if (!runtime.entityState.linkState.linkInventoryConfigured) {
+            return runtime.entityState.linkState.powerBraceletButtonHeld;
         }
         // EntityGetLiftedUp checks the B slot first. An equipped bracelet in
         // B suppresses the A-slot branch even when A also contains one.
-        if (runtime.linkState.linkItemB == 0x03) {
-            return runtime.linkState.actionButtonBHeld;
+        if (runtime.entityState.linkState.linkItemB == 0x03) {
+            return runtime.entityState.linkState.actionButtonBHeld;
         }
-        return runtime.linkState.linkItemA == 0x03 && runtime.linkState.actionButtonAHeld;
+        return runtime.entityState.linkState.linkItemA == 0x03 && runtime.entityState.linkState.actionButtonAHeld;
     }
 
     public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {
-        runtime.events.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
+        runtime.entityState.events.pendingSideViewPotLinkRequests.add(new SideViewPotLinkRequest(
                 sourceSlot,
                 contact.resetPegasusBoots(),
                 contact.restoreFinalPositionX(),
@@ -432,10 +444,10 @@ public final class EntityLiftThrowController {
     }
 
     public void setLiftedSourceDirection(int slot, int value) {
-        runtime.liftedSourceDirection[slot] = value;
+        runtime.entityState.liftedSourceDirection[slot] = value;
     }
 
     public boolean liftableRockSmashActive(int slot) {
-        return runtime.liftableRockSmashActive[slot];
+        return runtime.entityState.liftableRockSmashActive[slot];
     }
 }

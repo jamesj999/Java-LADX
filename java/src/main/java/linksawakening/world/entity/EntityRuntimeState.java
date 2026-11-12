@@ -89,7 +89,7 @@ import linksawakening.world.entity.motion.ZombieMotion;
 import linksawakening.world.entity.motion.ZoraMotion;
 
 /** ROM slot arrays and room handler state; orchestration remains in RoomEntityRuntime. */
-abstract class EntityRuntimeState {
+final class EntityRuntimeState {
     final EntityEventChannels events = new EntityEventChannels();
     final EntityLinkState linkState = new EntityLinkState();
     final EntityLinkView linkView = new EntityLinkView(linkState);

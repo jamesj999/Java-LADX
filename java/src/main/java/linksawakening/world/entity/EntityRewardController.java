@@ -29,16 +29,16 @@ public final class EntityRewardController {
     }
 
     void startInstrumentPickup(int slot) {
-        runtime.instrumentPickupSequenceActive[slot] = true;
-        runtime.instrumentPickupState[slot] = 0;
-        runtime.instrumentWarpFadeStep[slot] = 0;
-        runtime.instrumentBackgroundFade[slot] =
-                runtime.instrumentObjectFade[slot] = runtime.instrumentHintBatches[slot] = 0;
-        runtime.instrumentHintCountdown[slot] = 0;
-        runtime.instrumentHintOpened[slot] = false;
-        runtime.instrumentPickupSparklesPending[slot] = true;
-        runtime.enemyTransitionCountdown[slot] = 0x68;
-        runtime.pendingMusicTrack = 0x1B;
+        runtime.entityState.instrumentPickupSequenceActive[slot] = true;
+        runtime.entityState.instrumentPickupState[slot] = 0;
+        runtime.entityState.instrumentWarpFadeStep[slot] = 0;
+        runtime.entityState.instrumentBackgroundFade[slot] =
+                runtime.entityState.instrumentObjectFade[slot] = runtime.entityState.instrumentHintBatches[slot] = 0;
+        runtime.entityState.instrumentHintCountdown[slot] = 0;
+        runtime.entityState.instrumentHintOpened[slot] = false;
+        runtime.entityState.instrumentPickupSparklesPending[slot] = true;
+        runtime.entityState.enemyTransitionCountdown[slot] = 0x68;
+        runtime.entityState.pendingMusicTrack = 0x1B;
     }
 
     public void advanceInstrumentPickup(
@@ -49,96 +49,106 @@ public final class EntityRewardController {
             int linkZ,
             IntSupplier randomByteSupplier) {
         int slot = entity.slot();
-        if (runtime.instrumentPickupSparklesPending[slot]) {
-            runtime.instrumentPickupSparklesPending[slot] = false;
+        if (runtime.entityState.instrumentPickupSparklesPending[slot]) {
+            runtime.entityState.instrumentPickupSparklesPending[slot] = false;
             int[] xOffsets = {-0x18, 0x18, -0x18, 0x18};
             int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
             for (int variant = 3; variant >= 0; variant--) {
-                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                runtime.entityState.events.transientVfxRequests.add(new TransientVfxRequest(
                         TransientVfxType.MOVING_SPARKLE,
                         (linkEntityX + xOffsets[variant]) & 0xFF,
                         (linkEntityY + yOffsets[variant]) & 0xFF,
                         variant));
             }
         }
-        if (runtime.instrumentPickupState[slot] == 0 && runtime.enemyTransitionCountdown[slot] == 0x10) {
-            runtime.enemyTransitionCountdown[slot] = 0x0F;
-            runtime.instrumentPickupState[slot] = 1;
-            runtime.events.pendingDialogRequests.add(new DialogRequest(1, runtime.entityMapId & 0xFF));
-            runtime.events.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
-        } else if (runtime.instrumentPickupState[slot] == 1
-                && !runtime.activeMusic
-                && !runtime.linkState.dialogActive) {
-            int mapId = runtime.entityMapId & 0xFF;
+        if (runtime.entityState.instrumentPickupState[slot] == 0
+                && runtime.entityState.enemyTransitionCountdown[slot] == 0x10) {
+            runtime.entityState.enemyTransitionCountdown[slot] = 0x0F;
+            runtime.entityState.instrumentPickupState[slot] = 1;
+            runtime.entityState.events.pendingDialogRequests.add(
+                    new DialogRequest(1, runtime.entityState.entityMapId & 0xFF));
+            runtime.entityState.events.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
+        } else if (runtime.entityState.instrumentPickupState[slot] == 1
+                && !runtime.entityState.activeMusic
+                && !runtime.entityState.linkState.dialogActive) {
+            int mapId = runtime.entityState.entityMapId & 0xFF;
             if (mapId < EntityRomConstants.INSTRUMENT_MUSIC_TRACKS.length) {
-                runtime.pendingMusicTrack = EntityRomConstants.INSTRUMENT_MUSIC_TRACKS[mapId];
-                runtime.instrumentPickupState[slot] = 2;
-                runtime.enemyTransitionCountdown[slot] = 0xFF;
+                runtime.entityState.pendingMusicTrack = EntityRomConstants.INSTRUMENT_MUSIC_TRACKS[mapId];
+                runtime.entityState.instrumentPickupState[slot] = 2;
+                runtime.entityState.enemyTransitionCountdown[slot] = 0xFF;
             }
-        } else if (runtime.instrumentPickupState[slot] == 2 && runtime.enemyTransitionCountdown[slot] == 0) {
-            runtime.instrumentPickupState[slot] = 3;
-            runtime.instrumentWarpX[slot] = (entity.x() - 1) & 255; // $03:5F43
-            runtime.instrumentWarpY[slot] = entity.y();
-            runtime.slowTransitionCountdown[slot] = 0x80;
-            runtime.slowTimerInitialized[slot] = true;
-            runtime.events.pendingEntityEvents.add(
+        } else if (runtime.entityState.instrumentPickupState[slot] == 2
+                && runtime.entityState.enemyTransitionCountdown[slot] == 0) {
+            runtime.entityState.instrumentPickupState[slot] = 3;
+            runtime.entityState.instrumentWarpX[slot] = (entity.x() - 1) & 255; // $03:5F43
+            runtime.entityState.instrumentWarpY[slot] = entity.y();
+            runtime.entityState.slowTransitionCountdown[slot] = 0x80;
+            runtime.entityState.slowTimerInitialized[slot] = true;
+            runtime.entityState.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x2B));
-        } else if (runtime.instrumentPickupState[slot] == 2) {
-            runtime.instrumentParticleSpawnCountdown[slot] =
-                    (runtime.instrumentParticleSpawnCountdown[slot] - 1) & 0xFF;
-            if (runtime.instrumentParticleSpawnCountdown[slot] == 0xFF) {
-                runtime.instrumentParticleSpawnCountdown[slot] = 0x17;
-                runtime.instrumentParticleSpawnCounter[slot] =
-                        (runtime.instrumentParticleSpawnCounter[slot] + 1) & 0xFF;
+        } else if (runtime.entityState.instrumentPickupState[slot] == 2) {
+            runtime.entityState.instrumentParticleSpawnCountdown[slot] =
+                    (runtime.entityState.instrumentParticleSpawnCountdown[slot] - 1) & 0xFF;
+            if (runtime.entityState.instrumentParticleSpawnCountdown[slot] == 0xFF) {
+                runtime.entityState.instrumentParticleSpawnCountdown[slot] = 0x17;
+                runtime.entityState.instrumentParticleSpawnCounter[slot] =
+                        (runtime.entityState.instrumentParticleSpawnCounter[slot] + 1) & 0xFF;
                 spawnInstrumentParticle(
                         entity,
-                        runtime.instrumentParticleSpawnCounter[slot] & 0x01,
+                        runtime.entityState.instrumentParticleSpawnCounter[slot] & 0x01,
                         randomByteSupplier.getAsInt() & 0x01);
             }
-        } else if (runtime.instrumentPickupState[slot] == 3
-                && !runtime.linkState.dialogActive
-                && !runtime.linkState.inventoryAppearing
-                && !runtime.roomTransitionActive) {
+        } else if (runtime.entityState.instrumentPickupState[slot] == 3
+                && !runtime.entityState.linkState.dialogActive
+                && !runtime.entityState.linkState.inventoryAppearing
+                && !runtime.entityState.roomTransitionActive) {
             runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
             // $03:5E29: the warp controller advances its fade every eight
             // frames, then starts the fullscreen hint controller ($07:6523).
-            if (runtime.instrumentHintCountdown[slot] > 0) {
-                runtime.instrumentHintBatches[slot] = Math.min(9, runtime.instrumentHintBatches[slot] + 1);
-                if (--runtime.instrumentHintCountdown[slot] == 0 && !runtime.instrumentHintOpened[slot]) {
-                    runtime.instrumentHintOpened[slot] = true;
-                    runtime.events.pendingDialogRequests.add(new DialogRequest(1, 0x50 + (runtime.entityMapId & 0xFF)));
+            if (runtime.entityState.instrumentHintCountdown[slot] > 0) {
+                runtime.entityState.instrumentHintBatches[slot] =
+                        Math.min(9, runtime.entityState.instrumentHintBatches[slot] + 1);
+                if (--runtime.entityState.instrumentHintCountdown[slot] == 0
+                        && !runtime.entityState.instrumentHintOpened[slot]) {
+                    runtime.entityState.instrumentHintOpened[slot] = true;
+                    runtime.entityState.events.pendingDialogRequests.add(
+                            new DialogRequest(1, 0x50 + (runtime.entityState.entityMapId & 0xFF)));
                 }
             }
-            if (runtime.slowTransitionCountdown[slot] < 0x50
-                    && runtime.instrumentWarpFadeStep[slot] < 0x19
+            if (runtime.entityState.slowTransitionCountdown[slot] < 0x50
+                    && runtime.entityState.instrumentWarpFadeStep[slot] < 0x19
                     && (frameCounter & 7) == 0) {
-                int step = runtime.instrumentWarpFadeStep[slot]++;
+                int step = runtime.entityState.instrumentWarpFadeStep[slot]++;
                 if (step == 0) {
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x2C));
                 }
-                if (step == 0x18) runtime.instrumentHintCountdown[slot] = 0x60;
+                if (step == 0x18) runtime.entityState.instrumentHintCountdown[slot] = 0x60;
             }
             // func_020_6D0E raises RGB555 channels by one on even frames.
             // BG starts at private state 5; OBJ starts at state 15.
-            int fadeStep = runtime.instrumentWarpFadeStep[slot];
-            if (runtime.slowTransitionCountdown[slot] < 0x50 && fadeStep <= 0x19 && (frameCounter & 1) == 0) {
+            int fadeStep = runtime.entityState.instrumentWarpFadeStep[slot];
+            if (runtime.entityState.slowTransitionCountdown[slot] < 0x50
+                    && fadeStep <= 0x19
+                    && (frameCounter & 1) == 0) {
                 if (fadeStep >= 5)
-                    runtime.instrumentBackgroundFade[slot] = Math.min(31, runtime.instrumentBackgroundFade[slot] + 1);
+                    runtime.entityState.instrumentBackgroundFade[slot] =
+                            Math.min(31, runtime.entityState.instrumentBackgroundFade[slot] + 1);
                 if (fadeStep >= 15)
-                    runtime.instrumentObjectFade[slot] = Math.min(31, runtime.instrumentObjectFade[slot] + 1);
+                    runtime.entityState.instrumentObjectFade[slot] =
+                            Math.min(31, runtime.entityState.instrumentObjectFade[slot] + 1);
             }
-            if (runtime.slowTransitionCountdown[slot] == 0) {
-                runtime.instrumentPickupState[slot] = 4;
-                runtime.instrumentPickupSequenceActive[slot] = false;
-                runtime.events.pendingInstrumentCompletions.add(
-                        new InstrumentCompletionEvent(slot, runtime.entityMapId & 0xFF));
+            if (runtime.entityState.slowTransitionCountdown[slot] == 0) {
+                runtime.entityState.instrumentPickupState[slot] = 4;
+                runtime.entityState.instrumentPickupSequenceActive[slot] = false;
+                runtime.entityState.events.pendingInstrumentCompletions.add(
+                        new InstrumentCompletionEvent(slot, runtime.entityState.entityMapId & 0xFF));
                 runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 return;
             }
         }
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.entityState.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held =
                 withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
@@ -167,54 +177,61 @@ public final class EntityRewardController {
                 -1,
                 false);
         runtime.initializeHealthGroup(freeSlot);
-        runtime.instrumentParticleKind[freeSlot] = 1;
-        runtime.instrumentParticleSpeedX[freeSlot] = speedX[offsetIndex];
-        runtime.instrumentParticleSpeedY[freeSlot] = 0xFD;
-        runtime.instrumentParticleXAccumulator[freeSlot] = 0;
-        runtime.instrumentParticleYAccumulator[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0x38;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = 0;
-        runtime.enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyHitboxFlags[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION;
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.instrumentParticleKind[freeSlot] = 1;
+        runtime.entityState.instrumentParticleSpeedX[freeSlot] = speedX[offsetIndex];
+        runtime.entityState.instrumentParticleSpeedY[freeSlot] = 0xFD;
+        runtime.entityState.instrumentParticleXAccumulator[freeSlot] = 0;
+        runtime.entityState.instrumentParticleYAccumulator[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0x38;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = 0;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = ENTITY_PHYSICS_HARMLESS;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyHitboxFlags[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = EntityRomConstants.ENTITY_OPT1_NO_GROUND_INTERACTION;
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public void advanceInstrumentParticle(RoomEntity entity) {
         int slot = entity.slot();
-        if (runtime.enemyTransitionCountdown[slot] == 0) {
+        if (runtime.entityState.enemyTransitionCountdown[slot] == 0) {
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
         int x = addFallingSpeedToPosition(
-                entity.x(), runtime.instrumentParticleSpeedX[slot], runtime.instrumentParticleXAccumulator, slot);
+                entity.x(),
+                runtime.entityState.instrumentParticleSpeedX[slot],
+                runtime.entityState.instrumentParticleXAccumulator,
+                slot);
         int y = addFallingSpeedToPosition(
-                entity.y(), runtime.instrumentParticleSpeedY[slot], runtime.instrumentParticleYAccumulator, slot);
+                entity.y(),
+                runtime.entityState.instrumentParticleSpeedY[slot],
+                runtime.entityState.instrumentParticleYAccumulator,
+                slot);
         runtime.slots[slot] = withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
     public void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
-        int countdown = runtime.enemyTransitionCountdown[slot];
-        if (runtime.linkState.dialogActive) {
+        int countdown = runtime.entityState.enemyTransitionCountdown[slot];
+        if (runtime.entityState.linkState.dialogActive) {
             // UpdateEntityTimers is paused while a dialogue is open in the
             // ROM. Undo this runtime's generic tick before holding the item.
-            if (countdown > 0) runtime.enemyTransitionCountdown[slot]++;
+            if (countdown > 0) runtime.entityState.enemyTransitionCountdown[slot]++;
         } else if (countdown == 0x10) {
-            runtime.enemyTransitionCountdown[slot] = 0x0F;
-            runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x0F));
+            runtime.entityState.enemyTransitionCountdown[slot] = 0x0F;
+            runtime.entityState.events.pendingDialogRequests.add(new DialogRequest(0, 0x0F));
         } else if (countdown == 1) {
-            runtime.events.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
-            runtime.pendingMusicTrack = runtime.owlDefaultMusicResolver.applyAsInt(runtime.entityRoomId);
-            runtime.toadstoolPickupSequenceActive[slot] = false;
+            runtime.entityState.events.pendingToadstoolRewards.add(new ToadstoolRewardEvent(slot));
+            runtime.entityState.pendingMusicTrack =
+                    runtime.entityState.owlDefaultMusicResolver.applyAsInt(runtime.entityState.entityRoomId);
+            runtime.entityState.toadstoolPickupSequenceActive[slot] = false;
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
         }
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.entityState.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         RoomEntity held =
                 withPositionAndVariant(entity, linkEntityX, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);
@@ -222,43 +239,44 @@ public final class EntityRewardController {
 
     public void advanceSwordPickup(RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
-        if (runtime.linkState.dialogActive) {
-            if (runtime.enemyTransitionCountdown[slot] > 0) {
-                runtime.enemyTransitionCountdown[slot]++;
+        if (runtime.entityState.linkState.dialogActive) {
+            if (runtime.entityState.enemyTransitionCountdown[slot] > 0) {
+                runtime.entityState.enemyTransitionCountdown[slot]++;
             }
-            if (runtime.swordPickupState[slot] != 2) {
+            if (runtime.entityState.swordPickupState[slot] != 2) {
                 runtime.holdSwordAboveLink(
-                        entity, linkEntityX, linkEntityY, linkZ, runtime.swordPickupState[slot] == 3);
+                        entity, linkEntityX, linkEntityY, linkZ, runtime.entityState.swordPickupState[slot] == 3);
             } else {
-                runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+                runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
             }
             return;
         }
-        if (runtime.swordPickupState[slot] == 1) {
+        if (runtime.entityState.swordPickupState[slot] == 1) {
             runtime.lifecycle.decrementSlowTransitionCountdown(slot, frameCounter);
         }
-        switch (runtime.swordPickupState[slot]) {
+        switch (runtime.entityState.swordPickupState[slot]) {
             case 0 -> {
                 runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
-                int countdown = runtime.enemyTransitionCountdown[slot];
+                int countdown = runtime.entityState.enemyTransitionCountdown[slot];
                 if (countdown == 0x10) {
-                    runtime.enemyTransitionCountdown[slot]--;
-                    runtime.events.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
+                    runtime.entityState.enemyTransitionCountdown[slot]--;
+                    runtime.entityState.events.pendingDialogRequests.add(new DialogRequest(0, 0x9B));
                 } else if (countdown == 1) {
-                    runtime.pendingMusicTrack = 0x31;
-                    runtime.slowTransitionCountdown[slot] = 0x52;
-                    runtime.slowTimerInitialized[slot] = true;
-                    runtime.swordPickupState[slot] = 1;
+                    runtime.entityState.pendingMusicTrack = 0x31;
+                    runtime.entityState.slowTransitionCountdown[slot] = 0x52;
+                    runtime.entityState.slowTimerInitialized[slot] = true;
+                    runtime.entityState.swordPickupState[slot] = 1;
                 }
             }
             case 1 -> {
                 runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, false);
-                if (runtime.slowTransitionCountdown[slot] == 0) {
+                if (runtime.entityState.slowTransitionCountdown[slot] == 0) {
                     runtime.slots[slot] = withVariant(runtime.slots[slot], -1);
-                    runtime.enemyTransitionCountdown[slot] = 0x20;
-                    runtime.swordPickupState[slot] = 2;
-                    runtime.events.pendingLinkSwordSpinPoseRequests.add(new LinkSwordSpinPoseRequest(slot, 0x20));
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.entityState.enemyTransitionCountdown[slot] = 0x20;
+                    runtime.entityState.swordPickupState[slot] = 2;
+                    runtime.entityState.events.pendingLinkSwordSpinPoseRequests.add(
+                            new LinkSwordSpinPoseRequest(slot, 0x20));
+                    runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x03));
                 }
             }
@@ -266,28 +284,28 @@ public final class EntityRewardController {
                 // SwordShieldPickableState2Handler only advances the entity
                 // countdown and restores variant 0; Link's spin handler owns
                 // the motion lock and animation pose for these frames.
-                runtime.events.pendingLinkSwordSpinPoseRequests.add(
-                        new LinkSwordSpinPoseRequest(slot, runtime.enemyTransitionCountdown[slot]));
-                if (runtime.enemyTransitionCountdown[slot] == 0) {
-                    runtime.enemyTransitionCountdown[slot] = 0x20;
+                runtime.entityState.events.pendingLinkSwordSpinPoseRequests.add(
+                        new LinkSwordSpinPoseRequest(slot, runtime.entityState.enemyTransitionCountdown[slot]));
+                if (runtime.entityState.enemyTransitionCountdown[slot] == 0) {
+                    runtime.entityState.enemyTransitionCountdown[slot] = 0x20;
                     runtime.slots[slot] = withVariant(runtime.slots[slot], 0);
-                    runtime.swordPickupState[slot] = 3;
+                    runtime.entityState.swordPickupState[slot] = 3;
                 }
             }
             default -> {
-                runtime.events.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
+                runtime.entityState.events.pendingLinkSwordFinalPoseRequests.add(new LinkSwordFinalPoseRequest(slot));
                 runtime.holdSwordAboveLink(entity, linkEntityX, linkEntityY, linkZ, true);
-                if (runtime.enemyTransitionCountdown[slot] == 0x1A) {
-                    runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                if (runtime.entityState.enemyTransitionCountdown[slot] == 0x1A) {
+                    runtime.entityState.events.transientVfxRequests.add(new TransientVfxRequest(
                             TransientVfxType.SWORD_POKE, entity.x(), (entity.y() - 0x0C) & 0xFF));
-                    runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                    runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                             slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x07));
                 }
-                if (runtime.enemyTransitionCountdown[slot] == 0) {
+                if (runtime.entityState.enemyTransitionCountdown[slot] == 0) {
                     // The ROM leaves MUSIC_OVERWORLD_INTRO playing after the pose;
                     // the track data itself continues into the overworld loop.
-                    runtime.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
-                    runtime.swordPickupSequenceActive[slot] = false;
+                    runtime.entityState.events.pendingSwordPickupRewards.add(new SwordPickupRewardEvent(slot));
+                    runtime.entityState.swordPickupSequenceActive[slot] = false;
                     runtime.lifecycle.disableEntityWithoutPersistence(slot);
                 }
             }
@@ -296,34 +314,35 @@ public final class EntityRewardController {
 
     void advancePowerUpPickup(RoomEntity entity, int frame, int linkX, int linkY, int linkZ) {
         int slot = entity.slot();
-        if (runtime.powerUpPickupCountdown[slot] == 0x30) {
+        if (runtime.entityState.powerUpPickupCountdown[slot] == 0x30) {
             int[] xOffsets = {-0x1C, 0x14, -0x1C, 0x14};
             int[] yOffsets = {-0x2C, -0x2C, 0x04, 0x04};
             for (int variant = 3; variant >= 0; variant--) {
-                runtime.events.transientVfxRequests.add(new TransientVfxRequest(
+                runtime.entityState.events.transientVfxRequests.add(new TransientVfxRequest(
                         TransientVfxType.MOVING_SPARKLE,
                         (linkX + xOffsets[variant]) & 0xFF,
                         (linkY + yOffsets[variant]) & 0xFF,
                         variant));
             }
         }
-        if (!runtime.linkState.dialogActive) {
-            int countdown = --runtime.powerUpPickupCountdown[slot];
+        if (!runtime.entityState.linkState.dialogActive) {
+            int countdown = --runtime.entityState.powerUpPickupCountdown[slot];
             if (countdown == 0x2E) {
-                runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+                runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                         slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x17));
             }
             if (countdown == 2) {
-                runtime.powerUpPickupCountdown[slot] = 1;
-                runtime.events.pendingDialogRequests.add(new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
+                runtime.entityState.powerUpPickupCountdown[slot] = 1;
+                runtime.entityState.events.pendingDialogRequests.add(
+                        new DialogRequest(0, entity.type() == 0x33 ? 0x08 : 0xEC));
             } else if (countdown == 0) {
-                runtime.pendingMusicTrack = 0x49;
+                runtime.entityState.pendingMusicTrack = 0x49;
                 runtime.clearEntity(slot);
                 return;
             }
         }
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.entityState.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot, true));
         RoomEntity held = withPositionAndVariant(
                 entity,
                 linkX,
@@ -334,51 +353,51 @@ public final class EntityRewardController {
 
     public void refreshInstrumentPalette(EntityStatus status, int slot, int frame) {
         if (status == EntityStatus.ACTIVE
-                && runtime.instrumentParticleKind[slot] == 0
-                && runtime.instrumentPickupState[slot] < 3
-                && runtime.transitionSequenceCounter == 4
-                && runtime.spriteSelection != null) {
-            int[][] palettes = runtime.spriteSelection.objectPalettes();
+                && runtime.entityState.instrumentParticleKind[slot] == 0
+                && runtime.entityState.instrumentPickupState[slot] < 3
+                && runtime.entityState.transitionSequenceCounter == 4
+                && runtime.entityState.spriteSelection != null) {
+            int[][] palettes = runtime.entityState.spriteSelection.objectPalettes();
             int offset = ((frame >> 1) & 0x3C) / 2;
-            palettes[1][2] = runtime.instrumentPaletteCycle[offset];
-            palettes[1][3] = runtime.instrumentPaletteCycle[offset + 1];
-            runtime.spriteSelection = runtime.spriteSelection.withObjectPalettes(palettes);
+            palettes[1][2] = runtime.entityState.instrumentPaletteCycle[offset];
+            palettes[1][3] = runtime.entityState.instrumentPaletteCycle[offset + 1];
+            runtime.entityState.spriteSelection = runtime.entityState.spriteSelection.withObjectPalettes(palettes);
         }
     }
 
     public int instrumentParticleKind(int slot) {
-        return runtime.instrumentParticleKind[slot];
+        return runtime.entityState.instrumentParticleKind[slot];
     }
 
     public boolean instrumentPickupSequenceActive(int slot) {
-        return runtime.instrumentPickupSequenceActive[slot];
+        return runtime.entityState.instrumentPickupSequenceActive[slot];
     }
 
     public boolean swordPickupSequenceActive(int slot) {
-        return runtime.swordPickupSequenceActive[slot];
+        return runtime.entityState.swordPickupSequenceActive[slot];
     }
 
     public boolean toadstoolPickupSequenceActive(int slot) {
-        return runtime.toadstoolPickupSequenceActive[slot];
+        return runtime.entityState.toadstoolPickupSequenceActive[slot];
     }
 
     public boolean secretSeashellScreenShakeActive() {
-        return runtime.secretSeashellScreenShakeActive;
+        return runtime.entityState.secretSeashellScreenShakeActive;
     }
 
     public boolean secretSeashellPegasusCollisionActive() {
-        return runtime.secretSeashellPegasusCollisionActive;
+        return runtime.entityState.secretSeashellPegasusCollisionActive;
     }
 
     public boolean secretSeashellPegasusCollisionCoordinatesKnown() {
-        return runtime.secretSeashellPegasusCollisionCoordinatesKnown;
+        return runtime.entityState.secretSeashellPegasusCollisionCoordinatesKnown;
     }
 
     public int secretSeashellPegasusCollisionX() {
-        return runtime.secretSeashellPegasusCollisionX;
+        return runtime.entityState.secretSeashellPegasusCollisionX;
     }
 
     public int secretSeashellPegasusCollisionY() {
-        return runtime.secretSeashellPegasusCollisionY;
+        return runtime.entityState.secretSeashellPegasusCollisionY;
     }
 }

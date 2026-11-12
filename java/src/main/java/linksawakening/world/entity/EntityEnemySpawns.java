@@ -75,31 +75,31 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = bomb;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.bombDirection[freeSlot] = 0xFF;
-        runtime.playerArrowBombArrow[freeSlot] = false;
+        runtime.entityState.bombDirection[freeSlot] = 0xFF;
+        runtime.entityState.playerArrowBombArrow[freeSlot] = false;
         runtime.bombFinalPresentationPending[freeSlot] = false;
-        runtime.bombPrivateState4[freeSlot] = privateState4 & 0xFF;
-        runtime.bombPrivateCountdown1[freeSlot] = 0;
-        runtime.bombPrivateCountdown3[freeSlot] = 0;
-        runtime.placedBombMotionInitialized[freeSlot] = false;
-        runtime.enemyBombMotionInitialized[freeSlot] = initializeMotion;
+        runtime.entityState.bombPrivateState4[freeSlot] = privateState4 & 0xFF;
+        runtime.entityState.bombPrivateCountdown1[freeSlot] = 0;
+        runtime.entityState.bombPrivateCountdown3[freeSlot] = 0;
+        runtime.entityState.placedBombMotionInitialized[freeSlot] = false;
+        runtime.entityState.enemyBombMotionInitialized[freeSlot] = initializeMotion;
         if (initializeMotion) {
-            runtime.thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+            runtime.entityState.thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
         } else {
-            runtime.thrownEntityMotion.clear(freeSlot);
+            runtime.entityState.thrownEntityMotion.clear(freeSlot);
         }
-        runtime.thrownMotionInitialized[freeSlot] = false;
-        runtime.enemyHitboxFlags[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = transitionCountdown;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BOMB);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = initializeMotion ? 1 : 0;
-        runtime.enemyPhysicsFlags[freeSlot] = EntityRomConstants.BOMB_INITIAL_PHYSICS_FLAGS;
-        runtime.entityGroundStatus[freeSlot] = 0;
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.BOMB_OPTIONS1;
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.thrownMotionInitialized[freeSlot] = false;
+        runtime.entityState.enemyHitboxFlags[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = transitionCountdown;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_BOMB);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = initializeMotion ? 1 : 0;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = EntityRomConstants.BOMB_INITIAL_PHYSICS_FLAGS;
+        runtime.entityState.entityGroundStatus[freeSlot] = 0;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = EntityRomConstants.BOMB_OPTIONS1;
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return freeSlot;
     }
 
@@ -131,12 +131,12 @@ public final class EntityEnemySpawns {
                 false);
         runtime.initializeHealthGroup(freeSlot);
         runtime.pickups.resetEnemyDropState(freeSlot);
-        runtime.droppedItemBySlot[freeSlot] = EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD);
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.entityOptions1Override[freeSlot] = -1;
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.droppedItemBySlot[freeSlot] = EntityRomConstants.ENTITY_HIDING_SLIME_KEY;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD);
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD);
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.entityOptions1Override[freeSlot] = -1;
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return true;
     }
 
@@ -165,16 +165,16 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
     public void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
@@ -202,19 +202,19 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
-        runtime.enemyHealth[freeSlot] = GopongaProjectileMotion.HEALTH_OVERRIDE;
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
+        runtime.entityState.enemyHealth[freeSlot] = GopongaProjectileMotion.HEALTH_OVERRIDE;
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public void spawnZoraProjectile(ZoraMotion.ProjectileSpawn spawn) {
@@ -242,19 +242,19 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
-        runtime.enemyHealth[freeSlot] = GopongaProjectileMotion.HEALTH_OVERRIDE;
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = GopongaProjectileMotion.OPTIONS1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = GopongaProjectileMotion.INITIAL_PHYSICS_FLAGS;
+        runtime.entityState.enemyHealth[freeSlot] = GopongaProjectileMotion.HEALTH_OVERRIDE;
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public void spawnZombieChild(ZombieMotion.SpawnRequest spawn) {
@@ -282,22 +282,23 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = child;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = -1;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = -1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
         // ConfigureNewEntity starts from the static $52 row; the handler
         // clears projectile noclip before the child is first dispatched.
-        runtime.enemyPhysicsFlags[freeSlot] = ZombieMotion.INITIAL_PHYSICS_FLAGS & ~ZombieMotion.PROJECTILE_NOCLIP_FLAG;
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_ZOMBIE);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_ZOMBIE);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.zombieMotion.initializeChild(freeSlot);
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] =
+                ZombieMotion.INITIAL_PHYSICS_FLAGS & ~ZombieMotion.PROJECTILE_NOCLIP_FLAG;
+        runtime.entityState.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_ZOMBIE);
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_ZOMBIE);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.zombieMotion.initializeChild(freeSlot);
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public void spawnPokeySegment(PokeyMotion.SegmentSpawn spawn) {
@@ -324,23 +325,23 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = segment;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = -1;
-        runtime.enemyTransitionCountdown[freeSlot] = spawn.transitionCountdown();
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY);
-        runtime.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_POKEY);
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_POKEY);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = -1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = spawn.transitionCountdown();
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY);
+        runtime.entityState.enemyHitboxFlags[freeSlot] = initialHitboxFlags(EntityRomConstants.ENTITY_POKEY);
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_POKEY);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
         // ConfigureNewEntity seeds one ignored-hit frame; the child handler
         // decrements it before its first interactive collision pass.
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.entityInertia[freeSlot] = 0;
-        runtime.pokeyMotion.initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.entityInertia[freeSlot] = 0;
+        runtime.entityState.pokeyMotion.initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public void spawnWizrobeProjectile(RoomEntity source, WizrobeMotion.ProjectileSpawn spawn) {
@@ -368,19 +369,19 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = 0x42;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.wizrobeProjectileMotion.initializeSpawn(freeSlot, spawn.direction());
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = EntityRomConstants.WIZROBE_PROJECTILE_OPTIONS1;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = 0x42;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.wizrobeProjectileMotion.initializeSpawn(freeSlot, spawn.direction());
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     public boolean spawnEvasiveClone(RoomEntity source, StalfosEvasiveMotion.CloneRequest request) {
@@ -408,29 +409,29 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = clone;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = EntityRomConstants.EVASIVE_CLONE_OPTIONS;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyPhysicsFlags[freeSlot] = EntityRomConstants.EVASIVE_CLONE_PHYSICS_FLAGS;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = EntityRomConstants.EVASIVE_CLONE_OPTIONS;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = EntityRomConstants.EVASIVE_CLONE_PHYSICS_FLAGS;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
         // SpawnNewEntity writes one frame, but the Evasive handler immediately
         // stores register B over it. AnimateEntities keeps B at zero, so this
         // clone enters its fleeing handler with no ignore-hits countdown.
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 0;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
-        runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 0;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                 source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0A));
         return true;
     }
 
     public void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request) {
-        spawnEnemyProjectile(source, request, runtime.roamingEnemyMotion.direction(source.slot()));
+        spawnEnemyProjectile(source, request, runtime.entityState.roamingEnemyMotion.direction(source.slot()));
     }
 
     public void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request, int direction) {
@@ -465,17 +466,17 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(request.projectileType());
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
-        runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(request.projectileType());
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
+        runtime.entityState.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
     public void spawnWingedOctorokRock(RoomEntity source, int direction) {
@@ -510,17 +511,18 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = projectile;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK);
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.enemyRecoilMotion.clear(freeSlot);
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.enemyProjectileMotion.initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
-        runtime.enemyProjectileSpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = runtime.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK);
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.enemyRecoilMotion.clear(freeSlot);
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.enemyProjectileMotion.initializeSpawn(
+                freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
+        runtime.entityState.enemyProjectileSpawnedThisFrame[freeSlot] = true;
     }
 
     public boolean canSpawnCuccoAngry() {
@@ -554,17 +556,17 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = angry;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.entityOptions1Override[freeSlot] = CuccoMotion.ANGRY_OPTIONS1;
-        runtime.enemyPhysicsFlags[freeSlot] = CuccoMotion.ANGRY_PHYSICS_FLAGS;
-        runtime.enemyHitboxFlags[freeSlot] = CuccoMotion.ANGRY_HITBOX_FLAGS;
-        runtime.enemyHealth[freeSlot] = CuccoMotion.HEALTH_OVERRIDE;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 0;
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.entityOptions1Override[freeSlot] = CuccoMotion.ANGRY_OPTIONS1;
+        runtime.entityState.enemyPhysicsFlags[freeSlot] = CuccoMotion.ANGRY_PHYSICS_FLAGS;
+        runtime.entityState.enemyHitboxFlags[freeSlot] = CuccoMotion.ANGRY_HITBOX_FLAGS;
+        runtime.entityState.enemyHealth[freeSlot] = CuccoMotion.HEALTH_OVERRIDE;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 0;
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return true;
     }
 
@@ -590,16 +592,17 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = sensor;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = 0;
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.laserMotion.initializeSensor(freeSlot, parent.slot(), runtime.laserMotion.direction(parent.slot()));
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = 0;
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.laserMotion.initializeSensor(
+                freeSlot, parent.slot(), runtime.entityState.laserMotion.direction(parent.slot()));
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
     }
 
     boolean spawnLaserBeam(RoomEntity parent) {
@@ -624,20 +627,20 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots[freeSlot] = beam;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.baseEntityFlipAttribute[freeSlot] = 0;
-        runtime.enemyTransitionCountdown[freeSlot] = 0;
-        runtime.enemyStunnedCountdown[freeSlot] = 0;
-        runtime.enemyHealth[freeSlot] = 0;
-        runtime.enemyFlashCountdown[freeSlot] = 0;
-        runtime.enemyIgnoreHitsCountdown[freeSlot] = 1;
-        runtime.dyingCountdown[freeSlot] = 0;
-        runtime.powerRecoilDeath[freeSlot] = false;
-        runtime.laserMotion.initializeBeam(
+        runtime.entityState.baseEntityFlipAttribute[freeSlot] = 0;
+        runtime.entityState.enemyTransitionCountdown[freeSlot] = 0;
+        runtime.entityState.enemyStunnedCountdown[freeSlot] = 0;
+        runtime.entityState.enemyHealth[freeSlot] = 0;
+        runtime.entityState.enemyFlashCountdown[freeSlot] = 0;
+        runtime.entityState.enemyIgnoreHitsCountdown[freeSlot] = 1;
+        runtime.entityState.dyingCountdown[freeSlot] = 0;
+        runtime.entityState.powerRecoilDeath[freeSlot] = false;
+        runtime.entityState.laserMotion.initializeBeam(
                 freeSlot,
-                runtime.laserMotion.direction(parent.slot()),
-                runtime.laserMotion.speedX(parent.slot()),
-                runtime.laserMotion.speedY(parent.slot()));
-        runtime.dynamicEntitySpawnedThisFrame[freeSlot] = true;
+                runtime.entityState.laserMotion.direction(parent.slot()),
+                runtime.entityState.laserMotion.speedX(parent.slot()),
+                runtime.entityState.laserMotion.speedY(parent.slot()));
+        runtime.entityState.dynamicEntitySpawnedThisFrame[freeSlot] = true;
         return true;
     }
 }

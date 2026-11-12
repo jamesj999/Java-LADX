@@ -154,11 +154,11 @@ public final class EntityFrameExecution {
     }
 
     public EntityLinkView link() {
-        return runtime.linkView;
+        return runtime.entityState.linkView;
     }
 
     public EntitySlotView slot() {
-        return runtime.slotView;
+        return runtime.entityState.slotView;
     }
 
     public void replaceEntity(RoomEntity replacement) {
@@ -174,83 +174,83 @@ public final class EntityFrameExecution {
     }
 
     public void emit(DialogRequest event) {
-        runtime.events.pendingDialogRequests.add(event);
+        runtime.entityState.events.pendingDialogRequests.add(event);
     }
 
     public void emit(DungeonWarpRequest event) {
-        runtime.events.pendingDungeonWarpRequests.add(event);
+        runtime.entityState.events.pendingDungeonWarpRequests.add(event);
     }
 
     public void emit(EntityCombatEvent event) {
-        runtime.events.pendingEntityEvents.add(event);
+        runtime.entityState.events.pendingEntityEvents.add(event);
     }
 
     public void emit(HinoxLinkEffectRequest event) {
-        runtime.events.pendingHinoxLinkEffectRequests.add(event);
+        runtime.entityState.events.pendingHinoxLinkEffectRequests.add(event);
     }
 
     public void emit(KeyQuicksandEvent event) {
-        runtime.events.pendingKeyQuicksandEvents.add(event);
+        runtime.entityState.events.pendingKeyQuicksandEvents.add(event);
     }
 
     public void emit(KeyRewardEvent event) {
-        runtime.events.pendingKeyRewardEvents.add(event);
+        runtime.entityState.events.pendingKeyRewardEvents.add(event);
     }
 
     public void emit(LikeLikeEvent event) {
-        runtime.events.pendingLikeLikeEvents.add(event);
+        runtime.entityState.events.pendingLikeLikeEvents.add(event);
     }
 
     public void emit(LinkAttackClearRequest event) {
-        runtime.events.pendingLinkAttackClearRequests.add(event);
+        runtime.entityState.events.pendingLinkAttackClearRequests.add(event);
     }
 
     public void emit(LinkFacingRequest event) {
-        runtime.events.pendingLinkFacingRequests.add(event);
+        runtime.entityState.events.pendingLinkFacingRequests.add(event);
     }
 
     public void emit(LinkFallenPoseRequest event) {
-        runtime.events.pendingLinkFallenPoseRequests.add(event);
+        runtime.entityState.events.pendingLinkFallenPoseRequests.add(event);
     }
 
     public void emit(LinkMotionBlockRequest event) {
-        runtime.events.pendingLinkMotionBlockRequests.add(event);
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(event);
     }
 
     public void emit(RoomStatusPersistenceRequest event) {
-        runtime.events.pendingRoomStatusPersistenceRequests.add(event);
+        runtime.entityState.events.pendingRoomStatusPersistenceRequests.add(event);
     }
 
     public void emit(RoosterLinkStateRequest event) {
-        runtime.events.pendingRoosterLinkStateRequests.add(event);
+        runtime.entityState.events.pendingRoosterLinkStateRequests.add(event);
     }
 
     public void emit(ScreenShakeRequest event) {
-        runtime.events.pendingScreenShakeRequests.add(event);
+        runtime.entityState.events.pendingScreenShakeRequests.add(event);
     }
 
     public void emit(SideViewPlatformLinkRequest event) {
-        runtime.events.pendingSideViewPlatformLinkRequests.add(event);
+        runtime.entityState.events.pendingSideViewPlatformLinkRequests.add(event);
     }
 
     public void emit(SlimeKeyRewardEvent event) {
-        runtime.events.pendingSlimeKeyRewardEvents.add(event);
+        runtime.entityState.events.pendingSlimeKeyRewardEvents.add(event);
     }
 
     public void emit(WarpLinkStateRequest event) {
-        runtime.events.pendingWarpLinkStateRequests.add(event);
+        runtime.entityState.events.pendingWarpLinkStateRequests.add(event);
     }
 
     public void emit(WitchExchangeEvent event) {
-        runtime.events.pendingWitchExchangeEvents.add(event);
+        runtime.entityState.events.pendingWitchExchangeEvents.add(event);
     }
 
     public void emit(WitchRewardEvent event) {
-        runtime.events.pendingWitchRewardEvents.add(event);
+        runtime.entityState.events.pendingWitchRewardEvents.add(event);
     }
 
     public void emit(TransientVfxRequest event) {
-        runtime.events.transientVfxRequests.add(event);
+        runtime.entityState.events.transientVfxRequests.add(event);
     }
 
     public EntitySlotLifecycle lifecycle() {
@@ -310,279 +310,279 @@ public final class EntityFrameExecution {
     }
 
     public linksawakening.world.entity.motion.SideViewPlatformMotion sideViewPlatformMotion() {
-        return runtime.sideViewPlatformMotion;
+        return runtime.entityState.sideViewPlatformMotion;
     }
 
     public linksawakening.world.entity.motion.SideViewPotMotion sideViewPotMotion() {
-        return runtime.sideViewPotMotion;
+        return runtime.entityState.sideViewPotMotion;
     }
 
     public linksawakening.world.entity.motion.RoamingEnemyMotion roamingEnemyMotion() {
-        return runtime.roamingEnemyMotion;
+        return runtime.entityState.roamingEnemyMotion;
     }
 
     public linksawakening.world.entity.motion.UnmaskedIronMaskMotion unmaskedIronMaskMotion() {
-        return runtime.unmaskedIronMaskMotion;
+        return runtime.entityState.unmaskedIronMaskMotion;
     }
 
     public linksawakening.world.entity.motion.MoblinSwordMotion moblinSwordMotion() {
-        return runtime.moblinSwordMotion;
+        return runtime.entityState.moblinSwordMotion;
     }
 
     public linksawakening.world.entity.motion.PlayerArrowMotion playerArrowMotion() {
-        return runtime.playerArrowMotion;
+        return runtime.entityState.playerArrowMotion;
     }
 
     public linksawakening.world.entity.motion.EnemyProjectileMotion enemyProjectileMotion() {
-        return runtime.enemyProjectileMotion;
+        return runtime.entityState.enemyProjectileMotion;
     }
 
     public linksawakening.world.entity.motion.HookshotChainMotion hookshotChainMotion() {
-        return runtime.hookshotChainMotion;
+        return runtime.entityState.hookshotChainMotion;
     }
 
     public linksawakening.world.entity.motion.SparkMotion sparkMotion() {
-        return runtime.sparkMotion;
+        return runtime.entityState.sparkMotion;
     }
 
     public linksawakening.world.entity.motion.ZolGelMotion zolGelMotion() {
-        return runtime.zolGelMotion;
+        return runtime.entityState.zolGelMotion;
     }
 
     public linksawakening.world.entity.motion.HidingZolMotion hidingZolMotion() {
-        return runtime.hidingZolMotion;
+        return runtime.entityState.hidingZolMotion;
     }
 
     public linksawakening.world.entity.motion.StarMotion starMotion() {
-        return runtime.starMotion;
+        return runtime.entityState.starMotion;
     }
 
     public linksawakening.world.entity.motion.BlooperMotion blooperMotion() {
-        return runtime.blooperMotion;
+        return runtime.entityState.blooperMotion;
     }
 
     public linksawakening.world.entity.motion.WingedOctorokMotion wingedOctorokMotion() {
-        return runtime.wingedOctorokMotion;
+        return runtime.entityState.wingedOctorokMotion;
     }
 
     public linksawakening.world.entity.motion.PincerMotion pincerMotion() {
-        return runtime.pincerMotion;
+        return runtime.entityState.pincerMotion;
     }
 
     public linksawakening.world.entity.motion.BushCrawlerMotion bushCrawlerMotion() {
-        return runtime.bushCrawlerMotion;
+        return runtime.entityState.bushCrawlerMotion;
     }
 
     public linksawakening.world.entity.motion.MimicMotion mimicMotion() {
-        return runtime.mimicMotion;
+        return runtime.entityState.mimicMotion;
     }
 
     public linksawakening.world.entity.motion.MaskedMimicMotion maskedMimicMotion() {
-        return runtime.maskedMimicMotion;
+        return runtime.entityState.maskedMimicMotion;
     }
 
     public linksawakening.world.entity.motion.MiniMoldormMotion miniMoldormMotion() {
-        return runtime.miniMoldormMotion;
+        return runtime.entityState.miniMoldormMotion;
     }
 
     public linksawakening.world.entity.motion.MoldormMotion moldormMotion() {
-        return runtime.moldormMotion;
+        return runtime.entityState.moldormMotion;
     }
 
     public linksawakening.world.entity.motion.CuccoMotion cuccoMotion() {
-        return runtime.cuccoMotion;
+        return runtime.entityState.cuccoMotion;
     }
 
     public linksawakening.world.entity.motion.GiantGopongaMotion giantGopongaMotion() {
-        return runtime.giantGopongaMotion;
+        return runtime.entityState.giantGopongaMotion;
     }
 
     public linksawakening.world.entity.motion.GopongaProjectileMotion gopongaProjectileMotion() {
-        return runtime.gopongaProjectileMotion;
+        return runtime.entityState.gopongaProjectileMotion;
     }
 
     public linksawakening.world.entity.motion.PokeyMotion pokeyMotion() {
-        return runtime.pokeyMotion;
+        return runtime.entityState.pokeyMotion;
     }
 
     public linksawakening.world.entity.motion.PiranhaMotion piranhaMotion() {
-        return runtime.piranhaMotion;
+        return runtime.entityState.piranhaMotion;
     }
 
     public linksawakening.world.entity.motion.ZoraMotion zoraMotion() {
-        return runtime.zoraMotion;
+        return runtime.entityState.zoraMotion;
     }
 
     public linksawakening.world.entity.motion.ZombieMotion zombieMotion() {
-        return runtime.zombieMotion;
+        return runtime.entityState.zombieMotion;
     }
 
     public linksawakening.world.entity.motion.BuzzBlobMotion buzzBlobMotion() {
-        return runtime.buzzBlobMotion;
+        return runtime.entityState.buzzBlobMotion;
     }
 
     public linksawakening.world.entity.motion.SandCrabMotion sandCrabMotion() {
-        return runtime.sandCrabMotion;
+        return runtime.entityState.sandCrabMotion;
     }
 
     public linksawakening.world.entity.motion.DogMotion dogMotion() {
-        return runtime.dogMotion;
+        return runtime.entityState.dogMotion;
     }
 
     public linksawakening.world.entity.motion.UrchinMotion urchinMotion() {
-        return runtime.urchinMotion;
+        return runtime.entityState.urchinMotion;
     }
 
     public linksawakening.world.entity.motion.WitchRatMotion witchRatMotion() {
-        return runtime.witchRatMotion;
+        return runtime.entityState.witchRatMotion;
     }
 
     public linksawakening.world.entity.motion.WitchMotion witchMotion() {
-        return runtime.witchMotion;
+        return runtime.entityState.witchMotion;
     }
 
     public linksawakening.world.entity.motion.TarinRaccoonMotion tarinRaccoonMotion() {
-        return runtime.tarinRaccoonMotion;
+        return runtime.entityState.tarinRaccoonMotion;
     }
 
     public linksawakening.world.entity.motion.SpikeTrapMotion spikeTrapMotion() {
-        return runtime.spikeTrapMotion;
+        return runtime.entityState.spikeTrapMotion;
     }
 
     public linksawakening.world.entity.motion.PairoddMotion pairoddMotion() {
-        return runtime.pairoddMotion;
+        return runtime.entityState.pairoddMotion;
     }
 
     public linksawakening.world.entity.motion.PairoddProjectileMotion pairoddProjectileMotion() {
-        return runtime.pairoddProjectileMotion;
+        return runtime.entityState.pairoddProjectileMotion;
     }
 
     public linksawakening.world.entity.motion.WaterTektiteMotion waterTektiteMotion() {
-        return runtime.waterTektiteMotion;
+        return runtime.entityState.waterTektiteMotion;
     }
 
     public linksawakening.world.entity.motion.FishMotion fishMotion() {
-        return runtime.fishMotion;
+        return runtime.entityState.fishMotion;
     }
 
     public linksawakening.world.entity.motion.CrowMotion crowMotion() {
-        return runtime.crowMotion;
+        return runtime.entityState.crowMotion;
     }
 
     public linksawakening.world.entity.motion.BooBuddyMotion booBuddyMotion() {
-        return runtime.booBuddyMotion;
+        return runtime.entityState.booBuddyMotion;
     }
 
     public linksawakening.world.entity.motion.FairyMotion fairyMotion() {
-        return runtime.fairyMotion;
+        return runtime.entityState.fairyMotion;
     }
 
     public linksawakening.world.entity.motion.StalfosAggressiveMotion stalfosAggressiveMotion() {
-        return runtime.stalfosAggressiveMotion;
+        return runtime.entityState.stalfosAggressiveMotion;
     }
 
     public linksawakening.world.entity.motion.StalfosEvasiveMotion stalfosEvasiveMotion() {
-        return runtime.stalfosEvasiveMotion;
+        return runtime.entityState.stalfosEvasiveMotion;
     }
 
     public linksawakening.world.entity.motion.LikeLikeMotion likeLikeMotion() {
-        return runtime.likeLikeMotion;
+        return runtime.entityState.likeLikeMotion;
     }
 
     public linksawakening.world.entity.motion.GoombaMotion goombaMotion() {
-        return runtime.goombaMotion;
+        return runtime.entityState.goombaMotion;
     }
 
     public linksawakening.world.entity.motion.SnakeMotion snakeMotion() {
-        return runtime.snakeMotion;
+        return runtime.entityState.snakeMotion;
     }
 
     public linksawakening.world.entity.motion.WizrobeMotion wizrobeMotion() {
-        return runtime.wizrobeMotion;
+        return runtime.entityState.wizrobeMotion;
     }
 
     public linksawakening.world.entity.motion.WizrobeProjectileMotion wizrobeProjectileMotion() {
-        return runtime.wizrobeProjectileMotion;
+        return runtime.entityState.wizrobeProjectileMotion;
     }
 
     public linksawakening.world.entity.motion.PeaHatMotion peaHatMotion() {
-        return runtime.peaHatMotion;
+        return runtime.entityState.peaHatMotion;
     }
 
     public linksawakening.world.entity.motion.ArmosMotion armosMotion() {
-        return runtime.armosMotion;
+        return runtime.entityState.armosMotion;
     }
 
     public linksawakening.world.entity.motion.ArmosKnightMotion armosKnightMotion() {
-        return runtime.armosKnightMotion;
+        return runtime.entityState.armosKnightMotion;
     }
 
     public linksawakening.world.entity.motion.HinoxMotion hinoxMotion() {
-        return runtime.hinoxMotion;
+        return runtime.entityState.hinoxMotion;
     }
 
     public linksawakening.world.entity.motion.RollingBonesMotion rollingBonesMotion() {
-        return runtime.rollingBonesMotion;
+        return runtime.entityState.rollingBonesMotion;
     }
 
     public linksawakening.world.entity.motion.ThreeOfAKindMotion threeOfAKindMotion() {
-        return runtime.threeOfAKindMotion;
+        return runtime.entityState.threeOfAKindMotion;
     }
 
     public linksawakening.world.entity.motion.MoblinKingMotion moblinKingMotion() {
-        return runtime.moblinKingMotion;
+        return runtime.entityState.moblinKingMotion;
     }
 
     public linksawakening.world.entity.motion.BossIntroMotion bossIntroMotion() {
-        return runtime.bossIntroMotion;
+        return runtime.entityState.bossIntroMotion;
     }
 
     public linksawakening.world.entity.motion.GhiniMotion ghiniMotion() {
-        return runtime.ghiniMotion;
+        return runtime.entityState.ghiniMotion;
     }
 
     public linksawakening.world.entity.motion.HardHatMotion hardHatMotion() {
-        return runtime.hardHatMotion;
+        return runtime.entityState.hardHatMotion;
     }
 
     public linksawakening.world.entity.motion.PolsVoiceMotion polsVoiceMotion() {
-        return runtime.polsVoiceMotion;
+        return runtime.entityState.polsVoiceMotion;
     }
 
     public linksawakening.world.entity.motion.SpikedBeetleMotion spikedBeetleMotion() {
-        return runtime.spikedBeetleMotion;
+        return runtime.entityState.spikedBeetleMotion;
     }
 
     public linksawakening.world.entity.motion.MadBomberMotion madBomberMotion() {
-        return runtime.madBomberMotion;
+        return runtime.entityState.madBomberMotion;
     }
 
     public linksawakening.world.entity.motion.BomberMotion bomberMotion() {
-        return runtime.bomberMotion;
+        return runtime.entityState.bomberMotion;
     }
 
     public linksawakening.world.entity.motion.BombiteMotion bombiteMotion() {
-        return runtime.bombiteMotion;
+        return runtime.entityState.bombiteMotion;
     }
 
     public linksawakening.world.entity.motion.EnemyRecoilMotion enemyRecoilMotion() {
-        return runtime.enemyRecoilMotion;
+        return runtime.entityState.enemyRecoilMotion;
     }
 
     public linksawakening.world.entity.motion.FollowingNpcMotion followingNpcMotion() {
-        return runtime.followingNpcMotion;
+        return runtime.entityState.followingNpcMotion;
     }
 
     public linksawakening.world.entity.motion.BowWowMotion bowWowMotion() {
-        return runtime.bowWowMotion;
+        return runtime.entityState.bowWowMotion;
     }
 
     public linksawakening.world.entity.motion.ColorShellMotion colorShellMotion() {
-        return runtime.colorShellMotion;
+        return runtime.entityState.colorShellMotion;
     }
 
     public linksawakening.world.entity.motion.SecretSeashellMotion secretSeashellMotion() {
-        return runtime.secretSeashellMotion;
+        return runtime.entityState.secretSeashellMotion;
     }
 
     public linksawakening.world.entity.motion.WarpMotion warpMotion() {
@@ -590,14 +590,14 @@ public final class EntityFrameExecution {
     }
 
     public void requestMusic(int track) {
-        runtime.pendingMusicTrack = track;
+        runtime.entityState.pendingMusicTrack = track;
     }
 
     public void emit(linksawakening.world.entity.event.HookshotBridgeUpdate update) {
-        runtime.events.hookshotBridgeUpdates.add(update);
+        runtime.entityState.events.hookshotBridgeUpdates.add(update);
     }
 
     public void emit(linksawakening.world.entity.motion.RoamingEnemyMotion.LaunchRequest request) {
-        runtime.events.projectileLaunchRequests.add(request);
+        runtime.entityState.events.projectileLaunchRequests.add(request);
     }
 }

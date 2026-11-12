@@ -14,105 +14,105 @@ final class EntityFlyingEnemyInspection {
     }
 
     int keeseState(int slot) {
-        return runtime.keeseMotion.state(slot);
+        return runtime.entityState.keeseMotion.state(slot);
     }
 
     int keeseTransitionCountdown(int slot) {
-        return runtime.keeseMotion.transitionCountdown(slot);
+        return runtime.entityState.keeseMotion.transitionCountdown(slot);
     }
 
     int keeseAngle(int slot) {
-        return runtime.keeseMotion.angle(slot);
+        return runtime.entityState.keeseMotion.angle(slot);
     }
 
     int keeseSpeedX(int slot) {
-        return runtime.keeseMotion.speedX(slot);
+        return runtime.entityState.keeseMotion.speedX(slot);
     }
 
     int keeseSpeedY(int slot) {
-        return runtime.keeseMotion.speedY(slot);
+        return runtime.entityState.keeseMotion.speedY(slot);
     }
 
     int pairoddState(int slot) {
-        return runtime.pairoddMotion.state(slot);
+        return runtime.entityState.pairoddMotion.state(slot);
     }
 
     int pairoddTransitionCountdown(int slot) {
-        return runtime.pairoddMotion.transitionCountdown(slot);
+        return runtime.entityState.pairoddMotion.transitionCountdown(slot);
     }
 
     int pairoddDirection(int slot) {
-        return runtime.pairoddMotion.direction(slot);
+        return runtime.entityState.pairoddMotion.direction(slot);
     }
 
     int pairoddProjectileSpeedX(int slot) {
-        return runtime.pairoddProjectileMotion.speedX(slot);
+        return runtime.entityState.pairoddProjectileMotion.speedX(slot);
     }
 
     int pairoddProjectileSpeedY(int slot) {
-        return runtime.pairoddProjectileMotion.speedY(slot);
+        return runtime.entityState.pairoddProjectileMotion.speedY(slot);
     }
 
     int pairoddProjectileDirection(int slot) {
-        return runtime.pairoddProjectileMotion.direction(slot);
+        return runtime.entityState.pairoddProjectileMotion.direction(slot);
     }
 
     int fishState(int slot) {
-        return runtime.fishMotion.state(slot);
+        return runtime.entityState.fishMotion.state(slot);
     }
 
     int fishSpeedX(int slot) {
-        return runtime.fishMotion.speedX(slot);
+        return runtime.entityState.fishMotion.speedX(slot);
     }
 
     int fishSpeedZ(int slot) {
-        return runtime.fishMotion.speedZ(slot);
+        return runtime.entityState.fishMotion.speedZ(slot);
     }
 
     int fishTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.entityState.enemyTransitionCountdown[slot];
     }
 
     int crowState(int slot) {
-        return runtime.crowMotion.state(slot);
+        return runtime.entityState.crowMotion.state(slot);
     }
 
     int crowSpeedX(int slot) {
-        return runtime.crowMotion.speedX(slot);
+        return runtime.entityState.crowMotion.speedX(slot);
     }
 
     int crowSpeedY(int slot) {
-        return runtime.crowMotion.speedY(slot);
+        return runtime.entityState.crowMotion.speedY(slot);
     }
 
     int crowSpeedZ(int slot) {
-        return runtime.crowMotion.speedZ(slot);
+        return runtime.entityState.crowMotion.speedZ(slot);
     }
 
     int crowTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.entityState.enemyTransitionCountdown[slot];
     }
 
     int booBuddyState(int slot) {
-        return runtime.booBuddyMotion.state(slot);
+        return runtime.entityState.booBuddyMotion.state(slot);
     }
 
     int booBuddySpeedX(int slot) {
-        return runtime.booBuddyMotion.speedX(slot);
+        return runtime.entityState.booBuddyMotion.speedX(slot);
     }
 
     int booBuddySpeedY(int slot) {
-        return runtime.booBuddyMotion.speedY(slot);
+        return runtime.entityState.booBuddyMotion.speedY(slot);
     }
 
     int booBuddyTransitionCountdown(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.enemyTransitionCountdown[slot];
+        return runtime.entityState.enemyTransitionCountdown[slot];
     }
 
     int booBuddyTriggerCount() {
-        return runtime.booBuddyTriggerCount;
+        return runtime.entityState.booBuddyTriggerCount;
     }
 }

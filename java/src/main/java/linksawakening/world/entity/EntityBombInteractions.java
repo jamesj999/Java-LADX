@@ -25,24 +25,26 @@ public final class EntityBombInteractions {
         int x = runtime.slots[slot].x() + bombArrowXOffset(romDirection);
         int y = runtime.slots[slot].y() + bombArrowYOffset(romDirection);
         runtime.slots[slot] = withPositionAndVariant(runtime.slots[slot], x, y, runtime.slots[slot].spriteVariant());
-        runtime.bombPrivateCountdown3[slot] = 0x03;
-        runtime.lastBombPlacementPlayedBump = !runtime.groundInteractionSideScrolling;
-        if (runtime.groundInteractionSideScrolling) {
+        runtime.entityState.bombPrivateCountdown3[slot] = 0x03;
+        runtime.entityState.lastBombPlacementPlayedBump = !runtime.entityState.groundInteractionSideScrolling;
+        if (runtime.entityState.groundInteractionSideScrolling) {
             runtime.slots[slot] = withZ(runtime.slots[slot], 0);
         }
         // ConvertToBombArrowIfNeeded zeros speeds, but BombEntityHandler
         // must still run gravity and floor contact on subsequent frames.
-        runtime.thrownEntityMotion.startEnemyBomb(slot, 0, 0, 0);
+        runtime.entityState.thrownEntityMotion.startEnemyBomb(slot, 0, 0, 0);
         // Keep the placed-bomb bridge from restoring directional launch speed.
-        runtime.placedBombMotionInitialized[slot] = true;
+        runtime.entityState.placedBombMotionInitialized[slot] = true;
     }
 
     void markArrowAsBombArrow(int slot) {
-        runtime.playerArrowBombArrow[slot] = true;
+        runtime.entityState.playerArrowBombArrow[slot] = true;
         RoomEntity arrow = runtime.slots[slot];
         if (runtime.spriteHandlers != null && arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
             runtime.slots[slot] = withDefinition(
-                    arrow, runtime.spriteHandlers.forBombArrow(), runtime.playerArrowMotion.direction(slot));
+                    arrow,
+                    runtime.spriteHandlers.forBombArrow(),
+                    runtime.entityState.playerArrowMotion.direction(slot));
         }
     }
 
@@ -62,18 +64,18 @@ public final class EntityBombInteractions {
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
         int slot = entity.slot();
-        BombMotion.Decision decision = BombMotion.decide(runtime.enemyTransitionCountdown[slot] & 0xFF);
+        BombMotion.Decision decision = BombMotion.decide(runtime.entityState.enemyTransitionCountdown[slot] & 0xFF);
         if (decision.playExplosionSound()) {
-            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                     slot, EntityRomConstants.ENTITY_BOMB, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
         }
         if (decision.countdownOverride().isPresent()) {
-            runtime.enemyTransitionCountdown[slot] =
+            runtime.entityState.enemyTransitionCountdown[slot] =
                     decision.countdownOverride().getAsInt();
         }
         if (decision.phase() == BombMotion.Phase.EXPLOSION) {
-            runtime.enemyPhysicsFlags[slot] =
-                    (runtime.enemyPhysicsFlags[slot] & 0xF0) | EntityRomConstants.BOMB_EXPLOSION_PHYSICS_LOW_BITS;
+            runtime.entityState.enemyPhysicsFlags[slot] = (runtime.entityState.enemyPhysicsFlags[slot] & 0xF0)
+                    | EntityRomConstants.BOMB_EXPLOSION_PHYSICS_LOW_BITS;
         }
 
         EntitySpriteDefinition definition =
@@ -108,11 +110,11 @@ public final class EntityBombInteractions {
             return;
         }
         int bombSlot = bomb.slot();
-        int countdown = runtime.enemyTransitionCountdown[bombSlot] & 0xFF;
+        int countdown = runtime.entityState.enemyTransitionCountdown[bombSlot] & 0xFF;
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
-        if (runtime.bombPrivateState4[bombSlot] == 0x4C) {
+        if (runtime.entityState.bombPrivateState4[bombSlot] == 0x4C) {
             return;
         }
         if (countdown < 0x0E || countdown > 0x16) {
@@ -121,7 +123,7 @@ public final class EntityBombInteractions {
 
         int bombX = bomb.x() & 0xFF;
         int bombVisualY = (bomb.y() - bomb.z()) & 0xFF;
-        runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+        runtime.entityState.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
                 bombSlot,
                 BombExplosionEvent.OBJECT_TARGET,
                 bombX,
@@ -131,25 +133,25 @@ public final class EntityBombInteractions {
         if (countdown != 0x12) {
             return;
         }
-        if (runtime.bombPrivateState4[bombSlot] != 0) {
+        if (runtime.entityState.bombPrivateState4[bombSlot] != 0) {
             queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
-        runtime.swordMoblinAlertingSoundCounter = 0x04;
+        runtime.entityState.swordMoblinAlertingSoundCounter = 0x04;
 
         for (int targetSlot = runtime.slots.length - 1; targetSlot >= 0; targetSlot--) {
             RoomEntity target = runtime.slots[targetSlot];
             if (target.status().value() < EntityStatus.ACTIVE.value()
-                    || (runtime.enemyPhysicsFlags[targetSlot]
+                    || (runtime.entityState.enemyPhysicsFlags[targetSlot]
                                     & (EntityRomConstants.ENTITY_PHYSICS_PROJECTILE_NOCLIP
                                             | EntityRomConstants.ENTITY_PHYSICS_GRABBABLE))
                             != 0
-                    || (runtime.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
+                    || (runtime.entityState.enemyHitboxFlags[targetSlot] & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0
                     || !isWithinBombExplosionWindow(bombX, target.x())
                     || !isWithinBombExplosionWindow((target.y() - target.z()) & 0xFF, bombVisualY)) {
                 continue;
             }
-            runtime.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
+            runtime.entityState.events.pendingBombExplosionEvents.add(new BombExplosionEvent(
                     bombSlot, targetSlot, bombX, bombVisualY, countdown, BombExplosionEvent.DAMAGE_TYPE_BOMB));
             applyBombDamage(bomb, target);
         }
@@ -161,7 +163,7 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        runtime.swordMoblinAlertingSoundCounter = 0x04;
+        runtime.entityState.swordMoblinAlertingSoundCounter = 0x04;
         int bombX = bomb.x() & 0xFF;
         int bombY = bomb.y() & 0xFF;
         if (!isWithinBombExplosionWindow(bombX, linkEntityX) || !isWithinBombExplosionWindow(bombY, linkEntityY)) {
@@ -171,7 +173,7 @@ public final class EntityBombInteractions {
         boolean collisionProtected = projectileLinkState.invincibilityCounter() != 0;
         int linkDamage = runtime.enemyCombatTables == null
                 ? 0x08
-                : runtime.enemyCombatTables.contactDamageForGroup(runtime.enemyHealthGroup[bomb.slot()]);
+                : runtime.enemyCombatTables.contactDamageForGroup(runtime.entityState.enemyHealthGroup[bomb.slot()]);
         EnemyRecoilMotion.Vector linkResponse = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                 bomb.x(), bomb.y(), bomb.z(), linkEntityX, linkEntityY, 0x14);
         projectileEvents.add(new EntityProjectileEvent(
@@ -186,8 +188,12 @@ public final class EntityBombInteractions {
                 false,
                 0,
                 0,
-                collisionProtected ? (runtime.linkState.currentLinkSpeedX << 1) & 0xFF : (linkResponse.x() << 1) & 0xFF,
-                collisionProtected ? (runtime.linkState.currentLinkSpeedY << 1) & 0xFF : (linkResponse.y() << 1) & 0xFF,
+                collisionProtected
+                        ? (runtime.entityState.linkState.currentLinkSpeedX << 1) & 0xFF
+                        : (linkResponse.x() << 1) & 0xFF,
+                collisionProtected
+                        ? (runtime.entityState.linkState.currentLinkSpeedY << 1) & 0xFF
+                        : (linkResponse.y() << 1) & 0xFF,
                 collisionProtected ? 0 : 0x10));
     }
 
@@ -196,7 +202,9 @@ public final class EntityBombInteractions {
         RomEnemyCombatTables.SwordDamageResult damageResult = runtime.enemyCombatTables == null
                 ? null
                 : runtime.enemyCombatTables.resolveAttackDamage(
-                        target.type(), runtime.enemyHealthGroup[target.slot()], EntityRomConstants.DAMAGE_TYPE_BOMB);
+                        target.type(),
+                        runtime.entityState.enemyHealthGroup[target.slot()],
+                        EntityRomConstants.DAMAGE_TYPE_BOMB);
         int rawDamage =
                 damageResult == null ? RoomEntityCombatRules.basicSwordDamage(target.type()) : damageResult.rawValue();
 
@@ -207,41 +215,43 @@ public final class EntityBombInteractions {
             int secondarySoundId = -1;
 
             if (rawDamage == 0xFE) {
-                runtime.enemyTransitionCountdown[targetSlot] = 0x60;
-                runtime.enemyStunnedCountdown[targetSlot] = 0;
-                runtime.enemyFlashCountdown[targetSlot] = 0;
-                runtime.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
-                runtime.enemyPhysicsFlags[targetSlot] = (runtime.enemyPhysicsFlags[targetSlot] + 2) & 0xFF;
-                runtime.entityOptions1Override[targetSlot] = runtime.options1(targetSlot) & 0xC2;
+                runtime.entityState.enemyTransitionCountdown[targetSlot] = 0x60;
+                runtime.entityState.enemyStunnedCountdown[targetSlot] = 0;
+                runtime.entityState.enemyFlashCountdown[targetSlot] = 0;
+                runtime.entityState.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                runtime.entityState.enemyPhysicsFlags[targetSlot] =
+                        (runtime.entityState.enemyPhysicsFlags[targetSlot] + 2) & 0xFF;
+                runtime.entityState.entityOptions1Override[targetSlot] = runtime.options1(targetSlot) & 0xC2;
                 runtime.slots[targetSlot] = withStatus(target, EntityStatus.BURNING);
                 secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
                 secondarySoundId = 0x12;
             } else if (rawDamage == 0xFF) {
-                runtime.enemyTransitionCountdown[targetSlot] = 0;
-                runtime.enemyStunnedCountdown[targetSlot] = 0xFF;
-                runtime.enemyFlashCountdown[targetSlot] = 0;
-                runtime.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                runtime.entityState.enemyTransitionCountdown[targetSlot] = 0;
+                runtime.entityState.enemyStunnedCountdown[targetSlot] = 0xFF;
+                runtime.entityState.enemyFlashCountdown[targetSlot] = 0;
+                runtime.entityState.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
                 runtime.slots[targetSlot] = withStatus(target, EntityStatus.STUNNED);
             } else if (rawDamage == 0xFD) {
                 // The ROM's FD action is dispatched by the target's own
                 // entity-specific branch. Preserve it as a special result;
                 // the bomb vector below still applies unconditionally.
             } else if (rawDamage < 0xF0) {
-                runtime.enemyHealth[targetSlot] = Math.max(0, runtime.enemyHealth[targetSlot] - enemyDamage);
-                if (runtime.enemyHealth[targetSlot] == 0) {
+                runtime.entityState.enemyHealth[targetSlot] =
+                        Math.max(0, runtime.entityState.enemyHealth[targetSlot] - enemyDamage);
+                if (runtime.entityState.enemyHealth[targetSlot] == 0) {
                     // ApplySwordDamagesToEnemy uses $2F for the ordinary
                     // dying countdown; $40 is the Piece-of-Power override.
-                    runtime.dyingCountdown[targetSlot] = 0x2F;
-                    runtime.powerRecoilDeath[targetSlot] = false;
+                    runtime.entityState.dyingCountdown[targetSlot] = 0x2F;
+                    runtime.entityState.powerRecoilDeath[targetSlot] = false;
                     runtime.slots[targetSlot] =
                             withDeathPresentation(withStatus(target, EntityStatus.DYING), -1, false);
                 } else {
-                    runtime.enemyFlashCountdown[targetSlot] = 0x18;
-                    runtime.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
+                    runtime.entityState.enemyFlashCountdown[targetSlot] = 0x18;
+                    runtime.entityState.enemyIgnoreHitsCountdown[targetSlot] = 0x0A;
                 }
             }
 
-            runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
+            runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
                     targetSlot,
                     target.type(),
                     0,
@@ -255,7 +265,7 @@ public final class EntityBombInteractions {
                     null));
         }
 
-        runtime.enemyRecoilMotion.configureFromSource(
+        runtime.entityState.enemyRecoilMotion.configureFromSource(
                 targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
@@ -263,33 +273,34 @@ public final class EntityBombInteractions {
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = stunned.slot();
         RoomEntity moved = stunned;
-        if (runtime.enemyRecoilMotion.isActive(slot)) {
+        if (runtime.entityState.enemyRecoilMotion.isActive(slot)) {
             moved = runtime.backgroundMechanics
                     .applyEnemyRecoilIfNeeded(moved, backgroundCollision)
                     .entity();
         }
-        moved = runtime.thrownEntityMotion
+        moved = runtime.entityState
+                .thrownEntityMotion
                 .advance(
                         moved,
-                        runtime.groundInteractionSideScrolling,
+                        runtime.entityState.groundInteractionSideScrolling,
                         backgroundCollision,
                         frame,
-                        runtime.entityGroundStatus[slot])
+                        runtime.entityState.entityGroundStatus[slot])
                 .entity();
-        runtime.thrownEntityMotion.clear(slot);
-        runtime.thrownMotionInitialized[slot] = false;
+        runtime.entityState.thrownEntityMotion.clear(slot);
+        runtime.entityState.thrownMotionInitialized[slot] = false;
         return withStatus(moved, stunned.status());
     }
 
     public int bombPrivateCountdown1(int slot) {
-        return runtime.bombPrivateCountdown1[slot];
+        return runtime.entityState.bombPrivateCountdown1[slot];
     }
 
     public void setBombPrivateCountdown1(int slot, int value) {
-        runtime.bombPrivateCountdown1[slot] = value;
+        runtime.entityState.bombPrivateCountdown1[slot] = value;
     }
 
     public int bombPrivateState4(int slot) {
-        return runtime.bombPrivateState4[slot];
+        return runtime.entityState.bombPrivateState4[slot];
     }
 }

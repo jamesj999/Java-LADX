@@ -30,26 +30,26 @@ final class EntityPlayerCommands {
         if (entity.type() == EntityRomConstants.ENTITY_BOMB && runtime.bombFinalPresentationPending[slot]) {
             return false;
         }
-        if (runtime.liftedEntitySlot >= 0
-                && runtime.liftedEntitySlot != slot
-                && runtime.slots[runtime.liftedEntitySlot].status() == EntityStatus.LIFTED) {
+        if (runtime.entityState.liftedEntitySlot >= 0
+                && runtime.entityState.liftedEntitySlot != slot
+                && runtime.slots[runtime.entityState.liftedEntitySlot].status() == EntityStatus.LIFTED) {
             return false;
         }
 
-        runtime.liftedEntitySlot = slot;
-        runtime.liftedPhase[slot] = 0;
-        runtime.liftedSourceDirection[slot] = romDirection;
-        runtime.liftedStateInitialized[slot] = true;
-        runtime.liftedCarryState = 0;
-        runtime.liftedEffectiveDirection = romDirection;
-        runtime.enemyTransitionCountdown[slot] = 0x02;
+        runtime.entityState.liftedEntitySlot = slot;
+        runtime.entityState.liftedPhase[slot] = 0;
+        runtime.entityState.liftedSourceDirection[slot] = romDirection;
+        runtime.entityState.liftedStateInitialized[slot] = true;
+        runtime.entityState.liftedCarryState = 0;
+        runtime.entityState.liftedEffectiveDirection = romDirection;
+        runtime.entityState.enemyTransitionCountdown[slot] = 0x02;
         if (entity.type() == EntityRomConstants.ENTITY_BOMB) {
-            if (runtime.placedBombMotionInitialized[slot]) {
-                runtime.thrownEntityMotion.clear(slot);
-                runtime.placedBombMotionInitialized[slot] = false;
+            if (runtime.entityState.placedBombMotionInitialized[slot]) {
+                runtime.entityState.thrownEntityMotion.clear(slot);
+                runtime.entityState.placedBombMotionInitialized[slot] = false;
             }
             runtime.bombFinalPresentationPending[slot] = false;
-            runtime.enemyFlashCountdown[slot] = 0;
+            runtime.entityState.enemyFlashCountdown[slot] = 0;
             entity = withDefinition(
                     entity, runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB), 0);
         }
@@ -66,8 +66,8 @@ final class EntityPlayerCommands {
 
         int slot = state.slot();
         RoomEntity entity = runtime.slots[slot];
-        runtime.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
-        runtime.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
+        runtime.entityState.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
+        runtime.entityState.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
                 slot,
                 entity.type(),
                 0,
@@ -75,28 +75,29 @@ final class EntityPlayerCommands {
                 EntityCombatEvent.SoundChannel.JINGLE,
                 EntityRomConstants.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == EntityRomConstants.ENTITY_SIDE_VIEW_POT) {
-            runtime.thrownDirection[slot] = romDirection;
-            runtime.sideViewPotMotion.start(slot, romDirection);
-            runtime.thrownEntityMotion.clear(slot);
-            runtime.thrownMotionInitialized[slot] = false;
-            runtime.liftedStateInitialized[slot] = false;
-            runtime.liftedPhase[slot] = 0;
-            runtime.liftedCarryState = 0;
-            runtime.liftedEffectiveDirection = 0;
-            runtime.liftedEntitySlot = -1;
-            runtime.enemyTransitionCountdown[slot] = 0;
+            runtime.entityState.thrownDirection[slot] = romDirection;
+            runtime.entityState.sideViewPotMotion.start(slot, romDirection);
+            runtime.entityState.thrownEntityMotion.clear(slot);
+            runtime.entityState.thrownMotionInitialized[slot] = false;
+            runtime.entityState.liftedStateInitialized[slot] = false;
+            runtime.entityState.liftedPhase[slot] = 0;
+            runtime.entityState.liftedCarryState = 0;
+            runtime.entityState.liftedEffectiveDirection = 0;
+            runtime.entityState.liftedEntitySlot = -1;
+            runtime.entityState.enemyTransitionCountdown[slot] = 0;
             runtime.slots[slot] = withStatus(entity, EntityStatus.ACTIVE);
             return true;
         }
-        runtime.thrownDirection[slot] = romDirection;
-        runtime.thrownEntityMotion.start(slot, romDirection, entity.type(), runtime.groundInteractionSideScrolling);
-        runtime.thrownMotionInitialized[slot] = true;
-        runtime.liftedStateInitialized[slot] = false;
-        runtime.liftedPhase[slot] = 0;
-        runtime.liftedCarryState = 0;
-        runtime.liftedEffectiveDirection = 0;
-        runtime.liftedEntitySlot = -1;
-        runtime.enemyTransitionCountdown[slot] =
+        runtime.entityState.thrownDirection[slot] = romDirection;
+        runtime.entityState.thrownEntityMotion.start(
+                slot, romDirection, entity.type(), runtime.entityState.groundInteractionSideScrolling);
+        runtime.entityState.thrownMotionInitialized[slot] = true;
+        runtime.entityState.liftedStateInitialized[slot] = false;
+        runtime.entityState.liftedPhase[slot] = 0;
+        runtime.entityState.liftedCarryState = 0;
+        runtime.entityState.liftedEffectiveDirection = 0;
+        runtime.entityState.liftedEntitySlot = -1;
+        runtime.entityState.enemyTransitionCountdown[slot] =
                 entity.type() == EntityRomConstants.ENTITY_BOMB ? BombMotion.INITIAL_COUNTDOWN : 0;
         runtime.slots[slot] = withStatus(entity, EntityStatus.THROWN);
         return true;
@@ -171,28 +172,28 @@ final class EntityPlayerCommands {
     }
 
     void startSwordPickup(int slot) {
-        runtime.swordPickupSequenceActive[slot] = true;
-        runtime.swordPickupState[slot] = 0;
-        runtime.enemyTransitionCountdown[slot] = 0xA0;
-        runtime.slowTimerInitialized[slot] = true;
-        runtime.pendingMusicTrack = 0x0F;
+        runtime.entityState.swordPickupSequenceActive[slot] = true;
+        runtime.entityState.swordPickupState[slot] = 0;
+        runtime.entityState.enemyTransitionCountdown[slot] = 0xA0;
+        runtime.entityState.slowTimerInitialized[slot] = true;
+        runtime.entityState.pendingMusicTrack = 0x0F;
     }
 
     void startToadstoolPickup(int slot) {
-        runtime.toadstoolPickupSequenceActive[slot] = true;
-        runtime.enemyTransitionCountdown[slot] = 0x68;
-        runtime.pendingMusicTrack = 0x10;
+        runtime.entityState.toadstoolPickupSequenceActive[slot] = true;
+        runtime.entityState.enemyTransitionCountdown[slot] = 0x68;
+        runtime.entityState.pendingMusicTrack = 0x10;
     }
 
     void presentWitchGotItem(int slot) {
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.entityState.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
     }
 
     void holdSwordAboveLink(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ, boolean finalPose) {
         int slot = entity.slot();
-        runtime.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
-        runtime.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
+        runtime.entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        runtime.entityState.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
         runtime.slots[slot] = withZ(held, linkZ & 0xFF);

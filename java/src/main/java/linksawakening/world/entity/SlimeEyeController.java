@@ -109,8 +109,8 @@ public final class SlimeEyeController {
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
             clear(slot);
-            runtime.enemyHealth[slot] = 0x50;
-            runtime.enemyTransitionCountdown[slot] = 0xA0;
+            runtime.entityState.enemyHealth[slot] = 0x50;
+            runtime.entityState.enemyTransitionCountdown[slot] = 0xA0;
             runtime.slots[slot] = withZ(withStatus(entity, EntityStatus.ACTIVE), 0x7E);
             render(slot);
             return;
@@ -133,10 +133,10 @@ public final class SlimeEyeController {
         }
         runtime.lifecycle.decrementSlowTransitionCountdown(slot, frame.frame);
         if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
-            BossIntroMotion.Update intro = runtime.bossIntroMotion.advance(
+            BossIntroMotion.Update intro = runtime.entityState.bossIntroMotion.advance(
                     runtime.slotProperties.options1(slot),
                     entity.type(),
-                    runtime.entityMapId,
+                    runtime.entityState.entityMapId,
                     runtime.lifecycle.transitionSequenceCounter());
             if (intro.musicTrack() >= 0) frame.requestMusic(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
@@ -147,10 +147,10 @@ public final class SlimeEyeController {
         }
         // Main's combat pass precedes tick. Restore the fresh write that the
         // common flash tick would otherwise age before the ROM collision site.
-        if (hitThisFrame(slot, frame.frame)) runtime.enemyFlashCountdown[slot] = 0x18;
+        if (hitThisFrame(slot, frame.frame)) runtime.entityState.enemyFlashCountdown[slot] = 0x18;
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         render(slot);
-        if (runtime.slowTransitionCountdown[slot] != 0) {
+        if (runtime.entityState.slowTransitionCountdown[slot] != 0) {
             frame.emit(new LinkMotionBlockRequest(slot));
             frame.emit(new LinkFallenPoseRequest(slot));
         }
@@ -165,7 +165,7 @@ public final class SlimeEyeController {
             advanceDeath(frame);
             return;
         }
-        if (half[slot] == 0) runtime.enemyHealth[slot] = 0x50;
+        if (half[slot] == 0) runtime.entityState.enemyHealth[slot] = 0x50;
         if ((half[slot] != 0 || state[slot] != 0) && (!frame.handlerInteractive || frame.countdownBlocksInteraction))
             return;
         if (half[slot] == 0) advanceBody(frame);
@@ -175,15 +175,15 @@ public final class SlimeEyeController {
     private void advanceBody(EntityFrameExecution f) {
         int s = f.entity.slot();
         RoomEntity e = runtime.slots[s];
-        runtime.enemyHealth[s] = 0x50;
+        runtime.entityState.enemyHealth[s] = 0x50;
         switch (state[s]) {
             case 0 -> {
                 if (screenShakeCountdown == 5) {
                     state[s] = 1;
                     sound(s, 8);
                 }
-                if (runtime.enemyTransitionCountdown[s] == 0) {
-                    runtime.enemyTransitionCountdown[s] = 0x50;
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) {
+                    runtime.entityState.enemyTransitionCountdown[s] = 0x50;
                     long zols = runtime.slotEntities.stream()
                             .filter(x -> x.loaded() && x.type() == 0x1B)
                             .count();
@@ -201,7 +201,7 @@ public final class SlimeEyeController {
                 if ((e.z() & 0x80) != 0) {
                     e = withZ(e, 0);
                     f.emit(new ScreenShakeRequest(s, 0x50, 4));
-                    runtime.enemyTransitionCountdown[s] = 0x40;
+                    runtime.entityState.enemyTransitionCountdown[s] = 0x40;
                     noise(s, 0x0C);
                     if (!f.linkAirborne) stunLink(s, 0x14);
                     state[s] = 2;
@@ -209,11 +209,11 @@ public final class SlimeEyeController {
                 runtime.slots[s] = e;
             }
             case 2 -> {
-                if (runtime.enemyTransitionCountdown[s] == 0) state[s] = 3;
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) state[s] = 3;
             }
             case 3 -> {
-                if (runtime.enemyIgnoreHitsCountdown[s] > 0 && !hitThisFrame(s, f.frame))
-                    runtime.enemyIgnoreHitsCountdown[s]--;
+                if (runtime.entityState.enemyIgnoreHitsCountdown[s] > 0 && !hitThisFrame(s, f.frame))
+                    runtime.entityState.enemyIgnoreHitsCountdown[s]--;
                 if (splitting[s] != 0) {
                     if (splitting[s] == 1) {
                         split(e);
@@ -232,7 +232,7 @@ public final class SlimeEyeController {
                         stretch[s]--;
                     }
                 }
-                if (runtime.enemyFlashCountdown[s] != 0 && (f.frame & 0x1F) == 0) {
+                if (runtime.entityState.enemyFlashCountdown[s] != 0 && (f.frame & 0x1F) == 0) {
                     private1[s] = 0x50;
                     if (stretch[s] != 4) stretch[s]++;
                 }
@@ -242,18 +242,18 @@ public final class SlimeEyeController {
     }
 
     private void wander(EntityFrameExecution f) {
-        int s = f.entity.slot(), countdown = runtime.enemyTransitionCountdown[s];
+        int s = f.entity.slot(), countdown = runtime.entityState.enemyTransitionCountdown[s];
         RoomEntity e = runtime.slots[s];
         if (moving[s] == 0) {
             if (countdown != 0) return;
-            runtime.enemyTransitionCountdown[s] = (f.randomByteSupplier.getAsInt() & 0x1F) + 0x10;
+            runtime.entityState.enemyTransitionCountdown[s] = (f.randomByteSupplier.getAsInt() & 0x1F) + 0x10;
             moving[s] = 1;
             int quadrant = (e.x() >= 0x50 ? 1 : 0) | (((e.y() - e.z()) & 255) >= 0x48 ? 2 : 0);
             int index = quadrant * 4 | (f.randomByteSupplier.getAsInt() & 3);
             speedX[s] = read(RomSymbols.Data_004_4B5C, index);
             speedY[s] = read(RomSymbols.Data_004_4B6C, index);
         } else if (countdown == 0) {
-            runtime.enemyTransitionCountdown[s] = 0x30;
+            runtime.entityState.enemyTransitionCountdown[s] = 0x30;
             moving[s] = 0;
         } else if ((countdown & 0x0E) == 0) runtime.slots[s] = integrateXY(e, f.backgroundCollision);
     }
@@ -261,7 +261,7 @@ public final class SlimeEyeController {
     private void advanceHalf(EntityFrameExecution f) {
         int s = f.entity.slot();
         RoomEntity e = runtime.slots[s];
-        if (runtime.enemyIgnoreHitsCountdown[s] == 2) {
+        if (runtime.entityState.enemyIgnoreHitsCountdown[s] == 2) {
             if (angry[s] == 0) angry[s] = 1;
             else {
                 state[s] = 2;
@@ -269,20 +269,20 @@ public final class SlimeEyeController {
                 sound(s, 0x24);
             }
         }
-        if (runtime.enemyIgnoreHitsCountdown[s] != 0 && !hitThisFrame(s, f.frame)) {
-            if (runtime.enemyRecoilMotion.isActive(s)) {
+        if (runtime.entityState.enemyIgnoreHitsCountdown[s] != 0 && !hitThisFrame(s, f.frame)) {
+            if (runtime.entityState.enemyRecoilMotion.isActive(s)) {
                 e = runtime.backgroundMechanics
                         .applyEnemyRecoilIfNeeded(e, f.backgroundCollision)
                         .entity();
                 runtime.slots[s] = e;
-            } else runtime.enemyIgnoreHitsCountdown[s]--;
+            } else runtime.entityState.enemyIgnoreHitsCountdown[s]--;
             // ApplyRecoilIfNeeded_04 discards the caller return address.
             // The half's state machine, including Z, does not run this frame.
             return;
         }
         switch (state[s]) {
             case 0 -> {
-                if (runtime.enemyTransitionCountdown[s] == 0) {
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) {
                     int index = f.randomByteSupplier.getAsInt() & 7;
                     speedX[s] = read(RomSymbols.Data_004_4E94, index);
                     speedY[s] = read(RomSymbols.Data_004_4E9C, index);
@@ -298,7 +298,7 @@ public final class SlimeEyeController {
                 variant[s] = 0;
             }
             case 1 -> {
-                if (runtime.enemyTransitionCountdown[s] == 0) {
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) {
                     e = integrateXY(e, f.backgroundCollision);
                     e = integrateZ(e);
                     speedZ[s] = (speedZ[s] - 2) & 255;
@@ -312,7 +312,7 @@ public final class SlimeEyeController {
                         } else if (speedZ[s] < 0xF2) sound(s, 0x20);
                         speedZ[s] = 0;
                         state[s] = 0;
-                        runtime.enemyTransitionCountdown[s] = 0x20;
+                        runtime.entityState.enemyTransitionCountdown[s] = 0x20;
                     }
                     runtime.slots[s] = e;
                 }
@@ -323,13 +323,13 @@ public final class SlimeEyeController {
                 e = integrateZ(e);
                 runtime.slots[s] = e;
                 SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.rise(
-                        e.z(), runtime.enemyTransitionCountdown[s], variant[s], dropping[s], e.x(), e.y());
+                        e.z(), runtime.entityState.enemyTransitionCountdown[s], variant[s], dropping[s], e.x(), e.y());
                 state[s] = result.state();
-                runtime.enemyTransitionCountdown[s] = result.countdown();
+                runtime.entityState.enemyTransitionCountdown[s] = result.countdown();
             }
             case 3 -> {
                 SlimeEyeHalfMotion.Update result = SlimeEyeHalfMotion.waitAbove(
-                        runtime.enemyTransitionCountdown[s],
+                        runtime.entityState.enemyTransitionCountdown[s],
                         speedZ[s],
                         dropping[s],
                         e.x(),
@@ -340,7 +340,7 @@ public final class SlimeEyeController {
                 speedZ[s] = result.speedZ();
                 variant[s] = result.spriteVariant();
                 dropping[s] = result.privateState4();
-                runtime.enemyTransitionCountdown[s] = result.countdown();
+                runtime.entityState.enemyTransitionCountdown[s] = result.countdown();
                 runtime.slots[s] = withPositionAndVariant(e, result.x(), result.y(), e.spriteVariant());
                 if (result.jingle() >= 0) sound(s, result.jingle());
             }
@@ -353,8 +353,8 @@ public final class SlimeEyeController {
     }
 
     private void stunLink(int s, int countdown) {
-        runtime.slowTransitionCountdown[s] = countdown;
-        runtime.slowTimerInitialized[s] = true;
+        runtime.entityState.slowTransitionCountdown[s] = countdown;
+        runtime.entityState.slowTimerInitialized[s] = true;
     }
 
     private RoomEntity integrateZ(RoomEntity e) {
@@ -403,10 +403,10 @@ public final class SlimeEyeController {
                 -1,
                 false);
         runtime.initializeHealthGroup(s);
-        runtime.enemyHealth[s] = runtime.initialHealth(type);
-        runtime.enemyPhysicsFlags[s] = EntityTypeRules.initialPhysicsFlags(type);
-        runtime.enemyIgnoreHitsCountdown[s] = 1;
-        runtime.dynamicEntitySpawnedThisFrame[s] = true;
+        runtime.entityState.enemyHealth[s] = runtime.initialHealth(type);
+        runtime.entityState.enemyPhysicsFlags[s] = EntityTypeRules.initialPhysicsFlags(type);
+        runtime.entityState.enemyIgnoreHitsCountdown[s] = 1;
+        runtime.entityState.dynamicEntitySpawnedThisFrame[s] = true;
         return s;
     }
 
@@ -418,7 +418,7 @@ public final class SlimeEyeController {
             state[child] = 1;
             speedX[child] = read(RomSymbols.Data_004_496D, i);
             speedZ[child] = 0x10;
-            runtime.enemyHealth[child] = 5;
+            runtime.entityState.enemyHealth[child] = 5;
             render(child);
         }
         runtime.lifecycle.disableEntityWithoutPersistence(e.slot());
@@ -426,20 +426,20 @@ public final class SlimeEyeController {
 
     private void advanceDeath(EntityFrameExecution f) {
         int s = f.entity.slot();
-        runtime.enemyFlashCountdown[s] = f.frame & 255;
+        runtime.entityState.enemyFlashCountdown[s] = f.frame & 255;
         switch (state[s]) {
             case 0 -> {
-                runtime.enemyTransitionCountdown[s] = 0x40;
+                runtime.entityState.enemyTransitionCountdown[s] = 0x40;
                 state[s] = 1;
             }
             case 1 -> {
-                if (runtime.enemyTransitionCountdown[s] == 0) {
-                    runtime.enemyTransitionCountdown[s] = 0xA0;
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) {
+                    runtime.entityState.enemyTransitionCountdown[s] = 0xA0;
                     state[s] = 2;
                 }
             }
             default -> {
-                if (runtime.enemyTransitionCountdown[s] == 0) {
+                if (runtime.entityState.enemyTransitionCountdown[s] == 0) {
                     boolean another = runtime.slotEntities.stream()
                             .anyMatch(e -> e.loaded() && e.slot() != s && e.type() == 0x5B);
                     if (!another) {
@@ -447,7 +447,7 @@ public final class SlimeEyeController {
                         noise(s, 0x1A);
                     }
                     runtime.lifecycle.disableEntityWithoutPersistence(s);
-                } else if ((runtime.enemyTransitionCountdown[s] & 7) == 0) {
+                } else if ((runtime.entityState.enemyTransitionCountdown[s] & 7) == 0) {
                     int x = (f.entity.x() + (f.randomByteSupplier.getAsInt() & 31) - 16) & 255;
                     int y = (f.entity.y() - f.entity.z() + (f.randomByteSupplier.getAsInt() & 31) - 16) & 255;
                     runtime.bossRewards.createMoldormPoof(f.entity, x, y);
@@ -470,16 +470,17 @@ public final class SlimeEyeController {
         var definition = runtime.spriteHandlers.forSlimeEyeState(half[s] != 0, variant[s], e.z());
         runtime.slots[s] = withFlipAttribute(
                 withDefinition(e, definition, 0),
-                runtime.baseEntityFlipAttribute[s] ^ ((runtime.enemyFlashCountdown[s] << 2) & 0x10));
+                runtime.entityState.baseEntityFlipAttribute[s]
+                        ^ ((runtime.entityState.enemyFlashCountdown[s] << 2) & 0x10));
     }
 
     private void sound(int s, int id) {
-        runtime.events.pendingEntityEvents.add(
+        runtime.entityState.events.pendingEntityEvents.add(
                 new EntityCombatEvent(s, 0x5B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, id));
     }
 
     private void noise(int s, int id) {
-        runtime.events.pendingEntityEvents.add(
+        runtime.entityState.events.pendingEntityEvents.add(
                 new EntityCombatEvent(s, 0x5B, 0, false, EntityCombatEvent.SoundChannel.NOISE, id));
     }
 
@@ -498,11 +499,16 @@ public final class SlimeEyeController {
             EnemyAttackContext attack,
             List<EntityCombatEvent> events) {
         int s = e.slot();
-        if (!interactive || e.status() != EntityStatus.ACTIVE || runtime.enemyIgnoreHitsCountdown[s] != 0) return;
+        if (!interactive || e.status() != EntityStatus.ACTIVE || runtime.entityState.enemyIgnoreHitsCountdown[s] != 0)
+            return;
         boolean isHalf = half[s] != 0;
         if ((!isHalf && state[s] != 3)
-                || (isHalf && (state[s] >= 2 || (state[s] == 1 && runtime.enemyTransitionCountdown[s] != 0)))) return;
-        if (splitting[s] != 0 || runtime.enemyFlashCountdown[s] > 0 && runtime.enemyFlashCountdown[s] < 0x18) return;
+                || (isHalf
+                        && (state[s] >= 2 || (state[s] == 1 && runtime.entityState.enemyTransitionCountdown[s] != 0))))
+            return;
+        if (splitting[s] != 0
+                || runtime.entityState.enemyFlashCountdown[s] > 0 && runtime.entityState.enemyFlashCountdown[s] < 0x18)
+            return;
         int hitbox = isHalf ? 24 : 20;
         boolean hit = sword && overlaps(e, hitbox, sx, sw, sy, sh);
         if (hit) {
@@ -526,15 +532,16 @@ public final class SlimeEyeController {
                     : attack;
             var damage = runtime.enemyCombatTables == null
                     ? null
-                    : runtime.enemyCombatTables.resolveSwordDamage(0x5B, runtime.enemyHealthGroup[s], damageAttack);
+                    : runtime.enemyCombatTables.resolveSwordDamage(
+                            0x5B, runtime.entityState.enemyHealthGroup[s], damageAttack);
             int amount = damage == null ? 1 : damage.numericDamage();
             if (amount == 0) return;
             swordHitFrame[s] = (frame & 255) + 1;
-            runtime.enemyHealth[s] = Math.max(0, runtime.enemyHealth[s] - amount);
-            runtime.enemyIgnoreHitsCountdown[s] = attack.powerRecoil() ? 0x20 : 0x0A;
-            runtime.enemyFlashCountdown[s] = 0x18;
-            if (isHalf) runtime.enemyRecoilMotion.configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
-            if (isHalf && runtime.enemyHealth[s] == 0) {
+            runtime.entityState.enemyHealth[s] = Math.max(0, runtime.entityState.enemyHealth[s] - amount);
+            runtime.entityState.enemyIgnoreHitsCountdown[s] = attack.powerRecoil() ? 0x20 : 0x0A;
+            runtime.entityState.enemyFlashCountdown[s] = 0x18;
+            if (isHalf) runtime.entityState.enemyRecoilMotion.configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
+            if (isHalf && runtime.entityState.enemyHealth[s] == 0) {
                 state[s] = 0;
                 runtime.slots[s] = withStatus(e, EntityStatus.DYING);
             }
@@ -569,7 +576,7 @@ public final class SlimeEyeController {
                 && overlaps(e, isHalf ? 24 : stretch[s] * 4, lx + 8, 4, ly + 8, 4)) {
             int damage = runtime.enemyCombatTables == null
                     ? 4
-                    : runtime.enemyCombatTables.contactDamageForGroup(runtime.enemyHealthGroup[s]);
+                    : runtime.enemyCombatTables.contactDamageForGroup(runtime.entityState.enemyHealthGroup[s]);
             var vector = linksawakening.world.entity.motion.EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                     e.x(), e.y(), e.z(), lx, ly, 0x14);
             events.add(new EntityCombatEvent(

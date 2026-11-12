@@ -59,7 +59,8 @@ import linksawakening.world.room.ChestContentsTable;
  * the current room snapshot model. ROM display lists remain immutable; this
  * class only advances handler-owned status and sprite-variant fields.
  */
-public final class RoomEntityRuntime extends EntityRuntimeState {
+public final class RoomEntityRuntime {
+    final EntityRuntimeState entityState = new EntityRuntimeState();
     // Compatibility aliases for constants previously inherited by the public facade.
     public static final int ENTITY_CHEST_WITH_ITEM = EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
     public static final int ENTITY_KEY_DROP_POINT = EntityRomConstants.ENTITY_KEY_DROP_POINT;
@@ -208,13 +209,13 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     final ChestContentsTable chestContentsTable;
 
     public boolean gelClingingToLink() {
-        return gelClingingToLink;
+        return entityState.gelClingingToLink;
     }
 
     final boolean[] bombFinalPresentationPending = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void setFreeMovementMode(boolean enabled) {
-        freeMovementMode = enabled;
+        entityState.freeMovementMode = enabled;
     }
 
     final WarpMotion warpMotion;
@@ -261,9 +262,9 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             byte[] romData) {
         this.slots = initial.slots().toArray(RoomEntity[]::new);
         this.slotEntities = java.util.Arrays.asList(slots);
-        this.spriteSelection = initial.spriteSelection();
+        this.entityState.spriteSelection = initial.spriteSelection();
         this.spriteTiles = initial.spriteTiles();
-        this.groundInteractionSideScrolling = initial.sideScrolling();
+        this.entityState.groundInteractionSideScrolling = initial.sideScrolling();
         this.indoorRoom = indoorRoom;
         this.defaultRandomByteSupplier = defaultRandomByteSupplier;
         this.fallbackRomRandomByteSource = defaultRandomByteSupplier == null ? new RomRandomByteSource() : null;
@@ -438,14 +439,14 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     public List<EntityProjectileEvent> tick(EntityFrameContext context) {
         validateByte(context.linkSpeedX(), "Link X speed");
         validateByte(context.linkSpeedY(), "Link Y speed");
-        linkState.currentLinkSpeedX = context.linkSpeedX();
-        linkState.currentLinkSpeedY = context.linkSpeedY();
+        entityState.linkState.currentLinkSpeedX = context.linkSpeedX();
+        entityState.linkState.currentLinkSpeedY = context.linkSpeedY();
         try {
             return advanceFrame(context);
         } finally {
             combat.clearDeferredContactRecoil();
-            linkState.currentLinkSpeedX = 0;
-            linkState.currentLinkSpeedY = 0;
+            entityState.linkState.currentLinkSpeedX = 0;
+            entityState.linkState.currentLinkSpeedY = 0;
         }
     }
 
@@ -487,20 +488,21 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         state.handlerLinkCollisionEnabled = state.context.handlerLinkCollisionEnabled();
         Objects.requireNonNull(state.randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(state.projectileLinkState, "projectileLinkState");
-        state.runtime.gelClingingToLink = false; // AnimateEntities clears wIsGelClingingToLink each pass.
-        state.countdownBlocksInteraction = state.runtime.entityInteractionCountdown != 0;
-        if (!state.runtime.linkState.dialogActive && state.runtime.entityInteractionCountdown > 0)
-            state.runtime.entityInteractionCountdown--;
+        state.runtime.entityState.gelClingingToLink = false; // AnimateEntities clears wIsGelClingingToLink each pass.
+        state.countdownBlocksInteraction = state.runtime.entityState.entityInteractionCountdown != 0;
+        if (!state.runtime.entityState.linkState.dialogActive
+                && state.runtime.entityState.entityInteractionCountdown > 0)
+            state.runtime.entityState.entityInteractionCountdown--;
         state.handlerLinkCollisionEnabled = state.handlerLinkCollisionEnabled
-                && !state.runtime.linkState.inventoryAppearing
+                && !state.runtime.entityState.linkState.inventoryAppearing
                 && !state.countdownBlocksInteraction;
         state.threeOfAKindInteractive =
                 state.handlerLinkCollisionEnabled && state.runtime.backgroundMechanics.entityTimersInteractive();
         state.handlerInteractive = state.runtime.backgroundMechanics.entityHandlerInteractive(state.creditsGameplay);
-        state.bowWowHandlerInteractive = state.runtime.transitionSequenceCounter == 0x04
-                && !state.runtime.roomTransitionActive
-                && !state.runtime.linkState.dialogActive
-                && !state.runtime.linkState.inventoryAppearing
+        state.bowWowHandlerInteractive = state.runtime.entityState.transitionSequenceCounter == 0x04
+                && !state.runtime.entityState.roomTransitionActive
+                && !state.runtime.entityState.linkState.dialogActive
+                && !state.runtime.entityState.linkState.inventoryAppearing
                 && !state.runtime.inspection().witchGotItemPresentationActive();
         state.projectileTimersInteractive =
                 state.runtime.backgroundMechanics.gameplayEntityTimersInteractive(state.creditsGameplay);
@@ -508,92 +510,96 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         state.sideViewPotLinkCollisionInteractive = state.sideViewPotInteractive
                 && state.handlerLinkCollisionEnabled
                 && state.projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE;
-        state.runtime.shouldGetLostInMysteriousWoods = false;
+        state.runtime.entityState.shouldGetLostInMysteriousWoods = false;
         state.runtime.bombInteractions.finalizePendingBombPresentations();
         state.frame = state.frameCounter & 0xFF;
         state.romCollisionType = state.collisionType & 0xFF;
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.runtime.boomerangSoundClockProvided && state.runtime.gameplayWorld && !state.creditsGameplay) {
-            state.runtime.boomerangSfxCounter =
-                    (state.runtime.boomerangSfxCounter + 1) % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
+        if (!state.runtime.entityState.boomerangSoundClockProvided
+                && state.runtime.entityState.gameplayWorld
+                && !state.creditsGameplay) {
+            state.runtime.entityState.boomerangSfxCounter = (state.runtime.entityState.boomerangSfxCounter + 1)
+                    % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
         }
-        state.runtime.boomerangSoundClockProvided = false;
-        if (state.runtime.swordMoblinAlertingSoundCounter > 0) {
-            state.runtime.swordMoblinAlertingSoundCounter--;
+        state.runtime.entityState.boomerangSoundClockProvided = false;
+        if (state.runtime.entityState.swordMoblinAlertingSoundCounter > 0) {
+            state.runtime.entityState.swordMoblinAlertingSoundCounter--;
         }
-        if (state.runtime.bombArrowCooldown > 0) {
-            state.runtime.bombArrowCooldown--;
+        if (state.runtime.entityState.bombArrowCooldown > 0) {
+            state.runtime.entityState.bombArrowCooldown--;
         }
-        if (state.runtime.backgroundInteraction != null) {
+        if (state.runtime.entityState.backgroundInteraction != null) {
             state.backgroundCollision = (entity, direction, nextX, nextY) -> {
-                EntityBackgroundCollisionResult result = state.runtime.backgroundInteraction.probe(
+                EntityBackgroundCollisionResult result = state.runtime.entityState.backgroundInteraction.probe(
                         entity,
                         direction,
                         nextX,
                         nextY,
-                        state.runtime.enemyIgnoreHitsCountdown[entity.slot()],
+                        state.runtime.entityState.enemyIgnoreHitsCountdown[entity.slot()],
                         state.frame);
                 if (result.blocked()
                         && entity.status() == EntityStatus.THROWN
                         && checksThrownRoomEventTriggers(entity.type())) {
-                    state.runtime.events.pendingThrownBackgroundCollisions.add(new ThrownBackgroundCollisionEvent(
-                            entity.slot(), entity.type(), direction, result.objectId()));
+                    state.runtime.entityState.events.pendingThrownBackgroundCollisions.add(
+                            new ThrownBackgroundCollisionEvent(
+                                    entity.slot(), entity.type(), direction, result.objectId()));
                 }
                 return result.blocked();
             };
         }
-        state.hinoxBackgroundInteraction = state.runtime.backgroundInteraction;
+        state.hinoxBackgroundInteraction = state.runtime.entityState.backgroundInteraction;
         if (state.hinoxBackgroundInteraction == null && state.backgroundCollision != null) {
             state.hinoxBackgroundInteraction = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
         }
-        state.runtime.events.projectileLaunchRequests.clear();
-        Arrays.fill(state.runtime.enemyProjectileSpawnedThisFrame, false);
-        Arrays.fill(state.runtime.dynamicEntitySpawnedThisFrame, false);
-        Arrays.fill(state.runtime.genieImpactRegisteredThisFrame, false);
-        Arrays.fill(state.runtime.wingedSwordAttackThisFrame, false);
-        Arrays.fill(state.runtime.wingedStateTwoThisFrame, false);
-        state.runtime.events.transientVfxRequests.clear();
-        state.runtime.events.pendingLinkFinalPositionRequests.clear();
-        state.runtime.events.pendingRoosterLinkStateRequests.clear();
-        state.runtime.events.pendingLinkMotionBlockRequests.clear();
-        state.runtime.events.pendingSideViewPlatformLinkRequests.clear();
-        state.runtime.events.pendingSideViewPotLinkRequests.clear();
-        state.runtime.events.pendingHinoxLinkEffectRequests.clear();
-        state.runtime.events.pendingLinkFallenPoseRequests.clear();
-        state.runtime.events.pendingLinkFacingRequests.clear();
-        state.runtime.events.pendingLinkAttackStepRequests.clear();
-        state.runtime.events.pendingLinkAttackStepRequests.addAll(
-                state.runtime.events.pendingPreTickLinkAttackStepRequests);
-        state.runtime.events.pendingPreTickLinkAttackStepRequests.clear();
-        state.runtime.events.pendingLinkAttackClearRequests.clear();
-        state.runtime.events.pendingRoomStatusPersistenceRequests.clear();
-        state.runtime.events.pendingLinkHeldItemPoseRequests.clear();
-        state.runtime.events.pendingLinkSwordSpinPoseRequests.clear();
-        state.runtime.events.pendingLinkSwordFinalPoseRequests.clear();
-        state.runtime.events.pendingScreenShakeRequests.clear();
-        state.runtime.events.boomerangObjectRequests.clear();
-        state.runtime.events.magicRodObjectRequests.clear();
-        state.runtime.events.magicPowderObjectRequests.clear();
-        state.runtime.events.pendingDialogRequests.clear();
-        state.runtime.events.pendingEntityEvents.clear();
-        state.runtime.events.pendingThrownBackgroundCollisions.clear();
-        state.runtime.events.pendingEntityEvents.addAll(state.runtime.events.pendingPreTickEntityEvents);
-        state.runtime.events.pendingPreTickEntityEvents.clear();
-        state.runtime.events.pendingWarpLinkStateRequests.clear();
-        state.runtime.events.pendingChestRewardEvents.clear();
-        state.runtime.events.pendingHeartContainerRewards.clear();
-        state.runtime.events.pendingMadamMeowMeowFullHealRequests.clear();
-        state.runtime.events.pendingSwordPickupRewards.clear();
-        state.runtime.events.pendingToadstoolRewards.clear();
-        state.runtime.events.pendingInstrumentRewards.clear();
-        state.runtime.events.pendingInstrumentCompletions.clear();
-        state.runtime.events.pendingRichardProgressEvents.clear();
-        if (state.runtime.bossAgonySfxCountdown > 0) {
-            state.runtime.bossAgonySfxCountdown--;
-            if (state.runtime.bossAgonySfxCountdown == 0) {
-                state.runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
-                        state.runtime.bossAgonySourceSlot,
+        state.runtime.entityState.events.projectileLaunchRequests.clear();
+        Arrays.fill(state.runtime.entityState.enemyProjectileSpawnedThisFrame, false);
+        Arrays.fill(state.runtime.entityState.dynamicEntitySpawnedThisFrame, false);
+        Arrays.fill(state.runtime.entityState.genieImpactRegisteredThisFrame, false);
+        Arrays.fill(state.runtime.entityState.wingedSwordAttackThisFrame, false);
+        Arrays.fill(state.runtime.entityState.wingedStateTwoThisFrame, false);
+        state.runtime.entityState.events.transientVfxRequests.clear();
+        state.runtime.entityState.events.pendingLinkFinalPositionRequests.clear();
+        state.runtime.entityState.events.pendingRoosterLinkStateRequests.clear();
+        state.runtime.entityState.events.pendingLinkMotionBlockRequests.clear();
+        state.runtime.entityState.events.pendingSideViewPlatformLinkRequests.clear();
+        state.runtime.entityState.events.pendingSideViewPotLinkRequests.clear();
+        state.runtime.entityState.events.pendingHinoxLinkEffectRequests.clear();
+        state.runtime.entityState.events.pendingLinkFallenPoseRequests.clear();
+        state.runtime.entityState.events.pendingLinkFacingRequests.clear();
+        state.runtime.entityState.events.pendingLinkAttackStepRequests.clear();
+        state.runtime.entityState.events.pendingLinkAttackStepRequests.addAll(
+                state.runtime.entityState.events.pendingPreTickLinkAttackStepRequests);
+        state.runtime.entityState.events.pendingPreTickLinkAttackStepRequests.clear();
+        state.runtime.entityState.events.pendingLinkAttackClearRequests.clear();
+        state.runtime.entityState.events.pendingRoomStatusPersistenceRequests.clear();
+        state.runtime.entityState.events.pendingLinkHeldItemPoseRequests.clear();
+        state.runtime.entityState.events.pendingLinkSwordSpinPoseRequests.clear();
+        state.runtime.entityState.events.pendingLinkSwordFinalPoseRequests.clear();
+        state.runtime.entityState.events.pendingScreenShakeRequests.clear();
+        state.runtime.entityState.events.boomerangObjectRequests.clear();
+        state.runtime.entityState.events.magicRodObjectRequests.clear();
+        state.runtime.entityState.events.magicPowderObjectRequests.clear();
+        state.runtime.entityState.events.pendingDialogRequests.clear();
+        state.runtime.entityState.events.pendingEntityEvents.clear();
+        state.runtime.entityState.events.pendingThrownBackgroundCollisions.clear();
+        state.runtime.entityState.events.pendingEntityEvents.addAll(
+                state.runtime.entityState.events.pendingPreTickEntityEvents);
+        state.runtime.entityState.events.pendingPreTickEntityEvents.clear();
+        state.runtime.entityState.events.pendingWarpLinkStateRequests.clear();
+        state.runtime.entityState.events.pendingChestRewardEvents.clear();
+        state.runtime.entityState.events.pendingHeartContainerRewards.clear();
+        state.runtime.entityState.events.pendingMadamMeowMeowFullHealRequests.clear();
+        state.runtime.entityState.events.pendingSwordPickupRewards.clear();
+        state.runtime.entityState.events.pendingToadstoolRewards.clear();
+        state.runtime.entityState.events.pendingInstrumentRewards.clear();
+        state.runtime.entityState.events.pendingInstrumentCompletions.clear();
+        state.runtime.entityState.events.pendingRichardProgressEvents.clear();
+        if (state.runtime.entityState.bossAgonySfxCountdown > 0) {
+            state.runtime.entityState.bossAgonySfxCountdown--;
+            if (state.runtime.entityState.bossAgonySfxCountdown == 0) {
+                state.runtime.entityState.events.pendingEntityEvents.add(new EntityCombatEvent(
+                        state.runtime.entityState.bossAgonySourceSlot,
                         EntityRomConstants.ENTITY_GENIE,
                         0,
                         false,
@@ -601,31 +607,32 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
                         0x10));
             }
         }
-        state.runtime.events.pendingWitchExchangeEvents.clear();
-        state.runtime.events.pendingWitchRewardEvents.clear();
-        state.runtime.events.pendingOwlEventCompletions.clear();
-        state.runtime.events.pendingSlimeKeyRewardEvents.clear();
-        state.runtime.events.pendingKeyQuicksandEvents.clear();
-        state.runtime.events.pendingLikeLikeEvents.clear();
-        state.runtime.events.pendingBombExplosionEvents.clear();
-        state.runtime.events.hookshotBridgeUpdates.clear();
-        state.runtime.pendingSwitchBlockAnimationRequest = false;
-        if (state.runtime.linkState.linkPlayingOcarinaCountdown >= 0x10
-                && state.runtime.linkState.ocarinaAnimationCounter == 0x14) {
+        state.runtime.entityState.events.pendingWitchExchangeEvents.clear();
+        state.runtime.entityState.events.pendingWitchRewardEvents.clear();
+        state.runtime.entityState.events.pendingOwlEventCompletions.clear();
+        state.runtime.entityState.events.pendingSlimeKeyRewardEvents.clear();
+        state.runtime.entityState.events.pendingKeyQuicksandEvents.clear();
+        state.runtime.entityState.events.pendingLikeLikeEvents.clear();
+        state.runtime.entityState.events.pendingBombExplosionEvents.clear();
+        state.runtime.entityState.events.hookshotBridgeUpdates.clear();
+        state.runtime.entityState.pendingSwitchBlockAnimationRequest = false;
+        if (state.runtime.entityState.linkState.linkPlayingOcarinaCountdown >= 0x10
+                && state.runtime.entityState.linkState.ocarinaAnimationCounter == 0x14) {
             state.runtime.entityPlayerSpawns.spawnMusicalNote(
-                    state.linkEntityX, state.linkEntityY, state.runtime.linkState.ocarinaAnimationPhase);
+                    state.linkEntityX, state.linkEntityY, state.runtime.entityState.linkState.ocarinaAnimationPhase);
         }
-        state.projectileEvents = state.runtime.events.outbox.channel(EntityProjectileEvent.class, "projectileEvents");
+        state.projectileEvents =
+                state.runtime.entityState.events.outbox.channel(EntityProjectileEvent.class, "projectileEvents");
         state.projectileEvents.clear();
         if (state.linkPositionHistory != null) {
-            state.runtime.followingLinkPositionHistory = state.linkPositionHistory;
+            state.runtime.entityState.followingLinkPositionHistory = state.linkPositionHistory;
         }
-        state.runtime.linkState.followingLinkZ = state.linkZ & 0xFF;
-        state.runtime.linkState.followingLinkDirection = state.linkDirection & 0xFF;
-        state.runtime.linkState.followingEntityYOffset = state.entityYOffset & 0xFF;
+        state.runtime.entityState.linkState.followingLinkZ = state.linkZ & 0xFF;
+        state.runtime.entityState.linkState.followingLinkDirection = state.linkDirection & 0xFF;
+        state.runtime.entityState.linkState.followingEntityYOffset = state.entityYOffset & 0xFF;
         state.carryingEntity = state.runtime.inspection().liftedEntityState().carryState() != 0;
         state.romLinkDirection = romDirectionForJavaDirection(state.linkDirection);
-        state.runtime.linkState.lastRomLinkDirection = state.romLinkDirection;
+        state.runtime.entityState.linkState.lastRomLinkDirection = state.romLinkDirection;
         for (state.index = state.runtime.slots.length - 1; state.index >= 0; state.index--) {
             if (!EntitySlotPhase1.run(state)) continue;
             if (!EntitySlotPhase2.run(state)) continue;
@@ -640,7 +647,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         state.runtime.slotProperties.updatePincerBodyOam();
         state.runtime.slotProperties.updateWingedOctorokOam();
         state.runtime.slotProperties.updateBowWowChain(state.frame);
-        return state.runtime.events.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
+        return state.runtime.entityState.events.outbox.drain(EntityProjectileEvent.class, "projectileEvents");
     }
 
     /**
@@ -891,7 +898,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * The battle flag survives boss death, but not a room load/warp.
      */
     void resetRoomVariables() {
-        inBossBattle = false;
+        entityState.inBossBattle = false;
     }
 
     /** EntityInitHandler $03:48B5-4910. No boss-handler writes are outstanding:
@@ -901,8 +908,8 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
      * unloaded before calling this initialization hook.
      */
     boolean initializeBossBattle(RoomEntity entity) {
-        int options = entityOptions1Override[entity.slot()] >= 0
-                ? entityOptions1Override[entity.slot()]
+        int options = entityState.entityOptions1Override[entity.slot()] >= 0
+                ? entityState.entityOptions1Override[entity.slot()]
                 : romTables == null ? 0 : romTables.entityOptions1(entity.type());
         return initializeBossBattle(entity, options);
     }
@@ -910,11 +917,11 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     private boolean initializeBossBattle(RoomEntity entity, int options) {
         if ((options & 0x80) == 0) return true;
         // $03:48BE-48C4 rejects an already defeated room boss.
-        if ((entityRoomStatus & 0x30) != 0) {
+        if ((entityState.entityRoomStatus & 0x30) != 0) {
             lifecycle.disableEntityWithoutPersistence(entity.slot());
             return false;
         }
-        inBossBattle = true;
+        entityState.inBossBattle = true;
         return true;
     }
 
@@ -925,7 +932,8 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         if (slots[slot].status() == EntityStatus.ACTIVE) {
             initializeBossBattle(slots[slot], romTables == null ? 0 : romTables.entityOptions1(slots[slot].type()));
         }
-        enemyHealthGroup[slot] = enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type());
+        entityState.enemyHealthGroup[slot] =
+                enemyCombatTables == null ? 0 : enemyCombatTables.healthGroup(slots[slot].type());
     }
 
     int contactDamage(int slot) {
@@ -1222,7 +1230,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     public void setHeartPiecesCount(int count) {
-        heartPiecesCount = count;
+        entityState.heartPiecesCount = count;
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
@@ -1239,7 +1247,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
     }
 
     void blockLinkForOwl(int slot) {
-        events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
+        entityState.events.pendingLinkMotionBlockRequests.add(new LinkMotionBlockRequest(slot));
     }
 
     /** Mirrors Bow-Wow's label_005_4335 target-resolution branches. */
@@ -1274,7 +1282,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
             if (!slots[slot].loaded()) {
                 // Dynamic entity paths reuse this slot directly rather than
                 // necessarily passing through clearEntity first.
-                enemyHitboxFlags[slot] = 0;
+                entityState.enemyHitboxFlags[slot] = 0;
                 return slot;
             }
         }
@@ -1285,7 +1293,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
         int first = Math.min(highestSlot, slots.length - 1);
         for (int slot = first; slot >= 0; slot--) {
             if (!slots[slot].loaded()) {
-                enemyHitboxFlags[slot] = 0;
+                entityState.enemyHitboxFlags[slot] = 0;
                 return slot;
             }
         }
@@ -1358,7 +1366,7 @@ public final class RoomEntityRuntime extends EntityRuntimeState {
 
     public int thrownDirection(int slot) {
         validateEntitySlot(slot);
-        return thrownDirection[slot] & 0xFF;
+        return entityState.thrownDirection[slot] & 0xFF;
     }
 
     public int options1(int slot) {
