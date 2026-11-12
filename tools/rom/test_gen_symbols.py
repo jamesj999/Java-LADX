@@ -1,7 +1,7 @@
 """Run with python3 -m unittest discover -s tools/rom."""
 
 import unittest
-from gen_symbols import generate, ROOT
+from gen_symbols import generate, ROOT, check_without_sym
 
 
 class GeneratorTest(unittest.TestCase):
@@ -14,6 +14,16 @@ class GeneratorTest(unittest.TestCase):
         )
         sym = "\n".join(f"{bank}:{address} {label}" for label, bank, address in entries)
         self.assertEqual(source, generate(sym, (ROOT / "tools/rom/symbols.txt").read_text()))
+
+    def test_without_sym_checks_order_and_format(self):
+        source = generate("01:4000 One\n02:5000 Two", "One\nTwo")
+        self.assertTrue(check_without_sym(source, "One\nTwo"))
+        self.assertFalse(check_without_sym(source, "Two\nOne"))
+        self.assertFalse(check_without_sym(source + "// drift", "One\nTwo"))
+        with self.assertRaises(KeyError):
+            check_without_sym(source, "One\nTwo\nMissing")
+        with self.assertRaises(ValueError):
+            check_without_sym(source, "One\nOne")
 
     def test_missing_and_duplicate_labels_fail(self):
         with self.assertRaises(KeyError):
