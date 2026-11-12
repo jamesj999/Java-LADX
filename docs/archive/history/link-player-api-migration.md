@@ -651,3 +651,45 @@ external migration clients. The typed RoomPaletteLoader call is now used.
 - Link.useRocsFeather remains only for `java/src/test/java/linksawakening/world/room/GameplayRouteStage1.java`, which passes Link as JumpTarget. World must pass `link.airborne()` instead.
 - Link.update remains as genuine aggregate frame orchestration through its retained motion role.
 - Boundary tests now enforce direct Object inheritance and the exact single bridge exception; state has no gameplay dependency exemption.
+
+## Round 5 inheritance audit
+
+After aggregate flattening, 35 non-framework inheritance relationships remain in the owned main packages. No exception or sealed hierarchy was included. These internal algorithm/state hierarchies are retained; they do not reintroduce aggregate compatibility shelves. A future composition conversion can isolate their mutable phase dependencies, but is not required for deleting the external migration API.
+
+| Relationship | Reason retained |
+| --- | --- |
+| `FileMenuFlow extends FileMenuState` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `FileMenuController extends FileMenuEditing` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `FileMenuEditing extends FileMenuFlow` | One menu state machine shares selection/edit buffers and implements ordered flow/editing phases; virtual operations bind the phase sections to the same state. |
+| `State extends HeadlessState` | Public HeadlessGameDriver.State preserves the immutable HeadlessState value contract and external replay source compatibility; it adds no state or dispatch layer. |
+| `Diagnostics extends SessionDiagnostics` | Public HeadlessGameDriver.Diagnostics preserves the externally named SessionDiagnostics live-view subtype; it adds no state or dispatch layer. |
+| `LinkAnimator extends LinkAnimationSelection` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkSpriteRendering extends LinkPoseState` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkAirborne extends LinkJumpMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkRoomMotion extends LinkFrameMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteDynamicComposites extends EntitySpriteBossComposites` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `LinkBootsMotion extends LinkRoomMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkAnimationSelection extends LinkSpriteRendering` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkFrameMotion extends LinkMotionLifecycle` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteBossComposites extends EntitySpriteLookup` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteRomDecoding extends EntitySpriteDynamicComposites` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteHandlerCatalog extends EntitySpriteDecodeGeometry` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `EntitySpriteLookup extends EntitySpriteDecodeState` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `LinkMotion extends LinkCollisionMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkStateMachine extends LinkBootsMotion` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkJumpMotion extends LinkAirborneState` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `LinkCollisionMotion extends LinkPosition` | Internal motion/animation implementations share their own state root and fulfill its abstract algorithm operations; these are concrete behavioral phase sections, not deprecated Link API shelves. |
+| `EntitySpriteDecodeGeometry extends EntitySpriteRomDecoding` | One immutable ROM-backed catalog shares lookup/decode context; composite and geometry methods implement decoding operations on that context, with no aggregate back-reference. |
+| `DialogLifecycle extends DialogState` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogTextFormatting extends DialogPaging` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogController extends DialogTextFormatting` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `DialogPaging extends DialogLifecycle` | One dialog interpreter shares its cursor, page and timing state across lifecycle, paging and formatting phases; overrides implement the state root’s abstract operations. |
+| `IntroSequence extends IntroSceneRendering` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroBeachMotion extends IntroSceneMotion` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneMotion extends IntroLifecycle` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroLifecycle extends IntroSequenceState` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneRendering extends IntroSceneTransitions` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `IntroSceneTransitions extends IntroBeachMotion` | One intro interpreter shares RNG, script timers and scene state across ordered lifecycle/motion/render phases; no independent instances or legacy forwarding APIs are created. |
+| `Sword extends SwordChargeMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+| `SwordAttackMotion extends SwordState` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
+| `SwordChargeMotion extends SwordAttackMotion` | One equipment item shares attack/charge state and implements the EquipmentItem lifecycle; motion phases operate on that same state rather than wrapping another Sword. |
