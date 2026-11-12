@@ -57,40 +57,16 @@ abstract class LinkStateView {
         return legacyRoles().equipment().isRomLinkPushing();
     }
 
-    /** @deprecated Use animation().isTarinShieldPresentationVisible instead. */
-    @Deprecated(forRemoval = true)
-    public boolean isTarinShieldPresentationVisible() {
-        return legacyRoles().animation().isTarinShieldPresentationVisible();
-    }
-
-    /** @deprecated Use animation().tarinShieldPalette instead. */
-    @Deprecated(forRemoval = true)
-    public int[] tarinShieldPalette() {
-        return legacyRoles().animation().tarinShieldPalette();
-    }
-
     /** @deprecated Use animation().isMarinWakeUpBedVisible instead. */
     @Deprecated(forRemoval = true)
     public boolean isMarinWakeUpBedVisible() {
         return legacyRoles().animation().isMarinWakeUpBedVisible();
     }
 
-    /** @deprecated Use animation().marinWakeUpBedVariant instead. */
-    @Deprecated(forRemoval = true)
-    public int marinWakeUpBedVariant() {
-        return legacyRoles().animation().marinWakeUpBedVariant();
-    }
-
     /** @deprecated Use animation().romEntityZ instead. */
     @Deprecated(forRemoval = true)
     public int romEntityZ() {
         return legacyRoles().animation().romEntityZ();
-    }
-
-    /** @deprecated Use actions().isLikeLikeCaptured instead. */
-    @Deprecated(forRemoval = true)
-    public boolean isLikeLikeCaptured() {
-        return legacyRoles().actions().isLikeLikeCaptured();
     }
 
     /** @deprecated Use status().recoveryBlocksInput instead. */
@@ -177,12 +153,6 @@ abstract class LinkStateView {
         return legacyRoles().status().passOutPaletteEffect();
     }
 
-    /** @deprecated Use status().passOutPaletteFrames instead. */
-    @Deprecated(forRemoval = true)
-    public int passOutPaletteFrames() {
-        return legacyRoles().status().passOutPaletteFrames();
-    }
-
     /** @deprecated Use status().finishGameOver instead. */
     @Deprecated(forRemoval = true)
     public void finishGameOver() {
@@ -205,18 +175,6 @@ abstract class LinkStateView {
     @Deprecated(forRemoval = true)
     public int romMotionState() {
         return legacyRoles().airborne().romMotionState();
-    }
-
-    /** @deprecated Use motion().isSwimming instead. */
-    @Deprecated(forRemoval = true)
-    public boolean isSwimming() {
-        return legacyRoles().motion().isSwimming();
-    }
-
-    /** @deprecated Use motion().isDiving instead. */
-    @Deprecated(forRemoval = true)
-    public boolean isDiving() {
-        return legacyRoles().motion().isDiving();
     }
 
     /** @deprecated Use motion().romPhysicsModifier instead. */
@@ -259,12 +217,6 @@ abstract class LinkStateView {
     @Deprecated(forRemoval = true)
     public int romSpeedY() {
         return legacyRoles().position().romSpeedY();
-    }
-
-    /** @deprecated Use motion().pegasusBootsChargeMeter instead. */
-    @Deprecated(forRemoval = true)
-    public int pegasusBootsChargeMeter() {
-        return legacyRoles().motion().pegasusBootsChargeMeter();
     }
 
     /** @deprecated Use motion().pegasusBootsCollisionCountdown instead. */

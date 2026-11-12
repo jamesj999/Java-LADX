@@ -43,7 +43,7 @@ public final class BackgroundSceneLoader {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public BackgroundSceneLoader(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
+        this(romData == null ? null : Rom.unchecked(romData));
     }
     /** Preserve the legacy scene specification's file-offset arithmetic, including CPU-window aliases. */
     private static RomAddress sceneAddress(int bank, int address) {

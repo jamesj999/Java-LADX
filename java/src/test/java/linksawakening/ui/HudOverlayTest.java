@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ final class HudOverlayTest {
     void equippedIconsUseTheSameColourPalettesAsMatchingInventoryIcons() throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
 
         PlayerState player = new PlayerState();
         player.inventory().setItemB(InventoryItem.BOW.romValue());
@@ -34,7 +35,7 @@ final class HudOverlayTest {
             InventoryItem.EMPTY.romValue()
         });
 
-        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(Rom.of(rom)), player);
         menu.requestToggle();
         for (int frame = 0; frame < 16; frame++) {
             menu.tick();

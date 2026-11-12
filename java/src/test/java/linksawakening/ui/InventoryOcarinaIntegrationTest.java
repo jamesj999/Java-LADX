@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import linksawakening.rom.Rom;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.OcarinaSong;
 import linksawakening.state.PlayerState;
@@ -99,7 +100,7 @@ final class InventoryOcarinaIntegrationTest {
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
         try (InputStream stream = linksawakening.testing.TestRom.open()) {
-            return InventoryTilemapLoader.loadFromRom(stream.readAllBytes());
+            return InventoryTilemapLoader.loadFromRom(Rom.of(stream.readAllBytes()));
         }
     }
 }

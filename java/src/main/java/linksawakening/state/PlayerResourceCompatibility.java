@@ -4,7 +4,7 @@ import static linksawakening.state.PlayerState.*;
 
 /** @deprecated Temporary external API migration layer. */
 @Deprecated(forRemoval = true)
-abstract class PlayerResourceCompatibility extends PlayerStateComponents {
+abstract class PlayerResourceCompatibility {
     @Deprecated(forRemoval = true)
     PlayerResourceCompatibility() {
         super();
@@ -83,12 +83,6 @@ abstract class PlayerResourceCompatibility extends PlayerStateComponents {
                 .takeResourceSound(sound -> linksawakening.gameplay.GameplaySoundEvent.valueOf(sound.name()));
     }
 
-    /** @deprecated Use playerInitialization().initializeNewGame(maxArrows, maxBombs, maxMagicPowder). */
-    @Deprecated(forRemoval = true)
-    public void initializeNewGame(int maxArrows, int maxBombs, int maxMagicPowder) {
-        playerInitialization().initializeNewGame(maxArrows, maxBombs, maxMagicPowder);
-    }
-
     /** @deprecated Use playerInitialization().initializeDebugState(). */
     @Deprecated(forRemoval = true)
     public void initializeDebugState() {
@@ -159,12 +153,6 @@ abstract class PlayerResourceCompatibility extends PlayerStateComponents {
     @Deprecated(forRemoval = true)
     public void setHealth(int value) {
         vitals().setHealth(value);
-    }
-
-    /** @deprecated Use vitals().damage(amount). */
-    @Deprecated(forRemoval = true)
-    public void damage(int amount) {
-        vitals().damage(amount);
     }
 
     /** @deprecated Use vitals().applyRomEnemyDamage(nominalDamage). */

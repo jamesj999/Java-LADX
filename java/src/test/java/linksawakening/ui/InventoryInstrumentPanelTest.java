@@ -3,8 +3,10 @@ package linksawakening.ui;
 import static org.junit.jupiter.api.Assertions.*;
 
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomUtil;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -12,7 +14,7 @@ final class InventoryInstrumentPanelTest {
     @Test
     void romPositionsNumbersAndCollectionBitProduceTheTwoByTwoInstrumentLayout() throws Exception {
         byte[] rom = rom();
-        var panel = new InventoryInstrumentPanel(linksawakening.rom.Rom.of(rom));
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
         int[] offsets = {0x0F, 0x51, 0xB1, 0xEF, 0xEC, 0xAA, 0x4A, 0x0C};
         for (int i = 0; i < 8; i++) {
             assertEquals(0x100 + offsets[i], panel.position(i));
@@ -23,7 +25,7 @@ final class InventoryInstrumentPanelTest {
         // Confirm layout values are read from the ROM, not duplicated literals.
         rom[RomUtil.romOffset(1, 0x6BCF)] = 0x11;
         rom[RomUtil.romOffset(1, 0x6BD7)] = (byte) 0xB9;
-        var changed = new InventoryInstrumentPanel(linksawakening.rom.Rom.of(rom));
+        var changed = new InventoryInstrumentPanel(Rom.of(rom));
         assertEquals(0x111, changed.position(0));
         assertEquals(0xB9, changed.tilemapForInstrument(0, 0)[3]);
     }
@@ -31,8 +33,8 @@ final class InventoryInstrumentPanelTest {
     @Test
     void paletteCyclesEveryEightTicksAndLeavesTheOtherPalettesUnchanged() throws Exception {
         byte[] rom = rom();
-        var panel = new InventoryInstrumentPanel(linksawakening.rom.Rom.of(rom));
-        var base = InventoryTilemapLoader.loadFromRom(rom).palettes();
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
+        var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
         assertEquals(RomUtil.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
         assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 7)[7]);
         assertFalse(java.util.Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
@@ -40,19 +42,19 @@ final class InventoryInstrumentPanelTest {
         assertArrayEquals(base[0], panel.palettes(base, 8)[0]);
         assertEquals(
                 RomUtil.decodeRgb555(0x001F),
-                InventoryTilemapLoader.loadFromRom(rom).objectPalettes()[6][2]);
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).objectPalettes()[6][2]);
     }
 
     @Test
     void liveMenuUsesProgressFlagsAndLeavesDungeonMinimapAreaAlone() throws Exception {
         byte[] rom = rom();
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
         var menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(rom),
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)),
                 new PlayerState(),
                 linksawakening.gameplay.GameplaySoundSink.none(),
-                rom);
+                TestRoms.partial(rom));
         menu.requestToggle();
         for (int i = 0; i < 60; i++) menu.tick();
         byte[] flags = new byte[8];

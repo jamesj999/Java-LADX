@@ -34,7 +34,7 @@ final class MarinWakeUpBedRenderLayerTest {
                 null,
                 new PlayerState(),
                 new ItemRegistry());
-        link.showMarinWakeUpBed(3);
+        link.animation().showMarinWakeUpBed(3);
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
 

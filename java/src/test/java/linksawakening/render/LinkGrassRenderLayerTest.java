@@ -32,12 +32,12 @@ final class LinkGrassRenderLayerTest {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var link = new Link(input, config, tables, collision, null, new PlayerState(), null);
-        link.setPixelPosition(32, 32);
+        link.position().setPixelPosition(32, 32);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
-        link.setGelClinging(false, 211);
-        link.update();
-        assertEquals(8, link.romConsecutiveStepsCount());
-        assertTrue(link.grassGroundEffectActive());
+        link.motion().setGelClinging(false, 211);
+        link.motion().update();
+        assertEquals(8, link.animation().romConsecutiveStepsCount());
+        assertTrue(link.motion().grassGroundEffectActive());
         GPU gpu = new GPU();
         for (int y = 0; y < 8; y++) {
             gpu.getTile(0x1A).setPixel(0, y, 1);
@@ -60,14 +60,14 @@ final class LinkGrassRenderLayerTest {
         assertEquals(0x2299DD, pixel(buffer, 41, 48));
         assertEquals(0, pixel(buffer, 32, 40));
         input.onKeyEvent(config.rightKey(), GLFW_RELEASE);
-        link.update();
-        assertEquals(7, link.romConsecutiveStepsCount());
-        assertFalse(link.grassGroundEffectFlipX());
-        link.setRoomPhysicsForRoom(1, 0x10, 0xA3, 1);
-        assertFalse(link.grassGroundEffectActive(), "warp clears the source transient ground physics");
-        link.useRocsFeather();
-        link.update();
-        assertFalse(link.grassGroundEffectActive(), "airborne Link has no grass columns");
+        link.motion().update();
+        assertEquals(7, link.animation().romConsecutiveStepsCount());
+        assertFalse(link.animation().grassGroundEffectFlipX());
+        link.motion().setRoomPhysicsForRoom(1, 0x10, 0xA3, 1);
+        assertFalse(link.motion().grassGroundEffectActive(), "warp clears the source transient ground physics");
+        link.airborne().useRocsFeather();
+        link.motion().update();
+        assertFalse(link.motion().grassGroundEffectActive(), "airborne Link has no grass columns");
     }
 
     private static int pixel(byte[] buffer, int x, int y) {

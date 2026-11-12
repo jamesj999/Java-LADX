@@ -9,6 +9,7 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.EntitySpriteSelection;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.Test;
 final class EntityDeathRenderTest {
     @Test
     void sharedDeathCloudResetsBodyTileOffsetAndFacingForOctorokAndOtherEnemies() throws Exception {
-        var catalog = new EntitySpriteHandlerCatalog(loadRom());
+        var catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
         GPU gpu = new GPU();
         int[][] pattern = new int[8][8];
         for (int y = 0; y < 8; y++)

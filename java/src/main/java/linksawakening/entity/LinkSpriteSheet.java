@@ -2,6 +2,7 @@ package linksawakening.entity;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
 
 /**
  * Link's OAM sprite sheet, sourced from {@code LinkCharacter2Tiles} (base bank
@@ -145,6 +146,6 @@ public final class LinkSpriteSheet {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public static LinkSpriteSheet loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : new Rom(romData));
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

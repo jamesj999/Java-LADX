@@ -27,7 +27,7 @@ public final class RomBank {
     /** @deprecated Use {@link #loadPalettes(Rom, RomAddress, int)}. */
     @Deprecated(forRemoval = true)
     public static int[][] loadPalettes(byte[] romData, int bank, int address, int paletteCount) {
-        return loadPalettes(new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), paletteCount);
+        return loadPalettes(Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), paletteCount);
     }
 
     public static int[][] loadPalettes(Rom rom, RomAddress address, int paletteCount) {
@@ -49,7 +49,7 @@ public final class RomBank {
     @Deprecated(forRemoval = true)
     public static int[] decodeBackground(byte[] romData, int bank, int address, int tilemapWidth, int filler) {
         return decodeBackground(
-                new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), tilemapWidth, filler);
+                Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), tilemapWidth, filler);
     }
 
     public static int[] decodeBackground(Rom rom, RomAddress address, int tilemapWidth, int filler) {
@@ -70,7 +70,7 @@ public final class RomBank {
     /** @deprecated Use {@link #decodeBackgroundMap(Rom, RomAddress, int)}. */
     @Deprecated(forRemoval = true)
     public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int filler) {
-        return decodeBackgroundMap(new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), filler);
+        return decodeBackgroundMap(Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), filler);
     }
 
     public static int[] decodeBackgroundMap(Rom rom, RomAddress address, int filler) {
@@ -86,7 +86,7 @@ public final class RomBank {
     /** @deprecated Use {@link #decodeBackgroundMap(Rom, RomAddress, int[])}. */
     @Deprecated(forRemoval = true)
     public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int[] initialMap) {
-        return decodeBackgroundMap(new Rom(romData), RomAddress.fromOffset(romOffset(bank, address)), initialMap);
+        return decodeBackgroundMap(Rom.unchecked(romData), RomAddress.fromOffset(romOffset(bank, address)), initialMap);
     }
 
     public static int[] decodeBackgroundMap(Rom rom, RomAddress address, int[] initialMap) {

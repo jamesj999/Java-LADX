@@ -14,94 +14,10 @@ abstract class LinkActionView extends LinkMovementView {
         return legacyRoles().position().romEntityY();
     }
 
-    /** @deprecated Use actions().applyLikeLikeCapture instead. */
-    @Deprecated(forRemoval = true)
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY) {
-        legacyRoles().actions().applyLikeLikeCapture(romEntityX, romEntityY);
-    }
-
-    /** @deprecated Use actions().applyLikeLikeCapture instead. */
-    @Deprecated(forRemoval = true)
-    public void applyLikeLikeCapture(int romEntityX, int romEntityY, boolean pinPosition) {
-        legacyRoles().actions().applyLikeLikeCapture(romEntityX, romEntityY, pinPosition);
-    }
-
-    /** @deprecated Use actions().releaseLikeLikeCapture instead. */
-    @Deprecated(forRemoval = true)
-    public void releaseLikeLikeCapture() {
-        legacyRoles().actions().releaseLikeLikeCapture();
-    }
-
     /** @deprecated Use actions().setCarryingLiftedObjectState instead. */
     @Deprecated(forRemoval = true)
     public void setCarryingLiftedObjectState(int carryState, int romDirection) {
         legacyRoles().actions().setCarryingLiftedObjectState(carryState, romDirection);
-    }
-
-    /** @deprecated Use actions().applyRoosterFlightState instead. */
-    @Deprecated(forRemoval = true)
-    public void applyRoosterFlightState(int positionZ, int velocityZ, int speedX, int speedY, int romDirection) {
-        legacyRoles().actions().applyRoosterFlightState(positionZ, velocityZ, speedX, speedY, romDirection);
-    }
-
-    /** @deprecated Use actions().applyHinoxGrabState instead. */
-    @Deprecated(forRemoval = true)
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            int airborneState) {
-        legacyRoles()
-                .actions()
-                .applyHinoxGrabState(romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, airborneState);
-    }
-
-    /** @deprecated Use actions().applyHinoxGrabState instead. */
-    @Deprecated(forRemoval = true)
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            int airborneState,
-            boolean motionBlocked,
-            boolean applyHeldLinkPose) {
-        legacyRoles()
-                .actions()
-                .applyHinoxGrabState(
-                        romPositionX,
-                        romPositionY,
-                        positionZ,
-                        speedX,
-                        speedY,
-                        velocityZ,
-                        Link.GrabFlags.of(airborneState, motionBlocked, applyHeldLinkPose));
-    }
-
-    /** @deprecated Use actions().applyHinoxGrabState instead. */
-    @Deprecated(forRemoval = true)
-    public void applyHinoxGrabState(
-            int romPositionX,
-            int romPositionY,
-            int positionZ,
-            int speedX,
-            int speedY,
-            int velocityZ,
-            Link.GrabFlags arguments) {
-        legacyRoles()
-                .actions()
-                .applyHinoxGrabState(romPositionX, romPositionY, positionZ, speedX, speedY, velocityZ, arguments);
-    }
-
-    /** @deprecated Use actions().applyWarpState3 instead. */
-    @Deprecated(forRemoval = true)
-    public void applyWarpState3(int romPositionX, int visualRomPositionY, int immunityCountdown) {
-        legacyRoles().actions().applyWarpState3(romPositionX, visualRomPositionY, immunityCountdown);
     }
 
     /** @deprecated Use actions().leaveMarinWakeUpBed instead. */
@@ -114,12 +30,6 @@ abstract class LinkActionView extends LinkMovementView {
     @Deprecated(forRemoval = true)
     public void clearRoosterCarryState() {
         legacyRoles().actions().clearRoosterCarryState();
-    }
-
-    /** @deprecated Use animation().showRomFallenPose instead. */
-    @Deprecated(forRemoval = true)
-    public void showRomFallenPose() {
-        legacyRoles().animation().showRomFallenPose();
     }
 
     /** @deprecated Use animation().dialogGotItemActive instead. */
@@ -164,18 +74,6 @@ abstract class LinkActionView extends LinkMovementView {
         return legacyRoles().airborne().tickDialogGotItem(dialogActive);
     }
 
-    /** @deprecated Use animation().showHeldItemPose instead. */
-    @Deprecated(forRemoval = true)
-    public void showHeldItemPose() {
-        legacyRoles().animation().showHeldItemPose();
-    }
-
-    /** @deprecated Use animation().showPowerUpPickupPose instead. */
-    @Deprecated(forRemoval = true)
-    public void showPowerUpPickupPose() {
-        legacyRoles().animation().showPowerUpPickupPose();
-    }
-
     /** @deprecated Use animation().showTarinShieldPresentation instead. */
     @Deprecated(forRemoval = true)
     public void showTarinShieldPresentation(int[] palette) {
@@ -194,28 +92,10 @@ abstract class LinkActionView extends LinkMovementView {
         legacyRoles().animation().showStandingShieldDownPose();
     }
 
-    /** @deprecated Use animation().showSwordAcquisitionSpinPose instead. */
-    @Deprecated(forRemoval = true)
-    public void showSwordAcquisitionSpinPose(int countdown) {
-        legacyRoles().animation().showSwordAcquisitionSpinPose(countdown);
-    }
-
-    /** @deprecated Use animation().showSwordAcquisitionFinalPose instead. */
-    @Deprecated(forRemoval = true)
-    public void showSwordAcquisitionFinalPose() {
-        legacyRoles().animation().showSwordAcquisitionFinalPose();
-    }
-
     /** @deprecated Use animation().showMarinWakeUpBed instead. */
     @Deprecated(forRemoval = true)
     public void showMarinWakeUpBed(int spriteVariant) {
         legacyRoles().animation().showMarinWakeUpBed(spriteVariant);
-    }
-
-    /** @deprecated Use animation().render instead. */
-    @Deprecated(forRemoval = true)
-    public void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        legacyRoles().animation().render(displayBuffer, offsetX, offsetY);
     }
 
     /** @deprecated Use equipment().startRomItemAttackStep instead. */
@@ -282,12 +162,6 @@ abstract class LinkActionView extends LinkMovementView {
     @Deprecated(forRemoval = true)
     public void finishRoomScroll(boolean downward) {
         legacyRoles().motion().finishRoomScroll(downward);
-    }
-
-    /** @deprecated Use motion().writeRomInteractiveMotionBlock instead. */
-    @Deprecated(forRemoval = true)
-    public void writeRomInteractiveMotionBlock(int value) {
-        legacyRoles().motion().writeRomInteractiveMotionBlock(value);
     }
 
     /** @deprecated Use motion().romInteractiveMotionBlockValue instead. */

@@ -380,6 +380,6 @@ public final class InventoryMenu {
             PlayerState playerState,
             GameplaySoundSink soundSink,
             byte[] romData) {
-        this(tilemapLoader, playerState, soundSink, romData == null ? null : new Rom(romData));
+        this(tilemapLoader, playerState, soundSink, romData == null ? null : Rom.unchecked(romData));
     }
 }

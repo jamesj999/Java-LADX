@@ -2,8 +2,8 @@ package linksawakening.gpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class GPUGoldenLeafTilesTest {
@@ -17,7 +17,7 @@ final class GPUGoldenLeafTilesTest {
         }
         GPU gpu = new GPU();
 
-        gpu.replaceSlimeKeyTilesByGoldenLeaf(new Rom(rom));
+        gpu.replaceSlimeKeyTilesByGoldenLeaf(TestRoms.partial(rom));
 
         int destination = 0x0CA * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x20; index++) {

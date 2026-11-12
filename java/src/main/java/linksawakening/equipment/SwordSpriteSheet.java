@@ -2,6 +2,7 @@ package linksawakening.equipment;
 
 import linksawakening.gpu.Tile;
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
 
 /**
  * Sword blade OAM tiles, sourced from {@code LinkCharacterTiles} (bank $0C /
@@ -63,6 +64,6 @@ public final class SwordSpriteSheet {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public static SwordSpriteSheet loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : new Rom(romData));
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

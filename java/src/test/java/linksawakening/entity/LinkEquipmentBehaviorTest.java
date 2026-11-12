@@ -16,6 +16,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
@@ -164,11 +165,11 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(inputConfig)
                 .tables(RomTables.loadFromRom(rom))
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(playerState)
                 .items(itemRegistry)
                 .sounds(GameplaySoundSink.none())
-                .palette(LinkTunicPalette.loadFromRom(rom))
+                .palette(LinkTunicPalette.loadFromRom(Rom.of(rom)))
                 .build();
         link.position().setPixelPosition(40, 40);
         link.animation().showSwordAcquisitionSpinPose(0x20);
@@ -346,7 +347,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(loadRom()))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(loadRom())))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();
@@ -374,7 +375,7 @@ final class LinkEquipmentBehaviorTest extends LinkFixture {
                 .config(config)
                 .tables(null)
                 .collision(null)
-                .sprites(LinkSpriteSheet.loadFromRom(rom))
+                .sprites(LinkSpriteSheet.loadFromRom(Rom.of(rom)))
                 .player(player)
                 .items(new ItemRegistry())
                 .build();

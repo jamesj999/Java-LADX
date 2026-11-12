@@ -57,6 +57,6 @@ public final class SwordPalette {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public static SwordPalette loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : new Rom(romData));
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
 }

@@ -17,10 +17,12 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -86,7 +88,7 @@ public final class DialogEmulatorCapture {
             rom = in.readAllBytes();
         }
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(rom);
+        gpu.loadBaseTiles(Rom.of(rom));
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
@@ -108,14 +110,21 @@ public final class DialogEmulatorCapture {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var link = new Link(
-                input, config, tables, collision, LinkSpriteSheet.loadFromRom(rom), player, new ItemRegistry());
-        link.setPixelPosition(linkX - 8, linkY - 16);
-        link.setRomDirection(0);
+                input,
+                config,
+                tables,
+                collision,
+                LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)),
+                player,
+                new ItemRegistry());
+        link.position().setPixelPosition(linkX - 8, linkY - 16);
+        link.animation().setRomDirection(0);
         if (heldShield)
-            link.showTarinShieldPresentation(linksawakening.rom.RomBank.loadPalettes(rom, 0x05, 0x4C94, 1)[0]);
+            link.animation()
+                    .showTarinShieldPresentation(linksawakening.rom.RomBank.loadPalettes(rom, 0x05, 0x4C94, 1)[0]);
         if (receivedShield) {
-            player.applyChestReward(ChestContentsTable.CHEST_SHIELD);
-            link.showStandingShieldDownPose();
+            player.chestRewards().applyChestReward(ChestContentsTable.CHEST_SHIELD);
+            link.animation().showStandingShieldDownPose();
         }
         var motion = new MarinWakeUpMotion();
         var marinSource = session.rooms().activeRoom().entities().slots().get(0);
@@ -128,7 +137,7 @@ public final class DialogEmulatorCapture {
         var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
         session.story().updateHouseTarinPresentation(0, linkX, linkY);
         var inventory = new InventoryController(
-                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), player));
         replay(
                 scenario,
                 frames,
@@ -193,12 +202,12 @@ public final class DialogEmulatorCapture {
             session.story().applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
             session.story().updateHouseTarinPresentation(frame, linkX, linkY);
             if (bedExit) {
-                if (targetElapsed < 4) link.showMarinWakeUpBed(3);
+                if (targetElapsed < 4) link.animation().showMarinWakeUpBed(3);
                 else {
-                    if (targetElapsed == 4) link.leaveMarinWakeUpBed();
-                    link.update();
+                    if (targetElapsed == 4) link.actions().leaveMarinWakeUpBed();
+                    link.motion().update();
                 }
-            } else if (inBed) link.showMarinWakeUpBed(3);
+            } else if (inBed) link.animation().showMarinWakeUpBed(3);
             byte[] pixels = new byte[160 * 144 * 4];
             new GameFrameSceneBuilder()
                     .build(GameFrameState.empty()

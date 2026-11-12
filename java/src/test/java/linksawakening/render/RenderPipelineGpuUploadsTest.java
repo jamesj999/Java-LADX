@@ -14,6 +14,7 @@ import linksawakening.rom.RomSymbols;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -29,21 +30,21 @@ final class RenderPipelineGpuUploadsTest {
         }
         var player = new PlayerState();
         var menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(bytes),
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(bytes)),
                 player,
                 linksawakening.gameplay.GameplaySoundSink.none(),
-                bytes);
+                TestRoms.partial(bytes));
         var controller = new InventoryController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), menu);
         GPU gpu = new GPU();
-        gpu.loadBaseTiles(bytes);
+        gpu.loadBaseTiles(Rom.of(bytes));
         FrameScene scene = FrameScene.of(List.of(new InventoryRenderLayer(controller)));
         var observer = TestDrawObservers.CURRENT.get();
         TestDrawObservers.CURRENT.remove();
         try {
-            player.setHasToadstool(true);
+            player.ammunition().setHasToadstool(true);
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
             assertUpload(gpu, bytes, RomSymbols.MushroomTiles);
-            player.setHasToadstool(false);
+            player.ammunition().setHasToadstool(false);
             scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
             assertUpload(gpu, bytes, RomSymbols.InventoryEquipmentItemsTiles.plus(0xE0));
         } finally {
@@ -52,7 +53,7 @@ final class RenderPipelineGpuUploadsTest {
     }
 
     private static void assertUpload(GPU gpu, byte[] bytes, RomAddress source) {
-        byte[] expected = new Rom(bytes).slice(source.inBank(GbcBanks.adjust(source.bank())), 32);
+        byte[] expected = TestRoms.partial(bytes).slice(source.inBank(GbcBanks.adjust(source.bank())), 32);
         for (int i = 0; i < expected.length; i++) assertEquals(expected[i], gpu.readVRAM(0x8E0 + i));
     }
 }

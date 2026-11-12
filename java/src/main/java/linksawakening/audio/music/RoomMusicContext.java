@@ -45,9 +45,9 @@ public record RoomMusicContext(
                 room.mapId(),
                 category != Warp.CATEGORY_OVERWORLD,
                 category == Warp.CATEGORY_SIDESCROLL,
-                playerState.swordLevel(),
+                playerState.equipmentLevels().swordLevel(),
                 false,
-                playerState.activePowerUp());
+                playerState.equipmentLevels().activePowerUp());
     }
 
     public static RoomMusicContext overworld(int roomId, int swordLevel) {

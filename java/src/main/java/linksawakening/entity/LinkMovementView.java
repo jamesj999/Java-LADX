@@ -24,12 +24,6 @@ abstract class LinkMovementView extends LinkStateView {
         return legacyRoles().actions().isRoosterCarryActive();
     }
 
-    /** @deprecated Use actions().carryingLiftedObjectState instead. */
-    @Deprecated(forRemoval = true)
-    public int carryingLiftedObjectState() {
-        return legacyRoles().actions().carryingLiftedObjectState();
-    }
-
     /** @deprecated Use actions().isCarryingLiftedObject instead. */
     @Deprecated(forRemoval = true)
     public boolean isCarryingLiftedObject() {
@@ -46,12 +40,6 @@ abstract class LinkMovementView extends LinkStateView {
     @Deprecated(forRemoval = true)
     public void setRomDirection(int romDirection) {
         legacyRoles().animation().setRomDirection(romDirection);
-    }
-
-    /** @deprecated Use animation().faceRomDirectionPreservingWalkPhase instead. */
-    @Deprecated(forRemoval = true)
-    public void faceRomDirectionPreservingWalkPhase(int romDirection) {
-        legacyRoles().animation().faceRomDirectionPreservingWalkPhase(romDirection);
     }
 
     /** @deprecated Use airborne().isAirborne instead. */
@@ -88,24 +76,6 @@ abstract class LinkMovementView extends LinkStateView {
     @Deprecated(forRemoval = true)
     public void update() {
         legacyRoles().motion().update();
-    }
-
-    /** @deprecated Use motion().grassGroundEffectActive instead. */
-    @Deprecated(forRemoval = true)
-    public boolean grassGroundEffectActive() {
-        return legacyRoles().motion().grassGroundEffectActive();
-    }
-
-    /** @deprecated Use animation().grassGroundEffectFlipX instead. */
-    @Deprecated(forRemoval = true)
-    public boolean grassGroundEffectFlipX() {
-        return legacyRoles().animation().grassGroundEffectFlipX();
-    }
-
-    /** @deprecated Use animation().romConsecutiveStepsCount instead. */
-    @Deprecated(forRemoval = true)
-    public int romConsecutiveStepsCount() {
-        return legacyRoles().animation().romConsecutiveStepsCount();
     }
 
     /** @deprecated Use animation().tickAnimation instead. */
@@ -150,18 +120,6 @@ abstract class LinkMovementView extends LinkStateView {
         legacyRoles().position().setRoomEntryPixelPosition(pixelX, pixelY);
     }
 
-    /** @deprecated Use position().markRoomEntryPosition instead. */
-    @Deprecated(forRemoval = true)
-    public void markRoomEntryPosition() {
-        legacyRoles().position().markRoomEntryPosition();
-    }
-
-    /** @deprecated Use position().roomEntryPixelX instead. */
-    @Deprecated(forRemoval = true)
-    public int roomEntryPixelX() {
-        return legacyRoles().position().roomEntryPixelX();
-    }
-
     /** @deprecated Use position().roomEntryPixelY instead. */
     @Deprecated(forRemoval = true)
     public int roomEntryPixelY() {
@@ -196,12 +154,6 @@ abstract class LinkMovementView extends LinkStateView {
     @Deprecated(forRemoval = true)
     public void applyRomSpeedX(int speedX) {
         legacyRoles().position().applyRomSpeedX(speedX);
-    }
-
-    /** @deprecated Use position().applyRomFinalPosition instead. */
-    @Deprecated(forRemoval = true)
-    public void applyRomFinalPosition(int speedX, int speedY) {
-        legacyRoles().position().applyRomFinalPosition(speedX, speedY);
     }
 
     /** @deprecated Use position().captureRomFinalPosition instead. */

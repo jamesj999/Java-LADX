@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -17,7 +18,7 @@ final class InventoryDungeonPanelTest {
     @Test
     void tailCavePanelMatchesTheRealEmulatorsTilemapAndAttributes() throws Exception {
         byte[] rom = rom();
-        var loader = InventoryTilemapLoader.loadFromRom(rom);
+        var loader = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom));
         int[] map = loader.copyBaseTilemap(), attrs = loader.copyAttrmap();
         var lines = Files.readAllLines(Path.of("src/test/resources/opening/tail-cave-inventory/panel.tsv")).stream()
                 .filter(line -> !line.startsWith("#"))

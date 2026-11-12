@@ -19,6 +19,7 @@ import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
@@ -66,20 +67,26 @@ final class MainTest {
     @Test
     void configuredNewGameProfileClearsTheDebugInventoryBeforeRoomStartup() {
         PlayerState playerState = new PlayerState();
-        playerState.setItemA(PlayerState.INVENTORY_BOW);
-        playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.inventory().setItemA(linksawakening.state.InventoryItem.BOW.romValue());
+        playerState.inventory().setItemB(linksawakening.state.InventoryItem.HOOKSHOT.romValue());
 
         ScreenRouter.applyConfiguredItemProfile(
                 AppConfig.parse("""
             { "itemProfile": "NEW_GAME" }
             """), playerState);
 
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
-        assertEquals(30, playerState.maxArrows());
-        assertEquals(30, playerState.maxBombs());
-        assertEquals(20, playerState.maxMagicPowder());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(0));
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().itemA());
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().itemB());
+        assertEquals(30, playerState.ammunition().maxArrows());
+        assertEquals(30, playerState.ammunition().maxBombs());
+        assertEquals(20, playerState.ammunition().maxMagicPowder());
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().subscreenItem(0));
     }
 
     @Test
@@ -120,7 +127,7 @@ final class MainTest {
 
     @Test
     void backgroundScenesUseFullGameBoyBgMap() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(loadRom()));
 
         assertEquals(32 * 32, loader.load(BackgroundSceneCatalog.TITLE).tilemap().length);
     }

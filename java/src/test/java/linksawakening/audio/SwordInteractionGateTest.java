@@ -6,7 +6,6 @@ import linksawakening.app.GameSession;
 import linksawakening.entity.Link;
 import linksawakening.entity.LinkCommand;
 import linksawakening.equipment.Sword;
-import linksawakening.state.PlayerState;
 import linksawakening.world.entity.RomRandomByteSource;
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +23,12 @@ class SwordInteractionGateTest {
             var d = game.diagnostics();
             var player = d.playerState();
             var link = d.link();
-            player.setSwordLevel(1);
-            player.setItemA(PlayerState.INVENTORY_SWORD);
-            player.setItemB(0);
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(0);
             d.roomSession().rooms().loadIndoor(2, 0x5A);
             for (int slot = 0; slot < 16; slot++) d.roomSession().entityState().clearEntity(slot);
-            link.setRoomEntryRomPosition(72, 80);
+            link.position().setRoomEntryRomPosition(72, 80);
             rng.setObserver(draw -> draws[0]++);
             Sword sword = d.equipmentController().activeSword();
             game.headlessButton("a", true);
@@ -37,17 +36,17 @@ class SwordInteractionGateTest {
             assertEquals(1, draws[0]);
             assertEquals(Sword.STATE_DRAW, sword.state());
             for (int i = 0; i < 8; i++) {
-                link.writeRomInteractiveMotionBlock(2);
+                link.motion().writeRomInteractiveMotionBlock(2);
                 game.headlessFrame();
                 assertEquals(Sword.STATE_DRAW, sword.state());
-                assertEquals(0, link.romInteractiveMotionBlockValue());
+                assertEquals(0, link.motion().romInteractiveMotionBlockValue());
             }
             for (int i = 0; i < 3; i++) game.headlessFrame();
             assertEquals(Sword.STATE_SWING_START, sword.state(), "Resume the saved timer, not a fresh swing");
             game.headlessButton("a", false);
             for (int i = 0; i < 24; i++) game.headlessFrame();
             assertEquals(Sword.STATE_NONE, sword.state());
-            link.writeRomInteractiveMotionBlock(2);
+            link.motion().writeRomInteractiveMotionBlock(2);
             game.headlessButton("a", true);
             game.headlessFrame();
             assertEquals(1, draws[0]);
@@ -56,7 +55,7 @@ class SwordInteractionGateTest {
             assertEquals(1, draws[0], "Blocked edge must not be replayed when held on resume");
             game.headlessButton("a", false);
             game.headlessFrame();
-            link.writeRomInteractiveMotionBlock(3);
+            link.motion().writeRomInteractiveMotionBlock(3);
             game.headlessButton("a", true);
             game.headlessFrame();
             assertEquals(2, draws[0]);
@@ -73,13 +72,13 @@ class SwordInteractionGateTest {
         Link link = new Link(null, null, null, null, null, null, null);
         link.apply(new LinkCommand.MotionBlock(0, 0, 2));
         link.apply(new LinkCommand.MotionBlock(0, 0, 3));
-        assertEquals(3, link.romInteractiveMotionBlockValue());
-        assertFalse(link.romItemAnimationFrameBlocked());
+        assertEquals(3, link.motion().romInteractiveMotionBlockValue());
+        assertFalse(link.sideView().romItemAnimationFrameBlocked());
         link.apply(new LinkCommand.MotionBlock(0, 0, 2));
-        assertTrue(link.romItemAnimationFrameBlocked());
-        link.setSideScrolling(true);
-        assertFalse(link.romItemAnimationFrameBlocked());
-        assertThrows(IllegalArgumentException.class, () -> link.writeRomInteractiveMotionBlock(256));
+        assertTrue(link.sideView().romItemAnimationFrameBlocked());
+        link.sideView().setSideScrolling(true);
+        assertFalse(link.sideView().romItemAnimationFrameBlocked());
+        assertThrows(IllegalArgumentException.class, () -> link.motion().writeRomInteractiveMotionBlock(256));
     }
 
     private static void set(Object object, String name, Object value) throws Exception {

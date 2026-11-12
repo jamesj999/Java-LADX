@@ -1,6 +1,7 @@
 package linksawakening.entity;
 
 import linksawakening.rom.*;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.room.RoomPaletteLoader;
@@ -207,6 +208,6 @@ public final class EntitySpriteCatalog {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public EntitySpriteCatalog(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
+        this(romData == null ? null : Rom.unchecked(romData));
     }
 }

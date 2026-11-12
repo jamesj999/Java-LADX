@@ -6,6 +6,7 @@ import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
+import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ final class OcarinaPopupRendererTest {
     @Test
     void loaderKeepsTheRomOamFramesAndInventoryObjectPalettes() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(Rom.of(rom));
 
         int popupOffset = linksawakening.rom.RomBank.romOffset(0x20, 0x604B);
         int[] popup = loader.ocarinaPopupOam();
@@ -28,9 +29,9 @@ final class OcarinaPopupRendererTest {
     @Test
     void frameZeroUsesTheRomOamCoordinatesAndObjectPalette() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(Rom.of(rom));
         GPU gpu = new GPU();
-        gpu.loadOcarinaSymbolsTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
         writeSolidTile(gpu, 0x22, 1);
 
         PlayerState player = new PlayerState();

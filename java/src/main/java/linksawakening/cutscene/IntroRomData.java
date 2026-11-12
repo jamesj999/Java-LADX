@@ -47,8 +47,8 @@ public final class IntroRomData {
     private final Rom romView;
 
     public IntroRomData(Rom romData) {
-        this.romData =
-                new Rom(Objects.requireNonNull(romData, "romData").bytes(RomAddress.fromOffset(0), romData.size()));
+        this.romData = Rom.unchecked(
+                Objects.requireNonNull(romData, "romData").bytes(RomAddress.fromOffset(0), romData.size()));
         this.romView = romData;
     }
 
@@ -302,11 +302,5 @@ public final class IntroRomData {
             }
             return copy;
         }
-    }
-
-    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
-    @Deprecated(forRemoval = true)
-    public IntroRomData(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
     }
 }
