@@ -2,7 +2,9 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import java.util.function.Supplier;
+import linksawakening.app.SessionContext;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.DialogTextLoader;
@@ -18,50 +20,48 @@ import linksawakening.world.room.RoomSession;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class DialogInteractions {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public DialogInteractions(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public DialogInteractions(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public InputConfig inputConfig() {
-        return context.dialogs_inputConfig();
+        return context.inputConfig();
     }
 
     public OverworldDialogInteraction overworldDialogInteraction() {
-        return context.dialogs_overworldDialogInteraction();
+        return context.overworldDialogInteraction();
     }
 
     public RoomSession roomSession() {
-        return context.dialogs_roomSession();
+        return context.roomSession();
     }
 
     public Link link() {
-        return context.dialogs_link();
+        return context.link();
     }
 
     public PlayerState playerState() {
-        return context.dialogs_playerState();
+        return context.playerState();
     }
 
     public DialogController dialogController() {
-        return context.dialogs_dialogController();
+        return context.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.dialogs_dialogTextLoader();
+        return context.dialogTextLoader();
     }
 
     public Supplier<OverworldDialogBlockers> blockers() {
-        return context.dialogs_blockers();
+        return context.dialogsBlockers();
     }
 
     public boolean tryOpenOverworldDialog(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
                 || overworldDialogInteraction() == null
-                || roomSession() == null
-                || !roomSession().hasActiveRoom()
-                || link() == null) {
+                || !roomSession().hasActiveRoom()) {
             return false;
         }
         ActiveRoom room = roomSession().activeRoom();
@@ -80,10 +80,7 @@ public final class DialogInteractions {
 
     public boolean tryOpenChest(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()
-                || link() == null
-                || playerState() == null
                 || blockers().get().blocksOpening()) {
             return false;
         }
@@ -98,11 +95,7 @@ public final class DialogInteractions {
     }
 
     public void openEntityDialogRequests() {
-        if (roomSession() == null
-                || dialogController() == null
-                || dialogTextLoader() == null
-                || link() == null
-                || dialogController().isActive()) {
+        if (dialogTextLoader() == null || dialogController().isActive()) {
             return;
         }
         for (var request : roomSession().consumeEntityDialogRequests()) {

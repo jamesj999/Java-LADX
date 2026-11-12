@@ -1,11 +1,13 @@
 package linksawakening.app.gameplay;
 
+import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.rom.Rom;
+import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** Bank 0 death dispatch and bank 1 animation; screen loading follows in a later stage. */
 public final class PassOutController {
-    private linksawakening.entity.Link owner;
+    private Link owner;
     private LinkPassOutAnimation animation;
     private GameOverPresentation gameOver;
     private boolean handledFrame;
@@ -20,14 +22,14 @@ public final class PassOutController {
         gameOver = null;
     }
 
-    public linksawakening.ui.FileMenuFrameSnapshot snapshot() {
+    public FileMenuFrameSnapshot snapshot() {
         return gameOver == null ? null : gameOver.snapshot();
     }
 
     boolean tick(GameplaySimulation context, boolean dialog) {
         var link = context.link();
         handledFrame = link != null && link.isPassingOut();
-        if (link == null || context.playerState() == null) return false;
+        if (link == null) return false;
         if (owner != link) {
             owner = link;
             animation = null;
@@ -41,9 +43,8 @@ public final class PassOutController {
                 || context.transitionController().isInputBlocked();
         boolean itemBlocked = link.dialogGotItemActive()
                 || link.romItemAnimationFrameBlocked()
-                || (context.roomSession() != null
-                        && (context.roomSession().gotItemPresentationActive()
-                                || context.roomSession().swordPickupSequenceActive()));
+                || ((context.roomSession().gotItemPresentationActive()
+                        || context.roomSession().swordPickupSequenceActive()));
         if (LinkPassOutAnimation.shouldStart(
                 context.playerState().health(),
                 itemBlocked ? 1 : 0,

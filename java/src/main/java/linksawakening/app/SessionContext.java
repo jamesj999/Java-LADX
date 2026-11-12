@@ -2,6 +2,7 @@ package linksawakening.app;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,6 +10,8 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
+import linksawakening.app.debug.DebugMenu;
+import linksawakening.app.debug.DebugMenuOverlay;
 import linksawakening.app.gameplay.BushInteraction;
 import linksawakening.app.gameplay.DialogInteractions;
 import linksawakening.app.gameplay.GameplayFrame;
@@ -64,830 +67,606 @@ import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.RoomTransitionCoordinator;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
+import linksawakening.world.transition.Warp;
 
-/** Live access to session-owned services and state. */
+/** Builds and retains session services, screens and orchestration. Accessors read live mutable state. */
 public final class SessionContext {
+    SessionBootstrap.Collaborators services() {
+        return services;
+    }
+
     private final GameSession session;
 
     public SessionContext(GameSession session, boolean headless) {
-        this.session = java.util.Objects.requireNonNull(session);
-        initialize(headless);
+        this.session = Objects.requireNonNull(session);
+        screens.currentScreen = titleScreen;
+
+        host = headless
+                ? (session.headlessPcm == null ? new HeadlessHost() : new HeadlessHost(session.headlessPcm))
+                : new DesktopHost();
+        gpu = new GPU();
+        var built = new SessionBootstrap(
+                        session.random,
+                        gpu,
+                        transitionController,
+                        scrollController,
+                        new SessionBootstrap.Callbacks(
+                                (scene) -> router().setCutsceneScene(scene),
+                                room -> musicDirector.selectMusicForLoadedRoom(
+                                        room,
+                                        services().playerState(),
+                                        services().roomSession()),
+                                this::romDirectionForLink),
+                        host)
+                .build(headless);
+        services = built;
+        session.gameplaySoundSink = built.gameplaySoundSink();
+        scene.bgPalettes = built.bgPalettes();
+        scene.objPalettes = built.objPalettes();
+        appConfig = built.appConfig();
+        scene.currentTilemap = built.currentTilemap();
+        scene.currentAttrmap = built.currentAttrmap();
+        musicDirector = new MusicDirector(services().musicPlayer(), services().gameplayMusicController());
+        saveRamStore = built.saveRamStore();
+        newGameTarinShieldPalette = built.newGameTarinShieldPalette();
+        simulationGameOverOutcome = this::finishGameOver;
+        simulationDialogBlockers = this::currentOverworldDialogBlockers;
+        simulationDirection = this::romDirectionForLink;
+        simulationDialogSounds = this::routeDialogSounds;
+        inputRouterStop = () -> running = false;
+        inputRouterScreen = () -> screens.currentScreen;
+        inputRouterStartDebug = () -> router().startDebugGameplay();
+        inputRouterStory = this::openingStory;
+        inputRouterFileSave = () -> saves().startFileSave();
+        inputRouterDialogs = this::dialogs;
+        routerScreen = () -> screens.currentScreen;
+        routerShowScreen = value -> screens.currentScreen = value;
+        routerSetFileMenu = value -> screens.fileMenuController = value;
+        routerClearSaveSlot = () -> screens.currentSaveSlot = -1;
+        routerResetDebug = () -> debug.debugNoClip = false;
+        routerStartNewGame = () -> saves().startNewGame();
+        savesStartFileSelection = () -> router().startFileSelection();
+        savesShowFileSave = controller -> screens.fileSaveController = controller;
+        openingStoryBlockers = this::currentOverworldDialogBlockers;
+        openingStoryMusic = musicDirector::playDirectMusic;
+        openingStoryHouseMusic = MusicDirector::newGameHouseMusicTrack;
+        openingStoryRomDirection = this::romDirectionForLink;
+        dialogsBlockers = this::currentOverworldDialogBlockers;
+        liftingDirection = this::romDirectionForLink;
+        simulationDebugScroll = () -> inputRouter().tryDebugScreenScroll();
+        inputRouterToggleDebug = () -> {
+            debug.debugNoClip = !debug.debugNoClip;
+            services().link().setDebugNoClip(debug.debugNoClip);
+            DebugLog.log("Debug no-clip: " + (debug.debugNoClip ? "ON" : "OFF"));
+        };
+        inputRouterConsumeDialogInput = () -> overworldDialogInputConsumedThisFrame = true;
+        routerBackground = backgroundValue -> {
+            scene.currentTilemap = backgroundValue.tilemap();
+            scene.currentAttrmap = backgroundValue.attrmap();
+            scene.bgPalettes = backgroundValue.palettes();
+            scene.objPalettes = backgroundValue.objectPalettes();
+        };
+        routerClearFileMenuController = () -> screens.fileMenuController = null;
+        routerClearFileSaveController = () -> screens.fileSaveController = null;
+        routerClearNewGameWakeUpMotion = () -> session.newGameWakeUpMotion = null;
+        routerClearNewGameTarinShieldMotion = () -> session.newGameTarinShieldMotion = null;
+        savesEnterGameplay = () -> {
+            screens.fileMenuController = null;
+            screens.fileSaveController = null;
+            screens.currentScreen = gameplayScreen;
+        };
+        savesClearOpening = () -> {
+            session.newGameWakeUpMotion = null;
+            session.newGameTarinShieldMotion = null;
+        };
+        savesInitializeOpening = () -> {
+            session.newGameWakeUpMotion = new MarinWakeUpMotion();
+            session.newGameTarinShieldMotion = new TarinShieldMotion();
+        };
+        savesPlayHouseMusic = () -> musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack());
+        savesRefreshOpening = () -> openingStory().updateNewGameMarinPresentation();
+        savesRestoreOpening = saved -> openingStory()
+                .restoreNewGameHouseRuntimeIfNeeded(
+                        saved,
+                        motion -> session.newGameWakeUpMotion = motion,
+                        motion -> session.newGameTarinShieldMotion = motion,
+                        () -> openingStory().updateNewGameMarinPresentation());
+        savesEnterFileSave = () -> {
+            screens.currentScreen = fileSaveScreen;
+            screens.fileMenuController = null;
+        };
+        savesFileMenuBackground = label -> router().loadFileMenuBackgroundScene(label);
+        gameplayFrame = new GameplayFrame(
+                new TransitionPhase(
+                        scrollController, transitionController, services().link(), scrollSpeed),
+                () -> simulation().tick(),
+                this::completeInputFrame);
+        liftingInstance = new LiftInteraction(this);
+        dialogsInstance = new DialogInteractions(this);
+        bushesInstance = new BushInteraction(this);
+        openingStoryInstance = new OpeningStory(this);
+        rendererInstance = new RenderStateAssembler(this);
+        savesInstance = new SaveCoordinator(this);
+        routerInstance = new ScreenRouter(this);
+        inputRouterInstance = new InputRouter(this);
+        simulationInstance = new GameplaySimulation(this);
     }
 
-    public PassOutController simulation_passOutController() {
+    public PassOutController passOutController() {
         return passOutController;
     }
 
-    private java.util.function.IntConsumer simulation_gameOverOutcome;
+    private final IntConsumer simulationGameOverOutcome;
 
-    public java.util.function.IntConsumer simulation_gameOverOutcome() {
-        if (simulation_gameOverOutcome == null) simulation_gameOverOutcome = this::finishGameOver;
-        return simulation_gameOverOutcome;
+    public IntConsumer gameOverOutcome() {
+        return simulationGameOverOutcome;
     }
 
-    public GPU simulation_gpu() {
+    public GPU gpu() {
         return gpu;
     }
 
-    public byte[] simulation_romData() {
-        return services.romData();
+    public byte[] romData() {
+        return services().romData();
     }
 
-    public RoomSession simulation_roomSession() {
-        return services.roomSession();
+    public RoomSession roomSession() {
+        return services().roomSession();
     }
 
-    public TransitionController simulation_transitionController() {
+    public TransitionController transitionController() {
         return transitionController;
     }
 
-    public RoomTransitionCoordinator simulation_roomTransitionCoordinator() {
-        return services.roomTransitionCoordinator();
+    public RoomTransitionCoordinator roomTransitionCoordinator() {
+        return services().roomTransitionCoordinator();
     }
 
-    public boolean simulation_debugNoClip() {
+    public boolean debugNoClip() {
         return debug.debugNoClip;
     }
 
-    public int simulation_frameCounter() {
+    public int frameCounter() {
         return session.frameCounter;
     }
 
-    public int simulation_ROOM_PIXEL_HEIGHT() {
-        return ROOM_PIXEL_HEIGHT;
+    public int roomPixelHeight() {
+        return roomPixelHeight;
     }
 
-    public ScrollController simulation_scrollController() {
+    public ScrollController scrollController() {
         return scrollController;
     }
 
-    public InputConfig simulation_inputConfig() {
-        return services.inputConfig();
+    public InputConfig inputConfig() {
+        return services().inputConfig();
     }
 
-    public InputState simulation_inputState() {
-        return services.inputState();
+    public InputState inputState() {
+        return services().inputState();
     }
 
-    public PlayerState simulation_playerState() {
-        return services.playerState();
+    public PlayerState playerState() {
+        return services().playerState();
     }
 
-    public InventoryMenu simulation_inventoryMenu() {
-        return services.inventoryMenu();
+    public InventoryMenu inventoryMenu() {
+        return services().inventoryMenu();
     }
 
-    public InventoryController simulation_inventoryController() {
-        return services.inventoryController();
+    public InventoryController inventoryController() {
+        return services().inventoryController();
     }
 
-    public DialogController simulation_dialogController() {
-        return services.dialogController();
+    public DialogController dialogController() {
+        return services().dialogController();
     }
 
-    public DialogTextLoader simulation_dialogTextLoader() {
-        return services.dialogTextLoader();
+    public DialogTextLoader dialogTextLoader() {
+        return services().dialogTextLoader();
     }
 
-    public GameplaySoundSink simulation_gameplaySoundSink() {
+    public GameplaySoundSink gameplaySoundSink() {
         return session.gameplaySoundSink;
     }
 
-    public FrameMusicPlayer simulation_musicPlayer() {
-        return services.musicPlayer();
+    public FrameMusicPlayer musicPlayer() {
+        return services().musicPlayer();
     }
 
-    public GameplayMusicController simulation_gameplayMusicController() {
-        return services.gameplayMusicController();
+    public GameplayMusicController gameplayMusicController() {
+        return services().gameplayMusicController();
     }
 
-    public MusicDirector simulation_musicDirector() {
+    public MusicDirector musicDirector() {
         return musicDirector;
     }
 
-    public TransientVfxSystem simulation_transientVfxSystem() {
-        return services.transientVfxSystem();
+    public TransientVfxSystem transientVfxSystem() {
+        return services().transientVfxSystem();
     }
 
-    public DroppableRupeeSystem simulation_droppableRupeeSystem() {
-        return services.droppableRupeeSystem();
+    public DroppableRupeeSystem droppableRupeeSystem() {
+        return services().droppableRupeeSystem();
     }
 
-    public ItemRegistry simulation_itemRegistry() {
-        return services.itemRegistry();
+    public ItemRegistry itemRegistry() {
+        return services().itemRegistry();
     }
 
-    public EquipmentController simulation_equipmentController() {
-        return services.equipmentController();
+    public EquipmentController equipmentController() {
+        return services().equipmentController();
     }
 
-    public Link simulation_link() {
-        return services.link();
+    public Link link() {
+        return services().link();
     }
 
-    public OpeningStory simulation_story() {
+    public OpeningStory story() {
         return openingStory();
     }
 
-    public LiftInteraction simulation_lift() {
+    public LiftInteraction lift() {
         return lifting();
     }
 
-    public BushInteraction simulation_bush() {
+    public BushInteraction bush() {
         return bushes();
     }
 
-    public DialogInteractions simulation_dialogInteractions() {
+    public DialogInteractions dialogInteractions() {
         return dialogs();
     }
 
-    private Supplier<OverworldDialogBlockers> simulation_dialogBlockers;
+    private final Supplier<OverworldDialogBlockers> simulationDialogBlockers;
 
-    public Supplier<OverworldDialogBlockers> simulation_dialogBlockers() {
-        if (simulation_dialogBlockers == null) simulation_dialogBlockers = this::currentOverworldDialogBlockers;
-        return simulation_dialogBlockers;
+    public Supplier<OverworldDialogBlockers> dialogBlockers() {
+        return simulationDialogBlockers;
     }
 
-    private BooleanSupplier simulation_debugScroll;
+    private final BooleanSupplier simulationDebugScroll;
 
-    public BooleanSupplier simulation_debugScroll() {
-        if (simulation_debugScroll == null)
-            simulation_debugScroll = () -> inputRouter().tryDebugScreenScroll();
-        return simulation_debugScroll;
+    public BooleanSupplier simulationDebugScroll() {
+        return simulationDebugScroll;
     }
 
-    private IntUnaryOperator simulation_direction;
+    private final IntUnaryOperator simulationDirection;
 
-    public IntUnaryOperator simulation_direction() {
-        if (simulation_direction == null) simulation_direction = this::romDirectionForLink;
-        return simulation_direction;
+    public IntUnaryOperator direction() {
+        return simulationDirection;
     }
 
-    private Runnable simulation_dialogSounds;
+    private final Runnable simulationDialogSounds;
 
-    public Runnable simulation_dialogSounds() {
-        if (simulation_dialogSounds == null) simulation_dialogSounds = this::routeDialogSounds;
-        return simulation_dialogSounds;
+    public Runnable dialogSounds() {
+        return simulationDialogSounds;
     }
 
-    public RoomSession inputRouter_roomSession() {
-        return services.roomSession();
+    public int roomPixelWidth() {
+        return roomPixelWidth;
     }
 
-    public TransitionController inputRouter_transitionController() {
-        return transitionController;
+    public RomTables romTables() {
+        return services().romTables();
     }
 
-    public RoomTransitionCoordinator inputRouter_roomTransitionCoordinator() {
-        return services.roomTransitionCoordinator();
-    }
-
-    public int inputRouter_ROOM_PIXEL_WIDTH() {
-        return ROOM_PIXEL_WIDTH;
-    }
-
-    public int inputRouter_ROOM_PIXEL_HEIGHT() {
-        return ROOM_PIXEL_HEIGHT;
-    }
-
-    public ScrollController inputRouter_scrollController() {
-        return scrollController;
-    }
-
-    public InputConfig inputRouter_inputConfig() {
-        return services.inputConfig();
-    }
-
-    public InputState inputRouter_inputState() {
-        return services.inputState();
-    }
-
-    public InventoryController inputRouter_inventoryController() {
-        return services.inventoryController();
-    }
-
-    public DialogController inputRouter_dialogController() {
-        return services.dialogController();
-    }
-
-    public RomTables inputRouter_romTables() {
-        return services.romTables();
-    }
-
-    public Link inputRouter_link() {
-        return services.link();
-    }
-
-    public AppConfig inputRouter_config() {
+    public AppConfig config() {
         return currentAppConfig();
     }
 
-    private Runnable inputRouter_stop;
+    private final Runnable inputRouterStop;
 
-    public Runnable inputRouter_stop() {
-        if (inputRouter_stop == null) inputRouter_stop = () -> running = false;
-        return inputRouter_stop;
+    public Runnable stop() {
+        return inputRouterStop;
     }
 
-    private Runnable inputRouter_toggleDebug;
+    private final Runnable inputRouterToggleDebug;
 
-    public Runnable inputRouter_toggleDebug() {
-        if (inputRouter_toggleDebug == null)
-            inputRouter_toggleDebug = () -> {
-                debug.debugNoClip = !debug.debugNoClip;
-                services.link().setDebugNoClip(debug.debugNoClip);
-                System.out.println("Debug no-clip: " + (debug.debugNoClip ? "ON" : "OFF"));
-            };
-        return inputRouter_toggleDebug;
+    public Runnable inputRouterToggleDebug() {
+        return inputRouterToggleDebug;
     }
 
-    private Supplier<Screen> inputRouter_screen;
+    private final Supplier<Screen> inputRouterScreen;
 
-    public Supplier<Screen> inputRouter_screen() {
-        if (inputRouter_screen == null) inputRouter_screen = () -> currentScreen;
-        return inputRouter_screen;
+    public Supplier<Screen> screen() {
+        return inputRouterScreen;
     }
 
-    private Runnable inputRouter_consumeDialogInput;
+    private final Runnable inputRouterConsumeDialogInput;
 
-    public Runnable inputRouter_consumeDialogInput() {
-        if (inputRouter_consumeDialogInput == null)
-            inputRouter_consumeDialogInput = () -> overworldDialogInputConsumedThisFrame = true;
-        return inputRouter_consumeDialogInput;
+    public Runnable inputRouterConsumeDialogInput() {
+        return inputRouterConsumeDialogInput;
     }
 
-    private Runnable inputRouter_startDebug;
+    private final Runnable inputRouterStartDebug;
 
-    public Runnable inputRouter_startDebug() {
-        if (inputRouter_startDebug == null) inputRouter_startDebug = () -> router().startDebugGameplay();
-        return inputRouter_startDebug;
+    public Runnable startDebug() {
+        return inputRouterStartDebug;
     }
 
-    private Supplier<OpeningStory> inputRouter_story;
+    private final Supplier<OpeningStory> inputRouterStory;
 
-    public Supplier<OpeningStory> inputRouter_story() {
-        if (inputRouter_story == null) inputRouter_story = this::openingStory;
-        return inputRouter_story;
+    public Supplier<OpeningStory> inputRouterStory() {
+        return inputRouterStory;
     }
 
-    private Runnable inputRouter_fileSave;
+    private final Runnable inputRouterFileSave;
 
-    public Runnable inputRouter_fileSave() {
-        if (inputRouter_fileSave == null) inputRouter_fileSave = () -> saves().startFileSave();
-        return inputRouter_fileSave;
+    public Runnable fileSave() {
+        return inputRouterFileSave;
     }
 
-    private Supplier<DialogInteractions> inputRouter_dialogs;
+    private final Supplier<DialogInteractions> inputRouterDialogs;
 
-    public Supplier<DialogInteractions> inputRouter_dialogs() {
-        if (inputRouter_dialogs == null) inputRouter_dialogs = this::dialogs;
-        return inputRouter_dialogs;
+    public Supplier<DialogInteractions> inputRouterDialogs() {
+        return inputRouterDialogs;
     }
 
-    public GPU router_gpu() {
-        return gpu;
+    public BackgroundSceneLoader backgroundSceneLoader() {
+        return services().backgroundSceneLoader();
     }
 
-    public byte[] router_romData() {
-        return services.romData();
+    public CutsceneManager cutsceneManager() {
+        return services().cutsceneManager();
     }
 
-    public RoomSession router_roomSession() {
-        return services.roomSession();
-    }
-
-    public int router_ROOM_PIXEL_WIDTH() {
-        return ROOM_PIXEL_WIDTH;
-    }
-
-    public int router_ROOM_PIXEL_HEIGHT() {
-        return ROOM_PIXEL_HEIGHT;
-    }
-
-    public InputState router_inputState() {
-        return services.inputState();
-    }
-
-    public PlayerState router_playerState() {
-        return services.playerState();
-    }
-
-    public BackgroundSceneLoader router_backgroundSceneLoader() {
-        return services.backgroundSceneLoader();
-    }
-
-    public MusicDirector router_musicDirector() {
-        return musicDirector;
-    }
-
-    public CutsceneManager router_cutsceneManager() {
-        return services.cutsceneManager();
-    }
-
-    public SaveRamStore router_saveRamStore() {
+    public SaveRamStore saveRamStore() {
         return saveRamStore;
     }
 
-    public Link router_link() {
-        return services.link();
-    }
-
-    public Screen router_titleScreen() {
+    public Screen titleScreen() {
         return titleScreen;
     }
 
-    public Screen router_cutsceneScreen() {
+    public Screen cutsceneScreen() {
         return cutsceneScreen;
     }
 
-    public Screen router_fileMenuScreen() {
+    public Screen fileMenuScreen() {
         return fileMenuScreen;
     }
 
-    public Screen router_gameplayScreen() {
+    public Screen gameplayScreen() {
         return gameplayScreen;
     }
 
-    public AppConfig router_config() {
-        return currentAppConfig();
+    private final Supplier<Screen> routerScreen;
+
+    public Supplier<Screen> routerScreen() {
+        return routerScreen;
     }
 
-    private Supplier<Screen> router_screen;
+    private final Consumer<Screen> routerShowScreen;
 
-    public Supplier<Screen> router_screen() {
-        if (router_screen == null) router_screen = () -> currentScreen;
-        return router_screen;
+    public Consumer<Screen> showScreen() {
+        return routerShowScreen;
     }
 
-    private Consumer<Screen> router_showScreen;
+    private final Consumer<BackgroundScene> routerBackground;
 
-    public Consumer<Screen> router_showScreen() {
-        if (router_showScreen == null) router_showScreen = value -> currentScreen = value;
-        return router_showScreen;
+    public Consumer<BackgroundScene> routerBackground() {
+        return routerBackground;
     }
 
-    private Consumer<BackgroundScene> router_background;
+    private final Consumer<FileMenuController> routerSetFileMenu;
 
-    public Consumer<BackgroundScene> router_background() {
-        if (router_background == null)
-            router_background = backgroundValue -> {
-                scene.currentTilemap = backgroundValue.tilemap();
-                scene.currentAttrmap = backgroundValue.attrmap();
-                scene.bgPalettes = backgroundValue.palettes();
-                scene.objPalettes = backgroundValue.objectPalettes();
-            };
-        return router_background;
+    public Consumer<FileMenuController> setFileMenu() {
+        return routerSetFileMenu;
     }
 
-    private Consumer<FileMenuController> router_setFileMenu;
+    private final Runnable routerClearSaveSlot;
 
-    public Consumer<FileMenuController> router_setFileMenu() {
-        if (router_setFileMenu == null) router_setFileMenu = value -> screens.fileMenuController = value;
-        return router_setFileMenu;
+    public Runnable clearSaveSlot() {
+        return routerClearSaveSlot;
     }
 
-    private Runnable router_clearSaveSlot;
+    private final Runnable routerResetDebug;
 
-    public Runnable router_clearSaveSlot() {
-        if (router_clearSaveSlot == null) router_clearSaveSlot = () -> screens.currentSaveSlot = -1;
-        return router_clearSaveSlot;
+    public Runnable resetDebug() {
+        return routerResetDebug;
     }
 
-    private Runnable router_resetDebug;
+    private final Runnable routerStartNewGame;
 
-    public Runnable router_resetDebug() {
-        if (router_resetDebug == null) router_resetDebug = () -> debug.debugNoClip = false;
-        return router_resetDebug;
+    public Runnable startNewGame() {
+        return routerStartNewGame;
     }
 
-    private Runnable router_startNewGame;
+    private final Runnable routerClearFileMenuController;
 
-    public Runnable router_startNewGame() {
-        if (router_startNewGame == null) router_startNewGame = () -> saves().startNewGame();
-        return router_startNewGame;
+    public Runnable routerClearFileMenuController() {
+        return routerClearFileMenuController;
     }
 
-    private Runnable router_clearFileMenuController;
+    private final Runnable routerClearFileSaveController;
 
-    public Runnable router_clearFileMenuController() {
-        if (router_clearFileMenuController == null)
-            router_clearFileMenuController = () -> screens.fileMenuController = null;
-        return router_clearFileMenuController;
+    public Runnable routerClearFileSaveController() {
+        return routerClearFileSaveController;
     }
 
-    private Runnable router_clearFileSaveController;
+    private final Runnable routerClearNewGameWakeUpMotion;
 
-    public Runnable router_clearFileSaveController() {
-        if (router_clearFileSaveController == null)
-            router_clearFileSaveController = () -> screens.fileSaveController = null;
-        return router_clearFileSaveController;
+    public Runnable routerClearNewGameWakeUpMotion() {
+        return routerClearNewGameWakeUpMotion;
     }
 
-    private Runnable router_clearNewGameWakeUpMotion;
+    private final Runnable routerClearNewGameTarinShieldMotion;
 
-    public Runnable router_clearNewGameWakeUpMotion() {
-        if (router_clearNewGameWakeUpMotion == null)
-            router_clearNewGameWakeUpMotion = () -> session.newGameWakeUpMotion = null;
-        return router_clearNewGameWakeUpMotion;
+    public Runnable routerClearNewGameTarinShieldMotion() {
+        return routerClearNewGameTarinShieldMotion;
     }
 
-    private Runnable router_clearNewGameTarinShieldMotion;
-
-    public Runnable router_clearNewGameTarinShieldMotion() {
-        if (router_clearNewGameTarinShieldMotion == null)
-            router_clearNewGameTarinShieldMotion = () -> session.newGameTarinShieldMotion = null;
-        return router_clearNewGameTarinShieldMotion;
-    }
-
-    public PlayerState saves_playerState() {
-        return services.playerState();
-    }
-
-    public RoomSession saves_roomSession() {
-        return services.roomSession();
-    }
-
-    public Link saves_link() {
-        return services.link();
-    }
-
-    public GPU saves_gpu() {
-        return gpu;
-    }
-
-    public byte[] saves_romData() {
-        return services.romData();
-    }
-
-    public SaveRamStore saves_saveRamStore() {
-        return saveRamStore;
-    }
-
-    public int saves_currentSaveSlot() {
+    public int currentSaveSlot() {
         return screens.currentSaveSlot;
     }
 
-    public InputState saves_inputState() {
-        return services.inputState();
+    private final Runnable savesEnterGameplay;
+
+    public Runnable savesEnterGameplay() {
+        return savesEnterGameplay;
     }
 
-    private Runnable saves_enterGameplay;
+    private final Runnable savesClearOpening;
 
-    public Runnable saves_enterGameplay() {
-        if (saves_enterGameplay == null)
-            saves_enterGameplay = () -> {
-                screens.fileMenuController = null;
-                screens.fileSaveController = null;
-                currentScreen = gameplayScreen;
-            };
-        return saves_enterGameplay;
+    public Runnable savesClearOpening() {
+        return savesClearOpening;
     }
 
-    private Runnable saves_clearOpening;
+    private final Runnable savesInitializeOpening;
 
-    public Runnable saves_clearOpening() {
-        if (saves_clearOpening == null)
-            saves_clearOpening = () -> {
-                session.newGameWakeUpMotion = null;
-                session.newGameTarinShieldMotion = null;
-            };
-        return saves_clearOpening;
+    public Runnable savesInitializeOpening() {
+        return savesInitializeOpening;
     }
 
-    private Runnable saves_initializeOpening;
+    private final Runnable savesPlayHouseMusic;
 
-    public Runnable saves_initializeOpening() {
-        if (saves_initializeOpening == null)
-            saves_initializeOpening = () -> {
-                session.newGameWakeUpMotion = new MarinWakeUpMotion();
-                session.newGameTarinShieldMotion = new TarinShieldMotion();
-            };
-        return saves_initializeOpening;
+    public Runnable savesPlayHouseMusic() {
+        return savesPlayHouseMusic;
     }
 
-    private Runnable saves_playHouseMusic;
+    private final Runnable savesRefreshOpening;
 
-    public Runnable saves_playHouseMusic() {
-        if (saves_playHouseMusic == null)
-            saves_playHouseMusic = () -> musicDirector.playDirectMusic(MusicDirector.newGameHouseMusicTrack());
-        return saves_playHouseMusic;
+    public Runnable savesRefreshOpening() {
+        return savesRefreshOpening;
     }
 
-    private Runnable saves_refreshOpening;
+    private final Consumer<SaveSlotState> savesRestoreOpening;
 
-    public Runnable saves_refreshOpening() {
-        if (saves_refreshOpening == null)
-            saves_refreshOpening = () -> openingStory().updateNewGameMarinPresentation();
-        return saves_refreshOpening;
+    public Consumer<SaveSlotState> savesRestoreOpening() {
+        return savesRestoreOpening;
     }
 
-    private Consumer<SaveSlotState> saves_restoreOpening;
+    private final Runnable savesStartFileSelection;
 
-    public Consumer<SaveSlotState> saves_restoreOpening() {
-        if (saves_restoreOpening == null)
-            saves_restoreOpening = saved -> openingStory()
-                    .restoreNewGameHouseRuntimeIfNeeded(
-                            saved,
-                            motion -> session.newGameWakeUpMotion = motion,
-                            motion -> session.newGameTarinShieldMotion = motion,
-                            () -> openingStory().updateNewGameMarinPresentation());
-        return saves_restoreOpening;
+    public Runnable startFileSelection() {
+        return savesStartFileSelection;
     }
 
-    private Runnable saves_startFileSelection;
+    private final Runnable savesEnterFileSave;
 
-    public Runnable saves_startFileSelection() {
-        if (saves_startFileSelection == null) saves_startFileSelection = () -> router().startFileSelection();
-        return saves_startFileSelection;
+    public Runnable savesEnterFileSave() {
+        return savesEnterFileSave;
     }
 
-    private Runnable saves_enterFileSave;
+    private final Consumer<FileSaveController> savesShowFileSave;
 
-    public Runnable saves_enterFileSave() {
-        if (saves_enterFileSave == null)
-            saves_enterFileSave = () -> {
-                currentScreen = fileSaveScreen;
-                screens.fileMenuController = null;
-            };
-        return saves_enterFileSave;
+    public Consumer<FileSaveController> showFileSave() {
+        return savesShowFileSave;
     }
 
-    private Consumer<FileSaveController> saves_showFileSave;
+    private final Function<String, BackgroundScene> savesFileMenuBackground;
 
-    public Consumer<FileSaveController> saves_showFileSave() {
-        if (saves_showFileSave == null) saves_showFileSave = controller -> screens.fileSaveController = controller;
-        return saves_showFileSave;
+    public Function<String, BackgroundScene> savesFileMenuBackground() {
+        return savesFileMenuBackground;
     }
 
-    private Function<String, BackgroundScene> saves_fileMenuBackground;
-
-    public Function<String, BackgroundScene> saves_fileMenuBackground() {
-        if (saves_fileMenuBackground == null)
-            saves_fileMenuBackground = label -> router().loadFileMenuBackgroundScene(label);
-        return saves_fileMenuBackground;
-    }
-
-    public GPU renderer_gpu() {
-        return gpu;
-    }
-
-    public GameFrameSceneBuilder renderer_frameSceneBuilder() {
+    public GameFrameSceneBuilder frameSceneBuilder() {
         return frameSceneBuilder;
     }
 
-    public int[] renderer_currentTilemap() {
+    public int[] currentTilemap() {
         return scene.currentTilemap;
     }
 
-    public int[] renderer_currentAttrmap() {
+    public int[] currentAttrmap() {
         return scene.currentAttrmap;
     }
 
-    public int[][] renderer_bgPalettes() {
+    public int[][] bgPalettes() {
         return scene.bgPalettes;
     }
 
-    public int[][] renderer_objPalettes() {
+    public int[][] objPalettes() {
         return scene.objPalettes;
     }
 
-    public byte[] renderer_indexedDisplayBuffer() {
-        return services.indexedDisplayBuffer();
+    public byte[] indexedDisplayBuffer() {
+        return services().indexedDisplayBuffer();
     }
 
-    public RoomSession renderer_roomSession() {
-        return services.roomSession();
+    public int[] greenObjectsSpritePalette() {
+        return greenObjectsSpritePalette;
     }
 
-    public TransitionController renderer_transitionController() {
-        return transitionController;
+    public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
+        return services().cutLeavesEffectRenderer();
     }
 
-    public int renderer_frameCounter() {
-        return session.frameCounter;
+    public Screen currentScreen() {
+        return screens.currentScreen;
     }
 
-    public ScrollController renderer_scrollController() {
-        return scrollController;
-    }
-
-    public int[] renderer_GREEN_OBJECTS_SPRITE_PALETTE() {
-        return GREEN_OBJECTS_SPRITE_PALETTE;
-    }
-
-    public InventoryMenu renderer_inventoryMenu() {
-        return services.inventoryMenu();
-    }
-
-    public InventoryController renderer_inventoryController() {
-        return services.inventoryController();
-    }
-
-    public DialogController renderer_dialogController() {
-        return services.dialogController();
-    }
-
-    public CutsceneManager renderer_cutsceneManager() {
-        return services.cutsceneManager();
-    }
-
-    public TransientVfxSystem renderer_transientVfxSystem() {
-        return services.transientVfxSystem();
-    }
-
-    public DroppableRupeeSystem renderer_droppableRupeeSystem() {
-        return services.droppableRupeeSystem();
-    }
-
-    public CutLeavesEffectRenderer renderer_cutLeavesEffectRenderer() {
-        return services.cutLeavesEffectRenderer();
-    }
-
-    public Link renderer_link() {
-        return services.link();
-    }
-
-    public Screen renderer_currentScreen() {
-        return currentScreen;
-    }
-
-    public int openingStory_frameCounter() {
-        return session.frameCounter;
-    }
-
-    public MarinWakeUpMotion openingStory_newGameWakeUpMotion() {
+    public MarinWakeUpMotion newGameWakeUpMotion() {
         return session.newGameWakeUpMotion;
     }
 
-    public TarinShieldMotion openingStory_newGameTarinShieldMotion() {
+    public TarinShieldMotion newGameTarinShieldMotion() {
         return session.newGameTarinShieldMotion;
     }
 
-    public int[] openingStory_newGameTarinShieldPalette() {
+    public int[] newGameTarinShieldPalette() {
         return newGameTarinShieldPalette;
     }
 
-    public InputState openingStory_inputState() {
-        return services.inputState();
+    private final Supplier<OverworldDialogBlockers> openingStoryBlockers;
+
+    public Supplier<OverworldDialogBlockers> blockers() {
+        return openingStoryBlockers;
     }
 
-    public InputConfig openingStory_inputConfig() {
-        return services.inputConfig();
+    private final IntConsumer openingStoryMusic;
+
+    public IntConsumer music() {
+        return openingStoryMusic;
     }
 
-    public DialogController openingStory_dialogController() {
-        return services.dialogController();
+    private final IntSupplier openingStoryHouseMusic;
+
+    public IntSupplier houseMusic() {
+        return openingStoryHouseMusic;
     }
 
-    public DialogTextLoader openingStory_dialogTextLoader() {
-        return services.dialogTextLoader();
+    private final IntUnaryOperator openingStoryRomDirection;
+
+    public IntUnaryOperator romDirection() {
+        return openingStoryRomDirection;
     }
 
-    public RoomSession openingStory_roomSession() {
-        return services.roomSession();
+    public OverworldBushInteraction overworldBushInteraction() {
+        return services().overworldBushInteraction();
     }
 
-    public Link openingStory_link() {
-        return services.link();
+    public OverworldDialogInteraction overworldDialogInteraction() {
+        return services().overworldDialogInteraction();
     }
 
-    public PlayerState openingStory_playerState() {
-        return services.playerState();
+    private final Supplier<OverworldDialogBlockers> dialogsBlockers;
+
+    public Supplier<OverworldDialogBlockers> dialogsBlockers() {
+        return dialogsBlockers;
     }
 
-    private Supplier<OverworldDialogBlockers> openingStory_blockers;
+    private final IntUnaryOperator liftingDirection;
 
-    public Supplier<OverworldDialogBlockers> openingStory_blockers() {
-        if (openingStory_blockers == null) openingStory_blockers = this::currentOverworldDialogBlockers;
-        return openingStory_blockers;
+    public IntUnaryOperator liftingDirection() {
+        return liftingDirection;
     }
 
-    private IntConsumer openingStory_music;
-
-    public IntConsumer openingStory_music() {
-        if (openingStory_music == null) openingStory_music = musicDirector::playDirectMusic;
-        return openingStory_music;
-    }
-
-    private IntSupplier openingStory_houseMusic;
-
-    public IntSupplier openingStory_houseMusic() {
-        if (openingStory_houseMusic == null) openingStory_houseMusic = MusicDirector::newGameHouseMusicTrack;
-        return openingStory_houseMusic;
-    }
-
-    private IntUnaryOperator openingStory_romDirection;
-
-    public IntUnaryOperator openingStory_romDirection() {
-        if (openingStory_romDirection == null) openingStory_romDirection = this::romDirectionForLink;
-        return openingStory_romDirection;
-    }
-
-    public RoomSession bushes_roomSession() {
-        return services.roomSession();
-    }
-
-    public OverworldBushInteraction bushes_overworldBushInteraction() {
-        return services.overworldBushInteraction();
-    }
-
-    public Link bushes_link() {
-        return services.link();
-    }
-
-    public EquipmentController bushes_equipmentController() {
-        return services.equipmentController();
-    }
-
-    public GameplaySoundSink bushes_gameplaySoundSink() {
-        return session.gameplaySoundSink;
-    }
-
-    public TransientVfxSystem bushes_transientVfxSystem() {
-        return services.transientVfxSystem();
-    }
-
-    public DroppableRupeeSystem bushes_droppableRupeeSystem() {
-        return services.droppableRupeeSystem();
-    }
-
-    public InputConfig dialogs_inputConfig() {
-        return services.inputConfig();
-    }
-
-    public OverworldDialogInteraction dialogs_overworldDialogInteraction() {
-        return services.overworldDialogInteraction();
-    }
-
-    public RoomSession dialogs_roomSession() {
-        return services.roomSession();
-    }
-
-    public Link dialogs_link() {
-        return services.link();
-    }
-
-    public PlayerState dialogs_playerState() {
-        return services.playerState();
-    }
-
-    public DialogController dialogs_dialogController() {
-        return services.dialogController();
-    }
-
-    public DialogTextLoader dialogs_dialogTextLoader() {
-        return services.dialogTextLoader();
-    }
-
-    private Supplier<OverworldDialogBlockers> dialogs_blockers;
-
-    public Supplier<OverworldDialogBlockers> dialogs_blockers() {
-        if (dialogs_blockers == null) dialogs_blockers = this::currentOverworldDialogBlockers;
-        return dialogs_blockers;
-    }
-
-    public InputState lifting_inputState() {
-        return services.inputState();
-    }
-
-    public InputConfig lifting_inputConfig() {
-        return services.inputConfig();
-    }
-
-    public PlayerState lifting_playerState() {
-        return services.playerState();
-    }
-
-    public Link lifting_link() {
-        return services.link();
-    }
-
-    public RoomSession lifting_roomSession() {
-        return services.roomSession();
-    }
-
-    private IntUnaryOperator lifting_direction;
-
-    public IntUnaryOperator lifting_direction() {
-        if (lifting_direction == null) lifting_direction = this::romDirectionForLink;
-        return lifting_direction;
-    }
-
-    GameplayFrame gameplayFrame;
-    LiftInteraction liftingInstance;
-    DialogInteractions dialogsInstance;
-    BushInteraction bushesInstance;
-    OpeningStory openingStoryInstance;
-    RenderStateAssembler rendererInstance;
-    SaveCoordinator savesInstance;
-    ScreenRouter routerInstance;
-    InputRouter inputRouterInstance;
-    GameplaySimulation simulationInstance;
+    final GameplayFrame gameplayFrame;
+    final LiftInteraction liftingInstance;
+    final DialogInteractions dialogsInstance;
+    final BushInteraction bushesInstance;
+    final OpeningStory openingStoryInstance;
+    final RenderStateAssembler rendererInstance;
+    final SaveCoordinator savesInstance;
+    final ScreenRouter routerInstance;
+    final InputRouter inputRouterInstance;
+    final GameplaySimulation simulationInstance;
     final ScreenState screens = new ScreenState();
     final DebugState debug = new DebugState();
     final SceneState scene = new SceneState();
 
-    SessionBootstrap.Collaborators services;
+    final SessionBootstrap.Collaborators services;
 
     Host host = new HeadlessHost();
     GPU gpu;
@@ -897,15 +676,15 @@ public final class SessionContext {
     boolean running = true;
 
     // Room pixel dimensions
-    final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8; // 160
-    final int ROOM_PIXEL_HEIGHT = ROOM_TILE_HEIGHT * 8; // 128
+    final int roomPixelWidth = ROOM_TILE_WIDTH * 8; // 160
+    final int roomPixelHeight = ROOM_TILE_HEIGHT * 8; // 128
 
     // Scroll state
-    final int SCROLL_SPEED = 4; // pixels per frame (original uses ~2-4px)
+    final int scrollSpeed = 4; // pixels per frame (original uses ~2-4px)
 
     final ScrollController scrollController = new ScrollController();
     // Mirrors the first OBJ palette entry used for Link and leaf particles.
-    final int[] GREEN_OBJECTS_SPRITE_PALETTE = {
+    final int[] greenObjectsSpritePalette = {
         0x00000000, 0x00000000, 0x0010A840, 0x00F8B888,
     };
 
@@ -915,22 +694,22 @@ public final class SessionContext {
     int[] newGameTarinShieldPalette;
     AppConfig appConfig;
     final Screen titleScreen = new TitleScreen(new TitleScreen.Dependencies(
-            () -> services.cutsceneManager(), () -> services.inputState(), () -> router().startFileSelection()));
+            () -> services().cutsceneManager(), () -> services().inputState(), () -> router().startFileSelection()));
     final Screen cutsceneScreen = new CutsceneScreen(new CutsceneScreen.Dependencies(
-            () -> services.cutsceneManager(),
-            () -> services.inputState(),
-            () -> services.dialogController(),
-            () -> services.inputConfig(),
+            () -> services().cutsceneManager(),
+            () -> services().inputState(),
+            () -> services().dialogController(),
+            () -> services().inputConfig(),
             this::routeDialogSounds,
-            () -> currentScreen = titleScreen,
+            () -> screens.currentScreen = titleScreen,
             () -> {
-                currentScreen = titleScreen;
+                screens.currentScreen = titleScreen;
                 musicDirector.playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             }));
     final Screen fileMenuScreen = new FileMenuScreen(new FileMenuScreen.Dependencies(
             () -> screens.fileMenuController,
-            () -> services.inputState(),
-            () -> services.inputConfig(),
+            () -> services().inputState(),
+            () -> services().inputConfig(),
             () -> saveRamStore,
             slot -> screens.currentSaveSlot = slot,
             () -> saves().startNewGame(),
@@ -939,11 +718,11 @@ public final class SessionContext {
             this::completeInputFrame));
     final Screen fileSaveScreen = new FileSaveScreen(new FileSaveScreen.Dependencies(
             () -> screens.fileSaveController,
-            () -> services.inputState(),
-            () -> services.inputConfig(),
+            () -> services().inputState(),
+            () -> services().inputConfig(),
             () -> {
                 screens.fileSaveController = null;
-                currentScreen = this.gameplayScreen;
+                screens.currentScreen = this.gameplayScreen;
             },
             () -> saves().saveCurrentPlayerState(),
             () -> router().startFileSelection(),
@@ -953,48 +732,38 @@ public final class SessionContext {
             (key, action) -> inputRouter().gameplayKey(key, action),
             () -> this.passOutController.snapshot(),
             () -> inputRouter().tryPresentFileSave());
-    Screen currentScreen = titleScreen;
 
-    /** Initializes this session using the desktop update, input and render paths. */
-
-    /** Starts the production reset intro without creating a native window. */
-
-    /** Applies the configured player profile before a direct gameplay launch. */
-
-    /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
-    final linksawakening.app.gameplay.PassOutController passOutController =
-            new linksawakening.app.gameplay.PassOutController();
+    final PassOutController passOutController = new PassOutController();
 
     void composeFrameBuffer() {
         renderer().composeFrameBuffer();
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
-            if (debug.debugMenuOverlay == null)
-                debug.debugMenuOverlay = new linksawakening.app.debug.DebugMenuOverlay();
-            debug.debugMenuOverlay.render(debug.debugMenu, services.indexedDisplayBuffer());
+            if (debug.debugMenuOverlay == null) debug.debugMenuOverlay = new DebugMenuOverlay();
+            debug.debugMenuOverlay.render(debug.debugMenu, services().indexedDisplayBuffer());
         }
     }
 
     void onKeyEvent(int key, int action) {
         if (debug.debugMenu != null && debug.debugMenu.isOpen()) {
             debug.debugMenu.key(key, action);
-            services.inputState().clear();
+            services().inputState().clear();
             gameplayScreen.clearPendingInput();
             return;
         }
-        if (currentAppConfig().debugEnabled() && linksawakening.app.debug.DebugMenu.isToggle(key, action)) {
-            if (currentScreen == gameplayScreen
+        if (currentAppConfig().debugEnabled() && DebugMenu.isToggle(key, action)) {
+            if (screens.currentScreen == gameplayScreen
                     && inputRouter().canPresentFileSave()
-                    && !services.roomSession().tailCaveKeyholeSequenceActive()) {
+                    && !services().roomSession().tailCaveKeyholeSequenceActive()) {
                 if (debug.debugMenu == null)
-                    debug.debugMenu = new linksawakening.app.debug.DebugMenu(
-                            services.playerState(), services.roomSession(), this::debugTeleport);
+                    debug.debugMenu =
+                            new DebugMenu(services().playerState(), services().roomSession(), this::debugTeleport);
                 debug.debugMenu.open(
-                        services.roomSession().mapCategory(),
-                        services.roomSession().mapId(),
-                        services.roomSession().currentRoomId(),
-                        services.link().pixelX(),
-                        services.link().pixelY());
-                services.inputState().clear();
+                        services().roomSession().mapCategory(),
+                        services().roomSession().mapId(),
+                        services().roomSession().currentRoomId(),
+                        services().link().pixelX(),
+                        services().link().pixelY());
+                services().inputState().clear();
                 gameplayScreen.clearPendingInput();
             }
             return;
@@ -1002,18 +771,17 @@ public final class SessionContext {
         inputRouter().onKeyEvent(key, action);
     }
 
-    void debugTeleport(linksawakening.world.transition.Warp destination) {
-        services.roomSession().loadWarpDestination(destination);
+    void debugTeleport(Warp destination) {
+        services().roomSession().loadWarpDestination(destination);
         session.newGameWakeUpMotion = null;
         session.newGameTarinShieldMotion = null;
-        services.link().resetTransientStateForDebug();
-        services.link().setDebugNoClip(debug.debugNoClip);
-        services.link()
-                .setSideScrolling(destination.category() == linksawakening.world.transition.Warp.CATEGORY_SIDESCROLL);
-        services.link().setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
-        services.transientVfxSystem().clear();
-        services.droppableRupeeSystem().clear();
-        services.inputState().clear();
+        services().link().resetTransientStateForDebug();
+        services().link().setDebugNoClip(debug.debugNoClip);
+        services().link().setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);
+        services().link().setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
+        services().transientVfxSystem().clear();
+        services().droppableRupeeSystem().clear();
+        services().inputState().clear();
         gameplayScreen.clearPendingInput();
     }
 
@@ -1023,12 +791,12 @@ public final class SessionContext {
 
     void completeInputFrame() {
         // Run last so all consumers observe this frame's input edges.
-        services.inputState().tickEdges();
+        services().inputState().tickEdges();
         overworldDialogInputConsumedThisFrame = false;
     }
 
     void routeDialogSounds() {
-        DialogSoundRouter.routePending(services.dialogController(), services.dialogSoundSink());
+        DialogSoundRouter.routePending(services().dialogController(), services().dialogSoundSink());
     }
 
     int romDirectionForLink(int javaDirection) {
@@ -1043,11 +811,10 @@ public final class SessionContext {
 
     OverworldDialogBlockers currentOverworldDialogBlockers() {
         return new OverworldDialogBlockers(
-                services.inventoryController() != null
-                        && services.inventoryController().shouldBlockOverworldInput(),
+                services().inventoryController().shouldBlockOverworldInput(),
                 scrollController.isActive(),
                 transitionController.isInputBlocked(),
-                GameplayDialogInput.blocksGameplay(services.dialogController()),
+                GameplayDialogInput.blocksGameplay(services().dialogController()),
                 overworldDialogInputConsumedThisFrame);
     }
 
@@ -1057,48 +824,6 @@ public final class SessionContext {
 
     OpeningStory openingStory() {
         return openingStoryInstance;
-    }
-
-    void initialize(boolean headless) {
-        host = headless
-                ? (session.headlessPcm == null ? new HeadlessHost() : new HeadlessHost(session.headlessPcm))
-                : new DesktopHost();
-        gpu = new GPU();
-        var built = new SessionBootstrap(
-                        session.random,
-                        gpu,
-                        transitionController,
-                        scrollController,
-                        new SessionBootstrap.Callbacks(
-                                (scene) -> router().setCutsceneScene(scene),
-                                room -> musicDirector.selectMusicForLoadedRoom(
-                                        room, services.playerState(), services.roomSession()),
-                                this::romDirectionForLink),
-                        host)
-                .build(headless);
-        services = built;
-        session.gameplaySoundSink = built.gameplaySoundSink();
-        scene.bgPalettes = built.bgPalettes();
-        scene.objPalettes = built.objPalettes();
-        appConfig = built.appConfig();
-        scene.currentTilemap = built.currentTilemap();
-        scene.currentAttrmap = built.currentAttrmap();
-        musicDirector = new MusicDirector(services.musicPlayer(), services.gameplayMusicController());
-        saveRamStore = built.saveRamStore();
-        newGameTarinShieldPalette = built.newGameTarinShieldPalette();
-        gameplayFrame = new GameplayFrame(
-                new TransitionPhase(scrollController, transitionController, services.link(), SCROLL_SPEED),
-                () -> simulation().tick(),
-                this::completeInputFrame);
-        liftingInstance = new LiftInteraction(this);
-        dialogsInstance = new DialogInteractions(this);
-        bushesInstance = new BushInteraction(this);
-        openingStoryInstance = new OpeningStory(this);
-        rendererInstance = new RenderStateAssembler(this);
-        savesInstance = new SaveCoordinator(this);
-        routerInstance = new ScreenRouter(this);
-        inputRouterInstance = new InputRouter(this);
-        simulationInstance = new GameplaySimulation(this);
     }
 
     SaveCoordinator saves() {
@@ -1118,12 +843,12 @@ public final class SessionContext {
     }
 
     void finishGameOver(int option) {
-        var sword = services.equipmentController().activeSword();
+        var sword = services().equipmentController().activeSword();
         if (sword != null) sword.resetAfterGameOver();
         passOutController.clear();
         saves().finishGameOver(option);
-        services.transientVfxSystem().clear();
-        services.droppableRupeeSystem().clear();
+        services().transientVfxSystem().clear();
+        services().droppableRupeeSystem().clear();
     }
 
     GameplaySimulation simulation() {

@@ -14,9 +14,7 @@ import linksawakening.world.transition.Warp;
 final class CombatPhase {
     Sword.CollisionBox tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
         Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();
-        if (context.link() != null
-                && context.roomSession() != null
-                && !context.scrollController().isActive()
+        if (!context.scrollController().isActive()
                 && !context.transitionController().isInputBlocked()
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
@@ -57,7 +55,7 @@ final class CombatPhase {
             for (EntityCombatEvent event : combatEvents) {
                 if (event.linkDamage() > 0
                         && context.playerState().invincibilityCounter() == 0
-                        && (context.link() == null || !context.link().isCollisionDamageImmune())) {
+                        && (!context.link().isCollisionDamageImmune())) {
                     int previousPowerUp = context.playerState().activePowerUp();
                     context.playerState().applyRomEnemyDamage(event.linkDamage());
                     if (previousPowerUp != PlayerState.ACTIVE_POWER_UP_NONE

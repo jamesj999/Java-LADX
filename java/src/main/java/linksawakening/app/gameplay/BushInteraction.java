@@ -2,6 +2,8 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
+import linksawakening.app.SessionContext;
 import linksawakening.entity.Link;
 import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
@@ -16,47 +18,44 @@ import linksawakening.world.transition.Warp;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class BushInteraction {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public BushInteraction(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public BushInteraction(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public RoomSession roomSession() {
-        return context.bushes_roomSession();
+        return context.roomSession();
     }
 
     public OverworldBushInteraction overworldBushInteraction() {
-        return context.bushes_overworldBushInteraction();
+        return context.overworldBushInteraction();
     }
 
     public Link link() {
-        return context.bushes_link();
+        return context.link();
     }
 
     public EquipmentController equipmentController() {
-        return context.bushes_equipmentController();
+        return context.equipmentController();
     }
 
     public GameplaySoundSink gameplaySoundSink() {
-        return context.bushes_gameplaySoundSink();
+        return context.gameplaySoundSink();
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return context.bushes_transientVfxSystem();
+        return context.transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.bushes_droppableRupeeSystem();
+        return context.droppableRupeeSystem();
     }
 
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
 
     public void maybeCutBushWithSword() {
-        if (roomSession() == null
-                || !roomSession().hasActiveRoom()
-                || overworldBushInteraction() == null
-                || link() == null) {
+        if (!roomSession().hasActiveRoom() || overworldBushInteraction() == null) {
             return;
         }
         ActiveRoom room = roomSession().activeRoom();
@@ -102,7 +101,7 @@ public final class BushInteraction {
 
         gameplaySoundSink().play(cutResult.soundEvent());
 
-        if (transientVfxSystem() != null && cutResult.bushLeavesVisible()) {
+        if (cutResult.bushLeavesVisible()) {
             transientVfxSystem()
                     .spawn(
                             TransientVfxType.BUSH_LEAVES,
@@ -110,7 +109,7 @@ public final class BushInteraction {
                             overworldBushInteraction().effectOriginYForLocation(location));
         }
 
-        if (droppableRupeeSystem() != null) {
+        {
             droppableRupeeSystem()
                     .maybeSpawnFromBush(
                             originalObjectId,

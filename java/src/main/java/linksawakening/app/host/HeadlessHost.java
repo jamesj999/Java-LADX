@@ -1,21 +1,23 @@
 package linksawakening.app.host;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import linksawakening.gameplay.PcmSoundOutput;
 
 /** Window-free host used by replay sessions. */
 public final class HeadlessHost implements Host {
-    private final linksawakening.gameplay.PcmSoundOutput output;
+    private final PcmSoundOutput output;
 
     public HeadlessHost() {
         this((pcm, rate) -> {});
     }
 
-    public HeadlessHost(linksawakening.gameplay.PcmSoundOutput output) {
-        this.output = java.util.Objects.requireNonNull(output);
+    public HeadlessHost(PcmSoundOutput output) {
+        this.output = Objects.requireNonNull(output);
     }
 
     @Override
-    public linksawakening.gameplay.PcmSoundOutput createPcmOutput() {
+    public PcmSoundOutput createPcmOutput() {
         return output;
     }
 

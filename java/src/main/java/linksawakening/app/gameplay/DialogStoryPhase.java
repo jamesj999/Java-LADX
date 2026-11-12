@@ -8,22 +8,18 @@ import linksawakening.gameplay.SignpostDialogRef;
 
 final class DialogStoryPhase {
     boolean tick(GameplaySimulation context) {
-        if (context.playerState() != null
-                && (context.inventoryMenu() == null || context.inventoryMenu().isFullyClosed())) {
+        if ((context.inventoryMenu().isFullyClosed())) {
             context.playerState().latchFullHearts();
         }
-        if (context.roomSession() != null) {
+        {
             // $00:0F22 runs before world transitions and dialog gates.
             // The separate inventory gameplay handler does not run it.
             context.roomSession()
-                    .advanceBoomerangSoundClock(context.inventoryMenu() == null
-                            || context.inventoryMenu().transition().worldHandlerActive());
+                    .advanceBoomerangSoundClock(
+                            context.inventoryMenu().transition().worldHandlerActive());
         }
         context.scrollController().tickScreenShake();
-        if (context.roomSession() != null
-                && context.link() != null
-                && context.dialogController() != null
-                && !context.transitionController().isInputBlocked()) {
+        if (!context.transitionController().isInputBlocked()) {
             int dungeonTitle = context.roomSession()
                     .tickDungeonTitleMessage(
                             context.dialogController().isActive(),
@@ -38,7 +34,7 @@ final class DialogStoryPhase {
                                         context.link().pixelY()));
             }
         }
-        if (context.dialogController() != null) {
+        {
             context.dialogController().tick();
             context.dialogSounds().run();
         }

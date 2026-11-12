@@ -2,6 +2,7 @@ package linksawakening.app;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import linksawakening.app.screen.Screen;
@@ -24,122 +25,122 @@ import linksawakening.ui.FileMenuRomData;
 import linksawakening.world.room.RoomSession;
 
 public final class ScreenRouter {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public ScreenRouter(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public ScreenRouter(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public GPU gpu() {
-        return context.router_gpu();
+        return context.gpu();
     }
 
     public byte[] romData() {
-        return context.router_romData();
+        return context.romData();
     }
 
     public RoomSession roomSession() {
-        return context.router_roomSession();
+        return context.roomSession();
     }
 
     public int ROOM_PIXEL_WIDTH() {
-        return context.router_ROOM_PIXEL_WIDTH();
+        return context.roomPixelWidth();
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.router_ROOM_PIXEL_HEIGHT();
+        return context.roomPixelHeight();
     }
 
     public InputState inputState() {
-        return context.router_inputState();
+        return context.inputState();
     }
 
     public PlayerState playerState() {
-        return context.router_playerState();
+        return context.playerState();
     }
 
     public BackgroundSceneLoader backgroundSceneLoader() {
-        return context.router_backgroundSceneLoader();
+        return context.backgroundSceneLoader();
     }
 
     public MusicDirector musicDirector() {
-        return context.router_musicDirector();
+        return context.musicDirector();
     }
 
     public CutsceneManager cutsceneManager() {
-        return context.router_cutsceneManager();
+        return context.cutsceneManager();
     }
 
     public SaveRamStore saveRamStore() {
-        return context.router_saveRamStore();
+        return context.saveRamStore();
     }
 
     public Link link() {
-        return context.router_link();
+        return context.link();
     }
 
     public Screen titleScreen() {
-        return context.router_titleScreen();
+        return context.titleScreen();
     }
 
     public Screen cutsceneScreen() {
-        return context.router_cutsceneScreen();
+        return context.cutsceneScreen();
     }
 
     public Screen fileMenuScreen() {
-        return context.router_fileMenuScreen();
+        return context.fileMenuScreen();
     }
 
     public Screen gameplayScreen() {
-        return context.router_gameplayScreen();
+        return context.gameplayScreen();
     }
 
     public AppConfig config() {
-        return context.router_config();
+        return context.config();
     }
 
     public Supplier<Screen> screen() {
-        return context.router_screen();
+        return context.routerScreen();
     }
 
     public Consumer<Screen> showScreen() {
-        return context.router_showScreen();
+        return context.showScreen();
     }
 
     public Consumer<BackgroundScene> background() {
-        return context.router_background();
+        return context.routerBackground();
     }
 
     public Consumer<FileMenuController> setFileMenu() {
-        return context.router_setFileMenu();
+        return context.setFileMenu();
     }
 
     public Runnable clearSaveSlot() {
-        return context.router_clearSaveSlot();
+        return context.clearSaveSlot();
     }
 
     public Runnable resetDebug() {
-        return context.router_resetDebug();
+        return context.resetDebug();
     }
 
     public Runnable startNewGame() {
-        return context.router_startNewGame();
+        return context.startNewGame();
     }
 
     public Runnable clearFileMenuController() {
-        return context.router_clearFileMenuController();
+        return context.routerClearFileMenuController();
     }
 
     public Runnable clearFileSaveController() {
-        return context.router_clearFileSaveController();
+        return context.routerClearFileSaveController();
     }
 
     public Runnable clearNewGameWakeUpMotion() {
-        return context.router_clearNewGameWakeUpMotion();
+        return context.routerClearNewGameWakeUpMotion();
     }
 
     public Runnable clearNewGameTarinShieldMotion() {
-        return context.router_clearNewGameTarinShieldMotion();
+        return context.routerClearNewGameTarinShieldMotion();
     }
 
     public void startIntroCutscene() {
@@ -222,10 +223,10 @@ public final class ScreenRouter {
     }
 
     public void startDebugGameplay() {
-        if (playerState() == null || roomSession() == null || link() == null) {
+        if (link() == null) {
             return;
         }
-        if (screen().get() == cutsceneScreen() && cutsceneManager() != null) {
+        if (screen().get() == cutsceneScreen()) {
             cutsceneManager().skipIntroToTitle();
         }
         clearFileMenuController().run();
@@ -244,7 +245,7 @@ public final class ScreenRouter {
         link().setDirection(Link.DIRECTION_DOWN);
         gpu().loadBaseTiles(romData());
         loadOverworldScreen();
-        System.out.println("Debug gameplay started (F3 toggles no-clip)");
+        DebugLog.log("Debug gameplay started (F3 toggles no-clip)");
     }
 
     public void startConfiguredLocationGameplay() {

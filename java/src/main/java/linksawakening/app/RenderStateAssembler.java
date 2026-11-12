@@ -2,6 +2,7 @@ package linksawakening.app;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import linksawakening.app.screen.Screen;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
@@ -21,98 +22,98 @@ import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
 public final class RenderStateAssembler {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public RenderStateAssembler(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public RenderStateAssembler(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public GPU gpu() {
-        return context.renderer_gpu();
+        return context.gpu();
     }
 
     public GameFrameSceneBuilder frameSceneBuilder() {
-        return context.renderer_frameSceneBuilder();
+        return context.frameSceneBuilder();
     }
 
     public int[] currentTilemap() {
-        return context.renderer_currentTilemap();
+        return context.currentTilemap();
     }
 
     public int[] currentAttrmap() {
-        return context.renderer_currentAttrmap();
+        return context.currentAttrmap();
     }
 
     public int[][] bgPalettes() {
-        return context.renderer_bgPalettes();
+        return context.bgPalettes();
     }
 
     public int[][] objPalettes() {
-        return context.renderer_objPalettes();
+        return context.objPalettes();
     }
 
     public byte[] indexedDisplayBuffer() {
-        return context.renderer_indexedDisplayBuffer();
+        return context.indexedDisplayBuffer();
     }
 
     public RoomSession roomSession() {
-        return context.renderer_roomSession();
+        return context.roomSession();
     }
 
     public TransitionController transitionController() {
-        return context.renderer_transitionController();
+        return context.transitionController();
     }
 
     public int frameCounter() {
-        return context.renderer_frameCounter();
+        return context.frameCounter();
     }
 
     public ScrollController scrollController() {
-        return context.renderer_scrollController();
+        return context.scrollController();
     }
 
     public int[] GREEN_OBJECTS_SPRITE_PALETTE() {
-        return context.renderer_GREEN_OBJECTS_SPRITE_PALETTE();
+        return context.greenObjectsSpritePalette();
     }
 
     public InventoryMenu inventoryMenu() {
-        return context.renderer_inventoryMenu();
+        return context.inventoryMenu();
     }
 
     public InventoryController inventoryController() {
-        return context.renderer_inventoryController();
+        return context.inventoryController();
     }
 
     public DialogController dialogController() {
-        return context.renderer_dialogController();
+        return context.dialogController();
     }
 
     public CutsceneManager cutsceneManager() {
-        return context.renderer_cutsceneManager();
+        return context.cutsceneManager();
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return context.renderer_transientVfxSystem();
+        return context.transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.renderer_droppableRupeeSystem();
+        return context.droppableRupeeSystem();
     }
 
     public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
-        return context.renderer_cutLeavesEffectRenderer();
+        return context.cutLeavesEffectRenderer();
     }
 
     public Link link() {
-        return context.renderer_link();
+        return context.link();
     }
 
     public Screen currentScreen() {
-        return context.renderer_currentScreen();
+        return context.currentScreen();
     }
 
     public void composeFrameBuffer() {
-        if (inventoryMenu() != null && roomSession() != null && roomSession().activeRoom() != null) {
+        if (inventoryMenu() != null && roomSession().activeRoom() != null) {
             inventoryMenu()
                     .setWorldContext(
                             roomSession().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
@@ -138,10 +139,7 @@ public final class RenderStateAssembler {
                                 cutsceneManager() == null
                                         ? null
                                         : cutsceneManager().frameSnapshot())
-                        .withRoom(
-                                roomSession() == null ? null : roomSession().renderSnapshot(),
-                                scrollController(),
-                                transitionController())
+                        .withRoom(roomSession().renderSnapshot(), scrollController(), transitionController())
                         .withLink(link())
                         .withTransientVfx(
                                 transientVfxSystem(), cutLeavesEffectRenderer(), GREEN_OBJECTS_SPRITE_PALETTE())

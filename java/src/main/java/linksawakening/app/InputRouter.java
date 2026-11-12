@@ -3,6 +3,7 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import linksawakening.app.gameplay.DialogInteractions;
 import linksawakening.app.screen.FileSaveScreen;
@@ -27,94 +28,94 @@ import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
 public final class InputRouter {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public InputRouter(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public InputRouter(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public RoomSession roomSession() {
-        return context.inputRouter_roomSession();
+        return context.roomSession();
     }
 
     public TransitionController transitionController() {
-        return context.inputRouter_transitionController();
+        return context.transitionController();
     }
 
     public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return context.inputRouter_roomTransitionCoordinator();
+        return context.roomTransitionCoordinator();
     }
 
     public int ROOM_PIXEL_WIDTH() {
-        return context.inputRouter_ROOM_PIXEL_WIDTH();
+        return context.roomPixelWidth();
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.inputRouter_ROOM_PIXEL_HEIGHT();
+        return context.roomPixelHeight();
     }
 
     public ScrollController scrollController() {
-        return context.inputRouter_scrollController();
+        return context.scrollController();
     }
 
     public InputConfig inputConfig() {
-        return context.inputRouter_inputConfig();
+        return context.inputConfig();
     }
 
     public InputState inputState() {
-        return context.inputRouter_inputState();
+        return context.inputState();
     }
 
     public InventoryController inventoryController() {
-        return context.inputRouter_inventoryController();
+        return context.inventoryController();
     }
 
     public DialogController dialogController() {
-        return context.inputRouter_dialogController();
+        return context.dialogController();
     }
 
     public RomTables romTables() {
-        return context.inputRouter_romTables();
+        return context.romTables();
     }
 
     public Link link() {
-        return context.inputRouter_link();
+        return context.link();
     }
 
     public AppConfig config() {
-        return context.inputRouter_config();
+        return context.config();
     }
 
     public Runnable stop() {
-        return context.inputRouter_stop();
+        return context.stop();
     }
 
     public Runnable toggleDebug() {
-        return context.inputRouter_toggleDebug();
+        return context.inputRouterToggleDebug();
     }
 
     public Supplier<Screen> screen() {
-        return context.inputRouter_screen();
+        return context.screen();
     }
 
     public Runnable consumeDialogInput() {
-        return context.inputRouter_consumeDialogInput();
+        return context.inputRouterConsumeDialogInput();
     }
 
     public Runnable startDebug() {
-        return context.inputRouter_startDebug();
+        return context.startDebug();
     }
 
     public Supplier<OpeningStory> story() {
-        return context.inputRouter_story();
+        return context.inputRouterStory();
     }
 
     public Runnable fileSave() {
-        return context.inputRouter_fileSave();
+        return context.fileSave();
     }
 
     public Supplier<DialogInteractions> dialogs() {
-        return context.inputRouter_dialogs();
+        return context.inputRouterDialogs();
     }
 
     public void onKeyEvent(int key, int action) {
@@ -130,7 +131,7 @@ public final class InputRouter {
             }
             return;
         }
-        if (inputState() != null) {
+        {
             inputState().onKeyEvent(key, action);
         }
 
@@ -139,7 +140,7 @@ public final class InputRouter {
                 startDebug().run();
                 return;
             }
-            if (key == GLFW_KEY_F3 && link() != null) {
+            if (key == GLFW_KEY_F3) {
                 toggleDebug().run();
                 return;
             }
@@ -149,10 +150,10 @@ public final class InputRouter {
     }
 
     public void gameplayKey(int key, int action) {
-        if (link() != null && link().isPassingOut()) return;
+        if (link().isPassingOut()) return;
         if (action != GLFW_PRESS) return;
 
-        if (roomSession() != null && roomSession().tailCaveKeyholeSequenceActive()) {
+        if (roomSession().tailCaveKeyholeSequenceActive()) {
             return;
         }
 
@@ -169,7 +170,7 @@ public final class InputRouter {
         }
         // ApplyGotItem bypasses InitGotItemSequence ($00:1040-1077),
         // including its inventory/map and normal interaction input.
-        if (link() != null && link().dialogGotItemActive()) return;
+        if (link().dialogGotItemActive()) return;
 
         if (story().get().tryOpenTarinShieldDialog(key)) {
             return;
@@ -184,8 +185,7 @@ public final class InputRouter {
             return;
         }
 
-        if (link() == null || !link().recoveryBlocksInput())
-            inventoryController().dispatchToggleInput();
+        if (!link().recoveryBlocksInput()) inventoryController().dispatchToggleInput();
 
         // Debug: F1 dumps Link's surrounding cells with object IDs and
         // physics flags, to diagnose walk-through-wall/tree reports.
@@ -203,16 +203,15 @@ public final class InputRouter {
     }
 
     public void dumpLinkSurroundings() {
-        if (link() == null || roomSession() == null || !roomSession().hasActiveRoom()) return;
+        if (!roomSession().hasActiveRoom()) return;
         ActiveRoom room = roomSession().activeRoom();
         int[] roomObjectsArea = room.roomObjectsArea();
         int lx = link().pixelX();
         int ly = link().pixelY();
-        System.out.println("=== Link debug dump ===");
-        System.out.println("roomId=" + String.format("%02X", room.roomId()) + " mapCat=" + room.mapCategory()
-                + " mapId=" + String.format("%02X", room.mapId()));
-        System.out.println(
-                "Link pixel (" + lx + "," + ly + ") tile=" + String.format("%02X", Warp.packTileLocation(lx, ly)));
+        DebugLog.log("=== Link debug dump ===");
+        DebugLog.log("roomId=" + String.format("%02X", room.roomId()) + " mapCat=" + room.mapCategory() + " mapId="
+                + String.format("%02X", room.mapId()));
+        DebugLog.log("Link pixel (" + lx + "," + ly + ") tile=" + String.format("%02X", Warp.packTileLocation(lx, ly)));
         int centerCol = (lx + 8) >> 4;
         int centerRow = (ly + 8) >> 4;
         int tableIdx = (room.mapCategory() == Warp.CATEGORY_OVERWORLD)
@@ -236,7 +235,7 @@ public final class InputRouter {
                         .append(String.format("%02X", flag))
                         .append(")");
             }
-            System.out.println(sb.toString());
+            DebugLog.log(sb.toString());
         }
     }
 
@@ -256,7 +255,6 @@ public final class InputRouter {
         if (direction == ScrollController.NONE
                 || scrollController().isActive()
                 || transitionController().isInputBlocked()
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()) {
             return false;
         }
@@ -284,8 +282,8 @@ public final class InputRouter {
     public boolean tryPresentFileSave() {
         // Consume before gating: a blocked desktop request must not fire later.
         boolean requested = screen().get() instanceof GameplayScreen gameplay && gameplay.consumeFileSaveRequest();
-        if (link() != null && link().isPassingOut()
-                || roomSession() != null && roomSession().tailCaveKeyholeSequenceActive()
+        if (link().isPassingOut()
+                || roomSession().tailCaveKeyholeSequenceActive()
                 || story().get().marinWakeUpBlocksKeyInput()) return false;
         if ((requested
                         || shouldEnterFileSave(
@@ -313,11 +311,11 @@ public final class InputRouter {
     }
 
     public boolean canPresentFileSave() {
-        return (link() == null || !link().recoveryBlocksInput())
+        return (!link().recoveryBlocksInput())
                 && !scrollController().isActive()
                 && !transitionController().isInputBlocked()
-                && (inventoryController() == null || !inventoryController().shouldBlockOverworldInput())
-                && (dialogController() == null || !GameplayDialogInput.blocksGameplay(dialogController()));
+                && (!inventoryController().shouldBlockOverworldInput())
+                && (!GameplayDialogInput.blocksGameplay(dialogController()));
     }
 
     public void headlessButton(String button, boolean pressed) {

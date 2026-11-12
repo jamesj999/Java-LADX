@@ -2,6 +2,7 @@ package linksawakening.app;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import linksawakening.app.gameplay.BushInteraction;
 import linksawakening.app.gameplay.DialogInteractions;
 import linksawakening.app.gameplay.GameplaySimulation;
@@ -9,10 +10,12 @@ import linksawakening.app.gameplay.LiftInteraction;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.config.AppConfig;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.startup.TarinShieldMotion;
 import linksawakening.world.entity.RomRandomByteSource;
+import linksawakening.world.transition.Warp;
 
 public class GameSession {
     GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
@@ -21,13 +24,13 @@ public class GameSession {
 
     TarinShieldMotion newGameTarinShieldMotion;
 
-    linksawakening.gameplay.PcmSoundOutput headlessPcm;
+    PcmSoundOutput headlessPcm;
 
     int frameCounter;
 
     final RomRandomByteSource random;
 
-    final long FRAME_DURATION_NS = 1_000_000_000L / 60L;
+    final long frameDurationNs = 1_000_000_000L / 60L;
 
     SessionContext context;
 
@@ -62,7 +65,7 @@ public class GameSession {
             context.composeFrameBuffer();
             context.host.present(context.services.indexedDisplayBuffer());
 
-            nextFrameNs += FRAME_DURATION_NS;
+            nextFrameNs += frameDurationNs;
             long sleepNs = nextFrameNs - System.nanoTime();
             if (sleepNs > 0) {
                 try {
@@ -80,17 +83,7 @@ public class GameSession {
     }
 
     public HeadlessGameDriver.Diagnostics diagnostics() {
-        return new HeadlessGameDriver.Diagnostics(
-                context.gpu,
-                context.services.roomSession(),
-                context.transitionController,
-                frameCounter,
-                context.scrollController,
-                context.services.playerState(),
-                context.services.inventoryMenu(),
-                context.services.dialogController(),
-                context.services.equipmentController(),
-                context.services.link());
+        return new HeadlessGameDriver.Diagnostics(context);
     }
 
     public void headlessButton(String button, boolean pressed) {
@@ -102,12 +95,12 @@ public class GameSession {
     }
 
     public GameSession(RomRandomByteSource random) {
-        this.random = java.util.Objects.requireNonNull(random);
+        this.random = Objects.requireNonNull(random);
     }
 
-    public GameSession(linksawakening.gameplay.PcmSoundOutput output) {
+    public GameSession(PcmSoundOutput output) {
         this();
-        headlessPcm = java.util.Objects.requireNonNull(output);
+        headlessPcm = Objects.requireNonNull(output);
     }
 
     public void initializeHeadlessIntro() {
@@ -124,7 +117,7 @@ public class GameSession {
 
         context.musicDirector.tick();
 
-        context.currentScreen.tick();
+        context.screens.currentScreen.tick();
     }
 
     void cleanup() {
@@ -154,7 +147,7 @@ public class GameSession {
         context.onKeyEvent(key, action);
     }
 
-    private void debugTeleport(linksawakening.world.transition.Warp destination) {
+    private void debugTeleport(Warp destination) {
         context.debugTeleport(destination);
     }
 

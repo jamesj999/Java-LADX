@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.RoomSession;
@@ -55,12 +56,7 @@ public final class DebugMenu {
     private String message = "";
 
     public record Entry(
-            String label,
-            IntSupplier read,
-            IntConsumer write,
-            int min,
-            int max,
-            java.util.function.IntFunction<String> format) {
+            String label, IntSupplier read, IntConsumer write, int min, int max, IntFunction<String> format) {
         public void change(int delta) {
             write.accept(Math.clamp(read.getAsInt() + delta, min, max));
         }
@@ -223,13 +219,7 @@ public final class DebugMenu {
     }
 
     private void add(
-            int page,
-            String name,
-            IntSupplier get,
-            IntConsumer set,
-            int min,
-            int max,
-            java.util.function.IntFunction<String> format) {
+            int page, String name, IntSupplier get, IntConsumer set, int min, int max, IntFunction<String> format) {
         pages.get(page).add(new Entry(name, get, set, min, max, format));
     }
 

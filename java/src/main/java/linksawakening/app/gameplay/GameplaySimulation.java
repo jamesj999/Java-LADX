@@ -2,10 +2,13 @@ package linksawakening.app.gameplay;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
+import java.util.function.IntConsumer;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.MusicDirector;
+import linksawakening.app.SessionContext;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
@@ -37,158 +40,157 @@ public final class GameplaySimulation {
     private final CombatPhase combatPhase = new CombatPhase();
     private final LinkEquipmentPhase linkEquipmentPhase = new LinkEquipmentPhase();
     private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public GameplaySimulation(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public GameplaySimulation(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public PassOutController passOutController() {
-        return context.simulation_passOutController();
+        return context.passOutController();
     }
 
-    public java.util.function.IntConsumer gameOverOutcome() {
-        return context.simulation_gameOverOutcome();
+    public IntConsumer gameOverOutcome() {
+        return context.gameOverOutcome();
     }
 
     public GPU gpu() {
-        return context.simulation_gpu();
+        return context.gpu();
     }
 
     public byte[] romData() {
-        return context.simulation_romData();
+        return context.romData();
     }
 
     public RoomSession roomSession() {
-        return context.simulation_roomSession();
+        return context.roomSession();
     }
 
     public TransitionController transitionController() {
-        return context.simulation_transitionController();
+        return context.transitionController();
     }
 
     public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return context.simulation_roomTransitionCoordinator();
+        return context.roomTransitionCoordinator();
     }
 
     public boolean debugNoClip() {
-        return context.simulation_debugNoClip();
+        return context.debugNoClip();
     }
 
     public int frameCounter() {
-        return context.simulation_frameCounter();
+        return context.frameCounter();
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.simulation_ROOM_PIXEL_HEIGHT();
+        return context.roomPixelHeight();
     }
 
     public ScrollController scrollController() {
-        return context.simulation_scrollController();
+        return context.scrollController();
     }
 
     public InputConfig inputConfig() {
-        return context.simulation_inputConfig();
+        return context.inputConfig();
     }
 
     public InputState inputState() {
-        return context.simulation_inputState();
+        return context.inputState();
     }
 
     public PlayerState playerState() {
-        return context.simulation_playerState();
+        return context.playerState();
     }
 
     public InventoryMenu inventoryMenu() {
-        return context.simulation_inventoryMenu();
+        return context.inventoryMenu();
     }
 
     public InventoryController inventoryController() {
-        return context.simulation_inventoryController();
+        return context.inventoryController();
     }
 
     public DialogController dialogController() {
-        return context.simulation_dialogController();
+        return context.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.simulation_dialogTextLoader();
+        return context.dialogTextLoader();
     }
 
     public GameplaySoundSink gameplaySoundSink() {
-        return context.simulation_gameplaySoundSink();
+        return context.gameplaySoundSink();
     }
 
     public FrameMusicPlayer musicPlayer() {
-        return context.simulation_musicPlayer();
+        return context.musicPlayer();
     }
 
     public GameplayMusicController gameplayMusicController() {
-        return context.simulation_gameplayMusicController();
+        return context.gameplayMusicController();
     }
 
     public MusicDirector musicDirector() {
-        return context.simulation_musicDirector();
+        return context.musicDirector();
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return context.simulation_transientVfxSystem();
+        return context.transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.simulation_droppableRupeeSystem();
+        return context.droppableRupeeSystem();
     }
 
     public ItemRegistry itemRegistry() {
-        return context.simulation_itemRegistry();
+        return context.itemRegistry();
     }
 
     public EquipmentController equipmentController() {
-        return context.simulation_equipmentController();
+        return context.equipmentController();
     }
 
     public Link link() {
-        return context.simulation_link();
+        return context.link();
     }
 
     public OpeningStory story() {
-        return context.simulation_story();
+        return context.story();
     }
 
     public LiftInteraction lift() {
-        return context.simulation_lift();
+        return context.lift();
     }
 
     public BushInteraction bush() {
-        return context.simulation_bush();
+        return context.bush();
     }
 
     public DialogInteractions dialogInteractions() {
-        return context.simulation_dialogInteractions();
+        return context.dialogInteractions();
     }
 
     public Supplier<OverworldDialogBlockers> dialogBlockers() {
-        return context.simulation_dialogBlockers();
+        return context.dialogBlockers();
     }
 
     public BooleanSupplier debugScroll() {
-        return context.simulation_debugScroll();
+        return context.simulationDebugScroll();
     }
 
     public IntUnaryOperator direction() {
-        return context.simulation_direction();
+        return context.direction();
     }
 
     public Runnable dialogSounds() {
-        return context.simulation_dialogSounds();
+        return context.dialogSounds();
     }
 
     /** The simulation's strict per-frame order, including opening-story gates. */
     public void tick() {
         // GAMEPLAY_INVENTORY has its own handler ($00:0EA1/$20:5904):
         // world resources, effects, Link and entities do not advance behind it.
-        boolean inventoryBlockedAtStart =
-                inventoryController() != null && inventoryController().shouldBlockOverworldInput();
+        boolean inventoryBlockedAtStart = inventoryController().shouldBlockOverworldInput();
         if (inventoryBlockedAtStart) {
             boolean worldHandler = inventoryMenu().transition().worldHandlerActive();
             boolean interactive = inventoryMenu().isFullyOpen();
@@ -200,7 +202,7 @@ public final class GameplaySimulation {
         if (!dialogStoryPhase.tick(this)) return;
         boolean dialogBlocksGameplay = dialogBlockers().get().pausesGameplay();
         linkEquipmentPhase.tick(this, dialogBlocksGameplay, inventoryBlockedAtStart);
-        if (link() != null && (link().isPassingOut() || passOutController().handledFrame())) return;
+        if ((link().isPassingOut() || passOutController().handledFrame())) return;
         Sword.CollisionBox swordBox = combatPhase.tick(this, dialogBlocksGameplay);
         entityPhase.tick(this, swordBox);
         completeGameplayFrame(dialogController());

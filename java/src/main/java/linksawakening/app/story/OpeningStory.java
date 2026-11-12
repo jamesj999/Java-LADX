@@ -2,10 +2,13 @@ package linksawakening.app.story;
 
 import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
+import linksawakening.app.SessionContext;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
@@ -20,73 +23,74 @@ import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.RoomSession;
 
 public final class OpeningStory {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public OpeningStory(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public OpeningStory(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public int frameCounter() {
-        return context.openingStory_frameCounter();
+        return context.frameCounter();
     }
 
     public MarinWakeUpMotion newGameWakeUpMotion() {
-        return context.openingStory_newGameWakeUpMotion();
+        return context.newGameWakeUpMotion();
     }
 
     public TarinShieldMotion newGameTarinShieldMotion() {
-        return context.openingStory_newGameTarinShieldMotion();
+        return context.newGameTarinShieldMotion();
     }
 
     public int[] newGameTarinShieldPalette() {
-        return context.openingStory_newGameTarinShieldPalette();
+        return context.newGameTarinShieldPalette();
     }
 
     public InputState inputState() {
-        return context.openingStory_inputState();
+        return context.inputState();
     }
 
     public InputConfig inputConfig() {
-        return context.openingStory_inputConfig();
+        return context.inputConfig();
     }
 
     public DialogController dialogController() {
-        return context.openingStory_dialogController();
+        return context.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.openingStory_dialogTextLoader();
+        return context.dialogTextLoader();
     }
 
     public RoomSession roomSession() {
-        return context.openingStory_roomSession();
+        return context.roomSession();
     }
 
     public Link link() {
-        return context.openingStory_link();
+        return context.link();
     }
 
     public PlayerState playerState() {
-        return context.openingStory_playerState();
+        return context.playerState();
     }
 
     public Supplier<OverworldDialogBlockers> blockers() {
-        return context.openingStory_blockers();
+        return context.blockers();
     }
 
     public IntConsumer music() {
-        return context.openingStory_music();
+        return context.music();
     }
 
     public IntSupplier houseMusic() {
-        return context.openingStory_houseMusic();
+        return context.houseMusic();
     }
 
     public IntUnaryOperator romDirection() {
-        return context.openingStory_romDirection();
+        return context.romDirection();
     }
 
     public boolean tickNewGameWakeUp() {
@@ -97,11 +101,8 @@ public final class OpeningStory {
                 || inputState().isDown(inputConfig().downKey())
                 || inputState().isDown(inputConfig().leftKey())
                 || inputState().isDown(inputConfig().rightKey());
-        MarinWakeUpMotion.Update update = newGameWakeUpMotion()
-                .tick(
-                        frameCounter(),
-                        dialogController() != null && dialogController().isActive(),
-                        directionPressed);
+        MarinWakeUpMotion.Update update =
+                newGameWakeUpMotion().tick(frameCounter(), dialogController().isActive(), directionPressed);
         if (update.linkMotionBlocked()) {
             link().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
             link().blockNextRomMotionFrame();
@@ -124,13 +125,11 @@ public final class OpeningStory {
     }
 
     public void updateNewGameMarinPresentation() {
-        if (roomSession() != null && link() != null) {
+        {
             roomSession().updateHouseTarinPresentation(frameCounter(), link().romEntityX(), link().romEntityY());
         }
         if (newGameWakeUpMotion() == null
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()
-                || link() == null
                 || roomSession().activeRoom().mapId() != 0x10
                 || roomSession().activeRoom().roomId() != 0xA3) {
             return;
@@ -153,10 +152,7 @@ public final class OpeningStory {
         if ((newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete())
                 || newGameTarinShieldMotion() == null
                 || key != inputConfig().aKey()
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()
-                || link() == null
-                || dialogController() == null
                 || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
@@ -194,10 +190,7 @@ public final class OpeningStory {
         if (newGameWakeUpMotion() == null
                 || !newGameWakeUpMotion().complete()
                 || key != inputConfig().aKey()
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()
-                || link() == null
-                || dialogController() == null
                 || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
@@ -232,17 +225,14 @@ public final class OpeningStory {
 
     public boolean tickNewGameTarinShield() {
         if (newGameTarinShieldMotion() == null
-                || roomSession() == null
                 || !roomSession().hasActiveRoom()
-                || link() == null
-                || playerState() == null
                 || roomSession().activeRoom().mapId() != 0x10
                 || roomSession().activeRoom().roomId() != 0xA3) {
             return false;
         }
         TarinShieldMotion.Update update = newGameTarinShieldMotion()
                 .tick(
-                        dialogController() != null && dialogController().isActive(),
+                        dialogController().isActive(),
                         link().romEntityY(),
                         false,
                         playerState().shieldLevel());
@@ -256,7 +246,7 @@ public final class OpeningStory {
             link().blockNextRomMotionFrame();
         }
         if (update.grantShield()) {
-            playerState().applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SHIELD);
+            playerState().applyChestReward(ChestContentsTable.CHEST_SHIELD);
             link().showStandingShieldDownPose();
             // MUSIC_OBTAIN_ITEM is a jingle in the ROM.  The host music
             // player loops direct tracks, so resume the house track when
@@ -266,8 +256,7 @@ public final class OpeningStory {
         if (update.playObtainItemMusic()) {
             playDirectMusic(MusicTrackIds.MUSIC_OBTAIN_ITEM);
         }
-        if (update.dialogLowId() >= 0
-                && (dialogController() == null || !dialogController().isActive())) {
+        if (update.dialogLowId() >= 0 && (!dialogController().isActive())) {
             dialogController()
                     .openPreformattedForLinkY(
                             dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
@@ -294,8 +283,8 @@ public final class OpeningStory {
 
     public void restoreNewGameHouseRuntimeIfNeeded(
             SaveSlotState saved,
-            java.util.function.Consumer<MarinWakeUpMotion> wakeMotion,
-            java.util.function.Consumer<TarinShieldMotion> shieldMotion,
+            Consumer<MarinWakeUpMotion> wakeMotion,
+            Consumer<TarinShieldMotion> shieldMotion,
             Runnable refreshPresentation) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
             if (playerState().swordLevel() == 0) {

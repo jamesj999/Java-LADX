@@ -12,11 +12,8 @@ final class AnimatedTilesPhase {
                 && !context.transitionController().isInputBlocked()
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
-            if (context.roomSession() == null) {
-                context.gpu().tickAnimatedTiles(context.romData());
-            } else {
-                context.roomSession().tickGameplayVBlank();
-            }
+
+            context.roomSession().tickGameplayVBlank();
         }
     }
 }

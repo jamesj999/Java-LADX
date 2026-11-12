@@ -3,11 +3,14 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
 import linksawakening.scene.BackgroundScene;
@@ -20,82 +23,82 @@ import linksawakening.world.transition.Warp;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
 public final class SaveCoordinator {
-    private final linksawakening.app.SessionContext context;
+    private final SessionContext context;
 
-    public SaveCoordinator(linksawakening.app.SessionContext context) {
-        this.context = java.util.Objects.requireNonNull(context);
+    public SaveCoordinator(SessionContext context) {
+        this.context = Objects.requireNonNull(context);
     }
 
     public PlayerState playerState() {
-        return context.saves_playerState();
+        return context.playerState();
     }
 
     public RoomSession roomSession() {
-        return context.saves_roomSession();
+        return context.roomSession();
     }
 
     public Link link() {
-        return context.saves_link();
+        return context.link();
     }
 
     public GPU gpu() {
-        return context.saves_gpu();
+        return context.gpu();
     }
 
     public byte[] romData() {
-        return context.saves_romData();
+        return context.romData();
     }
 
     public SaveRamStore saveRamStore() {
-        return context.saves_saveRamStore();
+        return context.saveRamStore();
     }
 
     public int currentSaveSlot() {
-        return context.saves_currentSaveSlot();
+        return context.currentSaveSlot();
     }
 
     public InputState inputState() {
-        return context.saves_inputState();
+        return context.inputState();
     }
 
     public Runnable enterGameplay() {
-        return context.saves_enterGameplay();
+        return context.savesEnterGameplay();
     }
 
     public Runnable clearOpening() {
-        return context.saves_clearOpening();
+        return context.savesClearOpening();
     }
 
     public Runnable initializeOpening() {
-        return context.saves_initializeOpening();
+        return context.savesInitializeOpening();
     }
 
     public Runnable playHouseMusic() {
-        return context.saves_playHouseMusic();
+        return context.savesPlayHouseMusic();
     }
 
     public Runnable refreshOpening() {
-        return context.saves_refreshOpening();
+        return context.savesRefreshOpening();
     }
 
     public Consumer<SaveSlotState> restoreOpening() {
-        return context.saves_restoreOpening();
+        return context.savesRestoreOpening();
     }
 
     public Runnable startFileSelection() {
-        return context.saves_startFileSelection();
+        return context.startFileSelection();
     }
 
     public Runnable enterFileSave() {
-        return context.saves_enterFileSave();
+        return context.savesEnterFileSave();
     }
 
     public Consumer<FileSaveController> showFileSave() {
-        return context.saves_showFileSave();
+        return context.showFileSave();
     }
 
     public Function<String, BackgroundScene> fileMenuBackground() {
-        return context.saves_fileMenuBackground();
+        return context.savesFileMenuBackground();
     }
 
     public void startNewGame() {
@@ -176,9 +179,8 @@ public final class SaveCoordinator {
     public void finishGameOver(int option) {
         if (playerState().health() == 0) {
             playerState()
-                    .setHealth(new linksawakening.rom.Rom(romData())
-                            .u8(new linksawakening.rom.RomAddress(1, 0x5295)
-                                    .plus(playerState().maxHearts())));
+                    .setHealth(new Rom(romData())
+                            .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
         clearOpening().run();
@@ -231,12 +233,12 @@ public final class SaveCoordinator {
     }
 
     public void saveCurrentPlayerState() {
-        if (currentSaveSlot() < 0 || playerState() == null || saveRamStore() == null) {
+        if (currentSaveSlot() < 0 || saveRamStore() == null) {
             return;
         }
         saveRamStore().writePlayerState(currentSaveSlot(), playerState());
         saveCurrentSpawnLocation();
-        if (roomSession() != null) {
+        {
             saveRamStore()
                     .writeRoomStatuses(
                             currentSaveSlot(),
@@ -264,7 +266,7 @@ public final class SaveCoordinator {
     }
 
     public void saveCurrentSpawnLocation() {
-        if (roomSession() == null || !roomSession().hasActiveRoom() || link() == null) {
+        if (!roomSession().hasActiveRoom()) {
             return;
         }
 
