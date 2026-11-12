@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.ZombieFrame;
 import linksawakening.world.entity.motion.ZombieMotion;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ final class ZombieRuntimeTest {
 
     @Test
     void decodesZombiesFiveRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
@@ -62,7 +63,7 @@ final class ZombieRuntimeTest {
     @Test
     void usesTheRomZombieCombatAndPhysicsRows() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_ZOMBIE)
@@ -85,7 +86,7 @@ final class ZombieRuntimeTest {
 
     @Test
     void hiddenParentSelectsAnAllowedRomCoordinateAndRequestsAChild() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         RoomEntity parent = new RoomEntityBuilder()
@@ -123,7 +124,7 @@ final class ZombieRuntimeTest {
 
     @Test
     void childFollowsTheRomEmergenceAndVectorStates() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(1);
@@ -166,7 +167,7 @@ final class ZombieRuntimeTest {
 
     @Test
     void blockedMovementOrExpiredTimerStartsTheRomHiddenState() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
@@ -209,7 +210,7 @@ final class ZombieRuntimeTest {
     @CsvSource({"112, 64, 0, 2", "16, 64, 1, 1", "64, 16, 2, 2", "64, 112, 3, 2"})
     void newlyWalkingZombieProbesWallsBeforeAccumulatingAFullPixel(
             int linkX, int linkY, int blockedDirection, int emergenceVariant) throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
@@ -253,7 +254,7 @@ final class ZombieRuntimeTest {
 
     @Test
     void emergenceWalkingAndBurrowingPresentThePreviouslySelectedRomFrame() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZOMBIE, EntityRoomLoader.RoomTable.OVERWORLD);
         ZombieMotion motion = new ZombieMotion();
         motion.initializeChild(0);
@@ -276,7 +277,7 @@ final class ZombieRuntimeTest {
     @Test
     void roomRuntimeSpawnsTheZombieChildInTheRomRange() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity parent = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZOMBIE)
@@ -316,7 +317,7 @@ final class ZombieRuntimeTest {
     @Test
     void hiddenParentDoesNotRunTheRomEnemyDamageCollisionHandler() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity parent = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZOMBIE)
@@ -337,7 +338,7 @@ final class ZombieRuntimeTest {
     @Test
     void roomInitializationKeepsTheHiddenParentOutOfTheDisplayList() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity parent = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZOMBIE)

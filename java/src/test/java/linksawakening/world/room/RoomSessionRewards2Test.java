@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityPickupEvent;
@@ -266,16 +266,14 @@ final class RoomSessionRewards2Test {
 
         assertEquals(0xC2, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
         assertTrue(session.doors()
-                .tryUnlockKeyCavernKeyhole(
-                        0x5A, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01, 5));
+                .tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, 5));
         assertEquals(
                 0x231,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         assertEquals(0, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xB5) & 0x10);
 
         assertTrue(session.doors()
-                .tryUnlockKeyCavernKeyhole(
-                        0x5A, 0x4A, linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP), 0x01, 6));
+                .tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, 6));
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xB5) & 0x10);
         assertEquals(0xDF, session.components.roomDoorInteractions().tailCaveKeyholeCountdownForTest());
         int gateTopLeft = 2 * RoomConstants.ROOM_TILE_WIDTH + 12;
@@ -318,19 +316,17 @@ final class RoomSessionRewards2Test {
                 .tryOpenChest(
                         0x38,
                         0x31,
-                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        Direction.fromJavaOrUnknown(Direction.UP.javaIndex()),
                         true,
-                        playerState.swordLevel());
+                        playerState.equipmentLevels().swordLevel());
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, chest.itemType());
         session.entities().tickEntities(0, 0x40, 0x40);
-        session.components
-                .entityBridge()
-                .outbox
-                .consumeChestRewardEvents()
-                .forEach(reward -> playerState.applyChestReward(reward.itemType()));
-        assertEquals(1, playerState.tailKeyCount());
-        session.story().setTailKeyOwned(playerState.tailKeyCount() != 0);
+        session.components.entityBridge().outbox.consumeChestRewardEvents().forEach(reward -> playerState
+                .chestRewards()
+                .applyChestReward(reward.itemType()));
+        assertEquals(1, playerState.progression().tailKeyCount());
+        session.story().setTailKeyOwned(playerState.progression().tailKeyCount() != 0);
 
         int frame = 1;
         boolean owlDialogOpened = false;
@@ -355,9 +351,9 @@ final class RoomSessionRewards2Test {
                 .tryUnlockTailCaveKeyhole(
                         0x5A,
                         0x4A,
-                        linksawakening.state.Direction.fromJavaOrUnknown(Link.DIRECTION_UP),
+                        Direction.fromJavaOrUnknown(Direction.UP.javaIndex()),
                         0x01,
-                        playerState.tailKeyCount() != 0));
+                        playerState.progression().tailKeyCount() != 0));
         assertEquals(0x10, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xD3) & 0x10);
     }
 

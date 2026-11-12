@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 import linksawakening.world.entity.motion.MotionTestAccess;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ final class BuzzBlobRuntimeTest {
 
     @Test
     void decodesBuzzBlobsNineRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
@@ -53,7 +54,7 @@ final class BuzzBlobRuntimeTest {
     @Test
     void usesBuzzBlobsRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
@@ -76,7 +77,7 @@ final class BuzzBlobRuntimeTest {
 
     @Test
     void stateZeroUsesRomTimerSpeedAndFourFrameAnimation() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
         RoomEntity buzzBlob = new RoomEntityBuilder()
@@ -109,7 +110,7 @@ final class BuzzBlobRuntimeTest {
 
     @Test
     void backgroundInteractionRestoresBlockedBuzzBlobPosition() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
         RoomEntity buzzBlob = new RoomEntityBuilder()
@@ -140,7 +141,7 @@ final class BuzzBlobRuntimeTest {
 
     @Test
     void stateOneUsesItsSeparateRomAnimationAndReturnsToStateZero() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_BUZZ_BLOB, EntityRoomLoader.RoomTable.OVERWORLD);
         BuzzBlobMotion motion = new BuzzBlobMotion();
         MotionTestAccess.initializeStateOne(motion, 0);
@@ -165,7 +166,7 @@ final class BuzzBlobRuntimeTest {
     @Test
     void nonInteractiveLinkMotionSkipsBuzzBlobTerrainInteraction() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
@@ -199,7 +200,7 @@ final class BuzzBlobRuntimeTest {
     @Test
     void nonInteractiveLinkMotionSkipsBuzzBlobSharedRecoil() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)
@@ -234,7 +235,7 @@ final class BuzzBlobRuntimeTest {
     @Test
     void nonInteractiveLinkMotionSkipsBuzzBlobCombat() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_BUZZ_BLOB)

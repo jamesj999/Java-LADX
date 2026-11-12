@@ -55,8 +55,7 @@ public final class EntityRoomLoader {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
         this.romData = romData;
-        // entity.EntitySpriteHandlerCatalog still requires bytes outside this package ownership.
-        this.spriteHandlers = new EntitySpriteHandlerCatalog(romData.unsafeBytes());
+        this.spriteHandlers = new EntitySpriteHandlerCatalog(romData);
     }
 
     public RoomEntitySnapshot load(RoomTable table, int roomId) {

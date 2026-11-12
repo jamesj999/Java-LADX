@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -15,8 +16,8 @@ final class WingedOctorokRuntimeTest {
 
     @Test
     void catalogReadsTheBankSevenPairListAndTheHandlerCombatGroup() throws IOException {
-        EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(loadRom()).forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
+                .forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertEquals(0x07, definition.bank());
         assertEquals(0x562D, definition.address());
@@ -37,7 +38,7 @@ final class WingedOctorokRuntimeTest {
     @Test
     void liveRuntimeAdvancesTheRomStateAndPublishesTheGeneratedRect() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -79,7 +80,7 @@ final class WingedOctorokRuntimeTest {
     @Test
     void liveRuntimeSpawnsTheRomVariantOneOctorokRockAtCountdownTen() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xAE, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()

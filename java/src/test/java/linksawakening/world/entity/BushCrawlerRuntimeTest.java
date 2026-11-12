@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ final class BushCrawlerRuntimeTest {
 
     @Test
     void catalogReadsOutdoorIndoorAndLiftedBushCrawlerListsFromBankSeven() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
 
         EntitySpriteDefinition outdoor = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_BUSH_CRAWLER, EntityRoomLoader.RoomTable.OVERWORLD);
@@ -65,7 +66,7 @@ final class BushCrawlerRuntimeTest {
     @Test
     void liveRuntimeStartsTheThirtyFrameCrawlAndPublishesItsSecondPass() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xBB, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -101,7 +102,7 @@ final class BushCrawlerRuntimeTest {
     @Test
     void powerBraceletLiftConvertsTheSourceAndSpawnsThePrivateStateTwoCrawler() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0xBB, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

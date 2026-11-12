@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.MotionTestAccess;
 import linksawakening.world.entity.motion.WitchRatMotion;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ final class WitchRatRuntimeTest {
 
     @Test
     void decodesWitchRatRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B);
 
         assertTrue(definition.supported());
@@ -47,7 +48,7 @@ final class WitchRatRuntimeTest {
     @Test
     void exposesWitchRatRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_WITCH_RAT)
@@ -149,7 +150,7 @@ final class WitchRatRuntimeTest {
     @Test
     void runtimeWiresWitchRatStateAndRomPresentation() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_WITCH_RAT)
@@ -193,7 +194,7 @@ final class WitchRatRuntimeTest {
     }
 
     private static RoomEntity witchRat(byte[] rom) {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(rom)
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(rom))
                 .forEntityType(ENTITY_WITCH_RAT, EntityRoomLoader.RoomTable.INDOORS_B);
         return new RoomEntityBuilder()
                 .sourceLoadOrder(0)

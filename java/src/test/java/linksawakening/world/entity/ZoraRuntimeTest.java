@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.ZoraMotion;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ final class ZoraRuntimeTest {
 
     @Test
     void decodesZorasFiveRomSpritePairs() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertTrue(definition.supported());
@@ -60,7 +61,7 @@ final class ZoraRuntimeTest {
     @Test
     void usesZorasRomCombatAndPhysicsMetadata() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_ZORA)
@@ -83,7 +84,7 @@ final class ZoraRuntimeTest {
 
     @Test
     void stateZeroChoosesRomWaterCoordinateAndStartsRandomTimer() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
         RoomEntity zora = new RoomEntityBuilder()
@@ -113,7 +114,7 @@ final class ZoraRuntimeTest {
 
     @Test
     void stateTwoRemovesProjectileNoclipAndStateThreeUsesRomZTable() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
         RoomEntity zora = new RoomEntityBuilder()
@@ -193,7 +194,7 @@ final class ZoraRuntimeTest {
 
     @Test
     void usesThePreIncrementInertiaForTheRomZTable() throws IOException {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()))
                 .forEntityType(ENTITY_ZORA, EntityRoomLoader.RoomTable.OVERWORLD);
         ZoraMotion motion = new ZoraMotion();
         RoomEntity zora = new RoomEntityBuilder()
@@ -221,7 +222,7 @@ final class ZoraRuntimeTest {
     @Test
     void roomRuntimeSpawnsZoraProjectileInHighestFreeSlot() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity zora = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_ZORA)

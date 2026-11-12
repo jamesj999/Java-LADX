@@ -27,7 +27,7 @@ public final class RoomLoader {
         this.tilemapBuilder = new RoomTilemapBuilder(romData);
         this.paletteLoader = new RoomPaletteLoader(romData);
         this.entityLoader = new EntityRoomLoader(romData);
-        this.entitySpriteCatalog = new EntitySpriteCatalog(romData.unsafeBytes());
+        this.entitySpriteCatalog = new EntitySpriteCatalog(romData);
     }
 
     public LoadedRoom loadOverworld(int roomId) {
@@ -267,6 +267,6 @@ public final class RoomLoader {
     /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java; test/java/linksawakening/app/MabeCollisionSweepTest.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public RoomLoader(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
+        this(romData == null ? null : Rom.unchecked(romData));
     }
 }

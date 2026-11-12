@@ -3,14 +3,16 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class OwlEventDialogResolverTest {
     @Test
     void resolvesBeachAndTailCaveApproachDialogsFromRomTables() throws IOException {
-        OwlEventDialogResolver resolver = new OwlEventDialogResolver(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        OwlEventDialogResolver resolver =
+                new OwlEventDialogResolver((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
 
         assertEquals(0x0D9, resolver.globalDialogId(0xF2));
         assertEquals(0x0C1, resolver.globalDialogId(0x41));
@@ -23,9 +25,7 @@ final class OwlEventDialogResolverTest {
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> new OwlEventDialogResolver(
-                        (new byte[0x8000] == null
-                                ? (linksawakening.rom.Rom) null
-                                : new linksawakening.rom.Rom(new byte[0x8000]))));
+                        (new byte[0x8000] == null ? (Rom) null : TestRoms.partial(new byte[0x8000]))));
     }
 
     private static byte[] loadRom() throws IOException {

@@ -212,6 +212,6 @@ public final class TransitionController {
     /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public void setRomData(byte[] romData) {
-        setRomData(romData == null ? null : new Rom(romData));
+        setRomData(romData == null ? null : Rom.unchecked(romData));
     }
 }

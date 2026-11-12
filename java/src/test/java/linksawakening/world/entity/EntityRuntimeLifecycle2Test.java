@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import org.junit.jupiter.api.Test;
@@ -274,7 +275,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
     @Test
     void enemyProjectileWallTransitionUnloadsAndClearsTheReverseSlot() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
@@ -313,7 +314,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
 
     @Test
     void fullEntityTableLeavesTheLaunchSourceAndProjectileStateUnchanged() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition moblinDefinition = catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         List<RoomEntity> entities = new ArrayList<>();
         for (int slot = 0; slot < 15; slot++) {
@@ -567,7 +568,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void terminalStaticDeathRecordsKillAndDynamicDeathDoesNot() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EnemyDropResolver resolver = new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom));
 
@@ -611,7 +612,7 @@ final class EntityRuntimeLifecycle2Test extends EntityRuntimeTestSupport {
     @Test
     void explicitAndRandomNoDropDeathsUnloadWithExpectedCounterAndRandomBehavior() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(
                         snapshot(dyingEntity(0, 0, 0x09, catalog), dyingEntity(1, 1, 0x0B, catalog)))

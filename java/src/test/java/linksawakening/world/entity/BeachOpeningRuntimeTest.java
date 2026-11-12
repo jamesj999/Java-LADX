@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkFacingRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -54,7 +56,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void swordPickupUsesTheRomFanfareSequenceBeforeGrantingTheSword() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(1)
                         .type(ENTITY_SWORD_SHIELD_PICKUP)
@@ -134,7 +136,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void sleepyToadstoolUsesTheRomHeldItemSequenceBeforeGrantingItsReward() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_SLEEPY_TOADSTOOL)
@@ -196,7 +198,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void sleepyToadstoolUnloadsWhenAlreadyOwnedOrPowderIsPresent() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
 
         RoomEntityRuntime owned = toadstoolRuntime(catalog, rom);
         owned.configuration().setToadstoolPlayerState(true, 0);
@@ -216,7 +218,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void beachOwlTriggersInTheRomRectangleAndCompletesItsDialogEvent() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_OWL_EVENT)
@@ -267,7 +269,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void landedOwlReleasesLinkForTheFiveSourceInteractionCountdownFrames() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_OWL_EVENT)
@@ -301,7 +303,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void forestOwlRequiresTheSwordAndStartsItsFlightIntoTheRoom() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime swordless = owlRuntime(catalog, rom);
         swordless.configuration().setEntityRoomId(0x80);
         swordless.configuration().setChestPlayerLevels(0, 0, 0);
@@ -318,9 +320,7 @@ final class BeachOpeningRuntimeTest {
         armed.configuration().setChestPlayerLevels(0, 1, 0);
         armed.configuration()
                 .setOwlDialogResolver(
-                        new OwlEventDialogResolver(
-                                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
-                                ::globalDialogId);
+                        new OwlEventDialogResolver((rom == null ? (Rom) null : TestRoms.partial(rom)))::globalDialogId);
 
         armed.tick(EntityTestFrames.frame(armed, 0, 0x50, 0x50, () -> 0));
         assertEquals(1, EntityRuntimeFixture.inspection(armed).owlEventStateForTest(0));
@@ -347,7 +347,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void swampOwlRequiresTailCaveInstrumentAndBowWowBeforeBottleGrotto() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime missingTailInstrument = owlRuntime(catalog, rom);
         missingTailInstrument.configuration().setEntityRoomId(0x36);
         missingTailInstrument.configuration().setChestPlayerLevels(0, 1, 0);
@@ -377,7 +377,7 @@ final class BeachOpeningRuntimeTest {
     @Test
     void tailKeyOwlWaitsForOwnershipAndTheChestInitializedPrivateCountdown() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity owl = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(ENTITY_OWL_EVENT)
@@ -389,15 +389,12 @@ final class BeachOpeningRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
         runtime.configuration().setEntityRoomId(0x41);
         runtime.configuration()
                 .setOwlDialogResolver(
-                        new OwlEventDialogResolver(
-                                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)))
-                                ::globalDialogId);
+                        new OwlEventDialogResolver((rom == null ? (Rom) null : TestRoms.partial(rom)))::globalDialogId);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x50, () -> 0));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).owlEventStateForTest(0));

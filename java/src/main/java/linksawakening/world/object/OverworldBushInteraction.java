@@ -5,6 +5,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 
 /**
  * ROM-backed overworld sword interaction for breakable static objects.
@@ -102,7 +103,7 @@ public final class OverworldBushInteraction {
      * hit point falls outside the active 10x8 room area.
      */
     public int swordHitRoomObjectLocation(
-            boolean swordActive, linksawakening.state.Direction javaDirection, int linkPixelX, int linkPixelY) {
+            boolean swordActive, Direction javaDirection, int linkPixelX, int linkPixelY) {
         return swordHitRoomObjectLocationForCollisionIndex(
                 swordActive, toRomDirection(javaDirection), linkPixelX, linkPixelY);
     }
@@ -139,7 +140,7 @@ public final class OverworldBushInteraction {
      */
     public boolean cutBush(BushCutInputs inputs) {
         boolean swordActive = inputs.sword().active();
-        linksawakening.state.Direction javaDirection = inputs.sword().direction();
+        Direction javaDirection = inputs.sword().direction();
         int linkPixelX = inputs.sword().x();
         int linkPixelY = inputs.sword().y();
         int roomId = inputs.roomId();
@@ -366,7 +367,7 @@ public final class OverworldBushInteraction {
         return roomRevealsStairs(roomId) ? OBJECT_GROUND_STAIRS : OBJECT_PIT;
     }
 
-    private static int toRomDirection(linksawakening.state.Direction javaDirection) {
+    private static int toRomDirection(Direction javaDirection) {
         switch (javaDirection) {
             case RIGHT:
                 return 0;
@@ -390,6 +391,6 @@ public final class OverworldBushInteraction {
     /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public OverworldBushInteraction(byte[] romData, RomTables romTables) {
-        this(romData == null ? null : new Rom(romData), romTables);
+        this(romData == null ? null : Rom.unchecked(romData), romTables);
     }
 }

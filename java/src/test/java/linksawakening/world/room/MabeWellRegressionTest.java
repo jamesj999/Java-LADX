@@ -10,10 +10,12 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.*;
 import org.junit.jupiter.api.Test;
@@ -26,14 +28,13 @@ final class MabeWellRegressionTest {
         try (var stream = TestRom.open()) {
             rom = stream.readAllBytes();
         }
-        var tables = RomTables.loadFromRom(rom);
+        var tables = RomTables.load(TestRoms.partial(rom));
         var collision = new OverworldCollision(tables);
         var room = new RoomSession(new RoomSessionConfig(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)),
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
                 new GPU(),
-                new RoomLoader((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
-                new OverworldTilesetTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
                 collision,
                 new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -44,25 +45,28 @@ final class MabeWellRegressionTest {
         var input = new InputState();
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         var player = new PlayerState();
-        int health = player.health();
+        int health = player.vitals().health();
         var sounds = new ArrayList<GameplaySoundEvent>();
         var link = new Link(input, config, tables, collision, null, player, new ItemRegistry(), sounds::add);
         var transition = new TransitionController();
         var coordinator = new RoomTransitionCoordinator(
                 room, new RoomBoundaryController(), transition, new ScrollController(), sounds::add);
-        link.setRoomEntryPixelPosition(80, 32);
+        link.position().setRoomEntryPixelPosition(80, 32);
         input.onKeyEvent(config.downKey(), 1);
-        for (int frame = 0; frame < 160 && !link.isFallingIntoPit(); frame++) {
-            link.update();
+        for (int frame = 0; frame < 160 && !link.airborne().isFallingIntoPit(); frame++) {
+            link.motion().update();
             coordinator.handleWarpAndIndoorBoundaries(link);
             assertFalse(transition.isActive(), "fall animation precedes the warp");
         }
         input.onKeyEvent(config.downKey(), 0);
-        assertTrue(link.isFallingIntoPit(), "well fall at " + link.pixelX() + "," + link.pixelY());
+        assertTrue(
+                link.airborne().isFallingIntoPit(),
+                "well fall at " + link.position().pixelX() + ","
+                        + link.position().pixelY());
         assertEquals(
                 1, sounds.stream().filter(s -> s == GameplaySoundEvent.PIT_FALL).count());
         for (int frame = 0; frame < 96 && !transition.isActive(); frame++) {
-            link.update();
+            link.motion().update();
             coordinator.handleWarpAndIndoorBoundaries(link);
         }
         assertTrue(transition.isActive());
@@ -70,9 +74,9 @@ final class MabeWellRegressionTest {
         assertEquals(warp.category(), room.rooms().mapCategory());
         assertEquals(warp.destMap(), room.rooms().activeRoom().mapId());
         assertEquals(warp.destRoom(), room.rooms().currentRoomId());
-        assertEquals(0x70, link.romEntityZ());
-        assertEquals(health, player.health());
-        assertEquals(0, player.subtractHealthBuffer());
+        assertEquals(0x70, link.animation().romEntityZ());
+        assertEquals(health, player.vitals().health());
+        assertEquals(0, player.vitals().subtractHealthBuffer());
         assertFalse(sounds.contains(GameplaySoundEvent.STAIRS), "pit fade is silent after falling");
     }
 }

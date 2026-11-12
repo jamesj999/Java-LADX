@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.KeyQuicksandEvent;
@@ -24,7 +25,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void secretSeashellRemainsHiddenUntilItsRomObjectRevealConditionIsMet() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
@@ -63,7 +64,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void secretSeashellExceptionsExposePrivateStateFourWithoutRevealing() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
@@ -89,7 +90,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void secretSeashellTreeRoomsUsePegasusCollisionInsteadOfGrassReveal() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)
@@ -125,7 +126,7 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
     @Test
     void secretSeashellHandlerUnloadsForSwordUpgradeOrCompletedRoomWithoutPersistence() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntity shell = new RoomEntityBuilder()
                 .sourceLoadOrder(0)
                 .type(0x3D)

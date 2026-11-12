@@ -40,8 +40,8 @@ final class SlimeEyeSessionTest {
             player.vitals().setMaxHearts(14);
             player.vitals().setHealth(14 * 8);
             room.rooms().loadIndoor(2, 0x5A);
-            link.setRoomEntryRomPosition(80, 96);
-            link.setDirection(Direction.UP.javaIndex());
+            link.position().setRoomEntryRomPosition(80, 96);
+            link.animation().setDirection(Direction.UP.javaIndex());
             GameplaySoundSink original = game.gameplaySounds().sink();
             game.gameplaySounds().replace((GameplaySoundSink) sound -> {
                 sounds.add(sound);
@@ -63,8 +63,8 @@ final class SlimeEyeSessionTest {
             // SlimeEyeControlsTest covers the whole encounter using buttons only.
             while (eyes(room).size() == 1 && ticks < 900) {
                 var eye = eyes(room).getFirst();
-                link.setRoomEntryRomPosition(eye.x(), eye.y() + 16);
-                link.setDirection(Direction.UP.javaIndex());
+                link.position().setRoomEntryRomPosition(eye.x(), eye.y() + 16);
+                link.animation().setDirection(Direction.UP.javaIndex());
                 int phase = ticks % 256;
                 game.headlessButton("a", phase >= 192 || phase % 24 < 8);
                 game.headlessButton("b", phase >= 192);
@@ -81,8 +81,8 @@ final class SlimeEyeSessionTest {
                         .findFirst()
                         .orElse(null);
                 if (target != null) {
-                    link.setRoomEntryRomPosition(target.x(), Math.min(112, target.y() + 16));
-                    link.setDirection(Direction.UP.javaIndex());
+                    link.position().setRoomEntryRomPosition(target.x(), Math.min(112, target.y() + 16));
+                    link.animation().setDirection(Direction.UP.javaIndex());
                 }
                 game.headlessButton("a", frame % 24 < 8);
                 game.headlessFrame();

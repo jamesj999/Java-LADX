@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.PokeyMotion;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void decodesPokeysThreeRomDisplayStatesAndDetachedPair() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
 
         EntitySpriteDefinition main = catalog.forEntityType(ENTITY_POKEY, EntityRoomLoader.RoomTable.OVERWORLD);
         assertEquals(0x15, main.bank());
@@ -63,7 +64,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void mainPokeyAnimatesAndUsesItsRomHealthOverride() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_POKEY)
@@ -93,7 +94,7 @@ final class PokeyRuntimeTest {
     @Test
     void flashSeamSpawnsAHighSlotDetachedSegment() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
                         .type(ENTITY_POKEY)
@@ -138,7 +139,7 @@ final class PokeyRuntimeTest {
 
     @Test
     void detachedSegmentsReverseOnWallsAndPoofAfterThreeHits() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         RoomEntity segment = new RoomEntityBuilder()
                 .type(ENTITY_POKEY)
                 .at(0x40, 0x40)

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.room.ChestContentsTable;
@@ -18,12 +20,11 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void chestInitializesWithTheRomOpenAnimationAndRewardEvent() {
         byte[] rom = loadRom();
-        ChestContentsTable chestTable =
-                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        ChestContentsTable chestTable = new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(chestTable)
                 .build();
@@ -51,12 +52,11 @@ final class RoomEntityRuntimeChestTest {
     @Test
     void chestEmitsTheRomPresentationSoundAtInertiaEightAndDialogAtThirtyEight() {
         byte[] rom = loadRom();
-        ChestContentsTable chestTable =
-                new ChestContentsTable((rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        ChestContentsTable chestTable = new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(chestTable)
                 .build();
@@ -101,10 +101,9 @@ final class RoomEntityRuntimeChestTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(emptySnapshot())
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
         int chestSlot = runtime.spawnChestWithItem(0x28, 0x50, ChestContentsTable.CHEST_ZOL);
 

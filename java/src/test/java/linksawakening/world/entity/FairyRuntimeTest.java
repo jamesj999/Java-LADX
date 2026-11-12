@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -16,7 +17,7 @@ final class FairyRuntimeTest {
 
     @Test
     void decodesTheRomDroppableFairyPair() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
 
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
 
@@ -33,7 +34,7 @@ final class FairyRuntimeTest {
 
     @Test
     void runsTheFairyHandlerWithItsRomPhysicsAndOptions() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -68,7 +69,7 @@ final class FairyRuntimeTest {
     @Test
     void enemyDeathSpawnsTheFairyWithoutBouncingDropPhysics() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)

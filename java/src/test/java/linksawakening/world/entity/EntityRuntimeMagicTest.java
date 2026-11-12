@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -88,7 +89,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
     @Test
     void polsVoiceVectorBranchMatchesTheRomZeroDistanceResult() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition definition = catalog.forEntityType(0x18, EntityRoomLoader.RoomTable.INDOORS_A);
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
@@ -117,7 +118,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
     void ocarinaAnimationSpawnsAndAdvancesTheRomMusicalNoteEntity() {
         byte[] rom = syntheticRom();
         write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot())
                 .indoorRoom(true)
                 .randomByteSupplier(null)
@@ -208,7 +209,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
     @Test
     void pairoddSpawnsAReverseSlotProjectileWithRomDefinitionPositionAndVector() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = catalog.forEntityType(0x57, EntityRoomLoader.RoomTable.OVERWORLD, -1);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
                 .sourceLoadOrder(0)
@@ -334,7 +335,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
     @Test
     void desertLanmolaDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)
@@ -385,7 +386,7 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
 
     @Test
     void masterStalfosDeathUsesTheRomKeyProducerCountdownAndSpawnFields() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         RoomEntity source = new RoomEntityBuilder()
                 .slot(15)
                 .sourceLoadOrder(0)

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.LinkPositionHistory;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBuilder;
@@ -17,7 +18,7 @@ final class FollowingNpcMotionTest {
     @Test
     void ghostUsesTheBank19FollowThresholdVectorPhaseAndBobTable() {
         EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(ENTITY_GHOST);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_GHOST)
                 .at(0x10, 0x10)
@@ -54,7 +55,7 @@ final class FollowingNpcMotionTest {
     @Test
     void ghostSteersUsingTheCurrentBobHeightBeforeMovement() {
         EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(ENTITY_GHOST);
         RoomEntity current = new RoomEntityBuilder()
                 .type(ENTITY_GHOST)
                 .at(0x40, 0x50)
@@ -75,7 +76,7 @@ final class FollowingNpcMotionTest {
     @Test
     void ghostStaysPutInsideTheRomFollowWindow() {
         EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_GHOST);
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(ENTITY_GHOST);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_GHOST)
                 .at(0x40, 0x40)
@@ -94,7 +95,7 @@ final class FollowingNpcMotionTest {
     @Test
     void roosterUsesFourDirectionDisplayPairsAndEightFrameVectorRefresh() {
         EntitySpriteDefinition definition =
-                new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(ENTITY_ROOSTER);
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(ENTITY_ROOSTER);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(ENTITY_ROOSTER)
                 .at(0x10, 0x40)
@@ -128,7 +129,8 @@ final class FollowingNpcMotionTest {
 
     @Test
     void marinConsumesTheNextPositionAndZHistoryEntriesWhileRefreshingTheCurrentEntry() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(0xC1);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(0xC1)
                 .at(0x10, 0x20)
@@ -155,7 +157,8 @@ final class FollowingNpcMotionTest {
 
     @Test
     void marinAdvancesItsHistoryIndicesAndUsesTheFollowingDirectionOnTheNextFrame() {
-        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(syntheticRom()).forFollowerEntityType(0xC1);
+        EntitySpriteDefinition definition =
+                new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom())).forFollowerEntityType(0xC1);
         RoomEntity entity = new RoomEntityBuilder()
                 .type(0xC1)
                 .at(0x10, 0x20)

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
-import linksawakening.entity.Link;
+import linksawakening.state.Direction;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
@@ -60,7 +60,8 @@ final class RoomSessionProjectilesTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionSequenceCounterForTest(runtime, 0x04);
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
 
-        session.entities().tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0, Link.DIRECTION_DOWN, false);
+        session.entities()
+                .tickEntitiesWithProjectileEvents(0, 0x48, 0x40, 0x00, false, 0, Direction.DOWN.javaIndex(), false);
 
         assertEquals(
                 List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
@@ -358,10 +359,10 @@ final class RoomSessionProjectilesTest {
                 .orElseThrow();
         int linkX = richard.x() + 0x0F;
 
-        session.entities().tickEntities(0, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
-        session.entities().tickEntities(1, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(0, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
+        session.entities().tickEntities(1, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
         session.entityState().setEntityActionButtonsHeld(true, false);
-        session.entities().tickEntities(2, linkX, richard.y(), 0, Link.DIRECTION_LEFT);
+        session.entities().tickEntities(2, linkX, richard.y(), 0, Direction.LEFT.javaIndex());
 
         assertEquals(
                 0x13D,
@@ -372,13 +373,13 @@ final class RoomSessionProjectilesTest {
 
         session.entityState().setEntityActionButtonsHeld(false, false);
         for (int frame = 3; frame <= 34; frame++) {
-            session.entities().tickEntities(frame, 0x20, 0x70, 0, Link.DIRECTION_DOWN);
+            session.entities().tickEntities(frame, 0x20, 0x70, 0, Direction.DOWN.javaIndex());
         }
         RoomEntity movedRichard =
                 session.rooms().activeRoom().entities().slots().get(richard.slot());
         assertEquals(0x58, movedRichard.x());
 
-        session.entities().tickEntities(35, 0x78, 0x20, 0, Link.DIRECTION_DOWN);
+        session.entities().tickEntities(35, 0x78, 0x20, 0, Direction.DOWN.javaIndex());
         Warp warp = session.components.roomTransitionController().consumeClearedDungeonWarp();
         assertEquals(Warp.CATEGORY_INDOOR, warp.category());
         assertEquals(0x11, warp.destMap());

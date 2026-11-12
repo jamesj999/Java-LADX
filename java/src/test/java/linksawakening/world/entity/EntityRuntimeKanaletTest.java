@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -61,7 +62,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void kanaletKnightTerminalDeathActuallySpawnsTheGoldenLeaf() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity knight = new RoomEntityBuilder()
                 .slot(15)
@@ -198,7 +199,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
     @Test
     void bombExplosionTriggersTheKanaletWallMoblinHandler() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         RoomEntity wall = new RoomEntityBuilder()
                 .sourceLoadOrder(0)

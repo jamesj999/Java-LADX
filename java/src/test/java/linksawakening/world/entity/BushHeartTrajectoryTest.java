@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -24,7 +25,7 @@ final class BushHeartTrajectoryTest {
         var runtime = RoomEntityRuntime.builder(initial)
                 .indoorRoom(false)
                 .randomByteSupplier(() -> 0)
-                .spriteHandlers(new EntitySpriteHandlerCatalog(rom))
+                .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(rom)))
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
         runtime.configuration().setObjectQuery(e -> new RoomEntityObjectSample(0x04, 0, 0, 0));

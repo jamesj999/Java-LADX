@@ -3,15 +3,17 @@ package linksawakening.world.room;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class OwlStatueDialogResolverTest {
     @Test
     void resolvesKeyCavernHintsAndBeakGate() throws Exception {
-        OwlStatueDialogResolver resolver = new OwlStatueDialogResolver(
-                (loadRom() == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(loadRom())));
+        OwlStatueDialogResolver resolver =
+                new OwlStatueDialogResolver((loadRom() == null ? (Rom) null : TestRoms.partial(loadRom())));
         assertEquals(0x110, resolver.globalDialogId(2, 0x54, false));
         assertEquals(0x282, resolver.globalDialogId(2, 0x54, true));
         assertEquals(0x28B, resolver.globalDialogId(2, 0x40, true));
@@ -27,8 +29,8 @@ final class OwlStatueDialogResolverTest {
         write(rom, 0x4A40, 0x10, 0x70);
         write(rom, 0x7000, 0xA1, 0xA2, 0xA3, 0xA4);
         write(rom, 0x7010, 0x60, 0x61, 0x62);
-        OwlStatueDialogResolver resolver = new OwlStatueDialogResolver(
-                (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom)));
+        OwlStatueDialogResolver resolver =
+                new OwlStatueDialogResolver((rom == null ? (Rom) null : TestRoms.partial(rom)));
         assertEquals(0x2A1, resolver.globalDialogId(2, 0x60, true));
         assertEquals(0x2A2, resolver.globalDialogId(2, 0x61, true));
         assertEquals(0x2A3, resolver.globalDialogId(2, 0x62, true));
@@ -38,9 +40,7 @@ final class OwlStatueDialogResolverTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new OwlStatueDialogResolver(
-                        (new byte[0x8000] == null
-                                ? (linksawakening.rom.Rom) null
-                                : new linksawakening.rom.Rom(new byte[0x8000]))));
+                        (new byte[0x8000] == null ? (Rom) null : TestRoms.partial(new byte[0x8000]))));
     }
 
     private static void write(byte[] rom, int address, int... values) {

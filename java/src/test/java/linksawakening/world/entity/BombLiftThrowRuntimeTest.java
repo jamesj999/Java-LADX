@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 import org.junit.jupiter.api.Test;
 
@@ -473,7 +474,7 @@ final class BombLiftThrowRuntimeTest {
     }
 
     private static RoomEntityRuntime bombRuntime() throws IOException {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(loadRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
         List<RoomEntity> slots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));

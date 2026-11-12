@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.motion.*;
 import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,7 @@ final class SlimeEyeRuntimeTest {
 
     private RoomEntityRuntime runtime() throws Exception {
         byte[] rom = rom();
-        var sprites = new EntitySpriteHandlerCatalog(rom);
+        var sprites = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         var list = new ArrayList<RoomEntity>();
         for (int s = 0; s < 16; s++) list.add(RoomEntity.disabled(s));
         list.set(
@@ -40,8 +42,7 @@ final class SlimeEyeRuntimeTest {
                 .randomByteSupplier(() -> 0)
                 .spriteHandlers(sprites)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
-                .chestContentsTable(new ChestContentsTable(
-                        (rom == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(rom))))
+                .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
                 .build();
@@ -217,12 +218,11 @@ final class SlimeEyeRuntimeTest {
         var gpu = new linksawakening.gpu.GPU();
         gpu.loadBaseTiles(EntityRomTestData.view(bytes));
         var session = new linksawakening.world.room.RoomSession(new linksawakening.world.room.RoomSessionConfig(
-                (bytes == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(bytes)),
+                (bytes == null ? (Rom) null : TestRoms.partial(bytes)),
                 gpu,
-                new linksawakening.world.room.RoomLoader(
-                        (bytes == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(bytes))),
+                new linksawakening.world.room.RoomLoader((bytes == null ? (Rom) null : TestRoms.partial(bytes))),
                 new linksawakening.world.room.OverworldTilesetTable(
-                        (bytes == null ? (linksawakening.rom.Rom) null : new linksawakening.rom.Rom(bytes))),
+                        (bytes == null ? (Rom) null : TestRoms.partial(bytes))),
                 new linksawakening.physics.OverworldCollision(
                         RomTables.load(linksawakening.world.entity.EntityRomTestData.view(bytes))),
                 new linksawakening.world.room.RoomSessionConfig.Presentation(null, null, null),
@@ -303,7 +303,7 @@ final class SlimeEyeRuntimeTest {
     private void captureFixture(linksawakening.world.room.RoomSession session, linksawakening.gpu.GPU gpu, boolean half)
             throws Exception {
         var room = session.rooms().renderSnapshot();
-        var catalog = new EntitySpriteHandlerCatalog(rom());
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom()));
         var slots = new ArrayList<RoomEntity>();
         for (int i = 0; i < 16; i++) slots.add(RoomEntity.disabled(i));
         int[] xs = half ? new int[] {54, 90} : new int[] {72};
@@ -434,7 +434,7 @@ final class SlimeEyeRuntimeTest {
 
     @Test
     void romDisplayListsPreserveBodyStretchHalfAndShadowOffsets() throws Exception {
-        var catalog = new EntitySpriteHandlerCatalog(rom());
+        var catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom()));
         var full = catalog.forSlimeEyeState(false, 0, 0).dynamicVariant(0);
         assertEquals(12, full.size());
         assertEquals(-16, full.getFirst().xOffset());

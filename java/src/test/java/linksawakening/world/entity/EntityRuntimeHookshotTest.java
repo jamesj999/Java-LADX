@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.KeyRewardEvent;
 import linksawakening.world.room.ChestContentsTable;
@@ -17,7 +18,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
     @Test
     void hookshotUnmasksAnIronMaskAndSpawnsItsRomMaskEntity() throws IOException {
         byte[] rom = loadRom();
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
         EntitySpriteDefinition ironMaskDefinition =
                 catalog.forEntityType(0x24, EntityRoomLoader.RoomTable.INDOORS_A, -1);
@@ -63,7 +64,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
 
     @Test
     void keyDropPointMasterStalfosRoomUsesHookshotPresentationAndReward() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(syntheticRom());
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
         EntitySpriteDefinition definition = keyDropDefinition();
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot(new RoomEntityBuilder()
                         .type(0x30)
