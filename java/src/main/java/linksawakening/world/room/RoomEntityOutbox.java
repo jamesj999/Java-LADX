@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +36,24 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 
 final class RoomEntityOutbox {
     private final java.util.function.Supplier<RoomEntityRuntime> runtime;
+    private final RoomRequestDrain<linksawakening.world.entity.event.EntityRequest> rewardDrain =
+            new RoomRequestDrain<>();
+    private final RoomRequestDrain<EntityCombatEvent> combatDrain = new RoomRequestDrain<>();
+
+    void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
+        var events = runtime.get() == null
+                ? List.<EntityCombatEvent>of()
+                : runtime.get().consumePendingEntityEvents();
+        combatDrain.drain(events, pendingRoomEntityEvents, target);
+    }
+
+    DialogRequest consumeFirstEntityDialogRequest() {
+        DialogRequest first = pendingRoomDialogRequests.isEmpty() ? null : pendingRoomDialogRequests.getFirst();
+        pendingRoomDialogRequests.clear();
+        var events =
+                runtime.get() == null ? List.<DialogRequest>of() : runtime.get().consumePendingDialogRequests();
+        return first != null || events.isEmpty() ? first : events.getFirst();
+    }
 
     RoomEntityOutbox(java.util.function.Supplier<RoomEntityRuntime> runtime) {
         this.runtime = runtime;
@@ -57,10 +75,12 @@ final class RoomEntityOutbox {
     int pendingRoomMusicTrack = -1;
 
     List<EntityCombatEvent> consumeEntityEvents() {
-        List<EntityCombatEvent> events = new ArrayList<>();
-        if (runtime.get() != null) {
-            events.addAll(runtime.get().consumePendingEntityEvents());
-        }
+        var entityEvents = runtime.get() == null
+                ? List.<EntityCombatEvent>of()
+                : runtime.get().consumePendingEntityEvents();
+        if (pendingRoomEntityEvents.isEmpty()) return entityEvents;
+        List<EntityCombatEvent> events = new ArrayList<>(entityEvents.size() + pendingRoomEntityEvents.size());
+        events.addAll(entityEvents);
         events.addAll(pendingRoomEntityEvents);
         pendingRoomEntityEvents.clear();
         return List.copyOf(events);
@@ -219,6 +239,8 @@ final class RoomEntityOutbox {
     }
 
     List<DialogRequest> consumeEntityDialogRequests() {
+        if (pendingRoomDialogRequests.isEmpty())
+            return runtime.get() == null ? List.of() : runtime.get().consumePendingDialogRequests();
         List<DialogRequest> requests = new ArrayList<>(pendingRoomDialogRequests);
         pendingRoomDialogRequests.clear();
         if (runtime.get() != null) {
@@ -231,5 +253,45 @@ final class RoomEntityOutbox {
         List<BombExplosionEvent> pending = List.copyOf(pendingBombExplosionEvents);
         pendingBombExplosionEvents.clear();
         return pending;
+    }
+
+    void drainChestRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingChestRewardEvents, target);
+    }
+
+    void drainKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingKeyRewardEvents, target);
+    }
+
+    void drainSlimeKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingSlimeKeyRewardEvents, target);
+    }
+
+    void drainHeartContainerRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingHeartContainerRewards, target);
+    }
+
+    void drainMadamMeowMeowFullHealRequests(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingMadamMeowMeowFullHealRequests, target);
+    }
+
+    void drainRichardProgressEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingRichardProgressEvents, target);
+    }
+
+    void drainSwordPickupRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingSwordPickupRewards, target);
+    }
+
+    void drainToadstoolRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingToadstoolRewards, target);
+    }
+
+    void drainWitchExchangeEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingWitchExchangeEvents, target);
+    }
+
+    void drainWitchRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        rewardDrain.drain(pendingWitchRewardEvents, target);
     }
 }

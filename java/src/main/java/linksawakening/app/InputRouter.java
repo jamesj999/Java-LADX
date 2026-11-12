@@ -153,7 +153,7 @@ public final class InputRouter {
         if (link().isPassingOut()) return;
         if (action != GLFW_PRESS) return;
 
-        if (roomSession().tailCaveKeyholeSequenceActive()) {
+        if (roomSession().doors().tailCaveKeyholeSequenceActive()) {
             return;
         }
 
@@ -203,8 +203,8 @@ public final class InputRouter {
     }
 
     public void dumpLinkSurroundings() {
-        if (!roomSession().hasActiveRoom()) return;
-        ActiveRoom room = roomSession().activeRoom();
+        if (!roomSession().rooms().hasActiveRoom()) return;
+        ActiveRoom room = roomSession().rooms().activeRoom();
         int[] roomObjectsArea = room.roomObjectsArea();
         int lx = link().pixelX();
         int ly = link().pixelY();
@@ -255,7 +255,7 @@ public final class InputRouter {
         if (direction == ScrollController.NONE
                 || scrollController().isActive()
                 || transitionController().isInputBlocked()
-                || !roomSession().hasActiveRoom()) {
+                || !roomSession().rooms().hasActiveRoom()) {
             return false;
         }
         switch (direction) {
@@ -267,7 +267,7 @@ public final class InputRouter {
                 return false;
             }
         }
-        if (roomSession().activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (roomSession().rooms().activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             roomTransitionCoordinator().handleOverworldBoundary(link());
         } else {
             roomTransitionCoordinator().handleWarpAndIndoorBoundaries(link());
@@ -283,7 +283,7 @@ public final class InputRouter {
         // Consume before gating: a blocked desktop request must not fire later.
         boolean requested = screen().get() instanceof GameplayScreen gameplay && gameplay.consumeFileSaveRequest();
         if (link().isPassingOut()
-                || roomSession().tailCaveKeyholeSequenceActive()
+                || roomSession().doors().tailCaveKeyholeSequenceActive()
                 || story().get().marinWakeUpBlocksKeyInput()) return false;
         if ((requested
                         || shouldEnterFileSave(

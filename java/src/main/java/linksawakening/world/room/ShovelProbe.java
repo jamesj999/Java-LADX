@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 record ShovelProbe(boolean valid, int location, int objectLeft, int objectTop) {
     static ShovelProbe invalid() {

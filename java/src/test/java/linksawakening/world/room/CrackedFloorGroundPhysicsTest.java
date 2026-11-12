@@ -18,24 +18,24 @@ class CrackedFloorGroundPhysicsTest {
         try (var input = TestRom.open()) {
             rom = input.readAllBytes();
         }
-        var session = new RoomSession(
+        var session = new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 new OverworldCollision(RomTables.loadFromRom(rom)),
-                new TransientVfxSystem(16),
-                null);
+                new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         session.rooms().loadIndoor(0, 0x17);
         return session;
     }
 
-    private static RoomSession.LinkGroundFrame frame(
+    private static LinkGroundFrame frame(
             int x, int y, boolean airborne, boolean blocked, boolean dialog, boolean transition) {
-        return new RoomSession.LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
+        return new LinkGroundFrame(x, y, airborne, blocked, dialog, transition, 0, 0, 0);
     }
 
-    private static RoomSession.LinkGroundFrame standing() {
+    private static LinkGroundFrame standing() {
         return frame(40, 40, false, false, false, false);
     }
 

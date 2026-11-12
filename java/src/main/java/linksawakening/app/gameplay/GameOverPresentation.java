@@ -22,7 +22,7 @@ final class GameOverPresentation {
 
     GameOverPresentation(GameplaySimulation context) {
         menu = new GameOverMenu(context.romData());
-        var room = context.roomSession().renderSnapshot();
+        var room = context.roomSession().rooms().renderSnapshot();
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
         // LoadTileset0F ($01:6CE3): only the 20 visible columns are written.
@@ -32,7 +32,7 @@ final class GameOverPresentation {
             }
         Arrays.fill(attributes, 5); // GAMEPLAY_WORLD path, $01:6D11.
         context.playerState().incrementDeathCount();
-        context.roomSession().clearGameOverPowerCounter();
+        context.roomSession().progress().clearGameOverPowerCounter();
         context.playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
         context.link().presentGameOverStage(stage, countdown);
         refresh(true);

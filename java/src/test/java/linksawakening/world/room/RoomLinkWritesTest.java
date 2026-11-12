@@ -72,4 +72,42 @@ class RoomLinkWritesTest {
         assertEquals(List.of(new LinkWrite.AttackClearWrite(clear)), writes);
         assertThrows(UnsupportedOperationException.class, writes::clear);
     }
+
+    @Test
+    void directVisitorsPreserveTiePrecedenceAndStreamOrderWithoutWrapperLists() {
+        var calls = new java.util.ArrayList<String>();
+        var target = new LinkWriteSink.Positions() {
+            public void platform(SideViewPlatformLinkRequest r) {
+                calls.add("platform" + r.sourceSlot());
+            }
+
+            public void pot(SideViewPotLinkRequest r) {
+                calls.add("pot" + r.sourceSlot());
+            }
+
+            public void position(LinkFinalPositionRequest r) {
+                calls.add("position" + r.sourceSlot());
+            }
+        };
+        RoomLinkWrites.visitPositions(
+                List.of(platform(5), platform(2)),
+                List.of(pot(5), pot(3)),
+                List.of(new LinkFinalPositionRequest(5), new LinkFinalPositionRequest(1)),
+                target);
+        assertEquals(List.of("pot5", "platform5", "position5", "pot3", "platform2", "position1"), calls);
+        calls.clear();
+        RoomLinkWrites.visitAttacks(
+                List.of(new LinkAttackClearRequest(5), new LinkAttackClearRequest(1)),
+                List.of(new LinkAttackStepRequest(5)),
+                new LinkWriteSink.Attacks() {
+                    public void clear(LinkAttackClearRequest r) {
+                        calls.add("clear" + r.sourceSlot());
+                    }
+
+                    public void step(LinkAttackStepRequest r) {
+                        calls.add("step" + r.sourceSlot());
+                    }
+                });
+        assertEquals(List.of("step5", "clear5", "clear1"), calls);
+    }
 }

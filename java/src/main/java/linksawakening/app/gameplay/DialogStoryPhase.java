@@ -15,12 +15,14 @@ final class DialogStoryPhase {
             // $00:0F22 runs before world transitions and dialog gates.
             // The separate inventory gameplay handler does not run it.
             context.roomSession()
+                    .entityState()
                     .advanceBoomerangSoundClock(
                             context.inventoryMenu().transition().worldHandlerActive());
         }
         context.scrollController().tickScreenShake();
         if (!context.transitionController().isInputBlocked()) {
             int dungeonTitle = context.roomSession()
+                    .transitions()
                     .tickDungeonTitleMessage(
                             context.dialogController().isActive(),
                             context.inventoryMenu().isFullyClosed(),

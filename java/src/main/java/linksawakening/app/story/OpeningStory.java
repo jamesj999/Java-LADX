@@ -126,15 +126,20 @@ public final class OpeningStory {
 
     public void updateNewGameMarinPresentation() {
         {
-            roomSession().updateHouseTarinPresentation(frameCounter(), link().romEntityX(), link().romEntityY());
+            roomSession()
+                    .story()
+                    .updateHouseTarinPresentation(frameCounter(), link().romEntityX(), link().romEntityY());
         }
         if (newGameWakeUpMotion() == null
-                || !roomSession().hasActiveRoom()
-                || roomSession().activeRoom().mapId() != 0x10
-                || roomSession().activeRoom().roomId() != 0xA3) {
+                || !roomSession().rooms().hasActiveRoom()
+                || roomSession().rooms().activeRoom().mapId() != 0x10
+                || roomSession().rooms().activeRoom().roomId() != 0xA3) {
             return;
         }
-        for (var entity : roomSession().activeRoom().entities().loadedEntities()) {
+        var loadedEntities = roomSession().rooms().activeRoom().entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities.get(entityIndex);
+
             if (entity.type() != 0x3E) {
                 continue;
             }
@@ -142,6 +147,7 @@ public final class OpeningStory {
                     .tickMarinPresentation(
                             frameCounter(), entity.x(), entity.y(), link().romEntityX(), link().romEntityY());
             roomSession()
+                    .story()
                     .applyMarinWakeUpPresentation(
                             presentation.romX(), presentation.romY(), presentation.spriteVariant());
             return;
@@ -152,16 +158,19 @@ public final class OpeningStory {
         if ((newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete())
                 || newGameTarinShieldMotion() == null
                 || key != inputConfig().aKey()
-                || !roomSession().hasActiveRoom()
+                || !roomSession().rooms().hasActiveRoom()
                 || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession().activeRoom();
+        ActiveRoom room = roomSession().rooms().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
-        for (var entity : room.entities().loadedEntities()) {
+        var loadedEntities2 = room.entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities2.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities2.get(entityIndex);
+
             if (entity.type() == 0x3F
                     && TarinShieldMotion.canTalkToEntity(
                             entity.x(),
@@ -190,16 +199,19 @@ public final class OpeningStory {
         if (newGameWakeUpMotion() == null
                 || !newGameWakeUpMotion().complete()
                 || key != inputConfig().aKey()
-                || !roomSession().hasActiveRoom()
+                || !roomSession().rooms().hasActiveRoom()
                 || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession().activeRoom();
+        ActiveRoom room = roomSession().rooms().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
-        for (var entity : room.entities().loadedEntities()) {
+        var loadedEntities3 = room.entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities3.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities3.get(entityIndex);
+
             if (entity.type() == 0x3E
                     && newGameWakeUpMotion()
                             .canOpenFollowUpDialog(
@@ -225,9 +237,9 @@ public final class OpeningStory {
 
     public boolean tickNewGameTarinShield() {
         if (newGameTarinShieldMotion() == null
-                || !roomSession().hasActiveRoom()
-                || roomSession().activeRoom().mapId() != 0x10
-                || roomSession().activeRoom().roomId() != 0xA3) {
+                || !roomSession().rooms().hasActiveRoom()
+                || roomSession().rooms().activeRoom().mapId() != 0x10
+                || roomSession().rooms().activeRoom().roomId() != 0xA3) {
             return false;
         }
         TarinShieldMotion.Update update = newGameTarinShieldMotion()

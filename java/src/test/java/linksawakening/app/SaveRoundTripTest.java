@@ -31,16 +31,16 @@ final class SaveRoundTripTest {
             press(game, "a");
             RoomSession room = get(game, "roomSession", RoomSession.class);
             for (int frame = 0; frame < 40; frame++) game.headlessFrame();
-            assertEquals(0, room.mapCategory());
-            assertEquals(0xA2, room.currentRoomId());
+            assertEquals(0, room.rooms().mapCategory());
+            assertEquals(0xA2, room.rooms().currentRoomId());
             game.headlessButton("down", true);
             for (int frame = 0; frame < 8; frame++) game.headlessFrame();
             game.headlessButton("down", false);
             game.headlessButton("up", true);
             for (int frame = 0; frame < 100; frame++) game.headlessFrame();
             game.headlessButton("up", false);
-            assertEquals(1, room.mapCategory());
-            assertEquals(0xA3, room.currentRoomId());
+            assertEquals(1, room.rooms().mapCategory());
+            assertEquals(0xA3, room.rooms().currentRoomId());
         } finally {
             call(game, "cleanup", Void.class);
         }
@@ -114,7 +114,7 @@ final class SaveRoundTripTest {
             player.setShieldLevel(1);
             player.setItemB(PlayerState.INVENTORY_SHIELD);
             player.setRupees(237);
-            room.setTarinFlag(1);
+            room.story().setTarinFlag(1);
             game.headlessFrame();
             SaveCoordinator saves = call(game, "saves", SaveCoordinator.class);
             if (gameOverOption < 0) {
@@ -156,19 +156,29 @@ final class SaveRoundTripTest {
                 assertEquals(expected.shieldLevel(), restored.shieldLevel());
                 assertEquals(
                         expected.tarinFlag(),
-                        get(relaunched, "roomSession", RoomSession.class).tarinFlag());
+                        get(relaunched, "roomSession", RoomSession.class)
+                                .story()
+                                .tarinFlag());
                 RoomSession restoredRoom = get(relaunched, "roomSession", RoomSession.class);
-                assertArrayEquals(expected.overworldRoomStatus(), restoredRoom.overworldRoomStatusSnapshot());
-                assertArrayEquals(expected.indoorARoomStatus(), restoredRoom.indoorARoomStatusSnapshot());
-                assertArrayEquals(expected.indoorBRoomStatus(), restoredRoom.indoorBRoomStatusSnapshot());
-                assertArrayEquals(expected.colorDungeonRoomStatus(), restoredRoom.colorDungeonRoomStatusSnapshot());
-                assertArrayEquals(expected.dungeonItemFlags(), restoredRoom.dungeonItemFlagsSnapshot());
-                assertArrayEquals(expected.colorDungeonItemFlags(), restoredRoom.colorDungeonItemFlagsSnapshot());
-                assertArrayEquals(expected.dungeonProgressFlags(), restoredRoom.dungeonProgressFlagsSnapshot());
+                assertArrayEquals(
+                        expected.overworldRoomStatus(), restoredRoom.dungeon().overworldRoomStatusSnapshot());
+                assertArrayEquals(
+                        expected.indoorARoomStatus(), restoredRoom.dungeon().indoorARoomStatusSnapshot());
+                assertArrayEquals(
+                        expected.indoorBRoomStatus(), restoredRoom.dungeon().indoorBRoomStatusSnapshot());
+                assertArrayEquals(
+                        expected.colorDungeonRoomStatus(),
+                        restoredRoom.dungeon().colorDungeonRoomStatusSnapshot());
+                assertArrayEquals(
+                        expected.dungeonItemFlags(), restoredRoom.dungeon().dungeonItemFlagsSnapshot());
+                assertArrayEquals(
+                        expected.colorDungeonItemFlags(), restoredRoom.dungeon().colorDungeonItemFlagsSnapshot());
+                assertArrayEquals(
+                        expected.dungeonProgressFlags(), restoredRoom.dungeon().dungeonProgressFlagsSnapshot());
                 var restoredLink = get(relaunched, "link", linksawakening.entity.Link.class);
                 assertEquals(expected.spawnPositionX(), restoredLink.roomEntryRomPositionX());
                 assertEquals(expected.spawnPositionY(), restoredLink.roomEntryRomPositionY());
-                assertEquals(expected.spawnMapRoom(), restoredRoom.currentRoomId());
+                assertEquals(expected.spawnMapRoom(), restoredRoom.rooms().currentRoomId());
             } finally {
                 call(relaunched, "cleanup", Void.class);
             }

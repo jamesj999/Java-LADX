@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -32,6 +32,14 @@ public final class PresentationOutputs {
 
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
         return dependencies.entityBridge().get().outbox.consumeLikeLikeEvents();
+    }
+
+    public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
+        dependencies.entityBridge().get().outbox.drainEntityEvents(target);
+    }
+
+    public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
+        return dependencies.entityBridge().get().outbox.consumeFirstEntityDialogRequest();
     }
 
     record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}

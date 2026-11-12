@@ -10,10 +10,22 @@ import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.state.PlayerState;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityPickupEvent;
-import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.EntityPickupInputs;
+import linksawakening.world.room.LinkGroundFrame;
+import linksawakening.world.room.SwordBox;
 import linksawakening.world.transition.Warp;
 
 final class LinkEquipmentPhase {
+    private final LinkMotionDriver motion;
+
+    LinkEquipmentPhase() {
+        this(LinkMotionDriver.DIRECT);
+    }
+
+    LinkEquipmentPhase(LinkMotionDriver motion) {
+        this.motion = motion;
+    }
+
     void tick(GameplaySimulation context, boolean dialogBlocksGameplay, boolean inventoryBlockedAtStart) {
         if (!dialogBlocksGameplay) {
             {
@@ -56,8 +68,8 @@ final class LinkEquipmentPhase {
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
                 && (!context.link().dialogGotItemActive())
-                && (!context.roomSession().gotItemPresentationActive());
-        boolean swordPickupSequenceActive = context.roomSession().swordPickupSequenceActive();
+                && (!context.roomSession().entityState().gotItemPresentationActive());
+        boolean swordPickupSequenceActive = context.roomSession().entityState().swordPickupSequenceActive();
         linkActive = linkActive && !swordPickupSequenceActive;
         if (linkActive) {
             // AnimateEntities runs after Link motion and its normal NPC
@@ -66,18 +78,21 @@ final class LinkEquipmentPhase {
             // frame's motion work (bank0.asm:$0F97), so capture it before
             // any Link movement can change the position.
             {
-                int roomId = context.roomSession().currentRoomId();
-                context.link().setSideScrolling(context.roomSession().mapCategory() == Warp.CATEGORY_SIDESCROLL);
+                int roomId = context.roomSession().rooms().currentRoomId();
+                context.link()
+                        .setSideScrolling(context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
                 // $02:6CB6's manual exits precede the normal recoil gate.
-                boolean sideViewManualExit = context.roomSession().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                boolean sideViewManualExit = context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
                         && roomId != 0xE8
                         && roomId != 0xF8;
-                boolean caveManualExit = context.roomSession().mapId() == 0x1F && (roomId == 0xF2 || roomId == 0xF5);
+                boolean caveManualExit =
+                        context.roomSession().rooms().mapId() == 0x1F && (roomId == 0xF2 || roomId == 0xF5);
                 context.link().setNormalRecoilRoomBoundaries(!sideViewManualExit && !caveManualExit);
             }
-            context.link().setGelClinging(context.roomSession().gelClingingToLink(), context.frameCounter());
-            context.link().captureRomFinalPosition();
-            boolean keyholeSequenceActive = context.roomSession().tailCaveKeyholeSequenceActive();
+            context.link()
+                    .setGelClinging(context.roomSession().entityState().gelClingingToLink(), context.frameCounter());
+            motion.capture(context.link());
+            boolean keyholeSequenceActive = context.roomSession().doors().tailCaveKeyholeSequenceActive();
             if (keyholeSequenceActive) {
                 context.link().blockNextRomMotionFrame();
             }
@@ -86,14 +101,16 @@ final class LinkEquipmentPhase {
             boolean bombButtonHeld =
                     !context.link().recoveryBlocksInput() && context.lift().isBombButtonHeld();
             if (!keyholeSequenceActive) {
-                context.roomSession().setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
-                context.roomSession().setEntityBombButtonHeld(bombButtonHeld);
-                var liftedState = context.roomSession().liftedEntityState();
+                context.roomSession().entityState().setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
+                context.roomSession().entityState().setEntityBombButtonHeld(bombButtonHeld);
+                var liftedState = context.roomSession().rooms().liftedEntityState();
                 boolean bombBeingThrown = liftedState.type() == 0x02;
                 boolean throwPressed =
                         !context.link().recoveryBlocksInput() && context.lift().isThrowButtonPressed(bombBeingThrown);
                 if (throwPressed && liftedState.carryState() == 0x01) {
-                    context.roomSession().throwLiftedEntity(context.link().direction());
+                    context.roomSession()
+                            .playerItems()
+                            .throwLiftedEntity(context.link().direction());
                 }
             }
             boolean canGrab = !keyholeSequenceActive
@@ -102,6 +119,7 @@ final class LinkEquipmentPhase {
                     && !context.playerState().runningWithPegasusBoots()
                     && !context.link().isCarryingLiftedObject();
             boolean grabbing = context.roomSession()
+                    .doors()
                     .tryLiftObject(
                             context.link().pixelX(),
                             context.link().pixelY(),
@@ -127,12 +145,12 @@ final class LinkEquipmentPhase {
                     && !context.link().isCarryingLiftedObject()
                     && !context.link().romItemAnimationFrameBlocked()) {
                 if (context.link().romMotionState() == 0x05
-                        || (context.roomSession().gelClingingToLink())) {
+                        || (context.roomSession().entityState().gelClingingToLink())) {
                     context.equipmentController().tickEquippedItemsWithoutInput(context.frameCounter());
                 } else {
                     if (!swordPickupSequenceActive
-                            && ((!context.roomSession().powerUpPickupSequenceActive()
-                                    && !context.roomSession().heartPiecePickupActive())))
+                            && ((!context.roomSession().entityState().powerUpPickupSequenceActive()
+                                    && !context.roomSession().rooms().heartPiecePickupActive())))
                         context.equipmentController().dispatchButtonEdges();
                     context.equipmentController().tickEquippedItems(context.frameCounter());
                 }
@@ -145,15 +163,16 @@ final class LinkEquipmentPhase {
                 boolean wasAirborne = context.link().isAirborne();
                 int beforeMotionX = context.link().pixelX(),
                         beforeMotionY = context.link().pixelY();
-                context.link().update();
+                motion.update(context.link());
                 if (wasAirborne
                         && !context.link().isAirborne()
                         && !context.link().isFallingIntoPit()
-                        && context.roomSession().mapCategory() != Warp.CATEGORY_SIDESCROLL) {
+                        && context.roomSession().rooms().mapCategory() != Warp.CATEGORY_SIDESCROLL) {
                     // ApplyLinkGroundMotion $02:4588 probes the landing tile
                     // before func_002_434A applies XY. $00:1794 probes again
                     // after XY and copies that first sample at $02:7589.
                     context.roomSession()
+                            .terrain()
                             .tickCrackedFloorOnLanding(
                                     groundFrame(context, beforeMotionX, beforeMotionY, groundInteractionBlocked),
                                     dialogGotItemActive(context));
@@ -169,6 +188,7 @@ final class LinkEquipmentPhase {
                 int collisionProbeX = context.link().romCollisionProbePixelX();
                 int collisionProbeY = context.link().romCollisionProbePixelY();
                 context.roomSession()
+                        .doors()
                         .tryUnlockTailCaveKeyhole(
                                 collisionProbeX,
                                 collisionProbeY,
@@ -176,6 +196,7 @@ final class LinkEquipmentPhase {
                                 context.link().romCollisionType(),
                                 context.playerState().tailKeyCount() != 0);
                 context.roomSession()
+                        .doors()
                         .tryUnlockKeyCavernKeyhole(
                                 collisionProbeX,
                                 collisionProbeY,
@@ -183,12 +204,14 @@ final class LinkEquipmentPhase {
                                 context.link().romCollisionType(),
                                 context.playerState().goldenLeavesCount());
                 context.roomSession()
+                        .doors()
                         .tryUnlockIndoorKeyDoor(
                                 collisionProbeX,
                                 collisionProbeY,
                                 context.link().direction(),
                                 context.link().romCollisionType());
                 context.roomSession()
+                        .doors()
                         .tryInteractWithIndoorBlock(
                                 collisionProbeX,
                                 collisionProbeY,
@@ -201,9 +224,11 @@ final class LinkEquipmentPhase {
             }
             {
                 context.roomSession()
+                        .entityState()
                         .setEntityScreenShakeCountdown(
                                 context.scrollController().screenShakeCountdown());
                 context.roomSession()
+                        .entityState()
                         .setSecretSeashellPegasusCollisionState(
                                 context.scrollController().screenShakeCountdown() != 0,
                                 context.link().pegasusBootsCollisionCountdown() != 0,
@@ -212,11 +237,13 @@ final class LinkEquipmentPhase {
             }
             {
                 context.roomSession()
+                        .story()
                         .setChestPlayerLevels(
                                 context.playerState().shieldLevel(),
                                 context.playerState().swordLevel(),
                                 context.playerState().powerBraceletLevel());
                 context.roomSession()
+                        .entityState()
                         .setToadstoolPlayerState(
                                 context.playerState().hasToadstool(),
                                 context.playerState().magicPowderCount());
@@ -229,19 +256,17 @@ final class LinkEquipmentPhase {
                                 context.link().direction(),
                                 context.playerState().runningWithPegasusBoots());
                 EntityPickupEvent pickup = context.roomSession()
-                        .collectEntityIfNeeded(
+                        .entities()
+                        .collectEntityIfNeeded(new EntityPickupInputs(
                                 context.frameCounter(),
-                                context.link().romEntityX(),
-                                context.link().romEntityY(),
-                                context.link().isAirborne(),
-                                true,
-                                context.link().direction(),
-                                context.link().romEntityZ(),
-                                box.active(),
-                                box.x(),
-                                box.width(),
-                                box.y(),
-                                box.height());
+                                new EntityPickupInputs.Link(
+                                        context.link().romEntityX(),
+                                        context.link().romEntityY(),
+                                        context.link().isAirborne(),
+                                        true,
+                                        context.link().direction(),
+                                        context.link().romEntityZ()),
+                                new SwordBox(box.active(), box.x(), box.width(), box.y(), box.height())));
                 if (pickup != null) {
                     if (pickup.type() == 0x36) {
                         context.playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
@@ -277,21 +302,22 @@ final class LinkEquipmentPhase {
                     && (dialogBlocksGameplay
                             || context.scrollController().isActive()
                             || context.transitionController().isInputBlocked()
-                            || (context.roomSession().gotItemPresentationActive()))) {
+                            || (context.roomSession().entityState().gotItemPresentationActive()))) {
                 tickCrackedFloor(context, context.link().romInteractiveMotionBlockValue() != 0);
             }
         }
 
         if (!dialogBlocksGameplay) {
-            int rumbleHorizontal = context.roomSession().tickTailCaveKeyholeSequence();
+            int rumbleHorizontal = context.roomSession().doors().tickTailCaveKeyholeSequence();
             context.scrollController()
                     .setScriptedScreenShakeHorizontal(
-                            context.roomSession().tailCaveKeyholeSequenceActive(), rumbleHorizontal);
+                            context.roomSession().doors().tailCaveKeyholeSequenceActive(), rumbleHorizontal);
         }
     }
 
     private static void tickCrackedFloor(GameplaySimulation context, boolean interactionBlocked) {
         context.roomSession()
+                .terrain()
                 .tickCrackedFloor(
                         groundFrame(
                                 context, context.link().pixelX(), context.link().pixelY(), interactionBlocked),
@@ -302,12 +328,13 @@ final class LinkEquipmentPhase {
      * sequence (UseMagicPowder $00:149E) and the witch presentation
      * ($05:4834, $05:48DB). */
     private static boolean dialogGotItemActive(GameplaySimulation context) {
-        return (context.link().dialogGotItemActive()) || (context.roomSession().gotItemPresentationActive());
+        return (context.link().dialogGotItemActive())
+                || (context.roomSession().entityState().gotItemPresentationActive());
     }
 
-    private static RoomSession.LinkGroundFrame groundFrame(
+    private static LinkGroundFrame groundFrame(
             GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
-        return new RoomSession.LinkGroundFrame(
+        return new LinkGroundFrame(
                 pixelX,
                 pixelY,
                 context.link().isAirborne(),

@@ -33,8 +33,8 @@ class GameOverOutcomeSessionTest {
         slot.setAccessible(true);
         slot.setInt(linksawakening.app.SessionTestAccess.owner(game, "currentSaveSlot"), 0);
         var room = game.diagnostics().roomSession();
-        room.loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
-        room.loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
+        room.transitions().loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
+        room.rooms().loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
         var link = game.diagnostics().link();
         link.setPixelPosition(80, 64);
         var player = game.diagnostics().playerState();
@@ -74,8 +74,8 @@ class GameOverOutcomeSessionTest {
                     linksawakening.app.screen.FileMenuScreen.class,
                     screen.get(linksawakening.app.SessionTestAccess.owner(game, "currentScreen")));
         } else {
-            assertEquals(0x92, room.currentRoomId());
-            assertEquals(0, room.mapCategory());
+            assertEquals(0x92, room.rooms().currentRoomId());
+            assertEquals(0, room.rooms().mapCategory());
             assertEquals(0x50 - 8, link.pixelX());
             assertEquals(0x60 - 16, link.pixelY());
             assertEquals(128, player.invincibilityCounter());

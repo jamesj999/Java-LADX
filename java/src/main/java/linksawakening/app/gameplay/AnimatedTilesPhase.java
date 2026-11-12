@@ -13,7 +13,7 @@ final class AnimatedTilesPhase {
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
 
-            context.roomSession().tickGameplayVBlank();
+            context.roomSession().entityState().tickGameplayVBlank();
         }
     }
 }

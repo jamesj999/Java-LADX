@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import linksawakening.world.entity.RoomEntity;
@@ -24,7 +24,9 @@ final class RoomBombObjectInteractions {
             return;
         }
 
-        for (BombExplosionEvent event : events) {
+        for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
+            BombExplosionEvent event = events.get(eventIndex);
+
             if (!event.targetsRoomObjects()) {
                 continue;
             }

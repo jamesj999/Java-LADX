@@ -1,80 +1,14 @@
 package linksawakening.architecture;
 
+import static linksawakening.architecture.ClassFileReferences.classes;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.DataInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
+import linksawakening.architecture.ClassFileReferences.CompiledType;
 import org.junit.jupiter.api.Test;
 
 /** Checks compiled references, including descriptors and generic signatures. */
 class WorldDependencyTest {
-    private static final Path ROOT = Path.of("build/classes/java/main/linksawakening");
-    private static final Pattern TYPE = Pattern.compile("linksawakening/[A-Za-z0-9_$/]+");
-
-    private record FieldReference(String owner, String name) {}
-
-    private record CompiledType(String name, List<String> references, List<FieldReference> fields) {}
-
-    private static List<CompiledType> classes() throws Exception {
-        List<CompiledType> result = new ArrayList<>();
-        try (var paths = Files.walk(ROOT)) {
-            for (Path path : paths.filter(p -> p.toString().endsWith(".class")).toList()) {
-                List<String> references = new ArrayList<>();
-                List<FieldReference> fields = new ArrayList<>();
-                try (var input = new DataInputStream(Files.newInputStream(path))) {
-                    if (input.readInt() != 0xCAFEBABE) throw new IllegalArgumentException(path.toString());
-                    input.readUnsignedShort();
-                    input.readUnsignedShort();
-                    int count = input.readUnsignedShort();
-                    String[] utf8 = new String[count];
-                    int[] classNames = new int[count];
-                    int[][] nameAndTypes = new int[count][];
-                    List<int[]> fieldRefs = new ArrayList<>();
-                    for (int i = 1; i < count; i++) {
-                        switch (input.readUnsignedByte()) {
-                            case 1 -> {
-                                utf8[i] = input.readUTF();
-                                var matcher = TYPE.matcher(utf8[i]);
-                                while (matcher.find()) references.add(matcher.group());
-                            }
-                            case 3, 4 -> input.skipNBytes(4);
-                            case 5, 6 -> {
-                                input.skipNBytes(8);
-                                i++;
-                            }
-                            case 7 -> classNames[i] = input.readUnsignedShort();
-                            case 9 -> fieldRefs.add(new int[] {input.readUnsignedShort(), input.readUnsignedShort()});
-                            case 12 -> nameAndTypes[i] =
-                                    new int[] {input.readUnsignedShort(), input.readUnsignedShort()};
-                            case 8, 16, 19, 20 -> input.skipNBytes(2);
-                            case 10, 11, 17, 18 -> input.skipNBytes(4);
-                            case 15 -> input.skipNBytes(3);
-                            default -> throw new IllegalArgumentException("Unknown constant-pool tag: " + path);
-                        }
-                    }
-                    for (int[] field : fieldRefs) {
-                        fields.add(new FieldReference(utf8[classNames[field[0]]], utf8[nameAndTypes[field[1]][0]]));
-                    }
-                }
-                result.add(new CompiledType(
-                        "linksawakening/"
-                                + ROOT.relativize(path)
-                                        .toString()
-                                        .replace('\\', '/')
-                                        .replace(".class", ""),
-                        references,
-                        fields));
-            }
-        }
-        assertTrue(!result.isEmpty(), "No compiled world classes found");
-        return result;
-    }
-
     @Test
     void worldDoesNotDependOnApp() throws Exception {
         for (var type : classes()) {
@@ -142,6 +76,10 @@ class WorldDependencyTest {
             "room/RoomLoader",
             "room/RoomRenderSnapshot",
             "room/RoomSession",
+            "room/LinkGroundFrame",
+            "room/ShovelStartResult",
+            "room/ArrowShotResult",
+            "room/ChestOpenResult",
             "room/RoomEntities",
             "room/RoomEntityState",
             "room/RoomRooms",
@@ -161,6 +99,8 @@ class WorldDependencyTest {
             "room/LinkOutputs",
             "room/LinkPosition",
             "room/LinkWrite",
+            "room/LinkWriteSink",
+            "room/RoomFrameDrain",
             "room/PlayerHealth",
             "room/PlayerInputs",
             "room/PlayerLevels",

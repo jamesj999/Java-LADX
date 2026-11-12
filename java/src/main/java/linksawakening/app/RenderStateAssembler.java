@@ -113,17 +113,17 @@ public final class RenderStateAssembler {
     }
 
     public void composeFrameBuffer() {
-        if (inventoryMenu() != null && roomSession().activeRoom() != null) {
+        if (inventoryMenu() != null && roomSession().rooms().activeRoom() != null) {
             inventoryMenu()
                     .setWorldContext(
-                            roomSession().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
-                            roomSession().activeRoom().mapId(),
-                            roomSession().dungeonProgressFlagsSnapshot());
+                            roomSession().rooms().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
+                            roomSession().rooms().activeRoom().mapId(),
+                            roomSession().dungeon().dungeonProgressFlagsSnapshot());
             inventoryMenu()
                     .setDungeonContext(
-                            roomSession().currentDungeonItemFlagsSnapshot(),
-                            roomSession().dungeonMinimapRoomStatusSnapshot(),
-                            roomSession().indoorRoomPositionForSave(),
+                            roomSession().dungeon().currentDungeonItemFlagsSnapshot(),
+                            roomSession().dungeon().dungeonMinimapRoomStatusSnapshot(),
+                            roomSession().rooms().indoorRoomPositionForSave(),
                             frameCounter());
         }
         frameSceneBuilder().build(currentGameFrameState()).drawTo(indexedDisplayBuffer(), gpu());
@@ -139,7 +139,7 @@ public final class RenderStateAssembler {
                                 cutsceneManager() == null
                                         ? null
                                         : cutsceneManager().frameSnapshot())
-                        .withRoom(roomSession().renderSnapshot(), scrollController(), transitionController())
+                        .withRoom(roomSession().rooms().renderSnapshot(), scrollController(), transitionController())
                         .withLink(link())
                         .withTransientVfx(
                                 transientVfxSystem(), cutLeavesEffectRenderer(), GREEN_OBJECTS_SPRITE_PALETTE())

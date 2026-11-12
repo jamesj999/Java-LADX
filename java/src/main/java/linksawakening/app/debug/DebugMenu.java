@@ -153,7 +153,7 @@ public final class DebugMenu {
                 p::tailKeyCount,
                 v -> {
                     p.setTailKeyCount(v);
-                    world.setTailKeyOwned(v != 0);
+                    world.story().setTailKeyOwned(v != 0);
                 },
                 0,
                 1);
@@ -165,7 +165,7 @@ public final class DebugMenu {
                 p::birdKeyCount,
                 v -> {
                     p.setBirdKeyCount(v);
-                    world.setBirdKeyOwned(v != 0);
+                    world.story().setBirdKeyOwned(v != 0);
                 },
                 0,
                 1);
@@ -180,9 +180,9 @@ public final class DebugMenu {
                 v -> v < TRADES.length ? TRADES[v] : Integer.toString(v));
         add(3, "Song bits", p::ocarinaSongFlags, p::setOcarinaSongFlags, 0, 7);
         add(3, "Tunic", p::tunicType, p::setTunicType, 0, 2);
-        add(3, "BowWow state", world::bowWowState, world::setBowWowState, 0, 255);
-        add(3, "Richard flag", world::richardSpokenFlag, world::setRichardSpokenFlag, 0, 255);
-        add(3, "Tarin flag", world::tarinFlag, world::setTarinFlag, 0, 255);
+        add(3, "BowWow state", world.story()::bowWowState, world.story()::setBowWowState, 0, 255);
+        add(3, "Richard flag", world.story()::richardSpokenFlag, world.story()::setRichardSpokenFlag, 0, 255);
+        add(3, "Tarin flag", world.story()::tarinFlag, world.story()::setTarinFlag, 0, 255);
         add(4, "Dungeon", () -> dungeon, v -> dungeon = v, 0, 8, v -> v == 8 ? "Color" : Integer.toString(v + 1));
         String[] flags = {"Map", "Compass", "Stone beak", "Boss key", "Small keys"};
         for (int i = 0; i < flags.length; i++) {
@@ -192,9 +192,9 @@ public final class DebugMenu {
                     flags[i],
                     () -> Byte.toUnsignedInt(
                             dungeon == 8
-                                    ? world.colorDungeonItemFlagsSnapshot()[index]
-                                    : world.dungeonItemFlagsSnapshot()[dungeon * 5 + index]),
-                    v -> world.setDungeonItemForDebug(dungeon == 8 ? 255 : dungeon, index, v),
+                                    ? world.dungeon().colorDungeonItemFlagsSnapshot()[index]
+                                    : world.dungeon().dungeonItemFlagsSnapshot()[dungeon * 5 + index]),
+                    v -> world.dungeon().setDungeonItemForDebug(dungeon == 8 ? 255 : dungeon, index, v),
                     0,
                     i == 4 ? 255 : 1);
         }
@@ -203,11 +203,11 @@ public final class DebugMenu {
             add(
                     4,
                     "Instrument " + (i + 1),
-                    () -> Byte.toUnsignedInt(world.dungeonProgressFlagsSnapshot()[index]),
+                    () -> Byte.toUnsignedInt(world.dungeon().dungeonProgressFlagsSnapshot()[index]),
                     v -> {
-                        byte[] flagsCopy = world.dungeonProgressFlagsSnapshot();
+                        byte[] flagsCopy = world.dungeon().dungeonProgressFlagsSnapshot();
                         flagsCopy[index] = (byte) v;
-                        world.restoreDungeonProgressFlags(flagsCopy);
+                        world.dungeon().restoreDungeonProgressFlags(flagsCopy);
                     },
                     0,
                     3);

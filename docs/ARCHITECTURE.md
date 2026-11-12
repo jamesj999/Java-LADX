@@ -75,11 +75,18 @@ Key types: GameplayFrame, GameplaySimulation, EntityPhase, LinkCommandAdapter.
 
 `GameplaySimulation` and its phase instances are retained for the session
 lifetime. `GameplayFrame` and `TransitionPhase` are also built once.
-The owned phases read the simulation's live accessors directly, while
-`EntityPhase` retains its existing accessor contract. `GameplayFrame.tick()`
-makes three direct ordered calls; `Phase` and `phaseOrder()` remain the
-architecture-test contract and are not used to allocate a dispatch list each
-frame.
+The phases read the simulation's live accessors directly. `GameplayFrame.tick()`
+runs transitions, simulation and input completion. `SimulationStages` and
+`EntityFrameStages` are ordered runners shared by the retained production
+adapters and recording test doubles. They preserve early returns and pass the
+same sword box and projectile events through their consumers. They allocate no
+per-frame dispatch lists or closures.
+
+`EntityFrameInputsFactory` constructs immutable inputs; `LinkWriteApplier`
+translates ordered Link requests, and `EntityRewardApplier` handles synchronous
+reward batches. `EntityDialogRouting` and `LinkMotionDriver` provide recording
+ports for music/dialog/warp ordering and final-position capture before motion.
+`RoomBombPlacement` owns the successful-placement Link animation write.
 
 ### `app.story`
 
@@ -322,13 +329,22 @@ flowchart TD
   gpu --> rom
 ```
 
-`WorldDependencyTest` in `java/src/test/java/linksawakening/architecture`
-reads compiled constant pools, including descriptors and generic signatures.
+`ClassFileReferences` in `java/src/test/java/linksawakening/architecture`
+reads symbolic constant-pool references, including descriptors, generic
+signatures and field references. `WorldDependencyTest` uses this shared reader.
 It rejects world-to-app references, handler-to-room references and external
 use of motion/handlers, and checks the explicit app/world facade surface.
 Event dependencies must be event contracts or record/enum values.
-`MainArchitectureTest` in `java/src/test/java/linksawakening` checks session
-ownership, gameplay call ordering and native dependency restrictions.
+`AppBoundaryTest` checks entry-point/session ownership, screen lifecycle types,
+native dependency restrictions and the canonical bomb-placement role API.
+`GameplayFrameOrderTest`, `SimulationOrderTest`, `EntityFrameOrderTest` and
+`EntityFrameSessionTest` observe lifecycle order, early exits and consumer
+side effects. `RoomLinkWritesTest` checks descending merges and tie precedence;
+Link command and bomb-placement tests check real player/Link effects.
+`FileMenuBehaviorTest` exercises persistence, room entry and opening-story gates
+in headless sessions. None shells out to `javap` or matches disassembly text.
+The complete old-to-new mapping is recorded in
+[the architecture-test migration](archive/history/room-architecture-test-migration.md).
 `GlBoundaryTest` in `java/src/test/java/linksawakening/render` scans compiled
 gpu/render classes: only presenter classes may reference LWJGL there.
 These are specific guardrails, not a universal acyclic-package rule.
@@ -353,8 +369,10 @@ The runtime iterates slots from highest index to zero. Each slot passes
 `EntityPhase` builds immutable `EntityFrameInputs` from Link, player,
 UI, buttons and sword-box snapshots through `EntityFrameInputsFactory`.
 `LinkWriteApplier` applies ordered Link effects while `EntityPhase` orchestrates
-rewards, combat and presentation. `RoomSession.tickEntities` applies those
-inputs in the original setter order before advancing entity slots.
+combat and presentation and delegates rewards to `EntityRewardApplier`.
+`RoomSession.tickEntities` composes `RoomFrameInputApplier`, which applies inputs
+in the original setter order before advancing entity slots. Immutable component
+records are reused within the tick-only input value rather than copied again.
 `EntityTickInputs` is the tick-only boundary for callers that retain cached
 inputs; combat and pickup boundaries use their own parameter objects.
 Entity effects are consumed at the entity boundary, including projectiles,
@@ -365,7 +383,13 @@ merges position streams with pot/platform/final-position tie precedence and
 attack streams with attack-step precedence on ties. These are separate
 consumption stages: a platform write can load a room before later outputs
 are drained. `EntityFrameResults` groups live outbox views by Link, rewards
-and presentation; it deliberately does not eagerly snapshot every channel.
+and presentation. The facade caches these live views; it does not eagerly
+snapshot every channel. Synchronous `LinkWriteSink` visitors drain every competing
+stream before applying any merged write. Reward and combat `RoomFrameDrain`
+callbacks receive reusable read-only batches valid only during the callback;
+queue clearing still precedes consumer effects. Snapshot-returning `consume`
+methods remain immutable for clients that retain results. The dialog boundary
+drains all requests before selecting the first one to open.
 
 After simulation, `RenderStateAssembler` supplies frame state to scene
 construction. Indexed layers and OAM entries feed hardware composition.
@@ -374,12 +398,15 @@ Headless stepping composes the framebuffer without a native window.
 Package-private `GameSession.stepWithoutRender()` runs the same update,
 including audio and input completion, without assembling/composing pixels.
 `SessionAllocationTest` uses that path with 600 warm-up and 600 measured frames
-and `ThreadMXBean` allocation counters. Its fixed total-step limits are 8 KiB
-for the opening-dialog idle sample and 24 KiB for active gameplay after leaving
-the bed. Both include audio and world work; neither claims isolated app-only
-allocation. The active sample checks the normal-button bed-exit checkpoint.
-JFR sampling identified world snapshot/outbox/puzzle streams and audio PCM
-buffers as substantial remaining sources outside application composition.
+and `ThreadMXBean` allocation counters. Its limits are 5,248 bytes/frame for the
+opening-dialog idle sample and 18,944 for active gameplay after leaving the bed,
+with about 25% headroom over the round-3 measurements (4,205 and 15,154).
+Both include audio and world work; neither claims isolated app-only allocation.
+The active sample checks the normal-button bed-exit checkpoint. JFR sampling
+identifies entity snapshots/outbox channel machinery, shared sprite definitions,
+physics ground samples and audio PCM among remaining sources. Inputs stay
+immutable. Room effects reuse the first entity snapshot when all object-request
+channels are empty; a second snapshot still follows any object-interaction work.
 
 ```mermaid
 sequenceDiagram
@@ -496,10 +523,17 @@ entity boundary.
 collaborators instead of exposing entity handlers to application code.
 The `doors()`, `transitions()`, `playerItems()`, `story()`, `entities()`,
 `entityState()`, `rooms()`, `dungeon()`, `progress()` and `terrain()` views expose
-focused role interfaces. Deprecated compatibility interfaces retain the old
-facade entry points; the migration table is in
-[room-facade-migration.md](history/room-facade-migration.md). View implementations
-receive only their specific collaborators and state.
+focused, cached role interfaces. `RoomSession` has no superclass or compatibility
+interfaces; roles and frame adapters are composed. Boundary records, including
+`LinkGroundFrame`, `ShovelStartResult`, `ArrowShotResult` and `ChestOpenResult`,
+are top-level types. Construction takes `RoomSessionConfig`.
+
+The only deprecated methods are 26 direct bridges in one marked section for
+four off-limits entity test files. A seven-argument constructor and the private
+`context` reflection alias remain for those tests as well. No owned caller uses
+them. The exact member-to-caller and replacement inventory is in
+[room-facade-migration.md](archive/history/room-facade-migration.md).
+View implementations receive only their specific collaborators and state.
 `RoomSessionContext` is private construction-time wiring. Runtime collaborators
 receive their own dependency records and typed state: location, terrain,
 followers, entity-frame state, item use and puzzles. No runtime collaborator

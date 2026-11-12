@@ -42,6 +42,40 @@ public final class GameplaySimulation {
     private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
     private final SessionContext context;
 
+    private final SimulationStages stages = new SimulationStages() {
+        public boolean dialogStory() {
+            return dialogStoryPhase.tick(GameplaySimulation.this);
+        }
+
+        public boolean dialogBlocks() {
+            return dialogBlockers().get().pausesGameplay();
+        }
+
+        public void linkEquipment(boolean blocked, boolean inventory) {
+            linkEquipmentPhase.tick(GameplaySimulation.this, blocked, inventory);
+        }
+
+        public boolean passingOut() {
+            return link().isPassingOut() || passOutController().handledFrame();
+        }
+
+        public Sword.CollisionBox combat(boolean blocked) {
+            return combatPhase.tick(GameplaySimulation.this, blocked);
+        }
+
+        public void entities(Sword.CollisionBox sword) {
+            entityPhase.tick(GameplaySimulation.this, sword);
+        }
+
+        public void completeInput() {
+            completeGameplayFrame(dialogController());
+        }
+
+        public void animatedTiles(boolean blocked) {
+            animatedTilesPhase.tick(GameplaySimulation.this, blocked);
+        }
+    };
+
     public GameplaySimulation(SessionContext context) {
         this.context = Objects.requireNonNull(context);
     }
@@ -199,14 +233,7 @@ public final class GameplaySimulation {
                 inventoryController().dispatchMenuInput();
             if (!worldHandler) return;
         }
-        if (!dialogStoryPhase.tick(this)) return;
-        boolean dialogBlocksGameplay = dialogBlockers().get().pausesGameplay();
-        linkEquipmentPhase.tick(this, dialogBlocksGameplay, inventoryBlockedAtStart);
-        if ((link().isPassingOut() || passOutController().handledFrame())) return;
-        Sword.CollisionBox swordBox = combatPhase.tick(this, dialogBlocksGameplay);
-        entityPhase.tick(this, swordBox);
-        completeGameplayFrame(dialogController());
-        animatedTilesPhase.tick(this, dialogBlocksGameplay);
+        stages.run(inventoryBlockedAtStart);
     }
 
     public static boolean shouldTickRoomEntities(

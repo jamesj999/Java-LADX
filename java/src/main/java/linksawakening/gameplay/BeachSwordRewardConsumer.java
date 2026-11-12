@@ -12,7 +12,10 @@ public final class BeachSwordRewardConsumer {
         Objects.requireNonNull(roomSession, "roomSession");
         Objects.requireNonNull(playerState, "playerState");
 
-        for (var ignored : roomSession.consumeSwordPickupRewards()) {
+        var swordPickupRewards = roomSession.entityState().consumeSwordPickupRewards();
+        for (int ignoredIndex = 0; ignoredIndex < swordPickupRewards.size(); ignoredIndex++) {
+            linksawakening.world.entity.event.SwordPickupRewardEvent ignored = swordPickupRewards.get(ignoredIndex);
+
             playerState.playerRewards().applyBeachSwordReward();
         }
     }

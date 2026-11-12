@@ -422,7 +422,7 @@ final class RoomSessionDoors1Test {
         }
         assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
 
-        RoomSession.ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
+        ChestOpenResult chest = session.doors().tryOpenChest(0x78, 0x21, Link.DIRECTION_UP, true, 1);
         assertTrue(chest.opened());
         assertEquals(ChestContentsTable.CHEST_STONE_BEAK, chest.itemType());
         session.entities().tickEntitiesWithProjectileEvents(frame, 0x78, 0x21, 0, 0, Link.DIRECTION_DOWN, false);

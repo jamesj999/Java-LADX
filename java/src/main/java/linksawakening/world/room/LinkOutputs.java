@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
@@ -18,6 +18,19 @@ public final class LinkOutputs {
 
     LinkOutputs(Dependencies dependencies) {
         this.dependencies = dependencies;
+    }
+
+    public void drainPositionWrites(LinkWriteSink.Positions target) {
+        var platforms = dependencies.entityBridge().get().outbox.consumeSideViewPlatformLinkRequests();
+        var pots = dependencies.entityBridge().get().outbox.consumeSideViewPotLinkRequests();
+        var positions = dependencies.entityBridge().get().outbox.consumeLinkFinalPositionRequests();
+        RoomLinkWrites.visitPositions(platforms, pots, positions, target);
+    }
+
+    public void drainAttackWrites(LinkWriteSink.Attacks target) {
+        var clears = dependencies.entityBridge().get().outbox.consumeLinkAttackClearRequests();
+        var steps = dependencies.entityBridge().get().outbox.consumeLinkAttackStepRequests();
+        RoomLinkWrites.visitAttacks(clears, steps, target);
     }
 
     public List<LinkWrite> consumePositionWrites() {

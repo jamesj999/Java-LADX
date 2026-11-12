@@ -27,8 +27,8 @@ class SwordInteractionGateTest {
             player.setSwordLevel(1);
             player.setItemA(PlayerState.INVENTORY_SWORD);
             player.setItemB(0);
-            d.roomSession().loadIndoor(2, 0x5A);
-            for (int slot = 0; slot < 16; slot++) d.roomSession().clearEntity(slot);
+            d.roomSession().rooms().loadIndoor(2, 0x5A);
+            for (int slot = 0; slot < 16; slot++) d.roomSession().entityState().clearEntity(slot);
             link.setRoomEntryRomPosition(72, 80);
             rng.setObserver(draw -> draws[0]++);
             Sword sword = d.equipmentController().activeSword();

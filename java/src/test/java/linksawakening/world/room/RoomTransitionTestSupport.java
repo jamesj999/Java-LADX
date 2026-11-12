@@ -54,14 +54,14 @@ final class RoomTransitionTestSupport {
     }
 
     static RoomSession newSession(byte[] rom, RomTables romTables, OverworldCollision collision) {
-        return new RoomSession(
+        return new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 collision,
-                new TransientVfxSystem(16),
-                null);
+                new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
     static void tickInteractiveEntities(RoomSession session, int frame, int linkEntityX, int linkEntityY) {

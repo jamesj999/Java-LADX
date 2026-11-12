@@ -1,6 +1,6 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomSession.*;
+import static linksawakening.world.room.RoomSessionRules.*;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,9 @@ final class RoomTorchMutations {
             return;
         }
 
-        for (MagicPowderObjectRequest request : requests) {
+        for (int requestIndex = 0; requestIndex < requests.size(); requestIndex++) {
+            MagicPowderObjectRequest request = requests.get(requestIndex);
+
             boolean changed = applyPowderRequest(request);
 
             if (!changed) {

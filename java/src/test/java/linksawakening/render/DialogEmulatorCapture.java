@@ -28,6 +28,7 @@ import linksawakening.world.room.ChestContentsTable;
 import linksawakening.world.room.OverworldTilesetTable;
 import linksawakening.world.room.RoomLoader;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomSessionConfig;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
@@ -88,14 +89,20 @@ public final class DialogEmulatorCapture {
         gpu.loadBaseTiles(rom);
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var session =
-                new RoomSession(rom, gpu, new RoomLoader(rom), new OverworldTilesetTable(rom), collision, null, null);
+        var session = new RoomSession(new RoomSessionConfig(
+                rom,
+                gpu,
+                new RoomLoader(rom),
+                new OverworldTilesetTable(rom),
+                collision,
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         var profile = NewGameStartProfile.romDefaults();
-        session.loadIndoor(profile.mapId(), profile.roomId());
+        session.rooms().loadIndoor(profile.mapId(), profile.roomId());
         // Enter the normal entity init pass before synchronizing NPC clocks.
         // Hidden pot drops must get their source init state; they cannot rely
         // on missing shared-item graphics to stay invisible in this fixture.
-        session.tickEntities(0, linkX, linkY);
+        session.entities().tickEntities(0, linkX, linkY);
         var player = new PlayerState();
         profile.initializePlayerState(player);
         var input = new InputState();
@@ -111,7 +118,7 @@ public final class DialogEmulatorCapture {
             link.showStandingShieldDownPose();
         }
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
         String[] initial = initialClocks.trim().split("\\t");
         int firstFrame = Integer.parseInt(initial[0]);
         int inertia = Integer.parseInt(initial[1]);
@@ -119,7 +126,7 @@ public final class DialogEmulatorCapture {
         // As with captureHouse, displayed OAM trails the observed clocks by two frames.
         var marin = synchronizeMarin(motion, marinSource.x(), marinSource.y(), linkX, linkY, firstFrame, inertia);
         var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
-        session.updateHouseTarinPresentation(0, linkX, linkY);
+        session.story().updateHouseTarinPresentation(0, linkX, linkY);
         var inventory = new InventoryController(
                 input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
         replay(
@@ -179,12 +186,12 @@ public final class DialogEmulatorCapture {
             }
             while (elapsed < targetElapsed) {
                 elapsed++;
-                session.updateHouseTarinPresentation((firstFrame + elapsed) & 255, linkX, linkY);
+                session.story().updateHouseTarinPresentation((firstFrame + elapsed) & 255, linkX, linkY);
                 marin = motion.tickMarinPresentation(
                         (firstFrame + elapsed) & 255, marinSource.x(), marinSource.y(), linkX, linkY);
             }
-            session.applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
-            session.updateHouseTarinPresentation(frame, linkX, linkY);
+            session.story().applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
+            session.story().updateHouseTarinPresentation(frame, linkX, linkY);
             if (bedExit) {
                 if (targetElapsed < 4) link.showMarinWakeUpBed(3);
                 else {
@@ -196,7 +203,10 @@ public final class DialogEmulatorCapture {
             new GameFrameSceneBuilder()
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
-                            .withRoom(session.renderSnapshot(), new ScrollController(), new TransitionController())
+                            .withRoom(
+                                    session.rooms().renderSnapshot(),
+                                    new ScrollController(),
+                                    new TransitionController())
                             .withLink(link)
                             .withInventoryController(inventory)
                             .withDialogController(dialog)

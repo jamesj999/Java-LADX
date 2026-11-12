@@ -33,18 +33,18 @@ class DebugMenuIntegrationTest {
         menu.entries().get(3).write().accept(72);
         menu.entries().get(4).write().accept(96);
         game.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
-        assertEquals(0x17, game.diagnostics().roomSession().currentRoomId());
-        assertEquals(1, game.diagnostics().roomSession().mapCategory());
+        assertEquals(0x17, game.diagnostics().roomSession().rooms().currentRoomId());
+        assertEquals(1, game.diagnostics().roomSession().rooms().mapCategory());
         assertEquals(72, game.diagnostics().link().pixelX());
         assertEquals(96, game.diagnostics().link().pixelY());
         // Exercise category changes and the separate Color Dungeon tables.
         teleport(game, menu, 2, 0, 0x19);
-        assertEquals(2, game.diagnostics().roomSession().mapCategory());
+        assertEquals(2, game.diagnostics().roomSession().rooms().mapCategory());
         teleport(game, menu, 1, 255, 0x12);
-        assertEquals(255, game.diagnostics().roomSession().mapId());
+        assertEquals(255, game.diagnostics().roomSession().rooms().mapId());
         teleport(game, menu, 0, 0, 0x92);
-        assertEquals(0, game.diagnostics().roomSession().mapCategory());
-        assertEquals(0x92, game.diagnostics().roomSession().currentRoomId());
+        assertEquals(0, game.diagnostics().roomSession().rooms().mapCategory());
+        assertEquals(0x92, game.diagnostics().roomSession().rooms().currentRoomId());
         game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
         var sword = menu.entries().stream()
                 .filter(e -> e.label().equals("A"))

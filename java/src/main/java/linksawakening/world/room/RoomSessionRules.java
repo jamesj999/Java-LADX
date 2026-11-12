@@ -3,7 +3,9 @@ package linksawakening.world.room;
 import linksawakening.world.entity.EntityRomConstants;
 
 /** Immutable ROM-shaped room interaction constants. */
-abstract class RoomSessionRules {
+final class RoomSessionRules {
+    private RoomSessionRules() {}
+
     static final int ROOM_STATUS_TABLE_SIZE = 0x100;
     static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
     static final int W_TILESET_NO_UPDATE = 0xFF;

@@ -24,18 +24,34 @@ Passing tests bound verified behavior; they do not prove game-wide parity.
   `captureOpeningRoute` pairs with `tools/opening/capture.py` and `compare.py`.
   Record the route SHA-256, completed checkpoints, terminal state and comparison
   scope. A failed route must not be reported as a complete capture.
-- **Architecture and boundary guards:** `*ArchitectureTest`, compiled-code
-  guards and ROM constant guards constrain dependencies, ownership and selected
-  ordering contracts. Extend the existing guard closest to the boundary and
-  exercise forbidden as well as allowed cases where practical. These tests
-  verify structural contracts, not semantic ROM fidelity.
+- **Architecture and boundary guards:** tests under `architecture/` use the
+  shared `ClassFileReferences` reader for symbolic type/field dependencies,
+  descriptors and generic signatures. `WorldDependencyTest` enforces room/entity
+  boundaries and the explicit app/world allow-list; `AppBoundaryTest` checks
+  session ownership, native restrictions and public role contracts. They do
+  not invoke `javap` or match instruction text. ROM constant guards remain
+  separate. Extend the guard closest to the boundary.
+- **Behavioral ordering:** `GameplayFrameOrderTest`, `SimulationOrderTest` and
+  `EntityFrameOrderTest` record calls through the same ordered runners used by
+  production. `EntityFrameSessionTest` records real Link motion and dialog/music
+  ports; command and bomb tests assert observable effects. `RoomLinkWritesTest`
+  covers descending slot order, ties and stable stream order. Headless
+  `FileMenuBehaviorTest` covers file/menu persistence and opening-story gates.
+  The [replacement inventory](archive/history/room-architecture-test-migration.md)
+  maps each former disassembly assertion to its boundary/behavioral coverage.
+  These checks do not establish game-wide semantic ROM fidelity.
 - **Allocation guards:** `render.ComposeAllocationTest` measures retained
   composition scratch after warm-up (<4,096 bytes/frame); `app.SessionAllocationTest`
-  measures headless simulation steps, including world/audio work;
+  measures headless simulation steps, including world/audio work (5,248 bytes/frame
+  idle and 18,944 active, about 25% headroom over round-3 measurements);
   `audio.AudioAllocationTest` measures driver/APU steady-state allocation
   (<256 bytes/tick). Add representative work and measure after warm-up using
   thread allocation counters, outside parity instrumentation. Preserve budgets;
   report JVM and scope rather than attributing whole-session cost to one package.
+  JFR samples complement allocation counters. Filter recording stacks to the
+  update/measurement path to separate startup allocation. Keep recordings local.
+  Room drain tests verify read-only callback batches, queue clearing before
+  effects, exception cleanup and retained immutable snapshot ownership.
 - **Emulator comparison tools:** the [tool catalog](../tools/README.md) lists
   headless PyBoy scripts and matching Java capture tasks. Add comparisons using
   the original loaders/tables, with explicit regions, input overrides, injected

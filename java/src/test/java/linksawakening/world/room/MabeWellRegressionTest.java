@@ -28,14 +28,14 @@ final class MabeWellRegressionTest {
         }
         var tables = RomTables.loadFromRom(rom);
         var collision = new OverworldCollision(tables);
-        var room = new RoomSession(
+        var room = new RoomSession(new RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 collision,
-                new TransientVfxSystem(16),
-                null);
+                new RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         room.rooms().loadInitialOverworld(0xA0);
         var warp = room.rooms().activeRoom().firstWarp();
         assertEquals(0x61, collision.objectIdAtPoint(88, 88));

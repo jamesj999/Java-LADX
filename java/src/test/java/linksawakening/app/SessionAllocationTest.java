@@ -17,8 +17,8 @@ final class SessionAllocationTest {
             long bytesPerFrame = measure(session);
             assertTrue(session.diagnostics().dialogController().isActive(), "Opening dialog sample");
             System.out.println("Idle simulation allocation bytes/frame: " + bytesPerFrame);
-            // Original same-scenario baseline: 5,304 bytes/frame, before retaining collaborators.
-            assertTrue(bytesPerFrame <= 8_192, "Idle simulation bytes/frame: " + bytesPerFrame);
+            // Round 3 baseline: 4,237; achieved about 4,181. Budget includes ~25% headroom.
+            assertTrue(bytesPerFrame <= 5_248, "Idle simulation bytes/frame: " + bytesPerFrame);
         } finally {
             session.cleanup();
         }
@@ -41,9 +41,10 @@ final class SessionAllocationTest {
             assertEquals(70, session.diagnostics().link().romEntityX(), "Left the bed");
             long bytesPerFrame = measure(session);
             System.out.println("Active simulation allocation bytes/frame: " + bytesPerFrame);
-            // Includes world snapshot/outbox/puzzle allocations and audio PCM. JFR sampled these
-            // as major sources; this is a total-step budget, not an app-only attribution claim.
-            assertTrue(bytesPerFrame <= 24_576, "Active simulation bytes/frame: " + bytesPerFrame);
+            // Round 3 baseline: 18,871; achieved about 14,986. Budget includes ~25% headroom.
+            // Remaining sampled sources are entity snapshots/outboxes and audio PCM;
+            // this total-step budget is not an app-only attribution claim.
+            assertTrue(bytesPerFrame <= 18_944, "Active simulation bytes/frame: " + bytesPerFrame);
         } finally {
             session.cleanup();
         }

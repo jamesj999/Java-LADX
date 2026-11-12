@@ -92,7 +92,8 @@ final class MabeCollisionSweepTest {
                         if (!walkable(rom, loaded, x, y)) continue;
                         for (int dir = 0; dir < 4; dir++) {
                             if (!passableProbes(rom, loaded, x + DX[dir], y + DY[dir], dir)) continue;
-                            if (session.currentRoomId() != roomId || session.mapCategory() != 0)
+                            if (session.rooms().currentRoomId() != roomId
+                                    || session.rooms().mapCategory() != 0)
                                 teleport.invoke(game, new Warp(0, 0, roomId, 80, 96, -1));
                             link.resetTransientStateForDebug();
                             link.setRoomEntryPixelPosition(x, y);
@@ -103,7 +104,7 @@ final class MabeCollisionSweepTest {
                             if (link.pixelX() == x && link.pixelY() == y && link.romCollisionType() == 0) {
                                 entityBlocks++;
                                 for (var entity :
-                                        session.activeRoom().entities().loadedEntities()) {
+                                        session.rooms().activeRoom().entities().loadedEntities()) {
                                     if (Math.abs(entity.x() - link.romEntityX()) < 20
                                             && Math.abs(entity.y() - link.romEntityY()) < 20
                                             && !entity.spriteDefinition().supported()) {
