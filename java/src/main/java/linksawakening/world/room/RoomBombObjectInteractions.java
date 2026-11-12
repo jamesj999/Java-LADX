@@ -24,7 +24,9 @@ final class RoomBombObjectInteractions {
             return;
         }
 
-        for (BombExplosionEvent event : events) {
+        for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
+            BombExplosionEvent event = events.get(eventIndex);
+
             if (!event.targetsRoomObjects()) {
                 continue;
             }

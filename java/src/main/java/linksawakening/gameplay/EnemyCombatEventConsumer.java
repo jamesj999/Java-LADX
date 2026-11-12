@@ -36,16 +36,20 @@ public final class EnemyCombatEventConsumer {
 
     private EnemyCombatEventConsumer() {}
 
-    public static void consume(List<EntityCombatEvent> events, GameplaySoundSink soundSink) {
+    public static void consume(List<? extends EntityCombatEvent> events, GameplaySoundSink soundSink) {
         consume(events, soundSink, null);
     }
 
     public static void consume(
-            List<EntityCombatEvent> events, GameplaySoundSink soundSink, TransientVfxSystem transientVfxSystem) {
+            List<? extends EntityCombatEvent> events,
+            GameplaySoundSink soundSink,
+            TransientVfxSystem transientVfxSystem) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(soundSink, "soundSink");
 
-        for (EntityCombatEvent event : events) {
+        for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
+            EntityCombatEvent event = events.get(eventIndex);
+
             if (event == null) {
                 continue;
             }

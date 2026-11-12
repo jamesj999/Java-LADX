@@ -46,7 +46,9 @@ public final class EnemyProjectileEventConsumer {
         Objects.requireNonNull(playerState, "playerState");
         Objects.requireNonNull(soundSink, "soundSink");
 
-        for (EntityProjectileEvent event : events) {
+        for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
+            EntityProjectileEvent event = events.get(eventIndex);
+
             if (event == null) {
                 continue;
             }

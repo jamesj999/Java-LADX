@@ -8,6 +8,12 @@ import org.junit.jupiter.api.Test;
 class RoomFacadeCompatibilityTest {
     @Test
     void onlyEntityTestBridgesRemainWithoutCompatibilityInheritance() {
+        assertEquals(2, RoomSession.class.getConstructors().length);
+        var legacyConstructor = Arrays.stream(RoomSession.class.getConstructors())
+                .filter(c -> c.getParameterCount() == 7)
+                .findFirst()
+                .orElseThrow();
+        assertTrue(legacyConstructor.getAnnotation(Deprecated.class).forRemoval());
         assertEquals(Object.class, RoomSession.class.getSuperclass());
         assertEquals(0, RoomSession.class.getInterfaces().length);
         var bridges = Arrays.stream(RoomSession.class.getDeclaredMethods())

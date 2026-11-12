@@ -56,7 +56,9 @@ final class CombatPhase {
                                     swordBoxForEntityTick.height()),
                             attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
-            for (EntityCombatEvent event : combatEvents) {
+            for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
+                EntityCombatEvent event = combatEvents.get(eventIndex);
+
                 if (event.linkDamage() > 0
                         && context.playerState().invincibilityCounter() == 0
                         && (!context.link().isCollisionDamageImmune())) {

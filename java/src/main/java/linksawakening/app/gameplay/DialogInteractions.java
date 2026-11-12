@@ -100,17 +100,14 @@ public final class DialogInteractions {
         if (dialogTextLoader() == null || dialogController().isActive()) {
             return;
         }
-        for (var request : roomSession().entityState().consumeEntityDialogRequests()) {
-            SignpostDialogRef dialogRef = new SignpostDialogRef(request.tableId(), request.dialogLowId());
-            if (request.forceTop()) {
-                dialogController()
-                        .openPreformatted(dialogTextLoader().load(dialogRef), DialogController.BoxPosition.TOP);
-                return;
-            }
+        var request = roomSession().entityFrameResults().presentation().consumeFirstEntityDialogRequest();
+        if (request == null) return;
+        SignpostDialogRef dialogRef = new SignpostDialogRef(request.tableId(), request.dialogLowId());
+        if (request.forceTop())
+            dialogController().openPreformatted(dialogTextLoader().load(dialogRef), DialogController.BoxPosition.TOP);
+        else
             dialogController()
                     .openPreformattedForLinkY(
                             dialogTextLoader().load(dialogRef), LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
-            return;
-        }
     }
 }

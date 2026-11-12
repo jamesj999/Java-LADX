@@ -39,7 +39,9 @@ final class RoomEntityRewards {
         }
         List<KeyRewardEvent> rewards =
                 dependencies.entityBridge().get().entityRuntime.consumePendingKeyRewardEvents();
-        for (KeyRewardEvent reward : rewards) {
+        for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
+            KeyRewardEvent reward = rewards.get(rewardIndex);
+
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
@@ -122,8 +124,11 @@ final class RoomEntityRewards {
         if (dependencies.entityBridge().get().entityRuntime == null) {
             return;
         }
-        for (InstrumentCompletionEvent completion :
-                dependencies.entityBridge().get().entityRuntime.consumePendingInstrumentCompletions()) {
+        var instrumentCompletions =
+                dependencies.entityBridge().get().entityRuntime.consumePendingInstrumentCompletions();
+        for (int completionIndex = 0; completionIndex < instrumentCompletions.size(); completionIndex++) {
+            InstrumentCompletionEvent completion = instrumentCompletions.get(completionIndex);
+
             dependencies.items().pendingInstrumentTransition = true;
             if (completion.mapId() == 0x00) {
                 dependencies.followers().bowWowState = 0x80;
@@ -139,7 +144,9 @@ final class RoomEntityRewards {
         }
         List<RichardProgressEvent> events =
                 dependencies.entityBridge().get().entityRuntime.consumePendingRichardProgressEvents();
-        for (RichardProgressEvent event : events) {
+        for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
+            RichardProgressEvent event = events.get(eventIndex);
+
             if (event.kind() == RichardProgressEvent.Kind.START_QUEST) {
                 dependencies.roomState().indoorBRoomStatus[0xC7] |= (byte) ROOM_STATUS_EVENT_1;
                 dependencies.followers().richardSpokenFlag = Math.max(dependencies.followers().richardSpokenFlag, 0x02);
@@ -189,7 +196,9 @@ final class RoomEntityRewards {
         }
         List<SlimeKeyRewardEvent> rewards =
                 dependencies.entityBridge().get().entityRuntime.consumePendingSlimeKeyRewardEvents();
-        for (SlimeKeyRewardEvent reward : rewards) {
+        for (int rewardIndex = 0; rewardIndex < rewards.size(); rewardIndex++) {
+            SlimeKeyRewardEvent reward = rewards.get(rewardIndex);
+
             dependencies.entityInputs().get().entityGoldenLeavesCount = reward.goldenLeavesCount();
             dependencies.roomStoryState().get().markActiveRoomCompleted();
         }

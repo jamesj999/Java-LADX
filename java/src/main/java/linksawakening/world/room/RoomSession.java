@@ -15,165 +15,73 @@ import linksawakening.world.entity.event.LinkAttackClearRequest;
 /** Public room API delegating to room-scoped collaborators. */
 public final class RoomSession {
 
-    /** Applies the live frame inputs in the original setter order before ticking slots. */
+    /** Applies the live frame inputs in source order before ticking slots. */
     public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
-        entityState().setEntityDialogActive(inputs.ui().dialogActive());
-        entityState()
-                .setEntityTalkState(
-                        inputs.ui().inventoryAppearing(),
-                        inputs.ui().dialogCooldown(),
-                        inputs.ui().windowY());
-        components.entityInputs().setEntityDialogAskSelectionIndex(inputs.ui().selectionIndex());
-        components
-                .roomSessionViews()
-                .setHeartPiecesCount(inputs.player().progress().heartPieces());
-        components.entityInputs().setEntityMusicActive(inputs.ui().musicActive());
-        entityState()
-                .setEntityActionButtonsHeld(
-                        inputs.buttons().aHeld(), inputs.buttons().bHeld());
-        components.entityInputs().setEntityJoypadHeld(inputs.buttons().joypadHeld());
-        components.entityInputs().setEntityPressedButtonsMask(inputs.buttons().pressedMask());
-        entityState().setEntityPowerBraceletButtonHeld(inputs.buttons().braceletHeld());
-        entityState().setEntityBombButtonHeld(inputs.buttons().bombHeld());
-        entityState().setEntityAttackStepAnimationCountdown(inputs.link().attackCountdown());
-        components.entityInputs().setEntityFinalPositionX(inputs.link().finalX());
-        story().setBirdKeyOwned(inputs.player().progress().birdKey());
-        story().setTailKeyOwned(inputs.player().progress().tailKey());
-        components
-                .entityInputs()
-                .setEntityInventorySlots(
-                        inputs.player().inventory().itemA(),
-                        inputs.player().inventory().itemB());
-        setLiftStrengthBoost(
-                inputs.player().inventory().redTunic(),
-                inputs.player().inventory().pieceOfPower());
-        story().setHouseNpcTradeItem(inputs.player().progress().tradeItem());
-        story().setChestPlayerLevels(
-                        inputs.player().levels().shield(),
-                        inputs.player().levels().sword(),
-                        inputs.player().levels().bracelet());
-        entityState()
-                .setToadstoolPlayerState(
-                        inputs.player().progress().hasToadstool(),
-                        inputs.player().progress().powder());
-        components
-                .entityInputs()
-                .setEntityGoldenLeavesCount(inputs.player().progress().leaves());
-        setEnemyDropPlayerState(
-                inputs.player().health().maxHearts(),
-                inputs.player().health().health(),
-                inputs.player().health().powerUp(),
-                inputs.player().health().lowHealth());
-        components.entityBridge().outbox.setFreeMovementMode(inputs.link().freeMovement());
-        components.entityInputs().setEntityLinkVelocityZ(inputs.link().velocityZ());
-        return tickEntities(new EntityTickInputs(
-                inputs.frameCounter(),
-                new LinkPosition(
-                        inputs.link().position().x(),
-                        inputs.link().position().y(),
-                        inputs.link().position().z(),
-                        inputs.link().position().direction(),
-                        inputs.link().position().collisionType()),
-                new LinkMotion(
-                        inputs.link().motion().airborne(),
-                        inputs.link().motion().state(),
-                        inputs.link().motion().shield(),
-                        inputs.link().motion().invincibility(),
-                        inputs.link().motion().speedX(),
-                        inputs.link().motion().speedY()),
-                inputs.player().levels().shield(),
-                new SwordBox(
-                        inputs.sword().active(),
-                        inputs.sword().x(),
-                        inputs.sword().width(),
-                        inputs.sword().y(),
-                        inputs.sword().height())));
-    }
-
-    /** Drains only the position channels: applying these can load a different room. */
-    List<LinkWrite> consumePositionWrites() {
-        var platforms = components.entityBridge().outbox.consumeSideViewPlatformLinkRequests();
-        var pots = components.entityBridge().outbox.consumeSideViewPotLinkRequests();
-        var positions = components.entityBridge().outbox.consumeLinkFinalPositionRequests();
-        return RoomLinkWrites.positions(platforms, pots, positions);
-    }
-
-    List<LinkWrite> consumeAttackWrites() {
-        return RoomLinkWrites.attacks(
-                entityState().consumeLinkAttackClearRequests(),
-                components.entityBridge().outbox.consumeLinkAttackStepRequests());
+        return frameInputs.tick(inputs);
     }
 
     public EntityFrameResults entityFrameResults() {
-        return new EntityFrameResults(
-                new LinkOutputs(components.linkOutputsDependencies()),
-                new RewardOutputs(components.rewardOutputsDependencies()),
-                new PresentationOutputs(components.presentationOutputsDependencies()));
+        return frameResults;
     }
 
     public RoomDoors doors() {
-        return new RoomDoorsView(components.roomDoorInteractions());
+        return doors;
     }
 
     public RoomTransitions transitions() {
-        return new RoomTransitionsView(components.roomTransitionController());
+        return transitions;
     }
 
     public RoomPlayerItems playerItems() {
-        return new RoomPlayerItemsView(components.roomPlayerItemActions());
+        return playerItems;
     }
 
     public RoomStory story() {
-        return new RoomStoryView(components.roomStoryState());
+        return story;
     }
 
     final RoomSessionComponents components;
     private final RoomRoleViews roles;
+    private final RoomFrameInputApplier frameInputs;
+    private final EntityFrameResults frameResults;
+    private final RoomDoors doors;
+    private final RoomTransitions transitions;
+    private final RoomPlayerItems playerItems;
+    private final RoomStory story;
+
     /** Compatibility for SlimeEyeControlsTest reflection until the entity test migration. */
     @Deprecated(forRemoval = true)
     private final RoomSessionComponents context;
 
     static long nextRoomSessionId;
 
-    void loadIndoor(int mapId, int roomId, int mapCategory, int transitionDirection) {
-        components.roomLoadCoordinator().loadIndoor(mapId, roomId, mapCategory, transitionDirection);
-    }
-
-    /** Supplies the player fields consumed by the ROM enemy-drop resolver. */
-    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {
-        components.entityBridge().setEnemyDropPlayerState(maxHearts, health, activePowerUp);
-    }
-
     /** Register inputs used by ApplyLinkMotionState/ApplyLinkGroundPhysics ($00:1794/$02:75BD). */
 
     /** Result of the ROM ShootArrow bridge, including its conditional whoosh. */
 
-    /**
-     * Applies the ROM pickup collision cadence to the active room entities.
-     * Item-specific effects are returned to the gameplay layer so room state
-     * and persistent entity state stay separate.
-     */
-    void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp, boolean lowHealth) {
-        setEnemyDropPlayerState(maxHearts, health, activePowerUp);
-        components.entityFrame().enemyDropLowHealth = lowHealth;
-        components.roomLoadCoordinator().configureEnemyDropRuntime();
-    }
-
     /** Result of the ROM shovel probe made when Link begins using the item. */
 
     /** Result of the source closed-chest action bridge. */
-
-    /** Mirrors bank 0's sustained Power Bracelet pull on indoor object $20/$8E. */
-    void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
-        if (components.entityBridge().entityRuntime != null) {
-            components.entityBridge().entityRuntime.configuration().setLiftStrengthBoost(redTunic, pieceOfPower);
-        }
-    }
-
     public RoomSession(RoomSessionConfig config) {
         components = RoomSessionContext.create(config);
         context = components;
         roles = RoomRoleViews.create(components);
+        doors = new RoomDoorsView(components.roomDoorInteractions());
+        transitions = new RoomTransitionsView(components.roomTransitionController());
+        playerItems = new RoomPlayerItemsView(components.roomPlayerItemActions());
+        story = new RoomStoryView(components.roomStoryState());
+        frameInputs = new RoomFrameInputApplier(
+                components.entityInputs(),
+                components.entityBridge(),
+                components.entityFrame(),
+                components.roomSessionViews(),
+                roles.entityState(),
+                story,
+                components.roomLoadCoordinator());
+        frameResults = new EntityFrameResults(
+                new LinkOutputs(components.linkOutputsDependencies()),
+                new RewardOutputs(components.rewardOutputsDependencies()),
+                new PresentationOutputs(components.presentationOutputsDependencies()));
     }
 
     public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
@@ -205,7 +113,7 @@ public final class RoomSession {
     }
 
     // Deprecated bridges awaiting entity-test migration
-    /** @deprecated Use RoomSession(RoomSessionConfig); retained for world/entity/TarinRaccoonRuntimeTest. */
+    /** @deprecated Use RoomSession(RoomSessionConfig); retained for world/entity/TarinRaccoonRuntimeTest and SlimeEyeRuntimeTest. */
     @Deprecated(forRemoval = true)
     public RoomSession(
             byte[] romData,

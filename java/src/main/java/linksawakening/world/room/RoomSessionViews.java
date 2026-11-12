@@ -152,8 +152,12 @@ final class RoomSessionViews {
     List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         if (dependencies.entityBridge().get().entityRuntime == null) return List.of();
         var updates = dependencies.entityBridge().get().entityRuntime.consumeHeartPieceUpdates();
-        if (updates.stream().anyMatch(HeartPiecePickupUpdate::complete))
-            dependencies.roomStoryState().get().markActiveRoomCompleted();
+        for (int i = 0; i < updates.size(); i++) {
+            if (updates.get(i).complete()) {
+                dependencies.roomStoryState().get().markActiveRoomCompleted();
+                break;
+            }
+        }
         return updates;
     }
 

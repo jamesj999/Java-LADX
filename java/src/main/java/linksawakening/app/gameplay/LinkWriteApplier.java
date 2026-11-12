@@ -8,69 +8,89 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.room.*;
 
-final class LinkWriteApplier {
-    static void applyPositionWrites(GameplaySimulation c) {
-        var results = c.roomSession().entityFrameResults();
+final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.Attacks {
+    private GameplaySimulation current;
+
+    void applyPositionWrites(GameplaySimulation c) {
         c.link().clearStandingOnSideViewEntity();
-        for (var write : results.link().consumePositionWrites()) {
-            switch (write) {
-                case LinkWrite.PlatformWrite value -> {
-                    var request = value.request();
-                    if (request.standing()) {
-                        c.link().apply(LinkCommandAdapter.from(request));
-                        c.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(c.link());
-                        c.roomTransitionCoordinator().handleOverworldBoundary(c.link());
-                        if (c.scrollController().isActive()
-                                || c.transitionController().isInputBlocked()) {
-                            c.link().clearSideViewPlatformState();
-                        }
-                    }
-                }
-                case LinkWrite.FinalPositionWrite value -> {
-                    var request = value.request();
-                    c.link().apply(LinkCommandAdapter.from(request));
-                }
-                case LinkWrite.PotWrite value -> {
-                    var request = value.request();
-                    c.link().apply(LinkCommandAdapter.from(request));
-                }
-                default -> throw new IllegalStateException("Unexpected position write: " + write);
-            }
+        current = c;
+        try {
+            c.roomSession().entityFrameResults().link().drainPositionWrites(this);
+        } finally {
+            current = null;
         }
+    }
+
+    public void platform(linksawakening.world.entity.event.SideViewPlatformLinkRequest request) {
+        var c = current;
+        if (request.standing()) {
+            c.link().apply(LinkCommandAdapter.from(request));
+            c.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(c.link());
+            c.roomTransitionCoordinator().handleOverworldBoundary(c.link());
+            if (c.scrollController().isActive() || c.transitionController().isInputBlocked())
+                c.link().clearSideViewPlatformState();
+        }
+    }
+
+    public void position(linksawakening.world.entity.event.LinkFinalPositionRequest request) {
+        current.link().apply(LinkCommandAdapter.from(request));
+    }
+
+    public void pot(linksawakening.world.entity.event.SideViewPotLinkRequest request) {
+        current.link().apply(LinkCommandAdapter.from(request));
+    }
+
+    public void clear(linksawakening.world.entity.event.LinkAttackClearRequest request) {
+        current.link().apply(LinkCommandAdapter.from(request));
+    }
+
+    public void step(linksawakening.world.entity.event.LinkAttackStepRequest request) {
+        current.link().apply(LinkCommandAdapter.from(request));
     }
 
     static void applyMotionWrites(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        for (var request : results.link().consumeLinkMotionBlockRequests())
+        var linkMotionBlockRequests = results.link().consumeLinkMotionBlockRequests();
+        for (int requestIndex = 0; requestIndex < linkMotionBlockRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkMotionBlockRequest request =
+                    linkMotionBlockRequests.get(requestIndex);
             c.link().apply(LinkCommandAdapter.from(request));
-        for (var request : results.link().consumeWarpLinkStateRequests()) {
+        }
+        var warpLinkStateRequests = results.link().consumeWarpLinkStateRequests();
+        for (int requestIndex = 0; requestIndex < warpLinkStateRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.WarpLinkStateRequest request = warpLinkStateRequests.get(requestIndex);
+
             c.link().apply(LinkCommandAdapter.from(request));
             resetSword(c);
         }
         if (results.link().consumeWorldLinkMotionBlockRequest()) {
             c.link().apply(linksawakening.entity.LinkCommand.Action.BLOCK_MOTION);
         }
-        for (var request : results.link().consumeLinkFallenPoseRequests())
+        var linkFallenPoseRequests = results.link().consumeLinkFallenPoseRequests();
+        for (int requestIndex = 0; requestIndex < linkFallenPoseRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkFallenPoseRequest request = linkFallenPoseRequests.get(requestIndex);
             c.link().apply(LinkCommandAdapter.from(request));
-        for (var request : results.link().consumeLinkFacingRequests()) c.link().apply(LinkCommandAdapter.from(request));
+        }
+        var linkFacingRequests = results.link().consumeLinkFacingRequests();
+        for (int requestIndex = 0; requestIndex < linkFacingRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkFacingRequest request = linkFacingRequests.get(requestIndex);
+            c.link().apply(LinkCommandAdapter.from(request));
+        }
     }
 
-    static void applyAttackWrites(GameplaySimulation c) {
+    void applyAttackWrites(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        for (var write : results.link().consumeAttackWrites()) {
-            switch (write) {
-                case LinkWrite.AttackClearWrite value -> {
-                    var request = value.request();
-                    c.link().apply(LinkCommandAdapter.from(request));
-                }
-                case LinkWrite.AttackStepWrite value -> {
-                    var request = value.request();
-                    c.link().apply(LinkCommandAdapter.from(request));
-                }
-                default -> throw new IllegalStateException("Unexpected attack write: " + write);
-            }
+        current = c;
+        try {
+            results.link().drainAttackWrites(this);
+        } finally {
+            current = null;
         }
-        for (var request : results.link().consumeLinkHeldItemPoseRequests()) {
+        var linkHeldItemPoseRequests = results.link().consumeLinkHeldItemPoseRequests();
+        for (int requestIndex = 0; requestIndex < linkHeldItemPoseRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkHeldItemPoseRequest request =
+                    linkHeldItemPoseRequests.get(requestIndex);
+
             c.link().apply(LinkCommandAdapter.from(request));
             resetSword(c);
         }
@@ -78,7 +98,11 @@ final class LinkWriteApplier {
 
     static void applySwordWrites(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        for (var request : results.link().consumeLinkSwordSpinPoseRequests()) {
+        var linkSwordSpinPoseRequests = results.link().consumeLinkSwordSpinPoseRequests();
+        for (int requestIndex = 0; requestIndex < linkSwordSpinPoseRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkSwordSpinPoseRequest request =
+                    linkSwordSpinPoseRequests.get(requestIndex);
+
             int acquisitionBaseDirection = c.link().direction();
             c.link().apply(LinkCommandAdapter.from(request));
             if (c.itemRegistry().lookup(PlayerState.INVENTORY_SWORD) instanceof Sword acquisitionSword) {
@@ -89,7 +113,11 @@ final class LinkWriteApplier {
                 }
             }
         }
-        for (var request : results.link().consumeLinkSwordFinalPoseRequests()) {
+        var linkSwordFinalPoseRequests = results.link().consumeLinkSwordFinalPoseRequests();
+        for (int requestIndex = 0; requestIndex < linkSwordFinalPoseRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.LinkSwordFinalPoseRequest request =
+                    linkSwordFinalPoseRequests.get(requestIndex);
+
             c.link().apply(LinkCommandAdapter.from(request));
             if (c.itemRegistry().lookup(PlayerState.INVENTORY_SWORD) instanceof Sword sword) {
                 sword.resetSpinAttack();
@@ -98,7 +126,9 @@ final class LinkWriteApplier {
     }
 
     static void applyProjectileResponses(GameplaySimulation c, java.util.List<EntityProjectileEvent> projectileEvents) {
-        for (var event : projectileEvents) {
+        for (int eventIndex = 0; eventIndex < projectileEvents.size(); eventIndex++) {
+            linksawakening.world.entity.event.EntityProjectileEvent event = projectileEvents.get(eventIndex);
+
             // Accepted LINK_DAMAGE responses are applied by the
             // projectile consumer before PlayerState becomes
             // invincible. Keep this pass for shield reflection,
@@ -128,9 +158,17 @@ final class LinkWriteApplier {
 
     static void applyFinalEffects(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
-        for (var request : results.link().consumeRoosterLinkStateRequests())
+        var roosterLinkStateRequests = results.link().consumeRoosterLinkStateRequests();
+        for (int requestIndex = 0; requestIndex < roosterLinkStateRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.RoosterLinkStateRequest request =
+                    roosterLinkStateRequests.get(requestIndex);
             c.link().apply(LinkCommandAdapter.from(request));
-        for (var request : results.link().consumeHinoxLinkEffectRequests()) {
+        }
+        var hinoxLinkEffectRequests = results.link().consumeHinoxLinkEffectRequests();
+        for (int requestIndex = 0; requestIndex < hinoxLinkEffectRequests.size(); requestIndex++) {
+            linksawakening.world.entity.event.HinoxLinkEffectRequest request =
+                    hinoxLinkEffectRequests.get(requestIndex);
+
             applyHinoxEffect(c.link(), c.playerState(), request);
         }
         c.lift().synchronizeLinkLiftedPresentation();

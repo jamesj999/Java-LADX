@@ -136,7 +136,10 @@ public final class OpeningStory {
                 || roomSession().rooms().activeRoom().roomId() != 0xA3) {
             return;
         }
-        for (var entity : roomSession().rooms().activeRoom().entities().loadedEntities()) {
+        var loadedEntities = roomSession().rooms().activeRoom().entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities.get(entityIndex);
+
             if (entity.type() != 0x3E) {
                 continue;
             }
@@ -164,7 +167,10 @@ public final class OpeningStory {
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
-        for (var entity : room.entities().loadedEntities()) {
+        var loadedEntities2 = room.entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities2.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities2.get(entityIndex);
+
             if (entity.type() == 0x3F
                     && TarinShieldMotion.canTalkToEntity(
                             entity.x(),
@@ -202,7 +208,10 @@ public final class OpeningStory {
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
-        for (var entity : room.entities().loadedEntities()) {
+        var loadedEntities3 = room.entities().loadedEntities();
+        for (int entityIndex = 0; entityIndex < loadedEntities3.size(); entityIndex++) {
+            linksawakening.world.entity.RoomEntity entity = loadedEntities3.get(entityIndex);
+
             if (entity.type() == 0x3E
                     && newGameWakeUpMotion()
                             .canOpenFollowUpDialog(

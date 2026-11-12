@@ -99,6 +99,8 @@ class WorldDependencyTest {
             "room/LinkOutputs",
             "room/LinkPosition",
             "room/LinkWrite",
+            "room/LinkWriteSink",
+            "room/RoomFrameDrain",
             "room/PlayerHealth",
             "room/PlayerInputs",
             "room/PlayerLevels",

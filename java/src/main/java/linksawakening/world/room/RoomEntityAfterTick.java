@@ -27,8 +27,11 @@ final class RoomEntityAfterTick {
     }
 
     private void synchronizeQuestState() {
-        for (DungeonWarpRequest request :
-                dependencies.entityBridge().get().entityRuntime.consumePendingDungeonWarpRequests()) {
+        var dungeonWarpRequests =
+                dependencies.entityBridge().get().entityRuntime.consumePendingDungeonWarpRequests();
+        for (int requestIndex = 0; requestIndex < dungeonWarpRequests.size(); requestIndex++) {
+            DungeonWarpRequest request = dungeonWarpRequests.get(requestIndex);
+
             linksawakening.world.entity.event.WarpDestination destination = request.destination();
             dependencies.location().pendingDungeonWarp = new Warp(
                     Warp.CATEGORY_INDOOR,
@@ -72,7 +75,9 @@ final class RoomEntityAfterTick {
         dependencies.entityBridge().get().outbox.pendingBombExplosionEvents.addAll(bombExplosionEvents);
         List<ChestRewardEvent> chestRewards =
                 dependencies.entityBridge().get().entityRuntime.consumePendingChestRewardEvents();
-        for (ChestRewardEvent reward : chestRewards) {
+        for (int rewardIndex = 0; rewardIndex < chestRewards.size(); rewardIndex++) {
+            ChestRewardEvent reward = chestRewards.get(rewardIndex);
+
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
                 dependencies.roomState().dungeonItemState.incrementCurrentFlag(reward.itemType());
@@ -101,8 +106,11 @@ final class RoomEntityAfterTick {
     }
 
     private void persistEffects() {
-        for (RoomStatusPersistenceRequest request :
-                dependencies.entityBridge().get().entityRuntime.consumePendingRoomStatusPersistenceRequests()) {
+        var roomStatusPersistenceRequests =
+                dependencies.entityBridge().get().entityRuntime.consumePendingRoomStatusPersistenceRequests();
+        for (int requestIndex = 0; requestIndex < roomStatusPersistenceRequests.size(); requestIndex++) {
+            RoomStatusPersistenceRequest request = roomStatusPersistenceRequests.get(requestIndex);
+
             if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 dependencies.roomState()
                         .overworldRoomStatus[dependencies.location().activeRoom.roomId()] |= (byte)
@@ -117,8 +125,11 @@ final class RoomEntityAfterTick {
         dependencies.entityFrame().enemyDropCounters =
                 dependencies.entityBridge().get().entityRuntime.inspection().enemyDropCounters();
         if (dependencies.transientVfxSystem() != null) {
-            for (TransientVfxRequest request :
-                    dependencies.entityBridge().get().entityRuntime.enemies().transientVfxRequests()) {
+            var transientVfxRequests =
+                    dependencies.entityBridge().get().entityRuntime.enemies().transientVfxRequests();
+            for (int requestIndex = 0; requestIndex < transientVfxRequests.size(); requestIndex++) {
+                TransientVfxRequest request = transientVfxRequests.get(requestIndex);
+
                 dependencies
                         .transientVfxSystem()
                         .spawn(request.type(), request.worldX(), request.worldY(), request.variant());
@@ -167,43 +178,30 @@ final class RoomEntityAfterTick {
                         .entityRuntime
                         .inspection()
                         .snapshot());
+        boolean objectRequests = !bombExplosionEvents.isEmpty();
         dependencies.roomObjectMutations().get().applyBombObjectInteractions(bombExplosionEvents);
-        dependencies
-                .roomObjectMutations()
-                .get()
-                .applyBoomerangObjectInteractions(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .enemies()
-                        .boomerangObjectRequests());
-        dependencies
-                .roomObjectMutations()
-                .get()
-                .applyMagicRodObjectInteractions(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .enemies()
-                        .magicRodObjectRequests());
-        dependencies
-                .roomObjectMutations()
-                .get()
-                .applyMagicPowderObjectInteractions(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .enemies()
-                        .magicPowderObjectRequests());
-        dependencies
-                .location()
-                .activeRoom
-                .replaceEntities(dependencies
-                        .entityBridge()
-                        .get()
-                        .entityRuntime
-                        .inspection()
-                        .snapshot());
+        var boomerangs =
+                dependencies.entityBridge().get().entityRuntime.enemies().boomerangObjectRequests();
+        objectRequests |= !boomerangs.isEmpty();
+        dependencies.roomObjectMutations().get().applyBoomerangObjectInteractions(boomerangs);
+        var rods = dependencies.entityBridge().get().entityRuntime.enemies().magicRodObjectRequests();
+        objectRequests |= !rods.isEmpty();
+        dependencies.roomObjectMutations().get().applyMagicRodObjectInteractions(rods);
+        var powders = dependencies.entityBridge().get().entityRuntime.enemies().magicPowderObjectRequests();
+        objectRequests |= !powders.isEmpty();
+        dependencies.roomObjectMutations().get().applyMagicPowderObjectInteractions(powders);
+        // Empty object-request lists return without mutating runtime entities. The first
+        // immutable snapshot already contains their final state in that common case.
+        if (objectRequests)
+            dependencies
+                    .location()
+                    .activeRoom
+                    .replaceEntities(dependencies
+                            .entityBridge()
+                            .get()
+                            .entityRuntime
+                            .inspection()
+                            .snapshot());
         dependencies.roomPuzzleController().get().tickPushedBlockMotion(linkEntityX, linkEntityY);
         dependencies.roomPuzzleController().get().tickRoomEvent(linkEntityX, linkEntityY);
     }

@@ -10,9 +10,14 @@ import linksawakening.world.entity.event.EntityProjectileEvent;
 
 final class RoomEntitySimulation {
     private final Dependencies dependencies;
+    private final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+    private final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
 
     RoomEntitySimulation(Dependencies dependencies) {
         this.dependencies = dependencies;
+        backgroundCollision = (entity, direction, x, y) ->
+                dependencies.roomCollisionQueries().get().entityBackgroundCollision(entity, direction, x, y);
+        objectCollision = entity -> dependencies.roomCollisionQueries().get().pairoddProjectileObjectCollision(entity);
     }
 
     List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
@@ -60,8 +65,8 @@ final class RoomEntitySimulation {
                         linkEntityY,
                         collisionType & 0xFF,
                         dependencies.entityRandomByteSource(),
-                        dependencies.roomCollisionQueries().get()::entityBackgroundCollision,
-                        dependencies.roomCollisionQueries().get()::pairoddProjectileObjectCollision,
+                        backgroundCollision,
+                        objectCollision,
                         dependencies.followers().followingLinkPositionHistory,
                         dependencies.followers().followingLinkZ,
                         linkAirborne,

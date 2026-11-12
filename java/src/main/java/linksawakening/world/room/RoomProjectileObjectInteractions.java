@@ -27,7 +27,9 @@ final class RoomProjectileObjectInteractions {
             return;
         }
 
-        for (BoomerangObjectRequest request : requests) {
+        for (int requestIndex = 0; requestIndex < requests.size(); requestIndex++) {
+            BoomerangObjectRequest request = requests.get(requestIndex);
+
             OverworldBushInteraction.CutResult result = dependencies
                     .overworldBushInteraction()
                     .revealObjectAtLocation(
@@ -63,7 +65,9 @@ final class RoomProjectileObjectInteractions {
             return;
         }
 
-        for (MagicRodObjectRequest request : requests) {
+        for (int requestIndex = 0; requestIndex < requests.size(); requestIndex++) {
+            MagicRodObjectRequest request = requests.get(requestIndex);
+
             boolean changed = false;
             if (dependencies.location().activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 OverworldBushInteraction.CutResult result = dependencies

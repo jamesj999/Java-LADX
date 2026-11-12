@@ -34,5 +34,13 @@ public final class PresentationOutputs {
         return dependencies.entityBridge().get().outbox.consumeLikeLikeEvents();
     }
 
+    public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
+        dependencies.entityBridge().get().outbox.drainEntityEvents(target);
+    }
+
+    public linksawakening.world.entity.event.DialogRequest consumeFirstEntityDialogRequest() {
+        return dependencies.entityBridge().get().outbox.consumeFirstEntityDialogRequest();
+    }
+
     record Dependencies(java.util.function.Supplier<RoomEntityBridge> entityBridge) {}
 }

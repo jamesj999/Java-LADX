@@ -61,6 +61,47 @@ public final class RewardOutputs {
         return dependencies.entityBridge().get().outbox.consumeWitchRewardEvents();
     }
 
+    public void drainChestRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainChestRewardEvents(target);
+    }
+
+    public void drainKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainKeyRewardEvents(target);
+    }
+
+    public void drainSlimeKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainSlimeKeyRewardEvents(target);
+    }
+
+    public void drainHeartContainerRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainHeartContainerRewards(target);
+    }
+
+    public void drainMadamMeowMeowFullHealRequests(
+            RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainMadamMeowMeowFullHealRequests(target);
+    }
+
+    public void drainRichardProgressEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainRichardProgressEvents(target);
+    }
+
+    public void drainSwordPickupRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainSwordPickupRewards(target);
+    }
+
+    public void drainToadstoolRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainToadstoolRewards(target);
+    }
+
+    public void drainWitchExchangeEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainWitchExchangeEvents(target);
+    }
+
+    public void drainWitchRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
+        dependencies.entityBridge().get().outbox.drainWitchRewardEvents(target);
+    }
+
     record Dependencies(
             java.util.function.Supplier<RoomEntityBridge> entityBridge,
             java.util.function.Supplier<RoomSessionViews> roomSessionViews) {}
