@@ -62,7 +62,7 @@ final class MenuEmulatorCapture {
                         .build(GameFrameState.empty()
                                 .withScreen(RenderScreen.FILE_MENU)
                                 .withFileMenuFrame(menu.snapshot()))
-                        .drawTo(pixels, gpu);
+                        .drawTo(pixels, gpu, TestDrawObservers.CURRENT.get());
                 CaptureImageWriter.write(pixels, folder.resolve(String.format("%02d.png", frame)));
                 menu.tick(input, config);
                 input.tickEdges();

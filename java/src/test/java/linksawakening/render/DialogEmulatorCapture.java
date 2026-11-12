@@ -119,11 +119,49 @@ public final class DialogEmulatorCapture {
         // As with captureHouse, displayed OAM trails the observed clocks by two frames.
         var marin = synchronizeMarin(motion, marinSource.x(), marinSource.y(), linkX, linkY, firstFrame, inertia);
         var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
-        int page = -1;
-        int elapsed = 0;
         session.updateHouseTarinPresentation(0, linkX, linkY);
         var inventory = new InventoryController(
                 input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(rom), player));
+        replay(
+                scenario,
+                frames,
+                consumer,
+                timedDialog,
+                bedExit,
+                inBed,
+                linkX,
+                linkY,
+                session,
+                link,
+                motion,
+                marinSource,
+                firstFrame,
+                marin,
+                dialog,
+                inventory,
+                gpu);
+    }
+
+    private static void replay(
+            String scenario,
+            List<String> frames,
+            BiConsumer<String, byte[]> consumer,
+            boolean timedDialog,
+            boolean bedExit,
+            boolean inBed,
+            int linkX,
+            int linkY,
+            RoomSession session,
+            Link link,
+            MarinWakeUpMotion motion,
+            linksawakening.world.entity.RoomEntity marinSource,
+            int firstFrame,
+            MarinWakeUpMotion.MarinPresentation marin,
+            DialogController dialog,
+            InventoryController inventory,
+            GPU gpu) {
+        int page = -1;
+        int elapsed = 0;
         for (String row : frames) {
             String[] fields = row.split("\\t");
             int nextPage = Integer.parseInt(fields[0]);
@@ -163,7 +201,7 @@ public final class DialogEmulatorCapture {
                             .withInventoryController(inventory)
                             .withDialogController(dialog)
                             .withFrameCounter((frame - 2) & 255))
-                    .drawTo(pixels, gpu);
+                    .drawTo(pixels, gpu, TestDrawObservers.CURRENT.get());
             consumer.accept(String.format("%02d-%02d.png", nextPage, f), pixels);
         }
     }

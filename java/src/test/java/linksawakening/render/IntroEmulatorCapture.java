@@ -50,7 +50,7 @@ final class IntroEmulatorCapture {
     private static byte[] render(GameFrameSceneBuilder builder, GPU gpu, IntroFrameSnapshot snapshot) {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         builder.build(GameFrameState.empty().withScreen(RenderScreen.CUTSCENE).withIntroFrameSnapshot(snapshot))
-                .drawTo(buffer, gpu);
+                .drawTo(buffer, gpu, TestDrawObservers.CURRENT.get());
         return buffer;
     }
 

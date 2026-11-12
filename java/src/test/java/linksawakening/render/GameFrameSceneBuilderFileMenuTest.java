@@ -27,7 +27,7 @@ final class GameFrameSceneBuilderFileMenuTest {
                         .withScreen(RenderScreen.FILE_MENU)
                         .withIntroFrameSnapshot(intro.snapshot())
                         .withFileMenuFrame(menu));
-        scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu);
+        scene.drawTo(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4], gpu, TestDrawObservers.CURRENT.get());
         assertEquals(2, scene.layerCount());
         for (int tile = 0x90; tile < 0x98; tile++)
             for (int y = 0; y < 8; y++)
