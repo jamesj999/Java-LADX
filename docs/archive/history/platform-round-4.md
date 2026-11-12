@@ -57,3 +57,18 @@ Retained collaborators and pure functions have these responsibilities:
 
 These are responsibilities or explicit value/algorithm boundaries, rather than
 mechanical chunks receiving every field of a different owner on each call.
+
+## Deprecated API sweep
+
+Removed all eleven GPU byte-array delegates: loadAnimatedTilesGroup,
+tickAnimatedTiles, loadBaseOverworldTiles, loadBaseTiles, loadEntitySpriteSheets,
+loadColorDungeonEntitySheets, loadRoomSpecificTiles, both loadIndoorTiles overloads,
+copySwitchBlockTiles and copyPressedFloorSwitchTiles. No remaining owned main
+member carries @Deprecated. World callers already use Rom.
+
+Render test/capture callers now use IntroFrameSnapshot.Builder,
+FileMenuFrameSnapshot.Builder, DialogTextLoader.loadFromRom(Rom), and typed Rom
+constructors for RoomLoader, OverworldTilesetTable and RoomSessionConfig. A clean
+compile with temporary -Xlint:deprecation,removal reports zero warnings in owned
+main and test roots; remaining warnings originate only in off-limits app/gameplay
+callers. No build configuration was changed.

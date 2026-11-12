@@ -24,16 +24,13 @@ final class GameplayMusicControllerTest {
             player.equipmentLevels().setActivePowerUp(1);
             boolean boss = scenario == 1;
             int defaultTrack = scenario == 2 ? 0x22 : MusicTrackIds.MUSIC_MABE_VILLAGE;
-            var event = new linksawakening.world.entity.event.EntityProjectileEvent(
-                    0,
-                    0x0A,
-                    linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE,
-                    0xFF,
-                    4,
-                    linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE,
-                    3,
-                    false,
-                    false);
+            var event = linksawakening.world.entity.event.EntityProjectileEvent.builder(
+                            0, 0x0A, linksawakening.world.entity.event.EntityProjectileEvent.Kind.LINK_DAMAGE)
+                    .collisionValue(0xFF)
+                    .linkDamage(4)
+                    .soundChannel(linksawakening.world.entity.event.EntityProjectileEvent.SoundChannel.WAVE)
+                    .soundId(3)
+                    .build();
             for (int hit = 0; hit < 3; hit++) {
                 player.vitals().setInvincibilityCounter(0);
                 linksawakening.gameplay.EnemyProjectileEventConsumer.consume(
