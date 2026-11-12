@@ -14,28 +14,7 @@ import linksawakening.world.room.RoomSession;
 
 final class EntityPhase {
     void tick(GameplaySimulation c, Sword.CollisionBox b) {
-        assert java.util.stream.Stream.of(
-                        c.roomSession(),
-                        c.link(),
-                        c.playerState(),
-                        c.gpu(),
-                        c.romData(),
-                        c.inputState(),
-                        c.inputConfig(),
-                        c.inventoryMenu(),
-                        c.inventoryController(),
-                        c.dialogController(),
-                        c.musicPlayer(),
-                        c.gameplayMusicController(),
-                        c.musicDirector(),
-                        c.itemRegistry(),
-                        c.equipmentController(),
-                        c.lift(),
-                        c.dialogInteractions(),
-                        c.scrollController(),
-                        c.transitionController(),
-                        c.roomTransitionCoordinator())
-                .allMatch(java.util.Objects::nonNull);
+        assert requiredCollaboratorsPresent(c);
         // The original calls AnimateEntities after Link movement and
         // room-transition application. Give handlers the same current
         // position and active-room snapshot.
@@ -385,5 +364,30 @@ final class EntityPhase {
     private void resetSword(GameplaySimulation c) {
         Sword sword = c.equipmentController().activeSword();
         if (sword != null) sword.resetSpinAttack();
+    }
+
+    private boolean requiredCollaboratorsPresent(GameplaySimulation c) {
+        return java.util.stream.Stream.of(
+                        c.roomSession(),
+                        c.link(),
+                        c.playerState(),
+                        c.gpu(),
+                        c.romData(),
+                        c.inputState(),
+                        c.inputConfig(),
+                        c.inventoryMenu(),
+                        c.inventoryController(),
+                        c.dialogController(),
+                        c.musicPlayer(),
+                        c.gameplayMusicController(),
+                        c.musicDirector(),
+                        c.itemRegistry(),
+                        c.equipmentController(),
+                        c.lift(),
+                        c.dialogInteractions(),
+                        c.scrollController(),
+                        c.transitionController(),
+                        c.roomTransitionCoordinator())
+                .allMatch(java.util.Objects::nonNull);
     }
 }
