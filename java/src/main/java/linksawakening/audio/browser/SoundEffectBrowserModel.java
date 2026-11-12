@@ -7,7 +7,7 @@ import java.util.Objects;
 import linksawakening.audio.sfx.SoundEffect;
 
 /** Headless sound-effect filtering and metadata for the audition browser. */
-public final class SoundEffectBrowserModel {
+final class SoundEffectBrowserModel {
     private final List<SoundEffect> effects;
 
     public SoundEffectBrowserModel(List<SoundEffect> effects) {

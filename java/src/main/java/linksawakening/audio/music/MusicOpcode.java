@@ -1,7 +1,7 @@
 package linksawakening.audio.music;
 
 /** Classifies bytes in the ROM music command stream. */
-public final class MusicOpcode {
+final class MusicOpcode {
     private MusicOpcode() {}
 
     public static boolean isEnd(int opcode) {

@@ -6,9 +6,9 @@ import linksawakening.rom.RomSymbols;
 
 /** Color Dungeon BG uploads, selected by the room's high-byte/bank table. */
 final class ColorDungeonTileLoader {
-    private final RomTileLoader target;
+    private final Vram target;
 
-    ColorDungeonTileLoader(RomTileLoader target) {
+    ColorDungeonTileLoader(Vram target) {
         this.target = target;
     }
 

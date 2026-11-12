@@ -12,7 +12,7 @@ public final class GameFrameSceneBuilder {
 
     private DialogWindowPainter dialogWindowPainter;
     /** Uses alternate owned glyphs/window submission; null restores ROM-backed dialog rendering. */
-    public void setDialogWindowPainter(DialogWindowPainter painter) {
+    void setDialogWindowPainter(DialogWindowPainter painter) {
         dialogWindowPainter = painter;
     }
 
@@ -22,7 +22,7 @@ public final class GameFrameSceneBuilder {
     private final FrameScene reusableScene = FrameScene.borrowed(reusable.layers, frame);
 
     /** Attaches optional inspection to scenes built by this session-local builder. */
-    public void setDrawObserver(FrameDrawObserver observer) {
+    void setDrawObserver(FrameDrawObserver observer) {
         this.observer = observer;
     }
 
@@ -33,7 +33,6 @@ public final class GameFrameSceneBuilder {
 
     /** Refills a borrowed scene, valid until this builder's next build. Capture callers use immutable build(GameFrameState). */
     public FrameScene build(ReusableGameFrameState state) {
-        if (!reusable.supports(state)) return build(state.snapshot());
         reusable.fill(state, dialogWindowPainter);
         return reusableScene.observedBy(observer);
     }

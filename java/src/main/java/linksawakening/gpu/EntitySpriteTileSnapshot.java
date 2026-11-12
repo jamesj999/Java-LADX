@@ -16,7 +16,7 @@ public final class EntitySpriteTileSnapshot {
             if (sourceTiles[i] == null) {
                 throw new IllegalArgumentException("Entity tile cannot be null: " + i);
             }
-            this.tiles[i] = new FrozenTile(sourceTiles[i].copy());
+            this.tiles[i] = sourceTiles[i].frozenCopy();
         }
     }
 
@@ -41,29 +41,5 @@ public final class EntitySpriteTileSnapshot {
                     if (source[start + i].getPixel(x, y) != tiles[i].getPixel(x, y)) return false;
         }
         return true;
-    }
-
-    private static final class FrozenTile extends Tile {
-        private final Tile pixels;
-
-        FrozenTile(Tile pixels) {
-            super((int[]) null); // All operations delegate; no second pixel array is needed.
-            this.pixels = pixels;
-        }
-
-        @Override
-        public int getPixel(int x, int y) {
-            return pixels.getPixel(x, y);
-        }
-
-        @Override
-        public void setPixel(int x, int y, int color) {
-            throw new UnsupportedOperationException("Snapshot tiles are read-only");
-        }
-
-        @Override
-        public Tile copy() {
-            return pixels.copy();
-        }
     }
 }

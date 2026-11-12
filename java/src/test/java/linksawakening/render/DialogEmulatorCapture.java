@@ -92,10 +92,10 @@ public final class DialogEmulatorCapture {
         var tables = RomTables.load(Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
-                rom,
+                Rom.of(rom),
                 gpu,
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader(Rom.of(rom)),
+                new OverworldTilesetTable(Rom.of(rom)),
                 collision,
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
@@ -242,7 +242,7 @@ public final class DialogEmulatorCapture {
         dialog.setPlayerName("A");
         if (!heldShield && !bedExit)
             dialog.openPreformattedForLinkY(
-                    DialogTextLoader.loadFromRom(rom)
+                    DialogTextLoader.loadFromRom(Rom.of(rom))
                             .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)),
                     linkY);
         if ("marin-close".equals(scenario)) {

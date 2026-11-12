@@ -1,7 +1,7 @@
 package linksawakening.render;
 
 /** Submits a scrolling background tilemap with its attributes and palettes. */
-public final class BackgroundRenderLayer implements HardwareRenderLayer {
+final class BackgroundRenderLayer implements HardwareRenderLayer {
     private final int[] tilemap;
     private final int[] attrmap;
     private final int[][] palettes;

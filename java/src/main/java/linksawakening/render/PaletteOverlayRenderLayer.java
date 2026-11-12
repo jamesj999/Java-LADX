@@ -3,7 +3,7 @@ package linksawakening.render;
 import java.util.List;
 
 /** Composites a transparent plane with a saturating RGB555 channel increment. */
-public final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
+final class PaletteOverlayRenderLayer implements HardwareRenderLayer {
     private final List<RenderLayer> layers;
     private final int increment;
 

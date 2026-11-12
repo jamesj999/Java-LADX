@@ -5,9 +5,9 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
 final class TitleIntroTileLoader {
-    private final RomTileLoader target;
+    private final Vram target;
 
-    TitleIntroTileLoader(RomTileLoader target) {
+    TitleIntroTileLoader(Vram target) {
         this.target = target;
     }
 
@@ -45,7 +45,6 @@ final class TitleIntroTileLoader {
     }
 
     public void loadMenuTiles(Rom romData) {
-        target.loadBaseTiles(romData);
         target.loadTilesFromROM(
                 romData, GbcBanks.adjust(RomSymbols.MenuTiles.bank()), RomSymbols.MenuTiles.address(), 0x40, 0x080);
         target.loadTilesFromROM(

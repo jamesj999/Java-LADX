@@ -23,6 +23,17 @@ final class HardwareFrameTest {
     }
 
     @Test
+    void copiedBackgroundKeepsItsTransformWhenScratchIsReused() {
+        var frame = new HardwareFrame(true);
+        var scratch = frame.backgroundScratch();
+        scratch.withPaletteTransform(color -> color + 3, () -> scratch.backgroundPixel(0, 0, 1, PALETTE, false));
+        frame.copyBackgroundRows(scratch, 1);
+        scratch.reset();
+        scratch.withPaletteTransform(color -> color * 7, () -> scratch.backgroundPixel(0, 0, 1, PALETTE, false));
+        assertEquals(25, frame.backgroundRgb(0));
+    }
+
+    @Test
     void priorityDependsOnColorIndexAndMasterSwitch() {
         for (boolean enabled : new boolean[] {false, true})
             for (boolean bgPriority : new boolean[] {false, true})

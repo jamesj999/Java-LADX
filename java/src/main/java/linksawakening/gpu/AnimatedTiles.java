@@ -8,9 +8,9 @@ import linksawakening.rom.RomSymbols;
 final class AnimatedTiles {
     private static final int TILE_DATA_SIZE = Vram.TILE_DATA_SIZE;
     private static final int MAP_COLOR_DUNGEON = 0xFF;
-    private final RomTileLoader target;
+    private final Vram target;
 
-    AnimatedTiles(RomTileLoader target) {
+    AnimatedTiles(Vram target) {
         this.target = target;
     }
 
@@ -74,15 +74,7 @@ final class AnimatedTiles {
     }
 
     private void copyAnimatedScrollingTiles(int destinationTile) {
-        System.arraycopy(
-                animatedScrollingTiles,
-                0,
-                target.vram,
-                destinationTile * TILE_DATA_SIZE,
-                animatedScrollingTiles.length);
-        for (int tile = destinationTile; tile < destinationTile + 4; tile++) {
-            target.updateTile(tile);
-        }
+        target.copyTiles(animatedScrollingTiles, destinationTile);
     }
 
     private void copyAnimatedTilesFrame(Rom romData, int dataOffset) {

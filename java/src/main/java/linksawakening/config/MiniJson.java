@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /** Strict, dependency-free JSON reader. Errors report the zero-based source position. */
-public final class MiniJson {
+final class MiniJson {
     private final String source;
     private int position;
 

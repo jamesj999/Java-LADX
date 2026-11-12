@@ -19,8 +19,20 @@ final class GameFrameSceneBuilderFileMenuTest {
         for (int i = 0; i < 128; i++) intro.tick();
         int[] map = new int[32 * 32];
         int[][] palettes = {{0, 0, 0, 0}};
-        FileMenuFrameSnapshot menu = new FileMenuFrameSnapshot(
-                "selection", 0, false, false, 0, 0, new int[5], map, map, palettes, palettes, List.of());
+        FileMenuFrameSnapshot menu = new FileMenuFrameSnapshot.Builder()
+                .sceneId("selection")
+                .selectedSlot(0)
+                .commandRowArrowShifted(false)
+                .creation(false)
+                .selectedCharacter(0)
+                .namePosition(0)
+                .nameBytes(new int[5])
+                .tilemap(map)
+                .attrmap(map)
+                .bgPalettes(palettes)
+                .objectPalettes(palettes)
+                .sprites(List.of())
+                .build();
         GPU gpu = new GPU();
         FrameScene scene = new GameFrameSceneBuilder()
                 .build(GameFrameState.empty()
@@ -39,19 +51,20 @@ final class GameFrameSceneBuilderFileMenuTest {
         int[] tilemap = new int[32 * 32];
         int[] attrmap = new int[32 * 32];
         int[][] palettes = {{0, 0, 0, 0}};
-        FileMenuFrameSnapshot snapshot = new FileMenuFrameSnapshot(
-                "selection",
-                0,
-                false,
-                false,
-                0,
-                0,
-                new int[5],
-                tilemap,
-                attrmap,
-                palettes,
-                palettes,
-                List.of(new IntroSprite(0, 0, 0, 0, false, false)));
+        FileMenuFrameSnapshot snapshot = new FileMenuFrameSnapshot.Builder()
+                .sceneId("selection")
+                .selectedSlot(0)
+                .commandRowArrowShifted(false)
+                .creation(false)
+                .selectedCharacter(0)
+                .namePosition(0)
+                .nameBytes(new int[5])
+                .tilemap(tilemap)
+                .attrmap(attrmap)
+                .bgPalettes(palettes)
+                .objectPalettes(palettes)
+                .sprites(List.of(new IntroSprite(0, 0, 0, 0, false, false)))
+                .build();
 
         FrameScene scene = new GameFrameSceneBuilder()
                 .build(GameFrameState.empty().withScreen(RenderScreen.FILE_MENU).withFileMenuFrame(snapshot));

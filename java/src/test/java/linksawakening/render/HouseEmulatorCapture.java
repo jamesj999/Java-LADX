@@ -36,10 +36,10 @@ public final class HouseEmulatorCapture {
         var tables = RomTables.load(Rom.unchecked(rom));
         var collision = new OverworldCollision(tables);
         var session = new RoomSession(new RoomSessionConfig(
-                rom,
+                Rom.of(rom),
                 gpu,
-                new RoomLoader(rom),
-                new OverworldTilesetTable(rom),
+                new RoomLoader(Rom.of(rom)),
+                new OverworldTilesetTable(Rom.of(rom)),
                 collision,
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));

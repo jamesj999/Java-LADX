@@ -20,11 +20,11 @@ public final class FrameScene {
         this.layers = borrowed ? layers : List.copyOf(layers);
     }
 
-    public static FrameScene empty() {
+    static FrameScene empty() {
         return EMPTY;
     }
 
-    public static FrameScene of(List<RenderLayer> layers) {
+    static FrameScene of(List<RenderLayer> layers) {
         if (layers.isEmpty()) {
             return EMPTY;
         }
@@ -35,7 +35,7 @@ public final class FrameScene {
         drawTo(buffer, gpu, observer);
     }
 
-    public void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
+    void drawTo(byte[] buffer, GPU gpu, FrameDrawObserver observer) {
         hardwareFrame(gpu).compose(buffer);
         if (observer != null) observer.drawn(this, buffer, gpu);
     }
