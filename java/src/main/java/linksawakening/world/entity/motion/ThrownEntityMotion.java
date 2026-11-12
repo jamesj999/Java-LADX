@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySideViewGravity;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -228,20 +229,8 @@ public final class ThrownEntityMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), z, -1, false);
     }
 
     private static int signedByte(int value) {

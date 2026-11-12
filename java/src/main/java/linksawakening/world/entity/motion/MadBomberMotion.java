@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 MadBomberEntityHandler state machine and bomb producer. */
@@ -145,20 +146,8 @@ public final class MadBomberMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static int signedByte(int value) {

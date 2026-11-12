@@ -5,6 +5,7 @@ import java.util.function.IntSupplier;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.ColorShellWorld;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -149,17 +150,12 @@ public final class ColorShellMotion {
             default -> throw new IllegalStateException("Invalid Color Shell state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity,
                 positionX[slot],
                 positionY[slot],
-                entity.status(),
-                entity.spriteDefinition(),
                 spriteVariant[slot],
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 positionZ[slot],
                 -1,
                 false);

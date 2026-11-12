@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
 final class EntityHandlerRegistry implements EntityHandlerRegistration {
     private static final class Binding implements EntityHandler {
-        private final EntityHandler initializer;
+        private EntityHandler initializer;
         private BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance;
         private final EnumMap<EntityTickStage, List<Predicate<EntityFrameExecution>>> stages =
                 new EnumMap<>(EntityTickStage.class);
@@ -40,6 +40,30 @@ final class EntityHandlerRegistry implements EntityHandlerRegistration {
         }
     }
 
+    private final EntityMotionRegistry motions;
+
+    EntityHandlerRegistry() {
+        this(new EntityMotionRegistry());
+    }
+
+    EntityHandlerRegistry(EntityMotionRegistry motions) {
+        this.motions = motions;
+    }
+
+    @Override
+    public <T> T motion(Class<T> type, java.util.function.Supplier<? extends T> factory) {
+        return motions.get(type, factory);
+    }
+
+    @Override
+    public void registerInitializer(int type, java.util.function.BiConsumer<RoomEntity, IntSupplier> initializer) {
+        Objects.requireNonNull(initializer);
+        Binding binding = binding(type);
+        if (binding.initializer != null)
+            throw new IllegalArgumentException("Duplicate initializer for entity type: " + type);
+        binding.initializer = initializer::accept;
+    }
+
     private final Binding[] handlers = new Binding[256];
 
     void register(int type, EntityHandler handler) {
@@ -62,7 +86,7 @@ final class EntityHandlerRegistry implements EntityHandlerRegistration {
         return handlers[type];
     }
 
-    void registerAdvance(int type, BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance) {
+    public void registerAdvance(int type, BiFunction<RoomEntity, EntityFrameContext, RoomEntity> advance) {
         Objects.checkIndex(type, handlers.length);
         Objects.requireNonNull(advance);
         Binding binding = binding(type);

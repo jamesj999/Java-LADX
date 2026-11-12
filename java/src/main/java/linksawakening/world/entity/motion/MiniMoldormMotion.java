@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -251,17 +252,12 @@ public final class MiniMoldormMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 -1,
                 false);

@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -320,20 +321,7 @@ public final class StalfosEvasiveMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
     private static int directionForX(int delta) {

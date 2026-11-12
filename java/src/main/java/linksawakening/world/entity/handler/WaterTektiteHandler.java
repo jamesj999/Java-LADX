@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_WATER_TEKTITE;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -11,6 +14,7 @@ import linksawakening.world.entity.motion.*;
 /** ROM handler stages for WaterTektite. */
 final class WaterTektiteHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_WATER_TEKTITE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_WATER_TEKTITE, EntityTickStage.PHASE_3_AFTER_LASER, 2, WaterTektiteHandler::phase3WaterTektite);
     }
@@ -28,5 +32,9 @@ final class WaterTektiteHandler {
                             frameInput.backgroundCollision()));
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(WaterTektiteMotion.class, WaterTektiteMotion::new).initialize(entity.slot());
     }
 }

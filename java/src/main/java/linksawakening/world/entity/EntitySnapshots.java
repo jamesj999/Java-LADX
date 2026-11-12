@@ -199,4 +199,30 @@ public final class EntitySnapshots {
                         -1,
                         false));
     }
+
+    /** Copies a motion result verbatim, including its explicit death presentation. */
+    public static RoomEntity withMotion(
+            RoomEntity entity,
+            int x,
+            int y,
+            int variant,
+            int flipAttribute,
+            int z,
+            int deathVariant,
+            boolean powerRecoilDeath) {
+        return new RoomEntity(
+                entity.slot(),
+                entity.sourceLoadOrder(),
+                entity.type(),
+                x,
+                y,
+                entity.status(),
+                entity.spriteDefinition(),
+                variant,
+                flipAttribute,
+                entity.spriteTileOffset(),
+                z,
+                deathVariant,
+                powerRecoilDeath);
+    }
 }

@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -374,37 +375,12 @@ public final class MoblinSwordMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static int signedByte(int value) {

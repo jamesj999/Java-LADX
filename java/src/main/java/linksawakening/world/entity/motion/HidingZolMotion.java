@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
@@ -176,20 +177,8 @@ public final class HidingZolMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        RoomEntity updated =
+                EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
         return new Update(updated, hitGround, clearsIgnoreHitsCountdown, jumpJingle, physicsFlags);
     }
 

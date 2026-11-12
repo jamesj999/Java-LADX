@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$04 PairoddProjectileEntityHandler's vector travel and animation. */
@@ -44,20 +45,7 @@ public final class PairoddProjectileMotion {
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int variant = (frameCounter >>> 3) & 0x01;
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     public void clear(int slot) {

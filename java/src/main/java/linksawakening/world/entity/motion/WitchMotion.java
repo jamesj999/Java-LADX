@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** State and timing port of bank-$05 {@code WitchEntityHandler}. */
@@ -212,19 +213,7 @@ public final class WitchMotion {
     }
 
     private static RoomEntity withPresentation(RoomEntity source, int y, int variant) {
-        return new RoomEntity(
-                source.slot(),
-                source.sourceLoadOrder(),
-                source.type(),
-                source.x(),
-                y,
-                source.status(),
-                source.spriteDefinition(),
-                variant,
-                source.entityFlipAttribute(),
-                source.spriteTileOffset(),
-                source.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                source, source.x(), y, variant, source.entityFlipAttribute(), source.z(), -1, false);
     }
 }

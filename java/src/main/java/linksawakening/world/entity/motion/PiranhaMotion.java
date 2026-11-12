@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$36 PiranhaPlantEntityHandler's pipe rise, hold, and lower states. */
@@ -91,20 +92,8 @@ public final class PiranhaMotion {
             default -> throw new IllegalStateException("Invalid Piranha Plant state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        RoomEntity updated =
+                EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
         return new Update(updated, countdown, state[slot]);
     }
 

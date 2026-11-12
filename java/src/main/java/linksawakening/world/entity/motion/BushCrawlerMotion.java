@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -138,20 +139,8 @@ public final class BushCrawlerMotion {
             }
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                renderedVariant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity, x, y, renderedVariant, entity.entityFlipAttribute(), entity.z(), -1, false);
         return new Update(
                 updated,
                 state[slot],

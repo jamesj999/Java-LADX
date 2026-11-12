@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityCombatRules;
@@ -191,17 +192,12 @@ public final class CuccoMotion {
             state[slot] = 2;
         }
 
-        RoomEntity collisionEntity = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        RoomEntity collisionEntity = EntitySnapshots.withMotion(
+                entity,
                 x,
                 y,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 z,
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());
@@ -350,17 +346,12 @@ public final class CuccoMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 z & 0xFF,
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

@@ -197,6 +197,14 @@ final class EntitySlotPhase5 {
                             ? 0
                             : -1);
         }
+        commitPresentation(state);
+
+        return true;
+    }
+
+    private static void commitPresentation(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var presentationFlags = state.presentation();
         slotState.renderFlipAttribute(
                 presentationFlags.preservesHandlerPresentation()
                         ? slotState.updated().entityFlipAttribute()
@@ -242,6 +250,5 @@ final class EntitySlotPhase5 {
                     -1,
                     false);
         }
-        return true;
     }
 }

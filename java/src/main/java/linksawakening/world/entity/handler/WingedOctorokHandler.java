@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_WINGED_OCTOROK;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -14,6 +17,7 @@ import linksawakening.world.entity.motion.WingedOctorokMotion;
 /** ROM handler stages for WingedOctorok. */
 final class WingedOctorokHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_WINGED_OCTOROK, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_WINGED_OCTOROK,
                 EntityTickStage.PHASE_3_BEFORE_LASER,
@@ -68,5 +72,9 @@ final class WingedOctorokHandler {
             }
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(WingedOctorokMotion.class, WingedOctorokMotion::new).initialize(entity.slot());
     }
 }

@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -39,17 +40,12 @@ public final class ThreeOfAKindMotion {
         int slot = entity.slot();
         int x = move(entity, true, collision);
         int y = move(
-                new RoomEntity(
-                        entity.slot(),
-                        entity.sourceLoadOrder(),
-                        entity.type(),
+                EntitySnapshots.withMotion(
+                        entity,
                         x,
                         entity.y(),
-                        entity.status(),
-                        entity.spriteDefinition(),
                         entity.spriteVariant(),
                         entity.entityFlipAttribute(),
-                        entity.spriteTileOffset(),
                         entity.z(),
                         -1,
                         false),
@@ -184,19 +180,6 @@ public final class ThreeOfAKindMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 }

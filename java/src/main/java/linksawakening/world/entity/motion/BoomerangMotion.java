@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /**
@@ -240,17 +241,12 @@ public final class BoomerangMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x,
                 y,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

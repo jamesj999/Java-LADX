@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySideViewGravity;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.PlayerProjectileLaunchSpeed;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
@@ -259,20 +260,7 @@ public final class PlayerArrowMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
     }
 
     record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}

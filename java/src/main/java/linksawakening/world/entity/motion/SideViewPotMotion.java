@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.Objects;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Fixed-point motion for the side-view pot's dedicated throw state. */
@@ -99,17 +100,12 @@ public final class SideViewPotMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PIRANHA_PLANT;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -12,6 +15,7 @@ import linksawakening.world.entity.motion.PiranhaMotion;
 /** ROM handler stages for PiranhaPlant. */
 final class PiranhaPlantHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_PIRANHA_PLANT, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_PIRANHA_PLANT,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
@@ -42,5 +46,9 @@ final class PiranhaPlantHandler {
             presentationFlags.preservePiranhaPresentation(true);
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(PiranhaMotion.class, PiranhaMotion::new).initialize(entity.slot());
     }
 }

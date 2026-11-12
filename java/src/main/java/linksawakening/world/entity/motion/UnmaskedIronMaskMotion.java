@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
@@ -96,20 +97,8 @@ public final class UnmaskedIronMaskMotion {
         }
 
         return new Update(
-                new RoomEntity(
-                        entity.slot(),
-                        entity.sourceLoadOrder(),
-                        entity.type(),
-                        x,
-                        y,
-                        entity.status(),
-                        entity.spriteDefinition(),
-                        (frame >>> 4) & 0x01,
-                        entity.entityFlipAttribute(),
-                        entity.spriteTileOffset(),
-                        entity.z(),
-                        -1,
-                        false),
+                EntitySnapshots.withMotion(
+                        entity, x, y, (frame >>> 4) & 0x01, entity.entityFlipAttribute(), entity.z(), -1, false),
                 nextTransitionCountdown);
     }
 

@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.Objects;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityObjectQuery;
@@ -314,54 +315,25 @@ public final class ZombieMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x & 0xFF, y & 0xFF, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 -1,
                 false);
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                entity.x(),
-                entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, entity.x(), entity.y(), variant, entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     private void reset(int slot) {

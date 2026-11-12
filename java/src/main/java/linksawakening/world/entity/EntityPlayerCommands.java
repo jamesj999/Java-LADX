@@ -154,17 +154,12 @@ final class EntityPlayerCommands {
         for (int slot = 0; slot < runtime.slots().length; slot++) {
             RoomEntity entity = runtime.slots()[slot];
             if (entity.loaded() && entity.type() == 0x3E) {
-                runtime.slots()[slot] = new RoomEntity(
-                        entity.slot(),
-                        entity.sourceLoadOrder(),
-                        entity.type(),
+                runtime.slots()[slot] = EntitySnapshots.withMotion(
+                        entity,
                         x & 0xFF,
                         y & 0xFF,
-                        entity.status(),
-                        entity.spriteDefinition(),
                         spriteVariant,
                         entity.entityFlipAttribute(),
-                        entity.spriteTileOffset(),
                         entity.z(),
                         entity.deathSpriteVariant(),
                         entity.powerRecoilDeath());

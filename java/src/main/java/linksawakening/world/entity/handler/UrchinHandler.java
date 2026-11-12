@@ -1,9 +1,12 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_URCHIN;
 import static linksawakening.world.entity.EntitySnapshots.withDefinition;
 
+import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityLinkCollisionRules;
@@ -18,6 +21,7 @@ import linksawakening.world.entity.motion.UrchinMotion;
 /** ROM handler stages for Urchin. */
 final class UrchinHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_URCHIN, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_URCHIN, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 17, UrchinHandler::phase4Urchin);
     }
 
@@ -80,5 +84,9 @@ final class UrchinHandler {
             presentationFlags.preserveUrchinPresentation(true);
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(UrchinMotion.class, UrchinMotion::new).initialize(entity.slot());
     }
 }

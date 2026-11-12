@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -107,17 +108,12 @@ public final class FishMotion {
             default -> throw new IllegalStateException("Invalid Fish state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity,
                 x,
                 entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 z,
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

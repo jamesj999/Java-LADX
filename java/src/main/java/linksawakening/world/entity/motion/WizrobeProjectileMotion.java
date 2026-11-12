@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 WizrobeProjectileEntityHandler movement and palette pulse. */
@@ -46,20 +47,8 @@ public final class WizrobeProjectileMotion {
         }
         int x = addSpeed(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeed(entity.y(), speedY[slot], speedYAccumulator, slot);
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), entity.z(), -1, false);
     }
 
     public int flipAttribute(int frameCounter) {

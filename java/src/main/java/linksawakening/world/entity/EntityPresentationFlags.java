@@ -2,417 +2,391 @@ package linksawakening.world.entity;
 
 /** Presentation decisions retained across the ordered slot phases. */
 public final class EntityPresentationFlags {
-    private boolean preserveGhiniPresentation;
-    private boolean preserveMadBomberPresentation;
-    private boolean preserveBombitePresentation;
-    private boolean preserveIronMaskPresentation;
-    private boolean preserveSnakePresentation;
-    private boolean preserveStarPresentation;
-    private boolean preserveBlooperPresentation;
-    private boolean preserveWingedOctorokPresentation;
-    private boolean preservePincerPresentation;
-    private boolean preserveBushCrawlerPresentation;
-    private boolean preserveMimicPresentation;
-    private boolean preserveMaskedMimicPresentation;
-    private boolean preserveMiniMoldormPresentation;
-    private boolean preserveMoldormPresentation;
-    private boolean preserveCuccoPresentation;
-    private boolean preserveGopongaFlowerPresentation;
-    private boolean preserveGiantGopongaPresentation;
-    private boolean preserveGopongaProjectilePresentation;
-    private boolean preservePokeyPresentation;
-    private boolean preservePiranhaPresentation;
-    private boolean preserveZoraPresentation;
-    private boolean preserveZombiePresentation;
-    private boolean preserveBuzzBlobPresentation;
-    private boolean preserveSandCrabPresentation;
-    private boolean preserveDogPresentation;
-    private boolean preserveUrchinPresentation;
-    private boolean preserveWitchRatPresentation;
-    private boolean preserveWitchPresentation;
-    private boolean preserveRoosterPresentation;
-    private boolean preserveWizrobePresentation;
-    private boolean preserveWizrobeProjectilePresentation;
-    private boolean preservePolsVoicePresentation;
-    private boolean preserveSpikedBeetlePresentation;
-    private boolean preserveArmosKnightPresentation;
-    private boolean preserveHinoxPresentation;
-    private boolean preserveRollingBonesPresentation;
-    private boolean preserveThreeOfAKindPresentation;
-    private boolean preserveMoblinKingPresentation;
-    private boolean preserveSecretSeashellPresentation;
-    private boolean preserveDroppablePresentation;
-    private boolean preserveTarinPresentation;
+    private enum Kind {
+        GHINI,
+        MAD_BOMBER,
+        BOMBITE,
+        IRON_MASK,
+        SNAKE,
+        STAR,
+        BLOOPER,
+        WINGED_OCTOROK,
+        PINCER,
+        BUSH_CRAWLER,
+        MIMIC,
+        MASKED_MIMIC,
+        MINI_MOLDORM,
+        MOLDORM,
+        CUCCO,
+        GOPONGA_FLOWER,
+        GIANT_GOPONGA,
+        GOPONGA_PROJECTILE,
+        POKEY,
+        PIRANHA,
+        ZORA,
+        ZOMBIE,
+        BUZZ_BLOB,
+        SAND_CRAB,
+        DOG,
+        URCHIN,
+        WITCH_RAT,
+        WITCH,
+        ROOSTER,
+        WIZROBE,
+        WIZROBE_PROJECTILE,
+        POLS_VOICE,
+        SPIKED_BEETLE,
+        ARMOS_KNIGHT,
+        HINOX,
+        ROLLING_BONES,
+        THREE_OF_A_KIND,
+        MOBLIN_KING,
+        SECRET_SEASHELL,
+        DROPPABLE,
+        TARIN
+    }
+
+    private final java.util.EnumSet<Kind> preserved = java.util.EnumSet.noneOf(Kind.class);
 
     public boolean preserveGhiniPresentation() {
-        return preserveGhiniPresentation;
+        return preserved.contains(Kind.GHINI);
     }
 
     public boolean preserveGhiniPresentation(boolean value) {
-        return preserveGhiniPresentation = value;
+        return set(Kind.GHINI, value);
     }
 
     public boolean preserveMadBomberPresentation() {
-        return preserveMadBomberPresentation;
+        return preserved.contains(Kind.MAD_BOMBER);
     }
 
     public boolean preserveMadBomberPresentation(boolean value) {
-        return preserveMadBomberPresentation = value;
+        return set(Kind.MAD_BOMBER, value);
     }
 
     public boolean preserveBombitePresentation() {
-        return preserveBombitePresentation;
+        return preserved.contains(Kind.BOMBITE);
     }
 
     public boolean preserveBombitePresentation(boolean value) {
-        return preserveBombitePresentation = value;
+        return set(Kind.BOMBITE, value);
     }
 
     public boolean preserveIronMaskPresentation() {
-        return preserveIronMaskPresentation;
+        return preserved.contains(Kind.IRON_MASK);
     }
 
     public boolean preserveIronMaskPresentation(boolean value) {
-        return preserveIronMaskPresentation = value;
+        return set(Kind.IRON_MASK, value);
     }
 
     public boolean preserveSnakePresentation() {
-        return preserveSnakePresentation;
+        return preserved.contains(Kind.SNAKE);
     }
 
     public boolean preserveSnakePresentation(boolean value) {
-        return preserveSnakePresentation = value;
+        return set(Kind.SNAKE, value);
     }
 
     public boolean preserveStarPresentation() {
-        return preserveStarPresentation;
+        return preserved.contains(Kind.STAR);
     }
 
     public boolean preserveStarPresentation(boolean value) {
-        return preserveStarPresentation = value;
+        return set(Kind.STAR, value);
     }
 
     public boolean preserveBlooperPresentation() {
-        return preserveBlooperPresentation;
+        return preserved.contains(Kind.BLOOPER);
     }
 
     public boolean preserveBlooperPresentation(boolean value) {
-        return preserveBlooperPresentation = value;
+        return set(Kind.BLOOPER, value);
     }
 
     public boolean preserveWingedOctorokPresentation() {
-        return preserveWingedOctorokPresentation;
+        return preserved.contains(Kind.WINGED_OCTOROK);
     }
 
     public boolean preserveWingedOctorokPresentation(boolean value) {
-        return preserveWingedOctorokPresentation = value;
+        return set(Kind.WINGED_OCTOROK, value);
     }
 
     public boolean preservePincerPresentation() {
-        return preservePincerPresentation;
+        return preserved.contains(Kind.PINCER);
     }
 
     public boolean preservePincerPresentation(boolean value) {
-        return preservePincerPresentation = value;
+        return set(Kind.PINCER, value);
     }
 
     public boolean preserveBushCrawlerPresentation() {
-        return preserveBushCrawlerPresentation;
+        return preserved.contains(Kind.BUSH_CRAWLER);
     }
 
     public boolean preserveBushCrawlerPresentation(boolean value) {
-        return preserveBushCrawlerPresentation = value;
+        return set(Kind.BUSH_CRAWLER, value);
     }
 
     public boolean preserveMimicPresentation() {
-        return preserveMimicPresentation;
+        return preserved.contains(Kind.MIMIC);
     }
 
     public boolean preserveMimicPresentation(boolean value) {
-        return preserveMimicPresentation = value;
+        return set(Kind.MIMIC, value);
     }
 
     public boolean preserveMaskedMimicPresentation() {
-        return preserveMaskedMimicPresentation;
+        return preserved.contains(Kind.MASKED_MIMIC);
     }
 
     public boolean preserveMaskedMimicPresentation(boolean value) {
-        return preserveMaskedMimicPresentation = value;
+        return set(Kind.MASKED_MIMIC, value);
     }
 
     public boolean preserveMiniMoldormPresentation() {
-        return preserveMiniMoldormPresentation;
+        return preserved.contains(Kind.MINI_MOLDORM);
     }
 
     public boolean preserveMiniMoldormPresentation(boolean value) {
-        return preserveMiniMoldormPresentation = value;
+        return set(Kind.MINI_MOLDORM, value);
     }
 
     public boolean preserveMoldormPresentation() {
-        return preserveMoldormPresentation;
+        return preserved.contains(Kind.MOLDORM);
     }
 
     public boolean preserveMoldormPresentation(boolean value) {
-        return preserveMoldormPresentation = value;
+        return set(Kind.MOLDORM, value);
     }
 
     public boolean preserveCuccoPresentation() {
-        return preserveCuccoPresentation;
+        return preserved.contains(Kind.CUCCO);
     }
 
     public boolean preserveCuccoPresentation(boolean value) {
-        return preserveCuccoPresentation = value;
+        return set(Kind.CUCCO, value);
     }
 
     public boolean preserveGopongaFlowerPresentation() {
-        return preserveGopongaFlowerPresentation;
+        return preserved.contains(Kind.GOPONGA_FLOWER);
     }
 
     public boolean preserveGopongaFlowerPresentation(boolean value) {
-        return preserveGopongaFlowerPresentation = value;
+        return set(Kind.GOPONGA_FLOWER, value);
     }
 
     public boolean preserveGiantGopongaPresentation() {
-        return preserveGiantGopongaPresentation;
+        return preserved.contains(Kind.GIANT_GOPONGA);
     }
 
     public boolean preserveGiantGopongaPresentation(boolean value) {
-        return preserveGiantGopongaPresentation = value;
+        return set(Kind.GIANT_GOPONGA, value);
     }
 
     public boolean preserveGopongaProjectilePresentation() {
-        return preserveGopongaProjectilePresentation;
+        return preserved.contains(Kind.GOPONGA_PROJECTILE);
     }
 
     public boolean preserveGopongaProjectilePresentation(boolean value) {
-        return preserveGopongaProjectilePresentation = value;
+        return set(Kind.GOPONGA_PROJECTILE, value);
     }
 
     public boolean preservePokeyPresentation() {
-        return preservePokeyPresentation;
+        return preserved.contains(Kind.POKEY);
     }
 
     public boolean preservePokeyPresentation(boolean value) {
-        return preservePokeyPresentation = value;
+        return set(Kind.POKEY, value);
     }
 
     public boolean preservePiranhaPresentation() {
-        return preservePiranhaPresentation;
+        return preserved.contains(Kind.PIRANHA);
     }
 
     public boolean preservePiranhaPresentation(boolean value) {
-        return preservePiranhaPresentation = value;
+        return set(Kind.PIRANHA, value);
     }
 
     public boolean preserveZoraPresentation() {
-        return preserveZoraPresentation;
+        return preserved.contains(Kind.ZORA);
     }
 
     public boolean preserveZoraPresentation(boolean value) {
-        return preserveZoraPresentation = value;
+        return set(Kind.ZORA, value);
     }
 
     public boolean preserveZombiePresentation() {
-        return preserveZombiePresentation;
+        return preserved.contains(Kind.ZOMBIE);
     }
 
     public boolean preserveZombiePresentation(boolean value) {
-        return preserveZombiePresentation = value;
+        return set(Kind.ZOMBIE, value);
     }
 
     public boolean preserveBuzzBlobPresentation() {
-        return preserveBuzzBlobPresentation;
+        return preserved.contains(Kind.BUZZ_BLOB);
     }
 
     public boolean preserveBuzzBlobPresentation(boolean value) {
-        return preserveBuzzBlobPresentation = value;
+        return set(Kind.BUZZ_BLOB, value);
     }
 
     public boolean preserveSandCrabPresentation() {
-        return preserveSandCrabPresentation;
+        return preserved.contains(Kind.SAND_CRAB);
     }
 
     public boolean preserveSandCrabPresentation(boolean value) {
-        return preserveSandCrabPresentation = value;
+        return set(Kind.SAND_CRAB, value);
     }
 
     public boolean preserveDogPresentation() {
-        return preserveDogPresentation;
+        return preserved.contains(Kind.DOG);
     }
 
     public boolean preserveDogPresentation(boolean value) {
-        return preserveDogPresentation = value;
+        return set(Kind.DOG, value);
     }
 
     public boolean preserveUrchinPresentation() {
-        return preserveUrchinPresentation;
+        return preserved.contains(Kind.URCHIN);
     }
 
     public boolean preserveUrchinPresentation(boolean value) {
-        return preserveUrchinPresentation = value;
+        return set(Kind.URCHIN, value);
     }
 
     public boolean preserveWitchRatPresentation() {
-        return preserveWitchRatPresentation;
+        return preserved.contains(Kind.WITCH_RAT);
     }
 
     public boolean preserveWitchRatPresentation(boolean value) {
-        return preserveWitchRatPresentation = value;
+        return set(Kind.WITCH_RAT, value);
     }
 
     public boolean preserveWitchPresentation() {
-        return preserveWitchPresentation;
+        return preserved.contains(Kind.WITCH);
     }
 
     public boolean preserveWitchPresentation(boolean value) {
-        return preserveWitchPresentation = value;
+        return set(Kind.WITCH, value);
     }
 
     public boolean preserveRoosterPresentation() {
-        return preserveRoosterPresentation;
+        return preserved.contains(Kind.ROOSTER);
     }
 
     public boolean preserveRoosterPresentation(boolean value) {
-        return preserveRoosterPresentation = value;
+        return set(Kind.ROOSTER, value);
     }
 
     public boolean preserveWizrobePresentation() {
-        return preserveWizrobePresentation;
+        return preserved.contains(Kind.WIZROBE);
     }
 
     public boolean preserveWizrobePresentation(boolean value) {
-        return preserveWizrobePresentation = value;
+        return set(Kind.WIZROBE, value);
     }
 
     public boolean preserveWizrobeProjectilePresentation() {
-        return preserveWizrobeProjectilePresentation;
+        return preserved.contains(Kind.WIZROBE_PROJECTILE);
     }
 
     public boolean preserveWizrobeProjectilePresentation(boolean value) {
-        return preserveWizrobeProjectilePresentation = value;
+        return set(Kind.WIZROBE_PROJECTILE, value);
     }
 
     public boolean preservePolsVoicePresentation() {
-        return preservePolsVoicePresentation;
+        return preserved.contains(Kind.POLS_VOICE);
     }
 
     public boolean preservePolsVoicePresentation(boolean value) {
-        return preservePolsVoicePresentation = value;
+        return set(Kind.POLS_VOICE, value);
     }
 
     public boolean preserveSpikedBeetlePresentation() {
-        return preserveSpikedBeetlePresentation;
+        return preserved.contains(Kind.SPIKED_BEETLE);
     }
 
     public boolean preserveSpikedBeetlePresentation(boolean value) {
-        return preserveSpikedBeetlePresentation = value;
+        return set(Kind.SPIKED_BEETLE, value);
     }
 
     public boolean preserveArmosKnightPresentation() {
-        return preserveArmosKnightPresentation;
+        return preserved.contains(Kind.ARMOS_KNIGHT);
     }
 
     public boolean preserveArmosKnightPresentation(boolean value) {
-        return preserveArmosKnightPresentation = value;
+        return set(Kind.ARMOS_KNIGHT, value);
     }
 
     public boolean preserveHinoxPresentation() {
-        return preserveHinoxPresentation;
+        return preserved.contains(Kind.HINOX);
     }
 
     public boolean preserveHinoxPresentation(boolean value) {
-        return preserveHinoxPresentation = value;
+        return set(Kind.HINOX, value);
     }
 
     public boolean preserveRollingBonesPresentation() {
-        return preserveRollingBonesPresentation;
+        return preserved.contains(Kind.ROLLING_BONES);
     }
 
     public boolean preserveRollingBonesPresentation(boolean value) {
-        return preserveRollingBonesPresentation = value;
+        return set(Kind.ROLLING_BONES, value);
     }
 
     public boolean preserveThreeOfAKindPresentation() {
-        return preserveThreeOfAKindPresentation;
+        return preserved.contains(Kind.THREE_OF_A_KIND);
     }
 
     public boolean preserveThreeOfAKindPresentation(boolean value) {
-        return preserveThreeOfAKindPresentation = value;
+        return set(Kind.THREE_OF_A_KIND, value);
     }
 
     public boolean preserveMoblinKingPresentation() {
-        return preserveMoblinKingPresentation;
+        return preserved.contains(Kind.MOBLIN_KING);
     }
 
     public boolean preserveMoblinKingPresentation(boolean value) {
-        return preserveMoblinKingPresentation = value;
+        return set(Kind.MOBLIN_KING, value);
     }
 
     public boolean preserveSecretSeashellPresentation() {
-        return preserveSecretSeashellPresentation;
+        return preserved.contains(Kind.SECRET_SEASHELL);
     }
 
     public boolean preserveSecretSeashellPresentation(boolean value) {
-        return preserveSecretSeashellPresentation = value;
+        return set(Kind.SECRET_SEASHELL, value);
     }
 
     public boolean preserveDroppablePresentation() {
-        return preserveDroppablePresentation;
+        return preserved.contains(Kind.DROPPABLE);
     }
 
     public boolean preserveDroppablePresentation(boolean value) {
-        return preserveDroppablePresentation = value;
+        return set(Kind.DROPPABLE, value);
     }
 
     public boolean preserveTarinPresentation() {
-        return preserveTarinPresentation;
+        return preserved.contains(Kind.TARIN);
     }
 
     public boolean preserveTarinPresentation(boolean value) {
-        return preserveTarinPresentation = value;
+        return set(Kind.TARIN, value);
     }
 
     boolean preservesHandlerPresentation() {
-        return preserveGhiniPresentation()
-                || preserveMadBomberPresentation()
-                || preserveBombitePresentation()
-                || preserveIronMaskPresentation()
-                || preserveSnakePresentation()
-                || preserveStarPresentation()
-                || preserveBlooperPresentation()
-                || preserveWingedOctorokPresentation()
-                || preservePincerPresentation()
-                || preserveBushCrawlerPresentation()
-                || preserveMimicPresentation()
-                || preserveMaskedMimicPresentation()
-                || preserveMiniMoldormPresentation()
-                || preserveMoldormPresentation()
-                || preserveCuccoPresentation()
-                || preserveGopongaFlowerPresentation()
-                || preserveGiantGopongaPresentation()
-                || preserveGopongaProjectilePresentation()
-                || preservePokeyPresentation()
-                || preservePiranhaPresentation()
-                || preserveZoraPresentation()
-                || preserveZombiePresentation()
-                || preserveBuzzBlobPresentation()
-                || preserveSandCrabPresentation()
-                || preserveDogPresentation()
-                || preserveUrchinPresentation()
-                || preserveWitchRatPresentation()
-                || preserveWitchPresentation()
-                || preserveRoosterPresentation()
-                || preserveWizrobePresentation()
-                || preserveWizrobeProjectilePresentation()
-                || preservePolsVoicePresentation()
-                || preserveSpikedBeetlePresentation()
-                || preserveArmosKnightPresentation()
-                || preserveHinoxPresentation()
-                || preserveRollingBonesPresentation()
-                || preserveThreeOfAKindPresentation()
-                || preserveMoblinKingPresentation()
-                || preserveSecretSeashellPresentation()
-                || preserveDroppablePresentation()
-                || preserveTarinPresentation();
+        return !preserved.isEmpty();
+    }
+
+    private boolean set(Kind kind, boolean value) {
+        if (value) preserved.add(kind);
+        else preserved.remove(kind);
+        return value;
+    }
+
+    void reset() {
+        preserved.clear();
     }
 }

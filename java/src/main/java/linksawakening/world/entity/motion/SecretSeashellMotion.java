@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityObjectSample;
 
@@ -410,34 +411,24 @@ public final class SecretSeashellMotion {
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 entity.x(),
                 entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 z & 0xFF,
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

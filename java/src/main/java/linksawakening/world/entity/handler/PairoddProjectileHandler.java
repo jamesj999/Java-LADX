@@ -1,8 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_PAIRODD_PROJECTILE;
 
+import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
@@ -15,6 +18,8 @@ import linksawakening.world.entity.motion.*;
 /** ROM handler stages for PairoddProjectile. */
 final class PairoddProjectileHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(
+                ENTITY_PAIRODD_PROJECTILE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_PAIRODD_PROJECTILE,
                 EntityTickStage.PHASE_3_BEFORE_LASER,
@@ -83,5 +88,10 @@ final class PairoddProjectileHandler {
             }
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .initialize(entity.slot(), random);
     }
 }

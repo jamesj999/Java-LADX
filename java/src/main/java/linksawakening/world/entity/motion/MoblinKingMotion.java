@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -359,20 +360,8 @@ public final class MoblinKingMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y, int z) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z & 0xFF,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x & 0xFF, y & 0xFF, entity.spriteVariant(), entity.entityFlipAttribute(), z & 0xFF, -1, false);
     }
 
     static int signedByte(int value) {

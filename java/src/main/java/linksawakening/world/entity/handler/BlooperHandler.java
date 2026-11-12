@@ -1,8 +1,11 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BLOOPER;
 
 import java.util.Objects;
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -15,6 +18,7 @@ import linksawakening.world.entity.motion.BlooperMotion;
 /** ROM handler stages for Blooper. */
 final class BlooperHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_BLOOPER, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(ENTITY_BLOOPER, EntityTickStage.PHASE_3_BEFORE_LASER, 10, BlooperHandler::phase3Blooper);
     }
 
@@ -64,5 +68,9 @@ final class BlooperHandler {
             presentationFlags.preserveBlooperPresentation(true);
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(BlooperMotion.class, BlooperMotion::new).initialize(entity.slot());
     }
 }

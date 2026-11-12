@@ -3,6 +3,7 @@ package linksawakening.world.entity.motion;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /**
@@ -171,20 +172,8 @@ public final class FairyMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int z, int variant) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                z & 0xFF,
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, x & 0xFF, y & 0xFF, variant, entity.entityFlipAttribute(), z & 0xFF, -1, false);
     }
 
     private static int signedByte(int value) {

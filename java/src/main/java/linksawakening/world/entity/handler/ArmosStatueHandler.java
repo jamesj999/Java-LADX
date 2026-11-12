@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_STATUE;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
@@ -15,6 +18,7 @@ import linksawakening.world.entity.motion.ArmosMotion;
 /** ROM handler stages for ArmosStatue. */
 final class ArmosStatueHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_ARMOS_STATUE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_ARMOS_STATUE, EntityTickStage.PHASE_3_AFTER_LASER, 16, ArmosStatueHandler::phase3ArmosStatue);
     }
@@ -60,5 +64,9 @@ final class ArmosStatueHandler {
             }
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(ArmosMotion.class, ArmosMotion::new).initialize(entity.slot());
     }
 }

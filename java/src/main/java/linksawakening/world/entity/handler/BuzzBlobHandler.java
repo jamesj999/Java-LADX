@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUZZ_BLOB;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -13,6 +16,7 @@ import linksawakening.world.entity.motion.BuzzBlobMotion;
 /** ROM handler stages for BuzzBlob. */
 final class BuzzBlobHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_BUZZ_BLOB, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_BUZZ_BLOB, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 12, BuzzBlobHandler::phase4BuzzBlob);
     }
@@ -47,5 +51,9 @@ final class BuzzBlobHandler {
             presentationFlags.preserveBuzzBlobPresentation(true);
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(BuzzBlobMotion.class, BuzzBlobMotion::new).initialize(entity.slot());
     }
 }

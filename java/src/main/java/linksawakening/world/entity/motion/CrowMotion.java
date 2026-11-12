@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 CrowEntityHandler's proximity, flight, and bounds state machine. */
@@ -152,17 +153,12 @@ public final class CrowMotion {
             default -> throw new IllegalStateException("Invalid Crow state: " + state[slot]);
         }
 
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity,
                 x,
                 y,
-                entity.status(),
-                entity.spriteDefinition(),
                 variant,
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 z,
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());

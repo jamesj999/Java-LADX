@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
@@ -389,17 +390,12 @@ public final class TarinRaccoonMotion {
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity source, int x, int y, int variant) {
-        return new RoomEntity(
-                source.slot(),
-                source.sourceLoadOrder(),
-                source.type(),
+        return EntitySnapshots.withMotion(
+                source,
                 x,
                 y,
-                source.status(),
-                source.spriteDefinition(),
                 variant,
                 source.entityFlipAttribute(),
-                source.spriteTileOffset(),
                 source.z(),
                 source.deathSpriteVariant(),
                 source.powerRecoilDeath());
@@ -410,17 +406,12 @@ public final class TarinRaccoonMotion {
     }
 
     private static RoomEntity withZ(RoomEntity source, int z) {
-        return new RoomEntity(
-                source.slot(),
-                source.sourceLoadOrder(),
-                source.type(),
+        return EntitySnapshots.withMotion(
+                source,
                 source.x(),
                 source.y(),
-                source.status(),
-                source.spriteDefinition(),
                 source.spriteVariant(),
                 source.entityFlipAttribute(),
-                source.spriteTileOffset(),
                 z,
                 source.deathSpriteVariant(),
                 source.powerRecoilDeath());

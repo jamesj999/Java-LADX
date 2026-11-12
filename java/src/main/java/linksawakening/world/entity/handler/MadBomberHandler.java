@@ -1,10 +1,13 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.BOMBER_THROW_JINGLE_ID;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOMB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MAD_BOMBER;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -16,6 +19,7 @@ import linksawakening.world.entity.motion.MadBomberMotion;
 /** ROM handler stages for MadBomber. */
 final class MadBomberHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(ENTITY_MAD_BOMBER, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_MAD_BOMBER, EntityTickStage.PHASE_2_AFTER_LEEVER_CONTACT, 1, MadBomberHandler::phase2MadBomber);
     }
@@ -63,5 +67,9 @@ final class MadBomberHandler {
             }
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(MadBomberMotion.class, MadBomberMotion::new).initialize(entity.slot());
     }
 }

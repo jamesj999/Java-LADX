@@ -1,6 +1,7 @@
 package linksawakening.world.entity.motion;
 
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 GopongaProjectileEntityHandler movement, timers, and animation. */
@@ -116,54 +117,17 @@ public final class GopongaProjectileMotion {
     }
 
     private static RoomEntity withVariant(RoomEntity entity, int variant, int flipAttribute) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                entity.x(),
-                entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                flipAttribute,
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, entity.x(), entity.y(), variant, flipAttribute, entity.z(), -1, false);
     }
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant, int flipAttribute) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x,
-                y,
-                entity.status(),
-                entity.spriteDefinition(),
-                variant,
-                flipAttribute,
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(entity, x, y, variant, flipAttribute, entity.z(), -1, false);
     }
 
     private static RoomEntity withFlip(RoomEntity entity, int flipAttribute) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                entity.x(),
-                entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                flipAttribute,
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        return EntitySnapshots.withMotion(
+                entity, entity.x(), entity.y(), entity.spriteVariant(), flipAttribute, entity.z(), -1, false);
     }
 
     private int renderFlipAttribute(RoomEntity entity, int slot, int frameCounter) {

@@ -1,7 +1,10 @@
 package linksawakening.world.entity.handler;
 
+import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE;
 
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.*;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistration;
 import linksawakening.world.entity.EntityStatus;
@@ -11,6 +14,8 @@ import linksawakening.world.entity.motion.*;
 /** ROM handler stages for StalfosAggressive. */
 final class StalfosAggressiveHandler {
     static void install(EntityHandlerRegistration registry) {
+        registry.registerInitializer(
+                ENTITY_STALFOS_AGGRESSIVE, (entity, random) -> initialize(registry, entity, random));
         registry.registerTick(
                 ENTITY_STALFOS_AGGRESSIVE,
                 EntityTickStage.PHASE_3_AFTER_LASER,
@@ -33,5 +38,10 @@ final class StalfosAggressiveHandler {
                             frameInput.backgroundCollision()));
         }
         return true;
+    }
+
+    private static void initialize(EntityHandlerRegistration registry, RoomEntity entity, IntSupplier random) {
+        registry.motion(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
+                .initialize(entity.slot(), random);
     }
 }

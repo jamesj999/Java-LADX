@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Bank-$06 WizrobeEntityHandler state machine and launch timing. */
@@ -121,20 +122,8 @@ public final class WizrobeMotion {
         }
 
         currentSpriteVariant[slot] = normalizeVariant(nextVariant);
-        RoomEntity updated = new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
-                entity.x(),
-                entity.y(),
-                entity.status(),
-                entity.spriteDefinition(),
-                renderedVariant,
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+        RoomEntity updated = EntitySnapshots.withMotion(
+                entity, entity.x(), entity.y(), renderedVariant, entity.entityFlipAttribute(), entity.z(), -1, false);
         return new Update(updated, countdown, physicsFlags, projectileSpawn);
     }
 

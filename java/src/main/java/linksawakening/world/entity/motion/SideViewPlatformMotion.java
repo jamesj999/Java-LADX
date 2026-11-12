@@ -2,6 +2,7 @@ package linksawakening.world.entity.motion;
 
 import java.util.Objects;
 import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 
 /** Motion state for the side-view moving platform entity (bank $07). */
@@ -148,17 +149,12 @@ public final class SideViewPlatformMotion {
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {
-        return new RoomEntity(
-                entity.slot(),
-                entity.sourceLoadOrder(),
-                entity.type(),
+        return EntitySnapshots.withMotion(
+                entity,
                 x & 0xFF,
                 y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
                 entity.spriteVariant(),
                 entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
                 entity.z(),
                 entity.deathSpriteVariant(),
                 entity.powerRecoilDeath());
