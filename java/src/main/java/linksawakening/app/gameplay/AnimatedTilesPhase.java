@@ -1,8 +1,5 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
-
 final class AnimatedTilesPhase {
     void tick(GameplaySimulation context, boolean dialogBlocksGameplay) {
         // Advance the animated BG tiles (waterfalls, weather vanes, etc.).

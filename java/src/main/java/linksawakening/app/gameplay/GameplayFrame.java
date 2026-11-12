@@ -1,12 +1,23 @@
 package linksawakening.app.gameplay;
 
 import java.util.List;
+import linksawakening.app.screen.InputCompletion;
 
 /**
  * Ordered gameplay frame. Simulation includes its dialog/story gates; completion
  * still runs when a gate ends simulation early. Exceptions do not advance input.
  */
 public final class GameplayFrame {
+    /** Transition advancement performed before simulation. */
+    public interface Transitions {
+        void run();
+    }
+    /** Ordered simulation step. */
+    public interface Simulation {
+        void tick();
+    }
+
+    /** Observable order of the retained gameplay frame phases. */
     public enum Phase {
         TRANSITIONS,
         SIMULATION,
@@ -17,11 +28,11 @@ public final class GameplayFrame {
         return List.of(Phase.TRANSITIONS, Phase.SIMULATION, Phase.INPUT_COMPLETION);
     }
 
-    private final Runnable transitions;
-    private final Runnable simulation;
-    private final Runnable inputCompletion;
+    private final Transitions transitions;
+    private final Simulation simulation;
+    private final InputCompletion inputCompletion;
 
-    public GameplayFrame(Runnable transitions, Runnable simulation, Runnable inputCompletion) {
+    public GameplayFrame(Transitions transitions, Simulation simulation, InputCompletion inputCompletion) {
         this.transitions = transitions;
         this.simulation = simulation;
         this.inputCompletion = inputCompletion;
@@ -29,7 +40,7 @@ public final class GameplayFrame {
 
     public void tick() {
         transitions.run();
-        simulation.run();
-        inputCompletion.run();
+        simulation.tick();
+        inputCompletion.complete();
     }
 }

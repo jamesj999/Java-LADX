@@ -3,78 +3,56 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import linksawakening.app.SessionContext;
-import linksawakening.entity.Link;
-import linksawakening.equipment.EquipmentController;
+import linksawakening.app.GameplaySounds;
+import linksawakening.app.PlayerServices;
+import linksawakening.app.VisualServices;
+import linksawakening.app.WorldServices;
 import linksawakening.equipment.Sword;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.object.OverworldBushInteraction;
 import linksawakening.world.room.ActiveRoom;
-import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class BushInteraction {
-    private final SessionContext context;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final VisualServices visual;
+    private final GameplaySounds sounds;
 
-    public BushInteraction(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
-    }
-
-    public RoomSession roomSession() {
-        return context.roomSession();
-    }
-
-    public OverworldBushInteraction overworldBushInteraction() {
-        return context.overworldBushInteraction();
-    }
-
-    public Link link() {
-        return context.link();
-    }
-
-    public EquipmentController equipmentController() {
-        return context.equipmentController();
-    }
-
-    public GameplaySoundSink gameplaySoundSink() {
-        return context.gameplaySoundSink();
-    }
-
-    public TransientVfxSystem transientVfxSystem() {
-        return context.transientVfxSystem();
-    }
-
-    public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.droppableRupeeSystem();
+    public BushInteraction(WorldServices world, PlayerServices player, VisualServices visual, GameplaySounds sounds) {
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.visual = Objects.requireNonNull(visual);
+        this.sounds = Objects.requireNonNull(sounds);
     }
 
     private static final int OBJECT_GROUND_STAIRS = 0xC6;
 
     public void maybeCutBushWithSword() {
-        if (!roomSession().rooms().hasActiveRoom() || overworldBushInteraction() == null) {
+        if (!world.roomSession().rooms().hasActiveRoom()) {
             return;
         }
-        ActiveRoom room = roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoom();
 
-        Sword sword = equipmentController().activeSword();
+        Sword sword = player.equipmentController().activeSword();
         if (sword == null || !sword.staticCollisionActive()) {
             return;
         }
 
-        int location = overworldBushInteraction()
+        int location = world.overworldBushInteraction()
                 .swordHitRoomObjectLocationForCollisionIndex(
-                        true, sword.staticCollisionMapIndex(link().direction()), link().pixelX(), link().pixelY());
+                        true,
+                        sword.staticCollisionMapIndex(player.link().direction()),
+                        player.link().pixelX(),
+                        player.link().pixelY());
         if (location < 0) {
             return;
         }
 
-        if (roomSession().rooms().mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            if (roomSession().terrain().breakIndoorSwordCrystal(location)) {
-                link().clearRomAttackStepAnimationCountdown();
+        if (world.roomSession().rooms().mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            if (world.roomSession().terrain().breakIndoorSwordCrystal(location)) {
+                player.link().clearRomAttackStepAnimationCountdown();
             }
             return;
         }
@@ -85,7 +63,7 @@ public final class BushInteraction {
         }
         int originalObjectId = room.roomObjectsArea()[areaIndex];
 
-        OverworldBushInteraction.CutResult cutResult = overworldBushInteraction()
+        OverworldBushInteraction.CutResult cutResult = world.overworldBushInteraction()
                 .cutObjectAtLocation(
                         location,
                         room.roomId(),
@@ -99,22 +77,31 @@ public final class BushInteraction {
             return;
         }
 
-        gameplaySoundSink().play(cutResult.soundEvent());
+        applyCut(room, location, areaIndex, originalObjectId, cutResult);
+    }
+
+    private void applyCut(
+            ActiveRoom room,
+            int location,
+            int areaIndex,
+            int originalObjectId,
+            OverworldBushInteraction.CutResult cutResult) {
+        sounds.sink().play(cutResult.soundEvent());
 
         if (cutResult.bushLeavesVisible()) {
-            transientVfxSystem()
+            visual.transientVfxSystem()
                     .spawn(
                             TransientVfxType.BUSH_LEAVES,
-                            overworldBushInteraction().effectOriginXForLocation(location),
-                            overworldBushInteraction().effectOriginYForLocation(location));
+                            world.overworldBushInteraction().effectOriginXForLocation(location),
+                            world.overworldBushInteraction().effectOriginYForLocation(location));
         }
 
         {
-            droppableRupeeSystem()
+            visual.droppableRupeeSystem()
                     .maybeSpawnFromBush(
                             originalObjectId,
-                            overworldBushInteraction().effectOriginXForLocation(location),
-                            overworldBushInteraction().effectOriginYForLocation(location));
+                            world.overworldBushInteraction().effectOriginXForLocation(location),
+                            world.overworldBushInteraction().effectOriginYForLocation(location));
         }
 
         if (areaIndex >= 0

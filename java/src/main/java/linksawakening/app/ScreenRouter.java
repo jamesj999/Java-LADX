@@ -3,154 +3,66 @@ package linksawakening.app;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import linksawakening.app.screen.Screen;
+import linksawakening.app.screen.ScreenKind;
 import linksawakening.config.AppConfig;
-import linksawakening.cutscene.CutsceneManager;
 import linksawakening.cutscene.IntroCutsceneScript;
 import linksawakening.entity.Link;
-import linksawakening.gpu.GPU;
-import linksawakening.input.InputState;
-import linksawakening.rom.Rom;
-import linksawakening.save.SaveRamStore;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
-import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.StartupCoordinator;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
-import linksawakening.world.room.RoomSession;
 
+/** Loads screen presentations and starts configured, debug, or file-selected gameplay. */
 public final class ScreenRouter {
-    private final SessionContext context;
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final InputServices input;
+    private final SessionState state;
+    private final ScreenActions actions;
 
-    public ScreenRouter(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
-    }
-
-    public GPU gpu() {
-        return context.gpu();
-    }
-
-    public Rom romData() {
-        return context.romData();
-    }
-
-    public RoomSession roomSession() {
-        return context.roomSession();
+    public ScreenRouter(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            InputServices input,
+            SessionState state,
+            ScreenActions actions) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.input = Objects.requireNonNull(input);
+        this.state = Objects.requireNonNull(state);
+        this.actions = Objects.requireNonNull(actions);
     }
 
     public int ROOM_PIXEL_WIDTH() {
-        return context.roomPixelWidth();
+        return 160;
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.roomPixelHeight();
+        return 128;
     }
 
-    public InputState inputState() {
-        return context.inputState();
-    }
-
-    public PlayerState playerState() {
-        return context.playerState();
-    }
-
-    public BackgroundSceneLoader backgroundSceneLoader() {
-        return context.backgroundSceneLoader();
-    }
-
-    public MusicDirector musicDirector() {
-        return context.musicDirector();
-    }
-
-    public CutsceneManager cutsceneManager() {
-        return context.cutsceneManager();
-    }
-
-    public SaveRamStore saveRamStore() {
-        return context.saveRamStore();
-    }
-
-    public Link link() {
-        return context.link();
-    }
-
-    public Screen titleScreen() {
-        return context.titleScreen();
-    }
-
-    public Screen cutsceneScreen() {
-        return context.cutsceneScreen();
-    }
-
-    public Screen fileMenuScreen() {
-        return context.fileMenuScreen();
-    }
-
-    public Screen gameplayScreen() {
-        return context.gameplayScreen();
-    }
-
-    public AppConfig config() {
-        return context.config();
-    }
-
-    public Supplier<Screen> screen() {
-        return context.routerScreen();
-    }
-
-    public Consumer<Screen> showScreen() {
-        return context.showScreen();
-    }
-
-    public Consumer<BackgroundScene> background() {
-        return context.routerBackground();
-    }
-
-    public Consumer<FileMenuController> setFileMenu() {
-        return context.setFileMenu();
-    }
-
-    public Runnable clearSaveSlot() {
-        return context.clearSaveSlot();
-    }
-
-    public Runnable resetDebug() {
-        return context.resetDebug();
-    }
-
-    public Runnable startNewGame() {
-        return context.startNewGame();
-    }
-
-    public Runnable clearFileMenuController() {
-        return context.routerClearFileMenuController();
-    }
-
-    public Runnable clearFileSaveController() {
-        return context.routerClearFileSaveController();
-    }
-
-    public Runnable clearNewGameWakeUpMotion() {
-        return context.routerClearNewGameWakeUpMotion();
-    }
-
-    public Runnable clearNewGameTarinShieldMotion() {
-        return context.routerClearNewGameTarinShieldMotion();
+    private void setFileMenuController(FileMenuController controller) {
+        state.screens().fileMenuController = controller;
     }
 
     public void startIntroCutscene() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        showScreen().accept(cutsceneScreen());
-        musicDirector().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
-        gpu().loadIntroSequenceTiles(romData());
-        cutsceneManager().startIntro(romData().unsafeBytes(), this::loadIntroBackgroundScene);
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        actions.navigator().show(ScreenKind.CUTSCENE);
+        actions.music().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
+        rom.gpu().loadIntroSequenceTiles(rom.romData());
+        ui.cutsceneManager().startIntro(rom.romData().unsafeBytes(), this::loadIntroBackgroundScene);
     }
 
     public BackgroundScene loadIntroBackgroundScene(String sceneId) {
@@ -158,40 +70,39 @@ public final class ScreenRouter {
         if (spec == null) {
             throw new IllegalArgumentException("No intro background scene for " + sceneId);
         }
-        return backgroundSceneLoader().load(spec);
+        return rom.backgroundSceneLoader().load(spec);
     }
 
     public void startTitleScreenWithoutIntro() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        showScreen().accept(titleScreen());
-        musicDirector().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        actions.navigator().show(ScreenKind.TITLE);
+        actions.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     public void startFileSelection() {
-        showScreen().accept(fileMenuScreen());
-        clearFileSaveController().run();
-        gpu().loadMenuTiles(romData());
-        setFileMenu()
-                .accept(new FileMenuController(
-                        new FileMenuRomData(romData().unsafeBytes()),
-                        this::loadFileMenuBackgroundScene,
-                        saveRamStore().saveFilesMask(),
-                        saveRamStore().savedNames(),
-                        new int[] {
-                            saveRamStore().readSlot(0).maxHearts(),
-                            saveRamStore().readSlot(1).maxHearts(),
-                            saveRamStore().readSlot(2).maxHearts()
-                        },
-                        new int[] {
-                            saveRamStore().readSlot(0).deathCountBcd(),
-                            saveRamStore().readSlot(1).deathCountBcd(),
-                            saveRamStore().readSlot(2).deathCountBcd()
-                        }));
-        musicDirector().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
+        actions.navigator().show(ScreenKind.FILE_MENU);
+        state.screens().fileSaveController = null;
+        rom.gpu().loadMenuTiles(rom.romData());
+        setFileMenuController(new FileMenuController(
+                new FileMenuRomData(rom.romData().unsafeBytes()),
+                this::loadFileMenuBackgroundScene,
+                actions.saveState().saveRamStore.saveFilesMask(),
+                actions.saveState().saveRamStore.savedNames(),
+                new int[] {
+                    actions.saveState().saveRamStore.readSlot(0).maxHearts(),
+                    actions.saveState().saveRamStore.readSlot(1).maxHearts(),
+                    actions.saveState().saveRamStore.readSlot(2).maxHearts()
+                },
+                new int[] {
+                    actions.saveState().saveRamStore.readSlot(0).deathCountBcd(),
+                    actions.saveState().saveRamStore.readSlot(1).deathCountBcd(),
+                    actions.saveState().saveRamStore.readSlot(2).deathCountBcd()
+                }));
+        actions.music().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
-        inputState().tickEdges();
+        input.inputState().tickEdges();
     }
 
     public BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
@@ -199,77 +110,79 @@ public final class ScreenRouter {
         if (spec == null) {
             throw new IllegalArgumentException("No file-menu background scene for " + sceneId);
         }
-        return backgroundSceneLoader().load(spec);
+        return rom.backgroundSceneLoader().load(spec);
     }
 
     public void setCutsceneScene(String sceneId) {
         if (BackgroundSceneCatalog.requiresTitleTileset(sceneId)) {
-            gpu().loadTitleScreenTiles(romData());
+            rom.gpu().loadTitleScreenTiles(rom.romData());
         }
-        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId) && screen().get() == cutsceneScreen()) {
-            musicDirector().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
+        if (IntroCutsceneScript.SCENE_TITLE.equals(sceneId)
+                && actions.navigator().current() == actions.navigator().screen(ScreenKind.CUTSCENE)) {
+            actions.music().playDirectMusic(MusicDirector.naturalIntroTitleMusicTrack());
         }
         BackgroundSceneSpec spec = BackgroundSceneCatalog.forCutsceneScene(sceneId);
         if (spec != null) {
-            applyBackgroundScene(backgroundSceneLoader().load(spec));
+            applyBackgroundScene(rom.backgroundSceneLoader().load(spec));
         }
     }
 
     public void applyBackgroundScene(BackgroundScene scene) {
-        background().accept(scene);
+        state.scene().apply(scene);
     }
 
     public void startConfiguredGameplay() {
-        dispatchConfiguredGameplay(config(), () -> startNewGame().run(), this::startConfiguredLocationGameplay);
+        dispatchConfiguredGameplay(
+                state.options().config(), () -> actions.saves().startNewGame(), this::startConfiguredLocationGameplay);
     }
 
     public void startDebugGameplay() {
-        if (link() == null) {
-            return;
+        if (actions.navigator().current() == actions.navigator().screen(ScreenKind.CUTSCENE)) {
+            ui.cutsceneManager().skipIntroToTitle();
         }
-        if (screen().get() == cutsceneScreen()) {
-            cutsceneManager().skipIntroToTitle();
-        }
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        clearNewGameWakeUpMotion().run();
-        clearNewGameTarinShieldMotion().run();
-        clearSaveSlot().run();
-        link().resetTransientStateForDebug();
-        playerState().initializeDebugState();
-        roomSession().story().initializeNewGameWorldState();
-        roomSession().story().setBowWowState(0);
-        roomSession().story().setBirdKeyOwned(true);
-        roomSession().story().setTailKeyOwned(true);
-        showScreen().accept(gameplayScreen());
-        resetDebug().run();
-        link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData());
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        state.opening().wakeUp(null);
+        state.opening().shield(null);
+        state.screens().currentSaveSlot = -1;
+        player.link().resetTransientStateForDebug();
+        player.playerState().initializeDebugState();
+        world.roomSession().story().initializeNewGameWorldState();
+        world.roomSession().story().setBowWowState(0);
+        world.roomSession().story().setBirdKeyOwned(true);
+        world.roomSession().story().setTailKeyOwned(true);
+        actions.navigator().show(ScreenKind.GAMEPLAY);
+        state.debug().debugNoClip = false;
+        player.link().setDirection(Direction.DOWN.javaIndex());
+        rom.gpu().loadBaseTiles(rom.romData());
         loadOverworldScreen();
         DebugLog.log("Debug gameplay started (F3 toggles no-clip)");
     }
 
     public void startConfiguredLocationGameplay() {
-        clearFileMenuController().run();
-        clearFileSaveController().run();
-        clearSaveSlot().run();
-        clearNewGameWakeUpMotion().run();
-        clearNewGameTarinShieldMotion().run();
-        showScreen().accept(gameplayScreen());
-        applyConfiguredItemProfile(config(), playerState());
-        if (config().playIntroStory()) {
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        state.screens().currentSaveSlot = -1;
+        state.opening().wakeUp(null);
+        state.opening().shield(null);
+        actions.navigator().show(ScreenKind.GAMEPLAY);
+        applyConfiguredItemProfile(state.options().config(), player.playerState());
+        if (state.options().config().playIntroStory()) {
             System.err.println("Intro story startup is not implemented yet; spawning at start location");
         }
         loadOverworldScreen();
     }
 
     public void loadOverworldScreen() {
-        roomSession().rooms().loadInitialOverworld(StartupCoordinator.gameplayStartRoomId(config()));
+        world.roomSession()
+                .rooms()
+                .loadInitialOverworld(
+                        StartupCoordinator.gameplayStartRoomId(state.options().config()));
         // Center of Mabe Village Square has the statue (solid). Spawn Link two
         // tiles to the left of the room center so he lands on walkable ground.
         int startX = ROOM_PIXEL_WIDTH() / 2 - Link.SPRITE_SIZE / 2 - 32 + 10;
         int startY = ROOM_PIXEL_HEIGHT() / 2 - Link.SPRITE_SIZE / 2 - 10;
-        link().setRoomEntryPixelPosition(startX, startY);
+        player.link().setRoomEntryPixelPosition(startX, startY);
     }
 
     public static void applyConfiguredItemProfile(AppConfig config, PlayerState playerState) {

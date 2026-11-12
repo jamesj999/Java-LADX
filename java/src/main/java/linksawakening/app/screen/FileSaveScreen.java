@@ -1,49 +1,54 @@
 package linksawakening.app.screen;
 
-import static linksawakening.world.room.RoomConstants.*;
-
-import java.util.function.Supplier;
+import java.util.Objects;
+import linksawakening.app.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
 import linksawakening.ui.FileSaveAction;
-import linksawakening.ui.FileSaveController;
 
+/** Owns save-menu ticks and returns to the requested screen. */
 public final class FileSaveScreen implements Screen {
+    /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(
-            Supplier<FileSaveController> fileSaveController,
-            Supplier<InputState> inputState,
-            Supplier<InputConfig> inputConfig,
-            Runnable returnToGame,
-            Runnable saveCurrentPlayerState,
-            Runnable startFileSelection,
-            Runnable completeInput) {}
+            ScreenState screens,
+            InputState inputState,
+            InputConfig inputConfig,
+            SaveActions actions,
+            ScreenNavigator navigator,
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(completeInput);
+        }
+    }
 
     private final Dependencies dependencies;
 
     public FileSaveScreen(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies);
     }
 
     @Override
     public void tick() {
-        if (dependencies.fileSaveController().get() == null) {
+        if (dependencies.screens().fileSaveController == null) {
             throw new IllegalStateException("File save controller is not initialized");
         }
-        FileSaveAction action = dependencies
-                .fileSaveController()
-                .get()
-                .tick(
-                        dependencies.inputState().get(),
-                        dependencies.inputConfig().get());
+        FileSaveAction action =
+                dependencies.screens().fileSaveController.tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-            dependencies.returnToGame().run();
+            dependencies.screens().fileSaveController = null;
+            dependencies.navigator().show(ScreenKind.GAMEPLAY);
         } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
-            dependencies.saveCurrentPlayerState().run();
-            dependencies.startFileSelection().run();
+            dependencies.actions().saveCurrentPlayerState();
+            dependencies.navigator().startFileSelection();
         }
-        dependencies.completeInput().run();
+        dependencies.completeInput().complete();
         return;
     }
 
@@ -57,7 +62,7 @@ public final class FileSaveScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var controller = dependencies.fileSaveController().get();
+        var controller = dependencies.screens().fileSaveController;
         return state.withFileMenuFrame(controller == null ? null : controller.snapshot());
     }
 }

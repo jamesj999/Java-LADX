@@ -22,29 +22,13 @@ final class MainFileMenuFlowTest {
 
     @Test
     void titleEnterIsTheFileMenuBoundary() {
-        assertTrue(InputRouter.shouldEnterFileSelection(
-                new TitleScreen(new TitleScreen.Dependencies(() -> null, () -> null, () -> {})),
-                GLFW_KEY_ENTER,
-                GLFW_PRESS));
-        assertFalse(InputRouter.shouldEnterFileSelection(
-                new GameplayScreen(() -> {}, (key, action) -> {}), GLFW_KEY_ENTER, GLFW_PRESS));
+        assertTrue(InputRouter.shouldEnterFileSelection(ScreenTestFixtures.title(), GLFW_KEY_ENTER, GLFW_PRESS));
+        assertFalse(InputRouter.shouldEnterFileSelection(ScreenTestFixtures.gameplay(), GLFW_KEY_ENTER, GLFW_PRESS));
     }
 
     @Test
     void fileMenuHasItsOwnRenderScreenAndDisassemblyMusicTrack() {
-        assertEquals(
-                RenderScreen.FILE_MENU,
-                new FileMenuScreen(new FileMenuScreen.Dependencies(
-                                () -> null,
-                                () -> null,
-                                () -> null,
-                                () -> null,
-                                slot -> {},
-                                () -> {},
-                                saved -> {},
-                                mutation -> {},
-                                () -> {}))
-                        .renderScreen());
+        assertEquals(RenderScreen.FILE_MENU, ScreenTestFixtures.fileMenu().renderScreen());
         assertEquals(MusicTrackIds.MUSIC_FILE_SELECT, linksawakening.app.MusicDirector.fileSelectionMusicTrack());
     }
 

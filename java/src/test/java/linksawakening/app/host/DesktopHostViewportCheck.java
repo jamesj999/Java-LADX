@@ -12,9 +12,7 @@ public final class DesktopHostViewportCheck {
         DesktopHost host = new DesktopHost();
         host.open((key, action) -> {});
         try {
-            var field = DesktopHost.class.getDeclaredField("window");
-            field.setAccessible(true);
-            long window = field.getLong(host);
+            long window = host.windowHandle();
             byte[] pixels = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
             assertViewport(window, "initialized");
             host.present(pixels);

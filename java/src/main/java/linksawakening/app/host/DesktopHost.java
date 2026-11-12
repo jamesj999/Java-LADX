@@ -3,6 +3,8 @@ package linksawakening.app.host;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.function.BiConsumer;
+import linksawakening.audio.openal.OpenAlPcmSoundOutput;
+import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.input.KeyCodes;
 import linksawakening.render.OpenGlFramePresenter;
@@ -13,11 +15,17 @@ import org.lwjgl.system.MemoryStack;
 /** Owns native window, key callback and presentation resources. */
 public final class DesktopHost implements Host {
     @Override
-    public linksawakening.gameplay.PcmSoundOutput createPcmOutput() {
-        return new linksawakening.audio.openal.OpenAlPcmSoundOutput();
+    public PcmSoundOutput createPcmOutput() {
+        return new OpenAlPcmSoundOutput();
     }
 
     private long window;
+
+    /** Native handle for the package-local viewport check. */
+    long windowHandle() {
+        return window;
+    }
+
     private OpenGlFramePresenter framePresenter;
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;

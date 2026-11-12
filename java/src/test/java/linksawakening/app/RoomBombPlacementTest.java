@@ -20,16 +20,13 @@ class RoomBombPlacementTest {
                     calls.add(method.getName());
                     assertEquals(0, link.romAttackStepAnimationCountdown());
                     if (method.getName().equals("placeBomb")) {
-                        assertArrayEquals(new Object[] {48, 66, 0, 7}, args);
+                        assertArrayEquals(new Object[] {48, 66, 0, 1}, args);
                         return true;
                     }
                     if (method.getName().equals("lastBombPlacementPlayedBump")) return true;
                     throw new AssertionError(method);
                 });
-        var target = new RoomBombPlacement(link, items, d -> {
-            assertEquals(link.direction(), d);
-            return 7;
-        });
+        var target = new RoomBombPlacement(link, items);
         assertTrue(target.placeBomb());
         assertTrue(target.playBumpForLastPlacement());
         assertTrue(link.romAttackStepAnimationCountdown() > 0);
@@ -44,7 +41,7 @@ class RoomBombPlacementTest {
                     assertEquals("placeBomb", method.getName());
                     return false;
                 });
-        var target = new RoomBombPlacement(link, items, d -> d);
+        var target = new RoomBombPlacement(link, items);
         assertFalse(target.placeBomb());
         assertFalse(target.playBumpForLastPlacement());
         assertEquals(0, link.romAttackStepAnimationCountdown());

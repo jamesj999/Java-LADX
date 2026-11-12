@@ -1,11 +1,20 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
-
 import linksawakening.equipment.Sword;
-import linksawakening.state.PlayerState;
-import linksawakening.world.room.*;
+import linksawakening.state.PowerUp;
+import linksawakening.state.Tunic;
+import linksawakening.world.room.ButtonInputs;
+import linksawakening.world.room.EntityFrameInputs;
+import linksawakening.world.room.InventoryInputs;
+import linksawakening.world.room.LinkInputs;
+import linksawakening.world.room.LinkMotion;
+import linksawakening.world.room.LinkPosition;
+import linksawakening.world.room.PlayerHealth;
+import linksawakening.world.room.PlayerInputs;
+import linksawakening.world.room.PlayerLevels;
+import linksawakening.world.room.ProgressInputs;
+import linksawakening.world.room.SwordBox;
+import linksawakening.world.room.UiInputs;
 
 final class EntityFrameInputsFactory {
     static EntityFrameInputs create(GameplaySimulation c, Sword.CollisionBox b) {
@@ -50,14 +59,11 @@ final class EntityFrameInputsFactory {
                 new InventoryInputs(
                         p.itemA(),
                         p.itemB(),
-                        p.tunicType() == PlayerState.TUNIC_RED,
-                        p.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER),
+                        p.tunicType() == Tunic.RED.romValue(),
+                        p.activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
                 new PlayerLevels(p.shieldLevel(), p.swordLevel(), p.powerBraceletLevel()),
                 new PlayerHealth(
-                        p.maxHearts(),
-                        p.health(),
-                        p.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE,
-                        p.isOnLowHealth()));
+                        p.maxHearts(), p.health(), p.activePowerUp() != PowerUp.NONE.romValue(), p.isOnLowHealth()));
     }
 
     private static UiInputs buildUiInputs(GameplaySimulation c) {

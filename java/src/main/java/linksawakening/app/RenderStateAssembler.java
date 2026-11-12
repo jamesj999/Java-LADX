@@ -1,156 +1,84 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
 import linksawakening.app.screen.Screen;
-import linksawakening.cutscene.CutsceneManager;
-import linksawakening.dialog.DialogController;
-import linksawakening.entity.Link;
-import linksawakening.gpu.GPU;
 import linksawakening.render.GameFrameSceneBuilder;
 import linksawakening.render.GameFrameState;
 import linksawakening.render.RenderScreen;
-import linksawakening.ui.InventoryController;
-import linksawakening.ui.InventoryMenu;
-import linksawakening.vfx.CutLeavesEffectRenderer;
-import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.RoomSession;
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
+/** Assembles current scene and gameplay state for the shared renderer. */
 public final class RenderStateAssembler {
-    private final SessionContext context;
+    private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
+    private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final VisualServices visual;
+    private final SessionState state;
 
-    public RenderStateAssembler(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
-    }
-
-    public GPU gpu() {
-        return context.gpu();
-    }
-
-    public GameFrameSceneBuilder frameSceneBuilder() {
-        return context.frameSceneBuilder();
-    }
-
-    public int[] currentTilemap() {
-        return context.currentTilemap();
-    }
-
-    public int[] currentAttrmap() {
-        return context.currentAttrmap();
-    }
-
-    public int[][] bgPalettes() {
-        return context.bgPalettes();
-    }
-
-    public int[][] objPalettes() {
-        return context.objPalettes();
-    }
-
-    public byte[] indexedDisplayBuffer() {
-        return context.indexedDisplayBuffer();
-    }
-
-    public RoomSession roomSession() {
-        return context.roomSession();
-    }
-
-    public TransitionController transitionController() {
-        return context.transitionController();
-    }
-
-    public int frameCounter() {
-        return context.frameCounter();
-    }
-
-    public ScrollController scrollController() {
-        return context.scrollController();
-    }
-
-    public int[] GREEN_OBJECTS_SPRITE_PALETTE() {
-        return context.greenObjectsSpritePalette();
-    }
-
-    public InventoryMenu inventoryMenu() {
-        return context.inventoryMenu();
-    }
-
-    public InventoryController inventoryController() {
-        return context.inventoryController();
-    }
-
-    public DialogController dialogController() {
-        return context.dialogController();
-    }
-
-    public CutsceneManager cutsceneManager() {
-        return context.cutsceneManager();
-    }
-
-    public TransientVfxSystem transientVfxSystem() {
-        return context.transientVfxSystem();
-    }
-
-    public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.droppableRupeeSystem();
-    }
-
-    public CutLeavesEffectRenderer cutLeavesEffectRenderer() {
-        return context.cutLeavesEffectRenderer();
-    }
-
-    public Link link() {
-        return context.link();
-    }
-
-    public Screen currentScreen() {
-        return context.currentScreen();
+    public RenderStateAssembler(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            VisualServices visual,
+            SessionState state) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.visual = Objects.requireNonNull(visual);
+        this.state = Objects.requireNonNull(state);
     }
 
     public void composeFrameBuffer() {
-        if (inventoryMenu() != null && roomSession().rooms().activeRoom() != null) {
-            inventoryMenu()
+        if (world.roomSession().rooms().activeRoom() != null) {
+            ui.inventoryMenu()
                     .setWorldContext(
-                            roomSession().rooms().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
-                            roomSession().rooms().activeRoom().mapId(),
-                            roomSession().dungeon().dungeonProgressFlagsSnapshot());
-            inventoryMenu()
+                            world.roomSession().rooms().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
+                            world.roomSession().rooms().activeRoom().mapId(),
+                            world.roomSession().dungeon().dungeonProgressFlagsSnapshot());
+            ui.inventoryMenu()
                     .setDungeonContext(
-                            roomSession().dungeon().currentDungeonItemFlagsSnapshot(),
-                            roomSession().dungeon().dungeonMinimapRoomStatusSnapshot(),
-                            roomSession().rooms().indoorRoomPositionForSave(),
-                            frameCounter());
+                            world.roomSession().dungeon().currentDungeonItemFlagsSnapshot(),
+                            world.roomSession().dungeon().dungeonMinimapRoomStatusSnapshot(),
+                            world.roomSession().rooms().indoorRoomPositionForSave(),
+                            state.clock().value());
         }
-        frameSceneBuilder().build(currentGameFrameState()).drawTo(indexedDisplayBuffer(), gpu());
+        frameSceneBuilder.build(currentGameFrameState()).drawTo(visual.indexedDisplayBuffer(), rom.gpu());
     }
 
     public GameFrameState currentGameFrameState() {
-        return currentScreen()
+        return state.screens()
+                .currentScreen
                 .renderState(GameFrameState.empty()
                         .withScreen(currentRenderScreen())
-                        .withBackground(currentTilemap(), currentAttrmap(), bgPalettes(), objPalettes())
-                        .withCutsceneManager(cutsceneManager())
-                        .withIntroFrameSnapshot(
-                                cutsceneManager() == null
-                                        ? null
-                                        : cutsceneManager().frameSnapshot())
-                        .withRoom(roomSession().rooms().renderSnapshot(), scrollController(), transitionController())
-                        .withLink(link())
+                        .withBackground(
+                                state.scene().currentTilemap,
+                                state.scene().currentAttrmap,
+                                state.scene().bgPalettes,
+                                state.scene().objPalettes)
+                        .withCutsceneManager(ui.cutsceneManager())
+                        .withIntroFrameSnapshot(ui.cutsceneManager().frameSnapshot())
+                        .withRoom(
+                                world.roomSession().rooms().renderSnapshot(),
+                                world.scrollController(),
+                                world.transitionController())
+                        .withLink(player.link())
                         .withTransientVfx(
-                                transientVfxSystem(), cutLeavesEffectRenderer(), GREEN_OBJECTS_SPRITE_PALETTE())
-                        .withDroppableRupees(droppableRupeeSystem())
-                        .withInventoryController(inventoryController())
-                        .withDialogController(dialogController())
-                        .withFrameCounter(frameCounter()));
+                                visual.transientVfxSystem(),
+                                visual.cutLeavesEffectRenderer(),
+                                greenObjectsSpritePalette)
+                        .withDroppableRupees(visual.droppableRupeeSystem())
+                        .withInventoryController(ui.inventoryController())
+                        .withDialogController(ui.dialogController())
+                        .withFrameCounter(state.clock().value()));
     }
 
     public RenderScreen currentRenderScreen() {
-        return renderScreenFor(currentScreen());
+        return renderScreenFor(state.screens().currentScreen);
     }
 
     public RenderScreen renderScreenFor(Screen screen) {

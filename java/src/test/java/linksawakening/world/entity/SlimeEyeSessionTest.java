@@ -28,8 +28,8 @@ final class SlimeEyeSessionTest {
         try {
             game.initializeHeadlessNewGame();
             // Disclosed setup: bypass the opening bed sequence, grant sword/boots, load D3 directly.
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
             var diagnostics = game.diagnostics();
             var room = diagnostics.roomSession();
             var link = diagnostics.link();
@@ -42,8 +42,9 @@ final class SlimeEyeSessionTest {
             room.rooms().loadIndoor(2, 0x5A);
             link.setRoomEntryRomPosition(80, 96);
             link.setDirection(Direction.UP.javaIndex());
-            GameplaySoundSink original = (GameplaySoundSink) get(game, "gameplaySoundSink");
-            set(game, "gameplaySoundSink", (GameplaySoundSink) sound -> {
+            GameplaySoundSink original =
+                    (GameplaySoundSink) game.gameplaySounds().sink();
+            game.gameplaySounds().replace((GameplaySoundSink) sound -> {
                 sounds.add(sound);
                 original.play(sound);
             });
@@ -104,9 +105,7 @@ final class SlimeEyeSessionTest {
                     "Production GameSession with headless PCM; opening wake/shield skipped; sword/boots granted; max HP14; direct map02 room5A load; Link start80,96 facing up; scroll shake6 injected after180 frames; assisted fixture repositions Link below target each frame for body and halves, while actual sword input drives collision; no boss state or OAM writes.\nSounds="
                             + sounds + "\nPCM shorts=" + pcmSamples[0] + "\n");
         } finally {
-            var close = GameSession.class.getDeclaredMethod("cleanup");
-            close.setAccessible(true);
-            close.invoke(game);
+            game.close();
         }
     }
 

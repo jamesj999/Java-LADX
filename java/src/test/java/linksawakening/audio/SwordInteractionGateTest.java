@@ -18,8 +18,8 @@ class SwordInteractionGateTest {
         var game = new GameSession(rng);
         try {
             game.initializeHeadlessNewGame();
-            set(game, "newGameWakeUpMotion", null);
-            set(game, "newGameTarinShieldMotion", null);
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
             var d = game.diagnostics();
             var player = d.playerState();
             var link = d.link();
@@ -61,9 +61,7 @@ class SwordInteractionGateTest {
             assertEquals(2, draws[0]);
             assertEquals(Sword.STATE_DRAW, sword.state(), "Raw 3 must not use the exact-2 item gate");
         } finally {
-            var cleanup = GameSession.class.getDeclaredMethod("cleanup");
-            cleanup.setAccessible(true);
-            cleanup.invoke(game);
+            game.close();
         }
     }
 

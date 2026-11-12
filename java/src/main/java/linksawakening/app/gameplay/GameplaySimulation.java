@@ -3,12 +3,14 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntConsumer;
-import java.util.function.IntUnaryOperator;
-import java.util.function.Supplier;
+import linksawakening.app.InputServices;
 import linksawakening.app.MusicDirector;
-import linksawakening.app.SessionContext;
+import linksawakening.app.PlayerServices;
+import linksawakening.app.RomServices;
+import linksawakening.app.SessionState;
+import linksawakening.app.UiServices;
+import linksawakening.app.VisualServices;
+import linksawakening.app.WorldServices;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
@@ -19,10 +21,10 @@ import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
@@ -34,13 +36,26 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 /** ROM-ordered simulation between transition advancement and input completion. */
-public final class GameplaySimulation {
+public final class GameplaySimulation implements GameplayFrame.Simulation {
     private final AnimatedTilesPhase animatedTilesPhase = new AnimatedTilesPhase();
-    private final EntityPhase entityPhase = new EntityPhase();
+    private final EntityPhase entityPhase;
+    private final GameplayCombatEvents combatEvents;
+
+    GameplayCombatEvents combatEvents() {
+        return combatEvents;
+    }
+
     private final CombatPhase combatPhase = new CombatPhase();
     private final LinkEquipmentPhase linkEquipmentPhase = new LinkEquipmentPhase();
     private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
-    private final SessionContext context;
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final InputServices input;
+    private final VisualServices visual;
+    private final SessionState state;
+    private final GameplayControl control;
 
     private final SimulationStages stages = new SimulationStages() {
         public boolean dialogStory() {
@@ -48,7 +63,7 @@ public final class GameplaySimulation {
         }
 
         public boolean dialogBlocks() {
-            return dialogBlockers().get().pausesGameplay();
+            return dialogBlockers().current().pausesGameplay();
         }
 
         public void linkEquipment(boolean blocked, boolean inventory) {
@@ -76,148 +91,162 @@ public final class GameplaySimulation {
         }
     };
 
-    public GameplaySimulation(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public GameplaySimulation(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            InputServices input,
+            VisualServices visual,
+            SessionState state,
+            GameplayControl control) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.input = Objects.requireNonNull(input);
+        this.visual = Objects.requireNonNull(visual);
+        this.state = Objects.requireNonNull(state);
+        this.control = Objects.requireNonNull(control);
+        combatEvents = new GameplayCombatEvents(
+                world.roomSession(), player.link(), state.sounds(), visual.transientVfxSystem(), control.music());
+        entityPhase = new EntityPhase(combatEvents, EntityDialogRouting.DIRECT);
     }
 
     public PassOutController passOutController() {
-        return context.passOutController();
+        return control.passOut();
     }
 
-    public IntConsumer gameOverOutcome() {
-        return context.gameOverOutcome();
+    public GameOverActions gameOverOutcome() {
+        return control.gameOver();
     }
 
     public GPU gpu() {
-        return context.gpu();
+        return rom.gpu();
     }
 
-    public linksawakening.rom.Rom romData() {
-        return context.romData();
+    public Rom romData() {
+        return rom.romData();
     }
 
     public RoomSession roomSession() {
-        return context.roomSession();
+        return world.roomSession();
     }
 
     public TransitionController transitionController() {
-        return context.transitionController();
+        return world.transitionController();
     }
 
     public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return context.roomTransitionCoordinator();
+        return world.roomTransitionCoordinator();
     }
 
     public boolean debugNoClip() {
-        return context.debugNoClip();
+        return state.debug().debugNoClip;
     }
 
     public int frameCounter() {
-        return context.frameCounter();
+        return state.clock().value();
     }
 
     public int ROOM_PIXEL_HEIGHT() {
-        return context.roomPixelHeight();
+        return 128;
     }
 
     public ScrollController scrollController() {
-        return context.scrollController();
+        return world.scrollController();
     }
 
     public InputConfig inputConfig() {
-        return context.inputConfig();
+        return input.inputConfig();
     }
 
     public InputState inputState() {
-        return context.inputState();
+        return input.inputState();
     }
 
     public PlayerState playerState() {
-        return context.playerState();
+        return player.playerState();
     }
 
     public InventoryMenu inventoryMenu() {
-        return context.inventoryMenu();
+        return ui.inventoryMenu();
     }
 
     public InventoryController inventoryController() {
-        return context.inventoryController();
+        return ui.inventoryController();
     }
 
     public DialogController dialogController() {
-        return context.dialogController();
+        return ui.dialogController();
     }
 
     public DialogTextLoader dialogTextLoader() {
-        return context.dialogTextLoader();
+        return ui.dialogTextLoader();
     }
 
     public GameplaySoundSink gameplaySoundSink() {
-        return context.gameplaySoundSink();
+        return state.sounds().sink();
     }
 
     public FrameMusicPlayer musicPlayer() {
-        return context.musicPlayer();
+        return control.audio().musicPlayer();
     }
 
     public GameplayMusicController gameplayMusicController() {
-        return context.gameplayMusicController();
+        return control.audio().gameplayMusicController();
     }
 
     public MusicDirector musicDirector() {
-        return context.musicDirector();
+        return control.music();
     }
 
     public TransientVfxSystem transientVfxSystem() {
-        return context.transientVfxSystem();
+        return visual.transientVfxSystem();
     }
 
     public DroppableRupeeSystem droppableRupeeSystem() {
-        return context.droppableRupeeSystem();
+        return visual.droppableRupeeSystem();
     }
 
     public ItemRegistry itemRegistry() {
-        return context.itemRegistry();
+        return player.itemRegistry();
     }
 
     public EquipmentController equipmentController() {
-        return context.equipmentController();
+        return player.equipmentController();
     }
 
     public Link link() {
-        return context.link();
+        return player.link();
     }
 
     public OpeningStory story() {
-        return context.story();
+        return control.interactions().story();
     }
 
     public LiftInteraction lift() {
-        return context.lift();
+        return control.interactions().lift();
     }
 
     public BushInteraction bush() {
-        return context.bush();
+        return control.interactions().bush();
     }
 
     public DialogInteractions dialogInteractions() {
-        return context.dialogInteractions();
+        return control.interactions().dialogs();
     }
 
-    public Supplier<OverworldDialogBlockers> dialogBlockers() {
-        return context.dialogBlockers();
+    public DialogBlockers dialogBlockers() {
+        return control.blockers();
     }
 
-    public BooleanSupplier debugScroll() {
-        return context.simulationDebugScroll();
+    public DebugScroll debugScroll() {
+        return control.debugScroll();
     }
 
-    public IntUnaryOperator direction() {
-        return context.direction();
-    }
-
-    public Runnable dialogSounds() {
-        return context.dialogSounds();
+    public DialogSoundRouting dialogSounds() {
+        return control.dialogSounds();
     }
 
     /** The simulation's strict per-frame order, including opening-story gates. */

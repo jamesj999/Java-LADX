@@ -37,7 +37,7 @@ class AppBoundaryTest {
                     || type.name().startsWith("linksawakening/app/gameplay/");
             for (var ref : type.references()) {
                 if (isolated) assertFalse(ref.startsWith("org/lwjgl/"), type.name() + " -> " + ref);
-                if (type.name().startsWith("linksawakening/app/SessionBootstrap"))
+                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/SessionAssembly"))
                     assertFalse(ref.startsWith("linksawakening/audio/openal/"), type.name() + " -> " + ref);
             }
         }
@@ -50,5 +50,35 @@ class AppBoundaryTest {
                 .toList();
         assertEquals(1, methods.size());
         assertEquals(4, methods.getFirst().getParameterCount());
+    }
+
+    @Test
+    void domainCollaboratorsCannotCallBackIntoSessionComposition() throws Exception {
+        var direct = List.of("InputRouter", "ScreenRouter", "SaveCoordinator", "RenderStateAssembler");
+        for (var type : ClassFileReferences.classes()) {
+            boolean domain = type.name().startsWith("linksawakening/app/gameplay/")
+                    || type.name().startsWith("linksawakening/app/story/")
+                    || type.name().startsWith("linksawakening/gameplay/")
+                    || direct.stream().anyMatch(n -> type.name().equals("linksawakening/app/" + n));
+            if (domain) {
+                assertFalse(type.references().contains("linksawakening/app/GameSession"), type.name());
+                assertFalse(type.references().contains("linksawakening/app/SessionContext"), type.name());
+            }
+        }
+    }
+
+    @Test
+    void applicationSignaturesRemainSmall() throws Exception {
+        for (var compiled : ClassFileReferences.classes()) {
+            if (!compiled.name().startsWith("linksawakening/app/")
+                    && !compiled.name().startsWith("linksawakening/gameplay/")) continue;
+            var type = Class.forName(
+                    compiled.name().replace('/', '.'), false, getClass().getClassLoader());
+            for (var constructor : type.getDeclaredConstructors())
+                if (!constructor.isSynthetic())
+                    assertTrue(constructor.getParameterCount() <= 8, constructor.toString());
+            for (var method : type.getDeclaredMethods())
+                if (!method.isSynthetic()) assertTrue(method.getParameterCount() <= 8, method.toString());
+        }
     }
 }

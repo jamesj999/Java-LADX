@@ -1,7 +1,9 @@
 package linksawakening.gameplay;
 
-import linksawakening.rom.*;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 /** Signpost dialog table behavior and state. */
 public final class SignpostDialogTable {
@@ -21,17 +23,17 @@ public final class SignpostDialogTable {
         this.dialogLowIds = dialogLowIds.clone();
     }
 
-    public static SignpostDialogTable loadFromRom(byte[] romData) {
+    public static SignpostDialogTable loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");
         }
         int offset = RomBank.romOffset(SIGNPOST_DIALOG_TABLE_BANK, SIGNPOST_DIALOG_TABLE_ADDR);
-        if (offset < 0 || offset + ROOM_COUNT > romData.length) {
+        if (offset < 0 || offset + ROOM_COUNT > romData.size()) {
             throw new IllegalArgumentException("ROM data does not contain SignpostDialogTable");
         }
         int[] dialogLowIds = new int[ROOM_COUNT];
         for (int i = 0; i < ROOM_COUNT; i++) {
-            dialogLowIds[i] = new Rom(romData).u8(RomAddress.fromOffset(offset + i));
+            dialogLowIds[i] = romData.u8(RomAddress.fromOffset(offset + i));
         }
         return new SignpostDialogTable(dialogLowIds);
     }

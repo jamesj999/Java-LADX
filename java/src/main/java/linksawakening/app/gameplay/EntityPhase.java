@@ -1,48 +1,29 @@
 package linksawakening.app.gameplay;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
 
+import java.util.List;
+import java.util.Objects;
 import linksawakening.equipment.Sword;
-import linksawakening.gameplay.EnemyCombatEventConsumer;
 import linksawakening.gameplay.EnemyProjectileEventConsumer;
-import linksawakening.state.PlayerState;
+import linksawakening.state.InventoryItem;
 import linksawakening.world.entity.event.EntityProjectileEvent;
-import linksawakening.world.room.*;
+import linksawakening.world.entity.event.LikeLikeEvent;
+import linksawakening.world.entity.event.ScreenShakeRequest;
 
 final class EntityPhase {
     private final EntityRewardApplier rewards = new EntityRewardApplier();
-    private boolean collaboratorsVerified;
-    private GameplaySimulation combatContext;
-    private RoomEntityState hurtState;
-    private final RoomFrameDrain<linksawakening.world.entity.event.EntityCombatEvent> combatEvents = events -> {
-        var c = combatContext;
-        var entityCombatEvents = events;
-        EnemyCombatEventConsumer.consume(entityCombatEvents, c.gameplaySoundSink(), c.transientVfxSystem());
-        for (int eventIndex = 0; eventIndex < entityCombatEvents.size(); eventIndex++) {
-            linksawakening.world.entity.event.EntityCombatEvent event = entityCombatEvents.get(eventIndex);
-
-            if (event.linkDamage() == 0 && event.linkCollisionResponse().active()) {
-                c.link().apply(LinkCommandAdapter.from(event));
-            }
-        }
-    };
-    private final Runnable onContactHurt = () -> hurtState.resetGuardianAcornCounterOnHurt();
-    private final Runnable onPowerUpEnded =
-            () -> combatContext.musicDirector().restoreMusicAfterPowerUpEnds(combatContext.roomSession());
+    private final GameplayCombatEvents combatEvents;
     private final LinkWriteApplier linkWrites = new LinkWriteApplier();
     private final EntityDialogRouting routing;
 
-    EntityPhase() {
-        this(EntityDialogRouting.DIRECT);
-    }
-
-    EntityPhase(EntityDialogRouting routing) {
-        this.routing = routing;
+    EntityPhase(GameplayCombatEvents combatEvents, EntityDialogRouting routing) {
+        this.combatEvents = Objects.requireNonNull(combatEvents);
+        this.routing = Objects.requireNonNull(routing);
     }
 
     private final EntityFrameStages stages = new EntityFrameStages() {
-        public java.util.List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
+        public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
             return c.roomSession().tickEntities(EntityFrameInputsFactory.create(c, b));
         }
 
@@ -62,7 +43,7 @@ final class EntityPhase {
             LinkWriteApplier.applySwordWrites(c);
         }
 
-        public void combat(GameplaySimulation c, java.util.List<EntityProjectileEvent> events) {
+        public void combat(GameplaySimulation c, List<EntityProjectileEvent> events) {
             applyCombat(c, events);
         }
 
@@ -82,7 +63,7 @@ final class EntityPhase {
             routeDialogs(c);
         }
 
-        public void projectiles(GameplaySimulation c, java.util.List<EntityProjectileEvent> events) {
+        public void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events) {
             LinkWriteApplier.applyProjectileResponses(c, events);
         }
 
@@ -92,10 +73,6 @@ final class EntityPhase {
     };
 
     void tick(GameplaySimulation c, Sword.CollisionBox b) {
-        if (!collaboratorsVerified) {
-            assert requiredCollaboratorsPresent(c);
-            collaboratorsVerified = true;
-        }
         // The original calls AnimateEntities after Link movement and
         // room-transition application. Give handlers the same current
         // position and active-room snapshot.
@@ -109,17 +86,15 @@ final class EntityPhase {
         }
     }
 
-    private void applyCombat(GameplaySimulation c, java.util.List<EntityProjectileEvent> projectileEvents) {
+    private void applyCombat(GameplaySimulation c, List<EntityProjectileEvent> projectileEvents) {
         var results = c.roomSession().entityFrameResults();
         var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
         for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
-            linksawakening.world.entity.event.ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
+            ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
             c.scrollController().startScreenShake(request.countdown(), request.phase());
         }
-        hurtState = c.roomSession().entityState();
-        combatContext = c;
         EnemyProjectileEventConsumer.consume(
-                projectileEvents, c.playerState(), c.link(), c.gameplaySoundSink(), onContactHurt, onPowerUpEnded);
+                projectileEvents, c.playerState(), c.link(), c.gameplaySoundSink(), combatEvents);
         results.presentation().drainEntityEvents(combatEvents);
     }
 
@@ -145,13 +120,13 @@ final class EntityPhase {
         }
         var likeLikeEvents = results.presentation().consumeLikeLikeEvents();
         for (int eventIndex = 0; eventIndex < likeLikeEvents.size(); eventIndex++) {
-            linksawakening.world.entity.event.LikeLikeEvent event = likeLikeEvents.get(eventIndex);
+            LikeLikeEvent event = likeLikeEvents.get(eventIndex);
 
-            if (event.kind() == linksawakening.world.entity.event.LikeLikeEvent.Kind.CAPTURE) {
+            if (event.kind() == LikeLikeEvent.Kind.CAPTURE) {
                 if (event.stolenInventorySlot() == 0) {
-                    c.playerState().setItemB(PlayerState.INVENTORY_EMPTY);
+                    c.playerState().setItemB(InventoryItem.EMPTY.romValue());
                 } else if (event.stolenInventorySlot() == 1) {
-                    c.playerState().setItemA(PlayerState.INVENTORY_EMPTY);
+                    c.playerState().setItemA(InventoryItem.EMPTY.romValue());
                 }
                 c.link().apply(LinkCommandAdapter.from(event));
             } else c.link().apply(LinkCommandAdapter.from(event));
@@ -159,28 +134,5 @@ final class EntityPhase {
         routing.dialogs(c);
         routing.manbo(c);
         routing.instrument(c);
-    }
-
-    private boolean requiredCollaboratorsPresent(GameplaySimulation c) {
-        return c.roomSession() != null
-                && c.link() != null
-                && c.playerState() != null
-                && c.gpu() != null
-                && c.romData() != null
-                && c.inputState() != null
-                && c.inputConfig() != null
-                && c.inventoryMenu() != null
-                && c.inventoryController() != null
-                && c.dialogController() != null
-                && c.musicPlayer() != null
-                && c.gameplayMusicController() != null
-                && c.musicDirector() != null
-                && c.itemRegistry() != null
-                && c.equipmentController() != null
-                && c.lift() != null
-                && c.dialogInteractions() != null
-                && c.scrollController() != null
-                && c.transitionController() != null
-                && c.roomTransitionCoordinator() != null;
     }
 }

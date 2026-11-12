@@ -4,7 +4,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -15,46 +14,13 @@ import linksawakening.world.transition.Warp;
 /** Game-thread-only editor. No save I/O; changes use the ordinary save path. */
 public final class DebugMenu {
     private static final String[] PAGES = {"TELEPORT", "INVENTORY", "RESOURCES", "QUEST", "DUNGEONS"};
-    private static final String[] ITEMS = {
-        "Empty",
-        "Sword",
-        "Bombs",
-        "Bracelet",
-        "Shield",
-        "Bow",
-        "Hookshot",
-        "Magic rod",
-        "Boots",
-        "Ocarina",
-        "Feather",
-        "Shovel",
-        "Powder",
-        "Boomerang"
-    };
-    // TRADING_ITEM_* in LADX-Disassembly/src/constants/gameplay.asm.
-    private static final String[] TRADES = {
-        "None",
-        "Yoshi doll",
-        "Ribbon",
-        "Dog food",
-        "Bananas",
-        "Stick",
-        "Honeycomb",
-        "Pineapple",
-        "Hibiscus",
-        "Letter",
-        "Broom",
-        "Fishing hook",
-        "Necklace",
-        "Scale",
-        "Magnifying lens"
-    };
     private final List<List<Entry>> pages = new ArrayList<>();
-    private final Consumer<Warp> teleport;
+    private final TeleportTarget teleport;
     private boolean open, shift;
     private int page, selected, category, map, room, x, y, dungeon;
     private String message = "";
 
+    /** A debug editor binding; reads and writes a field without session navigation callbacks. */
     public record Entry(
             String label, IntSupplier read, IntConsumer write, int min, int max, IntFunction<String> format) {
         public void change(int delta) {
@@ -66,7 +32,7 @@ public final class DebugMenu {
         }
     }
 
-    public DebugMenu(PlayerState p, RoomSession world, Consumer<Warp> teleport) {
+    public DebugMenu(PlayerState p, RoomSession world, TeleportTarget teleport) {
         this.teleport = teleport;
         for (String ignored : PAGES) pages.add(new ArrayList<>());
         add(0, "Type", () -> category, v -> category = v, 0, 2, v -> new String[] {"Overworld", "Indoor", "Side view"}
@@ -76,113 +42,14 @@ public final class DebugMenu {
         add(0, "Pixel X", () -> x, v -> x = v, 0, 144);
         add(0, "Pixel Y", () -> y, v -> y = v, 0, 112);
         add(0, "ENTER", () -> 0, v -> {}, 0, 0, v -> "Teleport");
-        add(1, "A", p::itemA, p::setItemA, 0, 13, v -> ITEMS[v]);
-        add(1, "B", p::itemB, p::setItemB, 0, 13, v -> ITEMS[v]);
-        for (int i = 0; i < PlayerState.SUBSCREEN_SLOT_COUNT; i++) {
-            final int slot = i;
-            add(
-                    1,
-                    "Slot " + (i + 1),
-                    () -> p.subscreenItem(slot),
-                    v -> {
-                        int[] items = new int[PlayerState.SUBSCREEN_SLOT_COUNT];
-                        for (int j = 0; j < items.length; j++) items[j] = p.subscreenItem(j);
-                        items[slot] = v;
-                        p.setSubscreenItems(items);
-                    },
-                    0,
-                    13,
-                    v -> ITEMS[v]);
-        }
-        add(1, "Sword level", p::swordLevel, p::setSwordLevel, 0, 2);
-        add(1, "Shield level", p::shieldLevel, p::setShieldLevel, 0, 2);
-        add(1, "Bracelet level", p::powerBraceletLevel, p::setPowerBraceletLevel, 0, 2);
-        add(
-                2,
-                "Rupees",
-                p::rupees,
-                v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setRupees(v);
-                },
-                0,
-                999);
-        add(
-                2,
-                "Hearts",
-                p::maxHearts,
-                v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setMaxHearts(v);
-                },
-                1,
-                14);
-        add(
-                2,
-                "HP (1/8 heart)",
-                p::health,
-                v -> {
-                    p.clearResourceBuffersForDebug();
-                    p.setHealth(v);
-                },
-                0,
-                112);
-        add(2, "Heart pieces", p::heartPieces, p::setHeartPieces, 0, 3);
-        add(2, "Max arrows", p::maxArrows, p::setMaxArrows, 0, 99);
-        add(2, "Arrows", p::arrowCount, p::setArrowCount, 0, 99);
-        add(2, "Max bombs", p::maxBombs, p::setMaxBombs, 0, 99);
-        add(2, "Bombs", p::bombCount, p::setBombCount, 0, 99);
-        add(2, "Max powder", p::maxMagicPowder, p::setMaxMagicPowder, 0, 99);
-        add(2, "Powder", p::magicPowderCount, p::setMagicPowderCount, 0, 99);
-        add(2, "Seashells", p::seashells, p::setSeashells, 0, 99);
-        add(3, "Flippers", () -> p.hasFlippers() ? 1 : 0, v -> p.setHasFlippers(v != 0), 0, 1);
-        add(3, "Toadstool", () -> p.hasToadstool() ? 1 : 0, v -> p.setHasToadstool(v != 0), 0, 1);
-        add(
-                3,
-                "Medicine",
-                p::medicineCount,
-                v -> {
-                    p.setMedicineCount(v);
-                    p.setHasMedicine(v != 0);
-                },
-                0,
-                255);
-        add(
-                3,
-                "Tail key",
-                p::tailKeyCount,
-                v -> {
-                    p.setTailKeyCount(v);
-                    world.story().setTailKeyOwned(v != 0);
-                },
-                0,
-                1);
-        add(3, "Angler key", p::anglerKeyCount, p::setAnglerKeyCount, 0, 1);
-        add(3, "Face key", p::faceKeyCount, p::setFaceKeyCount, 0, 1);
-        add(
-                3,
-                "Bird key",
-                p::birdKeyCount,
-                v -> {
-                    p.setBirdKeyCount(v);
-                    world.story().setBirdKeyOwned(v != 0);
-                },
-                0,
-                1);
-        add(3, "Leaves/key", p::goldenLeavesCount, p::setGoldenLeavesCount, 0, 6);
-        add(
-                3,
-                "Trade",
-                p::tradeSequenceItem,
-                p::setTradeSequenceItem,
-                0,
-                14,
-                v -> v < TRADES.length ? TRADES[v] : Integer.toString(v));
-        add(3, "Song bits", p::ocarinaSongFlags, p::setOcarinaSongFlags, 0, 7);
-        add(3, "Tunic", p::tunicType, p::setTunicType, 0, 2);
-        add(3, "BowWow state", world.story()::bowWowState, world.story()::setBowWowState, 0, 255);
-        add(3, "Richard flag", world.story()::richardSpokenFlag, world.story()::setRichardSpokenFlag, 0, 255);
-        add(3, "Tarin flag", world.story()::tarinFlag, world.story()::setTarinFlag, 0, 255);
+        DebugMenuPages.inventory(this, p);
+        DebugMenuPages.resources(this, p);
+        DebugMenuPages.questItems(this, p, world);
+        DebugMenuPages.questProgress(this, p, world);
+        buildDungeons(world);
+    }
+
+    private void buildDungeons(RoomSession world) {
         add(4, "Dungeon", () -> dungeon, v -> dungeon = v, 0, 8, v -> v == 8 ? "Color" : Integer.toString(v + 1));
         String[] flags = {"Map", "Compass", "Stone beak", "Boss key", "Small keys"};
         for (int i = 0; i < flags.length; i++) {
@@ -214,12 +81,11 @@ public final class DebugMenu {
         }
     }
 
-    private void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max) {
+    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max) {
         add(page, name, get, set, min, max, Integer::toString);
     }
 
-    private void add(
-            int page, String name, IntSupplier get, IntConsumer set, int min, int max, IntFunction<String> format) {
+    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max, IntFunction<String> format) {
         pages.get(page).add(new Entry(name, get, set, min, max, format));
     }
 
@@ -273,7 +139,7 @@ public final class DebugMenu {
             entry.write().accept(key == GLFW_KEY_HOME ? entry.min() : entry.max());
         } else if (key == GLFW_KEY_ENTER && page == 0) {
             try {
-                teleport.accept(destination(category, map, room, x, y));
+                teleport.teleport(destination(category, map, room, x, y));
                 message = "Teleported. F4 resumes.";
             } catch (IllegalArgumentException e) {
                 message = "Invalid map/room selection";

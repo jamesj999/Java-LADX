@@ -1,30 +1,28 @@
 package linksawakening.app;
 
-import java.util.function.IntUnaryOperator;
+import java.util.Objects;
 import linksawakening.entity.Link;
 import linksawakening.equipment.Bomb;
+import linksawakening.state.Direction;
 import linksawakening.world.room.RoomPlayerItems;
 
 /** Room-owned placement with Link's successful-placement animation writes. */
 final class RoomBombPlacement implements Bomb.PlacementTarget {
     private final Link link;
     private final RoomPlayerItems items;
-    private final IntUnaryOperator direction;
     private boolean bump;
 
-    RoomBombPlacement(Link link, RoomPlayerItems items, IntUnaryOperator direction) {
-        this.link = link;
-        this.items = items;
-        this.direction = direction;
+    RoomBombPlacement(Link link, RoomPlayerItems items) {
+        this.link = Objects.requireNonNull(link);
+        this.items = Objects.requireNonNull(items);
     }
 
     public boolean placeBomb() {
-        if (link == null || items == null) {
-            bump = false;
-            return false;
-        }
         boolean placed = items.placeBomb(
-                link.romEntityX(), link.romEntityY(), link.romEntityZ(), direction.applyAsInt(link.direction()));
+                link.romEntityX(),
+                link.romEntityY(),
+                link.romEntityZ(),
+                Direction.fromJava(link.direction()).romIndex());
         bump = placed && items.lastBombPlacementPlayedBump();
         if (placed) link.startRomItemAttackStep();
         return placed;
@@ -35,6 +33,6 @@ final class RoomBombPlacement implements Bomb.PlacementTarget {
     }
 
     public boolean bombActive() {
-        return items != null && items.bombActive();
+        return items.bombActive();
     }
 }

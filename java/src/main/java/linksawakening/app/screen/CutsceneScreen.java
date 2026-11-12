@@ -1,47 +1,59 @@
 package linksawakening.app.screen;
 
-import static linksawakening.world.room.RoomConstants.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.util.function.Supplier;
+import java.util.Objects;
+import linksawakening.app.MusicDirector;
+import linksawakening.app.gameplay.DialogSoundRouting;
+import linksawakening.app.story.MusicRequests;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.RenderScreen;
 
+/** Ticks intro dialogs and cutscenes before completing the input frame. */
 public final class CutsceneScreen implements Screen {
+    /** Required screen collaborators, validated before the first tick. */
     public record Dependencies(
-            Supplier<CutsceneManager> cutsceneManager,
-            Supplier<InputState> inputState,
-            Supplier<DialogController> dialogController,
-            Supplier<InputConfig> inputConfig,
-            Runnable routeDialogSounds,
-            Runnable showTitle,
-            Runnable skipToTitle) {}
+            CutsceneManager cutsceneManager,
+            InputState inputState,
+            DialogController dialogController,
+            InputConfig inputConfig,
+            DialogSoundRouting sounds,
+            ScreenNavigator navigator,
+            MusicRequests music) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(dialogController);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(sounds);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(music);
+        }
+    }
 
     private final Dependencies dependencies;
 
     public CutsceneScreen(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies);
     }
 
     @Override
     public void tick() {
-        if (dependencies.dialogController().get() != null) {
-            dependencies.dialogController().get().tick();
-            dependencies.routeDialogSounds().run();
+
+        dependencies.dialogController().tick();
+        dependencies.sounds().route();
+
+        if (dependencies.cutsceneManager().isActive()) {
+            dependencies.cutsceneManager().tick();
         }
-        if (dependencies.cutsceneManager().get() != null
-                && dependencies.cutsceneManager().get().isActive()) {
-            dependencies.cutsceneManager().get().tick();
+        if (!dependencies.cutsceneManager().isActive()
+                && dependencies.cutsceneManager().isShowingTitleScene()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
         }
-        if (dependencies.cutsceneManager().get() != null
-                && !dependencies.cutsceneManager().get().isActive()
-                && dependencies.cutsceneManager().get().isShowingTitleScene()) {
-            dependencies.showTitle().run();
-        }
-        dependencies.inputState().get().tickEdges();
+        dependencies.inputState().tickEdges();
         return;
     }
 
@@ -49,17 +61,16 @@ public final class CutsceneScreen implements Screen {
     public void onKey(int key, int action) {
         if (key == GLFW_KEY_ENTER
                 && action == GLFW_PRESS
-                && dependencies.cutsceneManager().get() != null
-                && dependencies.cutsceneManager().get().skipIntroToTitle()) {
-            dependencies.skipToTitle().run();
+                && dependencies.cutsceneManager().skipIntroToTitle()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
+            dependencies.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
             return;
         }
         if (action == GLFW_PRESS
-                && dependencies.dialogController().get() != null
-                && (key == dependencies.inputConfig().get().aKey()
-                        || key == dependencies.inputConfig().get().bKey()
+                && (key == dependencies.inputConfig().aKey()
+                        || key == dependencies.inputConfig().bKey()
                         || key == GLFW_KEY_ENTER)) {
-            dependencies.dialogController().get().advance();
+            dependencies.dialogController().advance();
         }
     }
 

@@ -14,9 +14,7 @@ class DebugMenuIntegrationTest {
     void menuPausesEditsTeleportsAndConsumesEscape() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -59,9 +57,7 @@ class DebugMenuIntegrationTest {
         assertEquals(0, game.diagnostics().playerState().addRupeeBuffer());
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         assertFalse(menu.isOpen());
-        var running = SessionTestAccess.field(game, "running");
-        running.setAccessible(true);
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
         game.headlessFrame();
         assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
     }
@@ -70,9 +66,7 @@ class DebugMenuIntegrationTest {
     void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         // Keep the real Marin/Tarin wake-up sequence; do not skip it with F2.
         var before = game.diagnostics().headlessState();
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -97,20 +91,16 @@ class DebugMenuIntegrationTest {
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
         assertFalse(menu(game).isOpen());
         game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
-        var running = SessionTestAccess.field(game, "running");
-        running.setAccessible(true);
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
         game.headlessFrame(); // Wake-up blocks and discards the save request.
-        assertTrue(running.getBoolean(SessionTestAccess.owner(game, "running")));
+        assertTrue(game.lifecycle().running());
     }
 
     @Test
     void configDisablesMenu() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":false}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":false}"));
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
         assertNull(menu(game));
     }
@@ -119,9 +109,7 @@ class DebugMenuIntegrationTest {
     void menuWaitsForRoomTransitionsAndDialogs() throws Exception {
         var game = new GameSession();
         game.initializeHeadlessNewGame();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         game.diagnostics().transitionController().startFadeOut(() -> {});
         game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
@@ -142,8 +130,6 @@ class DebugMenuIntegrationTest {
     }
 
     private DebugMenu menu(GameSession game) throws Exception {
-        var field = SessionTestAccess.field(game, "debugMenu");
-        field.setAccessible(true);
-        return (DebugMenu) field.get(SessionTestAccess.owner(game, "debugMenu"));
+        return game.state().debug().debugMenu;
     }
 }

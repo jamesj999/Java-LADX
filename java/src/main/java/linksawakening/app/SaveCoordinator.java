@@ -1,119 +1,77 @@
 package linksawakening.app;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.io.IOException;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import linksawakening.entity.Link;
-import linksawakening.gpu.GPU;
-import linksawakening.input.InputState;
-import linksawakening.rom.Rom;
+import linksawakening.app.screen.SaveActions;
+import linksawakening.app.screen.ScreenKind;
+import linksawakening.app.screen.ScreenNavigator;
 import linksawakening.rom.RomAddress;
-import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
-import linksawakening.scene.BackgroundScene;
 import linksawakening.startup.NewGameStartProfile;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.state.PowerUp;
 import linksawakening.ui.FileSaveController;
 import linksawakening.world.room.ActiveRoom;
-import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.Warp;
 
 /** Persistence and room-entry orchestration, using the current session snapshot. */
-public final class SaveCoordinator {
-    private final SessionContext context;
+public final class SaveCoordinator implements SaveActions {
+    private final RomServices rom;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final InputServices input;
+    private final SessionState state;
+    private final SaveState saveState;
+    private final ScreenNavigator navigator;
+    private final StoryActions storyActions;
 
-    public SaveCoordinator(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
+    public SaveCoordinator(
+            RomServices rom,
+            WorldServices world,
+            PlayerServices player,
+            InputServices input,
+            SessionState state,
+            SaveState saveState,
+            ScreenNavigator navigator,
+            StoryActions storyActions) {
+        this.rom = Objects.requireNonNull(rom);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.input = Objects.requireNonNull(input);
+        this.state = Objects.requireNonNull(state);
+        this.saveState = Objects.requireNonNull(saveState);
+        this.navigator = Objects.requireNonNull(navigator);
+        this.storyActions = Objects.requireNonNull(storyActions);
     }
 
-    public PlayerState playerState() {
-        return context.playerState();
+    private void enterGameplay() {
+        state.screens().fileMenuController = null;
+        state.screens().fileSaveController = null;
+        navigator.show(ScreenKind.GAMEPLAY);
     }
 
-    public RoomSession roomSession() {
-        return context.roomSession();
+    private void enterFileSave() {
+        navigator.show(ScreenKind.FILE_SAVE);
+        state.screens().fileMenuController = null;
     }
 
-    public Link link() {
-        return context.link();
-    }
-
-    public GPU gpu() {
-        return context.gpu();
-    }
-
-    public Rom romData() {
-        return context.romData();
-    }
-
-    public SaveRamStore saveRamStore() {
-        return context.saveRamStore();
-    }
-
-    public int currentSaveSlot() {
-        return context.currentSaveSlot();
-    }
-
-    public InputState inputState() {
-        return context.inputState();
-    }
-
-    public Runnable enterGameplay() {
-        return context.savesEnterGameplay();
-    }
-
-    public Runnable clearOpening() {
-        return context.savesClearOpening();
-    }
-
-    public Runnable initializeOpening() {
-        return context.savesInitializeOpening();
-    }
-
-    public Runnable playHouseMusic() {
-        return context.savesPlayHouseMusic();
-    }
-
-    public Runnable refreshOpening() {
-        return context.savesRefreshOpening();
-    }
-
-    public Consumer<SaveSlotState> restoreOpening() {
-        return context.savesRestoreOpening();
-    }
-
-    public Runnable startFileSelection() {
-        return context.startFileSelection();
-    }
-
-    public Runnable enterFileSave() {
-        return context.savesEnterFileSave();
-    }
-
-    public Consumer<FileSaveController> showFileSave() {
-        return context.showFileSave();
-    }
-
-    public Function<String, BackgroundScene> fileMenuBackground() {
-        return context.savesFileMenuBackground();
+    private void setFileSaveController(FileSaveController controller) {
+        state.screens().fileSaveController = controller;
     }
 
     public void startNewGame() {
-        enterGameplay().run();
+        enterGameplay();
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
-        profile.initializePlayerState(playerState());
-        roomSession().story().initializeNewGameWorldState();
-        roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
-        roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
-        roomSession().story().setBowWowState(0);
-        link().setDirection(Link.DIRECTION_DOWN);
-        gpu().loadBaseTiles(romData());
-        roomSession().rooms().loadIndoor(profile.mapId(), profile.roomId());
-        roomSession()
+        profile.initializePlayerState(player.playerState());
+        world.roomSession().story().initializeNewGameWorldState();
+        world.roomSession().story().setBirdKeyOwned(player.playerState().birdKeyCount() != 0);
+        world.roomSession().story().setTailKeyOwned(player.playerState().tailKeyCount() != 0);
+        world.roomSession().story().setBowWowState(0);
+        player.link().setDirection(Direction.DOWN.javaIndex());
+        rom.gpu().loadBaseTiles(rom.romData());
+        world.roomSession().rooms().loadIndoor(profile.mapId(), profile.roomId());
+        world.roomSession()
                 .progress()
                 .setRespawnPoint(
                         new Warp(
@@ -124,49 +82,49 @@ public final class SaveCoordinator {
                                 profile.entryY(),
                                 -1),
                         0);
-        link().setRoomEntryRomPosition(profile.entryX(), profile.entryY());
-        initializeOpening().run();
-        playHouseMusic().run();
-        refreshOpening().run();
+        player.link().setRoomEntryRomPosition(profile.entryX(), profile.entryY());
+        state.opening().initialize();
+        storyActions.music().playDirectMusic(MusicDirector.newGameHouseMusicTrack());
+        storyActions.story().updateNewGameMarinPresentation();
     }
 
     public void startSavedGame(SaveSlotState saved) {
-        enterGameplay().run();
-        clearOpening().run();
-        playerState().applySavedGame(saved);
-        roomSession().story().setBirdKeyOwned(playerState().birdKeyCount() != 0);
-        roomSession().story().setTailKeyOwned(playerState().tailKeyCount() != 0);
-        roomSession()
+        enterGameplay();
+        state.opening().clear();
+        player.playerState().applySavedGame(saved);
+        world.roomSession().story().setBirdKeyOwned(player.playerState().birdKeyCount() != 0);
+        world.roomSession().story().setTailKeyOwned(player.playerState().tailKeyCount() != 0);
+        world.roomSession()
                 .story()
                 .restoreRoomStatuses(
                         saved.overworldRoomStatus(),
                         saved.indoorARoomStatus(),
                         saved.indoorBRoomStatus(),
                         saved.colorDungeonRoomStatus());
-        roomSession().dungeon().restoreDungeonItemFlags(saved.dungeonItemFlags(), saved.colorDungeonItemFlags());
-        roomSession().dungeon().restoreDungeonProgressFlags(saved.dungeonProgressFlags());
-        roomSession().story().setBowWowState(saved.bowWowState());
-        roomSession().story().setTarinFlag(saved.tarinFlag());
-        roomSession().story().setRichardSpokenFlag(saved.richardSpokenFlag());
-        roomSession().story().setHouseNpcTradeItem(playerState().tradeSequenceItem());
-        roomSession()
+        world.roomSession().dungeon().restoreDungeonItemFlags(saved.dungeonItemFlags(), saved.colorDungeonItemFlags());
+        world.roomSession().dungeon().restoreDungeonProgressFlags(saved.dungeonProgressFlags());
+        world.roomSession().story().setBowWowState(saved.bowWowState());
+        world.roomSession().story().setTarinFlag(saved.tarinFlag());
+        world.roomSession().story().setRichardSpokenFlag(saved.richardSpokenFlag());
+        world.roomSession().story().setHouseNpcTradeItem(player.playerState().tradeSequenceItem());
+        world.roomSession()
                 .story()
                 .setChestPlayerLevels(
-                        playerState().shieldLevel(),
-                        playerState().swordLevel(),
-                        playerState().powerBraceletLevel());
+                        player.playerState().shieldLevel(),
+                        player.playerState().swordLevel(),
+                        player.playerState().powerBraceletLevel());
         if (saved.spawnIsIndoor() != 0) {
-            gpu().loadBaseTiles(romData());
-            roomSession()
+            rom.gpu().loadBaseTiles(rom.romData());
+            world.roomSession()
                     .rooms()
                     .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
-            link().setDirection(Link.DIRECTION_UP);
+            player.link().setDirection(Direction.UP.javaIndex());
         } else {
-            roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
-            link().setDirection(Link.DIRECTION_DOWN);
+            world.roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
+            player.link().setDirection(Direction.DOWN.javaIndex());
         }
-        link().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
-        roomSession()
+        player.link().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
+        world.roomSession()
                 .progress()
                 .setRespawnPoint(
                         new Warp(
@@ -177,140 +135,139 @@ public final class SaveCoordinator {
                                 saved.spawnPositionY(),
                                 -1),
                         saved.spawnIndoorRoom());
-        restoreOpening().accept(saved);
+        storyActions.story().restoreNewGameHouseRuntimeIfNeeded(saved);
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
     public void finishGameOver(int option) {
-        if (playerState().health() == 0) {
-            playerState()
-                    .setHealth(romData()
-                            .u8(new RomAddress(1, 0x5295).plus(playerState().maxHearts())));
+        if (player.playerState().health() == 0) {
+            player.playerState()
+                    .setHealth(rom.romData()
+                            .u8(new RomAddress(1, 0x5295)
+                                    .plus(player.playerState().maxHearts())));
         }
         if (option != 2) saveCurrentPlayerState();
-        clearOpening().run();
-        link().finishGameOver();
-        playerState().clearResourceBuffersForDebug();
-        playerState().setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
-        roomSession().progress().clearGameOverPowerCounter();
-        roomSession().progress().resetGameOverSwitchBlocks();
+        state.opening().clear();
+        player.link().finishGameOver();
+        player.playerState().clearResourceBuffersForDebug();
+        player.playerState().setActivePowerUp(PowerUp.NONE.romValue());
+        world.roomSession().progress().clearGameOverPowerCounter();
+        world.roomSession().progress().resetGameOverSwitchBlocks();
         if (option == 1) {
-            startFileSelection().run();
+            navigator.startFileSelection();
             return;
         }
-        if (option == 0 && currentSaveSlot() >= 0) {
-            startSavedGame(saveRamStore().readSlot(currentSaveSlot()));
+        if (option == 0 && state.screens().currentSaveSlot >= 0) {
+            startSavedGame(saveState.saveRamStore.readSlot(state.screens().currentSaveSlot));
         } else {
-            Warp spawn = roomSession().progress().respawnPoint();
+            Warp spawn = world.roomSession().progress().respawnPoint();
             if (spawn == null) throw new IllegalStateException("No game-over spawn point");
-            gpu().loadBaseTiles(romData());
+            rom.gpu().loadBaseTiles(rom.romData());
             if (spawn.category() == Warp.CATEGORY_OVERWORLD) {
-                roomSession().rooms().loadInitialOverworld(spawn.destRoom());
-                link().setDirection(Link.DIRECTION_DOWN);
+                world.roomSession().rooms().loadInitialOverworld(spawn.destRoom());
+                player.link().setDirection(Direction.DOWN.javaIndex());
             } else {
-                roomSession()
+                world.roomSession()
                         .rooms()
                         .loadIndoorFromSavedPosition(
                                 spawn.destMap(),
                                 spawn.destRoom(),
-                                roomSession().progress().respawnIndoorRoom());
-                link().setDirection(Link.DIRECTION_UP);
+                                world.roomSession().progress().respawnIndoorRoom());
+                player.link().setDirection(Direction.UP.javaIndex());
             }
-            link().setRoomEntryRomPosition(spawn.destX(), spawn.destY());
-            enterGameplay().run();
+            player.link().setRoomEntryRomPosition(spawn.destX(), spawn.destY());
+            enterGameplay();
         }
-        playerState().setInvincibilityCounter(0x80);
-        inputState().tickEdges();
+        player.playerState().setInvincibilityCounter(0x80);
+        input.inputState().tickEdges();
     }
 
     public void persistFileMenuMutation(Runnable mutation) {
         mutation.run();
         try {
-            saveRamStore().flush();
+            saveState.saveRamStore.flush();
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist file-menu mutation", exception);
         }
-        startFileSelection().run();
+        navigator.startFileSelection();
     }
 
     public void startFileSave() {
-        enterFileSave().run();
-        gpu().loadSaveMenuTiles(romData());
-        showFileSave().accept(new FileSaveController(fileMenuBackground()::apply));
-        inputState().tickEdges();
+        enterFileSave();
+        rom.gpu().loadSaveMenuTiles(rom.romData());
+        setFileSaveController(new FileSaveController(navigator::loadFileMenuBackgroundScene));
+        input.inputState().tickEdges();
     }
 
     public void saveCurrentPlayerState() {
-        if (currentSaveSlot() < 0 || saveRamStore() == null) {
+        if (state.screens().currentSaveSlot < 0) {
             return;
         }
-        saveRamStore().writePlayerState(currentSaveSlot(), playerState());
+        saveState.saveRamStore.writePlayerState(state.screens().currentSaveSlot, player.playerState());
         saveCurrentSpawnLocation();
         {
-            saveRamStore()
-                    .writeRoomStatuses(
-                            currentSaveSlot(),
-                            roomSession().dungeon().overworldRoomStatusSnapshot(),
-                            roomSession().dungeon().indoorARoomStatusSnapshot(),
-                            roomSession().dungeon().indoorBRoomStatusSnapshot(),
-                            roomSession().dungeon().colorDungeonRoomStatusSnapshot());
-            saveRamStore()
-                    .writeDungeonItemFlags(
-                            currentSaveSlot(),
-                            roomSession().dungeon().dungeonItemFlagsSnapshot(),
-                            roomSession().dungeon().colorDungeonItemFlagsSnapshot());
-            saveRamStore()
-                    .writeDungeonProgressFlags(
-                            currentSaveSlot(), roomSession().dungeon().dungeonProgressFlagsSnapshot());
-            saveRamStore()
-                    .writeBowWowState(currentSaveSlot(), roomSession().story().bowWowState());
-            saveRamStore()
-                    .writeTarinFlag(currentSaveSlot(), roomSession().story().tarinFlag());
-            saveRamStore()
-                    .writeRichardSpokenFlag(
-                            currentSaveSlot(), roomSession().story().richardSpokenFlag());
+            saveState.saveRamStore.writeRoomStatuses(
+                    state.screens().currentSaveSlot,
+                    world.roomSession().dungeon().overworldRoomStatusSnapshot(),
+                    world.roomSession().dungeon().indoorARoomStatusSnapshot(),
+                    world.roomSession().dungeon().indoorBRoomStatusSnapshot(),
+                    world.roomSession().dungeon().colorDungeonRoomStatusSnapshot());
+            saveState.saveRamStore.writeDungeonItemFlags(
+                    state.screens().currentSaveSlot,
+                    world.roomSession().dungeon().dungeonItemFlagsSnapshot(),
+                    world.roomSession().dungeon().colorDungeonItemFlagsSnapshot());
+            saveState.saveRamStore.writeDungeonProgressFlags(
+                    state.screens().currentSaveSlot,
+                    world.roomSession().dungeon().dungeonProgressFlagsSnapshot());
+            saveState.saveRamStore.writeBowWowState(
+                    state.screens().currentSaveSlot, world.roomSession().story().bowWowState());
+            saveState.saveRamStore.writeTarinFlag(
+                    state.screens().currentSaveSlot, world.roomSession().story().tarinFlag());
+            saveState.saveRamStore.writeRichardSpokenFlag(
+                    state.screens().currentSaveSlot, world.roomSession().story().richardSpokenFlag());
         }
         try {
-            saveRamStore().flush();
+            saveState.saveRamStore.flush();
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist player save state", exception);
         }
     }
 
     public void saveCurrentSpawnLocation() {
-        if (!roomSession().rooms().hasActiveRoom()) {
+        if (!world.roomSession().rooms().hasActiveRoom()) {
             return;
         }
 
-        Warp spawn = roomSession().progress().respawnPoint();
+        Warp spawn = world.roomSession().progress().respawnPoint();
         if (spawn != null) {
-            saveRamStore()
-                    .writeSpawnLocation(
-                            currentSaveSlot(),
-                            spawn.category() == 0 ? 0 : 1,
-                            spawn.destMap(),
-                            spawn.destRoom(),
-                            spawn.destX(),
-                            spawn.destY(),
-                            roomSession().progress().respawnIndoorRoom());
+            saveState.saveRamStore.writeSpawnLocation(
+                    state.screens().currentSaveSlot,
+                    spawn.category() == 0 ? 0 : 1,
+                    spawn.destMap(),
+                    spawn.destRoom(),
+                    spawn.destX(),
+                    spawn.destY(),
+                    world.roomSession().progress().respawnIndoorRoom());
             return;
         }
-        ActiveRoom room = roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoom();
         boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        int indoorRoom = roomSession().rooms().indoorRoomPositionForSave();
+        int indoorRoom = world.roomSession().rooms().indoorRoomPositionForSave();
         if (indoorRoom < 0) {
             // Small houses/caves have no map-layout table. The source leaves
             // wIndoorRoom at its previous value in that case.
-            indoorRoom = saveRamStore().readSlot(currentSaveSlot()).spawnIndoorRoom();
+            indoorRoom = saveState
+                    .saveRamStore
+                    .readSlot(state.screens().currentSaveSlot)
+                    .spawnIndoorRoom();
         }
-        saveRamStore()
-                .writeSpawnLocation(
-                        currentSaveSlot(),
-                        isIndoor ? 1 : 0,
-                        isIndoor ? room.mapId() : 0,
-                        room.roomId(),
-                        link().roomEntryRomPositionX(),
-                        link().roomEntryRomPositionY(),
-                        indoorRoom);
+        saveState.saveRamStore.writeSpawnLocation(
+                state.screens().currentSaveSlot,
+                isIndoor ? 1 : 0,
+                isIndoor ? room.mapId() : 0,
+                room.roomId(),
+                player.link().roomEntryRomPositionX(),
+                player.link().roomEntryRomPositionY(),
+                indoorRoom);
     }
 }

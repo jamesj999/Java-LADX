@@ -1,152 +1,110 @@
 package linksawakening.app.story;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
-import java.util.function.IntUnaryOperator;
-import java.util.function.Supplier;
-import linksawakening.app.SessionContext;
+import linksawakening.app.InputServices;
+import linksawakening.app.PlayerServices;
+import linksawakening.app.SessionState;
+import linksawakening.app.UiServices;
+import linksawakening.app.WorldServices;
 import linksawakening.audio.music.MusicTrackIds;
-import linksawakening.dialog.DialogController;
-import linksawakening.entity.Link;
-import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.SignpostDialogRef;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
 import linksawakening.save.SaveSlotState;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.TarinShieldMotion;
-import linksawakening.state.PlayerState;
+import linksawakening.state.Direction;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestContentsTable;
-import linksawakening.world.room.RoomSession;
 
-public final class OpeningStory {
-    private final SessionContext context;
+/** Runs Marin wake-up and Tarin shield state machines against live session state. */
+public final class OpeningStory implements OpeningRestoration {
+    private final PlayerServices player;
+    private final WorldServices world;
+    private final InputServices input;
+    private final UiServices ui;
+    private final SessionState state;
+    private final OpeningActions actions;
 
-    public OpeningStory(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
-    }
-
-    public int frameCounter() {
-        return context.frameCounter();
-    }
-
-    public MarinWakeUpMotion newGameWakeUpMotion() {
-        return context.newGameWakeUpMotion();
-    }
-
-    public TarinShieldMotion newGameTarinShieldMotion() {
-        return context.newGameTarinShieldMotion();
-    }
-
-    public int[] newGameTarinShieldPalette() {
-        return context.newGameTarinShieldPalette();
-    }
-
-    public InputState inputState() {
-        return context.inputState();
-    }
-
-    public InputConfig inputConfig() {
-        return context.inputConfig();
-    }
-
-    public DialogController dialogController() {
-        return context.dialogController();
-    }
-
-    public DialogTextLoader dialogTextLoader() {
-        return context.dialogTextLoader();
-    }
-
-    public RoomSession roomSession() {
-        return context.roomSession();
-    }
-
-    public Link link() {
-        return context.link();
-    }
-
-    public PlayerState playerState() {
-        return context.playerState();
-    }
-
-    public Supplier<OverworldDialogBlockers> blockers() {
-        return context.blockers();
-    }
-
-    public IntConsumer music() {
-        return context.music();
-    }
-
-    public IntSupplier houseMusic() {
-        return context.houseMusic();
-    }
-
-    public IntUnaryOperator romDirection() {
-        return context.romDirection();
+    public OpeningStory(
+            PlayerServices player,
+            WorldServices world,
+            InputServices input,
+            UiServices ui,
+            SessionState state,
+            OpeningActions actions) {
+        this.player = Objects.requireNonNull(player);
+        this.world = Objects.requireNonNull(world);
+        this.input = Objects.requireNonNull(input);
+        this.ui = Objects.requireNonNull(ui);
+        this.state = Objects.requireNonNull(state);
+        this.actions = Objects.requireNonNull(actions);
     }
 
     public boolean tickNewGameWakeUp() {
-        if (newGameWakeUpMotion() == null || newGameWakeUpMotion().complete()) {
+        if (state.opening().wakeUp() == null || state.opening().wakeUp().complete()) {
             return false;
         }
-        boolean directionPressed = inputState().isDown(inputConfig().upKey())
-                || inputState().isDown(inputConfig().downKey())
-                || inputState().isDown(inputConfig().leftKey())
-                || inputState().isDown(inputConfig().rightKey());
-        MarinWakeUpMotion.Update update =
-                newGameWakeUpMotion().tick(frameCounter(), dialogController().isActive(), directionPressed);
+        boolean directionPressed = input.inputState().isDown(input.inputConfig().upKey())
+                || input.inputState().isDown(input.inputConfig().downKey())
+                || input.inputState().isDown(input.inputConfig().leftKey())
+                || input.inputState().isDown(input.inputConfig().rightKey());
+        MarinWakeUpMotion.Update update = state.opening()
+                .wakeUp()
+                .tick(state.clock().value(), ui.dialogController().isActive(), directionPressed);
         if (update.linkMotionBlocked()) {
-            link().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
-            link().blockNextRomMotionFrame();
-            link().showMarinWakeUpBed(update.bedSpriteVariant());
+            player.link().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
+            player.link().blockNextRomMotionFrame();
+            player.link().showMarinWakeUpBed(update.bedSpriteVariant());
         }
         if (update.openWakeDialog()) {
-            dialogController()
+            ui.dialogController()
                     .openPreformattedForLinkY(
-                            dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
-                            LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
+                            ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
         }
         if (update.leaveBed()) {
-            link().leaveMarinWakeUpBed();
+            player.link().leaveMarinWakeUpBed();
         }
         return true;
     }
 
     public boolean marinWakeUpBlocksKeyInput() {
-        return newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete();
+        return state.opening().wakeUp() != null && !state.opening().wakeUp().complete();
     }
 
     public void updateNewGameMarinPresentation() {
         {
-            roomSession()
+            world.roomSession()
                     .story()
-                    .updateHouseTarinPresentation(frameCounter(), link().romEntityX(), link().romEntityY());
+                    .updateHouseTarinPresentation(
+                            state.clock().value(),
+                            player.link().romEntityX(),
+                            player.link().romEntityY());
         }
-        if (newGameWakeUpMotion() == null
-                || !roomSession().rooms().hasActiveRoom()
-                || roomSession().rooms().activeRoom().mapId() != 0x10
-                || roomSession().rooms().activeRoom().roomId() != 0xA3) {
+        if (state.opening().wakeUp() == null
+                || !world.roomSession().rooms().hasActiveRoom()
+                || world.roomSession().rooms().activeRoom().mapId() != 0x10
+                || world.roomSession().rooms().activeRoom().roomId() != 0xA3) {
             return;
         }
-        var loadedEntities = roomSession().rooms().activeRoom().entities().loadedEntities();
+        var loadedEntities = world.roomSession().rooms().activeRoom().entities().loadedEntities();
         for (int entityIndex = 0; entityIndex < loadedEntities.size(); entityIndex++) {
-            linksawakening.world.entity.RoomEntity entity = loadedEntities.get(entityIndex);
+            RoomEntity entity = loadedEntities.get(entityIndex);
 
             if (entity.type() != 0x3E) {
                 continue;
             }
-            MarinWakeUpMotion.MarinPresentation presentation = newGameWakeUpMotion()
+            MarinWakeUpMotion.MarinPresentation presentation = state.opening()
+                    .wakeUp()
                     .tickMarinPresentation(
-                            frameCounter(), entity.x(), entity.y(), link().romEntityX(), link().romEntityY());
-            roomSession()
+                            state.clock().value(),
+                            entity.x(),
+                            entity.y(),
+                            player.link().romEntityX(),
+                            player.link().romEntityY());
+            world.roomSession()
                     .story()
                     .applyMarinWakeUpPresentation(
                             presentation.romX(), presentation.romY(), presentation.spriteVariant());
@@ -155,39 +113,44 @@ public final class OpeningStory {
     }
 
     public boolean tryOpenTarinShieldDialog(int key) {
-        if ((newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete())
-                || newGameTarinShieldMotion() == null
-                || key != inputConfig().aKey()
-                || !roomSession().rooms().hasActiveRoom()
-                || dialogTextLoader() == null
+        if ((state.opening().wakeUp() != null && !state.opening().wakeUp().complete())
+                || state.opening().shield() == null
+                || key != input.inputConfig().aKey()
+                || !world.roomSession().rooms().hasActiveRoom()
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
         var loadedEntities2 = room.entities().loadedEntities();
         for (int entityIndex = 0; entityIndex < loadedEntities2.size(); entityIndex++) {
-            linksawakening.world.entity.RoomEntity entity = loadedEntities2.get(entityIndex);
+            RoomEntity entity = loadedEntities2.get(entityIndex);
 
             if (entity.type() == 0x3F
                     && TarinShieldMotion.canTalkToEntity(
                             entity.x(),
                             entity.y(),
-                            link().romEntityX(),
-                            link().romEntityY(),
-                            romDirectionForLink(link().direction()),
-                            link().isAirborne(),
+                            player.link().romEntityX(),
+                            player.link().romEntityY(),
+                            Direction.fromJava(player.link().direction()).romIndex(),
+                            player.link().isAirborne(),
                             true,
-                            dialogController().isActive())) {
-                TarinShieldMotion.Update update = newGameTarinShieldMotion()
-                        .tick(false, link().romEntityY(), true, playerState().shieldLevel());
+                            ui.dialogController().isActive())) {
+                TarinShieldMotion.Update update = state.opening()
+                        .shield()
+                        .tick(
+                                false,
+                                player.link().romEntityY(),
+                                true,
+                                player.playerState().shieldLevel());
                 if (update.dialogLowId() >= 0) {
-                    dialogController()
+                    ui.dialogController()
                             .openPreformattedForLinkY(
-                                    dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
-                                    LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
+                                    ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                                    LinkDialogPosition.dialogYFromTopLeft(
+                                            player.link().pixelY()));
                 }
                 return true;
             }
@@ -196,39 +159,41 @@ public final class OpeningStory {
     }
 
     public boolean tryOpenMarinFollowUpDialog(int key) {
-        if (newGameWakeUpMotion() == null
-                || !newGameWakeUpMotion().complete()
-                || key != inputConfig().aKey()
-                || !roomSession().rooms().hasActiveRoom()
-                || dialogTextLoader() == null
+        if (state.opening().wakeUp() == null
+                || !state.opening().wakeUp().complete()
+                || key != input.inputConfig().aKey()
+                || !world.roomSession().rooms().hasActiveRoom()
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
         var loadedEntities3 = room.entities().loadedEntities();
         for (int entityIndex = 0; entityIndex < loadedEntities3.size(); entityIndex++) {
-            linksawakening.world.entity.RoomEntity entity = loadedEntities3.get(entityIndex);
+            RoomEntity entity = loadedEntities3.get(entityIndex);
 
             if (entity.type() == 0x3E
-                    && newGameWakeUpMotion()
+                    && state.opening()
+                            .wakeUp()
                             .canOpenFollowUpDialog(
                                     entity.x(),
                                     entity.y(),
-                                    link().romEntityX(),
-                                    link().romEntityY(),
-                                    romDirectionForLink(link().direction()),
-                                    link().isAirborne(),
+                                    player.link().romEntityX(),
+                                    player.link().romEntityY(),
+                                    Direction.fromJava(player.link().direction())
+                                            .romIndex(),
+                                    player.link().isAirborne(),
                                     true,
-                                    dialogController().isActive())) {
-                dialogController()
+                                    ui.dialogController().isActive())) {
+                ui.dialogController()
                         .openPreformattedForLinkY(
-                                dialogTextLoader()
+                                ui.dialogTextLoader()
                                         .load(new SignpostDialogRef(
-                                                0, newGameWakeUpMotion().followUpDialogLowId())),
-                                LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
+                                                0, state.opening().wakeUp().followUpDialogLowId())),
+                                LinkDialogPosition.dialogYFromTopLeft(
+                                        player.link().pixelY()));
                 return true;
             }
         }
@@ -236,30 +201,31 @@ public final class OpeningStory {
     }
 
     public boolean tickNewGameTarinShield() {
-        if (newGameTarinShieldMotion() == null
-                || !roomSession().rooms().hasActiveRoom()
-                || roomSession().rooms().activeRoom().mapId() != 0x10
-                || roomSession().rooms().activeRoom().roomId() != 0xA3) {
+        if (state.opening().shield() == null
+                || !world.roomSession().rooms().hasActiveRoom()
+                || world.roomSession().rooms().activeRoom().mapId() != 0x10
+                || world.roomSession().rooms().activeRoom().roomId() != 0xA3) {
             return false;
         }
-        TarinShieldMotion.Update update = newGameTarinShieldMotion()
+        TarinShieldMotion.Update update = state.opening()
+                .shield()
                 .tick(
-                        dialogController().isActive(),
-                        link().romEntityY(),
+                        ui.dialogController().isActive(),
+                        player.link().romEntityY(),
                         false,
-                        playerState().shieldLevel());
+                        player.playerState().shieldLevel());
         if (update.presentShield()) {
-            link().showTarinShieldPresentation(newGameTarinShieldPalette());
+            player.link().showTarinShieldPresentation(actions.shieldPalette());
         } else {
-            link().clearTarinShieldPresentation();
+            player.link().clearTarinShieldPresentation();
         }
-        if (update.linkY() != link().romEntityY()) {
-            link().setPixelPosition(link().pixelX(), update.linkY() - 0x10);
-            link().blockNextRomMotionFrame();
+        if (update.linkY() != player.link().romEntityY()) {
+            player.link().setPixelPosition(player.link().pixelX(), update.linkY() - 0x10);
+            player.link().blockNextRomMotionFrame();
         }
         if (update.grantShield()) {
-            playerState().applyChestReward(ChestContentsTable.CHEST_SHIELD);
-            link().showStandingShieldDownPose();
+            player.playerState().applyChestReward(ChestContentsTable.CHEST_SHIELD);
+            player.link().showStandingShieldDownPose();
             // MUSIC_OBTAIN_ITEM is a jingle in the ROM.  The host music
             // player loops direct tracks, so resume the house track when
             // TarinShield2Handler awards the shield and opens Dialog091.
@@ -268,43 +234,51 @@ public final class OpeningStory {
         if (update.playObtainItemMusic()) {
             playDirectMusic(MusicTrackIds.MUSIC_OBTAIN_ITEM);
         }
-        if (update.dialogLowId() >= 0 && (!dialogController().isActive())) {
-            dialogController()
+        if (update.dialogLowId() >= 0 && (!ui.dialogController().isActive())) {
+            ui.dialogController()
                     .openPreformattedForLinkY(
-                            dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
-                            LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
+                            ui.dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
         }
         return update.linkMotionBlocked();
     }
 
     private OverworldDialogBlockers currentOverworldDialogBlockers() {
-        return blockers().get();
+        return actions.blockers().current();
     }
 
     private void playDirectMusic(int track) {
-        music().accept(track);
+        actions.music().playDirectMusic(track);
     }
 
     private int newGameHouseMusicTrack() {
-        return houseMusic().getAsInt();
+        return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
     }
 
-    private int romDirectionForLink(int direction) {
-        return romDirection().applyAsInt(direction);
+    public void restoreWake(MarinWakeUpMotion motion) {
+        state.opening().wakeUp(motion);
     }
 
-    public void restoreNewGameHouseRuntimeIfNeeded(
-            SaveSlotState saved,
-            Consumer<MarinWakeUpMotion> wakeMotion,
-            Consumer<TarinShieldMotion> shieldMotion,
-            Runnable refreshPresentation) {
+    public void restoreShield(TarinShieldMotion motion) {
+        state.opening().shield(motion);
+    }
+
+    public void refreshPresentation() {
+        updateNewGameMarinPresentation();
+    }
+
+    public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved) {
+        restoreNewGameHouseRuntimeIfNeeded(saved, this);
+    }
+
+    public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved, OpeningRestoration target) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
-            if (playerState().swordLevel() == 0) {
-                wakeMotion.accept(MarinWakeUpMotion.postWake());
-                refreshPresentation.run();
+            if (player.playerState().swordLevel() == 0) {
+                target.restoreWake(MarinWakeUpMotion.postWake());
+                target.refreshPresentation();
             }
-            if (playerState().shieldLevel() == 0) {
-                shieldMotion.accept(new TarinShieldMotion());
+            if (player.playerState().shieldLevel() == 0) {
+                target.restoreShield(new TarinShieldMotion());
             }
         }
     }

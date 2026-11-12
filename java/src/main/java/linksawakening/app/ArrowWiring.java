@@ -1,0 +1,51 @@
+package linksawakening.app;
+
+import linksawakening.equipment.Arrow;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.state.InventoryItem;
+import linksawakening.state.PowerUp;
+import linksawakening.world.room.ArrowShotResult;
+
+/** Registers the arrow and its room-facing adapter. */
+final class ArrowWiring {
+    private ArrowWiring() {}
+
+    static void register(EquipmentInputs c, ItemRegistry registry) {
+        registry.register(
+                InventoryItem.BOW.romValue(),
+                new Arrow(
+                        c.playerState(),
+                        c.gameplaySoundSink(),
+                        new Arrow.ShootTarget() {
+                            private boolean playWhooshForLastShot;
+
+                            @Override
+                            public boolean shootArrow() {
+                                ArrowShotResult result = c.roomSession()
+                                        .playerItems()
+                                        .shootArrowResult(
+                                                c.link().romEntityX(),
+                                                c.link().romEntityY(),
+                                                c.link().romEntityZ(),
+                                                c.link().applyRomItemDirectionFromInput(),
+                                                c.playerState().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue());
+                                playWhooshForLastShot = result.playWhoosh();
+                                if (result.spawned()) {
+                                    c.link().startRomItemAttackStep();
+                                }
+                                return result.spawned();
+                            }
+
+                            @Override
+                            public boolean playWhooshForLastShot() {
+                                return playWhooshForLastShot;
+                            }
+
+                            @Override
+                            public int activeProjectileCount() {
+                                return c.roomSession().playerItems().activeProjectileCount();
+                            }
+                        },
+                        c.link()::canUseItems));
+    }
+}

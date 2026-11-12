@@ -19,6 +19,19 @@ public final class GameplaySoundEffectMap {
     public static GameplaySoundEffectMap fromCatalog(SoundEffectCatalog catalog) {
         Objects.requireNonNull(catalog, "catalog");
         Map<GameplaySoundEvent, SoundEffect> effects = new EnumMap<>(GameplaySoundEvent.class);
+        addPlayerEffects(effects, catalog);
+        addWorldEffects(effects, catalog);
+        return new GameplaySoundEffectMap(effects);
+    }
+
+    public Optional<SoundEffect> resolve(GameplaySoundEvent event) {
+        if (event == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(effects.get(event));
+    }
+
+    private static void addPlayerEffects(Map<GameplaySoundEvent, SoundEffect> effects, SoundEffectCatalog catalog) {
         put(effects, catalog, GameplaySoundEvent.ROC_FEATHER_JUMP, SoundEffectNamespace.JINGLE, 0x0D);
         put(effects, catalog, GameplaySoundEvent.LINK_FOOTSTEP, SoundEffectNamespace.NOISE, 0x07);
         put(effects, catalog, GameplaySoundEvent.LEDGE_FALL, SoundEffectNamespace.JINGLE, 0x08);
@@ -52,6 +65,9 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.PUZZLE_SOLVED, SoundEffectNamespace.JINGLE, 0x02);
         put(effects, catalog, GameplaySoundEvent.ENEMY_HIT, SoundEffectNamespace.JINGLE, 0x03);
         put(effects, catalog, GameplaySoundEvent.SWORD_POKE, SoundEffectNamespace.JINGLE, 0x07);
+    }
+
+    private static void addWorldEffects(Map<GameplaySoundEvent, SoundEffect> effects, SoundEffectCatalog catalog) {
         put(effects, catalog, GameplaySoundEvent.ENEMY_BURNING, SoundEffectNamespace.NOISE, 0x12);
         put(effects, catalog, GameplaySoundEvent.ENEMY_DESTROYED, SoundEffectNamespace.NOISE, 0x13);
         put(effects, catalog, GameplaySoundEvent.BEAMOS_LASER, SoundEffectNamespace.NOISE, 0x08);
@@ -86,14 +102,6 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.RUPEE, SoundEffectNamespace.WAVE, 0x05);
         put(effects, catalog, GameplaySoundEvent.LOW_HEARTS, SoundEffectNamespace.WAVE, 0x04);
         put(effects, catalog, GameplaySoundEvent.HEART_PICKED_UP, SoundEffectNamespace.WAVE, 0x06);
-        return new GameplaySoundEffectMap(effects);
-    }
-
-    public Optional<SoundEffect> resolve(GameplaySoundEvent event) {
-        if (event == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(effects.get(event));
     }
 
     private static void put(

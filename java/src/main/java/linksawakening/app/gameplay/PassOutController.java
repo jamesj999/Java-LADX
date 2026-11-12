@@ -27,8 +27,7 @@ public final class PassOutController {
 
     boolean tick(GameplaySimulation context, boolean dialog) {
         var link = context.link();
-        handledFrame = link != null && link.isPassingOut();
-        if (link == null) return false;
+        handledFrame = link.isPassingOut();
         if (owner != link) {
             owner = link;
             animation = null;

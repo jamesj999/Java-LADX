@@ -102,9 +102,7 @@ final class ToadstoolPresentationTest {
         }
         var game = new GameSession((pcm, sampleRate) -> {});
         game.initializeHeadlessIntro();
-        var config = SessionTestAccess.field(game, "appConfig");
-        config.setAccessible(true);
-        config.set(SessionTestAccess.owner(game, "appConfig"), AppConfig.parse("{\"debugEnabled\":true}"));
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
         game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
         var player = game.diagnostics().playerState();
         player.setHasToadstool(true);

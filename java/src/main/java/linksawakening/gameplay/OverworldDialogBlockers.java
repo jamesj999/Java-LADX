@@ -1,4 +1,5 @@
 package linksawakening.gameplay;
+
 /** Immutable overworld dialog blockers values. */
 public record OverworldDialogBlockers(
         boolean inventoryBlocking,

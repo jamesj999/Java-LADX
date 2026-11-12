@@ -1,7 +1,6 @@
 package linksawakening.app.gameplay;
 
 import static linksawakening.app.gameplay.GameplaySimulation.*;
-import static linksawakening.world.room.RoomConstants.*;
 
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.SignpostDialogRef;
@@ -38,7 +37,7 @@ final class DialogStoryPhase {
         }
         {
             context.dialogController().tick();
-            context.dialogSounds().run();
+            context.dialogSounds().route();
         }
         context.story().updateNewGameMarinPresentation();
         if (context.story().tickNewGameWakeUp()) {

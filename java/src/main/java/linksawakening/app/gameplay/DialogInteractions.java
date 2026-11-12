@@ -1,113 +1,88 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.world.room.RoomConstants.*;
-
 import java.util.Objects;
-import java.util.function.Supplier;
-import linksawakening.app.SessionContext;
+import linksawakening.app.InputServices;
+import linksawakening.app.PlayerServices;
+import linksawakening.app.UiServices;
+import linksawakening.app.WorldServices;
 import linksawakening.dialog.DialogController;
-import linksawakening.entity.Link;
-import linksawakening.gameplay.DialogTextLoader;
 import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.LinkDialogPosition;
-import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.SignpostDialogRef;
-import linksawakening.input.InputConfig;
-import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestOpenResult;
-import linksawakening.world.room.RoomSession;
 
 /** Focused frame interactions using the current session collaborators. */
 public final class DialogInteractions {
-    private final SessionContext context;
+    private final InputServices input;
+    private final WorldServices world;
+    private final PlayerServices player;
+    private final UiServices ui;
+    private final DialogBlockers dialogBlockers;
 
-    public DialogInteractions(SessionContext context) {
-        this.context = Objects.requireNonNull(context);
-    }
-
-    public InputConfig inputConfig() {
-        return context.inputConfig();
-    }
-
-    public OverworldDialogInteraction overworldDialogInteraction() {
-        return context.overworldDialogInteraction();
-    }
-
-    public RoomSession roomSession() {
-        return context.roomSession();
-    }
-
-    public Link link() {
-        return context.link();
-    }
-
-    public PlayerState playerState() {
-        return context.playerState();
-    }
-
-    public DialogController dialogController() {
-        return context.dialogController();
-    }
-
-    public DialogTextLoader dialogTextLoader() {
-        return context.dialogTextLoader();
-    }
-
-    public Supplier<OverworldDialogBlockers> blockers() {
-        return context.dialogsBlockers();
+    public DialogInteractions(
+            InputServices input,
+            WorldServices world,
+            PlayerServices player,
+            UiServices ui,
+            DialogBlockers dialogBlockers) {
+        this.input = Objects.requireNonNull(input);
+        this.world = Objects.requireNonNull(world);
+        this.player = Objects.requireNonNull(player);
+        this.ui = Objects.requireNonNull(ui);
+        this.dialogBlockers = Objects.requireNonNull(dialogBlockers);
     }
 
     public boolean tryOpenOverworldDialog(int key) {
-        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
-                || overworldDialogInteraction() == null
-                || !roomSession().rooms().hasActiveRoom()) {
+        if (!GameplayDialogInput.isActionButtonKey(key, input.inputConfig())
+                || !world.roomSession().rooms().hasActiveRoom()) {
             return false;
         }
-        ActiveRoom room = roomSession().rooms().activeRoom();
-        return overworldDialogInteraction()
+        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        return ui.overworldDialogInteraction()
                 .tryOpenSignpostDialog(
                         room.roomId(),
                         room.mapCategory(),
                         room.roomObjectsArea(),
-                        link().pixelX(),
-                        link().pixelY(),
-                        link().direction(),
-                        true,
-                        blockers().get(),
-                        dialogController());
+                        player.link().pixelX(),
+                        player.link().pixelY(),
+                        player.link().direction(),
+                        new OverworldDialogInteraction.Interaction(
+                                true, dialogBlockers.current(), ui.dialogController()));
     }
 
     public boolean tryOpenChest(int key) {
-        if (!GameplayDialogInput.isActionButtonKey(key, inputConfig())
-                || !roomSession().rooms().hasActiveRoom()
-                || blockers().get().blocksOpening()) {
+        if (!GameplayDialogInput.isActionButtonKey(key, input.inputConfig())
+                || !world.roomSession().rooms().hasActiveRoom()
+                || dialogBlockers.current().blocksOpening()) {
             return false;
         }
-        ChestOpenResult result = roomSession()
+        ChestOpenResult result = world.roomSession()
                 .doors()
                 .tryOpenChest(
-                        link().pixelX(),
-                        link().pixelY(),
-                        link().direction(),
+                        player.link().pixelX(),
+                        player.link().pixelY(),
+                        player.link().direction(),
                         true,
-                        playerState().swordLevel());
+                        player.playerState().swordLevel());
         return result.opened();
     }
 
     public void openEntityDialogRequests() {
-        if (dialogTextLoader() == null || dialogController().isActive()) {
+        if (ui.dialogController().isActive()) {
             return;
         }
-        var request = roomSession().entityFrameResults().presentation().consumeFirstEntityDialogRequest();
+        var request = world.roomSession().entityFrameResults().presentation().consumeFirstEntityDialogRequest();
         if (request == null) return;
         SignpostDialogRef dialogRef = new SignpostDialogRef(request.tableId(), request.dialogLowId());
         if (request.forceTop())
-            dialogController().openPreformatted(dialogTextLoader().load(dialogRef), DialogController.BoxPosition.TOP);
+            ui.dialogController()
+                    .openPreformatted(ui.dialogTextLoader().load(dialogRef), DialogController.BoxPosition.TOP);
         else
-            dialogController()
+            ui.dialogController()
                     .openPreformattedForLinkY(
-                            dialogTextLoader().load(dialogRef), LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
+                            ui.dialogTextLoader().load(dialogRef),
+                            LinkDialogPosition.dialogYFromTopLeft(player.link().pixelY()));
     }
 }
