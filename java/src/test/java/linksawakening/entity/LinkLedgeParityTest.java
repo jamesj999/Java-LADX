@@ -182,14 +182,15 @@ final class LinkLedgeParityTest {
         var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
         return new Fixture(
-                new Link(
-                        input,
-                        config,
-                        tables,
-                        collision,
-                        LinkSpriteSheet.loadFromRom(rom),
-                        new PlayerState(),
-                        new ItemRegistry()),
+                new LinkTestBuilder()
+                        .input(input)
+                        .config(config)
+                        .tables(tables)
+                        .collision(collision)
+                        .sprites(LinkSpriteSheet.loadFromRom(rom))
+                        .player(new PlayerState())
+                        .items(new ItemRegistry())
+                        .build(),
                 rom,
                 room);
     }

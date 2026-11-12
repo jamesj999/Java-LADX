@@ -137,15 +137,16 @@ final class LinkJumpSoundTest {
             if (indoor) collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
             Arrays.fill(room, 0xFF);
             collision.setRoom(room);
-            link = new Link(
-                    input,
-                    config,
-                    tables,
-                    collision,
-                    null,
-                    new PlayerState(),
-                    new ItemRegistry(),
-                    event -> sounds.add(frame + ":" + event));
+            link = new LinkTestBuilder()
+                    .input(input)
+                    .config(config)
+                    .tables(tables)
+                    .collision(collision)
+                    .sprites(null)
+                    .player(new PlayerState())
+                    .items(new ItemRegistry())
+                    .sounds(event -> sounds.add(frame + ":" + event))
+                    .build();
         }
 
         void advance(int frames) {

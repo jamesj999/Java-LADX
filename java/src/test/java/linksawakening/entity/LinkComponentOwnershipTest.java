@@ -27,7 +27,15 @@ class LinkComponentOwnershipTest {
 
     @Test
     void assemblyBindsEachDependencyToTheOwnedComponent() {
-        Link link = new Link(null, null, null, null, null, null, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(null)
+                .items(null)
+                .build();
         assertSame(link.linkMotion, link.assembly.linkMotion.get());
         assertSame(link.linkAnimationState, link.assembly.linkAnimationState.get());
         assertSame(link.linkItemState, link.assembly.linkItemState.get());

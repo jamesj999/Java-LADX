@@ -1,0 +1,474 @@
+package linksawakening.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
+import linksawakening.rom.RomTables;
+import linksawakening.state.LinkMotionState;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class LinkAdditionalTest extends LinkFixture {
+
+    @Test
+    void savedLoadsCanRestoreFacingAndRejectInvalidDirections() {
+        Link link = new LinkTestBuilder()
+                .input(new InputState())
+                .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+
+        link.setDirection(Link.DIRECTION_UP);
+
+        assertEquals(Link.DIRECTION_UP, link.direction());
+        assertThrows(IllegalArgumentException.class, () -> link.setDirection(4));
+    }
+
+    @Test
+    void grabbingAndPullingHoldFacingAndPositionUntilReleased() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(tables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new LinkTestBuilder()
+                .input(input)
+                .config(config)
+                .tables(tables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.setPixelPosition(64, 64);
+        link.setDirection(Link.DIRECTION_UP);
+        input.onKeyEvent(config.downKey(), GLFW_PRESS);
+        link.setGrabbingObject(true, false);
+        link.update();
+        assertEquals(Link.DIRECTION_UP, link.direction());
+        assertEquals(64, link.pixelY());
+        assertEquals(0x3A, resolvedAnimationState(link));
+        link.setGrabbingObject(true, true);
+        link.update();
+        assertEquals(0x3B, resolvedAnimationState(link));
+        assertEquals(64, link.pixelY());
+        link.setGrabbingObject(false, false);
+        link.update();
+        assertEquals(Link.DIRECTION_DOWN, link.direction());
+    }
+
+    @Test
+    void fullyHeldObjectsUseTheRomLiftingAnimationListByDirection() throws Exception {
+        Link link = new LinkTestBuilder()
+                .input(new InputState())
+                .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+
+        link.setCarryingLiftedObjectState(1, 0);
+        assertEquals(0x3E, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 1);
+        assertEquals(0x40, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 2);
+        assertEquals(0x42, resolvedAnimationState(link));
+        link.setCarryingLiftedObjectState(1, 3);
+        assertEquals(0x44, resolvedAnimationState(link));
+    }
+
+    @Test
+    void intermediateLiftStatesAreRomAnimationStatesAndBlockMotion() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+
+        link.setCarryingLiftedObjectState(0x37, 3);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        link.update();
+
+        assertEquals(0x37, resolvedAnimationState(link));
+        assertEquals(Link.DIRECTION_DOWN, link.direction());
+    }
+
+    @Test
+    void clingingGelAllowsMovementOnlyOnEveryFourthWorldFrame() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = linkWithEmptyRoom(input);
+        link.setPixelPosition(40, 40);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        for (int frame = 0; frame < 8; frame++) {
+            int before = link.pixelX();
+            link.setGelClinging(true, frame);
+            link.update();
+            assertEquals(before + ((frame & 3) == 0 ? 1 : 0), link.pixelX());
+        }
+        link.setGelClinging(false, 8);
+        link.update();
+        assertEquals(43, link.pixelX());
+    }
+
+    @Test
+    void consumesRomResponseSpeedOnTheNextMotionUpdate() throws Exception {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(romTables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.setPixelPosition(0x20, 0x20);
+
+        link.applyRomSpeed(0xF8, 0x00);
+        link.update();
+
+        assertEquals(0x1F, link.pixelX());
+    }
+
+    @Test
+    void blockedMotionKeepsPreviousFacingForDiagonalInput() {
+        InputState inputState = new InputState();
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        PlayerState playerState = new PlayerState();
+        ItemRegistry itemRegistry = new ItemRegistry();
+        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(playerState)
+                .items(itemRegistry)
+                .build();
+
+        inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
+        link.update();
+        assertEquals(Link.DIRECTION_LEFT, link.direction());
+
+        inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
+        link.update();
+
+        assertEquals(Link.DIRECTION_LEFT, link.direction());
+    }
+
+    @Test
+    void tallGrassUsesWorldFramePhaseAfterPausedLinkUpdates() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
+        Link link = linkInRoom(config, tables, objects);
+        link.setPixelPosition(0x20, 0x20);
+        // Link's motion has not ticked through the intervening room scroll.
+        // The global clock, rather than the number of Link updates, gates grass.
+        link.setGelClinging(false, 211);
+        link.update();
+        assertEquals(0x21, link.pixelX());
+        link.setGelClinging(false, 212);
+        link.update();
+        assertEquals(0x21, link.pixelX());
+        link.setGelClinging(false, 219);
+        link.update();
+        assertEquals(0x22, link.pixelX());
+        link.setGelClinging(false, 220);
+        link.update();
+        assertEquals(0x22, link.pixelX());
+    }
+
+    @Test
+    void tallGrassSlowsLinkMovement() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+
+        Link normal = linkInRoom(inputConfig, romTables, emptyRoomObjectsArea());
+        int[] grassyRoomObjects = emptyRoomObjectsArea();
+        grassyRoomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
+        Link slowed = linkInRoom(inputConfig, romTables, grassyRoomObjects);
+
+        normal.setPixelPosition(0x20, 0x20);
+        slowed.setPixelPosition(0x20, 0x20);
+
+        for (int i = 0; i < 8; i++) {
+            normal.update();
+            slowed.update();
+        }
+
+        assertEquals(0x28, normal.pixelX());
+        assertEquals(0x26, slowed.pixelX());
+    }
+
+    @Test
+    void lavaIsPassableAndStartsRecoveryWithoutFlippers() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        int lava = -1;
+        for (int id = 0; id < 256; id++) {
+            if (tables.objectPhysicsFlag(RomTables.PHYSICS_TABLE_INDOORS1, id) == PhysicsFlags.LAVA) {
+                lava = id;
+                break;
+            }
+        }
+        assertTrue(lava >= 0);
+        int[] objects = emptyRoomObjectsArea();
+        objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 3] = lava;
+        PlayerState player = new PlayerState();
+        Link link = linkInRoom(
+                new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_INDOORS1);
+        link.setRoomEntryPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 32 && link.romMotionState() != Link.LINK_MOTION_RECOVER; i++) link.update();
+        assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
+        assertEquals(lava, link.linkStateMachine.physicsModifier);
+        assertEquals(0x50, link.linkStateMachine.recoverCountdown);
+        for (int i = 0; i < 80; i++) link.update();
+        assertEquals(0x20, link.pixelX());
+        assertEquals(0x20, link.pixelY());
+        assertEquals(lava == 6 ? 4 : 0, player.subtractHealthBuffer());
+    }
+
+    @Test
+    void recoveryUsesRomCountdownPosesDamageConditionAndMapEntry() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        for (int object : new int[] {6, OBJECT_DEEP_WATER}) {
+            PlayerState player = new PlayerState();
+            Link link = linkInRoom(config, tables, emptyRoomObjectsArea(), player, RomTables.PHYSICS_TABLE_OVERWORLD);
+            link.setRoomEntryPixelPosition(16, 24);
+            link.setPixelPosition(64, 64);
+            link.linkStateMachine.motionState = LinkMotionState.RECOVER;
+            link.linkStateMachine.physicsModifier = object;
+            link.linkStateMachine.recoverCountdown = 0x50;
+            for (int frame = 1; frame < 80; frame++) {
+                link.update();
+                int remaining = 80 - frame;
+                assertEquals(remaining >= 64 ? 0x4C : remaining >= 48 ? 0x4E : 0xFF, resolvedAnimationState(link));
+                assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
+                assertEquals(64, link.pixelX());
+            }
+            link.update();
+            assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
+            assertEquals(16, link.pixelX());
+            assertEquals(24, link.pixelY());
+            assertEquals(0x40, player.invincibilityCounter());
+            assertEquals(object == 6 ? 4 : 0, player.subtractHealthBuffer());
+        }
+    }
+
+    @Test
+    void reportsRomCollisionTypeForEachBlockedDirectionAndResetsNextUpdate() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        CollisionAttempt[] attempts = {
+            new CollisionAttempt(Link.DIRECTION_UP, 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
+            new CollisionAttempt(Link.DIRECTION_DOWN, 0x02, 0x20, 0x20, 3, 2, 0x26, 0x30),
+            new CollisionAttempt(Link.DIRECTION_LEFT, 0x04, 0x40, 0x20, 2, 3, 0x3F, 0x29),
+            new CollisionAttempt(Link.DIRECTION_RIGHT, 0x08, 0x20, 0x20, 2, 3, 0x30, 0x29),
+        };
+
+        for (CollisionAttempt attempt : attempts) {
+            InputState inputState = new InputState();
+            pressDirection(inputState, inputConfig, attempt.direction());
+            int[] roomObjects = emptyRoomObjectsArea();
+            int blockingCell = ROOM_OBJECTS_BASE + attempt.blockRow() * ROOM_OBJECT_ROW_STRIDE + attempt.blockColumn();
+            roomObjects[blockingCell] = 0x00;
+
+            OverworldCollision collision = new OverworldCollision(romTables);
+            collision.setRoom(roomObjects);
+            Link link = new LinkTestBuilder()
+                    .input(inputState)
+                    .config(inputConfig)
+                    .tables(romTables)
+                    .collision(collision)
+                    .sprites(null)
+                    .player(new PlayerState())
+                    .items(new ItemRegistry())
+                    .build();
+            link.setPixelPosition(attempt.startX(), attempt.startY());
+
+            assertFalse(collision.linkOnNormalPit(attempt.startX(), attempt.startY()));
+            assertTrue(collision.pointBlocked(attempt.probeX(), attempt.probeY()));
+
+            int guard = 0;
+            while (link.romCollisionType() == 0 && guard++ < 16) {
+                link.update();
+            }
+
+            assertEquals(attempt.sourceBit(), link.romCollisionType(), "direction " + attempt.direction());
+
+            roomObjects[blockingCell] = 0xFF;
+            link.update();
+
+            assertEquals(
+                    0, link.romCollisionType(), "collision type should reset for direction " + attempt.direction());
+        }
+    }
+
+    @Test
+    void blocksLinkFromEnteringAMismatchedRaisedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(romTables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.setPixelPosition(0x07, 0x20);
+
+        assertTrue(collision.pointBlocked(0x13, 0x29));
+        link.update();
+
+        assertEquals(0x07, link.pixelX());
+    }
+
+    @Test
+    void allowsLinkToEnterAMatchingRaisedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 1] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x02);
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(romTables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.setPixelPosition(0x07, 0x20);
+
+        link.update();
+
+        assertEquals(0x08, link.pixelX());
+    }
+
+    @Test
+    void standingOverrideLetsLinkLeaveAMismatchedSwitchBlock() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.loadFromRom(rom);
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE] = 0xDC;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        collision.setRoom(roomObjects);
+        collision.setSwitchBlocksState(0x00);
+        Link link = new LinkTestBuilder()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(romTables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.setPixelPosition(0x00, 0x20);
+
+        link.update();
+
+        assertEquals(0x01, link.pixelX());
+        assertTrue(collision.linkStandingOnSwitchBlock());
+    }
+
+    @Test
+    void singleProbeCollisionSlidesAlongCornersOnBothAxes() throws Exception {
+        RomTables tables = RomTables.loadFromRom(loadRom());
+        // direction, start X/Y, expected X/Y. One solid tile at (32,32).
+        int[][] cases = {
+            {Link.DIRECTION_DOWN, 25, 16, 24, 16},
+            {Link.DIRECTION_DOWN, 41, 16, 42, 16},
+            {Link.DIRECTION_UP, 25, 42, 24, 42},
+            {Link.DIRECTION_UP, 41, 42, 42, 42},
+            {Link.DIRECTION_RIGHT, 20, 20, 20, 19},
+            {Link.DIRECTION_RIGHT, 20, 38, 20, 39},
+            {Link.DIRECTION_LEFT, 44, 20, 44, 19},
+            {Link.DIRECTION_LEFT, 44, 38, 44, 39},
+            {Link.DIRECTION_DOWN, 32, 16, 32, 16}, // Both probes: no slide.
+            {Link.DIRECTION_RIGHT, 20, 32, 20, 32},
+        };
+        for (int[] c : cases) {
+            InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+            InputState input = new InputState();
+            int key =
+                    switch (c[0]) {
+                        case Link.DIRECTION_DOWN -> config.downKey();
+                        case Link.DIRECTION_UP -> config.upKey();
+                        case Link.DIRECTION_LEFT -> config.leftKey();
+                        default -> config.rightKey();
+                    };
+            input.onKeyEvent(key, GLFW_PRESS);
+            int[] objects = emptyRoomObjectsArea();
+            objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = 0x21;
+            OverworldCollision collision = new OverworldCollision(tables);
+            collision.setRoom(objects);
+            Link link = new LinkTestBuilder()
+                    .input(input)
+                    .config(config)
+                    .tables(tables)
+                    .collision(collision)
+                    .sprites(null)
+                    .player(new PlayerState())
+                    .items(new ItemRegistry())
+                    .build();
+            link.setPixelPosition(c[1], c[2]);
+            link.update();
+            assertEquals(c[3], link.pixelX(), java.util.Arrays.toString(c));
+            assertEquals(c[4], link.pixelY(), java.util.Arrays.toString(c));
+        }
+    }
+}

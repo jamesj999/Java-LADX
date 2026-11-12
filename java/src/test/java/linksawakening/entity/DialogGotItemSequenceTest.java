@@ -75,13 +75,14 @@ final class DialogGotItemSequenceTest {
     }
 
     private static Link link() {
-        return new Link(
-                new linksawakening.input.InputState(),
-                new linksawakening.input.InputConfig(1, 2, 3, 4, 5, 6, 7),
-                null,
-                null,
-                null,
-                new linksawakening.state.PlayerState(),
-                new linksawakening.equipment.ItemRegistry());
+        return new LinkTestBuilder()
+                .input(new linksawakening.input.InputState())
+                .config(new linksawakening.input.InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new linksawakening.state.PlayerState())
+                .items(new linksawakening.equipment.ItemRegistry())
+                .build();
     }
 }

@@ -10,7 +10,15 @@ final class LinkStateMachineTest {
     @Test
     void spikesReverseSpeedBufferOneHeartAndGateRepeatedHits() {
         PlayerState player = new PlayerState();
-        Link link = new Link(null, null, null, null, null, player, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(player)
+                .items(null)
+                .build();
         link.linkMotion.lastRomSpeedX = 0x14;
         link.linkMotion.lastRomSpeedY = 0xF1;
         link.linkDamage.hurtBySpikes();
@@ -30,7 +38,15 @@ final class LinkStateMachineTest {
     @Test
     void sideViewSpikesPreserveVerticalJumpRegisters() {
         PlayerState player = new PlayerState();
-        Link link = new Link(null, null, null, null, null, player, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(player)
+                .items(null)
+                .build();
         link.linkSideView.sideScrolling = true;
         link.linkAirborne.zVelocity = 7;
         link.linkDamage.hurtBySpikes();
@@ -41,7 +57,15 @@ final class LinkStateMachineTest {
 
     @Test
     void scrollEntryPreservesBothFractionalAccumulatorsAndRecordsLanding() {
-        Link link = new Link(null, null, null, null, null, null, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(null)
+                .items(null)
+                .build();
         link.linkMotion.subX = (148 << Link.SUB_PIXEL_SHIFT) + 10;
         link.linkMotion.subY = (80 << Link.SUB_PIXEL_SHIFT) + 5;
         link.setRoomScrollEntryPixelPosition(3, 80);
@@ -56,7 +80,15 @@ final class LinkStateMachineTest {
     @Test
     void interactiveBlockIsConsumedAfterInvincibilityTicks() {
         PlayerState player = new PlayerState();
-        Link link = new Link(null, null, null, null, null, player, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(player)
+                .items(null)
+                .build();
         link.setPixelPosition(64, 64);
         link.blockNextRomMotionFrame();
         player.setInvincibilityCounter(2);
@@ -71,7 +103,15 @@ final class LinkStateMachineTest {
 
     @Test
     void revolvingDoorExitsOnFrameSeventyTwoAndEmitsOneTransition() {
-        Link link = new Link(null, null, null, null, null, null, null);
+        Link link = new LinkTestBuilder()
+                .input(null)
+                .config(null)
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(null)
+                .items(null)
+                .build();
         link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
         link.linkStateMachine.revolvingDoorFrame = 70;
         link.linkStateMachine.tickRevolvingDoor();

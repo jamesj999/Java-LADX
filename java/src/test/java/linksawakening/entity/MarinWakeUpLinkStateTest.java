@@ -48,14 +48,15 @@ final class MarinWakeUpLinkStateTest {
 
     @Test
     void leavingBedAppliesMarinsSourceLinkMotion() {
-        Link link = new Link(
-                new InputState(),
-                new InputConfig(1, 2, 3, 4, 5, 6, 7),
-                null,
-                null,
-                null,
-                new PlayerState(),
-                new ItemRegistry());
+        Link link = new LinkTestBuilder()
+                .input(new InputState())
+                .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .tables(null)
+                .collision(null)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
 
         link.showMarinWakeUpBed(4);
         assertTrue(link.isMarinWakeUpBedVisible());
@@ -84,7 +85,15 @@ final class MarinWakeUpLinkStateTest {
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         InputState input = new InputState();
         input.onKeyEvent(config.leftKey(), GLFW_PRESS);
-        Link link = new Link(input, config, tables, collision, null, new PlayerState(), new ItemRegistry());
+        Link link = new LinkTestBuilder()
+                .input(input)
+                .config(config)
+                .tables(tables)
+                .collision(collision)
+                .sprites(null)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
         link.setPixelPosition(0x40, 0x40);
         link.leaveMarinWakeUpBed();
 
