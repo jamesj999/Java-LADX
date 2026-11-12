@@ -1,4 +1,7 @@
-numpy
-Pillow
+# Python 3.11+; validated with CPython 3.12.
+numpy==2.2.6
+Pillow==11.2.1
 # 2.9.0 changes input timing and breaks the recorded opening routes.
 pyboy==2.8.1
+ruff==0.11.13
+pytest==8.4.0
