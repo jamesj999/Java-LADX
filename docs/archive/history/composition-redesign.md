@@ -286,3 +286,52 @@ Immutable registration recipes are selected without a ROM or catalog reference. 
 | `ENTITY_INSTRUMENT_OF_THE_SIRENS` | `forInstrumentShard` |
 
 Result: project inheritance depth 6 → 0; catalog facade 411 lines. Immutable family recipes and their indexed registration data are independent of ROM decoding. EntitySpriteDecoder owns the ROM; EntitySpriteStates, BossSpriteComposer and EntityEffectSprites compose that decoder for state selection, boss geometry and transient effects respectively. EntitySpriteGeometry contains only coordinate algorithms. Two ROM-free tests cover registration priority/arbitrary map selectors and bounded OAM decoding. Full suite: 2,888 tests, zero failures/errors, one skipped.
+
+## File menu
+
+Original chain: FileMenuController → FileMenuEditing → FileMenuFlow → FileMenuState.
+
+Name-entry character selection, insertion position and five-byte buffer belong to FileNameEntry. FileMenuController owns slot/copy/erase transitions and snapshot publication; those operations are cohesive and are merged rather than keeping the former flow/editing slices.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `snapshotBuilder` | `refreshSnapshot` |
+| `spriteScratch` | `buildSprites` |
+| `NAME_LENGTH` | `copySavedNames`, `tickSelection`, `tickCreation`, `drawSaveSlotName` |
+| `NAME_ENTRY_CHARACTER_COUNT` | `tickCreation` |
+| `BG_MAP_BASE` |  |
+| `FILE_NEW_SAVE_SLOT_INDEX_OFFSET` | `refreshSnapshot` |
+| `FILE_NEW_NAME_OFFSET` | `refreshSnapshot` |
+| `SAVE_NAME_OFFSETS` | `refreshSnapshot` |
+| `COPY_SOURCE_NAME_OFFSETS` | `refreshSnapshot` |
+| `COPY_TARGET_NAME_OFFSETS` | `refreshSnapshot` |
+| `QUIT_OK_OFFSET` | `refreshSnapshot` |
+| `FILE_NEW_SAVE_SLOT_1_TILE` | `refreshSnapshot` |
+| `DARK_BACKGROUND_TILE` | `drawSaveSlotName`, `tileForStoredName` |
+| `sceneProvider` | `FileMenuState`, `FileMenuState`, `FileMenuFlow`, `FileMenuFlow`, `FileMenuEditing`, `FileMenuEditing`, `refreshSnapshot`, `FileMenuController`, `FileMenuController` |
+| `sceneCache` | `refreshSnapshot` |
+| `selectionCursorYPositions` | `FileMenuState`, `buildSprites`, `addCursorPair` |
+| `nameEntryCharacterTable` | `FileMenuState`, `tickCreation` |
+| `nameCursorYPositions` | `FileMenuState`, `buildSprites` |
+| `nameCursorXPositions` | `FileMenuState`, `buildSprites` |
+| `namePositionXPositions` | `FileMenuState`, `buildSprites` |
+| `codepointToTileMap` | `FileMenuState`, `tileForStoredName` |
+| `saveFilesMask` | `FileMenuState`, `FileMenuState`, `FileMenuFlow`, `FileMenuFlow`, `FileMenuEditing`, `FileMenuEditing`, `refreshSnapshot`, `hasSavedFile`, `FileMenuController`, `FileMenuController` |
+| `savedNames` | `FileMenuState`, `FileMenuState`, `FileMenuFlow`, `FileMenuFlow`, `tickSelection`, `tickErasePick`, `tickCopySource`, `FileMenuEditing`, `FileMenuEditing`, `refreshSnapshot`, `FileMenuController`, `FileMenuController` |
+| `maxHearts` | `FileMenuState`, `FileMenuFlow`, `FileMenuEditing`, `refreshSnapshot`, `FileMenuController` |
+| `deathCountsBcd` | `FileMenuState`, `FileMenuFlow`, `FileMenuEditing`, `refreshSnapshot`, `FileMenuController` |
+| `deathDigitTiles` | `FileMenuState`, `refreshSnapshot` |
+| `quitOkTiles` | `FileMenuState`, `refreshSnapshot` |
+| `selectedSlot` | `tickSelection`, `tickErasePick`, `tickEraseConfirm`, `tickCopySource`, `tickCopyTarget`, `tickCopyConfirm`, `moveFourRowCursor`, `returnToSelection`, `tickCreation`, `refreshSnapshot`, `buildSprites` |
+| `commandRowArrowShifted` | `tickSelection`, `refreshSnapshot`, `buildSprites` |
+| `mode` | `mode`, `tick`, `tickSelection`, `tickErasePick`, `tickEraseConfirm`, `tickCopySource`, `tickCopyTarget`, `tickCopyConfirm`, `returnToSelection`, `refreshSnapshot`, `buildSprites` |
+| `sourceSlot` | `tickErasePick`, `tickEraseConfirm`, `tickCopySource`, `tickCopyTarget`, `tickCopyConfirm`, `refreshSnapshot`, `buildSprites` |
+| `targetSlot` | `tickCopySource`, `tickCopyTarget`, `tickCopyConfirm`, `refreshSnapshot`, `buildSprites` |
+| `confirmationOk` | `tickErasePick`, `tickEraseConfirm`, `tickCopyTarget`, `tickCopyConfirm`, `toggleConfirmation`, `buildSprites` |
+| `selectedCharacter` | `tickSelection`, `tickCreation`, `refreshSnapshot`, `buildSprites` |
+| `namePosition` | `tickSelection`, `tickCreation`, `refreshSnapshot`, `buildSprites` |
+| `frameCounter` | `tick`, `refreshSnapshot`, `buildSprites`, `addCursorPair` |
+| `currentName` | `tickSelection`, `tickCreation`, `refreshSnapshot` |
+| `snapshot` | `snapshot`, `refreshSnapshot` |
+
+Result: depth 3 → 0; four chain files / 606 lines → two final classes / 543 lines (controller 475, name editor 68). All state is private. Two independent name-entry tests cover wrap/reset, START priority and action-copy ownership. Full suite: 2,890 tests, zero failures/errors, one skipped.
