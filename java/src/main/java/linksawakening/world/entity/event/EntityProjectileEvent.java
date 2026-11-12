@@ -27,13 +27,18 @@ public record EntityProjectileEvent(
         int linkIgnoreCollisionCountdown)
         implements EntityEvent {
 
+    /** Named construction for collision events; validation happens at build time. */
+    public static EntityProjectileEventBuilder builder(int slot, int type, Kind kind) {
+        return new EntityProjectileEventBuilder(slot, type, kind);
+    }
+
     /** Source-shaped hLinkSpeedX/Y write emitted by hookshot state {@code $01}. */
     public static EntityProjectileEvent hookshotPull(int slot, int speedX, int speedY) {
         return new EntityProjectileEvent(
                 slot, 0x03, Kind.HOOKSHOT_PULL, 0, 0, SoundChannel.NONE, -1, false, false, 0, 0, speedX, speedY, 0);
     }
 
-    /** @deprecated External callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
+    /** @deprecated Use builder; external callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
     @Deprecated
     public EntityProjectileEvent(
             int slot,
@@ -48,7 +53,7 @@ public record EntityProjectileEvent(
         this(slot, type, kind, collisionValue, linkDamage, soundChannel, soundId, remove, swordPokeVfx, 0, 0);
     }
 
-    /** @deprecated External callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
+    /** @deprecated Use builder; external callers: gameplay.EnemyProjectileEventConsumerTest and audio.music.GameplayMusicControllerTest. */
     @Deprecated
     public EntityProjectileEvent(
             int slot,

@@ -161,19 +161,19 @@ public final class RoomEntityRuntime
         return new RoomEntityRuntimeBuilder(initial);
     }
 
-    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
+    /** Compatibility for world.room.RoomSessionState1Test, RoomSessionProjectilesTest and RoomSessionTestSupport; use builder. */
     @Deprecated
     public static RoomEntityRuntime from(RoomEntitySnapshot initial) {
         return builder(initial).build();
     }
 
-    /** Compatibility for world.room.RoomSessionTest and RoomTransitionCoordinatorTest; use builder for new callers. */
+    /** Compatibility for world.room reward, story and door tests; use builder for new callers. */
     @Deprecated
     public static RoomEntityRuntime from(RoomEntitySnapshot initial, boolean indoorRoom) {
         return builder(initial).indoorRoom(indoorRoom).build();
     }
 
-    /** Compatibility for world.room.RoomSessionTest; use builder for new callers. */
+    /** Compatibility for world.room.RoomSessionState1Test, RoomSessionProjectilesTest and RoomSessionTestSupport; use builder. */
     @Deprecated
     public static RoomEntityRuntime from(
             RoomEntitySnapshot initial,
@@ -189,7 +189,7 @@ public final class RoomEntityRuntime
                 .build();
     }
 
-    /** Compatibility for world.room.RoomLoadCoordinator and RoomStoryState; use builder for new callers. */
+    /** Compatibility for world.room.RoomActiveRoomInitializer and RoomFollowerSynchronizer; use builder for new callers. */
     @Deprecated(forRemoval = true)
     public static RoomEntityRuntime from(
             RoomEntitySnapshot initial,
