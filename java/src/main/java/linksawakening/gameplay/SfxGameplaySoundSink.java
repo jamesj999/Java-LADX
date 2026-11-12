@@ -19,7 +19,7 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
         this(new GameBoyApu(SAMPLE_RATE), output);
     }
 
-    public SfxGameplaySoundSink(byte[] romData, PcmSoundOutput output) {
+    public SfxGameplaySoundSink(linksawakening.rom.Rom romData, PcmSoundOutput output) {
         this(new GameBoyApu(SAMPLE_RATE), romData, output);
     }
 
@@ -27,7 +27,7 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
         this(apu, new SoundEffectPlayer(apu), output);
     }
 
-    public SfxGameplaySoundSink(GameBoyApu apu, byte[] romData, PcmSoundOutput output) {
+    public SfxGameplaySoundSink(GameBoyApu apu, linksawakening.rom.Rom romData, PcmSoundOutput output) {
         this(apu, new SoundEffectPlayer(apu, romData), output);
     }
 

@@ -35,9 +35,9 @@ final class UiWiring {
                 new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData.unsafeBytes());
         InventoryController inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
         DialogController dialogController = DialogController.forGameplay();
-        DialogTextLoader dialogTextLoader = DialogTextLoader.loadFromRom(romData.unsafeBytes());
-        OverworldDialogInteraction overworldDialogInteraction = new OverworldDialogInteraction(
-                SignpostDialogTable.loadFromRom(romData.unsafeBytes()), dialogTextLoader);
+        DialogTextLoader dialogTextLoader = DialogTextLoader.loadFromRom(romData);
+        OverworldDialogInteraction overworldDialogInteraction =
+                new OverworldDialogInteraction(SignpostDialogTable.loadFromRom(romData), dialogTextLoader);
         CutsceneManager cutsceneManager = new CutsceneManager(dialogController, navigator::setCutsceneScene);
         var introCatalog = SoundEffectCatalog.fromRom(romData);
         cutsceneManager.setIntroNoiseSound(id -> introCatalog
