@@ -3,15 +3,10 @@ package linksawakening.audio.browser;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -20,14 +15,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
@@ -39,33 +30,34 @@ import linksawakening.audio.openal.OpenAlMusicPlayer;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 
+/** Standalone Swing audition view over headless transport and catalog models. */
 public final class AudioBrowserFrame extends JFrame {
     private static final int TIMER_DELAY_MS = 30;
 
-    private final BrowserModel browserModel;
-    private final SoundEffectBrowserModel soundEffectBrowserModel;
-    private final TransportState transportState = new TransportState();
-    private final OpenAlMusicPlayer player;
-    private final MusicDriver driver;
-    private final DefaultListModel<MusicTrack> trackListModel = new DefaultListModel<>();
-    private final JList<MusicTrack> trackList = new JList<>(trackListModel);
-    private final DefaultListModel<SoundEffect> soundEffectListModel = new DefaultListModel<>();
-    private final JList<SoundEffect> soundEffectList = new JList<>(soundEffectListModel);
-    private final JTextField searchField = new JTextField();
-    private final JTextField soundEffectSearchField = new JTextField();
-    private final JButton playButton = new JButton("Play");
-    private final JButton pauseResumeButton = new JButton("Pause");
-    private final JButton stopButton = new JButton("Stop");
-    private final JButton playSoundEffectButton = new JButton("Play SFX");
-    private final JCheckBox loopCheckBox = new JCheckBox("Loop");
-    private final JSlider volumeSlider = new JSlider(0, 100, 100);
-    private final JTextArea metadataArea = new JTextArea(4, 32);
-    private final JTextArea soundEffectMetadataArea = new JTextArea(4, 32);
-    private final JLabel statusLabel = new JLabel("Ready");
-    private final JLabel[] channelLabels = {
+    final BrowserModel browserModel;
+    final SoundEffectBrowserModel soundEffectBrowserModel;
+    final TransportState transportState = new TransportState();
+    final OpenAlMusicPlayer player;
+    final MusicDriver driver;
+    final DefaultListModel<MusicTrack> trackListModel = new DefaultListModel<>();
+    final JList<MusicTrack> trackList = new JList<>(trackListModel);
+    final DefaultListModel<SoundEffect> soundEffectListModel = new DefaultListModel<>();
+    final JList<SoundEffect> soundEffectList = new JList<>(soundEffectListModel);
+    final JTextField searchField = new JTextField();
+    final JTextField soundEffectSearchField = new JTextField();
+    final JButton playButton = new JButton("Play");
+    final JButton pauseResumeButton = new JButton("Pause");
+    final JButton stopButton = new JButton("Stop");
+    final JButton playSoundEffectButton = new JButton("Play SFX");
+    final JCheckBox loopCheckBox = new JCheckBox("Loop");
+    final JSlider volumeSlider = new JSlider(0, 100, 100);
+    final JTextArea metadataArea = new JTextArea(4, 32);
+    final JTextArea soundEffectMetadataArea = new JTextArea(4, 32);
+    final JLabel statusLabel = new JLabel("Ready");
+    final JLabel[] channelLabels = {
         new JLabel("Ch1 idle"), new JLabel("Ch2 idle"), new JLabel("Ch3 idle"), new JLabel("Ch4 idle")
     };
-    private final Timer updateTimer;
+    final Timer updateTimer;
 
     public AudioBrowserFrame(
             MusicCatalog catalog, SoundEffectCatalog soundEffectCatalog, OpenAlMusicPlayer player, MusicDriver driver) {
@@ -98,14 +90,16 @@ public final class AudioBrowserFrame extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
     }
 
+    private final BrowserPanels panels = new BrowserPanels(this);
+
     private void configureWindow() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(760, 420));
         setLayout(new BorderLayout(8, 8));
-        add(buildSearchPanel(), BorderLayout.NORTH);
-        add(buildBrowserTabs(), BorderLayout.CENTER);
-        add(buildDetailsPanel(), BorderLayout.EAST);
-        add(buildStatusPanel(), BorderLayout.SOUTH);
+        add(panels.buildSearchPanel(), BorderLayout.NORTH);
+        add(panels.buildBrowserTabs(), BorderLayout.CENTER);
+        add(panels.buildDetailsPanel(), BorderLayout.EAST);
+        add(panels.buildStatusPanel(), BorderLayout.SOUTH);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent event) {
@@ -115,98 +109,6 @@ public final class AudioBrowserFrame extends JFrame {
         });
         pack();
         setLocationRelativeTo(null);
-    }
-
-    private JPanel buildSearchPanel() {
-        JPanel panel = new JPanel(new BorderLayout(6, 0));
-        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
-        panel.add(new JLabel("Search"), BorderLayout.WEST);
-        panel.add(searchField, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JScrollPane buildTrackPanel() {
-        JScrollPane scrollPane = new JScrollPane(trackList);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Tracks"));
-        return scrollPane;
-    }
-
-    private JTabbedPane buildBrowserTabs() {
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Music", buildTrackPanel());
-        tabs.addTab("SFX", buildSoundEffectPanel());
-        return tabs;
-    }
-
-    private JPanel buildSoundEffectPanel() {
-        JPanel panel = new JPanel(new BorderLayout(6, 6));
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
-        JPanel searchPanel = new JPanel(new BorderLayout(6, 0));
-        searchPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 0, 6));
-        searchPanel.add(new JLabel("Search"), BorderLayout.WEST);
-        searchPanel.add(soundEffectSearchField, BorderLayout.CENTER);
-        panel.add(searchPanel, BorderLayout.NORTH);
-
-        JScrollPane listScrollPane = new JScrollPane(soundEffectList);
-        listScrollPane.setBorder(BorderFactory.createTitledBorder("Sound Effects"));
-        panel.add(listScrollPane, BorderLayout.CENTER);
-
-        JPanel detailsPanel = new JPanel(new BorderLayout(4, 4));
-        detailsPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 6));
-        detailsPanel.add(playSoundEffectButton, BorderLayout.NORTH);
-        soundEffectMetadataArea.setEditable(false);
-        soundEffectMetadataArea.setLineWrap(true);
-        soundEffectMetadataArea.setWrapStyleWord(true);
-        detailsPanel.add(new JScrollPane(soundEffectMetadataArea), BorderLayout.CENTER);
-        panel.add(detailsPanel, BorderLayout.EAST);
-        return panel;
-    }
-
-    private JPanel buildDetailsPanel() {
-        JPanel panel = new JPanel(new BorderLayout(6, 6));
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-        panel.add(buildTransportPanel(), BorderLayout.NORTH);
-
-        metadataArea.setEditable(false);
-        metadataArea.setLineWrap(true);
-        metadataArea.setWrapStyleWord(true);
-        panel.add(new JScrollPane(metadataArea), BorderLayout.CENTER);
-        panel.add(buildChannelPanel(), BorderLayout.SOUTH);
-        return panel;
-    }
-
-    private JPanel buildTransportPanel() {
-        JPanel panel = new JPanel(new GridLayout(0, 1, 4, 4));
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        buttons.add(playButton);
-        buttons.add(pauseResumeButton);
-        buttons.add(stopButton);
-        panel.add(buttons);
-        panel.add(loopCheckBox);
-        volumeSlider.setMajorTickSpacing(25);
-        volumeSlider.setPaintTicks(true);
-        volumeSlider.setPaintLabels(true);
-        panel.add(new JLabel("Volume"));
-        panel.add(volumeSlider);
-        return panel;
-    }
-
-    private JPanel buildChannelPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 2, 4, 4));
-        panel.setBorder(BorderFactory.createTitledBorder("Channels"));
-        for (JLabel channelLabel : channelLabels) {
-            channelLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            panel.add(channelLabel);
-        }
-        return panel;
-    }
-
-    private JPanel buildStatusPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
-        panel.add(statusLabel, BorderLayout.CENTER);
-        return panel;
     }
 
     private void configureTrackList() {
@@ -283,7 +185,7 @@ public final class AudioBrowserFrame extends JFrame {
         refreshMetadata();
     }
 
-    private void applySoundEffectFilter() {
+    void applySoundEffectFilter() {
         SoundEffect selected = soundEffectList.getSelectedValue();
         fillSoundEffectList(soundEffectBrowserModel.filteredEffects(soundEffectSearchField.getText()));
         if (selected != null) {
@@ -333,7 +235,7 @@ public final class AudioBrowserFrame extends JFrame {
         refreshTransportAvailability();
     }
 
-    private void playSelectedSoundEffect() {
+    void playSelectedSoundEffect() {
         SoundEffect effect = soundEffectList.getSelectedValue();
         if (effect == null) {
             statusLabel.setText("No SFX selected");
@@ -421,97 +323,17 @@ public final class AudioBrowserFrame extends JFrame {
         }
     }
 
+    /** Compatibility name for the browser transport model. */
+    public static final class TransportState extends BrowserTransportState {}
+    /** Compatibility name for the track search model. */
+    public static final class BrowserModel extends MusicBrowserModel {
+        public BrowserModel(List<MusicTrack> tracks) {
+            super(tracks);
+        }
+    }
+
     public record TransportControls(
             boolean playEnabled, boolean pauseResumeEnabled, boolean stopEnabled, String pauseResumeText) {}
-
-    public static final class TransportState {
-        private boolean playbackActive;
-        private boolean paused;
-
-        public void playbackStarted() {
-            playbackActive = true;
-            paused = false;
-        }
-
-        public void playbackStopped() {
-            playbackActive = false;
-            paused = false;
-        }
-
-        public void soundEffectPreviewStarted() {
-            playbackStopped();
-        }
-
-        public boolean playbackActive() {
-            return playbackActive;
-        }
-
-        public boolean togglePauseResume() {
-            if (!playbackActive) {
-                paused = false;
-                return false;
-            }
-            paused = !paused;
-            return paused;
-        }
-
-        public TransportControls controls(boolean audioAvailable, boolean trackSelected) {
-            boolean playbackControlsEnabled = audioAvailable && playbackActive;
-            return new TransportControls(
-                    audioAvailable && trackSelected,
-                    playbackControlsEnabled,
-                    playbackControlsEnabled,
-                    playbackActive && paused ? "Resume" : "Pause");
-        }
-    }
-
-    public static final class BrowserModel {
-        private final List<MusicTrack> tracks;
-
-        public BrowserModel(List<MusicTrack> tracks) {
-            this.tracks = List.copyOf(Objects.requireNonNull(tracks, "tracks"));
-        }
-
-        public List<MusicTrack> filteredTracks(String filter) {
-            String normalizedFilter = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
-            if (normalizedFilter.isEmpty()) {
-                return tracks;
-            }
-
-            List<MusicTrack> filtered = new ArrayList<>();
-            for (MusicTrack track : tracks) {
-                String id = hexByte(track.id()).toLowerCase(Locale.ROOT);
-                String name = track.name().toLowerCase(Locale.ROOT);
-                if (id.contains(normalizedFilter) || name.contains(normalizedFilter)) {
-                    filtered.add(track);
-                }
-            }
-            return filtered;
-        }
-
-        public String metadata(MusicTrack track) {
-            Objects.requireNonNull(track, "track");
-            return hexByte(track.id()) + " " + track.name()
-                    + System.lineSeparator()
-                    + "bank " + hexByte(track.bank())
-                    + System.lineSeparator()
-                    + "header " + hexWord(track.headerAddress())
-                    + System.lineSeparator()
-                    + "rom " + hexOffset(track.romOffset());
-        }
-
-        private static String hexByte(int value) {
-            return String.format(Locale.ROOT, "0x%02X", value & 0xFF);
-        }
-
-        private static String hexWord(int value) {
-            return String.format(Locale.ROOT, "0x%04X", value & 0xFFFF);
-        }
-
-        private static String hexOffset(int value) {
-            return String.format(Locale.ROOT, "0x%05X", value);
-        }
-    }
 
     private static final class TrackCellRenderer extends DefaultListCellRenderer {
         @Override
