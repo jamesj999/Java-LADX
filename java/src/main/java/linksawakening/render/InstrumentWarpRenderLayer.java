@@ -1,5 +1,6 @@
 package linksawakening.render;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
@@ -34,7 +35,7 @@ final class InstrumentWarpRenderLayer implements HardwareRenderLayer {
             public void submit(HardwareFrame model, linksawakening.gpu.GPU gpu) {
                 if (commands.length != 256 || entities.spriteTiles() == null) return;
                 int start = ((frame >> 3) & 3) * 64;
-                var sprites = new java.util.ArrayList<SpriteListRenderLayer.Sprite>();
+                var sprites = new ArrayList<SpriteListRenderLayer.Sprite>();
                 for (int i = 0; i < 16; i++) {
                     int at = start + i * 4;
                     int tile = commands[at + 2];

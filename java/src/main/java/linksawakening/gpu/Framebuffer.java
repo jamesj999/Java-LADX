@@ -2,6 +2,7 @@ package linksawakening.gpu;
 
 import java.nio.ByteBuffer;
 
+/** Owns the native RGBA presentation buffer and clipped tile writes. */
 public class Framebuffer {
 
     public static final int WIDTH = 160;

@@ -4,6 +4,7 @@ import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.transition.ScrollController;
 
+/** TransientVfxRenderLayer supplies frame rendering inputs or composition. */
 public final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;

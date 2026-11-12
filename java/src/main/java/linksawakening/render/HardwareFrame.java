@@ -65,6 +65,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         inventoryCutoffY = -1;
         oam.clear();
         nextEntry = 0;
+        if (diagnostics != null) diagnostics.reset();
     }
 
     HardwareFrameDiagnostics diagnostics() {
@@ -107,14 +108,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         closedWindowY = Math.min(closedWindowY, y);
         backgroundTile(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, palette, (attributes & 128) != 0);
         if (tile == null || diagnostics == null) return;
-        stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
-            if (diagnostics != null) diagnostics.hudTiles[pixel] = tileId;
-            if (diagnostics != null) diagnostics.hudAttributes[pixel] = attributes;
-            if (diagnostics != null) diagnostics.approvedHudEvidence[pixel] = true;
-        });
+        diagnostics.closedHudTile(tile, tileId, attributes, x, y);
     }
-
-    /** Call after compose. Requires the legacy RGB to equal the resolved HUD color and a hardware-visible OBJ. */
 
     /** HideSprites ($01:5F4B-$5F69): at WY=0 every visible gameplay OAM entry is hidden. */
     public void hideGameplayObjectsForOpenInventory() {
@@ -132,7 +127,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
-    /** A narrow, ROM-proven whole-entry hiding difference above the moving window. */
     public void sprite8x16(linksawakening.gpu.GPU gpu, int tile, int x, int y, boolean fx, boolean fy, int[] palette) {
         int base = tile & 254;
         append8x16(gpu.getTile(fy ? base + 1 : base), gpu.getTile(fy ? base : base + 1), x, y, fx, fy, palette, false);
@@ -174,7 +168,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void copyBackgroundRows(HardwareFrame source, int rows) {
         if (rows < 0 || rows > HEIGHT) throw new IllegalArgumentException("Background row count");
         if (copiedTransforms.length < source.transforms.size()) copiedTransforms = new int[source.transforms.size()];
-        for (int i = 0; i < source.transforms.size(); i++) {
+        int sourceTransformCount = source.transforms.size();
+        for (int i = 0; i < sourceTransformCount; i++) {
             copiedTransforms[i] = transforms.size();
             transforms.add(source.transforms.get(i).andThen(transforms.get(paletteTransform)));
         }
@@ -193,76 +188,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
-    static final class ObjectTile {
-        Tile tile;
-
-        Tile tile() {
-            return tile;
-        }
-
-        int x;
-
-        int x() {
-            return x;
-        }
-
-        int y;
-
-        int y() {
-            return y;
-        }
-
-        boolean flipX;
-
-        boolean flipX() {
-            return flipX;
-        }
-
-        boolean flipY;
-
-        boolean flipY() {
-            return flipY;
-        }
-
-        int[] palette;
-
-        int[] palette() {
-            return palette;
-        }
-
-        int order;
-
-        int order() {
-            return order;
-        }
-
-        boolean behind;
-
-        boolean behind() {
-            return behind;
-        }
-
-        String source;
-
-        String source() {
-            return source;
-        }
-
-        int entryY;
-
-        int entryY() {
-            return entryY;
-        }
-
-        IntUnaryOperator transform;
-
-        IntUnaryOperator transform() {
-            return transform;
-        }
-    }
-
-    private final ArrayList<ObjectTile> oam = new ArrayList<>();
-    private final ArrayList<ObjectTile> entryPool = new ArrayList<>();
+    private final ArrayList<OamEntry> oam = new ArrayList<>();
+    private final ArrayList<OamEntry> entryPool = new ArrayList<>();
     private int nextEntry;
 
     @Override
@@ -273,8 +200,8 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     @Override
     public void appendFromEntry(
             int entryY, Tile tile, int x, int y, boolean fx, boolean fy, int[] palette, boolean behind) {
-        if (nextEntry == entryPool.size()) entryPool.add(new ObjectTile());
-        ObjectTile entry = entryPool.get(nextEntry++);
+        if (nextEntry == entryPool.size()) entryPool.add(new OamEntry());
+        OamEntry entry = entryPool.get(nextEntry++);
         entry.tile = tile;
         entry.x = x;
         entry.y = y;
@@ -340,7 +267,7 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
-    private void rasterizeObject(ObjectTile entry) {
+    private void rasterizeObject(OamEntry entry) {
         if (entry.tile == null) return;
         for (int ty = 0; ty < 8; ty++)
             for (int tx = 0; tx < 8; tx++) {
@@ -357,20 +284,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                     diagnostics.objFlags[pixel] =
                             (entry.flipX ? 32 : 0) | (entry.flipY ? 64 : 0) | (entry.behind ? 128 : 0);
                 }
-            }
-    }
-
-    interface PixelWriter {
-        void write(int pixel, int index);
-    }
-
-    static void stamp(Tile tile, int x, int y, boolean flipX, boolean flipY, PixelWriter writer) {
-        if (tile == null) return;
-        for (int ty = 0; ty < 8; ty++)
-            for (int tx = 0; tx < 8; tx++) {
-                int px = x + tx, py = y + ty;
-                if (px < 0 || py < 0 || px >= WIDTH || py >= HEIGHT) continue;
-                writer.write(py * WIDTH + px, tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty));
             }
     }
 }

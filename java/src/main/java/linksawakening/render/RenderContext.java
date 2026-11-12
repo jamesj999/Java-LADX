@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import linksawakening.gpu.GPU;
 
+/** Carries the target RGBA buffer, tile source and optional indexed OAM sink. */
 public record RenderContext(byte[] buffer, GPU gpu, OamSink oam) {
     private static final byte[] INDEXED_BUFFER = new byte[0];
 

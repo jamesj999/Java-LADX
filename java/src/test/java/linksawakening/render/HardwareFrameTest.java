@@ -208,4 +208,14 @@ final class HardwareFrameTest {
         frame.append(solid(3), 0, 0, false, false, PALETTE, false);
         assertEquals(44, pixel(frame, 0, 0));
     }
+
+    @Test
+    void copyingRowsFromTheSameFramePreservesPaletteTransformOrder() {
+        HardwareFrame frame = new HardwareFrame(true);
+        frame.withPaletteTransform(
+                color -> color + 1, () -> frame.backgroundTile(solid(1), 0, 0, false, false, PALETTE, false));
+        frame.withPaletteTransform(color -> color * 2, () -> frame.copyBackgroundRows(frame, 1));
+        assertEquals(46, pixel(frame, 0, 0));
+        assertEquals(23, pixel(frame, 0, 1));
+    }
 }

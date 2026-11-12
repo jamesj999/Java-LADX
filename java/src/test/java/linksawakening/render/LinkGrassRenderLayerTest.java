@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import java.util.Arrays;
 import linksawakening.entity.Link;
 import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
@@ -25,7 +26,7 @@ final class LinkGrassRenderLayerTest {
         }
         var collision = new OverworldCollision(tables);
         int[] objects = new int[0x100];
-        java.util.Arrays.fill(objects, 0x0A);
+        Arrays.fill(objects, 0x0A);
         collision.setRoom(objects);
         assertEquals(6, collision.objectPhysicsFlagAtPoint(40, 40));
         var input = new InputState();

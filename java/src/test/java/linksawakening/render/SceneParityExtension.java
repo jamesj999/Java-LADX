@@ -4,6 +4,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -22,18 +28,22 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         var rows = new ArrayList<String>();
         rows.add("scene\tstatus\tdetail");
         context.getStore(KEY).put("rows", rows);
-        var groups = new java.util.TreeMap<String, Group>();
+        var groups = new TreeMap<String, Group>();
         context.getStore(KEY).put("groups", groups);
-        var expectedSources = new java.util.TreeMap<String, Group>();
+        var expectedSources = new TreeMap<String, Group>();
         context.getStore(KEY).put("expectedSources", expectedSources);
+        observe(context, rows, groups, expectedSources);
+    }
+
+    private static void observe(
+            ExtensionContext context,
+            ArrayList<String> rows,
+            Map<String, Group> groups,
+            Map<String, Group> expectedSources) {
         boolean probe = Boolean.getBoolean("sceneParity.probe");
         TestDrawObservers.CURRENT.set((scene, rgba, gpu) -> {
             String id = Integer.toString(rows.size());
-            var blocked = scene.layersForComparison().stream()
-                    .filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
-                    .map(layer -> layer.getClass().getName())
-                    .distinct()
-                    .toList();
+            var blocked = blockedLayers(scene);
             if (!blocked.isEmpty()) {
                 rows.add(id + "\tBLOCKED\t" + String.join(",", blocked));
                 return;
@@ -48,9 +58,9 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                 throw new AssertionError(
                         "Compatibility reference mutated hardware output: " + context.getDisplayName());
             int expectedPixels = 0, mismatchPixels = 0;
-            var sceneGroups = new java.util.HashSet<String>();
-            var sceneExpectedSources = new java.util.HashSet<String>();
-            var evidence = new java.util.LinkedHashSet<String>();
+            var sceneGroups = new HashSet<String>();
+            var sceneExpectedSources = new HashSet<String>();
+            var evidence = new LinkedHashSet<String>();
             for (int offset = 0; offset < rgba.length; offset += 4) {
                 if (Arrays.equals(legacy, offset, offset + 4, hardware, offset, offset + 4)) continue;
                 int pixel = offset / 4;
@@ -81,18 +91,36 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
                 if (sceneGroups.add(groupKey)) group.scenes++;
                 if (group.example == null) group.example = "scene=" + id + " " + detail;
             }
-            if (mismatchPixels > 0) {
-                rows.add(id + "\tMISMATCH\tpixels=" + mismatchPixels + ";expectedPixels=" + expectedPixels);
-                return;
-            }
-            if (expectedPixels > 0)
-                rows.add(
-                        id + "\tEXPECTED_FIDELITY_FIX\tpixels=" + expectedPixels
-                                + "; CGB priority: OBJ wins when BG index=0 or both priority flags clear; PyBoy beach-route 56 overlap frames LCDC=$E7 WY=128 WX=7; HUD "
-                                + evidence
-                                + "; reference HUD tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59; dialog attr=$01 verified in 804 original-ROM prompt-arrow overlap frames (not Link/NPC geometry), LCDC=$E7; dialog_letters.asm:$4A84; Link excluded from hide loop bank1.asm:$5F7F-$5F81");
-            else rows.add(id + "\tIDENTICAL\t" + scene.layerCount() + " layers");
+            report(rows, id, scene.layerCount(), expectedPixels, mismatchPixels, evidence);
         });
+    }
+
+    private static List<String> blockedLayers(FrameScene scene) {
+        return scene.layersForComparison().stream()
+                .filter(layer -> !(layer instanceof HardwareRenderLayer hardware) || !hardware.supportsHardware())
+                .map(layer -> layer.getClass().getName())
+                .distinct()
+                .toList();
+    }
+
+    private static void report(
+            ArrayList<String> rows,
+            String id,
+            int layers,
+            int expectedPixels,
+            int mismatchPixels,
+            Set<String> evidence) {
+        if (mismatchPixels > 0) {
+            rows.add(id + "\tMISMATCH\tpixels=" + mismatchPixels + ";expectedPixels=" + expectedPixels);
+            return;
+        }
+        if (expectedPixels > 0)
+            rows.add(
+                    id + "\tEXPECTED_FIDELITY_FIX\tpixels=" + expectedPixels
+                            + "; CGB priority: OBJ wins when BG index=0 or both priority flags clear; PyBoy beach-route 56 overlap frames LCDC=$E7 WY=128 WX=7; HUD "
+                            + evidence
+                            + "; reference HUD tile=$7F attr=$01 index=0; animated_tiles.asm:$1D57-$1D59; dialog attr=$01 verified in 804 original-ROM prompt-arrow overlap frames (not Link/NPC geometry), LCDC=$E7; dialog_letters.asm:$4A84; Link excluded from hide loop bank1.asm:$5F7F-$5F81");
+        else rows.add(id + "\tIDENTICAL\t" + layers + " layers");
     }
 
     @Override
@@ -108,8 +136,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
         Files.createDirectories(directory);
         Files.write(directory.resolve(name + ".tsv"), rows);
         @SuppressWarnings("unchecked")
-        var expectedSources =
-                (java.util.Map<String, Group>) context.getStore(KEY).remove("expectedSources");
+        var expectedSources = (Map<String, Group>) context.getStore(KEY).remove("expectedSources");
         if (expectedSources != null && !expectedSources.isEmpty()) {
             var report = new ArrayList<String>();
             report.add("source\tpixels\tscenes\texample");
@@ -118,7 +145,7 @@ public final class SceneParityExtension implements BeforeEachCallback, AfterEach
             Files.write(directory.resolve(name + ".expected.tsv"), report);
         }
         @SuppressWarnings("unchecked")
-        var groups = (java.util.Map<String, Group>) context.getStore(KEY).remove("groups");
+        var groups = (Map<String, Group>) context.getStore(KEY).remove("groups");
         if (groups != null && !groups.isEmpty()) {
             var report = new ArrayList<String>();
             report.add("pattern\tpixels\tscenes\texample");

@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
+/** Owns OpenGL resources that present the composed RGBA framebuffer. */
 public final class OpenGlFramePresenter {
     private final long window;
     private final int vao;

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import linksawakening.gpu.GPU;
 
+/** Retains ordered layers and reusable scratch storage for indexed frame composition. */
 public final class FrameScene {
     private static final FrameScene EMPTY = new FrameScene(List.of());
 

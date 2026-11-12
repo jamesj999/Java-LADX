@@ -3,6 +3,8 @@ package linksawakening.render;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
@@ -32,7 +34,7 @@ final class IntroEmulatorCapture {
                 if (BackgroundSceneCatalog.requiresTitleTileset(snapshot.sceneId())) gpu.loadTitleScreenTiles(rom);
                 byte[] pixels = render(builder, gpu, snapshot);
                 writePng(pixels, new File(outDir, String.format("%04d.png", frame)));
-                java.util.List<String> rain = new java.util.ArrayList<>();
+                List<String> rain = new ArrayList<>();
                 for (var sprite : snapshot.sprites()) {
                     if (sprite.tileIndex() == 0x28 || (sprite.tileIndex() >= 0x70 && sprite.tileIndex() <= 0x76))
                         rain.add("[" + sprite.x() + "," + sprite.y() + "," + sprite.tileIndex() + "]");

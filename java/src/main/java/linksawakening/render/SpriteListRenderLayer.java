@@ -1,11 +1,14 @@
 package linksawakening.render;
 
+import java.util.ArrayList;
+
 /** Draws a software OAM list in entry order, with transparent OBJ color zero. */
 public final class SpriteListRenderLayer implements HardwareRenderLayer {
+    /** One tile entry with screen coordinates, palette selection, flips and hardware height. */
     public record Sprite(int tileIndex, int x, int y, int paletteIndex, boolean flipX, boolean flipY, int height) {}
 
     private final Iterable<Sprite> sprites;
-    private final java.util.ArrayList<Sprite> ordered = new java.util.ArrayList<>();
+    private final ArrayList<Sprite> ordered = new ArrayList<>();
     private final int[][] palettes;
     private linksawakening.gpu.EntitySpriteTileSnapshot tiles;
 

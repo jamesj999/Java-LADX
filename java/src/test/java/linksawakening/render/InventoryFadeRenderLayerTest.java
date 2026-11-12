@@ -2,6 +2,7 @@ package linksawakening.render;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.List;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
@@ -32,6 +33,6 @@ final class InventoryFadeRenderLayerTest {
         assertEquals(0, hardware[0] & 255);
         assertEquals(0x21, legacy[0] & 255);
         // This historical painter difference must remain observable to strict parity.
-        assertFalse(java.util.Arrays.equals(hardware, legacy));
+        assertFalse(Arrays.equals(hardware, legacy));
     }
 }

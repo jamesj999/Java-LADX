@@ -3,6 +3,7 @@ package linksawakening.render;
 import linksawakening.dialog.DialogController;
 import linksawakening.dialog.DialogRenderer;
 
+/** Submits dialog window pixels and the timed page-advance prompt. */
 public final class DialogRenderLayer implements HardwareRenderLayer {
     private final DialogController dialogController;
     private final int[] backgroundPalette;

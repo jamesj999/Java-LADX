@@ -76,6 +76,43 @@ final class RoomTileLoader {
                 DUNGEONS_TILES_COUNT,
                 DUNGEONS_TILES_VRAM_INDEX);
 
+        loadMapOverlays(romData, mapId, rom);
+
+        // LoadIndoorTiles copies the map's indoor-item sheet to vTiles1+$400
+        // after the shared gameplay base copy. House maps use the overworld
+        // item sheet; dungeon maps use InventoryIndoorItemsTiles.
+        if (mapId != MAP_COLOR_DUNGEON) {
+            if (mapId >= 0x0A) {
+                target.loadTilesFromROM(
+                        romData,
+                        GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
+                        INVENTORY_OVERWORLD_ITEMS_TILES_ADDR,
+                        0x30,
+                        0x0C0);
+            } else {
+                target.loadTilesFromROM(
+                        romData,
+                        GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
+                        INVENTORY_INDOOR_ITEMS_TILES_ADDR,
+                        0x30,
+                        0x0C0);
+            }
+        }
+
+        // LoadRoomSpecificTiles $00:2F24-$2F4A replaces the entire BG-only
+        // region for side-view rooms, then returns before the top-view patch.
+        if (sideScrolling) {
+            int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
+                    ? RomSymbols.DungeonSideview1Tiles.address()
+                    : RomSymbols.DungeonSideview2Tiles.address();
+            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK), source, 0x80, 0x100);
+            return;
+        }
+
+        loadRoomOverlay(romData, mapId, roomId, rom);
+    }
+
+    private void loadMapOverlays(byte[] romData, int mapId, Rom rom) {
         // Per-map walls overlay the first 32 tiles of the shared block. Each
         // entry in DungeonWallsTilesPointers is a single high byte — the
         // actual source address is that byte * 0x100 within bank 0x0D.
@@ -112,38 +149,9 @@ final class RoomTileLoader {
                     DUNGEON_ITEMS_TILES_COUNT,
                     DUNGEON_ITEMS_VRAM_INDEX);
         }
+    }
 
-        // LoadIndoorTiles copies the map's indoor-item sheet to vTiles1+$400
-        // after the shared gameplay base copy. House maps use the overworld
-        // item sheet; dungeon maps use InventoryIndoorItemsTiles.
-        if (mapId != MAP_COLOR_DUNGEON) {
-            if (mapId >= 0x0A) {
-                target.loadTilesFromROM(
-                        romData,
-                        GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
-                        INVENTORY_OVERWORLD_ITEMS_TILES_ADDR,
-                        0x30,
-                        0x0C0);
-            } else {
-                target.loadTilesFromROM(
-                        romData,
-                        GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
-                        INVENTORY_INDOOR_ITEMS_TILES_ADDR,
-                        0x30,
-                        0x0C0);
-            }
-        }
-
-        // LoadRoomSpecificTiles $00:2F24-$2F4A replaces the entire BG-only
-        // region for side-view rooms, then returns before the top-view patch.
-        if (sideScrolling) {
-            int source = mapId == 0x06 || (mapId >= 0x0A && roomId != 0xE9)
-                    ? RomSymbols.DungeonSideview1Tiles.address()
-                    : RomSymbols.DungeonSideview2Tiles.address();
-            target.loadTilesFromROM(romData, GbcBanks.adjust(DUNGEONS_TILES_BANK), source, 0x80, 0x100);
-            return;
-        }
-
+    private void loadRoomOverlay(byte[] romData, int mapId, int roomId, Rom rom) {
         // Per-room indoor tileset at VRAM tile 0x100 (vTiles2 base).
         // IndoorsTilesetsTable is actually two 256-byte halves: IndoorsA at
         // $6EB3 and IndoorsB at $6FB3 (bank0.asm:1031 — `inc h` for IndoorsB

@@ -3,6 +3,7 @@ package linksawakening.render;
 import static linksawakening.gpu.Framebuffer.HEIGHT;
 import static linksawakening.gpu.Framebuffer.WIDTH;
 
+import java.util.Arrays;
 import java.util.List;
 
 /** Optional pixel provenance and narrowly evidenced legacy comparison for capture tools. */
@@ -16,19 +17,31 @@ final class HardwareFrameDiagnostics {
     boolean[] inventoryOriginalHidden;
     String[] inventoryOriginalSources;
 
+    void reset() {
+        Arrays.fill(approvedHudEvidence, false);
+        Arrays.fill(hudTiles, 0);
+        Arrays.fill(hudAttributes, 0);
+        Arrays.fill(bgSources, null);
+        Arrays.fill(objSources, null);
+        Arrays.fill(objFlags, 0);
+        inventoryOriginalColors = null;
+        inventoryOriginalHidden = null;
+        inventoryOriginalSources = null;
+    }
+
     void attach(HardwareFrame frame) {
         this.frame = frame;
     }
 
-    void beforeInventoryHiding(List<HardwareFrame.ObjectTile> before, int windowY) {
+    void beforeInventoryHiding(List<OamEntry> before, int windowY) {
         boolean anyHidden = false;
         for (var entry : before) if (((entry.entryY() + 16) & 255) >= windowY + 8) anyHidden = true;
         if (windowY <= 0 || windowY >= 128 || !anyHidden) return;
         inventoryOriginalColors = new int[WIDTH * HEIGHT];
         inventoryOriginalHidden = new boolean[WIDTH * HEIGHT];
         inventoryOriginalSources = new String[WIDTH * HEIGHT];
-        for (HardwareFrame.ObjectTile entry : before) {
-            HardwareFrame.stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
+        for (OamEntry entry : before) {
+            stamp(entry.tile(), entry.x(), entry.y(), entry.flipX(), entry.flipY(), (pixel, index) -> {
                 if (index == 0) return;
                 inventoryOriginalColors[pixel] = entry.transform().applyAsInt(entry.palette()[index]);
                 inventoryOriginalHidden[pixel] = ((entry.entryY() + 16) & 255) >= windowY + 8;
@@ -111,5 +124,27 @@ final class HardwareFrameDiagnostics {
                     || (hardware[at + channel] & 255) != ((newRgb >> shift) & 255)) return false;
         }
         return legacy[at + 3] == (byte) 255 && hardware[at + 3] == (byte) 255;
+    }
+
+    void closedHudTile(linksawakening.gpu.Tile tile, int tileId, int attributes, int x, int y) {
+        stamp(tile, x, y, (attributes & 32) != 0, (attributes & 64) != 0, (pixel, index) -> {
+            hudTiles[pixel] = tileId;
+            hudAttributes[pixel] = attributes;
+            approvedHudEvidence[pixel] = true;
+        });
+    }
+
+    interface PixelWriter {
+        void write(int pixel, int index);
+    }
+
+    static void stamp(linksawakening.gpu.Tile tile, int x, int y, boolean flipX, boolean flipY, PixelWriter writer) {
+        if (tile == null) return;
+        for (int ty = 0; ty < 8; ty++)
+            for (int tx = 0; tx < 8; tx++) {
+                int px = x + tx, py = y + ty;
+                if (px < 0 || py < 0 || px >= WIDTH || py >= HEIGHT) continue;
+                writer.write(py * WIDTH + px, tile.getPixel(flipX ? 7 - tx : tx, flipY ? 7 - ty : ty));
+            }
     }
 }
