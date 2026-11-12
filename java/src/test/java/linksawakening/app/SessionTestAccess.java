@@ -1,5 +1,7 @@
 package linksawakening.app;
 
+import linksawakening.app.flow.SessionContext;
+
 public final class SessionTestAccess {
     private SessionTestAccess() {}
 

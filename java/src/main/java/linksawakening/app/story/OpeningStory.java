@@ -1,11 +1,11 @@
 package linksawakening.app.story;
 
 import java.util.Objects;
-import linksawakening.app.InputServices;
-import linksawakening.app.PlayerServices;
-import linksawakening.app.SessionState;
-import linksawakening.app.UiServices;
-import linksawakening.app.WorldServices;
+import linksawakening.app.services.InputServices;
+import linksawakening.app.services.PlayerServices;
+import linksawakening.app.services.UiServices;
+import linksawakening.app.services.WorldServices;
+import linksawakening.app.state.SessionState;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;

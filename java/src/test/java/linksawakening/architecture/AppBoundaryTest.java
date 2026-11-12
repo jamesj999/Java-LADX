@@ -37,7 +37,7 @@ class AppBoundaryTest {
                     || type.name().startsWith("linksawakening/app/gameplay/");
             for (var ref : type.references()) {
                 if (isolated) assertFalse(ref.startsWith("org/lwjgl/"), type.name() + " -> " + ref);
-                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/SessionAssembly"))
+                if (type.name().endsWith("Wiring") || type.name().equals("linksawakening/app/wiring/SessionAssembly"))
                     assertFalse(ref.startsWith("linksawakening/audio/openal/"), type.name() + " -> " + ref);
             }
         }
@@ -62,7 +62,7 @@ class AppBoundaryTest {
                     || direct.stream().anyMatch(n -> type.name().equals("linksawakening/app/" + n));
             if (domain) {
                 assertFalse(type.references().contains("linksawakening/app/GameSession"), type.name());
-                assertFalse(type.references().contains("linksawakening/app/SessionContext"), type.name());
+                assertFalse(type.references().contains("linksawakening/app/flow/SessionContext"), type.name());
             }
         }
     }

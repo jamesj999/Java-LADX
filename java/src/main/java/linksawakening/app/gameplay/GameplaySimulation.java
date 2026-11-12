@@ -3,14 +3,22 @@ package linksawakening.app.gameplay;
 import static linksawakening.world.room.RoomConstants.*;
 
 import java.util.Objects;
-import linksawakening.app.InputServices;
-import linksawakening.app.MusicDirector;
-import linksawakening.app.PlayerServices;
-import linksawakening.app.RomServices;
-import linksawakening.app.SessionState;
-import linksawakening.app.UiServices;
-import linksawakening.app.VisualServices;
-import linksawakening.app.WorldServices;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.entity.EntityPhase;
+import linksawakening.app.gameplay.interaction.BushInteraction;
+import linksawakening.app.gameplay.interaction.DialogBlockers;
+import linksawakening.app.gameplay.interaction.DialogInteractions;
+import linksawakening.app.gameplay.interaction.DialogSoundRouting;
+import linksawakening.app.gameplay.interaction.LiftInteraction;
+import linksawakening.app.gameplay.recovery.GameOverActions;
+import linksawakening.app.gameplay.recovery.PassOutController;
+import linksawakening.app.services.InputServices;
+import linksawakening.app.services.PlayerServices;
+import linksawakening.app.services.RomServices;
+import linksawakening.app.services.UiServices;
+import linksawakening.app.services.VisualServices;
+import linksawakening.app.services.WorldServices;
+import linksawakening.app.state.SessionState;
 import linksawakening.app.story.OpeningStory;
 import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
@@ -39,12 +47,6 @@ import linksawakening.world.transition.TransitionController;
 public final class GameplaySimulation implements GameplayFrame.Simulation {
     private final AnimatedTilesPhase animatedTilesPhase = new AnimatedTilesPhase();
     private final EntityPhase entityPhase;
-    private final GameplayCombatEvents combatEvents;
-
-    GameplayCombatEvents combatEvents() {
-        return combatEvents;
-    }
-
     private final CombatPhase combatPhase = new CombatPhase();
     private final LinkEquipmentPhase linkEquipmentPhase = new LinkEquipmentPhase();
     private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
@@ -108,9 +110,8 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
         this.visual = Objects.requireNonNull(visual);
         this.state = Objects.requireNonNull(state);
         this.control = Objects.requireNonNull(control);
-        combatEvents = new GameplayCombatEvents(
+        entityPhase = new EntityPhase(
                 world.roomSession(), player.link(), state.sounds(), visual.transientVfxSystem(), control.music());
-        entityPhase = new EntityPhase(combatEvents, EntityDialogRouting.DIRECT);
     }
 
     public PassOutController passOutController() {

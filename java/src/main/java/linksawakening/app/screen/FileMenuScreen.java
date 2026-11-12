@@ -1,8 +1,8 @@
 package linksawakening.app.screen;
 
 import java.util.Objects;
-import linksawakening.app.SaveState;
-import linksawakening.app.ScreenState;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.ScreenState;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.render.GameFrameState;

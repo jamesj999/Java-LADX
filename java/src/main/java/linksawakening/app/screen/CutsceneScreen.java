@@ -3,8 +3,8 @@ package linksawakening.app.screen;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.Objects;
-import linksawakening.app.MusicDirector;
-import linksawakening.app.gameplay.DialogSoundRouting;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.interaction.DialogSoundRouting;
 import linksawakening.app.story.MusicRequests;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
