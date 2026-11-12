@@ -58,6 +58,7 @@ public final class TransitionController {
     }
 
     /** Supplies the ROM-backed wave table used by Manbo's non-interactive effect. */
+    /** Uses the caller-owned typed ROM; no copy or bank-alignment check is introduced. */
     public void setRomData(Rom romData) {
         manboTransitionWave = romData == null ? null : new ManboTransitionWave(romData);
     }
@@ -209,7 +210,7 @@ public final class TransitionController {
         return (r << 16) | (g << 8) | b;
     }
 
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/SubsystemWiring.java:build. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public void setRomData(byte[] romData) {
         setRomData(romData == null ? null : Rom.unchecked(romData));

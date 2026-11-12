@@ -92,6 +92,7 @@ public final class OverworldBushInteraction {
         new StaticObjectRule(OBJECT_TALL_GRASS, true, OverworldBushInteraction::revealGroundAfterCut),
     };
 
+    /** Uses the caller-owned typed ROM; no copy or bank-alignment check is introduced. */
     public OverworldBushInteraction(Rom romData, RomTables romTables) {
         this.romData = romData;
         this.romTables = romTables;
@@ -388,7 +389,7 @@ public final class OverworldBushInteraction {
         return bank * BANK_SIZE + (address - 0x4000);
     }
 
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java. Legacy partial buffers retain their validation timing. */
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/SubsystemWiring.java:build. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public OverworldBushInteraction(byte[] romData, RomTables romTables) {
         this(romData == null ? null : Rom.unchecked(romData), romTables);

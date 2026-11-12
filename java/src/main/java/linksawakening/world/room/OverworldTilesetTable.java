@@ -12,6 +12,7 @@ public final class OverworldTilesetTable {
 
     private final Rom rom;
 
+    /** Uses the caller-owned typed ROM; no copy or bank-alignment check is introduced. */
     public OverworldTilesetTable(Rom romData) {
         this.rom = java.util.Objects.requireNonNull(romData, "data");
     }
@@ -34,7 +35,7 @@ public final class OverworldTilesetTable {
         return currentTilesetId != tilesetId;
     }
 
-    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/SessionBootstrap.java; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
+    /** @deprecated Pass Rom; retained for main/java/linksawakening/app/wiring/WorldWiring.java:rooms; test/java/linksawakening/app/MusicDirectorTest.java; test/java/linksawakening/render/DialogEmulatorCapture.java; test/java/linksawakening/render/HouseEmulatorCapture.java. Legacy partial buffers retain their validation timing. */
     @Deprecated(forRemoval = true)
     public OverworldTilesetTable(byte[] romData) {
         this(romData == null ? null : Rom.unchecked(romData));
