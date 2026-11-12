@@ -61,18 +61,13 @@ final class MainArchitectureTest {
 
     @Test
     void mainConsumesProjectileEventsAtTheEntityFrameBoundary() throws Exception {
-        check("EntityPhase", "tick", "tickEntitiesWithProjectileEvents", "EnemyProjectileEventConsumer.consume");
+        check("EntityPhase", "tick", "tickEntities", "EnemyProjectileEventConsumer.consume");
     }
 
     @Test
     void mainWiresSwordAndTailCaveCompletionAtTheEntityFrameBoundary() throws Exception {
         check("CombatPhase", "tick", "enemyCollisionBox", "resolveEntityCombat");
-        check(
-                "EntityPhase",
-                "tick",
-                "setEntityDialogActive",
-                "setEntityMusicActive",
-                "tickEntitiesWithProjectileEvents");
+        check("EntityPhase", "tick", "isActive", "isMusicPlaying", "tickEntities");
         check("EntityPhase", "tick", "consumeHeartContainerRewards", "applyHeartContainerReward");
         check(
                 "EntityPhase",
@@ -118,7 +113,7 @@ final class MainArchitectureTest {
         assertTrue(CompiledCode.code(P + "EntityPhase").contains("LinkCommandAdapter.from"));
         assertTrue(CompiledCode.code("linksawakening.entity.LinkCommand$PotContact")
                 .contains("applySideViewPotContact"));
-        assertTrue(CompiledCode.code(P + "EntityPhase").contains("setEntityFinalPositionX"));
+        assertTrue(CompiledCode.code(P + "EntityPhase").contains("romFinalPositionX"));
     }
 
     @Test
@@ -147,7 +142,7 @@ final class MainArchitectureTest {
     @Test
     void mainStartsLinkItemAttackStepAfterASuccessfulBombThrow() throws Exception {
         check("LinkEquipmentPhase", "tick", "throwLiftedEntity");
-        check("EntityPhase", "tick", "tickEntitiesWithProjectileEvents", "consumeLinkAttackStepRequests");
+        check("EntityPhase", "tick", "tickEntities", "consumeLinkAttackStepRequests");
     }
 
     @Test

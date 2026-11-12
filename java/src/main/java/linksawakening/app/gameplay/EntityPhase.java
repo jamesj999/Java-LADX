@@ -11,6 +11,7 @@ import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.room.RoomSession;
 
 final class EntityPhase {
     void tick(GameplaySimulation context, Sword.CollisionBox swordBoxForEntityTick) {
@@ -49,79 +50,84 @@ final class EntityPhase {
                         inventoryController.shouldBlockOverworldInput()
                                 && !inventoryMenu.transition().worldHandlerActive(),
                         inventoryMenu != null && inventoryMenu.isTransitioning())) {
-            roomSession.setEntityDialogActive(dialogController != null && dialogController.isActive());
-            roomSession.setEntityTalkState(
-                    inventoryMenu != null && inventoryMenu.inventoryAppearing(),
-                    dialogController == null ? 0 : dialogController.dialogCooldown(),
-                    inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
-            roomSession.setEntityDialogAskSelectionIndex(
-                    dialogController == null ? 0 : dialogController.choiceSelectionIndex());
-            roomSession.setHeartPiecesCount(playerState.heartPieces());
-            roomSession.setEntityMusicActive(musicPlayer != null && musicPlayer.isMusicPlaying());
-            roomSession.setEntityActionButtonsHeld(
-                    inputState != null && inputConfig != null && inputState.isDown(inputConfig.aKey()),
-                    inputState != null && inputConfig != null && inputState.isDown(inputConfig.bKey()));
-            roomSession.setEntityJoypadHeld(inputState != null
-                    && inputConfig != null
-                    && (inputState.isDown(inputConfig.upKey())
-                            || inputState.isDown(inputConfig.downKey())
-                            || inputState.isDown(inputConfig.leftKey())
-                            || inputState.isDown(inputConfig.rightKey())
-                            || inputState.isDown(inputConfig.aKey())
-                            || inputState.isDown(inputConfig.bKey())
-                            || inputState.isDown(inputConfig.selectKey())
-                            || inputState.isDown(inputConfig.menuOpenKey())));
-            roomSession.setEntityPressedButtonsMask(link == null ? 0 : link.romPressedButtonsMask());
-            roomSession.setEntityPowerBraceletButtonHeld(lift.isPowerBraceletButtonHeld());
-            roomSession.setEntityBombButtonHeld(lift.isBombButtonHeld());
-            roomSession.setEntityAttackStepAnimationCountdown(
-                    link == null ? 0 : link.romAttackStepAnimationCountdown());
-            roomSession.setEntityFinalPositionX(link == null ? 0 : link.romFinalPositionX());
-            roomSession.setBirdKeyOwned(playerState != null && playerState.birdKeyCount() != 0);
-            roomSession.setTailKeyOwned(playerState != null && playerState.tailKeyCount() != 0);
-            roomSession.setEntityInventorySlots(
-                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
-                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB());
-            roomSession.setLiftStrengthBoost(
-                    playerState != null && playerState.tunicType() == PlayerState.TUNIC_RED,
-                    playerState != null && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER);
-            roomSession.setHouseNpcTradeItem(playerState == null ? 0 : playerState.tradeSequenceItem());
-            roomSession.setChestPlayerLevels(
-                    playerState == null ? 1 : playerState.shieldLevel(),
-                    playerState == null ? 1 : playerState.swordLevel(),
-                    playerState == null ? 1 : playerState.powerBraceletLevel());
-            roomSession.setToadstoolPlayerState(
-                    playerState != null && playerState.hasToadstool(),
-                    playerState == null ? 0 : playerState.magicPowderCount());
-            roomSession.setEntityGoldenLeavesCount(playerState == null ? 0 : playerState.goldenLeavesCount());
-            roomSession.setEnemyDropPlayerState(
-                    playerState.maxHearts(),
-                    playerState.health(),
-                    playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE,
-                    playerState.isOnLowHealth());
-            roomSession.setFreeMovementMode(link != null && link.debugNoClip());
-            roomSession.setEntityLinkVelocityZ(link == null ? 0 : link.zVelocity());
-            var projectileEvents = roomSession.tickEntitiesWithProjectileEvents(
+            var projectileEvents = roomSession.tickEntities(new RoomSession.EntityFrameInputs(
                     frameCounter,
-                    link == null ? 0x08 : link.romEntityX(),
-                    link == null ? 0x10 : link.romEntityY(),
-                    link == null ? 0x00 : link.romEntityZ(),
-                    link != null && link.isAirborne(),
-                    link == null ? 0x02 : link.romMotionState(),
-                    link == null ? 0x00 : link.direction(),
-                    link == null ? 0x00 : link.romCollisionType(),
-                    link != null && link.isUsingShield(),
-                    playerState == null ? 1 : playerState.shieldLevel(),
-                    playerState == null
-                            ? 0
-                            : link != null && link.isCollisionDamageImmune() ? 1 : playerState.invincibilityCounter(),
-                    swordBoxForEntityTick.active(),
-                    swordBoxForEntityTick.x(),
-                    swordBoxForEntityTick.width(),
-                    swordBoxForEntityTick.y(),
-                    swordBoxForEntityTick.height(),
-                    link == null ? 0 : link.romSpeedX(),
-                    link == null ? 0 : link.romSpeedY());
+                    new RoomSession.LinkInputs(
+                            new RoomSession.LinkPosition(
+                                    link == null ? 0x08 : link.romEntityX(),
+                                    link == null ? 0x10 : link.romEntityY(),
+                                    link == null ? 0x00 : link.romEntityZ(),
+                                    link == null ? 0x00 : link.direction(),
+                                    link == null ? 0x00 : link.romCollisionType()),
+                            new RoomSession.LinkMotion(
+                                    link != null && link.isAirborne(),
+                                    link == null ? 0x02 : link.romMotionState(),
+                                    link != null && link.isUsingShield(),
+                                    playerState == null
+                                            ? 0
+                                            : link != null && link.isCollisionDamageImmune()
+                                                    ? 1
+                                                    : playerState.invincibilityCounter(),
+                                    link == null ? 0 : link.romSpeedX(),
+                                    link == null ? 0 : link.romSpeedY()),
+                            link == null ? 0 : link.romAttackStepAnimationCountdown(),
+                            link == null ? 0 : link.romFinalPositionX(),
+                            link != null && link.debugNoClip(),
+                            link == null ? 0 : link.zVelocity()),
+                    new RoomSession.PlayerInputs(
+                            new RoomSession.ProgressInputs(
+                                    playerState.heartPieces(),
+                                    playerState != null && playerState.birdKeyCount() != 0,
+                                    playerState != null && playerState.tailKeyCount() != 0,
+                                    playerState == null ? 0 : playerState.tradeSequenceItem(),
+                                    playerState != null && playerState.hasToadstool(),
+                                    playerState == null ? 0 : playerState.magicPowderCount(),
+                                    playerState == null ? 0 : playerState.goldenLeavesCount()),
+                            new RoomSession.InventoryInputs(
+                                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemA(),
+                                    playerState == null ? PlayerState.INVENTORY_EMPTY : playerState.itemB(),
+                                    playerState != null && playerState.tunicType() == PlayerState.TUNIC_RED,
+                                    playerState != null
+                                            && playerState.activePowerUp()
+                                                    == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER),
+                            new RoomSession.PlayerLevels(
+                                    playerState == null ? 1 : playerState.shieldLevel(),
+                                    playerState == null ? 1 : playerState.swordLevel(),
+                                    playerState == null ? 1 : playerState.powerBraceletLevel()),
+                            new RoomSession.PlayerHealth(
+                                    playerState.maxHearts(),
+                                    playerState.health(),
+                                    playerState.activePowerUp() != PlayerState.ACTIVE_POWER_UP_NONE,
+                                    playerState.isOnLowHealth())),
+                    new RoomSession.UiInputs(
+                            dialogController != null && dialogController.isActive(),
+                            inventoryMenu != null && inventoryMenu.inventoryAppearing(),
+                            dialogController == null ? 0 : dialogController.dialogCooldown(),
+                            inventoryMenu == null ? 0x80 : inventoryMenu.windowY(),
+                            dialogController == null ? 0 : dialogController.choiceSelectionIndex(),
+                            musicPlayer != null && musicPlayer.isMusicPlaying()),
+                    new RoomSession.ButtonInputs(
+                            inputState != null && inputConfig != null && inputState.isDown(inputConfig.aKey()),
+                            inputState != null && inputConfig != null && inputState.isDown(inputConfig.bKey()),
+                            inputState != null
+                                    && inputConfig != null
+                                    && (inputState.isDown(inputConfig.upKey())
+                                            || inputState.isDown(inputConfig.downKey())
+                                            || inputState.isDown(inputConfig.leftKey())
+                                            || inputState.isDown(inputConfig.rightKey())
+                                            || inputState.isDown(inputConfig.aKey())
+                                            || inputState.isDown(inputConfig.bKey())
+                                            || inputState.isDown(inputConfig.selectKey())
+                                            || inputState.isDown(inputConfig.menuOpenKey())),
+                            link == null ? 0 : link.romPressedButtonsMask(),
+                            lift.isPowerBraceletButtonHeld(),
+                            lift.isBombButtonHeld()),
+                    new RoomSession.SwordBox(
+                            swordBoxForEntityTick.active(),
+                            swordBoxForEntityTick.x(),
+                            swordBoxForEntityTick.width(),
+                            swordBoxForEntityTick.y(),
+                            swordBoxForEntityTick.height())));
             if (link != null) {
                 link.clearStandingOnSideViewEntity();
             }

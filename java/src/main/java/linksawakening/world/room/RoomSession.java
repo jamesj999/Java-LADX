@@ -59,6 +59,123 @@ import linksawakening.world.transition.Warp;
 
 /** Public room API delegating to room-scoped collaborators. */
 public final class RoomSession extends RoomSessionRules {
+    /** Immutable snapshot of the app inputs used by one entity frame. */
+    public record EntityFrameInputs(
+            int frameCounter,
+            LinkInputs link,
+            PlayerInputs player,
+            UiInputs ui,
+            ButtonInputs buttons,
+            SwordBox sword) {}
+
+    public record UiInputs(
+            boolean dialogActive,
+            boolean inventoryAppearing,
+            int dialogCooldown,
+            int windowY,
+            int selectionIndex,
+            boolean musicActive) {}
+
+    public record ButtonInputs(
+            boolean aHeld,
+            boolean bHeld,
+            boolean joypadHeld,
+            int pressedMask,
+            boolean braceletHeld,
+            boolean bombHeld) {}
+
+    public record PlayerInputs(
+            ProgressInputs progress, InventoryInputs inventory, PlayerLevels levels, PlayerHealth health) {}
+
+    public record ProgressInputs(
+            int heartPieces,
+            boolean birdKey,
+            boolean tailKey,
+            int tradeItem,
+            boolean hasToadstool,
+            int powder,
+            int leaves) {}
+
+    public record InventoryInputs(int itemA, int itemB, boolean redTunic, boolean pieceOfPower) {}
+
+    public record PlayerLevels(int shield, int sword, int bracelet) {}
+
+    public record PlayerHealth(int maxHearts, int health, boolean powerUp, boolean lowHealth) {}
+
+    public record LinkInputs(
+            LinkPosition position,
+            LinkMotion motion,
+            int attackCountdown,
+            int finalX,
+            boolean freeMovement,
+            int velocityZ) {}
+
+    public record LinkPosition(int x, int y, int z, int direction, int collisionType) {}
+
+    public record LinkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {}
+
+    public record SwordBox(boolean active, int x, int width, int y, int height) {}
+    /** Applies the live frame inputs in the original setter order before ticking slots. */
+    public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
+        setEntityDialogActive(inputs.ui().dialogActive());
+        setEntityTalkState(
+                inputs.ui().inventoryAppearing(),
+                inputs.ui().dialogCooldown(),
+                inputs.ui().windowY());
+        setEntityDialogAskSelectionIndex(inputs.ui().selectionIndex());
+        setHeartPiecesCount(inputs.player().progress().heartPieces());
+        setEntityMusicActive(inputs.ui().musicActive());
+        setEntityActionButtonsHeld(inputs.buttons().aHeld(), inputs.buttons().bHeld());
+        setEntityJoypadHeld(inputs.buttons().joypadHeld());
+        setEntityPressedButtonsMask(inputs.buttons().pressedMask());
+        setEntityPowerBraceletButtonHeld(inputs.buttons().braceletHeld());
+        setEntityBombButtonHeld(inputs.buttons().bombHeld());
+        setEntityAttackStepAnimationCountdown(inputs.link().attackCountdown());
+        setEntityFinalPositionX(inputs.link().finalX());
+        setBirdKeyOwned(inputs.player().progress().birdKey());
+        setTailKeyOwned(inputs.player().progress().tailKey());
+        setEntityInventorySlots(
+                inputs.player().inventory().itemA(), inputs.player().inventory().itemB());
+        setLiftStrengthBoost(
+                inputs.player().inventory().redTunic(),
+                inputs.player().inventory().pieceOfPower());
+        setHouseNpcTradeItem(inputs.player().progress().tradeItem());
+        setChestPlayerLevels(
+                inputs.player().levels().shield(),
+                inputs.player().levels().sword(),
+                inputs.player().levels().bracelet());
+        setToadstoolPlayerState(
+                inputs.player().progress().hasToadstool(),
+                inputs.player().progress().powder());
+        setEntityGoldenLeavesCount(inputs.player().progress().leaves());
+        setEnemyDropPlayerState(
+                inputs.player().health().maxHearts(),
+                inputs.player().health().health(),
+                inputs.player().health().powerUp(),
+                inputs.player().health().lowHealth());
+        setFreeMovementMode(inputs.link().freeMovement());
+        setEntityLinkVelocityZ(inputs.link().velocityZ());
+        return tickEntitiesWithProjectileEvents(
+                inputs.frameCounter(),
+                inputs.link().position().x(),
+                inputs.link().position().y(),
+                inputs.link().position().z(),
+                inputs.link().motion().airborne(),
+                inputs.link().motion().state(),
+                inputs.link().position().direction(),
+                inputs.link().position().collisionType(),
+                inputs.link().motion().shield(),
+                inputs.player().levels().shield(),
+                inputs.link().motion().invincibility(),
+                inputs.sword().active(),
+                inputs.sword().x(),
+                inputs.sword().width(),
+                inputs.sword().y(),
+                inputs.sword().height(),
+                inputs.link().motion().speedX(),
+                inputs.link().motion().speedY());
+    }
+
     final RoomSessionContext context;
     static long nextRoomSessionId;
 
@@ -370,7 +487,7 @@ public final class RoomSession extends RoomSessionRules {
         return context.roomSessionViews.heartPiecePickupActive();
     }
 
-    public void setHeartPiecesCount(int count) {
+    void setHeartPiecesCount(int count) {
         context.roomSessionViews.setHeartPiecesCount(count);
     }
 
@@ -446,7 +563,7 @@ public final class RoomSession extends RoomSessionRules {
         return context.entityBridge.entityRuntime != null && context.entityBridge.entityRuntime.gelClingingToLink();
     }
     /** Supplies wDialogState's active gate to the room entity handlers. */
-    public void setEntityLinkVelocityZ(int velocity) {
+    void setEntityLinkVelocityZ(int velocity) {
         context.entityInputs.setEntityLinkVelocityZ(velocity);
     }
 
@@ -458,11 +575,11 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
     }
 
-    public void setEntityDialogAskSelectionIndex(int selectionIndex) {
+    void setEntityDialogAskSelectionIndex(int selectionIndex) {
         context.entityInputs.setEntityDialogAskSelectionIndex(selectionIndex);
     }
     /** Supplies the source wActiveMusicIndex gate to entity state machines. */
-    public void setEntityMusicActive(boolean active) {
+    void setEntityMusicActive(boolean active) {
         context.entityInputs.setEntityMusicActive(active);
     }
     /** Supplies the distinct held A/B states consumed by ROM input handlers. */
@@ -470,15 +587,15 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
     }
     /** Supplies whether any held Game Boy joypad bit is active. */
-    public void setEntityJoypadHeld(boolean joypadHeld) {
+    void setEntityJoypadHeld(boolean joypadHeld) {
         context.entityInputs.setEntityJoypadHeld(joypadHeld);
     }
     /** Supplies hPressedButtonsMask's currently-held D-pad bits to entities. */
-    public void setEntityPressedButtonsMask(int pressedButtonsMask) {
+    void setEntityPressedButtonsMask(int pressedButtonsMask) {
         context.entityInputs.setEntityPressedButtonsMask(pressedButtonsMask);
     }
     /** Supplies the B/A inventory bytes consumed by Like Like's handler. */
-    public void setEntityInventorySlots(int itemA, int itemB) {
+    void setEntityInventorySlots(int itemA, int itemB) {
         context.entityInputs.setEntityInventorySlots(itemA, itemB);
     }
     /** Supplies the upgrade bytes consumed by the live chest dialog handler. */
@@ -511,7 +628,7 @@ public final class RoomSession extends RoomSessionRules {
         context.roomStoryState.updateWitchEnvironment();
     }
     /** Supplies wGoldenLeavesCount to the live Hiding Slime Key handler. */
-    public void setEntityGoldenLeavesCount(int goldenLeavesCount) {
+    void setEntityGoldenLeavesCount(int goldenLeavesCount) {
         context.entityInputs.setEntityGoldenLeavesCount(goldenLeavesCount);
     }
     /** Supplies wScreenShakeCountdown to ceiling-triggered entity handlers. */
@@ -539,7 +656,7 @@ public final class RoomSession extends RoomSessionRules {
         context.entityInputs.setEntityAttackStepAnimationCountdown(countdown);
     }
     /** Supplies hLinkFinalPositionX captured before the current Link update. */
-    public void setEntityFinalPositionX(int positionX) {
+    void setEntityFinalPositionX(int positionX) {
         context.entityInputs.setEntityFinalPositionX(positionX);
     }
     /** Returns wShouldGetLostInMysteriousWoods from the latest entity pass. */
