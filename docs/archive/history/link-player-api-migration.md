@@ -372,7 +372,7 @@ Internal ROM fields and parameters now use `Rom`. Byte overloads preserve partia
 
 Total: 12 remaining byte-array compatibility delegates (14 before round 4).
 
-## Allocation guards
+## Round 3 allocation guards (historical)
 
 ROM-free synthetic-data measurements use `AllocationProbe.bytesPerIteration`,
 retained actions and five measured windows. Link includes actual walking and
@@ -399,7 +399,7 @@ Correction to step 3 commit metrics: the measured raw-ROM declaration baseline
 was 43 (including locals), not the 42 stated in its message; final remains zero
 outside the 14 compatibility delegates.
 
-## Readability audit
+## Round 3 readability audit (historical)
 
 - Replaced ten source-chunk sprite registration modules with sixteen named
   responsibility groups: contextual objects, room objects, pickups, bosses,
@@ -549,3 +549,47 @@ All sixteen survivors have off-limits callers, resolved by compiler signature:
 | `linksawakening.gpu.RomTileLoader.tickAnimatedTiles(byte[])` | `java/src/main/java/linksawakening/world/room/RoomEntityBridge.java` |
 
 Default suite: 2,822 tests before/after; zero failures/errors, one existing skip.
+
+## Round 4 final compiler inventory
+
+Compiled all main and test sources with `-Xlint:deprecation,removal` and
+`-Xmaxwarns 10000`, using a temporary local Gradle init script. The build
+configuration is unchanged. Counts are warning occurrences, not unique symbols
+or files; overloads and repeated call sites each count. No warning limit was hit.
+
+| Top-level package | Main removal warnings | Test removal warnings | Total |
+| --- | ---: | ---: | ---: |
+| (root) | 0 | 0 | 0 |
+| app | 508 | 241 | 749 |
+| architecture | 0 | 0 | 0 |
+| audio | 0 | 0 | 0 |
+| config | 0 | 0 | 0 |
+| cutscene | 0 | 0 | 0 |
+| dialog | 0 | 0 | 0 |
+| entity | 79 | 70 | 149 |
+| equipment | 0 | 15 | 15 |
+| gameplay | 9 | 73 | 82 |
+| gpu | 0 | 0 | 0 |
+| input | 0 | 0 | 0 |
+| physics | 0 | 16 | 16 |
+| render | 0 | 9 | 9 |
+| rom | 0 | 37 | 37 |
+| save | 0 | 0 | 0 |
+| scene | 0 | 0 | 0 |
+| startup | 0 | 0 | 0 |
+| state | 93 | 0 | 93 |
+| testing | 0 | 0 | 0 |
+| ui | 0 | 4 | 4 |
+| vfx | 0 | 0 | 0 |
+| world | 126 | 1723 | 1849 |
+| **Total** | **815** | **2188** | **3003** |
+
+Remaining owned warnings include deprecated layer dispatch/implementation
+contracts and older ROM aggregate/table APIs beyond this round's caller migration.
+The targeted Link/PlayerState and GPU/audio/owned ROM delegates have no owned
+callers outside the temporary legacy layers and aggregate superclass contract.
+
+All five round 4 steps are complete. Verification used the default test task
+with LA_ROM: 2,821 baseline → 2,822 final tests, zero failures/errors and one
+existing skip. No off-limits source or test files, fixtures, build configuration,
+ROMs or extracted assets changed.
