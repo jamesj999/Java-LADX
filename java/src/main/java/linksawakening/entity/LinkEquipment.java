@@ -11,12 +11,35 @@ import linksawakening.state.InventoryItem;
 
 /** ROM-faithful equipment collaborator for Link. */
 final class LinkEquipment {
-    private final Link link;
-    BooleanSupplier shieldInputAllowed = () -> true;
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkAnimationState> linkAnimationState;
+    private final LinkComponentRef<LinkControls> linkControls;
+    private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+    private final LinkComponentRef<LinkItemState> linkItemState;
+    private final LinkComponentRef<LinkServices> linkServices;
+    private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
-    LinkEquipment(Link link) {
-        this.link = link;
+    LinkEquipment(Dependencies dependencies) {
+        linkAirborne = dependencies.linkAirborne;
+        linkAnimationState = dependencies.linkAnimationState;
+        linkControls = dependencies.linkControls;
+        linkEntityEffects = dependencies.linkEntityEffects;
+        linkItemState = dependencies.linkItemState;
+        linkServices = dependencies.linkServices;
+        linkStateMachine = dependencies.linkStateMachine;
     }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+    }
+
+    BooleanSupplier shieldInputAllowed = () -> true;
 
     /**
      * Mirrors the leading CheckItemsToUse gate used before an equipped item
@@ -24,7 +47,9 @@ final class LinkEquipment {
      * reject it, while pit, carry, and interactive item motion do.
      */
     boolean canUseItems() {
-        if (link.romMotionState() != 0 || link.isCarryingLiftedObject() || link.isRomLinkPushing()) {
+        if (linkAirborne.get().accessRomMotionState() != 0
+                || linkEntityEffects.get().accessIsCarryingLiftedObject()
+                || linkItemState.get().accessIsRomLinkPushing()) {
             return false;
         }
         return !itemsBlockMotion();
@@ -37,16 +62,24 @@ final class LinkEquipment {
 
     /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
     boolean isUsingShield() {
-        if (link.linkStateMachine.gelClinging || !shieldInputAllowed.getAsBoolean()) {
+        if (linkStateMachine.get().gelClinging || !shieldInputAllowed.getAsBoolean()) {
             return false;
         }
-        if (link.inputState == null || link.inputConfig == null || link.playerState == null) {
+        if (linkServices.get().inputState == null
+                || linkServices.get().inputConfig == null
+                || linkServices.get().playerState == null) {
             return false;
         }
-        boolean usingA = link.playerState.itemA() == InventoryItem.SHIELD.romValue()
-                && link.inputState.isDown(link.inputConfig.aKey());
-        boolean usingB = link.playerState.itemB() == InventoryItem.SHIELD.romValue()
-                && link.inputState.isDown(link.inputConfig.bKey());
+        boolean usingA = linkServices.get().playerState.itemA() == InventoryItem.SHIELD.romValue()
+                && linkServices
+                        .get()
+                        .inputState
+                        .isDown(linkServices.get().inputConfig.aKey());
+        boolean usingB = linkServices.get().playerState.itemB() == InventoryItem.SHIELD.romValue()
+                && linkServices
+                        .get()
+                        .inputState
+                        .isDown(linkServices.get().inputConfig.bKey());
         return usingA || usingB;
     }
 
@@ -56,11 +89,11 @@ final class LinkEquipment {
      * and diagonal masks preserve the existing facing.
      */
     int applyRomItemDirectionFromInput() {
-        int newDirection = JOYPAD_TO_DIRECTION[link.buildJoypadMask()];
+        int newDirection = JOYPAD_TO_DIRECTION[linkControls.get().accessBuildJoypadMask()];
         if (newDirection != -1) {
-            link.direction = newDirection;
+            linkAnimationState.get().direction = newDirection;
         }
-        return Direction.fromJava(link.direction).romIndex();
+        return Direction.fromJava(linkAnimationState.get().direction).romIndex();
     }
 
     boolean itemsBlockMotion() {
@@ -68,17 +101,23 @@ final class LinkEquipment {
     }
 
     boolean itemsBlockMotion(boolean beforeTopDownAnimation) {
-        if (link.linkEntityEffects.grabbingObject || link.isLiftTransitionBlockingMotion()) {
+        if (linkEntityEffects.get().grabbingObject || linkEntityEffects.get().accessIsLiftTransitionBlockingMotion()) {
             return true;
         }
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return false;
         }
-        EquipmentItem a = link.itemRegistry.lookup(link.playerState.itemA());
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemA());
         if (a != null && itemBlocksMotion(a, beforeTopDownAnimation)) {
             return true;
         }
-        EquipmentItem b = link.itemRegistry.lookup(link.playerState.itemB());
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemB());
         return b != null && itemBlocksMotion(b, beforeTopDownAnimation);
     }
 
@@ -93,15 +132,21 @@ final class LinkEquipment {
     }
 
     boolean itemsLockFacing(boolean beforeTopDownAnimation) {
-        if (link.linkEntityEffects.grabbingObject) return true;
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkEntityEffects.get().grabbingObject) return true;
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return false;
         }
-        EquipmentItem a = link.itemRegistry.lookup(link.playerState.itemA());
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemA());
         if (a != null && itemLocksFacing(a, beforeTopDownAnimation)) {
             return true;
         }
-        EquipmentItem b = link.itemRegistry.lookup(link.playerState.itemB());
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemB());
         return b != null && itemLocksFacing(b, beforeTopDownAnimation);
     }
 
@@ -112,44 +157,83 @@ final class LinkEquipment {
     }
 
     EquipmentItem itemInSlotA() {
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return null;
         }
-        return link.itemRegistry.lookup(link.playerState.itemA());
+        return linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemA());
     }
 
     EquipmentItem itemInSlotB() {
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return null;
         }
-        return link.itemRegistry.lookup(link.playerState.itemB());
+        return linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemB());
     }
 
     void tickRomAttackStepAnimationCountdown() {
-        if ((link.romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) == 0) {
-            link.romAttackStepAnimationCountdown = 0;
+        if ((linkItemState.get().romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) == 0) {
+            linkItemState.get().romAttackStepAnimationCountdown = 0;
         } else {
-            link.romAttackStepAnimationCountdown = (link.romAttackStepAnimationCountdown - 1) & 0xFF;
+            linkItemState.get().romAttackStepAnimationCountdown =
+                    (linkItemState.get().romAttackStepAnimationCountdown - 1) & 0xFF;
         }
     }
 
     /** Starts the ROM's generic item attack-step animation window. */
     void startRomItemAttackStep() {
-        link.romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
+        linkItemState.get().romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
     }
 
     /** Starts SprinkleMagicPowder's two-frame-longer generic item window ($0E). */
     void startRomMagicPowderAttackStep() {
-        link.romAttackStepAnimationCountdown = 0x0E;
+        linkItemState.get().romAttackStepAnimationCountdown = 0x0E;
     }
 
     /** Starts UseMagicRod's high-bit attack-step animation window. */
     void startRomMagicRodAttackStep() {
-        link.romAttackStepAnimationCountdown = 0x8E;
+        linkItemState.get().romAttackStepAnimationCountdown = 0x8E;
     }
 
     /** Mirrors TarinEntityHandler's direct clear of the item attack-step byte. */
     void clearRomAttackStepAnimationCountdown() {
-        link.romAttackStepAnimationCountdown = 0;
+        linkItemState.get().romAttackStepAnimationCountdown = 0;
+    }
+
+    void accessStartRomItemAttackStep() {
+        this.startRomItemAttackStep();
+    }
+
+    void accessStartRomMagicPowderAttackStep() {
+        this.startRomMagicPowderAttackStep();
+    }
+
+    void accessStartRomMagicRodAttackStep() {
+        this.startRomMagicRodAttackStep();
+    }
+
+    void accessClearRomAttackStepAnimationCountdown() {
+        this.clearRomAttackStepAnimationCountdown();
+    }
+
+    boolean accessCanUseItems() {
+        return this.canUseItems();
+    }
+
+    void accessSetShieldInputAllowed(BooleanSupplier allowed) {
+        this.setShieldInputAllowed(allowed);
+    }
+
+    boolean accessIsUsingShield() {
+        return this.isUsingShield();
+    }
+
+    int accessApplyRomItemDirectionFromInput() {
+        return this.applyRomItemDirectionFromInput();
     }
 }

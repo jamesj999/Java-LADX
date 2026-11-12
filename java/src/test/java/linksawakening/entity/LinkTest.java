@@ -56,7 +56,7 @@ final class LinkTest {
         link.setPixelPosition(0x25, 0x28);
         for (int frame = 0; frame < 16; frame++) {
             link.tickRomLinkPushing();
-            int previousSteps = link.romConsecutiveStepsCount;
+            int previousSteps = link.linkAnimationState.romConsecutiveStepsCount;
             link.update();
             assertTrue(link.isRomLinkPushing());
             if (frame == 0) assertEquals(-1, link.linkAnimator.pushingAnimationState);
@@ -70,7 +70,7 @@ final class LinkTest {
         link.tickRomLinkPushing();
         assertFalse(link.isRomLinkPushing());
         link.markRomLinkPushing(3); // Entity collision writes the same byte.
-        int steps = link.romConsecutiveStepsCount;
+        int steps = link.linkAnimationState.romConsecutiveStepsCount;
         link.update();
         assertEquals(0x20 + ((steps >> 3) & 1), link.linkAnimator.resolveAnimationState());
     }
@@ -832,19 +832,19 @@ final class LinkTest {
     @Test
     void tarinFacingPreservesTheCurrentWalkingAnimationPhase() throws Exception {
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), null, null, null, null, null);
-        Field walkFrame = Link.class.getDeclaredField("walkFrame");
+        Field walkFrame = LinkAnimationState.class.getDeclaredField("walkFrame");
         walkFrame.setAccessible(true);
-        walkFrame.setInt(link, 1);
-        Field walkTickCounter = Link.class.getDeclaredField("walkTickCounter");
+        walkFrame.setInt(link.linkAnimationState, 1);
+        Field walkTickCounter = LinkAnimationState.class.getDeclaredField("walkTickCounter");
         walkTickCounter.setAccessible(true);
-        walkTickCounter.setInt(link, 3);
+        walkTickCounter.setInt(link.linkAnimationState, 3);
 
         link.faceRomDirectionPreservingWalkPhase(0);
 
         assertEquals(Link.DIRECTION_RIGHT, link.direction());
         assertEquals(0x0B, resolvedAnimationState(link));
-        assertEquals(1, walkFrame.getInt(link));
-        assertEquals(3, walkTickCounter.getInt(link));
+        assertEquals(1, walkFrame.getInt(link.linkAnimationState));
+        assertEquals(3, walkTickCounter.getInt(link.linkAnimationState));
     }
 
     @Test
@@ -854,9 +854,9 @@ final class LinkTest {
         itemRegistry.register(playerState.itemA(), new BlockingItem());
         Link link = new Link(
                 new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), null, null, null, playerState, itemRegistry);
-        Field countdown = Link.class.getDeclaredField("romAttackStepAnimationCountdown");
+        Field countdown = LinkItemState.class.getDeclaredField("romAttackStepAnimationCountdown");
         countdown.setAccessible(true);
-        countdown.setInt(link, 0x80);
+        countdown.setInt(link.linkItemState, 0x80);
 
         assertEquals(0x80, link.romAttackStepAnimationCountdown());
 
@@ -1492,7 +1492,7 @@ final class LinkTest {
         while (withoutFlippers.romMotionState() == Link.LINK_MOTION_RECOVER) withoutFlippers.update();
         assertEquals(0x20, withoutFlippers.pixelX());
         assertEquals(0x20, withoutFlippers.pixelY());
-        assertEquals(0x40, withoutFlippers.playerState.invincibilityCounter());
+        assertEquals(0x40, withoutFlippers.linkServices.playerState.invincibilityCounter());
     }
 
     @Test
@@ -1519,11 +1519,11 @@ final class LinkTest {
         assertEquals(0, link.romEntityZ());
         int finalDirection = link.direction();
         assertEquals(directions[(frame >>> 2) & 3], finalDirection);
-        link.inputState.onKeyEvent(link.inputConfig.rightKey(), GLFW_RELEASE);
+        link.linkServices.inputState.onKeyEvent(link.linkServices.inputConfig.rightKey(), GLFW_RELEASE);
         link.update();
         assertEquals(finalDirection, link.direction());
         assertEquals(64, link.pixelX());
-        link.inputState.onKeyEvent(link.inputConfig.rightKey(), GLFW_PRESS);
+        link.linkServices.inputState.onKeyEvent(link.linkServices.inputConfig.rightKey(), GLFW_PRESS);
         link.update();
         assertEquals(Link.DIRECTION_RIGHT, link.direction());
         assertTrue(link.pixelX() > 64);

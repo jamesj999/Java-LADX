@@ -13,10 +13,41 @@ import linksawakening.state.Tunic;
 
 /** ROM pose selection and sprite data for both rendering paths. */
 final class LinkAnimator {
-    private final Link link;
+    private final LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkAnimationState> linkAnimationState;
+    private final LinkComponentRef<LinkDamage> linkDamage;
+    private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+    private final LinkComponentRef<LinkEquipment> linkEquipment;
+    private final LinkComponentRef<LinkItemState> linkItemState;
+    private final LinkComponentRef<LinkMotion> linkMotion;
+    private final LinkComponentRef<LinkServices> linkServices;
+    private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
-    LinkAnimator(Link link) {
-        this.link = link;
+    LinkAnimator(Dependencies dependencies) {
+        dialogGotItemSequence = dependencies.dialogGotItemSequence;
+        linkAirborne = dependencies.linkAirborne;
+        linkAnimationState = dependencies.linkAnimationState;
+        linkDamage = dependencies.linkDamage;
+        linkEntityEffects = dependencies.linkEntityEffects;
+        linkEquipment = dependencies.linkEquipment;
+        linkItemState = dependencies.linkItemState;
+        linkMotion = dependencies.linkMotion;
+        linkServices = dependencies.linkServices;
+        linkStateMachine = dependencies.linkStateMachine;
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 
     static final int[][] ANIMATION_STATE = {
@@ -80,30 +111,40 @@ final class LinkAnimator {
     int jumpAnimationFrame;
 
     void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        if (link.linkEntityEffects.likeLikeCaptured) {
+        if (linkEntityEffects.get().likeLikeCaptured) {
             return;
         }
         int animationState = resolveAnimationState();
         if (animationState == 0xFF) return;
-        link.spriteSheet.resolveTiles(animationState, composedTiles);
+        linkServices.get().spriteSheet.resolveTiles(animationState, composedTiles);
 
-        boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);
-        boolean leftFlipY = link.spriteSheet.leftHalfFlipY(animationState);
-        boolean rightFlipX = link.spriteSheet.rightHalfFlipX(animationState);
-        boolean rightFlipY = link.spriteSheet.rightHalfFlipY(animationState);
+        boolean leftFlipX = linkServices.get().spriteSheet.leftHalfFlipX(animationState);
+        boolean leftFlipY = linkServices.get().spriteSheet.leftHalfFlipY(animationState);
+        boolean rightFlipX = linkServices.get().spriteSheet.rightHalfFlipX(animationState);
+        boolean rightFlipY = linkServices.get().spriteSheet.rightHalfFlipY(animationState);
 
-        int originX = link.linkMotion.pixelX() + offsetX;
+        int originX = linkMotion.get().pixelX() + offsetX;
         int renderY = renderY();
         int originY = renderY + offsetY;
-        int[] palette = link.playerState != null && (link.playerState.invincibilityCounter() & 0x04) != 0
+        int[] palette = linkServices.get().playerState != null
+                        && (linkServices.get().playerState.invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
-                ? link.tunicPalette.forObjectPalette(4)
-                : link.tunicPalette.forTunic(
-                        link.playerState == null ? Tunic.GREEN.romValue() : link.playerState.tunicType());
+                ? linkServices.get().tunicPalette.forObjectPalette(4)
+                : linkServices
+                        .get()
+                        .tunicPalette
+                        .forTunic(
+                                linkServices.get().playerState == null
+                                        ? Tunic.GREEN.romValue()
+                                        : linkServices.get().playerState.tunicType());
 
-        if (link.linkStateMachine.revolvingDoorPaletteVariant >= 0 && link.linkStateMachine.revolvingDoorFrame < 0x38) {
-            palette = link.romTables.revolvingDoorPalette(link.linkStateMachine.revolvingDoorPaletteVariant);
+        if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
+                && linkStateMachine.get().revolvingDoorFrame < 0x38) {
+            palette = linkServices
+                    .get()
+                    .romTables
+                    .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
         }
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
@@ -127,26 +168,32 @@ final class LinkAnimator {
     }
 
     void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY) {
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return;
         }
-        EquipmentItem a = link.itemRegistry.lookup(link.playerState.itemA());
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemA());
         if (a != null) {
             a.render(
                     displayBuffer,
-                    link.linkMotion.pixelX(),
-                    link.linkMotion.pixelY() - link.zPixels(),
-                    link.direction,
+                    linkMotion.get().pixelX(),
+                    linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction,
                     offsetX,
                     offsetY);
         }
-        EquipmentItem b = link.itemRegistry.lookup(link.playerState.itemB());
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemB());
         if (b != null && b != a) {
             b.render(
                     displayBuffer,
-                    link.linkMotion.pixelX(),
-                    link.linkMotion.pixelY() - link.zPixels(),
-                    link.direction,
+                    linkMotion.get().pixelX(),
+                    linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction,
                     offsetX,
                     offsetY);
         }
@@ -155,13 +202,13 @@ final class LinkAnimator {
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.render(
                         displayBuffer,
-                        link.linkMotion.pixelX(),
-                        link.linkMotion.pixelY() - link.zPixels(),
-                        link.direction,
+                        linkMotion.get().pixelX(),
+                        linkMotion.get().pixelY() - linkAirborne.get().accessZPixels(),
+                        linkAnimationState.get().direction,
                         offsetX,
                         offsetY);
             }
@@ -203,73 +250,82 @@ final class LinkAnimator {
         if (swordAcquisitionAnimationState >= 0) {
             return swordAcquisitionAnimationState;
         }
-        if (link.linkAirborne.fallingIntoPit) {
+        if (linkAirborne.get().fallingIntoPit) {
             int frame = Math.min(
                     LinkAnimator.FALL_ANIMATION_STATE.length - 1,
-                    link.linkAirborne.fallingFrameCounter / LinkRomConstants.FALL_FRAME_TICKS);
+                    linkAirborne.get().fallingFrameCounter / LinkRomConstants.FALL_FRAME_TICKS);
             return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 
-        if (link.linkStateMachine.motionState == LinkMotionState.SWIMMING) {
-            return link.linkStateMachine.physicsModifier != 0
-                    ? LinkAnimator.DIVING_ANIMATION_STATE[link.walkFrame]
-                    : LinkAnimator.SWIMMING_ANIMATION_STATE[link.direction][link.walkFrame];
+        if (linkStateMachine.get().motionState == LinkMotionState.SWIMMING) {
+            return linkStateMachine.get().physicsModifier != 0
+                    ? LinkAnimator.DIVING_ANIMATION_STATE[linkAnimationState.get().walkFrame]
+                    : LinkAnimator.SWIMMING_ANIMATION_STATE[linkAnimationState.get().direction][
+                            linkAnimationState.get().walkFrame];
         }
 
-        if (link.linkEntityEffects.grabbingObject) {
+        if (linkEntityEffects.get().grabbingObject) {
             return 0x36
-                    + 2 * Direction.fromJava(link.direction).romIndex()
-                    + (link.linkEntityEffects.pullingObject ? 1 : 0);
+                    + 2 * Direction.fromJava(linkAnimationState.get().direction).romIndex()
+                    + (linkEntityEffects.get().pullingObject ? 1 : 0);
         }
         // func_002_4338 copies the intermediate ROM carry animation state
         // directly (for example $37/$39/$3B/$3D). The final carry state is
         // the regular two-frame lifting list below.
-        if (link.linkEntityEffects.carryingLiftedObjectState >= 2) {
-            return link.linkEntityEffects.carryingLiftedObjectState;
+        if (linkEntityEffects.get().carryingLiftedObjectState >= 2) {
+            return linkEntityEffects.get().carryingLiftedObjectState;
         }
         // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
-        // while link.linkAirborne.airborne, selecting the alternate normal pose after the flip.
-        int normalFrame = link.linkAirborne.airborne
-                        || (ledgeJumpRenderY != Integer.MIN_VALUE && link.romConsecutiveStepsCount == 0xFF)
+        // while linkAirborne.get().airborne, selecting the alternate normal pose after the flip.
+        int normalFrame = linkAirborne.get().airborne
+                        || (ledgeJumpRenderY != Integer.MIN_VALUE
+                                && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
                 ? 1
-                : link.walkFrame;
-        int baseState = LinkAnimator.ANIMATION_STATE[link.direction][normalFrame];
-        if (link.linkEntityEffects.carryingLiftedObjectState == 1) {
-            return LinkAnimator.LIFTING_ANIMATION_STATE[link.direction][link.walkFrame];
+                : linkAnimationState.get().walkFrame;
+        int baseState = LinkAnimator.ANIMATION_STATE[linkAnimationState.get().direction][normalFrame];
+        if (linkEntityEffects.get().carryingLiftedObjectState == 1) {
+            return LinkAnimator.LIFTING_ANIMATION_STATE[linkAnimationState.get().direction][
+                    linkAnimationState.get().walkFrame];
         }
-        int override = queryOverride(link.linkEquipment.itemInSlotA());
+        int override = queryOverride(linkEquipment.get().itemInSlotA());
         if (override >= 0) {
             return override;
         }
-        override = queryOverride(link.linkEquipment.itemInSlotB());
+        override = queryOverride(linkEquipment.get().itemInSlotB());
         if (override >= 0) {
             return override;
         }
-        if (link.linkAirborne.airborne
-                && !link.linkAirborne.spinningPitWarpArrival
+        if (linkAirborne.get().airborne
+                && !linkAirborne.get().spinningPitWarpArrival
                 && jumpAnimationFrame < 3
-                && !link.linkAirborne.swordSuppressesJumpAnimation()) {
-            return LinkAnimator.JUMP_ANIMATION_STATE[link.direction][jumpAnimationFrame];
+                && !linkAirborne.get().swordSuppressesJumpAnimation()) {
+            return LinkAnimator.JUMP_ANIMATION_STATE[linkAnimationState.get().direction][jumpAnimationFrame];
         }
         if (pushingAnimationState >= 0) return pushingAnimationState;
-        if (link.spriteSheet != null) {
-            int carriedShield = !link.linkStateMachine.gelClinging
-                            && link.playerState != null
-                            && (link.playerState.itemA() == InventoryItem.SHIELD.romValue()
-                                    || link.playerState.itemB() == InventoryItem.SHIELD.romValue())
-                    ? link.playerState.shieldLevel()
+        if (linkServices.get().spriteSheet != null) {
+            int carriedShield = !linkStateMachine.get().gelClinging
+                            && linkServices.get().playerState != null
+                            && (linkServices.get().playerState.itemA() == InventoryItem.SHIELD.romValue()
+                                    || linkServices.get().playerState.itemB() == InventoryItem.SHIELD.romValue())
+                    ? linkServices.get().playerState.shieldLevel()
                     : 0;
-            return link.spriteSheet.walkingAnimationState(
-                    Direction.fromJava(link.direction).romIndex(),
-                    normalFrame,
-                    carriedShield,
-                    link.linkEquipment.isUsingShield());
+            return linkServices
+                    .get()
+                    .spriteSheet
+                    .walkingAnimationState(
+                            Direction.fromJava(linkAnimationState.get().direction)
+                                    .romIndex(),
+                            normalFrame,
+                            carriedShield,
+                            linkEquipment.get().isUsingShield());
         }
-        if (link.linkEquipment.isUsingShield() && link.playerState != null && link.playerState.shieldLevel() > 0) {
-            int[][] shieldTable = link.playerState.shieldLevel() >= 2
+        if (linkEquipment.get().isUsingShield()
+                && linkServices.get().playerState != null
+                && linkServices.get().playerState.shieldLevel() > 0) {
+            int[][] shieldTable = linkServices.get().playerState.shieldLevel() >= 2
                     ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE
                     : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
-            return shieldTable[link.direction][normalFrame];
+            return shieldTable[linkAnimationState.get().direction][normalFrame];
         }
         return baseState;
     }
@@ -279,13 +335,24 @@ final class LinkAnimator {
     /** $02:42C7 selects walking poses before this frame's movement/collisions. */
     void cachePushingAnimation() {
         pushingAnimationState = -1;
-        if (link.isRomLinkPushing()
-                && (link.collision == null || !link.collision.linkOnSlowGround(link.pixelX(), link.pixelY()))) {
-            int frame = (link.romConsecutiveStepsCount >> 3) & 1;
-            pushingAnimationState = link.spriteSheet != null
-                    ? link.spriteSheet.pushingAnimationState(
-                            Direction.fromJava(link.direction).romIndex(), frame)
-                    : new int[] {0x1A, 0x1C, 0x1E, 0x20}[link.direction] + frame;
+        if (linkItemState.get().accessIsRomLinkPushing()
+                && (linkServices.get().collision == null
+                        || !linkServices
+                                .get()
+                                .collision
+                                .linkOnSlowGround(
+                                        linkMotion.get().accessPixelX(),
+                                        linkMotion.get().accessPixelY()))) {
+            int frame = (linkAnimationState.get().romConsecutiveStepsCount >> 3) & 1;
+            pushingAnimationState = linkServices.get().spriteSheet != null
+                    ? linkServices
+                            .get()
+                            .spriteSheet
+                            .pushingAnimationState(
+                                    Direction.fromJava(linkAnimationState.get().direction)
+                                            .romIndex(),
+                                    frame)
+                    : new int[] {0x1A, 0x1C, 0x1E, 0x20}[linkAnimationState.get().direction] + frame;
         }
     }
 
@@ -293,33 +360,33 @@ final class LinkAnimator {
         if (item == null) {
             return -1;
         }
-        return item.overrideAnimationState(link.direction, link.walkFrame);
+        return item.overrideAnimationState(linkAnimationState.get().direction, linkAnimationState.get().walkFrame);
     }
 
     /** Applies the ROM's explicit hLinkAnimationState=$6A fallen-pose write. */
     void showRomFallenPose() {
-        link.linkStateMachine.romInteractiveMotionBlocked = true;
+        linkStateMachine.get().romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6A;
-        link.movingThisFrame = false;
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Applies HoldEntityAboveLink's got-item pose and interaction lock. */
     void showHeldItemPose() {
-        link.linkStateMachine.romInteractiveMotionBlocked = true;
+        linkStateMachine.get().romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6C;
-        link.direction = Direction.DOWN.javaIndex();
-        link.romAttackStepAnimationCountdown = 0;
-        link.movingThisFrame = false;
+        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkItemState.get().romAttackStepAnimationCountdown = 0;
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** HandleGotItemB's power-up pose, distinct from lifting a physical object. */
     void showPowerUpPickupPose() {
-        link.linkStateMachine.romInteractiveMotionBlocked = true;
+        linkStateMachine.get().romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6B;
-        link.linkDamage.collisionIgnoreFramesRemaining = 0;
-        link.linkMotion.forcedSpeedPending = false;
-        link.romAttackStepAnimationCountdown = 0;
-        link.movingThisFrame = false;
+        linkDamage.get().collisionIgnoreFramesRemaining = 0;
+        linkMotion.get().forcedSpeedPending = false;
+        linkItemState.get().romAttackStepAnimationCountdown = 0;
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Applies TarinShield2Handler's shield-specific got-item presentation. */
@@ -340,9 +407,9 @@ final class LinkAnimator {
     void showStandingShieldDownPose() {
         tarinShieldPresentation = false;
         romAnimationStateOverride = 0x22;
-        link.linkStateMachine.romInteractiveMotionBlocked = false;
-        link.direction = Direction.DOWN.javaIndex();
-        link.movingThisFrame = false;
+        linkStateMachine.get().romInteractiveMotionBlocked = false;
+        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Applies one ROM spin sector while obtaining the beach sword. */
@@ -350,12 +417,12 @@ final class LinkAnimator {
         if (countdown < 0 || countdown > 0x20) {
             throw new IllegalArgumentException("Sword-spin countdown must be between 0 and 32");
         }
-        if (link.romTables == null) {
+        if (linkServices.get().romTables == null) {
             throw new IllegalStateException("Sword acquisition spin requires ROM tables");
         }
         if (swordAcquisitionBaseRomDirection < 0) {
             swordAcquisitionBaseRomDirection =
-                    Direction.fromJava(link.direction).romIndex();
+                    Direction.fromJava(linkAnimationState.get().direction).romIndex();
             swordAcquisitionAnimationState = resolveAnimationState();
         }
         // The spin handler writes a fresh hLinkAnimationState. Do not let a
@@ -363,27 +430,29 @@ final class LinkAnimator {
         // front of this ROM-driven sword pose.
         romAnimationStateOverride = -1;
         int sector = Math.min(7, countdown >> 2);
-        int swordState = link.romTables.swordSpinAnimationState(swordAcquisitionBaseRomDirection, sector);
-        int absoluteRomDirection = link.romTables.swordSpinAbsoluteDirection(swordAcquisitionBaseRomDirection, sector);
-        int animationState = link.romTables.swordDirectionAnimState(absoluteRomDirection, swordState);
+        int swordState = linkServices.get().romTables.swordSpinAnimationState(swordAcquisitionBaseRomDirection, sector);
+        int absoluteRomDirection =
+                linkServices.get().romTables.swordSpinAbsoluteDirection(swordAcquisitionBaseRomDirection, sector);
+        int animationState = linkServices.get().romTables.swordDirectionAnimState(absoluteRomDirection, swordState);
         // UpdateSpinAttackAnimation leaves hLinkAnimationState unchanged for
         // LINK_ANIMATION_STATE_HIDDEN, so retain the previous ROM pose.
         if (animationState != 0xFF) {
             swordAcquisitionAnimationState = animationState;
         }
-        link.linkStateMachine.romInteractiveMotionBlocked = true;
-        link.direction = Direction.fromRom(absoluteRomDirection).javaIndex();
-        link.movingThisFrame = false;
+        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkAnimationState.get().direction =
+                Direction.fromRom(absoluteRomDirection).javaIndex();
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Mirrors the sword handler's final hLinkAnimationState=$6B write. */
     void showSwordAcquisitionFinalPose() {
-        link.linkStateMachine.romInteractiveMotionBlocked = true;
+        linkStateMachine.get().romInteractiveMotionBlocked = true;
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
         romAnimationStateOverride = 0x6B;
-        link.direction = Direction.DOWN.javaIndex();
-        link.movingThisFrame = false;
+        linkAnimationState.get().direction = Direction.DOWN.javaIndex();
+        linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Hides ordinary Link OAM and selects Marin's dedicated bed display list. */
@@ -395,31 +464,41 @@ final class LinkAnimator {
     }
 
     void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        if (link.linkEntityEffects.likeLikeCaptured) {
+        if (linkEntityEffects.get().likeLikeCaptured) {
             return;
         }
         Tile[] composedTiles = new Tile[4];
         int animationState = resolveAnimationState();
         if (animationState == 0xFF) return;
-        link.spriteSheet.resolveTiles(animationState, composedTiles);
+        linkServices.get().spriteSheet.resolveTiles(animationState, composedTiles);
 
-        boolean leftFlipX = link.spriteSheet.leftHalfFlipX(animationState);
-        boolean leftFlipY = link.spriteSheet.leftHalfFlipY(animationState);
-        boolean rightFlipX = link.spriteSheet.rightHalfFlipX(animationState);
-        boolean rightFlipY = link.spriteSheet.rightHalfFlipY(animationState);
+        boolean leftFlipX = linkServices.get().spriteSheet.leftHalfFlipX(animationState);
+        boolean leftFlipY = linkServices.get().spriteSheet.leftHalfFlipY(animationState);
+        boolean rightFlipX = linkServices.get().spriteSheet.rightHalfFlipX(animationState);
+        boolean rightFlipY = linkServices.get().spriteSheet.rightHalfFlipY(animationState);
 
-        int originX = link.pixelX() + offsetX;
+        int originX = linkMotion.get().accessPixelX() + offsetX;
         int renderY = renderY();
         int originY = renderY + offsetY;
-        int[] palette = link.playerState != null && (link.playerState.invincibilityCounter() & 0x04) != 0
+        int[] palette = linkServices.get().playerState != null
+                        && (linkServices.get().playerState.invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
-                ? link.tunicPalette.forObjectPalette(4)
-                : link.tunicPalette.forTunic(
-                        link.playerState == null ? Tunic.GREEN.romValue() : link.playerState.tunicType());
+                ? linkServices.get().tunicPalette.forObjectPalette(4)
+                : linkServices
+                        .get()
+                        .tunicPalette
+                        .forTunic(
+                                linkServices.get().playerState == null
+                                        ? Tunic.GREEN.romValue()
+                                        : linkServices.get().playerState.tunicType());
 
-        if (link.linkStateMachine.revolvingDoorPaletteVariant >= 0 && link.linkStateMachine.revolvingDoorFrame < 0x38) {
-            palette = link.romTables.revolvingDoorPalette(link.linkStateMachine.revolvingDoorPaletteVariant);
+        if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
+                && linkStateMachine.get().revolvingDoorFrame < 0x38) {
+            palette = linkServices
+                    .get()
+                    .romTables
+                    .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
         }
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
@@ -446,26 +525,49 @@ final class LinkAnimator {
     }
 
     void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
-        if (link.itemRegistry == null || link.playerState == null) {
+        if (linkServices.get().itemRegistry == null || linkServices.get().playerState == null) {
             return;
         }
-        EquipmentItem a = link.itemRegistry.lookup(link.playerState.itemA());
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemA());
         if (a != null) {
-            a.submitOam(sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);
+            a.submitOam(
+                    sink,
+                    linkMotion.get().accessPixelX(),
+                    linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction,
+                    offsetX,
+                    offsetY);
         }
-        EquipmentItem b = link.itemRegistry.lookup(link.playerState.itemB());
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .lookup(linkServices.get().playerState.itemB());
         if (b != null && b != a) {
-            b.submitOam(sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);
+            b.submitOam(
+                    sink,
+                    linkMotion.get().accessPixelX(),
+                    linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction,
+                    offsetX,
+                    offsetY);
         }
         if (swordAcquisitionAnimationState >= 0) {
             // ApplyLinkMotionState draws the sword during the pickup spin
             // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
             // sword handler from the registry, but do not draw it twice if a
             // save already has the sword equipped.
-            EquipmentItem acquisitionSword = link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
             if (acquisitionSword != null && acquisitionSword != a && acquisitionSword != b) {
                 acquisitionSword.submitOam(
-                        sink, link.pixelX(), link.pixelY() - link.zPixels(), link.direction, offsetX, offsetY);
+                        sink,
+                        linkMotion.get().accessPixelX(),
+                        linkMotion.get().accessPixelY() - linkAirborne.get().accessZPixels(),
+                        linkAnimationState.get().direction,
+                        offsetX,
+                        offsetY);
             }
         }
     }
@@ -473,6 +575,98 @@ final class LinkAnimator {
     private int renderY() {
         return ledgeJumpRenderY != Integer.MIN_VALUE
                 ? ledgeJumpRenderY
-                : link.pixelY() - (bedJumpRenderZ >= 0 ? bedJumpRenderZ : link.zPixels());
+                : linkMotion.get().accessPixelY()
+                        - (bedJumpRenderZ >= 0
+                                ? bedJumpRenderZ
+                                : linkAirborne.get().accessZPixels());
+    }
+
+    boolean accessIsTarinShieldPresentationVisible() {
+        return this.tarinShieldPresentation;
+    }
+
+    int[] accessTarinShieldPalette() {
+        return this.tarinShieldPalette == null ? null : this.tarinShieldPalette.clone();
+    }
+
+    boolean accessIsMarinWakeUpBedVisible() {
+        return this.marinWakeUpBedVariant >= 0;
+    }
+
+    int accessMarinWakeUpBedVariant() {
+        return this.marinWakeUpBedVariant;
+    }
+
+    int accessRomAnimationState() {
+        return this.resolveAnimationState();
+    }
+
+    void accessShowRomFallenPose() {
+        this.showRomFallenPose();
+    }
+
+    boolean accessDialogGotItemActive() {
+        return dialogGotItemSequence.get().item() != 0;
+    }
+
+    int accessDialogGotItem() {
+        return dialogGotItemSequence.get().item();
+    }
+
+    int accessDialogGotItemCountdown() {
+        return dialogGotItemSequence.get().countdown();
+    }
+
+    int accessPresentedDialogGotItem() {
+        return dialogGotItemSequence.get().presentedItem();
+    }
+
+    void accessPresentToadstool() {
+        if (linkAnimationState.get().accessRomEntityZ() != 0) return;
+        dialogGotItemSequence.get().start(2, 0x2A);
+    }
+
+    void accessClearDialogGotItem() {
+        dialogGotItemSequence.get().clear();
+    }
+
+    void accessShowHeldItemPose() {
+        this.showHeldItemPose();
+    }
+
+    void accessShowPowerUpPickupPose() {
+        this.showPowerUpPickupPose();
+    }
+
+    void accessShowTarinShieldPresentation(int[] palette) {
+        this.showTarinShieldPresentation(palette);
+    }
+
+    void accessClearTarinShieldPresentation() {
+        this.clearTarinShieldPresentation();
+    }
+
+    void accessShowStandingShieldDownPose() {
+        this.showStandingShieldDownPose();
+    }
+
+    void accessShowSwordAcquisitionSpinPose(int countdown) {
+        this.showSwordAcquisitionSpinPose(countdown);
+    }
+
+    void accessShowSwordAcquisitionFinalPose() {
+        this.showSwordAcquisitionFinalPose();
+    }
+
+    void accessShowMarinWakeUpBed(int spriteVariant) {
+        this.showMarinWakeUpBed(spriteVariant);
+    }
+
+    void accessRender(byte[] displayBuffer, int offsetX, int offsetY) {
+        this.render(displayBuffer, offsetX, offsetY);
+    }
+
+    void accessSubmitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
+        this.submitOam(sink, offsetX, offsetY);
     }
 }

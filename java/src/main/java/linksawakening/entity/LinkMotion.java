@@ -9,7 +9,49 @@ import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
 final class LinkMotion {
-    private final Link link;
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkAnimationState> linkAnimationState;
+    private final LinkComponentRef<LinkAnimator> linkAnimator;
+    private final LinkComponentRef<LinkControls> linkControls;
+    private final LinkComponentRef<LinkDamage> linkDamage;
+    private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+    private final LinkComponentRef<LinkEquipment> linkEquipment;
+    private final LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+    private final LinkComponentRef<LinkItemState> linkItemState;
+    private final LinkComponentRef<LinkServices> linkServices;
+    private final LinkComponentRef<LinkSideView> linkSideView;
+    private final LinkComponentRef<LinkStateMachine> linkStateMachine;
+
+    LinkMotion(Dependencies dependencies) {
+        linkAirborne = dependencies.linkAirborne;
+        linkAnimationState = dependencies.linkAnimationState;
+        linkAnimator = dependencies.linkAnimator;
+        linkControls = dependencies.linkControls;
+        linkDamage = dependencies.linkDamage;
+        linkEntityEffects = dependencies.linkEntityEffects;
+        linkEquipment = dependencies.linkEquipment;
+        linkGroundMotion = dependencies.linkGroundMotion;
+        linkItemState = dependencies.linkItemState;
+        linkServices = dependencies.linkServices;
+        linkSideView = dependencies.linkSideView;
+        linkStateMachine = dependencies.linkStateMachine;
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+    }
+
     int subX;
     int subY;
     int lastRomSpeedX;
@@ -22,10 +64,6 @@ final class LinkMotion {
     boolean doorWarpPending;
     final int[] collisionProbePixelX = new int[4];
     final int[] collisionProbePixelY = new int[4];
-
-    LinkMotion(Link link) {
-        this.link = link;
-    }
 
     void tryMoveAxis(int signedSpeed, boolean isXAxis) {
         int previousSubX = subX;
@@ -45,10 +83,10 @@ final class LinkMotion {
 
         // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
         // BackgroundCollisionHandler ($02:6E45) skips all probes until landing.
-        int probeMask = link.collision != null
-                        && !link.linkStateMachine.debugNoClip
-                        && !link.linkEntityEffects.marinBedJumpMotionLocked
-                        && !link.linkAirborne.directionalLedgeJumpMotionLocked
+        int probeMask = linkServices.get().collision != null
+                        && !linkStateMachine.get().debugNoClip
+                        && !linkEntityEffects.get().marinBedJumpMotionLocked
+                        && !linkAirborne.get().directionalLedgeJumpMotionLocked
                 ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection)
                 : 0;
         if (probeMask != 0) {
@@ -97,34 +135,35 @@ final class LinkMotion {
             boolean blocked = false;
             int pointX = spriteX + xs[i];
             int pointY = spriteY + ys[i];
-            int physicsFlag = link.collision.objectPhysicsFlagAtPoint(pointX, pointY);
-            int objectId = link.collision.objectIdAtPoint(pointX, pointY);
+            int physicsFlag = linkServices.get().collision.objectPhysicsFlagAtPoint(pointX, pointY);
+            int objectId = linkServices.get().collision.objectIdAtPoint(pointX, pointY);
             // $02:716B/$7468: the top six pixels of the revolving doorway.
-            if (link.collision.usesIndoorPhysicsTable()
+            if (linkServices.get().collision.usesIndoorPhysicsTable()
                     && (physicsFlag == 0x7C || physicsFlag == 0x7D)
                     && (objectId == 0xB1 || objectId == 0xB2)
                     && (pointY & 15) < 6
-                    && link.linkStateMachine.motionState != LinkMotionState.REVOLVING_DOOR) {
-                link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
-                link.linkStateMachine.revolvingDoorFrame = 0;
-                link.linkStateMachine.revolvingDoorTransitionPending = false;
-                link.linkStateMachine.revolvingDoorPaletteVariant = -1;
-                link.linkAirborne.zSubPixels = link.linkAirborne.zVelocity = 0;
-                link.linkAirborne.airborne = false;
-                link.linkDamage.collisionIgnoreFramesRemaining = 0;
-                if (link.playerState != null) link.playerState.setInvincibilityCounter(0);
-                if (link.itemRegistry != null
-                        && link.itemRegistry.lookup(InventoryItem.SWORD.romValue())
+                    && linkStateMachine.get().motionState != LinkMotionState.REVOLVING_DOOR) {
+                linkStateMachine.get().motionState = LinkMotionState.REVOLVING_DOOR;
+                linkStateMachine.get().revolvingDoorFrame = 0;
+                linkStateMachine.get().revolvingDoorTransitionPending = false;
+                linkStateMachine.get().revolvingDoorPaletteVariant = -1;
+                linkAirborne.get().zSubPixels = linkAirborne.get().zVelocity = 0;
+                linkAirborne.get().airborne = false;
+                linkDamage.get().collisionIgnoreFramesRemaining = 0;
+                if (linkServices.get().playerState != null)
+                    linkServices.get().playerState.setInvincibilityCounter(0);
+                if (linkServices.get().itemRegistry != null
+                        && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
                                 instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
-                link.soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
+                linkServices.get().soundSink.play(GameplaySoundEvent.REVOLVING_DOOR);
             }
             if (physicsFlag == PhysicsFlags.DOOR) {
                 // ApplyCollisionWithDoor ($02:71BB-723A): only the top six
                 // pixels initiate a warp. The rest is a narrow walkable lane.
-                if (link.isCarryingLiftedObject()) {
+                if (linkEntityEffects.get().accessIsCarryingLiftedObject()) {
                     blocked = true;
                 } else if ((pointY & 15) < 6) {
-                    blocked = link.linkDamage.collisionIgnoreFramesRemaining != 0;
+                    blocked = linkDamage.get().collisionIgnoreFramesRemaining != 0;
                     if (!blocked) doorWarpPending = true;
                 } else {
                     blocked = (pointX & 15) < 6 || (pointX & 15) >= 11;
@@ -133,26 +172,33 @@ final class LinkMotion {
                 blocked |= applyOverworldLedgeCollision(pointY);
             } else if (isDirectionalLedgePhysics(physicsFlag)) {
                 if (directionalLedgeHalfIsPassable(physicsFlag, pointX)) {
-                    link.linkAirborne.directionalLedgeCollisionCounter = 0;
+                    linkAirborne.get().directionalLedgeCollisionCounter = 0;
                     continue;
                 }
                 blocked |= applyDirectionalLedgeCollision(physicsFlag, dir);
-            } else if (link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers())
-                    && !link.collision.pointNormalPit(pointX, pointY)) {
+            } else if (linkServices
+                            .get()
+                            .collision
+                            .pointBlockedForLink(
+                                    pointX, pointY, linkControls.get().accessPlayerHasFlippers())
+                    && !linkServices.get().collision.pointNormalPit(pointX, pointY)) {
                 blocked = true;
                 // ApplyCollisionWithSolid $02:72FA-7338: holding the sword
                 // follows its poke path; a raised shield suppresses the write.
-                var sword = link.itemRegistry == null ? null : link.itemRegistry.lookup(InventoryItem.SWORD.romValue());
+                var sword = linkServices.get().itemRegistry == null
+                        ? null
+                        : linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue());
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
                         && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
-                boolean running = link.playerState != null && link.playerState.runningWithPegasusBoots();
-                if (!link.linkEquipment.isUsingShield() && (!swordHolding || running)) {
-                    link.markRomLinkPushing(3);
+                boolean running = linkServices.get().playerState != null
+                        && linkServices.get().playerState.runningWithPegasusBoots();
+                if (!linkEquipment.get().isUsingShield() && (!swordHolding || running)) {
+                    linkItemState.get().accessMarkRomLinkPushing(3);
                 }
             } else {
                 // ApplyCollisionWithObject reaches label_002_7461 for an
                 // ordinary passable probe, which clears wC191.
-                link.linkAirborne.directionalLedgeCollisionCounter = 0;
+                linkAirborne.get().directionalLedgeCollisionCounter = 0;
             }
             if (blocked) blockedMask |= 1 << i;
         }
@@ -162,47 +208,48 @@ final class LinkMotion {
     boolean applyDirectionalLedgeCollision(int physicsFlag, int moveDirection) {
         int ledgeDirection =
                 Direction.fromRomOrUnknown(physicsFlag - PhysicsFlags.CAT_LEDGE).javaIndex();
-        if (link.linkAirborne.airborne
-                || link.direction != ledgeDirection
+        if (linkAirborne.get().airborne
+                || linkAnimationState.get().direction != ledgeDirection
                 || moveDirection != ledgeDirection
-                || (link.buildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
-            link.linkAirborne.directionalLedgeCollisionCounter = 0;
+                || (linkControls.get().accessBuildJoypadMask() & joypadBitForDirection(ledgeDirection)) == 0) {
+            linkAirborne.get().directionalLedgeCollisionCounter = 0;
             return true;
         }
 
-        boolean pegasusRunning = link.playerState != null && link.playerState.runningWithPegasusBoots();
-        link.linkAirborne.directionalLedgeCollisionCounter++;
-        if (!pegasusRunning && link.linkAirborne.directionalLedgeCollisionCounter < 0x0C) {
+        boolean pegasusRunning = linkServices.get().playerState != null
+                && linkServices.get().playerState.runningWithPegasusBoots();
+        linkAirborne.get().directionalLedgeCollisionCounter++;
+        if (!pegasusRunning && linkAirborne.get().directionalLedgeCollisionCounter < 0x0C) {
             return true;
         }
 
-        link.linkStateMachine.resetPegasusBoots();
-        link.linkAirborne.directionalLedgeCollisionCounter = 0;
-        link.linkAirborne.directionalLedgeJumpMotionLocked = true;
-        link.linkAirborne.directionalLedgeJumpSpeedX = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+        linkStateMachine.get().resetPegasusBoots();
+        linkAirborne.get().directionalLedgeCollisionCounter = 0;
+        linkAirborne.get().directionalLedgeJumpMotionLocked = true;
+        linkAirborne.get().directionalLedgeJumpSpeedX = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
             case RIGHT -> 0x10;
             case LEFT -> -0x10;
             default -> 0;
         };
-        link.linkAirborne.directionalLedgeJumpSpeedY = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
+        linkAirborne.get().directionalLedgeJumpSpeedY = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {
             case DOWN -> 0x10;
             case UP -> -0x10;
             default -> 0;
         };
-        lastRomSpeedX = link.linkAirborne.directionalLedgeJumpSpeedX & 0xFF;
-        lastRomSpeedY = link.linkAirborne.directionalLedgeJumpSpeedY & 0xFF;
-        link.linkAirborne.airborne = true;
-        link.linkAirborne.zSubPixels = 0;
-        link.linkAirborne.zVelocity = 0x1C;
-        link.linkAnimator.ledgeJumpRenderY = pixelY() - link.zPixels();
-        link.linkAnimator.jumpAnimationCounter = 0;
-        link.linkAnimator.jumpAnimationFrame = 0;
-        link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
+        lastRomSpeedX = linkAirborne.get().directionalLedgeJumpSpeedX & 0xFF;
+        lastRomSpeedY = linkAirborne.get().directionalLedgeJumpSpeedY & 0xFF;
+        linkAirborne.get().airborne = true;
+        linkAirborne.get().zSubPixels = 0;
+        linkAirborne.get().zVelocity = 0x1C;
+        linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
+        linkAnimator.get().jumpAnimationCounter = 0;
+        linkAnimator.get().jumpAnimationFrame = 0;
+        linkServices.get().soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
     }
 
     boolean directionalLedgeHalfIsPassable(int physicsFlag, int pointX) {
-        if (link.collision.usesIndoorPhysicsTable()) {
+        if (linkServices.get().collision.usesIndoorPhysicsTable()) {
             return false;
         }
         int ledgeDirection = physicsFlag - PhysicsFlags.CAT_LEDGE;
@@ -211,24 +258,24 @@ final class LinkMotion {
     }
 
     boolean applyOverworldLedgeCollision(int pointY) {
-        link.linkAirborne.directionalLedgeCollisionCounter = 0;
-        if (link.linkEntityEffects.roosterCarryActive || link.linkAirborne.overworldLedgeFallActive) {
+        linkAirborne.get().directionalLedgeCollisionCounter = 0;
+        if (linkEntityEffects.get().roosterCarryActive || linkAirborne.get().overworldLedgeFallActive) {
             return true;
         }
         if ((pointY & 0x0F) < 8) {
             return false;
         }
 
-        link.linkStateMachine.resetPegasusBoots();
-        link.linkAnimator.ledgeJumpRenderY = pixelY() - link.zPixels();
-        subX = (link.romEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
+        linkStateMachine.get().resetPegasusBoots();
+        linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
+        subX = (accessRomEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
-        link.linkStateMachine.motionState = LinkMotionState.UNSTUCKING;
-        link.linkStateMachine.physicsModifier = 0;
-        link.linkAirborne.overworldLedgeFallActive = true;
+        linkStateMachine.get().motionState = LinkMotionState.UNSTUCKING;
+        linkStateMachine.get().physicsModifier = 0;
+        linkAirborne.get().overworldLedgeFallActive = true;
         // The collision changes wLinkMotionState only. The dispatcher runs
         // LinkMotionUnstuckingHandler on the following frame ($02:4960).
-        link.soundSink.play(GameplaySoundEvent.LEDGE_FALL);
+        linkServices.get().soundSink.play(GameplaySoundEvent.LEDGE_FALL);
         return true;
     }
 
@@ -237,32 +284,35 @@ final class LinkMotion {
         lastRomSpeedX = 0;
         lastRomSpeedY = 0xFF;
         subY += 16 << Link.SUB_PIXEL_SHIFT;
-        link.linkAirborne.zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
+        linkAirborne.get().zSubPixels += 16 << Link.SUB_PIXEL_SHIFT;
         for (int step = 0; step < 16; step++) {
             subY += 8 << Link.SUB_PIXEL_SHIFT;
-            link.linkAirborne.zSubPixels += 8 << Link.SUB_PIXEL_SHIFT;
+            linkAirborne.get().zSubPixels += 8 << Link.SUB_PIXEL_SHIFT;
             if (!ledgeUnstuckingPositionBlocked()) {
                 break;
             }
         }
-        link.linkStateMachine.physicsModifier = 1;
+        linkStateMachine.get().physicsModifier = 1;
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
-        link.linkAirborne.airborne = true;
-        link.linkAirborne.zVelocity = 0;
-        link.linkAnimator.jumpAnimationCounter = 0;
-        link.linkAnimator.jumpAnimationFrame = 0;
+        linkAirborne.get().airborne = true;
+        linkAirborne.get().zVelocity = 0;
+        linkAnimator.get().jumpAnimationCounter = 0;
+        linkAnimator.get().jumpAnimationFrame = 0;
     }
 
     boolean ledgeUnstuckingPositionBlocked() {
-        int spriteX = link.pixelX();
-        int spriteY = link.pixelY();
+        int spriteX = accessPixelX();
+        int spriteY = accessPixelY();
         boolean blocked = false;
         int lastObject = 0xFF;
         for (int index = 0; index < 2; index++) {
             int pointX = spriteX + LinkRomConstants.COLLISION_POINTS_X[Direction.UP.javaIndex()][index];
             int pointY = spriteY + LinkRomConstants.COLLISION_POINTS_Y[Direction.UP.javaIndex()][index];
-            blocked |= link.collision.pointBlockedForLink(pointX, pointY, link.playerHasFlippers());
-            lastObject = link.collision.objectIdAtPoint(pointX, pointY);
+            blocked |= linkServices
+                    .get()
+                    .collision
+                    .pointBlockedForLink(pointX, pointY, linkControls.get().accessPlayerHasFlippers());
+            lastObject = linkServices.get().collision.objectIdAtPoint(pointX, pointY);
         }
         // LinkMotionUnstuckingHandler ($02:4990-499E) continues over $E1,
         // but explicitly stops over OBJECT_WELL despite its solid physics.
@@ -301,13 +351,13 @@ final class LinkMotion {
     }
 
     void setRoomEntryPixelPosition(int pixelX, int pixelY) {
-        link.linkSideView.clearSideViewPlatformState();
+        linkSideView.get().clearSideViewPlatformState();
         setPixelPosition(pixelX, pixelY);
         markRoomEntryPosition();
     }
 
     void setRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
-        link.linkSideView.clearSideViewPlatformState();
+        linkSideView.get().clearSideViewPlatformState();
         subX += (pixelX - pixelX()) << Link.SUB_PIXEL_SHIFT;
         subY += (pixelY - pixelY()) << Link.SUB_PIXEL_SHIFT;
         markRoomEntryPosition();
@@ -376,7 +426,7 @@ final class LinkMotion {
         Link.validateRomByte(speedX, "Link X speed");
         forcedSpeedX = (byte) speedX;
         // The pot handler leaves hLinkSpeedY untouched; Link computes its
-        // ordinary Y input on the next motion link.update.
+        // ordinary Y input on the next motion linkGroundMotion.get().accessUpdate.
         forcedSpeedXOnly = true;
         forcedSpeedPending = true;
     }
@@ -445,8 +495,126 @@ final class LinkMotion {
         forcedSpeedY = 0;
         forcedSpeedPending = false;
         forcedSpeedXOnly = false;
-        link.linkSideView.sideViewPlatformVerticalSpeedPending = -1;
+        linkSideView.get().sideViewPlatformVerticalSpeedPending = -1;
         lastRomSpeedX = 0;
         lastRomSpeedY = 0;
+    }
+
+    boolean accessConsumeDoorWarp() {
+        boolean pending = this.doorWarpPending;
+        this.doorWarpPending = false;
+        return pending;
+    }
+
+    int accessRomCollisionType() {
+        return this.romCollisionType & 0xFF;
+    }
+
+    int accessRomCollisionProbePixelX() {
+        return linkAnimationState.get().accessHasFacingCollision()
+                ? this.collisionProbePixelX[linkAnimationState.get().direction]
+                : this.pixelX();
+    }
+
+    int accessRomCollisionProbePixelY() {
+        return linkAnimationState.get().accessHasFacingCollision()
+                ? this.collisionProbePixelY[linkAnimationState.get().direction]
+                : this.pixelY();
+    }
+
+    int accessRomSpeedX() {
+        return this.lastRomSpeedX & 0xFF;
+    }
+
+    int accessRomSpeedY() {
+        return this.lastRomSpeedY & 0xFF;
+    }
+
+    int accessRomSwordCollisionY() {
+        return this.romEntityY() - linkAirborne.get().accessZPixels();
+    }
+
+    void accessSetPixelPosition(int pixelX, int pixelY) {
+        this.setPixelPosition(pixelX, pixelY);
+    }
+
+    void accessSetRoomScrollEntryPixelPosition(int pixelX, int pixelY) {
+        this.setRoomScrollEntryPixelPosition(pixelX, pixelY);
+    }
+
+    void accessSetRoomEntryPixelPosition(int pixelX, int pixelY) {
+        this.setRoomEntryPixelPosition(pixelX, pixelY);
+    }
+
+    void accessMarkRoomEntryPosition() {
+        this.markRoomEntryPosition();
+    }
+
+    int accessRoomEntryPixelX() {
+        return this.roomEntryPixelX();
+    }
+
+    int accessRoomEntryPixelY() {
+        return this.roomEntryPixelY();
+    }
+
+    int accessRoomEntryRomPositionX() {
+        return this.roomEntryRomPositionX();
+    }
+
+    int accessRoomEntryRomPositionY() {
+        return this.roomEntryRomPositionY();
+    }
+
+    void accessSetRoomEntryRomPosition(int romPositionX, int romPositionY) {
+        this.setRoomEntryRomPosition(romPositionX, romPositionY);
+    }
+
+    void accessApplyRomSpeed(int speedX, int speedY) {
+        this.applyRomSpeed(speedX, speedY);
+    }
+
+    void accessApplyRomSpeedX(int speedX) {
+        this.applyRomSpeedX(speedX);
+    }
+
+    void accessApplyRomFinalPosition(int speedX, int speedY) {
+        this.applyRomFinalPosition(speedX, speedY);
+    }
+
+    void accessCaptureRomFinalPosition() {
+        this.captureRomFinalPosition();
+    }
+
+    void accessRestoreRomFinalPosition() {
+        this.restoreRomFinalPosition();
+    }
+
+    void accessRestoreRomFinalPositionX() {
+        this.restoreRomFinalPositionX();
+    }
+
+    void accessClearRomPositionIncrement() {
+        this.clearRomPositionIncrement();
+    }
+
+    int accessPixelX() {
+        return this.pixelX();
+    }
+
+    int accessPixelY() {
+        return this.pixelY();
+    }
+
+    int accessRomEntityX() {
+        return this.romEntityX();
+    }
+
+    int accessRomFinalPositionX() {
+        return this.romFinalPositionX();
+    }
+
+    int accessRomEntityY() {
+        return this.romEntityY();
     }
 }
