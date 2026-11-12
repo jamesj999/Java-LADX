@@ -656,41 +656,7 @@ public final class SessionBootstrap {
                 new Bomb(
                         playerState,
                         gameplaySoundSink,
-                        new Bomb.PlacementTarget() {
-                            private boolean playBumpForLastPlacement;
-
-                            @Override
-                            public boolean placeBomb() {
-                                if (link == null || roomSession == null) {
-                                    playBumpForLastPlacement = false;
-                                    return false;
-                                }
-                                boolean placed = roomSession
-                                        .playerItems()
-                                        .placeBomb(
-                                                link.romEntityX(),
-                                                link.romEntityY(),
-                                                link.romEntityZ(),
-                                                callbacks.romDirection().applyAsInt(link.direction()));
-                                playBumpForLastPlacement =
-                                        placed && roomSession.playerItems().lastBombPlacementPlayedBump();
-                                if (placed) {
-                                    link.startRomItemAttackStep();
-                                }
-                                return placed;
-                            }
-
-                            @Override
-                            public boolean playBumpForLastPlacement() {
-                                return playBumpForLastPlacement;
-                            }
-
-                            @Override
-                            public boolean bombActive() {
-                                return roomSession != null
-                                        && roomSession.playerItems().bombActive();
-                            }
-                        },
+                        new RoomBombPlacement(link, roomSession.playerItems(), callbacks.romDirection()),
                         link::canUseItems));
         itemRegistry.register(
                 PlayerState.INVENTORY_BOW,

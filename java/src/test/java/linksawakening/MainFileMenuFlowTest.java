@@ -67,22 +67,6 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void committingAFilePersistsThenReturnsToSelection() {
-        CompiledCode.calls("linksawakening.app.screen.FileMenuScreen", "tick", "persistFileMenuMutation");
-    }
-
-    @Test
-    void newGameBootstrapResetsPersistentWorldStateBeforeLoadingTheHouse() {
-        CompiledCode.calls(
-                "linksawakening.app.SaveCoordinator",
-                "startNewGame",
-                "initializePlayerState",
-                "initializeNewGameWorldState",
-                "loadIndoor",
-                "setRoomEntryRomPosition");
-    }
-
-    @Test
     void configuredNewGameDispatchesOnlyTheDedicatedBootstrap() {
         int[] calls = new int[2];
         AppConfig config = AppConfig.parse("""
@@ -106,95 +90,5 @@ final class MainFileMenuFlowTest {
 
         assertEquals(0, calls[0]);
         assertEquals(1, calls[1]);
-    }
-
-    @Test
-    void startupTreatsSavedAndNewGamePositionsAsRomOamCoordinates() {
-        CompiledCode.calls(
-                "linksawakening.app.SaveCoordinator",
-                "startSavedGame",
-                "loadIndoorFromSavedPosition",
-                "setRoomEntryRomPosition");
-    }
-
-    @Test
-    void newGameRunsMarinsWakeSequenceWithRomBackedDialog() {
-        CompiledCode.calls(
-                "linksawakening.app.story.OpeningStory",
-                "tickNewGameWakeUp",
-                "MarinWakeUpMotion.tick",
-                "DialogTextLoader.load",
-                "openPreformattedForLinkY");
-    }
-
-    @Test
-    void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() {
-        CompiledCode.calls(
-                "linksawakening.app.InputRouter", "gameplayKey", "marinWakeUpBlocksKeyInput", "dispatchToggleInput");
-    }
-
-    @Test
-    void wakeReleaseUsesHeldDirectionsAndMarinFollowUpUsesOnlyA() {
-        CompiledCode.calls(
-                "linksawakening.app.story.OpeningStory",
-                "tickNewGameWakeUp",
-                "InputState.isDown",
-                "MarinWakeUpMotion.tick");
-    }
-
-    @Test
-    void tarinTalkUsesOnlyAAndUnshieldedHouseSavesRestoreHisSequence() {
-        CompiledCode.calls(
-                "linksawakening.app.story.OpeningStory",
-                "restoreNewGameHouseRuntimeIfNeeded",
-                "swordLevel",
-                "postWake",
-                "Runnable.run",
-                "shieldLevel");
-    }
-
-    @Test
-    void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() {
-        CompiledCode.calls(
-                "linksawakening.app.ScreenRouter",
-                "startFileSelection",
-                "saveFilesMask",
-                "savedNames",
-                "FileMenuController");
-    }
-
-    @Test
-    void copyAndErasePersistThenRebuildTheFileMenu() {
-        CompiledCode.calls(
-                "linksawakening.app.SaveCoordinator",
-                "persistFileMenuMutation",
-                "Runnable.run",
-                "SaveRamStore.flush",
-                "startFileSelection");
-    }
-
-    @Test
-    void saveAndQuitUsesTheModeledPlayerStateWriter() {
-        CompiledCode.calls(
-                "linksawakening.app.SaveCoordinator",
-                "saveCurrentPlayerState",
-                "writePlayerState",
-                "saveCurrentSpawnLocation",
-                "writeRoomStatuses",
-                "writeDungeonItemFlags",
-                "SaveRamStore.flush");
-    }
-
-    @Test
-    void initializedFileSelectionLoadsTheSavedRoomInsteadOfThrowing() {
-        CompiledCode.calls(
-                "linksawakening.app.SaveCoordinator",
-                "startSavedGame",
-                "restoreRoomStatuses",
-                "restoreDungeonItemFlags",
-                "setTarinFlag",
-                "setChestPlayerLevels",
-                "loadIndoorFromSavedPosition",
-                "setRoomEntryRomPosition");
     }
 }

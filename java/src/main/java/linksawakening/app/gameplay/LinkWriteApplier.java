@@ -131,12 +131,17 @@ final class LinkWriteApplier {
         for (var request : results.link().consumeRoosterLinkStateRequests())
             c.link().apply(LinkCommandAdapter.from(request));
         for (var request : results.link().consumeHinoxLinkEffectRequests()) {
-            c.link().apply(LinkCommandAdapter.from(request));
-            if (request.damage() != 0) {
-                c.playerState().applyRomEnemyDamage(request.damage());
-            }
+            applyHinoxEffect(c.link(), c.playerState(), request);
         }
         c.lift().synchronizeLinkLiftedPresentation();
+    }
+
+    static void applyHinoxEffect(
+            linksawakening.entity.Link link,
+            PlayerState player,
+            linksawakening.world.entity.event.HinoxLinkEffectRequest request) {
+        link.apply(LinkCommandAdapter.from(request));
+        if (request.damage() != 0) player.applyRomEnemyDamage(request.damage());
     }
 
     private static void resetSword(GameplaySimulation c) {

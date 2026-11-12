@@ -5,6 +5,14 @@ import java.lang.reflect.Field;
 public final class SessionTestAccess {
     private SessionTestAccess() {}
 
+    public static void cleanup(GameSession session) {
+        session.cleanup();
+    }
+
+    public static SessionContext context(GameSession session) {
+        return session.context;
+    }
+
     public static Object owner(GameSession session, String name) throws Exception {
         try {
             GameSession.class.getDeclaredField(name);

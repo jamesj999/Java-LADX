@@ -13,6 +13,66 @@ import linksawakening.world.entity.event.RichardProgressEvent;
 import linksawakening.world.room.*;
 
 final class EntityPhase {
+    private final EntityDialogRouting routing;
+
+    EntityPhase() {
+        this(EntityDialogRouting.DIRECT);
+    }
+
+    EntityPhase(EntityDialogRouting routing) {
+        this.routing = routing;
+    }
+
+    private final EntityFrameStages stages = new EntityFrameStages() {
+        public java.util.List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
+            return c.roomSession().tickEntities(EntityFrameInputsFactory.create(c, b));
+        }
+
+        public void positions(GameplaySimulation c) {
+            LinkWriteApplier.applyPositionWrites(c);
+        }
+
+        public void motion(GameplaySimulation c) {
+            LinkWriteApplier.applyMotionWrites(c);
+        }
+
+        public void attacks(GameplaySimulation c) {
+            LinkWriteApplier.applyAttackWrites(c);
+        }
+
+        public void sword(GameplaySimulation c) {
+            LinkWriteApplier.applySwordWrites(c);
+        }
+
+        public void combat(GameplaySimulation c, java.util.List<EntityProjectileEvent> events) {
+            applyCombat(c, events);
+        }
+
+        public void chests(GameplaySimulation c) {
+            applyChestRewards(c);
+        }
+
+        public void progress(GameplaySimulation c) {
+            applyProgressRewards(c);
+        }
+
+        public void witch(GameplaySimulation c) {
+            applyWitchRewards(c);
+        }
+
+        public void dialogs(GameplaySimulation c) {
+            routeDialogs(c);
+        }
+
+        public void projectiles(GameplaySimulation c, java.util.List<EntityProjectileEvent> events) {
+            LinkWriteApplier.applyProjectileResponses(c, events);
+        }
+
+        public void finalEffects(GameplaySimulation c) {
+            LinkWriteApplier.applyFinalEffects(c);
+        }
+    };
+
     void tick(GameplaySimulation c, Sword.CollisionBox b) {
         assert requiredCollaboratorsPresent(c);
         // The original calls AnimateEntities after Link movement and
@@ -24,18 +84,7 @@ final class EntityPhase {
                 c.inventoryController().shouldBlockOverworldInput()
                         && !c.inventoryMenu().transition().worldHandlerActive(),
                 c.inventoryMenu().isTransitioning())) {
-            var projectileEvents = c.roomSession().tickEntities(EntityFrameInputsFactory.create(c, b));
-            LinkWriteApplier.applyPositionWrites(c);
-            LinkWriteApplier.applyMotionWrites(c);
-            LinkWriteApplier.applyAttackWrites(c);
-            LinkWriteApplier.applySwordWrites(c);
-            applyCombat(c, projectileEvents);
-            applyChestRewards(c);
-            applyProgressRewards(c);
-            applyWitchRewards(c);
-            routeDialogs(c);
-            LinkWriteApplier.applyProjectileResponses(c, projectileEvents);
-            LinkWriteApplier.applyFinalEffects(c);
+            stages.run(c, b);
         }
     }
 
@@ -59,7 +108,7 @@ final class EntityPhase {
         }
     }
 
-    private void applyChestRewards(GameplaySimulation c) {
+    void applyChestRewards(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
         int musicFadeOutCountdown = results.presentation().consumePendingMusicFadeOutCountdown();
         if (musicFadeOutCountdown != 0) {
@@ -114,13 +163,13 @@ final class EntityPhase {
             c.playerState().applyWitchMagicPowderReward();
     }
 
-    private void routeDialogs(GameplaySimulation c) {
+    void routeDialogs(GameplaySimulation c) {
         var results = c.roomSession().entityFrameResults();
         c.roomSession().story().setBirdKeyOwned(c.playerState().birdKeyCount() != 0);
         c.roomSession().story().setTailKeyOwned(c.playerState().tailKeyCount() != 0);
         int chestMusicTrack = results.presentation().consumePendingMusicTrack();
         if (chestMusicTrack >= 0) {
-            c.musicDirector().playDirectMusic(chestMusicTrack);
+            routing.music(c, chestMusicTrack);
         }
         for (var event : results.presentation().consumeLikeLikeEvents()) {
             if (event.kind() == linksawakening.world.entity.event.LikeLikeEvent.Kind.CAPTURE) {
@@ -132,11 +181,9 @@ final class EntityPhase {
                 c.link().apply(LinkCommandAdapter.from(event));
             } else c.link().apply(LinkCommandAdapter.from(event));
         }
-        c.dialogInteractions().openEntityDialogRequests();
-        if (c.roomTransitionCoordinator().handlePendingManboTransition(c.link())) {
-            c.gameplaySoundSink().play(linksawakening.gameplay.GameplaySoundEvent.MANBO_WARP);
-        }
-        c.roomTransitionCoordinator().handlePendingInstrumentTransition(c.link());
+        routing.dialogs(c);
+        routing.manbo(c);
+        routing.instrument(c);
     }
 
     private boolean requiredCollaboratorsPresent(GameplaySimulation c) {

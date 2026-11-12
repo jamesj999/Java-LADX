@@ -16,6 +16,16 @@ import linksawakening.world.room.SwordBox;
 import linksawakening.world.transition.Warp;
 
 final class LinkEquipmentPhase {
+    private final LinkMotionDriver motion;
+
+    LinkEquipmentPhase() {
+        this(LinkMotionDriver.DIRECT);
+    }
+
+    LinkEquipmentPhase(LinkMotionDriver motion) {
+        this.motion = motion;
+    }
+
     void tick(GameplaySimulation context, boolean dialogBlocksGameplay, boolean inventoryBlockedAtStart) {
         if (!dialogBlocksGameplay) {
             {
@@ -81,7 +91,7 @@ final class LinkEquipmentPhase {
             }
             context.link()
                     .setGelClinging(context.roomSession().entityState().gelClingingToLink(), context.frameCounter());
-            context.link().captureRomFinalPosition();
+            motion.capture(context.link());
             boolean keyholeSequenceActive = context.roomSession().doors().tailCaveKeyholeSequenceActive();
             if (keyholeSequenceActive) {
                 context.link().blockNextRomMotionFrame();
@@ -153,7 +163,7 @@ final class LinkEquipmentPhase {
                 boolean wasAirborne = context.link().isAirborne();
                 int beforeMotionX = context.link().pixelX(),
                         beforeMotionY = context.link().pixelY();
-                context.link().update();
+                motion.update(context.link());
                 if (wasAirborne
                         && !context.link().isAirborne()
                         && !context.link().isFallingIntoPit()
