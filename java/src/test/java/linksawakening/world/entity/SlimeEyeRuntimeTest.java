@@ -215,15 +215,15 @@ final class SlimeEyeRuntimeTest {
         byte[] bytes = rom();
         var gpu = new linksawakening.gpu.GPU();
         gpu.loadBaseTiles(EntityRomTestData.view(bytes));
-        var session = new linksawakening.world.room.RoomSession(
+        var session = new linksawakening.world.room.RoomSession(new linksawakening.world.room.RoomSessionConfig(
                 bytes,
                 gpu,
                 new linksawakening.world.room.RoomLoader(bytes),
                 new linksawakening.world.room.OverworldTilesetTable(bytes),
                 new linksawakening.physics.OverworldCollision(
                         RomTables.load(linksawakening.world.entity.EntityRomTestData.view(bytes))),
-                null,
-                null);
+                new linksawakening.world.room.RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
         session.rooms().loadIndoor(2, 0x5A);
         for (int i = 0; i < 2; i++) session.entities().tickEntitiesWithProjectileEvents(i, 80, 96, 0, 0, 0, false);
         session.entityState().setEntityScreenShakeCountdown(5);

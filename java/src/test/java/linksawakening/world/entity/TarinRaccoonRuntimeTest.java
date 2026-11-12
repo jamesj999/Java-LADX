@@ -631,14 +631,14 @@ final class TarinRaccoonRuntimeTest {
     private static RoomSession newSession() {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom));
-        return new RoomSession(
+        return new RoomSession(new linksawakening.world.room.RoomSessionConfig(
                 rom,
                 new GPU(),
                 new RoomLoader(rom),
                 new OverworldTilesetTable(rom),
                 new OverworldCollision(romTables),
-                new TransientVfxSystem(16),
-                null);
+                new linksawakening.world.room.RoomSessionConfig.Presentation(new TransientVfxSystem(16), null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
     }
 
     private static RoomEntityRuntime raccoonRuntime(boolean indoor) {
