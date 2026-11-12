@@ -35,6 +35,7 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 
 public class GameSession {
+    OpeningStory openingStoryInstance;
     RenderStateAssembler rendererInstance;
     SaveCoordinator savesInstance;
     ScreenRouter routerInstance;
@@ -324,22 +325,7 @@ public class GameSession {
     }
 
     OpeningStory openingStory() {
-        return new OpeningStory(
-                frameCounter,
-                newGameWakeUpMotion,
-                newGameTarinShieldMotion,
-                newGameTarinShieldPalette,
-                services.inputState(),
-                services.inputConfig(),
-                services.dialogController(),
-                services.dialogTextLoader(),
-                services.roomSession(),
-                services.link(),
-                services.playerState(),
-                this::currentOverworldDialogBlockers,
-                musicDirector::playDirectMusic,
-                MusicDirector::newGameHouseMusicTrack,
-                this::romDirectionForLink);
+        return openingStoryInstance;
     }
 
     void initialize(boolean headless) {
@@ -370,6 +356,7 @@ public class GameSession {
         saveRamStore = built.saveRamStore();
         newGameTarinShieldPalette = built.newGameTarinShieldPalette();
         context = new SessionContext(this);
+        openingStoryInstance = new OpeningStory(context);
         rendererInstance = new RenderStateAssembler(context);
         savesInstance = new SaveCoordinator(context);
         routerInstance = new ScreenRouter(context);

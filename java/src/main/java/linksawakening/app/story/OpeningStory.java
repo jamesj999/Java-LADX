@@ -22,89 +22,146 @@ import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 
-public record OpeningStory(
-        int frameCounter,
-        MarinWakeUpMotion newGameWakeUpMotion,
-        TarinShieldMotion newGameTarinShieldMotion,
-        int[] newGameTarinShieldPalette,
-        InputState inputState,
-        InputConfig inputConfig,
-        DialogController dialogController,
-        DialogTextLoader dialogTextLoader,
-        RoomSession roomSession,
-        Link link,
-        PlayerState playerState,
-        Supplier<OverworldDialogBlockers> blockers,
-        IntConsumer music,
-        IntSupplier houseMusic,
-        IntUnaryOperator romDirection) {
+public final class OpeningStory {
+    private final linksawakening.app.SessionContext context;
+
+    public OpeningStory(linksawakening.app.SessionContext context) {
+        this.context = java.util.Objects.requireNonNull(context);
+    }
+
+    public int frameCounter() {
+        return context.openingStory_frameCounter();
+    }
+
+    public MarinWakeUpMotion newGameWakeUpMotion() {
+        return context.openingStory_newGameWakeUpMotion();
+    }
+
+    public TarinShieldMotion newGameTarinShieldMotion() {
+        return context.openingStory_newGameTarinShieldMotion();
+    }
+
+    public int[] newGameTarinShieldPalette() {
+        return context.openingStory_newGameTarinShieldPalette();
+    }
+
+    public InputState inputState() {
+        return context.openingStory_inputState();
+    }
+
+    public InputConfig inputConfig() {
+        return context.openingStory_inputConfig();
+    }
+
+    public DialogController dialogController() {
+        return context.openingStory_dialogController();
+    }
+
+    public DialogTextLoader dialogTextLoader() {
+        return context.openingStory_dialogTextLoader();
+    }
+
+    public RoomSession roomSession() {
+        return context.openingStory_roomSession();
+    }
+
+    public Link link() {
+        return context.openingStory_link();
+    }
+
+    public PlayerState playerState() {
+        return context.openingStory_playerState();
+    }
+
+    public Supplier<OverworldDialogBlockers> blockers() {
+        return context.openingStory_blockers();
+    }
+
+    public IntConsumer music() {
+        return context.openingStory_music();
+    }
+
+    public IntSupplier houseMusic() {
+        return context.openingStory_houseMusic();
+    }
+
+    public IntUnaryOperator romDirection() {
+        return context.openingStory_romDirection();
+    }
+
     public boolean tickNewGameWakeUp() {
-        if (newGameWakeUpMotion == null || newGameWakeUpMotion.complete()) {
+        if (newGameWakeUpMotion() == null || newGameWakeUpMotion().complete()) {
             return false;
         }
-        boolean directionPressed = inputState.isDown(inputConfig.upKey())
-                || inputState.isDown(inputConfig.downKey())
-                || inputState.isDown(inputConfig.leftKey())
-                || inputState.isDown(inputConfig.rightKey());
-        MarinWakeUpMotion.Update update = newGameWakeUpMotion.tick(
-                frameCounter, dialogController != null && dialogController.isActive(), directionPressed);
+        boolean directionPressed = inputState().isDown(inputConfig().upKey())
+                || inputState().isDown(inputConfig().downKey())
+                || inputState().isDown(inputConfig().leftKey())
+                || inputState().isDown(inputConfig().rightKey());
+        MarinWakeUpMotion.Update update = newGameWakeUpMotion()
+                .tick(
+                        frameCounter(),
+                        dialogController() != null && dialogController().isActive(),
+                        directionPressed);
         if (update.linkMotionBlocked()) {
-            link.setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
-            link.blockNextRomMotionFrame();
-            link.showMarinWakeUpBed(update.bedSpriteVariant());
+            link().setPixelPosition(update.linkRomX() - 0x08, update.linkRomY() - 0x10);
+            link().blockNextRomMotionFrame();
+            link().showMarinWakeUpBed(update.bedSpriteVariant());
         }
         if (update.openWakeDialog()) {
-            dialogController.openPreformattedForLinkY(
-                    dialogTextLoader.load(new SignpostDialogRef(0, update.dialogLowId())),
-                    LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+            dialogController()
+                    .openPreformattedForLinkY(
+                            dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                            LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
         }
         if (update.leaveBed()) {
-            link.leaveMarinWakeUpBed();
+            link().leaveMarinWakeUpBed();
         }
         return true;
     }
 
     public boolean marinWakeUpBlocksKeyInput() {
-        return newGameWakeUpMotion != null && !newGameWakeUpMotion.complete();
+        return newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete();
     }
 
     public void updateNewGameMarinPresentation() {
-        if (roomSession != null && link != null) {
-            roomSession.updateHouseTarinPresentation(frameCounter, link.romEntityX(), link.romEntityY());
+        if (roomSession() != null && link() != null) {
+            roomSession().updateHouseTarinPresentation(frameCounter(), link().romEntityX(), link().romEntityY());
         }
-        if (newGameWakeUpMotion == null
-                || roomSession == null
-                || !roomSession.hasActiveRoom()
-                || link == null
-                || roomSession.activeRoom().mapId() != 0x10
-                || roomSession.activeRoom().roomId() != 0xA3) {
+        if (newGameWakeUpMotion() == null
+                || roomSession() == null
+                || !roomSession().hasActiveRoom()
+                || link() == null
+                || roomSession().activeRoom().mapId() != 0x10
+                || roomSession().activeRoom().roomId() != 0xA3) {
             return;
         }
-        for (var entity : roomSession.activeRoom().entities().loadedEntities()) {
+        for (var entity : roomSession().activeRoom().entities().loadedEntities()) {
             if (entity.type() != 0x3E) {
                 continue;
             }
-            MarinWakeUpMotion.MarinPresentation presentation = newGameWakeUpMotion.tickMarinPresentation(
-                    frameCounter, entity.x(), entity.y(), link.romEntityX(), link.romEntityY());
-            roomSession.applyMarinWakeUpPresentation(
-                    presentation.romX(), presentation.romY(), presentation.spriteVariant());
+            MarinWakeUpMotion.MarinPresentation presentation = newGameWakeUpMotion()
+                    .tickMarinPresentation(
+                            frameCounter(), entity.x(), entity.y(), link().romEntityX(), link().romEntityY());
+            roomSession()
+                    .applyMarinWakeUpPresentation(
+                            presentation.romX(), presentation.romY(), presentation.spriteVariant());
             return;
         }
     }
 
     public boolean tryOpenTarinShieldDialog(int key) {
-        if ((newGameWakeUpMotion != null && !newGameWakeUpMotion.complete())
-                || newGameTarinShieldMotion == null
-                || key != inputConfig.aKey()
-                || roomSession == null
-                || !roomSession.hasActiveRoom()
-                || link == null
-                || dialogController == null
-                || dialogTextLoader == null
+        if ((newGameWakeUpMotion() != null && !newGameWakeUpMotion().complete())
+                || newGameTarinShieldMotion() == null
+                || key != inputConfig().aKey()
+                || roomSession() == null
+                || !roomSession().hasActiveRoom()
+                || link() == null
+                || dialogController() == null
+                || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession.activeRoom();
+        ActiveRoom room = roomSession().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
@@ -113,18 +170,19 @@ public record OpeningStory(
                     && TarinShieldMotion.canTalkToEntity(
                             entity.x(),
                             entity.y(),
-                            link.romEntityX(),
-                            link.romEntityY(),
-                            romDirectionForLink(link.direction()),
-                            link.isAirborne(),
+                            link().romEntityX(),
+                            link().romEntityY(),
+                            romDirectionForLink(link().direction()),
+                            link().isAirborne(),
                             true,
-                            dialogController.isActive())) {
-                TarinShieldMotion.Update update =
-                        newGameTarinShieldMotion.tick(false, link.romEntityY(), true, playerState.shieldLevel());
+                            dialogController().isActive())) {
+                TarinShieldMotion.Update update = newGameTarinShieldMotion()
+                        .tick(false, link().romEntityY(), true, playerState().shieldLevel());
                 if (update.dialogLowId() >= 0) {
-                    dialogController.openPreformattedForLinkY(
-                            dialogTextLoader.load(new SignpostDialogRef(0, update.dialogLowId())),
-                            LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+                    dialogController()
+                            .openPreformattedForLinkY(
+                                    dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                                    LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
                 }
                 return true;
             }
@@ -133,35 +191,39 @@ public record OpeningStory(
     }
 
     public boolean tryOpenMarinFollowUpDialog(int key) {
-        if (newGameWakeUpMotion == null
-                || !newGameWakeUpMotion.complete()
-                || key != inputConfig.aKey()
-                || roomSession == null
-                || !roomSession.hasActiveRoom()
-                || link == null
-                || dialogController == null
-                || dialogTextLoader == null
+        if (newGameWakeUpMotion() == null
+                || !newGameWakeUpMotion().complete()
+                || key != inputConfig().aKey()
+                || roomSession() == null
+                || !roomSession().hasActiveRoom()
+                || link() == null
+                || dialogController() == null
+                || dialogTextLoader() == null
                 || currentOverworldDialogBlockers().blocksOpening()) {
             return false;
         }
-        ActiveRoom room = roomSession.activeRoom();
+        ActiveRoom room = roomSession().activeRoom();
         if (room.mapId() != 0x10 || room.roomId() != 0xA3) {
             return false;
         }
         for (var entity : room.entities().loadedEntities()) {
             if (entity.type() == 0x3E
-                    && newGameWakeUpMotion.canOpenFollowUpDialog(
-                            entity.x(),
-                            entity.y(),
-                            link.romEntityX(),
-                            link.romEntityY(),
-                            romDirectionForLink(link.direction()),
-                            link.isAirborne(),
-                            true,
-                            dialogController.isActive())) {
-                dialogController.openPreformattedForLinkY(
-                        dialogTextLoader.load(new SignpostDialogRef(0, newGameWakeUpMotion.followUpDialogLowId())),
-                        LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+                    && newGameWakeUpMotion()
+                            .canOpenFollowUpDialog(
+                                    entity.x(),
+                                    entity.y(),
+                                    link().romEntityX(),
+                                    link().romEntityY(),
+                                    romDirectionForLink(link().direction()),
+                                    link().isAirborne(),
+                                    true,
+                                    dialogController().isActive())) {
+                dialogController()
+                        .openPreformattedForLinkY(
+                                dialogTextLoader()
+                                        .load(new SignpostDialogRef(
+                                                0, newGameWakeUpMotion().followUpDialogLowId())),
+                                LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
                 return true;
             }
         }
@@ -169,32 +231,33 @@ public record OpeningStory(
     }
 
     public boolean tickNewGameTarinShield() {
-        if (newGameTarinShieldMotion == null
-                || roomSession == null
-                || !roomSession.hasActiveRoom()
-                || link == null
-                || playerState == null
-                || roomSession.activeRoom().mapId() != 0x10
-                || roomSession.activeRoom().roomId() != 0xA3) {
+        if (newGameTarinShieldMotion() == null
+                || roomSession() == null
+                || !roomSession().hasActiveRoom()
+                || link() == null
+                || playerState() == null
+                || roomSession().activeRoom().mapId() != 0x10
+                || roomSession().activeRoom().roomId() != 0xA3) {
             return false;
         }
-        TarinShieldMotion.Update update = newGameTarinShieldMotion.tick(
-                dialogController != null && dialogController.isActive(),
-                link.romEntityY(),
-                false,
-                playerState.shieldLevel());
+        TarinShieldMotion.Update update = newGameTarinShieldMotion()
+                .tick(
+                        dialogController() != null && dialogController().isActive(),
+                        link().romEntityY(),
+                        false,
+                        playerState().shieldLevel());
         if (update.presentShield()) {
-            link.showTarinShieldPresentation(newGameTarinShieldPalette);
+            link().showTarinShieldPresentation(newGameTarinShieldPalette());
         } else {
-            link.clearTarinShieldPresentation();
+            link().clearTarinShieldPresentation();
         }
-        if (update.linkY() != link.romEntityY()) {
-            link.setPixelPosition(link.pixelX(), update.linkY() - 0x10);
-            link.blockNextRomMotionFrame();
+        if (update.linkY() != link().romEntityY()) {
+            link().setPixelPosition(link().pixelX(), update.linkY() - 0x10);
+            link().blockNextRomMotionFrame();
         }
         if (update.grantShield()) {
-            playerState.applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SHIELD);
-            link.showStandingShieldDownPose();
+            playerState().applyChestReward(linksawakening.world.room.ChestContentsTable.CHEST_SHIELD);
+            link().showStandingShieldDownPose();
             // MUSIC_OBTAIN_ITEM is a jingle in the ROM.  The host music
             // player loops direct tracks, so resume the house track when
             // TarinShield2Handler awards the shield and opens Dialog091.
@@ -203,28 +266,30 @@ public record OpeningStory(
         if (update.playObtainItemMusic()) {
             playDirectMusic(MusicTrackIds.MUSIC_OBTAIN_ITEM);
         }
-        if (update.dialogLowId() >= 0 && (dialogController == null || !dialogController.isActive())) {
-            dialogController.openPreformattedForLinkY(
-                    dialogTextLoader.load(new SignpostDialogRef(0, update.dialogLowId())),
-                    LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+        if (update.dialogLowId() >= 0
+                && (dialogController() == null || !dialogController().isActive())) {
+            dialogController()
+                    .openPreformattedForLinkY(
+                            dialogTextLoader().load(new SignpostDialogRef(0, update.dialogLowId())),
+                            LinkDialogPosition.dialogYFromTopLeft(link().pixelY()));
         }
         return update.linkMotionBlocked();
     }
 
     private OverworldDialogBlockers currentOverworldDialogBlockers() {
-        return blockers.get();
+        return blockers().get();
     }
 
     private void playDirectMusic(int track) {
-        music.accept(track);
+        music().accept(track);
     }
 
     private int newGameHouseMusicTrack() {
-        return houseMusic.getAsInt();
+        return houseMusic().getAsInt();
     }
 
     private int romDirectionForLink(int direction) {
-        return romDirection.applyAsInt(direction);
+        return romDirection().applyAsInt(direction);
     }
 
     public void restoreNewGameHouseRuntimeIfNeeded(
@@ -233,11 +298,11 @@ public record OpeningStory(
             java.util.function.Consumer<TarinShieldMotion> shieldMotion,
             Runnable refreshPresentation) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
-            if (playerState.swordLevel() == 0) {
+            if (playerState().swordLevel() == 0) {
                 wakeMotion.accept(MarinWakeUpMotion.postWake());
                 refreshPresentation.run();
             }
-            if (playerState.shieldLevel() == 0) {
+            if (playerState().shieldLevel() == 0) {
                 shieldMotion.accept(new TarinShieldMotion());
             }
         }

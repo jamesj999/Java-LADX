@@ -3,6 +3,8 @@ package linksawakening.app;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import linksawakening.app.gameplay.BushInteraction;
@@ -694,5 +696,77 @@ public final class SessionContext {
 
     public Screen renderer_currentScreen() {
         return session.currentScreen;
+    }
+
+    public int openingStory_frameCounter() {
+        return session.frameCounter;
+    }
+
+    public MarinWakeUpMotion openingStory_newGameWakeUpMotion() {
+        return session.newGameWakeUpMotion;
+    }
+
+    public TarinShieldMotion openingStory_newGameTarinShieldMotion() {
+        return session.newGameTarinShieldMotion;
+    }
+
+    public int[] openingStory_newGameTarinShieldPalette() {
+        return session.newGameTarinShieldPalette;
+    }
+
+    public InputState openingStory_inputState() {
+        return session.services.inputState();
+    }
+
+    public InputConfig openingStory_inputConfig() {
+        return session.services.inputConfig();
+    }
+
+    public DialogController openingStory_dialogController() {
+        return session.services.dialogController();
+    }
+
+    public DialogTextLoader openingStory_dialogTextLoader() {
+        return session.services.dialogTextLoader();
+    }
+
+    public RoomSession openingStory_roomSession() {
+        return session.services.roomSession();
+    }
+
+    public Link openingStory_link() {
+        return session.services.link();
+    }
+
+    public PlayerState openingStory_playerState() {
+        return session.services.playerState();
+    }
+
+    private Supplier<OverworldDialogBlockers> openingStory_blockers;
+
+    public Supplier<OverworldDialogBlockers> openingStory_blockers() {
+        if (openingStory_blockers == null) openingStory_blockers = session::currentOverworldDialogBlockers;
+        return openingStory_blockers;
+    }
+
+    private IntConsumer openingStory_music;
+
+    public IntConsumer openingStory_music() {
+        if (openingStory_music == null) openingStory_music = session.musicDirector::playDirectMusic;
+        return openingStory_music;
+    }
+
+    private IntSupplier openingStory_houseMusic;
+
+    public IntSupplier openingStory_houseMusic() {
+        if (openingStory_houseMusic == null) openingStory_houseMusic = MusicDirector::newGameHouseMusicTrack;
+        return openingStory_houseMusic;
+    }
+
+    private IntUnaryOperator openingStory_romDirection;
+
+    public IntUnaryOperator openingStory_romDirection() {
+        if (openingStory_romDirection == null) openingStory_romDirection = session::romDirectionForLink;
+        return openingStory_romDirection;
     }
 }
