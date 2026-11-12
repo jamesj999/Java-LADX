@@ -80,8 +80,8 @@ final class LinkEntityEffects {
         linkAirborne.get().zVelocity = 0;
         linkAirborne.get().fallingIntoPit = false;
         linkAirborne.get().groundStatus = GroundStatus.NORMAL;
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkSwimming.get().swimmingSpeedX = 0;
         linkSwimming.get().swimmingSpeedY = 0;
         linkSwimming.get().swimmingFastCountdown = 0;
@@ -128,13 +128,13 @@ final class LinkEntityEffects {
             throw new IllegalArgumentException(
                     "Rooster ROM linkAnimationState.get().direction must be between 0 and 3");
         }
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkAirborne.get().airborne = true;
         linkAirborne.get().zSubPixels = (positionZ & 0xFF) << Link.SUB_PIXEL_SHIFT;
         linkAirborne.get().zVelocity = velocityZ & 0xFF;
         linkAirborne.get().groundStatus = GroundStatus.NORMAL;
         linkAirborne.get().fallingIntoPit = false;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         roosterCarryActive = true;
         linkAnimationState.get().direction = Direction.fromRom(romDirection);
         linkMotion.get().applyRomSpeed(speedX, speedY);
@@ -179,7 +179,7 @@ final class LinkEntityEffects {
         Link.validateRomByte(velocityZ, "Hinox Link Z velocity");
         Link.validateRomByte(airborneState, "Hinox Link linkAirborne.get().airborne state");
         linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (romPositionY - 0x10) & 0xFF);
-        linkStateMachine.get().romInteractiveMotionBlocked = motionBlocked;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(motionBlocked);
         if (applyHeldLinkPose) {
             linkAnimator.get().romAnimationStateOverride = 0x6A;
         }
@@ -200,7 +200,7 @@ final class LinkEntityEffects {
         Link.validateRomByte(visualRomPositionY, "Warp Link visual Y");
         Link.validateRomByte(immunityCountdown, "Warp Link immunity");
         linkMotion.get().setPixelPosition((romPositionX - 0x08) & 0xFF, (visualRomPositionY - 0x10) & 0xFF);
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         linkAnimator.get().romAnimationStateOverride = -1;
         linkItemState.get().romAttackStepAnimationCountdown = 0;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
@@ -221,8 +221,8 @@ final class LinkEntityEffects {
 
     /** Applies Marin's final writes when Link jumps out of the bed. */
     void leaveMarinWakeUpBed() {
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().romInteractiveMotionBlocked = false;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().status().romInteractiveMotionBlocked(false);
         linkAnimator.get().romAnimationStateOverride = -1;
         // The entity handler has already drawn the bed on the launch frame.
         // Ordinary Link rendering takes over at the next physics accessUpdate.
@@ -249,8 +249,8 @@ final class LinkEntityEffects {
         linkAirborne.get().zVelocity = 0;
         linkAirborne.get().groundStatus = GroundStatus.NORMAL;
         linkAirborne.get().fallingIntoPit = false;
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkMotion.get().forcedSpeedPending = false;
         linkMotion.get().forcedSpeedXOnly = false;
     }

@@ -22,12 +22,12 @@ final class LinkMotion extends LinkCollisionMotion {
             return false;
         }
 
-        linkStateMachine.get().resetPegasusBoots();
+        linkStateMachine.get().dash().resetPegasusBoots();
         linkAnimator.get().ledgeJumpRenderY = pixelY() - linkAirborne.get().accessZPixels();
         subX = (accessRomEntityX() & 0xF0) << Link.SUB_PIXEL_SHIFT;
         subY -= 8 << Link.SUB_PIXEL_SHIFT;
-        linkStateMachine.get().motionState = LinkMotionState.UNSTUCKING;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.UNSTUCKING);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         linkAirborne.get().overworldLedgeFallActive = true;
         // The collision changes wLinkMotionState only. The dispatcher runs
         // LinkMotionUnstuckingHandler on the following frame ($02:4960).
@@ -48,7 +48,7 @@ final class LinkMotion extends LinkCollisionMotion {
                 break;
             }
         }
-        linkStateMachine.get().physicsModifier = 1;
+        linkStateMachine.get().roomPhysics().physicsModifier(1);
         subY -= 3 << Link.SUB_PIXEL_SHIFT;
         linkAirborne.get().airborne = true;
         linkAirborne.get().zVelocity = 0;

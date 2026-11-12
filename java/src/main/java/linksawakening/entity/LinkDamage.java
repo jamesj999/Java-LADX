@@ -42,9 +42,9 @@ final class LinkDamage {
 
     void applySpikeGroundPhysics() {
         if (linkServices.get().collision == null
-                || linkStateMachine.get().accessDebugNoClip()
+                || linkStateMachine.get().status().accessDebugNoClip()
                 || linkAirborne.get().zSubPixels != 0
-                || linkStateMachine.get().motionState == LinkMotionState.UNSTUCKING) return;
+                || linkStateMachine.get().status().motionState() == LinkMotionState.UNSTUCKING) return;
         int x = linkMotion.get().accessPixelX() + 8;
         int y = linkMotion.get().accessPixelY() + 12;
         int object = linkServices.get().collision.objectIdAtPoint(x, y);

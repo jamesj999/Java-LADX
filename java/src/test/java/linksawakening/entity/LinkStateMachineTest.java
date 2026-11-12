@@ -95,7 +95,7 @@ final class LinkStateMachineTest {
         player.vitals().setInvincibilityCounter(2);
         link.position().applyRomSpeed(16, 0);
         link.motion().update();
-        assertFalse(link.linkStateMachine.romInteractiveMotionBlocked);
+        assertFalse(link.linkStateMachine.status().romInteractiveMotionBlocked());
         assertEquals(1, player.vitals().invincibilityCounter());
         assertEquals(64, link.position().pixelX());
         assertEquals(0, link.position().romSpeedX());
@@ -113,12 +113,12 @@ final class LinkStateMachineTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.linkStateMachine.motionState = LinkMotionState.REVOLVING_DOOR;
-        link.linkStateMachine.revolvingDoorFrame = 70;
-        link.linkStateMachine.tickRevolvingDoor();
+        link.linkStateMachine.status().motionState(LinkMotionState.REVOLVING_DOOR);
+        link.linkStateMachine.door().revolvingDoorFrame(70);
+        link.linkStateMachine.door().tickRevolvingDoor();
         assertEquals(5, link.airborne().romMotionState());
         assertFalse(link.motion().consumeRevolvingDoorTransition());
-        link.linkStateMachine.tickRevolvingDoor();
+        link.linkStateMachine.door().tickRevolvingDoor();
         assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         assertEquals(Direction.UP.javaIndex(), link.animation().direction());
         assertEquals(-5, link.position().romEntityY());

@@ -49,14 +49,14 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
 
     /** Applies the ROM's explicit hLinkAnimationState=$6A fallen-pose write. */
     protected void showRomFallenPose() {
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         romAnimationStateOverride = 0x6A;
         linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Applies HoldEntityAboveLink's got-item pose and interaction lock. */
     protected void showHeldItemPose() {
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         romAnimationStateOverride = 0x6C;
         linkAnimationState.get().direction = Direction.DOWN;
         linkItemState.get().romAttackStepAnimationCountdown = 0;
@@ -65,7 +65,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
 
     /** HandleGotItemB's power-up pose, distinct from lifting a physical object. */
     protected void showPowerUpPickupPose() {
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         romAnimationStateOverride = 0x6B;
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkMotion.get().forcedSpeedPending = false;
@@ -91,7 +91,7 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
     protected void showStandingShieldDownPose() {
         tarinShieldPresentation = false;
         romAnimationStateOverride = 0x22;
-        linkStateMachine.get().romInteractiveMotionBlocked = false;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(false);
         linkAnimationState.get().direction = Direction.DOWN;
         linkAnimationState.get().movingThisFrame = false;
     }
@@ -124,14 +124,14 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
         if (animationState != 0xFF) {
             swordAcquisitionAnimationState = animationState;
         }
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         linkAnimationState.get().direction = Direction.fromRom(absoluteRomDirection);
         linkAnimationState.get().movingThisFrame = false;
     }
 
     /** Mirrors the sword handler's final hLinkAnimationState=$6B write. */
     protected void showSwordAcquisitionFinalPose() {
-        linkStateMachine.get().romInteractiveMotionBlocked = true;
+        linkStateMachine.get().status().romInteractiveMotionBlocked(true);
         swordAcquisitionBaseRomDirection = -1;
         swordAcquisitionAnimationState = -1;
         romAnimationStateOverride = 0x6B;
@@ -181,12 +181,12 @@ abstract class LinkAnimationSelection extends LinkSpriteRendering {
                                                 .equipmentLevels()
                                                 .tunicType());
 
-        if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
-                && linkStateMachine.get().revolvingDoorFrame < 0x38) {
+        if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
+                && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
             palette = linkServices
                     .get()
                     .linkMotionTables
-                    .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
+                    .revolvingDoorPalette(linkStateMachine.get().door().revolvingDoorPaletteVariant());
         }
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.

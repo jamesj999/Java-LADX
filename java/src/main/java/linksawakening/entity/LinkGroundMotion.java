@@ -45,7 +45,7 @@ final class LinkGroundMotion {
                 && !linkSideView.get().sideScrolling
                 && !linkAirborne.get().airborne
                 && !linkAirborne.get().fallingIntoPit
-                && linkStateMachine.get().motionState != LinkMotionState.UNSTUCKING
+                && linkStateMachine.get().status().motionState() != LinkMotionState.UNSTUCKING
                 && linkMotion.get().accessRomEntityY() < 0x88
                 && linkServices
                                 .get()

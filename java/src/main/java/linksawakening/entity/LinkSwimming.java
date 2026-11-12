@@ -53,13 +53,13 @@ final class LinkSwimming {
                 .objectPhysicsFlagAtPoint(
                         linkMotion.get().accessPixelX() + 8, linkMotion.get().accessPixelY() + 12);
         if (flag != 7 && flag != 0x0B) return false;
-        if (linkStateMachine.get().slowWalkingSpeed != 0) {
+        if (linkStateMachine.get().status().slowWalkingSpeed() != 0) {
             applyWaterCurrent();
             return true;
         }
-        if (linkStateMachine.get().itemUsageContext == 0x80) return false;
-        if (linkStateMachine.get().motionState == LinkMotionState.RECOVER
-                || linkStateMachine.get().motionState == LinkMotionState.SWIMMING) return true;
+        if (linkStateMachine.get().status().itemUsageContext() == 0x80) return false;
+        if (linkStateMachine.get().status().motionState() == LinkMotionState.RECOVER
+                || linkStateMachine.get().status().motionState() == LinkMotionState.SWIMMING) return true;
         int object = linkServices
                 .get()
                 .collision
@@ -69,16 +69,16 @@ final class LinkSwimming {
                 linkMotion.get().accessRomEntityX(), (linkMotion.get().accessRomEntityY() - 2) & 0xFF);
         linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.WATER_SPLASH);
         if (object == 6 || !linkControls.get().accessPlayerHasFlippers()) {
-            linkStateMachine.get().recoverCountdown = 0x50;
-            linkStateMachine.get().motionState = LinkMotionState.RECOVER;
-            linkStateMachine.get().physicsModifier = object;
+            linkStateMachine.get().status().recoverCountdown(0x50);
+            linkStateMachine.get().status().motionState(LinkMotionState.RECOVER);
+            linkStateMachine.get().roomPhysics().physicsModifier(object);
             linkMotion.get().subY += 2 << Link.SUB_PIXEL_SHIFT;
-            linkStateMachine.get().recoveringInWater = true;
+            linkStateMachine.get().status().recoveringInWater(true);
             return true;
         }
 
-        linkStateMachine.get().motionState = LinkMotionState.SWIMMING;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.SWIMMING);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         swimmingFastCountdown = 0;
         divingCountdown = 0;
         linkAirborne.get().airborne = false;
@@ -106,7 +106,7 @@ final class LinkSwimming {
                         linkMotion.get().accessPixelX() + 8, linkMotion.get().accessPixelY() + 12);
         int index = object - 0xE7;
         if (object == 0x0E) {
-            index = switch (linkStateMachine.get().physicsRoomId) {
+            index = switch (linkStateMachine.get().roomPhysics().physicsRoomId()) {
                 case 0x3E -> 1;
                 case 0x3D -> 2;
                 case 0x3C, 0x3F -> 3;
@@ -128,8 +128,12 @@ final class LinkSwimming {
                         instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
         linkMotion.get().lastRomSpeedX = linkMotion.get().lastRomSpeedY = 0;
         linkAnimationState.get().movingThisFrame = false;
-        if (linkStateMachine.get().recoverCountdown > 0) linkStateMachine.get().recoverCountdown--;
-        int countdown = linkStateMachine.get().recoverCountdown;
+        if (linkStateMachine.get().status().recoverCountdown() > 0)
+            linkStateMachine
+                    .get()
+                    .status()
+                    .recoverCountdown(linkStateMachine.get().status().recoverCountdown() - 1);
+        int countdown = linkStateMachine.get().status().recoverCountdown();
         if (countdown != 0) {
             linkAnimator.get().romAnimationStateOverride = countdown >= 0x40 ? 0x4C : countdown >= 0x30 ? 0x4E : 0xFF;
             if (countdown == 0x40)
@@ -137,13 +141,14 @@ final class LinkSwimming {
             return;
         }
         if (linkServices.get().playerState != null) {
-            if (linkStateMachine.get().physicsModifier == 6)
+            if (linkStateMachine.get().roomPhysics().physicsModifier() == 6)
                 linkServices.get().playerState.vitals().addSubtractHealthBuffer(4);
             linkServices.get().playerState.vitals().setInvincibilityCounter(0x40);
         }
-        linkStateMachine.get().recoveringInWater = false;
-        linkStateMachine.get().physicsModifier = 0;
-        if (!linkServices.get().collision.usesIndoorPhysicsTable() && linkStateMachine.get().physicsRoomId == 0x2B) {
+        linkStateMachine.get().status().recoveringInWater(false);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
+        if (!linkServices.get().collision.usesIndoorPhysicsTable()
+                && linkStateMachine.get().roomPhysics().physicsRoomId() == 0x2B) {
             linkMotion.get().roomEntrySubX = (0x48 - 8) << Link.SUB_PIXEL_SHIFT;
             linkMotion.get().roomEntrySubY = (0x30 - 16) << Link.SUB_PIXEL_SHIFT;
             linkMotion.get().hasRoomEntryPosition = true;
@@ -152,7 +157,7 @@ final class LinkSwimming {
             linkMotion.get().subX = linkMotion.get().roomEntrySubX;
             linkMotion.get().subY = linkMotion.get().roomEntrySubY;
         }
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         linkAnimator.get().romAnimationStateOverride = -1;
     }
 
@@ -179,7 +184,7 @@ final class LinkSwimming {
         if (divingCountdown > 0) {
             divingCountdown--;
             if (divingCountdown == 0) {
-                linkStateMachine.get().physicsModifier = 0;
+                linkStateMachine.get().roomPhysics().physicsModifier(0);
             }
         }
 
@@ -189,8 +194,11 @@ final class LinkSwimming {
                         linkServices.get().inputConfig == null
                                 ? -1
                                 : linkServices.get().inputConfig.bKey())) {
-            linkStateMachine.get().physicsModifier ^= 1;
-            divingCountdown = linkStateMachine.get().physicsModifier == 0 ? 0 : 0xA0;
+            linkStateMachine
+                    .get()
+                    .roomPhysics()
+                    .physicsModifier(linkStateMachine.get().roomPhysics().physicsModifier() ^ (1));
+            divingCountdown = linkStateMachine.get().roomPhysics().physicsModifier() == 0 ? 0 : 0xA0;
         }
         if (linkControls
                 .get()
@@ -219,7 +227,7 @@ final class LinkSwimming {
             swimmingSpeedY = linkMotion.get().forcedSpeedY;
             linkMotion.get().forcedSpeedPending = false;
             linkMotion.get().forcedSpeedXOnly = false;
-        } else if ((linkStateMachine.get().frameCounter & 0x01) == 0) {
+        } else if ((linkStateMachine.get().status().frameCounter() & 0x01) == 0) {
             boolean fast = swimmingFastCountdown >= 0x10;
             int targetX = linkServices.get().linkMotionTables.swimmingSpeedX(mask, fast);
             int targetY = linkServices.get().linkMotionTables.swimmingSpeedY(mask, fast);
@@ -268,8 +276,8 @@ final class LinkSwimming {
     }
 
     void leaveSwimming() {
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         swimmingSpeedX = 0;
         swimmingSpeedY = 0;
         swimmingFastCountdown = 0;

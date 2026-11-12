@@ -61,9 +61,9 @@ abstract class LinkJumpMotion extends LinkAirborneState {
         directionalLedgeJumpSpeedX = 0;
         directionalLedgeJumpSpeedY = 0;
         overworldLedgeFallActive = false;
-        if (linkStateMachine.get().motionState == LinkMotionState.UNSTUCKING) {
-            linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
-            linkStateMachine.get().physicsModifier = 0;
+        if (linkStateMachine.get().status().motionState() == LinkMotionState.UNSTUCKING) {
+            linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+            linkStateMachine.get().roomPhysics().physicsModifier(0);
         }
         zSubPixels = 0;
         zVelocity = 0;
@@ -98,7 +98,7 @@ abstract class LinkJumpMotion extends LinkAirborneState {
         // The next default-motion frame clears it again. hLinkPhysicsModifier
         // remains 1; only wLinkMotionState changes back to default.
         tickJump(false);
-        linkStateMachine.get().physicsModifier = 1;
+        linkStateMachine.get().roomPhysics().physicsModifier(1);
         airborne = true;
         if (!swordSuppressesJumpAnimation()) tickJumpAnimation();
     }

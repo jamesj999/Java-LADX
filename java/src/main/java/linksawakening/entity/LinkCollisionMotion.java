@@ -34,7 +34,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
         // MarinLinkAwakeInBedHandler ($05:530E) sets wC10A too:
         // BackgroundCollisionHandler ($02:6E45) skips all probes until landing.
         int probeMask = linkServices.get().collision != null
-                        && !linkStateMachine.get().debugNoClip
+                        && !linkStateMachine.get().status().debugNoClip()
                         && !linkEntityEffects.get().marinBedJumpMotionLocked
                         && !linkAirborne.get().directionalLedgeJumpMotionLocked
                 ? leadingEdgeCollisionMask(candidatePixelX, candidatePixelY, moveDirection)
@@ -92,11 +92,11 @@ abstract class LinkCollisionMotion extends LinkPosition {
                     && (physicsFlag == 0x7C || physicsFlag == 0x7D)
                     && (objectId == 0xB1 || objectId == 0xB2)
                     && (pointY & 15) < 6
-                    && linkStateMachine.get().motionState != LinkMotionState.REVOLVING_DOOR) {
-                linkStateMachine.get().motionState = LinkMotionState.REVOLVING_DOOR;
-                linkStateMachine.get().revolvingDoorFrame = 0;
-                linkStateMachine.get().revolvingDoorTransitionPending = false;
-                linkStateMachine.get().revolvingDoorPaletteVariant = -1;
+                    && linkStateMachine.get().status().motionState() != LinkMotionState.REVOLVING_DOOR) {
+                linkStateMachine.get().status().motionState(LinkMotionState.REVOLVING_DOOR);
+                linkStateMachine.get().door().revolvingDoorFrame(0);
+                linkStateMachine.get().door().revolvingDoorTransitionPending(false);
+                linkStateMachine.get().door().revolvingDoorPaletteVariant(-1);
                 linkAirborne.get().zSubPixels = linkAirborne.get().zVelocity = 0;
                 linkAirborne.get().airborne = false;
                 linkDamage.get().collisionIgnoreFramesRemaining = 0;
@@ -175,7 +175,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
             return true;
         }
 
-        linkStateMachine.get().resetPegasusBoots();
+        linkStateMachine.get().dash().resetPegasusBoots();
         linkAirborne.get().directionalLedgeCollisionCounter = 0;
         linkAirborne.get().directionalLedgeJumpMotionLocked = true;
         linkAirborne.get().directionalLedgeJumpSpeedX = switch (Direction.fromJavaOrUnknown(ledgeDirection)) {

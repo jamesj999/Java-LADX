@@ -90,12 +90,12 @@ final class LinkWaterBehaviorTest extends LinkFixture {
         objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_DEEP_WATER;
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects);
         link.position().setPixelPosition(0x20, 0x20);
-        link.linkStateMachine.itemUsageContext = 0x80;
+        link.linkStateMachine.status().itemUsageContext(0x80);
         assertFalse(link.linkSwimming.enterSwimmingIfNeeded());
         assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
-        link.linkStateMachine.itemUsageContext = 0;
-        link.linkStateMachine.slowWalkingSpeed = 1;
-        link.linkStateMachine.physicsRoomId = 0x3E;
+        link.linkStateMachine.status().itemUsageContext(0);
+        link.linkStateMachine.status().slowWalkingSpeed(1);
+        link.linkStateMachine.roomPhysics().physicsRoomId(0x3E);
         assertTrue(link.linkSwimming.enterSwimmingIfNeeded());
         assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
         assertEquals(0xFA, link.position().romSpeedX());

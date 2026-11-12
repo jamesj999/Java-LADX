@@ -13,11 +13,11 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
     }
 
     public boolean debugNoClip() {
-        return linkStateMachine.accessDebugNoClip();
+        return linkStateMachine.status().accessDebugNoClip();
     }
 
     public boolean isSwimming() {
-        return linkStateMachine.accessIsSwimming();
+        return linkStateMachine.status().accessIsSwimming();
     }
 
     public boolean isDiving() {
@@ -25,23 +25,23 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
     }
 
     public int romPhysicsModifier() {
-        return linkStateMachine.accessRomPhysicsModifier();
+        return linkStateMachine.roomPhysics().accessRomPhysicsModifier();
     }
 
     public int pegasusBootsChargeMeter() {
-        return linkStateMachine.accessPegasusBootsChargeMeter();
+        return linkStateMachine.dash().accessPegasusBootsChargeMeter();
     }
 
     public int pegasusBootsCollisionCountdown() {
-        return linkStateMachine.accessPegasusBootsCollisionCountdown();
+        return linkStateMachine.dash().accessPegasusBootsCollisionCountdown();
     }
 
     public int pegasusBootsCollisionPosX() {
-        return linkStateMachine.accessPegasusBootsCollisionPosX();
+        return linkStateMachine.dash().accessPegasusBootsCollisionPosX();
     }
 
     public int pegasusBootsCollisionPosY() {
-        return linkStateMachine.accessPegasusBootsCollisionPosY();
+        return linkStateMachine.dash().accessPegasusBootsCollisionPosY();
     }
 
     public void setGelClinging(boolean clinging, int worldFrame) {
@@ -61,7 +61,7 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
     }
 
     public boolean consumeRevolvingDoorTransition() {
-        return linkStateMachine.accessConsumeRevolvingDoorTransition();
+        return linkStateMachine.door().accessConsumeRevolvingDoorTransition();
     }
 
     public boolean shouldApplyGroundMotion() {
@@ -69,54 +69,54 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
     }
 
     public void setDebugNoClip(boolean enabled) {
-        linkStateMachine.accessSetDebugNoClip(enabled);
+        linkStateMachine.setDebugNoClip(enabled);
     }
 
     public void resetTransientStateForDebug() {
-        linkStateMachine.accessResetTransientStateForDebug();
+        linkStateMachine.resetTransientStateForDebug();
     }
 
     public void finishRoomScroll(boolean downward) {
-        linkStateMachine.accessFinishRoomScroll(downward);
+        linkStateMachine.roomPhysics().finishRoomScroll(downward);
     }
 
     public void writeRomInteractiveMotionBlock(int value) {
-        linkStateMachine.accessWriteRomInteractiveMotionBlock(value);
+        linkStateMachine.status().writeRomInteractiveMotionBlock(value);
     }
 
     public int romInteractiveMotionBlockValue() {
-        return linkStateMachine.accessRomInteractiveMotionBlockValue();
+        return linkStateMachine.status().romInteractiveMotionBlockValue();
     }
 
     public int romSlowWalkingSpeed() {
-        return linkStateMachine.accessRomSlowWalkingSpeed();
+        return linkStateMachine.status().slowWalkingSpeed();
     }
 
     public int romItemUsageContext() {
-        return linkStateMachine.accessRomItemUsageContext();
+        return linkStateMachine.status().itemUsageContext();
     }
 
     public void blockNextRomMotionFrame() {
-        linkStateMachine.accessBlockNextRomMotionFrame();
+        linkStateMachine.status().blockNextRomMotionFrame();
     }
 
     public void initializeRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
-        linkStateMachine.accessInitializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+        linkStateMachine.roomPhysics().initializeRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 
     public void setRoomPhysicsForRoom(long loadToken, int mapId, int roomId, int mapCategory) {
-        linkStateMachine.accessSetRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
+        linkStateMachine.roomPhysics().setRoomPhysicsForRoom(loadToken, mapId, roomId, mapCategory);
     }
 
     public void setRomPhysicsModifier(int modifier) {
-        linkStateMachine.accessSetRomPhysicsModifier(modifier);
+        linkStateMachine.roomPhysics().setRomPhysicsModifier(modifier);
     }
 
     public ScreenShakeRequest consumePegasusScreenShakeRequest() {
-        return linkStateMachine.accessConsumePegasusScreenShakeRequest();
+        return linkStateMachine.dash().consumePegasusScreenShakeRequest();
     }
 
     public void resetPegasusBoots() {
-        linkStateMachine.accessResetPegasusBoots();
+        linkStateMachine.dash().resetPegasusBoots();
     }
 }

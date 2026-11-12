@@ -335,3 +335,55 @@ Name-entry character selection, insertion position and five-byte buffer belong t
 | `snapshot` | `snapshot`, `refreshSnapshot` |
 
 Result: depth 3 → 0; four chain files / 606 lines → two final classes / 543 lines (controller 475, name editor 68). All state is private. Two independent name-entry tests cover wrap/reset, START priority and action-copy ownership. Full suite: 2,890 tests, zero failures/errors, one skipped.
+
+## Link motion dispatch
+
+Original chain: LinkStateMachine → LinkBootsMotion → LinkRoomMotion → LinkFrameMotion → LinkMotionLifecycle.
+
+Frame dispatch remains in LinkStateMachine. Pegasus charge/collision/shake state belongs to LinkDash; room identity/physics belongs to LinkRoomPhysics; revolving-door animation/transition state belongs to LinkDoorTraversal. LinkMotionStatus is the explicit small shared state for motion mode, recovery and frame gates. Existing airborne, swimming, equipment and animation components remain separate collaborators.
+
+| State/constant | Referencing methods |
+| --- | --- |
+| `dialogGotItemSequence` | `LinkMotionLifecycle`, `resetTransientStateForDebug` |
+| `linkAirborne` | `LinkMotionLifecycle`, `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `prepareGroundMotion`, `resolveSpeeds`, `applyMotion`, `updatePegasusBootsUse`, `handlePegasusBootsCollision`, `setDebugNoClip`, `resetTransientStateForDebug`, `finishRoomScroll` |
+| `linkAnimationState` | `LinkMotionLifecycle`, `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `prepareGroundMotion`, `resolveSpeeds`, `applyMotion`, `tickRevolvingDoor`, `updateDebugNoClip`, `pegasusRunningSpeedX`, `pegasusRunningSpeedY`, `handlePegasusBootsCollision`, `resetTransientStateForDebug` |
+| `linkAnimator` | `LinkMotionLifecycle`, `beginFrame`, `prepareGroundMotion`, `applyMotion`, `tickRevolvingDoor`, `resetTransientStateForDebug` |
+| `linkControls` | `LinkMotionLifecycle`, `prepareGroundMotion`, `updateDebugNoClip` |
+| `linkDamage` | `LinkMotionLifecycle`, `beginFrame`, `advanceHazardMotion`, `prepareGroundMotion`, `applyMotion`, `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom` |
+| `linkEntityEffects` | `LinkMotionLifecycle`, `advanceHazardMotion`, `prepareGroundMotion`, `resolveSpeeds`, `applyMotion`, `updatePegasusBootsUse`, `resetTransientStateForDebug` |
+| `linkEquipment` | `LinkMotionLifecycle`, `beginFrame`, `prepareGroundMotion` |
+| `linkGroundMotion` | `LinkMotionLifecycle`, `applyMotion`, `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom`, `accessSetGelClinging` |
+| `linkItemState` | `LinkMotionLifecycle`, `resetTransientStateForDebug` |
+| `linkMotion` | `LinkMotionLifecycle`, `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `resolveSpeeds`, `applyMotion`, `tickRevolvingDoor`, `updateDebugNoClip`, `updatePegasusBootsUse`, `handlePegasusBootsCollision`, `resetTransientStateForDebug`, `finishRoomScroll` |
+| `linkServices` | `LinkMotionLifecycle`, `advanceSpecialMotion`, `resolveSpeeds`, `tickRevolvingDoor`, `groundSpeedIndex`, `updateDebugNoClip`, `updatePegasusBootsUse`, `handlePegasusBootsCollision`, `finishRoomScroll`, `resetPegasusBoots` |
+| `linkSideView` | `LinkMotionLifecycle`, `beginFrame`, `advanceSpecialMotion`, `resetTransientStateForDebug` |
+| `linkSignals` | `LinkMotionLifecycle`, `advanceHazardMotion`, `resetTransientStateForDebug` |
+| `linkSwimming` | `LinkMotionLifecycle`, `advanceSpecialMotion`, `advanceHazardMotion`, `applyMotion` |
+| `motionState` | `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `tickRevolvingDoor`, `updatePegasusBootsUse`, `resetTransientStateForDebug`, `finishRoomScroll`, `accessIsSwimming` |
+| `physicsModifier` | `advanceHazardMotion`, `resetTransientStateForDebug`, `finishRoomScroll`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom`, `setRomPhysicsModifier`, `accessIsDiving`, `accessRomPhysicsModifier` |
+| `recoverCountdown` | `resetTransientStateForDebug` |
+| `recoveringInWater` | `resetTransientStateForDebug` |
+| `slowWalkingSpeed` | `accessRomSlowWalkingSpeed` |
+| `itemUsageContext` | `accessRomItemUsageContext` |
+| `revolvingDoorFrame` | `tickRevolvingDoor`, `resetTransientStateForDebug` |
+| `revolvingDoorTransitionPending` | `tickRevolvingDoor`, `resetTransientStateForDebug`, `accessConsumeRevolvingDoorTransition` |
+| `revolvingDoorPaletteVariant` | `tickRevolvingDoor`, `resetTransientStateForDebug` |
+| `romInteractiveMotionBlocked` | `beginFrame`, `updatePegasusBootsUse`, `resetTransientStateForDebug`, `writeRomInteractiveMotionBlock` |
+| `romInteractiveMotionBlockValue` | `beginFrame`, `resetTransientStateForDebug`, `writeRomInteractiveMotionBlock`, `accessRomInteractiveMotionBlockValue` |
+| `physicsRoomLoadToken` | `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom` |
+| `physicsRoomMapId` | `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom` |
+| `physicsRoomId` | `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom` |
+| `physicsRoomCategory` | `resetTransientStateForDebug`, `initializeRoomPhysicsForRoom`, `setRoomPhysicsForRoom` |
+| `debugNoClip` | `advanceSpecialMotion`, `setDebugNoClip`, `resetTransientStateForDebug`, `finishRoomScroll`, `accessDebugNoClip` |
+| `frameCounter` | `beginFrame`, `advanceSpecialMotion` |
+| `gelClinging` | `applyMotion`, `accessSetGelClinging` |
+| `gelMotionFrame` | `applyMotion`, `accessSetGelClinging` |
+| `pegasusBootsChargeMeter` | `resolveSpeeds`, `updatePegasusBootsUse`, `resetPegasusBoots`, `accessPegasusBootsChargeMeter` |
+| `pegasusBootsCollisionCountdown` | `beginFrame`, `handlePegasusBootsCollision`, `accessPegasusBootsCollisionCountdown` |
+| `pegasusBootsCollisionPosX` | `handlePegasusBootsCollision`, `accessPegasusBootsCollisionPosX` |
+| `pegasusBootsCollisionPosY` | `handlePegasusBootsCollision`, `accessPegasusBootsCollisionPosY` |
+| `pendingPegasusScreenShakeCountdown` | `handlePegasusBootsCollision`, `consumePegasusScreenShakeRequest` |
+| `pendingPegasusScreenShakePhase` | `handlePegasusBootsCollision`, `consumePegasusScreenShakeRequest` |
+| `frame` | `beginFrame`, `advanceSpecialMotion`, `advanceHazardMotion`, `prepareGroundMotion`, `resolveSpeeds`, `applyMotion`, `blockNextRomMotionFrame`, `consumePegasusScreenShakeRequest` |
+
+Result: depth 4 → 0; LinkStateMachine is a 489-line dispatcher. LinkDash owns charge/rebound/shake, LinkRoomPhysics owns room-identity defaults and scroll completion, LinkDoorTraversal owns door timing/palette/transition, and LinkMotionStatus holds explicit shared mode/recovery/frame gates. Every state field in these components is private; no component receives LinkStateMachine or Link. Assembly-only dependency wiring lives in LinkAssembly. Full suite: 2,891 tests, zero failures/errors, one skipped; one independent interaction-byte validation test added.

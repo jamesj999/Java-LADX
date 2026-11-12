@@ -206,7 +206,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
         RomTables tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
         Link link = linkInRoom(new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, emptyRoomObjectsArea());
         link.position().setRoomEntryPixelPosition(64, 64);
-        link.linkStateMachine.frameCounter = 0;
+        link.linkStateMachine.status().frameCounter(0);
         link.airborne().setPitWarpArrival(0x70);
         int[] directions = {
             Direction.RIGHT.javaIndex(),

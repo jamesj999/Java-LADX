@@ -49,12 +49,12 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                                                 .equipmentLevels()
                                                 .tunicType());
 
-        if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
-                && linkStateMachine.get().revolvingDoorFrame < 0x38) {
+        if (linkStateMachine.get().door().revolvingDoorPaletteVariant() >= 0
+                && linkStateMachine.get().door().revolvingDoorFrame() < 0x38) {
             palette = linkServices
                     .get()
                     .linkMotionTables
-                    .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
+                    .revolvingDoorPalette(linkStateMachine.get().door().revolvingDoorPaletteVariant());
         }
 
         // Column-major tile layout: [0]=UL, [1]=LL, [2]=UR, [3]=LR.
@@ -139,8 +139,8 @@ abstract class LinkSpriteRendering extends LinkPoseState {
             return LinkAnimator.FALL_ANIMATION_STATE[frame];
         }
 
-        if (linkStateMachine.get().motionState == LinkMotionState.SWIMMING) {
-            return linkStateMachine.get().physicsModifier != 0
+        if (linkStateMachine.get().status().motionState() == LinkMotionState.SWIMMING) {
+            return linkStateMachine.get().roomPhysics().physicsModifier() != 0
                     ? LinkAnimator.DIVING_ANIMATION_STATE[linkAnimationState.get().walkFrame]
                     : LinkAnimator.SWIMMING_ANIMATION_STATE[
                             linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
@@ -191,7 +191,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         }
         if (pushingAnimationState >= 0) return pushingAnimationState;
         if (linkServices.get().spriteSheet != null) {
-            int carriedShield = !linkStateMachine.get().gelClinging
+            int carriedShield = !linkStateMachine.get().status().gelClinging()
                             && linkServices.get().playerState != null
                             && (linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
                                     || linkServices

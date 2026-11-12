@@ -48,7 +48,7 @@ final class LinkRecovery {
     }
 
     int accessGameOverStage() {
-        return accessIsPassingOut() ? linkStateMachine.get().accessRomPhysicsModifier() : 0;
+        return accessIsPassingOut() ? linkStateMachine.get().roomPhysics().accessRomPhysicsModifier() : 0;
     }
 
     int accessGameOverCountdown() {
@@ -56,7 +56,7 @@ final class LinkRecovery {
     }
 
     void accessPresentGameOverStage(int stage, int countdown) {
-        linkStateMachine.get().physicsModifier = stage;
+        linkStateMachine.get().roomPhysics().physicsModifier(stage);
         gameOverCountdown = countdown;
     }
 
@@ -84,8 +84,8 @@ final class LinkRecovery {
     }
 
     void accessBeginPassOut() {
-        linkStateMachine.get().motionState = LinkMotionState.PASS_OUT;
-        linkStateMachine.get().physicsModifier = 0;
+        linkStateMachine.get().status().motionState(LinkMotionState.PASS_OUT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
         if (linkServices.get().playerState != null)
             linkServices.get().playerState.vitals().setInvincibilityCounter(0);
         linkDamage.get().collisionIgnoreFramesRemaining = 0;

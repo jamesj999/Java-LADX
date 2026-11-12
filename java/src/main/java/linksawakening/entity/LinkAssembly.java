@@ -53,7 +53,7 @@ final class LinkAssembly {
         linkSideViewDependencies.linkServices = linkServices;
         linkSideViewDependencies.linkStateMachine = linkStateMachine;
         linkSideView.bind(new LinkSideView(linkSideViewDependencies));
-        LinkStateMachine.Dependencies linkStateMachineDependencies = new LinkStateMachine.Dependencies();
+        MotionDependencies linkStateMachineDependencies = new MotionDependencies();
         linkStateMachineDependencies.dialogGotItemSequence = dialogGotItemSequence;
         linkStateMachineDependencies.linkAirborne = linkAirborne;
         linkStateMachineDependencies.linkAnimationState = linkAnimationState;
@@ -183,5 +183,23 @@ final class LinkAssembly {
 
     private void bindGroup4(LinkServices services) {
         dialogGotItemSequence.bind(new DialogGotItemSequence());
+    }
+
+    static final class MotionDependencies {
+        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkSignals> linkSignals;
+        LinkComponentRef<LinkSwimming> linkSwimming;
     }
 }

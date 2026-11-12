@@ -73,7 +73,7 @@ final class LinkAirborne extends LinkJumpMotion {
     }
 
     protected void accessSetPitWarpArrival(int z) {
-        linkStateMachine.get().motionState = LinkMotionState.DEFAULT;
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
         this.zSubPixels = z << SUB_PIXEL_SHIFT;
         this.zVelocity = 0;
         this.airborne = z != 0;
@@ -84,7 +84,7 @@ final class LinkAirborne extends LinkJumpMotion {
         if (this.groundStatus == GroundStatus.PIT || this.fallingIntoPit) {
             return 0x06;
         }
-        return linkStateMachine.get().motionState.romValue();
+        return linkStateMachine.get().status().motionState().romValue();
     }
 
     protected boolean accessIsAirborne() {
@@ -104,7 +104,7 @@ final class LinkAirborne extends LinkJumpMotion {
                 || linkSideView.get().sideViewFeatherPending
                 || this.groundStatus == GroundStatus.PIT
                 || this.fallingIntoPit
-                || linkStateMachine.get().accessIsSwimming()) {
+                || linkStateMachine.get().status().accessIsSwimming()) {
             return;
         }
         if (linkSideView.get().sideScrolling) {

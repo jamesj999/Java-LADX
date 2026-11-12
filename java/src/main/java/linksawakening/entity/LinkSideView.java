@@ -256,7 +256,7 @@ final class LinkSideView {
     }
 
     boolean accessRomItemAnimationFrameBlocked() {
-        return !this.sideScrolling && linkStateMachine.get().accessRomInteractiveMotionBlockValue() == 2;
+        return !this.sideScrolling && linkStateMachine.get().status().romInteractiveMotionBlockValue() == 2;
     }
 
     void accessApplySideViewPlatformContact(int horizontalDelta, int romPositionY, int romSpeedY, boolean standing) {
