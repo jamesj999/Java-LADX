@@ -13,6 +13,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -52,7 +53,7 @@ public final class HouseEmulatorCapture {
                 config,
                 tables,
                 collision,
-                LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)),
+                LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)),
                 player,
                 new ItemRegistry());
         var motion = new MarinWakeUpMotion();
@@ -73,9 +74,7 @@ public final class HouseEmulatorCapture {
         }
         session.story().updateHouseTarinPresentation(0, 0x38, 0x34);
         var inventory = new InventoryController(
-                input,
-                config,
-                new InventoryMenu(InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom)), player));
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), player));
         Path folder = out.resolve("ours");
         Files.createDirectories(folder);
         for (int f = 0; f < clocks.size(); f++) {

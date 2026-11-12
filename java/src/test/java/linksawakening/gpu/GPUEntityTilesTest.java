@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.EntitySpriteCatalog;
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import linksawakening.world.entity.EntityRoomLoader;
 import org.junit.jupiter.api.Test;
@@ -65,8 +66,8 @@ final class GPUEntityTilesTest {
     @Test
     void shippedRoom92UsesAdjustedGbcNpcBanksAndSixteenTileDestinations() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteSelection selection = new EntitySpriteCatalog(new linksawakening.rom.Rom(rom))
-                .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        EntitySpriteSelection selection =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         GPU gpu = new GPU();
         gpu.loadEntitySpriteSheets(rom, selection.sheetValues());
 

@@ -11,6 +11,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.transition.ScrollController;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ final class LinkScrollVisibilityTest {
         try (var input = TestRom.open()) {
             rom = input.readAllBytes();
         }
-        var sheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom));
+        var sheet = LinkSpriteSheet.loadFromRom(TestRoms.partial(rom));
         var link = new Link(
                 new InputState(),
                 new InputConfig(1, 2, 3, 4, 5, 6, 7),

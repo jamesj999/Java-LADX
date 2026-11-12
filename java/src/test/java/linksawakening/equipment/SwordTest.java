@@ -15,6 +15,7 @@ import java.util.Set;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 import org.junit.jupiter.api.Test;
@@ -298,8 +299,7 @@ final class SwordTest {
     @Test
     void fullyChargedReleaseFrameRendersSameSwordPoseAsHolding() throws Exception {
         byte[] romData = loadRom();
-        Sword sword = new Sword(
-                RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData)));
+        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(Rom.of(romData)));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -324,10 +324,10 @@ final class SwordTest {
     @Test
     void romSwordPalettesChangeColorsWithoutChangingBladeGeometry() throws Exception {
         byte[] romData = loadRom();
-        SwordPalette palette = SwordPalette.loadFromRom(new linksawakening.rom.Rom(romData));
+        SwordPalette palette = SwordPalette.loadFromRom(Rom.of(romData));
         Sword sword = new Sword(
                 RomTables.loadFromRom(romData),
-                SwordSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData)),
+                SwordSpriteSheet.loadFromRom(Rom.of(romData)),
                 GameplaySoundSink.none(),
                 () -> 0,
                 palette);
@@ -357,7 +357,7 @@ final class SwordTest {
     void holdingSwordRendersUsingRomHoldingEntry() throws Exception {
         byte[] romData = loadRom();
         RomTables romTables = RomTables.loadFromRom(romData);
-        SwordSpriteSheet spriteSheet = SwordSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData));
+        SwordSpriteSheet spriteSheet = SwordSpriteSheet.loadFromRom(Rom.of(romData));
         Sword sword = new Sword(romTables, spriteSheet);
 
         sword.onPress();

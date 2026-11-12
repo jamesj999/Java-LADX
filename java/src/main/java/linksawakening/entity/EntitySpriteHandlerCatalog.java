@@ -51,6 +51,6 @@ public final class EntitySpriteHandlerCatalog extends EntitySpriteDecodeGeometry
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public EntitySpriteHandlerCatalog(byte[] romData) {
-        this(romData == null ? null : new Rom(romData));
+        this(romData == null ? null : Rom.unchecked(romData));
     }
 }

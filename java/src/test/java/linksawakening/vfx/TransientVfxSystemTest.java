@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import linksawakening.gpu.Tile;
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -118,7 +119,7 @@ final class TransientVfxSystemTest {
     @Test
     void bushLeavesRendererUsesRomFrameSelectionAndRectMetadata() throws IOException {
         byte[] rom = loadRom();
-        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom));
+        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(rom));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(spriteSheet);
 
         assertEquals(0, renderer.frameIndexForCountdown(0x1F));
@@ -149,7 +150,7 @@ final class TransientVfxSystemTest {
     @Test
     void bushLeavesRendererConvertsEntityOamCoordinatesToScreenPixels() throws IOException {
         byte[] rom = loadRom();
-        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom));
+        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(rom));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(spriteSheet);
 
         List<CutLeavesEffectRenderer.SpritePlacement> frame = renderer.renderBushLeaves(0x48, 0x60, 0x1F);
@@ -161,8 +162,7 @@ final class TransientVfxSystemTest {
 
     @Test
     void laserBeamRendererUsesTheRomTileAndAlternatingAttributeBit() throws IOException {
-        TransientVfxSpriteSheet spriteSheet =
-                TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom()));
+        TransientVfxSpriteSheet spriteSheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(spriteSheet);
 
         List<CutLeavesEffectRenderer.SpritePlacement> firstFrame = renderer.renderLaserBeam(0x44, 0x60, 0x10, 0, 0);
@@ -182,7 +182,7 @@ final class TransientVfxSystemTest {
     @Test
     void swordBeamRendererUsesTheRomTwoSpriteVariantAndFlickerTables() throws IOException {
         CutLeavesEffectRenderer renderer =
-                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom())));
+                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom())));
 
         assertTrue(renderer.renderSwordBeam(0x44, 0x60, 0x08, 0, 0, 0).isEmpty());
         var firstFrame = renderer.renderSwordBeam(0x44, 0x60, 0x08, 1, 0, 0);
@@ -201,7 +201,7 @@ final class TransientVfxSystemTest {
     @Test
     void waterSplashRendererUsesRomTwoSpritePhases() throws IOException {
         CutLeavesEffectRenderer renderer =
-                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom())));
+                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom())));
 
         var first = renderer.renderWaterSplash(0x40, 0x60, 0x07);
         var second = renderer.renderWaterSplash(0x40, 0x60, 0x0F);

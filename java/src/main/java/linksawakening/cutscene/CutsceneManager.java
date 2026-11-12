@@ -136,6 +136,6 @@ public final class CutsceneManager implements CutsceneContext {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
-        startIntro(romData == null ? null : new Rom(romData), backgroundProvider);
+        startIntro(romData == null ? null : Rom.unchecked(romData), backgroundProvider);
     }
 }

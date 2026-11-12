@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class IntroRomDataTest {
@@ -30,7 +31,7 @@ final class IntroRomDataTest {
         writeBytes(rom, 0x7A27, sequence(8, 0x60));
         writeBytes(rom, 0x77BD, sequence(32, 0x70));
 
-        IntroRomData data = new IntroRomData(new linksawakening.rom.Rom(rom));
+        IntroRomData data = new IntroRomData(TestRoms.partial(rom));
 
         List<IntroRomData.OamEntry> ship = data.shipTiles();
         assertEquals(6, ship.size());
@@ -66,15 +67,15 @@ final class IntroRomDataTest {
         writeBytes(rom, 0x7AE4, sequence(20 * 19, 0x90));
 
         IntroRomData.TitleRow row =
-                new IntroRomData(new linksawakening.rom.Rom(rom)).titleRows().get(6);
+                new IntroRomData(TestRoms.partial(rom)).titleRows().get(6);
 
         assertEquals(0x9AD6, row.tileTargetAddress());
         assertEquals(0x9AD6, row.attributeTargetAddress());
         assertArrayEquals(sequence(16, 0x60), row.tileBytes());
         assertArrayEquals(sequence(16, 0xE0), row.attributeBytes());
-        assertEquals(20 * 19, new IntroRomData(new linksawakening.rom.Rom(rom)).postBeachTilemap().length);
-        assertEquals(0x90, new IntroRomData(new linksawakening.rom.Rom(rom)).postBeachTilemap()[0]);
-        assertEquals((0x90 + 379) & 0xFF, new IntroRomData(new linksawakening.rom.Rom(rom)).postBeachTilemap()[379]);
+        assertEquals(20 * 19, new IntroRomData(TestRoms.partial(rom)).postBeachTilemap().length);
+        assertEquals(0x90, new IntroRomData(TestRoms.partial(rom)).postBeachTilemap()[0]);
+        assertEquals((0x90 + 379) & 0xFF, new IntroRomData(TestRoms.partial(rom)).postBeachTilemap()[379]);
     }
 
     @Test
@@ -86,7 +87,7 @@ final class IntroRomDataTest {
         writeWordAtOffset(rom, palette + 4, 0x7C00);
         writeWordAtOffset(rom, palette + 6, 0x7FFF);
 
-        IntroRomData.PaletteBlock block = new IntroRomData(new linksawakening.rom.Rom(rom)).dxFadeInPalette();
+        IntroRomData.PaletteBlock block = new IntroRomData(TestRoms.partial(rom)).dxFadeInPalette();
 
         assertEquals(16, block.rows().length);
         assertArrayEquals(
@@ -105,16 +106,15 @@ final class IntroRomDataTest {
         writeBytes(rom, 0x7CF9, 3, 2, 1, 0, 0, 1, 2, 3);
 
         assertArrayEquals(
-                new int[] {3, 2, 1, 0, 0, 1, 2, 3},
-                new IntroRomData(new linksawakening.rom.Rom(rom)).introVerticalOffsets());
+                new int[] {3, 2, 1, 0, 0, 1, 2, 3}, new IntroRomData(TestRoms.partial(rom)).introVerticalOffsets());
     }
 
     @Test
     void rejectsTruncatedFixedTableReads() {
         byte[] rom = Arrays.copyOf(syntheticRom(), RomBank.romOffset(BANK, 0x7538) + 23);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> new IntroRomData(new linksawakening.rom.Rom(rom)).shipTiles());
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> new IntroRomData(TestRoms.partial(rom)).shipTiles());
 
         assertTrue(exception.getMessage().contains("IntroShipTiles"));
     }

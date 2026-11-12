@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.Rom;
+import linksawakening.testing.TestRoms;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void mapsTheGhiniFamilyToExactShippedRomDisplayLists() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         for (int entityType : new int[] {0x10, 0x12}) {
             EntitySpriteDefinition ghini = catalog.forEntityType(entityType, EntityRoomLoader.RoomTable.OVERWORLD);
@@ -70,7 +72,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void moblinSwordDynamicDefinitionMirrorsItsRomOamConstruction() throws Exception {
-        EntitySpriteDefinition sword = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()))
+        EntitySpriteDefinition sword = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
                 .forEntityType(0x14, EntityRoomLoader.RoomTable.OVERWORLD);
 
         assertDefinition(sword, 0x07, 0x7A95, EntitySpriteDefinition.Shape.DYNAMIC, 8, 0);
@@ -107,7 +109,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void rejectsDisplayListsThatWouldReadOutsideTheSelectedRomBank() {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(syntheticRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(syntheticRom()));
 
         assertThrows(IllegalArgumentException.class, () -> catalog.decodePair(0xD0, 0x06, 0x7FFF, 2, 0));
         assertThrows(IllegalArgumentException.class, () -> catalog.decodeSingle(0xD1, 0x06, 0x4000, 0, 0));
@@ -115,7 +117,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void shippedRomDisplayListsContainTheExpectedFirstVariants() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition crow = catalog.forEntityType(0x7A, EntityRoomLoader.RoomTable.OVERWORLD);
         assertEquals(0x50, crow.variant(0).first().tile());
@@ -390,7 +392,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void mapsColorShellStatesToTheSixBankTwentyRectangleFamilies() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
         int[] types = {0xE9, 0xEA, 0xEB};
         int[] activeAddresses = {0x6688, 0x66E8, 0x6748};
         int[] inactiveAddresses = {0x67A8, 0x67D8, 0x6808};
@@ -411,7 +413,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void colorShellRectangleBytesPreserveRomOffsetsAttributesAndHiddenOam() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition active = catalog.forColorShellState(0xE9, 0x00, EntityStatus.ACTIVE);
         EntitySpriteDefinition.RectangleSprite first =
@@ -429,7 +431,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void decodesTheRomDeathRectangleFamiliesAndPowerFinalFrame() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition death = catalog.forDeathEntity();
         assertDefinition(death, 0x03, 0x5488, EntitySpriteDefinition.Shape.RECTANGLE, 4, 0);
@@ -455,7 +457,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void decodesFloatingItemsMixedMainListSourceQuirkAndRectangleOverlay() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition floating = catalog.forEntityType(0x86, EntityRoomLoader.RoomTable.OVERWORLD);
         assertDefinition(floating, 0x06, 0x7ADD, EntitySpriteDefinition.Shape.PAIR, 7, 0);
@@ -488,7 +490,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void evasiveStalfosVariantsMatchBothRomDisplayListFamilies() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         assertPairBytes(catalog.forEntityType(0x1E, EntityRoomLoader.RoomTable.INDOORS_A), new int[][] {
             {0x4A, 0x01, 0x4C, 0x01},
@@ -503,7 +505,7 @@ final class EntitySpriteHandlerCatalogAdditionalTest extends EntitySpriteHandler
 
     @Test
     void mapsLaserParentToTheRomRotationDisplayListAndLeavesBeamInvisible() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition laser = catalog.forEntityType(0x2A, EntityRoomLoader.RoomTable.INDOORS_A);
         assertDefinition(laser, 0x04, 0x6C2D, EntitySpriteDefinition.Shape.PAIR, 8, 0);

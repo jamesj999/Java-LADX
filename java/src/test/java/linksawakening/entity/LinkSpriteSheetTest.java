@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import linksawakening.gpu.Tile;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class LinkSpriteSheetTest {
@@ -18,7 +19,7 @@ final class LinkSpriteSheetTest {
         romData[romOffset(0x20, 0x5319)] = 0x00;
         romData[romOffset(0x20, 0x531A)] = 0x02;
 
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData));
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(TestRoms.partial(romData));
         Tile[] resolved = new Tile[4];
 
         spriteSheet.resolveTiles(0, resolved);
@@ -33,7 +34,7 @@ final class LinkSpriteSheetTest {
         romData[stateOffset] = 0x12;
         romData[stateOffset + 1] = 0x14;
 
-        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(romData));
+        LinkSpriteSheet spriteSheet = LinkSpriteSheet.loadFromRom(TestRoms.partial(romData));
         Tile[] resolved = new Tile[4];
 
         spriteSheet.resolveTiles(0x75, resolved);

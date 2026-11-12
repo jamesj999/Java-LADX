@@ -12,6 +12,7 @@ import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 /** Golden pixels recorded by running the shipped ROM, independently of the Java renderer. */
@@ -37,9 +38,9 @@ final class IntroEmulatorParityTest {
                 "Emulator fixtures are tied to the shipped ROM revision");
         GPU gpu = new GPU();
         gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(TestRoms.partial(rom));
         IntroSequence sequence = new IntroSequence(
-                new linksawakening.rom.Rom(rom), id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
+                TestRoms.partial(rom), id -> loader.load(BackgroundSceneCatalog.forCutsceneScene(id)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
         int last = golden.keySet().stream().mapToInt(Integer::intValue).max().orElseThrow();
         for (int frame = 0; frame <= last; frame++) {

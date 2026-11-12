@@ -479,3 +479,44 @@ those two adapter-construction files are listed as callers.
 - ROM delegates: 14 → 12.
 - Legacy superclass layers: 9 → 8.
 - Default suite: 2,821 tests; zero failures/errors, one existing skip.
+
+## Round 4 ROM construction
+
+`Rom.unchecked(byte[])` deliberately skips bank-alignment validation while
+preserving null checks, read bounds and backing-array ownership.
+ROM-free tests use `testing.TestRoms.partial(byte...)`; known complete ROM
+loads use `Rom.of(byte[])`. No production test-only factory was introduced.
+
+Owned constructor sites (excluding Rom's own factories): 215 → 0.
+Of those, 105 complete-ROM test sites use `Rom.of`, 67 synthetic-buffer sites
+use `TestRoms.partial`, and 43 compatibility/copy sites use `Rom.unchecked`.
+The public deprecated constructor remains solely for the following off-limits
+caller files (plus construction inside its own factories):
+
+- `java/src/main/java/linksawakening/gameplay/DialogTextLoader.java`
+- `java/src/main/java/linksawakening/gameplay/SignpostDialogTable.java`
+- `java/src/main/java/linksawakening/world/entity/EnemyDropResolver.java`
+- `java/src/main/java/linksawakening/world/entity/EntityRoomLoader.java`
+- `java/src/main/java/linksawakening/world/entity/RomEnemyCombatTables.java`
+- `java/src/main/java/linksawakening/world/entity/RoomEntityRuntime.java`
+- `java/src/main/java/linksawakening/world/entity/RoomEntityRuntimeBuilder.java`
+- `java/src/main/java/linksawakening/world/object/OverworldBushInteraction.java`
+- `java/src/main/java/linksawakening/world/room/ChestContentsTable.java`
+- `java/src/main/java/linksawakening/world/room/DungeonRoomEventTable.java`
+- `java/src/main/java/linksawakening/world/room/ManboWarpResolver.java`
+- `java/src/main/java/linksawakening/world/room/OverworldTilesetTable.java`
+- `java/src/main/java/linksawakening/world/room/OwlEventDialogResolver.java`
+- `java/src/main/java/linksawakening/world/room/RoomLoader.java`
+- `java/src/main/java/linksawakening/world/room/RoomObjectParser.java`
+- `java/src/main/java/linksawakening/world/room/RoomPaletteLoader.java`
+- `java/src/main/java/linksawakening/world/room/RoomTileRedraw.java`
+- `java/src/main/java/linksawakening/world/room/RoomTilemapBuilder.java`
+- `java/src/main/java/linksawakening/world/room/RoomTransitionController.java`
+- `java/src/main/java/linksawakening/world/room/RoomWorldState.java`
+- `java/src/main/java/linksawakening/world/transition/ManboTransitionWave.java`
+- `java/src/test/java/linksawakening/app/MabeCollisionSweepTest.java`
+- `java/src/test/java/linksawakening/app/gameplay/LinkPassOutAnimationTest.java`
+- `java/src/test/java/linksawakening/app/gameplay/PassOutSessionTest.java`
+- `java/src/test/java/linksawakening/world/entity/EntityRomTestData.java`
+
+Default suite: 2,821 → 2,822 tests; zero failures/errors, one existing skip.

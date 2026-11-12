@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -34,8 +35,7 @@ final class HudOverlayTest {
             InventoryItem.EMPTY.romValue()
         });
 
-        InventoryMenu menu =
-                new InventoryMenu(InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom)), player);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(Rom.of(rom)), player);
         menu.requestToggle();
         for (int frame = 0; frame < 16; frame++) {
             menu.tick();

@@ -21,6 +21,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -112,7 +113,7 @@ public final class DialogEmulatorCapture {
                 config,
                 tables,
                 collision,
-                LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)),
+                LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)),
                 player,
                 new ItemRegistry());
         link.position().setPixelPosition(linkX - 8, linkY - 16);
@@ -135,9 +136,7 @@ public final class DialogEmulatorCapture {
         var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
         session.story().updateHouseTarinPresentation(0, linkX, linkY);
         var inventory = new InventoryController(
-                input,
-                config,
-                new InventoryMenu(InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(rom)), player));
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), player));
         replay(
                 scenario,
                 frames,

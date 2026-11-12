@@ -8,12 +8,12 @@ import linksawakening.gpu.GPU;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.GbcBanks;
-import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -29,10 +29,10 @@ final class RenderPipelineGpuUploadsTest {
         }
         var player = new PlayerState();
         var menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(bytes)),
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(bytes)),
                 player,
                 linksawakening.gameplay.GameplaySoundSink.none(),
-                new linksawakening.rom.Rom(bytes));
+                TestRoms.partial(bytes));
         var controller = new InventoryController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), menu);
         GPU gpu = new GPU();
         gpu.loadBaseTiles(bytes);
@@ -52,7 +52,7 @@ final class RenderPipelineGpuUploadsTest {
     }
 
     private static void assertUpload(GPU gpu, byte[] bytes, RomAddress source) {
-        byte[] expected = new Rom(bytes).slice(source.inBank(GbcBanks.adjust(source.bank())), 32);
+        byte[] expected = TestRoms.partial(bytes).slice(source.inBank(GbcBanks.adjust(source.bank())), 32);
         for (int i = 0; i < expected.length; i++) assertEquals(expected[i], gpu.readVRAM(0x8E0 + i));
     }
 }

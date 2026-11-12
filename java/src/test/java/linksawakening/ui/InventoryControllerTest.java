@@ -14,6 +14,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import java.io.InputStream;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
@@ -26,8 +27,7 @@ final class InventoryControllerTest {
         InputConfig inputConfig = new InputConfig(
                 GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState playerState = new PlayerState();
-        InventoryMenu menu = new InventoryMenu(
-                InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(loadRom())), playerState);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(Rom.of(loadRom())), playerState);
         InventoryController controller = new InventoryController(input, inputConfig, menu);
 
         input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);

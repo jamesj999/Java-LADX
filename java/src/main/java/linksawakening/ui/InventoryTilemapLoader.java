@@ -109,7 +109,7 @@ public final class InventoryTilemapLoader {
     /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
     @Deprecated(forRemoval = true)
     public static InventoryTilemapLoader loadFromRom(byte[] romData) {
-        return loadFromRom(romData == null ? null : new Rom(romData));
+        return loadFromRom(romData == null ? null : Rom.unchecked(romData));
     }
     /** Replaces synchronous renderer scratch buffers, including zero padding. */
     void copyInto(int[] tiles, int[] attributes) {

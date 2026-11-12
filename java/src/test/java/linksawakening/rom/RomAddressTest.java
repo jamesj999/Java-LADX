@@ -2,6 +2,7 @@ package linksawakening.rom;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 class RomAddressTest {
@@ -17,7 +18,7 @@ class RomAddressTest {
     @Test
     void unsignedAndLittleEndianReadsAndSliceOwnership() {
         byte[] bytes = {(byte) 0xFE, (byte) 0xAB};
-        Rom rom = new Rom(bytes);
+        Rom rom = TestRoms.partial(bytes);
         RomAddress start = new RomAddress(0, 0);
         assertEquals(254, rom.u8(start));
         assertEquals(0xABFE, rom.u16le(start));

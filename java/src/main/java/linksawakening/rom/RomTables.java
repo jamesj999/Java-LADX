@@ -26,7 +26,7 @@ public final class RomTables {
     /** @deprecated Use {@link #load(Rom)}. */
     @Deprecated(forRemoval = true)
     public static RomTables loadFromRom(byte[] romData) {
-        return load(new Rom(romData));
+        return load(Rom.unchecked(romData));
     }
 
     public PhysicsTables physicsTables() {

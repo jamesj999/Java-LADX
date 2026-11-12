@@ -2,10 +2,29 @@ package linksawakening.rom;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 class RomReadTest {
     private static final RomAddress START = RomAddress.fromOffset(0);
+
+    @Test
+    void partialBuffersSkipAlignmentButRetainNullAndReadBoundsChecks() {
+        byte[] data = {(byte) 0xFE, 0x12, 0x34};
+        Rom rom = TestRoms.partial(data);
+        assertEquals(3, rom.size());
+        assertSame(data, rom.unsafeBytes());
+        assertEquals(0x12FE, rom.u16le(START));
+        data[0] = 7;
+        assertEquals(7, rom.u8(START));
+        assertThrows(IllegalArgumentException.class, () -> Rom.of(data));
+        assertThrows(NullPointerException.class, () -> Rom.unchecked(null));
+        assertThrows(NullPointerException.class, () -> TestRoms.partial((byte[]) null));
+        assertThrows(IndexOutOfBoundsException.class, () -> rom.u8(START.plus(3)));
+        assertThrows(IndexOutOfBoundsException.class, () -> rom.u16le(START.plus(2)));
+        assertEquals(0, TestRoms.partial().size());
+        assertArrayEquals(new byte[0], rom.bytes(START.plus(3), 0));
+    }
 
     @Test
     void signedUnsignedCopiesAndViews() {

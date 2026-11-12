@@ -3,6 +3,7 @@ package linksawakening.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.Rom;
 import linksawakening.world.entity.EntityRoomLoader;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void decodesMoblinKingsFourteenSourceBodyVariants() throws Exception {
-        EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()))
+        EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
                 .forEntityType(0xE4, EntityRoomLoader.RoomTable.INDOORS_B);
 
         assertDefinition(king, 0x15, 0x4A15, EntitySpriteDefinition.Shape.RECTANGLE, 14, 0);
@@ -22,8 +23,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void buildsMoblinKingsBodyWeaponAndAirborneShadowLayers() throws Exception {
-        EntitySpriteDefinition king =
-                new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom())).forMoblinKingState(0, 0, true);
+        EntitySpriteDefinition king = new EntitySpriteHandlerCatalog(Rom.of(loadRom())).forMoblinKingState(0, 0, true);
 
         assertEquals(EntitySpriteDefinition.Shape.DYNAMIC, king.shape());
         assertEquals(9, king.dynamicVariant(0).size());
@@ -34,7 +34,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void decodesRollingBonesAndBuildsTheSixPairRollingBar() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition boss = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES, EntityRoomLoader.RoomTable.INDOORS_A);
@@ -56,7 +56,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void selectsHinoxMapSpecificSpriteTablesFromTheRom() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         assertDefinition(
                 catalog.forEntityType(
@@ -86,7 +86,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void mapsMiniMoldormToItsBankFourPairDisplayList() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition definition = catalog.forEntityType(
                 EntitySpriteHandlerCatalog.ENTITY_MINI_MOLDORM, EntityRoomLoader.RoomTable.INDOORS_A);
@@ -108,7 +108,7 @@ final class EntityBossSpriteTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
     void buildsMiniMoldormHeadAndDelayedTailAsOneDynamicDisplayList() throws Exception {
-        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(new linksawakening.rom.Rom(loadRom()));
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
 
         EntitySpriteDefinition definition = catalog.forMiniMoldormState(0x03, 0x50, 0x60, 0x48, 0x58, 0x40, 0x50);
 

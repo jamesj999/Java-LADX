@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +69,7 @@ final class CutsceneManagerTest {
         List<String> loadedScenes = new ArrayList<>();
         CutsceneManager manager = new CutsceneManager(dialog, loadedScenes::add);
 
-        manager.startIntro(new linksawakening.rom.Rom(loadRom()), CutsceneManagerTest::backgroundFor);
+        manager.startIntro(Rom.of(loadRom()), CutsceneManagerTest::backgroundFor);
 
         assertEquals(IntroCutsceneScript.SCENE_SEA, manager.frameSnapshot().sceneId());
         assertEquals(0, manager.frameSnapshot().frameCounter());

@@ -4,6 +4,7 @@ import java.nio.file.*;
 import linksawakening.gpu.*;
 import linksawakening.input.*;
 import linksawakening.scene.*;
+import linksawakening.testing.TestRoms;
 import linksawakening.ui.*;
 
 /** Offline screenshots through the production menu controller and framebuffer. */
@@ -19,9 +20,9 @@ final class MenuEmulatorCapture {
             boolean saved = mask != 0;
             GPU gpu = new GPU();
             gpu.loadMenuTiles(rom);
-            var loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+            var loader = new BackgroundSceneLoader(TestRoms.partial(rom));
             var menu = new FileMenuController(
-                    new FileMenuRomData(new linksawakening.rom.Rom(rom)),
+                    new FileMenuRomData(TestRoms.partial(rom)),
                     id -> loader.load(BackgroundSceneCatalog.forFileMenuScene(id)),
                     mask,
                     saved

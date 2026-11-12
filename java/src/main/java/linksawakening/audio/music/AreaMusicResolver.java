@@ -100,6 +100,6 @@ public final class AreaMusicResolver {
 
     @Deprecated(forRemoval = true)
     public static AreaMusicResolver fromRom(byte[] romData) {
-        return fromRom(new Rom(romData));
+        return fromRom(Rom.unchecked(romData));
     }
 }

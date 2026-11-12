@@ -18,6 +18,7 @@ import linksawakening.rom.RomTables;
 import linksawakening.state.PlayerState;
 import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 /** Scalar expectations from bank2.asm, also checked in a local PyBoy 2.9.0 trace. */
@@ -113,7 +114,7 @@ final class LinkLedgeParityTest {
             link.linkAnimator.jumpAnimationCounter = 0;
             for (int frame = 0; frame < 24; frame++) {
                 link.linkAirborne.tickJumpAnimation();
-                int state = new Rom(fixture.rom)
+                int state = TestRoms.partial(fixture.rom)
                         .u8(new linksawakening.rom.RomAddress(0x02, 0x46B5)
                                 .plus(Link.romDirectionForJavaDirection(direction) * 4 + frame / 8));
                 assertEquals(state, link.animation().romAnimationState());
@@ -152,7 +153,7 @@ final class LinkLedgeParityTest {
                         0,
                         0);
         assertEquals(2, columns.size());
-        Rom rom = new Rom(fixture.rom);
+        Rom rom = TestRoms.partial(fixture.rom);
         for (int half = 0; half < 2; half++) {
             int tile = rom.u8(RomSymbols.LinkAnimationStateTable.plus(state * 2 + half));
             int attrs = rom.u8(RomSymbols.data_020_5407.plus(state * 2 + half));
@@ -192,7 +193,7 @@ final class LinkLedgeParityTest {
                         .config(config)
                         .tables(tables)
                         .collision(collision)
-                        .sprites(LinkSpriteSheet.loadFromRom(new linksawakening.rom.Rom(rom)))
+                        .sprites(LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)))
                         .player(new PlayerState())
                         .items(new ItemRegistry())
                         .build(),

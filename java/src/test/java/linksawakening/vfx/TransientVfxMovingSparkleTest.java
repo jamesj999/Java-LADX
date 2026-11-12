@@ -3,6 +3,7 @@ package linksawakening.vfx;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import linksawakening.rom.Rom;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -11,7 +12,7 @@ final class TransientVfxMovingSparkleTest {
     @Test
     void rendersTheRomSparklePairAndDirectionalMotion() {
         CutLeavesEffectRenderer renderer =
-                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(new linksawakening.rom.Rom(loadRom())));
+                new CutLeavesEffectRenderer(TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom())));
 
         var initial = renderer.renderMovingSparkle(0x40, 0x50, 0x22, 0);
         assertEquals(2, initial.size());

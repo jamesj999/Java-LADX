@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
 final class SwordPaletteTest {
@@ -14,7 +15,7 @@ final class SwordPaletteTest {
         writePaletteRow(rom, 3, 0x001F, 0x03E0, 0x7C00, 0x7FFF);
         writePaletteRow(rom, 4, 0x0210, 0x0421, 0x0632, 0x0843);
 
-        SwordPalette palette = SwordPalette.loadFromRom(new linksawakening.rom.Rom(rom));
+        SwordPalette palette = SwordPalette.loadFromRom(TestRoms.partial(rom));
 
         assertArrayEquals(
                 new int[] {
@@ -35,7 +36,7 @@ final class SwordPaletteTest {
         byte[] rom = syntheticRom();
         writePaletteRow(rom, 3, 0x001F, 0x03E0, 0x7C00, 0x7FFF);
         writePaletteRow(rom, 4, 0x0210, 0x0421, 0x0632, 0x0843);
-        SwordPalette palette = SwordPalette.loadFromRom(new linksawakening.rom.Rom(rom));
+        SwordPalette palette = SwordPalette.loadFromRom(TestRoms.partial(rom));
 
         int[] normal = palette.normal();
         int[] charged = palette.charged();

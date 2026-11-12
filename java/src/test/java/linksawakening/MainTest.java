@@ -19,6 +19,7 @@ import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.config.AppConfig;
 import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import linksawakening.scene.BackgroundSceneSpec;
@@ -126,7 +127,7 @@ final class MainTest {
 
     @Test
     void backgroundScenesUseFullGameBoyBgMap() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(loadRom()));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(loadRom()));
 
         assertEquals(32 * 32, loader.load(BackgroundSceneCatalog.TITLE).tilemap().length);
     }

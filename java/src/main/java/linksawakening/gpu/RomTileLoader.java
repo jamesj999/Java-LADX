@@ -241,86 +241,86 @@ class RomTileLoader extends Vram {
 
     @Deprecated(forRemoval = true)
     public void loadAnimatedTilesGroup(byte[] rom, int group) {
-        loadAnimatedTilesGroup(rom == null ? null : new Rom(rom), group);
+        loadAnimatedTilesGroup(rom == null ? null : Rom.unchecked(rom), group);
     }
 
     @Deprecated(forRemoval = true)
     public void tickAnimatedTiles(byte[] rom) {
-        tickAnimatedTiles(rom == null ? null : new Rom(rom));
+        tickAnimatedTiles(rom == null ? null : Rom.unchecked(rom));
     }
 
     @Deprecated(forRemoval = true)
     public void loadTitleScreenTiles(byte[] romData) {
-        loadTitleScreenTiles(romData == null ? null : new Rom(romData));
+        loadTitleScreenTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadIntroSequenceTiles(byte[] romData) {
-        loadIntroSequenceTiles(romData == null ? null : new Rom(romData));
+        loadIntroSequenceTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadBaseOverworldTiles(byte[] romData) {
-        loadBaseOverworldTiles(romData == null ? null : new Rom(romData));
+        loadBaseOverworldTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadBaseTiles(byte[] romData) {
-        loadBaseTiles(romData == null ? null : new Rom(romData));
+        loadBaseTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void updatePowderInventoryTiles(byte[] romData, boolean hasToadstool) {
-        updatePowderInventoryTiles(romData == null ? null : new Rom(romData), hasToadstool);
+        updatePowderInventoryTiles(romData == null ? null : Rom.unchecked(romData), hasToadstool);
     }
 
     @Deprecated(forRemoval = true)
     public void loadMenuTiles(byte[] romData) {
-        loadMenuTiles(romData == null ? null : new Rom(romData));
+        loadMenuTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadEntitySpriteSheets(byte[] romData, int[] sheetValues) {
-        loadEntitySpriteSheets(romData == null ? null : new Rom(romData), sheetValues);
+        loadEntitySpriteSheets(romData == null ? null : Rom.unchecked(romData), sheetValues);
     }
 
     @Deprecated(forRemoval = true)
     public void loadColorDungeonEntitySheets(byte[] romData, int roomId) {
-        loadColorDungeonEntitySheets(romData == null ? null : new Rom(romData), roomId);
+        loadColorDungeonEntitySheets(romData == null ? null : Rom.unchecked(romData), roomId);
     }
 
     @Deprecated(forRemoval = true)
     public void loadRoomSpecificTiles(byte[] romData, int roomId, int tilesetId) {
-        loadRoomSpecificTiles(romData == null ? null : new Rom(romData), roomId, tilesetId);
+        loadRoomSpecificTiles(romData == null ? null : Rom.unchecked(romData), roomId, tilesetId);
     }
 
     @Deprecated(forRemoval = true)
     public final void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
-        loadIndoorTiles(romData == null ? null : new Rom(romData), mapId, roomId);
+        loadIndoorTiles(romData == null ? null : Rom.unchecked(romData), mapId, roomId);
     }
 
     @Deprecated(forRemoval = true)
     public final void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
-        loadIndoorTiles(romData == null ? null : new Rom(romData), mapId, roomId, sideScrolling);
+        loadIndoorTiles(romData == null ? null : Rom.unchecked(romData), mapId, roomId, sideScrolling);
     }
 
     @Deprecated(forRemoval = true)
     public void copySwitchBlockTiles(byte[] romData, int sourceOffset, int destinationTile) {
-        copySwitchBlockTiles(romData == null ? null : new Rom(romData), sourceOffset, destinationTile);
+        copySwitchBlockTiles(romData == null ? null : Rom.unchecked(romData), sourceOffset, destinationTile);
     }
 
     @Deprecated(forRemoval = true)
     public void copyPressedFloorSwitchTiles(byte[] romData) {
-        copyPressedFloorSwitchTiles(romData == null ? null : new Rom(romData));
+        copyPressedFloorSwitchTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadOcarinaSymbolsTiles(byte[] romData) {
-        loadOcarinaSymbolsTiles(romData == null ? null : new Rom(romData));
+        loadOcarinaSymbolsTiles(romData == null ? null : Rom.unchecked(romData));
     }
 
     @Deprecated(forRemoval = true)
     public void loadSharedVfxTiles(byte[] romData) {
-        loadSharedVfxTiles(romData == null ? null : new Rom(romData));
+        loadSharedVfxTiles(romData == null ? null : Rom.unchecked(romData));
     }
 }

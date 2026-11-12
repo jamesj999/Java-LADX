@@ -8,6 +8,7 @@ import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import org.junit.jupiter.api.Test;
@@ -20,10 +21,9 @@ final class DumpIntroFramesHarness {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
         gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(new linksawakening.rom.Rom(rom));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(rom));
         IntroSequence sequence = new IntroSequence(
-                new linksawakening.rom.Rom(rom),
-                sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+                Rom.of(rom), sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
 
         File outDir = new File(System.getProperty("java.io.tmpdir"), "intro-frames");

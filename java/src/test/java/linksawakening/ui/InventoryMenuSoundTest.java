@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.rom.Rom;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -142,7 +143,7 @@ final class InventoryMenuSoundTest {
 
     private static InventoryTilemapLoader loadTilemap() throws Exception {
         try (InputStream stream = linksawakening.testing.TestRom.open()) {
-            return InventoryTilemapLoader.loadFromRom(new linksawakening.rom.Rom(stream.readAllBytes()));
+            return InventoryTilemapLoader.loadFromRom(Rom.of(stream.readAllBytes()));
         }
     }
 

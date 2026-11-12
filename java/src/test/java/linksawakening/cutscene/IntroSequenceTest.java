@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 import org.junit.jupiter.api.Test;
 
@@ -101,9 +102,8 @@ final class IntroSequenceTest {
         assertEquals(0, intro.titleRevealRows());
 
         tick(intro, 2); // queued row becomes visible on the next VBlank
-        IntroRomData.TitleRow firstRow = new IntroRomData(new linksawakening.rom.Rom(loadRom()))
-                .titleRows()
-                .get(0);
+        IntroRomData.TitleRow firstRow =
+                new IntroRomData(Rom.of(loadRom())).titleRows().get(0);
         assertEquals(2, intro.titleRevealRows());
         assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(), firstRow.tileTargetAddress()));
         assertArrayEquals(
@@ -149,7 +149,7 @@ final class IntroSequenceTest {
 
     private static IntroSequence newIntro() {
         byte[] rom = loadRom();
-        return new IntroSequence(new linksawakening.rom.Rom(rom), IntroSequenceTest::backgroundFor);
+        return new IntroSequence(Rom.of(rom), IntroSequenceTest::backgroundFor);
     }
 
     private static BackgroundScene backgroundFor(String sceneId) {
