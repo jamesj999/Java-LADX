@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityCombatResolver; resolved lazily to preserve initialization order. */
 interface EntityCombatResolverServices {
     int contactDamage(int slot);
@@ -22,7 +24,7 @@ interface EntityCombatResolverServices {
 
     linksawakening.world.entity.EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -78,8 +80,8 @@ interface EntityCombatResolverServices {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

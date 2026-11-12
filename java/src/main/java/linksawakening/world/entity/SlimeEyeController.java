@@ -7,6 +7,7 @@ import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.event.*;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.SlimeEyeHalfMotion;
 
@@ -133,8 +134,8 @@ public final class SlimeEyeController {
         }
         runtime.lifecycle().decrementSlowTransitionCountdown(slot, frame.frame);
         if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
-            BossIntroMotion.Update intro = runtime.motionSet()
-                    .bossIntroMotion
+            BossIntroMotion.Update intro = runtime.motions()
+                    .get(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
                             runtime.slotProperties().options1(slot),
                             entity.type(),
@@ -272,7 +273,9 @@ public final class SlimeEyeController {
             }
         }
         if (runtime.combatTables().readEnemyIgnoreHitsCountdown(s) != 0 && !hitThisFrame(s, f.frame)) {
-            if (runtime.motionSet().enemyRecoilMotion.isActive(s)) {
+            if (runtime.motions()
+                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                    .isActive(s)) {
                 e = runtime.backgroundMechanics()
                         .applyEnemyRecoilIfNeeded(e, f.backgroundCollision)
                         .entity();
@@ -552,7 +555,10 @@ public final class SlimeEyeController {
                     .writeEnemyHealth(s, Math.max(0, runtime.combatTables().readEnemyHealth(s) - amount));
             runtime.combatTables().writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
             runtime.combatTables().writeEnemyFlashCountdown(s, 0x18);
-            if (isHalf) runtime.motionSet().enemyRecoilMotion.configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
+            if (isHalf)
+                runtime.motions()
+                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                        .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
             if (isHalf && runtime.combatTables().readEnemyHealth(s) == 0) {
                 state[s] = 0;
                 runtime.slots()[s] = withStatus(e, EntityStatus.DYING);

@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityRoomInitialization; resolved lazily to preserve initialization order. */
 interface EntityRoomInitializationServices {
     void clearBombFinalPresentations();
@@ -18,7 +20,7 @@ interface EntityRoomInitializationServices {
 
     linksawakening.world.entity.EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -70,8 +72,8 @@ interface EntityRoomInitializationServices {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import java.util.Arrays;
+import linksawakening.world.entity.motion.*;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityDebugConfiguration {
@@ -45,7 +46,7 @@ public final class EntityDebugConfiguration {
         if (!runtime.roomInspection().isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_BOW_WOW)) {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
-        runtime.motionSet().bowWowMotion.setTransitionCountdownForTest(slot, value);
+        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).setTransitionCountdownForTest(slot, value);
     }
 
     void setEntityInertiaForTest(int slot, int value) {
@@ -56,7 +57,9 @@ public final class EntityDebugConfiguration {
     void setMoblinKingStateForTest(
             int slot, int state, int direction, int speedX, int speedY, int speedZ, int transitionCountdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
-        runtime.motionSet().moblinKingMotion.setStateForTest(slot, state, direction, speedX, speedY, speedZ);
+        runtime.motions()
+                .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                .setStateForTest(slot, state, direction, speedX, speedY, speedZ);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, transitionCountdown);
     }
 
@@ -112,7 +115,7 @@ public final class EntityDebugConfiguration {
         runtime.physicsTables().writeSlowTransitionCountdown(slot, slowCountdown);
         runtime.physicsTables().writeSlowTimerInitialized(slot, true);
         runtime.bossRewards().writeEnemyDropActive(slot, false);
-        runtime.motionSet().enemyDropMotion.clear(slot);
+        runtime.motions().get(EnemyDropMotion.class, EnemyDropMotion::new).clear(slot);
     }
 
     void setSlowTransitionCountdownForTest(int slot, int countdown) {
@@ -128,7 +131,7 @@ public final class EntityDebugConfiguration {
 
     void setThreeOfAKindSettledForTest(int slot, int face) {
         EntitySlotValidation.validateEntitySlot(slot);
-        runtime.motionSet().threeOfAKindMotion.setSettledForTest(slot, face);
+        runtime.motions().get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new).setSettledForTest(slot, face);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0);
     }
 
@@ -137,7 +140,7 @@ public final class EntityDebugConfiguration {
         if (runtime.slots()[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
-        runtime.motionSet().hinoxMotion.setStateForTest(slot, state, 0, 0);
+        runtime.motions().get(HinoxMotion.class, HinoxMotion::new).setStateForTest(slot, state, 0, 0);
     }
 
     void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
@@ -145,7 +148,7 @@ public final class EntityDebugConfiguration {
         if (runtime.slots()[slot].type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
-        runtime.motionSet().hinoxMotion.setSpeedForTest(slot, speedX, speedY);
+        runtime.motions().get(HinoxMotion.class, HinoxMotion::new).setSpeedForTest(slot, speedX, speedY);
     }
 
     void setTarinRaccoonStateForTest(
@@ -158,8 +161,8 @@ public final class EntityDebugConfiguration {
             int privateState3,
             boolean nearLinkLatch) {
         EntitySlotValidation.validateEntitySlot(slot);
-        runtime.motionSet()
-                .tarinRaccoonMotion
+        runtime.motions()
+                .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                 .setStateForTest(slot, state, speedX, speedY, speedZ, privateState2, privateState3, nearLinkLatch);
     }
 
@@ -179,12 +182,14 @@ public final class EntityDebugConfiguration {
     }
 
     void setWitchGotItemPresentationActiveForTest(boolean active) {
-        Arrays.fill(runtime.motionSet().witchMotion.storageWitchGotItemCountdown(), active ? 1 : 0);
+        Arrays.fill(
+                runtime.motions().get(WitchMotion.class, WitchMotion::new).storageWitchGotItemCountdown(),
+                active ? 1 : 0);
     }
 
     void setSideViewPotSpeedForTest(int slot, int speedX, int speedY) {
-        runtime.motionSet().sideViewPotMotion.setSpeedX(slot, speedX);
-        runtime.motionSet().sideViewPotMotion.setSpeedY(slot, speedY);
+        runtime.motions().get(SideViewPotMotion.class, SideViewPotMotion::new).setSpeedX(slot, speedX);
+        runtime.motions().get(SideViewPotMotion.class, SideViewPotMotion::new).setSpeedY(slot, speedY);
     }
 
     void setSwitchBlockAnimationActiveForTest(boolean active) {
@@ -192,44 +197,58 @@ public final class EntityDebugConfiguration {
     }
 
     void setSideViewPlatformSpeedYForTest(int slot, int speed) {
-        runtime.motionSet().sideViewPlatformMotion.setSpeedY(slot, speed);
+        runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .setSpeedY(slot, speed);
     }
 
     void setSideViewPlatformSpeedXForTest(int slot, int speed) {
-        runtime.motionSet().sideViewPlatformMotion.setSpeedX(slot, speed);
+        runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .setSpeedX(slot, speed);
     }
 
     void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
-        runtime.motionSet().laserMotion.setParentForTest(slot, countdown, newSpeedX, newSpeedY);
+        runtime.motions()
+                .get(LaserMotion.class, LaserMotion::new)
+                .setParentForTest(slot, countdown, newSpeedX, newSpeedY);
     }
 
     void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        runtime.motionSet().pairoddProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
+        runtime.motions()
+                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .setForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
     void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        runtime.motionSet().laserMotion.setBeamForTest(slot, newSpeedX, newSpeedY, direction);
+        runtime.motions()
+                .get(LaserMotion.class, LaserMotion::new)
+                .setBeamForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
     void setZolPrivateCountdown1ForTest(int slot, int value) {
         EntitySlotValidation.validateByte(value, "Zol/Gel private countdown 1");
-        runtime.motionSet().zolGelMotion.setPrivateCountdown1ForTest(slot, value);
+        runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).setPrivateCountdown1ForTest(slot, value);
     }
 
     void setEvasivePrivateCountdown1ForTest(int slot, int value) {
-        runtime.motionSet().stalfosEvasiveMotion.setPrivateCountdown1ForTest(slot, value);
+        runtime.motions()
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .setPrivateCountdown1ForTest(slot, value);
     }
 
     void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
-        runtime.motionSet().stalfosEvasiveMotion.setFleeingForTest(slot, newSpeedX, newSpeedY);
+        runtime.motions()
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .setFleeingForTest(slot, newSpeedX, newSpeedY);
     }
 
     void setWizrobeStateForTest(
             int slot, int state, int transitionCountdown, int privateState1, int privateCountdown1, int direction) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
-        runtime.motionSet()
-                .wizrobeMotion
+        runtime.motions()
+                .get(WizrobeMotion.class, WizrobeMotion::new)
                 .setForTest(
                         slot,
                         state,
@@ -243,7 +262,9 @@ public final class EntityDebugConfiguration {
     }
 
     void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
-        runtime.motionSet().wizrobeProjectileMotion.setForTest(slot, newSpeedX, newSpeedY, direction);
+        runtime.motions()
+                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .setForTest(slot, newSpeedX, newSpeedY, direction);
     }
 
     public void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
@@ -351,8 +372,8 @@ public final class EntityDebugConfiguration {
 
     public void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        runtime.motionSet()
-                .colorShellMotion
+        runtime.motions()
+                .get(ColorShellMotion.class, ColorShellMotion::new)
                 .setStateForTest(slot, state, transitionCountdown, direction, speedX, speedY);
     }
 
@@ -362,8 +383,8 @@ public final class EntityDebugConfiguration {
         if (!entity.loaded()) {
             throw new IllegalArgumentException("Entity slot is not loaded: " + slot);
         }
-        runtime.motionSet()
-                .enemyRecoilMotion
+        runtime.motions()
+                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .configure(slot, entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, length);
     }
 }

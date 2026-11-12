@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by SlimeEyeController; resolved lazily to preserve initialization order. */
 interface SlimeEyeControllerServices {
     int findFreeEntitySlot();
@@ -18,7 +20,7 @@ interface SlimeEyeControllerServices {
 
     linksawakening.world.entity.EntityEventChannels events();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -68,8 +70,8 @@ interface SlimeEyeControllerServices {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

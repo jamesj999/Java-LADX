@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityRoomInspection; resolved lazily to preserve initialization order. */
 interface EntityRoomInspectionServices {
     boolean bombFinalPresentationPending(int slot);
@@ -26,7 +28,7 @@ interface EntityRoomInspectionServices {
 
     linksawakening.world.entity.EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -98,8 +100,8 @@ interface EntityRoomInspectionServices {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

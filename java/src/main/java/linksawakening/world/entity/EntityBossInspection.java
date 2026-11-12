@@ -5,6 +5,8 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
+import linksawakening.world.entity.motion.*;
+
 /** Read-only inspection for Boss. */
 final class EntityBossInspection {
     private final EntityBossInspectionServices runtime;
@@ -14,7 +16,9 @@ final class EntityBossInspection {
     }
 
     int armosKnightState(int slot) {
-        return runtime.motionSet().armosKnightMotion.state(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .state(slot);
     }
 
     int armosKnightTransitionCountdown(int slot) {
@@ -22,23 +26,33 @@ final class EntityBossInspection {
     }
 
     int armosKnightSpeedX(int slot) {
-        return runtime.motionSet().armosKnightMotion.speedX(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .speedX(slot);
     }
 
     int armosKnightSpeedY(int slot) {
-        return runtime.motionSet().armosKnightMotion.speedY(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .speedY(slot);
     }
 
     int armosKnightSpeedZ(int slot) {
-        return runtime.motionSet().armosKnightMotion.speedZ(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .speedZ(slot);
     }
 
     int armosKnightPrivateCountdown1(int slot) {
-        return runtime.motionSet().armosKnightMotion.privateCountdown1(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .privateCountdown1(slot);
     }
 
     int armosKnightInertia(int slot) {
-        return runtime.motionSet().armosKnightMotion.inertia(slot);
+        return runtime.motions()
+                .get(ArmosKnightMotion.class, ArmosKnightMotion::new)
+                .inertia(slot);
     }
 
     int geniePrivateState1ForTest(int slot) {
@@ -83,17 +97,21 @@ final class EntityBossInspection {
 
     int rollingBonesBarStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().rollingBonesMotion.barState(slot);
+        return runtime.motions()
+                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                .barState(slot);
     }
 
     int rollingBonesBarSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().rollingBonesMotion.barSpeedX(slot);
+        return runtime.motions()
+                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                .barSpeedX(slot);
     }
 
     int moldormHeadSpriteVariant(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().moldormMotion.headSpriteVariant(slot);
+        return runtime.motions().get(MoldormMotion.class, MoldormMotion::new).headSpriteVariant(slot);
     }
 
     int moldormTransitionCountdown(int slot) {
@@ -103,7 +121,7 @@ final class EntityBossInspection {
 
     int moldormPrivateCountdown2(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().moldormMotion.privateCountdown2(slot);
+        return runtime.motions().get(MoldormMotion.class, MoldormMotion::new).privateCountdown2(slot);
     }
 
     int moldormDestructionState(int slot) {
@@ -113,6 +131,6 @@ final class EntityBossInspection {
 
     int moldormInertia(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().moldormMotion.inertia(slot);
+        return runtime.motions().get(MoldormMotion.class, MoldormMotion::new).inertia(slot);
     }
 }

@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityDebugConfiguration; resolved lazily to preserve initialization order. */
 interface EntityDebugConfigurationServices {
     linksawakening.world.entity.EntityBossRewards bossRewards();
@@ -8,7 +10,7 @@ interface EntityDebugConfigurationServices {
 
     linksawakening.world.entity.EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -36,8 +38,8 @@ interface EntityDebugConfigurationServices {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

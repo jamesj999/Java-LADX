@@ -19,6 +19,7 @@ import linksawakening.world.entity.event.LinkSwordSpinPoseRequest;
 import linksawakening.world.entity.event.SwordPickupRewardEvent;
 import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 
 /** ROM reward presentation sequences, sharing the owning room slot table. */
 public final class EntityRewardController {
@@ -430,23 +431,33 @@ public final class EntityRewardController {
     }
 
     public boolean secretSeashellScreenShakeActive() {
-        return runtime.motionSet().secretSeashellMotion.readSecretSeashellScreenShakeActive();
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .readSecretSeashellScreenShakeActive();
     }
 
     public boolean secretSeashellPegasusCollisionActive() {
-        return runtime.motionSet().secretSeashellMotion.readSecretSeashellPegasusCollisionActive();
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .readSecretSeashellPegasusCollisionActive();
     }
 
     public boolean secretSeashellPegasusCollisionCoordinatesKnown() {
-        return runtime.motionSet().secretSeashellMotion.readSecretSeashellPegasusCollisionCoordinatesKnown();
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .readSecretSeashellPegasusCollisionCoordinatesKnown();
     }
 
     public int secretSeashellPegasusCollisionX() {
-        return runtime.motionSet().secretSeashellMotion.readSecretSeashellPegasusCollisionX();
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .readSecretSeashellPegasusCollisionX();
     }
 
     public int secretSeashellPegasusCollisionY() {
-        return runtime.motionSet().secretSeashellMotion.readSecretSeashellPegasusCollisionY();
+        return runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .readSecretSeashellPegasusCollisionY();
     }
 
     int readSwordPickupState(int slot) {

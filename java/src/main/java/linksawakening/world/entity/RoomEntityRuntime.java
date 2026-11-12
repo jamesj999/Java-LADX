@@ -51,6 +51,7 @@ import linksawakening.world.entity.event.ToadstoolRewardEvent;
 import linksawakening.world.entity.event.WarpLinkStateRequest;
 import linksawakening.world.entity.event.WitchExchangeEvent;
 import linksawakening.world.entity.event.WitchRewardEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.WarpMotion;
 import linksawakening.world.room.ChestContentsTable;
 
@@ -122,7 +123,7 @@ public final class RoomEntityRuntime {
     final ChestContentsTable chestContentsTable;
 
     public boolean gelClingingToLink() {
-        return entityState.motionSet.zolGelMotion.readGelClingingToLink();
+        return entityState.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink();
     }
 
     public void setFreeMovementMode(boolean enabled) {
@@ -399,8 +400,11 @@ public final class RoomEntityRuntime {
         state.handlerLinkCollisionEnabled = state.context.handlerLinkCollisionEnabled();
         Objects.requireNonNull(state.randomByteSupplier, "randomByteSupplier");
         Objects.requireNonNull(state.projectileLinkState, "projectileLinkState");
-        state.runtime.entityState.motionSet.zolGelMotion.writeGelClingingToLink(
-                false); // AnimateEntities clears wIsGelClingingToLink each pass.
+        state.runtime
+                .entityState
+                .motions
+                .get(ZolGelMotion.class, ZolGelMotion::new)
+                .writeGelClingingToLink(false); // AnimateEntities clears wIsGelClingingToLink each pass.
         state.countdownBlocksInteraction =
                 state.runtime.entityState.roomVariables.readEntityInteractionCountdown() != 0;
         if (!state.runtime.entityState.linkState.dialogActive
@@ -436,8 +440,17 @@ public final class RoomEntityRuntime {
                     % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
         state.runtime.projectiles.writeBoomerangSoundClockProvided(false);
-        if (state.runtime.entityState.motionSet.moblinSwordMotion.readSwordMoblinAlertingSoundCounter() > 0) {
-            state.runtime.entityState.motionSet.moblinSwordMotion.postSwordMoblinAlertingSoundCounter(-1);
+        if (state.runtime
+                        .entityState
+                        .motions
+                        .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                        .readSwordMoblinAlertingSoundCounter()
+                > 0) {
+            state.runtime
+                    .entityState
+                    .motions
+                    .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                    .postSwordMoblinAlertingSoundCounter(-1);
         }
         if (state.runtime.bombInteractions.readBombArrowCooldown() > 0) {
             state.runtime.bombInteractions.postBombArrowCooldown(-1);
@@ -542,8 +555,11 @@ public final class RoomEntityRuntime {
                 state.runtime.entityState.events.outbox.channel(EntityProjectileEvent.class, "projectileEvents");
         state.projectileEvents.clear();
         if (state.linkPositionHistory != null) {
-            state.runtime.entityState.motionSet.followingNpcMotion.writeFollowingLinkPositionHistory(
-                    state.linkPositionHistory);
+            state.runtime
+                    .entityState
+                    .motions
+                    .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                    .writeFollowingLinkPositionHistory(state.linkPositionHistory);
         }
         state.runtime.entityState.linkState.followingLinkZ = state.linkZ & 0xFF;
         state.runtime.entityState.linkState.followingLinkDirection = state.linkDirection & 0xFF;

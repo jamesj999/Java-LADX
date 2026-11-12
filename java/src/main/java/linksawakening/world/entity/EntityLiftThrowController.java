@@ -8,6 +8,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPotLinkRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
 import linksawakening.world.entity.motion.LiftedEntityMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
@@ -81,7 +82,9 @@ public final class EntityLiftThrowController {
         if (entity.type() != 0x9D || entity.spriteDefinition().shape() != EntitySpriteDefinition.Shape.SINGLE)
             return false;
         if (!interactive) return true;
-        var update = runtime.motionSet().thrownEntityMotion.advance(entity, false, null);
+        var update = runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                .advance(entity, false, null);
         runtime.slots()[entity.slot()] =
                 update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity();
         return true;
@@ -117,7 +120,9 @@ public final class EntityLiftThrowController {
                 runtime.physicsTables().writeEnemyPhysicsFlags(slot, 0xC1);
                 runtime.combatTables().writeEnemyHitboxFlags(slot, 0);
                 runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(slot, true);
-                runtime.motionSet().thrownEntityMotion.startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
+                runtime.motions()
+                        .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                        .startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
             }
         }
         int visualY = (entity.y() - entity.z()) & 255;
@@ -143,11 +148,13 @@ public final class EntityLiftThrowController {
         int slot = entity.slot();
         if (!this.readThrownMotionInitialized(slot)) {
             this.writeThrownDirection(slot, romLinkDirection);
-            runtime.motionSet().thrownEntityMotion.start(slot, romLinkDirection, entity.type(), sideScrolling);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .start(slot, romLinkDirection, entity.type(), sideScrolling);
             this.writeThrownMotionInitialized(slot, true);
         }
-        ThrownEntityMotion.Update update = runtime.motionSet()
-                .thrownEntityMotion
+        ThrownEntityMotion.Update update = runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(
                         entity,
                         sideScrolling,
@@ -163,7 +170,9 @@ public final class EntityLiftThrowController {
         }
         if (entity.type() == 0x9D && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             runtime.slots()[slot] = RoomEntity.disabled(slot);
-            runtime.motionSet().thrownEntityMotion.clear(slot);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .clear(slot);
             this.writeThrownMotionInitialized(slot, false);
             smashStatue(updated);
             return runtime.slots()[slot];
@@ -172,14 +181,24 @@ public final class EntityLiftThrowController {
                 && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             collideThrownEntityWithEntities(updated, frame);
             runtime.slots()[slot] = RoomEntity.disabled(slot);
-            runtime.motionSet().thrownEntityMotion.clear(slot);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .clear(slot);
             this.writeThrownMotionInitialized(slot, false);
             runtime.spawnLiftableRockSmash(updated.x(), updated.y(), entity.spriteVariant());
             return runtime.slots()[slot];
         }
-        if (runtime.motionSet().thrownEntityMotion.speedX(slot) == 0
-                && runtime.motionSet().thrownEntityMotion.speedY(slot) == 0) {
-            runtime.motionSet().thrownEntityMotion.clear(slot);
+        if (runtime.motions()
+                                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                                .speedX(slot)
+                        == 0
+                && runtime.motions()
+                                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                                .speedY(slot)
+                        == 0) {
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .clear(slot);
             this.writeThrownMotionInitialized(slot, false);
             runtime.combatTables().writeEnemyStunnedCountdown(slot, 0xFF);
             updated = withStatus(updated, EntityStatus.STUNNED);
@@ -191,8 +210,15 @@ public final class EntityLiftThrowController {
             RoomEntity original, RoomEntity moved, RoomEntityBackgroundCollision fallback, int frame) {
         int slot = original.slot();
         boolean blocked = false;
-        if (runtime.motionSet().sideViewPotMotion.speedX(slot) != 0) {
-            int direction = (runtime.motionSet().sideViewPotMotion.speedX(slot) & 0x80) != 0
+        if (runtime.motions()
+                        .get(SideViewPotMotion.class, SideViewPotMotion::new)
+                        .speedX(slot)
+                != 0) {
+            int direction = (runtime.motions()
+                                            .get(SideViewPotMotion.class, SideViewPotMotion::new)
+                                            .speedX(slot)
+                                    & 0x80)
+                            != 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
             if (runtime.physicsTables().readBackgroundInteraction() != null) {
@@ -210,8 +236,15 @@ public final class EntityLiftThrowController {
                 blocked |= fallback.blocks(original, direction, moved.x(), original.y());
             }
         }
-        if (runtime.motionSet().sideViewPotMotion.speedY(slot) != 0) {
-            int direction = (runtime.motionSet().sideViewPotMotion.speedY(slot) & 0x80) != 0
+        if (runtime.motions()
+                        .get(SideViewPotMotion.class, SideViewPotMotion::new)
+                        .speedY(slot)
+                != 0) {
+            int direction = (runtime.motions()
+                                            .get(SideViewPotMotion.class, SideViewPotMotion::new)
+                                            .speedY(slot)
+                                    & 0x80)
+                            != 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
             if (runtime.physicsTables().readBackgroundInteraction() != null) {
@@ -258,8 +291,12 @@ public final class EntityLiftThrowController {
                     .applyPlayerProjectileDamage(
                             target,
                             EntityRomConstants.DAMAGE_TYPE_THROW_AT,
-                            runtime.motionSet().thrownEntityMotion.speedX(sourceSlot),
-                            runtime.motionSet().thrownEntityMotion.speedY(sourceSlot));
+                            runtime.motions()
+                                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                                    .speedX(sourceSlot),
+                            runtime.motions()
+                                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                                    .speedY(sourceSlot));
         }
     }
 
@@ -274,13 +311,13 @@ public final class EntityLiftThrowController {
                 // Preserve its static source state instead of inventing a table index.
                 return entity;
             }
-            runtime.motionSet()
-                    .thrownEntityMotion
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                     .startPlacedBomb(slot, runtime.bombInteractions().readBombDirection(slot));
             runtime.bombInteractions().writePlacedBombMotionInitialized(slot, true);
         }
-        return runtime.motionSet()
-                .thrownEntityMotion
+        return runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(
                         entity,
                         runtime.physicsTables().readGroundInteractionSideScrolling(),
@@ -298,8 +335,8 @@ public final class EntityLiftThrowController {
             // bombs have no source speed tables to advance.
             return entity;
         }
-        return runtime.motionSet()
-                .thrownEntityMotion
+        return runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(
                         entity,
                         runtime.physicsTables().readGroundInteractionSideScrolling(),
@@ -333,7 +370,7 @@ public final class EntityLiftThrowController {
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
         runtime.slots()[slot] = carried;
         runtime.physicsTables().writeFallingVisualYOffset(slot, 0);
-        runtime.motionSet().bushCrawlerMotion.clear(slot);
+        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
         runtime.events()
                 .pendingEntityEvents
                 .add(new EntityCombatEvent(
@@ -379,9 +416,9 @@ public final class EntityLiftThrowController {
                 .writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
         runtime.physicsTables()
                 .writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeFallingVisualYOffset(freeSlot, 0);
-        runtime.motionSet().bushCrawlerMotion.initializeSpecial(freeSlot);
+        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).initializeSpecial(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }

@@ -10,6 +10,30 @@ import org.junit.jupiter.api.Test;
 
 class EntityInfrastructureTest {
     @Test
+    void motionRegistryRetainsTheFirstInstanceForEachType() {
+        EntityMotionRegistry registry = new EntityMotionRegistry();
+        var motion = registry.get(
+                linksawakening.world.entity.motion.CrowMotion.class,
+                linksawakening.world.entity.motion.CrowMotion::new);
+        assertSame(motion, registry.get(linksawakening.world.entity.motion.CrowMotion.class, () -> {
+            throw new AssertionError("A motion must not be recreated");
+        }));
+    }
+
+    @Test
+    void motionRegistriesDoNotShareStateBetweenRooms() {
+        EntityMotionRegistry firstRoom = new EntityMotionRegistry();
+        EntityMotionRegistry secondRoom = new EntityMotionRegistry();
+        assertNotSame(
+                firstRoom.get(
+                        linksawakening.world.entity.motion.CrowMotion.class,
+                        linksawakening.world.entity.motion.CrowMotion::new),
+                secondRoom.get(
+                        linksawakening.world.entity.motion.CrowMotion.class,
+                        linksawakening.world.entity.motion.CrowMotion::new));
+    }
+
+    @Test
     void outboxKeepsStagedAndLiveEventsSeparate() {
         EntityOutbox outbox = new EntityOutbox();
         var staged = outbox.channel(LinkAttackStepRequest.class, "staged");

@@ -12,6 +12,7 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.KeyRewardEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BowWowMotion;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
@@ -90,8 +91,8 @@ public final class EntitySlotLifecycle {
         for (int index = runtime.slots().length - 1; index >= 0; index--) {
             RoomEntity entity = runtime.slots()[index];
             if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                runtime.motionSet()
-                        .secretSeashellMotion
+                runtime.motions()
+                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                         .ensureInitialized(
                                 entity.slot(), runtime.roomVariables().readEntityRoomId());
             }
@@ -113,8 +114,14 @@ public final class EntitySlotLifecycle {
                     || (isCommonDroppableType(entity.type())
                             && runtime.bossRewards().readDroppablePrivateState3(entity.slot()) != 0)
                     || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
-                            && (runtime.motionSet().secretSeashellMotion.privateState3(entity.slot()) != 0
-                                    || runtime.motionSet().secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
+                            && (runtime.motions()
+                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                                    .privateState3(entity.slot())
+                                            != 0
+                                    || runtime.motions()
+                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                                    .privateCountdown1(entity.slot())
+                                            != 0))
                     || (!swordPickup
                             && !floating
                             && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))
@@ -177,9 +184,11 @@ public final class EntitySlotLifecycle {
         }
         runtime.slimeEye().clear(slot);
         runtime.pickups().resetEnemyDropState(slot);
-        runtime.motionSet().sideViewPlatformMotion.clear(slot);
-        runtime.motionSet().sideViewPotMotion.clear(slot);
-        runtime.motionSet().genieMotion.clear(slot);
+        runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .clear(slot);
+        runtime.motions().get(SideViewPotMotion.class, SideViewPotMotion::new).clear(slot);
+        runtime.motions().get(GenieMotion.class, GenieMotion::new).clear(slot);
         if (runtime.genie().genieControllerSlot() == slot) {
             runtime.genie().setGenieControllerSlot(-1);
         }
@@ -206,15 +215,21 @@ public final class EntitySlotLifecycle {
         runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
         runtime.projectiles().writeMagicPowderState(slot, 0);
         runtime.projectiles().writeMagicPowderPrivateState4(slot, 0);
-        runtime.motionSet().secretSeashellMotion.clear(slot);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .clear(slot);
         runtime.physicsTables().writeEntityPrivateState4(slot, 0);
         runtime.physicsTables().writeEntityInertia(slot, 0);
         runtime.projectiles().writeMusicalNoteInertia(slot, 0);
         runtime.projectiles().writeMusicalNoteSpeedX(slot, 0);
         runtime.projectiles().writeMusicalNoteSpeedY(slot, 0);
         runtime.physicsTables().writeEntityUnknownJ(slot, 0);
-        runtime.motionSet().unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
-        runtime.motionSet().unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .setMaskRemovalState(slot, 0);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .setMaskSourceHookshotSlot(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashCountdown(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashSourceVariant(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashActive(slot, false);
@@ -224,22 +239,22 @@ public final class EntitySlotLifecycle {
         if (runtime.projectiles().readLatestShotArrowEntityIndex() == slot) {
             runtime.projectiles().writeLatestShotArrowEntityIndex(-1);
         }
-        runtime.motionSet().bombiteMotion.clear(slot);
-        runtime.motionSet().blooperMotion.clear(slot);
-        runtime.motionSet().pincerMotion.clear(slot);
-        runtime.motionSet().bushCrawlerMotion.clear(slot);
-        runtime.motionSet().pokeyMotion.clear(slot);
-        runtime.motionSet().zoraMotion.clear(slot);
-        runtime.motionSet().zombieMotion.clear(slot);
-        runtime.motionSet().buzzBlobMotion.clear(slot);
-        runtime.motionSet().sandCrabMotion.clear(slot);
-        runtime.motionSet().dogMotion.clear(slot);
-        runtime.motionSet().urchinMotion.clear(slot);
-        runtime.motionSet().witchRatMotion.clear(slot);
-        runtime.motionSet().mimicMotion.clear(slot);
-        runtime.motionSet().maskedMimicMotion.clear(slot);
-        runtime.motionSet().miniMoldormMotion.clear(slot);
-        runtime.motionSet().moldormMotion.clear(slot);
+        runtime.motions().get(BombiteMotion.class, BombiteMotion::new).clear(slot);
+        runtime.motions().get(BlooperMotion.class, BlooperMotion::new).clear(slot);
+        runtime.motions().get(PincerMotion.class, PincerMotion::new).clear(slot);
+        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
+        runtime.motions().get(PokeyMotion.class, PokeyMotion::new).clear(slot);
+        runtime.motions().get(ZoraMotion.class, ZoraMotion::new).clear(slot);
+        runtime.motions().get(ZombieMotion.class, ZombieMotion::new).clear(slot);
+        runtime.motions().get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
+        runtime.motions().get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
+        runtime.motions().get(DogMotion.class, DogMotion::new).clear(slot);
+        runtime.motions().get(UrchinMotion.class, UrchinMotion::new).clear(slot);
+        runtime.motions().get(WitchRatMotion.class, WitchRatMotion::new).clear(slot);
+        runtime.motions().get(MimicMotion.class, MimicMotion::new).clear(slot);
+        runtime.motions().get(MaskedMimicMotion.class, MaskedMimicMotion::new).clear(slot);
+        runtime.motions().get(MiniMoldormMotion.class, MiniMoldormMotion::new).clear(slot);
+        runtime.motions().get(MoldormMotion.class, MoldormMotion::new).clear(slot);
         if (!entity.loaded()) {
             return 0;
         }
@@ -280,75 +295,97 @@ public final class EntitySlotLifecycle {
         runtime.bombInteractions().writePlacedBombMotionInitialized(slot, false);
         runtime.liftThrow().writeLedgeTransitionTimer(slot, 0);
         runtime.liftThrow().writeThrownMotionInitialized(slot, false);
-        runtime.motionSet().hookshotChainMotion.clear(slot);
-        runtime.motionSet().hookshotBridgeMotion.clear(slot);
-        runtime.motionSet().boomerangMotion.clear(slot);
-        runtime.motionSet().magicRodFireballMotion.clear(slot);
-        runtime.motionSet().swordBeamMotion.clear(slot);
+        runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                .clear(slot);
+        runtime.motions()
+                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
+                .clear(slot);
+        runtime.motions().get(BoomerangMotion.class, BoomerangMotion::new).clear(slot);
+        runtime.motions()
+                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
+                .clear(slot);
+        runtime.motions().get(SwordBeamMotion.class, SwordBeamMotion::new).clear(slot);
         if (entity.type() == EntityRomConstants.ENTITY_HOOKSHOT_CHAIN) {
             runtime.slotProperties().writeHookshotChainOam(List.of());
         }
         runtime.physicsTables().writeBaseEntityFlipAttribute(slot, 0);
         runtime.physicsTables().writeEntityOptions1Override(slot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(slot);
-        runtime.motionSet().colorShellMotion.clear(slot);
-        runtime.motionSet().butterflyMotion.clear(slot);
-        runtime.motionSet().keeseMotion.clear(slot);
-        runtime.motionSet().roamingEnemyMotion.clear(slot);
-        runtime.motionSet().unmaskedIronMaskMotion.clear(slot);
-        runtime.motionSet().moblinSwordMotion.clear(slot);
-        runtime.motionSet().playerArrowMotion.clear(slot);
-        runtime.motionSet().tektiteMotion.clear(slot);
-        runtime.motionSet().leeverMotion.clear(slot);
-        runtime.motionSet().antiFairyMotion.clear(slot);
-        runtime.motionSet().sparkMotion.clear(slot);
-        runtime.motionSet().zolGelMotion.clear(slot);
-        runtime.motionSet().pokeyMotion.clear(slot);
-        runtime.motionSet().hidingZolMotion.clear(slot);
-        runtime.motionSet().starMotion.clear(slot);
-        runtime.motionSet().blooperMotion.clear(slot);
-        runtime.motionSet().pincerMotion.clear(slot);
-        runtime.motionSet().spikeTrapMotion.clear(slot);
-        runtime.motionSet().pairoddMotion.clear(slot);
-        runtime.motionSet().pairoddProjectileMotion.clear(slot);
-        runtime.motionSet().enemyProjectileMotion.clear(slot);
-        runtime.motionSet().wingedOctorokMotion.clear(slot);
-        runtime.motionSet().bushCrawlerMotion.clear(slot);
-        runtime.motionSet().cuccoMotion.clear(slot);
-        runtime.motionSet().giantGopongaMotion.clear(slot);
-        runtime.motionSet().gopongaProjectileMotion.clear(slot);
-        runtime.motionSet().zoraMotion.clear(slot);
-        runtime.motionSet().zombieMotion.clear(slot);
-        runtime.motionSet().buzzBlobMotion.clear(slot);
-        runtime.motionSet().sandCrabMotion.clear(slot);
-        runtime.motionSet().dogMotion.clear(slot);
-        runtime.motionSet().urchinMotion.clear(slot);
-        runtime.motionSet().witchRatMotion.clear(slot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
+        runtime.motions().get(ColorShellMotion.class, ColorShellMotion::new).clear(slot);
+        runtime.motions().get(ButterflyMotion.class, ButterflyMotion::new).clear(slot);
+        runtime.motions().get(KeeseMotion.class, KeeseMotion::new).clear(slot);
+        runtime.motions().get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).clear(slot);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .clear(slot);
+        runtime.motions().get(MoblinSwordMotion.class, MoblinSwordMotion::new).clear(slot);
+        runtime.motions().get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(slot);
+        runtime.motions().get(TektiteMotion.class, TektiteMotion::new).clear(slot);
+        runtime.motions().get(LeeverMotion.class, LeeverMotion::new).clear(slot);
+        runtime.motions().get(AntiFairyMotion.class, AntiFairyMotion::new).clear(slot);
+        runtime.motions().get(SparkMotion.class, SparkMotion::new).clear(slot);
+        runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).clear(slot);
+        runtime.motions().get(PokeyMotion.class, PokeyMotion::new).clear(slot);
+        runtime.motions().get(HidingZolMotion.class, HidingZolMotion::new).clear(slot);
+        runtime.motions().get(StarMotion.class, StarMotion::new).clear(slot);
+        runtime.motions().get(BlooperMotion.class, BlooperMotion::new).clear(slot);
+        runtime.motions().get(PincerMotion.class, PincerMotion::new).clear(slot);
+        runtime.motions().get(SpikeTrapMotion.class, SpikeTrapMotion::new).clear(slot);
+        runtime.motions().get(PairoddMotion.class, PairoddMotion::new).clear(slot);
+        runtime.motions()
+                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .clear(slot);
+        runtime.motions()
+                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                .clear(slot);
+        runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .clear(slot);
+        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
+        runtime.motions().get(CuccoMotion.class, CuccoMotion::new).clear(slot);
+        runtime.motions().get(GiantGopongaMotion.class, GiantGopongaMotion::new).clear(slot);
+        runtime.motions()
+                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
+                .clear(slot);
+        runtime.motions().get(ZoraMotion.class, ZoraMotion::new).clear(slot);
+        runtime.motions().get(ZombieMotion.class, ZombieMotion::new).clear(slot);
+        runtime.motions().get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
+        runtime.motions().get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
+        runtime.motions().get(DogMotion.class, DogMotion::new).clear(slot);
+        runtime.motions().get(UrchinMotion.class, UrchinMotion::new).clear(slot);
+        runtime.motions().get(WitchRatMotion.class, WitchRatMotion::new).clear(slot);
         runtime.slotProperties().writeWingedSwordAttackThisFrame(slot, false);
         runtime.slotProperties().writeWingedStateTwoThisFrame(slot, false);
-        runtime.motionSet().laserMotion.clear(slot);
-        runtime.motionSet().waterTektiteMotion.clear(slot);
-        runtime.motionSet().fishMotion.clear(slot);
-        runtime.motionSet().crowMotion.clear(slot);
-        runtime.motionSet().booBuddyMotion.clear(slot);
-        runtime.motionSet().stalfosAggressiveMotion.clear(slot);
-        runtime.motionSet().stalfosEvasiveMotion.clear(slot);
-        runtime.motionSet().threeOfAKindMotion.clear(slot);
-        runtime.motionSet().gibdoMotion.clear(slot);
-        runtime.motionSet().likeLikeMotion.clear(slot);
-        runtime.motionSet().goombaMotion.clear(slot);
-        runtime.motionSet().snakeMotion.clear(slot);
-        runtime.motionSet().wizrobeMotion.clear(slot);
-        runtime.motionSet().wizrobeProjectileMotion.clear(slot);
-        runtime.motionSet().peaHatMotion.clear(slot);
-        runtime.motionSet().armosMotion.clear(slot);
-        runtime.motionSet().ghiniMotion.clear(slot);
-        runtime.motionSet().hardHatMotion.clear(slot);
-        runtime.motionSet().madBomberMotion.clear(slot);
-        runtime.motionSet().followingNpcMotion.clear(slot);
-        runtime.motionSet().bowWowMotion.clear(slot);
-        runtime.motionSet().moblinKingMotion.clear(slot);
-        runtime.motionSet().thrownEntityMotion.clear(slot);
+        runtime.motions().get(LaserMotion.class, LaserMotion::new).clear(slot);
+        runtime.motions().get(WaterTektiteMotion.class, WaterTektiteMotion::new).clear(slot);
+        runtime.motions().get(FishMotion.class, FishMotion::new).clear(slot);
+        runtime.motions().get(CrowMotion.class, CrowMotion::new).clear(slot);
+        runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).clear(slot);
+        runtime.motions()
+                .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
+                .clear(slot);
+        runtime.motions()
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .clear(slot);
+        runtime.motions().get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new).clear(slot);
+        runtime.motions().get(GibdoMotion.class, GibdoMotion::new).clear(slot);
+        runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).clear(slot);
+        runtime.motions().get(GoombaMotion.class, GoombaMotion::new).clear(slot);
+        runtime.motions().get(SnakeMotion.class, SnakeMotion::new).clear(slot);
+        runtime.motions().get(WizrobeMotion.class, WizrobeMotion::new).clear(slot);
+        runtime.motions()
+                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .clear(slot);
+        runtime.motions().get(PeaHatMotion.class, PeaHatMotion::new).clear(slot);
+        runtime.motions().get(ArmosMotion.class, ArmosMotion::new).clear(slot);
+        runtime.motions().get(GhiniMotion.class, GhiniMotion::new).clear(slot);
+        runtime.motions().get(HardHatMotion.class, HardHatMotion::new).clear(slot);
+        runtime.motions().get(MadBomberMotion.class, MadBomberMotion::new).clear(slot);
+        runtime.motions().get(FollowingNpcMotion.class, FollowingNpcMotion::new).clear(slot);
+        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).clear(slot);
+        runtime.motions().get(MoblinKingMotion.class, MoblinKingMotion::new).clear(slot);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
         if (runtime.liftThrow().readLiftedEntitySlot() == slot) {
             runtime.liftThrow().writeLiftedEntitySlot(-1);
             runtime.liftThrow().writeLiftedCarryState(0);
@@ -395,7 +432,7 @@ public final class EntitySlotLifecycle {
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(slot, 0);
         runtime.combatTables().writeDyingCountdown(slot, 0);
         runtime.combatTables().writePowerRecoilDeath(slot, false);
-        runtime.motionSet().enemyRecoilMotion.clear(slot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
 
         int freeSlot = runtime.findFreeEntitySlot();
         if (freeSlot >= 0) {
@@ -430,8 +467,10 @@ public final class EntitySlotLifecycle {
             runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
             // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
             runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-            runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-            runtime.motionSet().zolGelMotion.prepareSpawnedGel(freeSlot);
+            runtime.motions()
+                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                    .clear(freeSlot);
+            runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).prepareSpawnedGel(freeSlot);
         }
         return gel;
     }
@@ -450,11 +489,14 @@ public final class EntitySlotLifecycle {
         if (target.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             if (runtime.physicsTables().readEntityPrivateState4(targetSlot) == 0
                     || runtime.linkState().dialogActive
-                    || runtime.motionSet().bowWowMotion.privateCountdown2(source.slot()) != 0) {
+                    || runtime.motions()
+                                    .get(BowWowMotion.class, BowWowMotion::new)
+                                    .privateCountdown2(source.slot())
+                            != 0) {
                 return;
             }
-            runtime.motionSet().bowWowMotion.setTransitionCountdown(source.slot(), 0);
-            runtime.motionSet().bowWowMotion.setPrivateCountdown2(source.slot(), 0x80);
+            runtime.motions().get(BowWowMotion.class, BowWowMotion::new).setTransitionCountdown(source.slot(), 0);
+            runtime.motions().get(BowWowMotion.class, BowWowMotion::new).setPrivateCountdown2(source.slot(), 0x80);
             runtime.events().pendingDialogRequests.add(new DialogRequest(1, EntityRomConstants.DIALOG_BOW_WOW));
             return;
         }
@@ -492,8 +534,12 @@ public final class EntitySlotLifecycle {
             runtime.physicsTables().writeEnemyPhysicsFlags(slot, EntityRomConstants.EVASIVE_PHYSICS_FLAGS);
             runtime.combatTables().writeDyingCountdown(slot, 0);
             runtime.combatTables().writePowerRecoilDeath(slot, false);
-            runtime.motionSet().enemyRecoilMotion.clear(slot);
-            runtime.motionSet().stalfosEvasiveMotion.clear(slot);
+            runtime.motions()
+                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                    .clear(slot);
+            runtime.motions()
+                    .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                    .clear(slot);
             return;
         }
 
@@ -521,9 +567,11 @@ public final class EntitySlotLifecycle {
     public void disableEntityWithoutPersistence(int slot) {
         runtime.slimeEye().clear(slot);
         runtime.pickups().resetEnemyDropState(slot);
-        runtime.motionSet().sideViewPlatformMotion.clear(slot);
-        runtime.motionSet().sideViewPotMotion.clear(slot);
-        runtime.motionSet().genieMotion.clear(slot);
+        runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .clear(slot);
+        runtime.motions().get(SideViewPotMotion.class, SideViewPotMotion::new).clear(slot);
+        runtime.motions().get(GenieMotion.class, GenieMotion::new).clear(slot);
         if (runtime.genie().genieControllerSlot() == slot) {
             runtime.genie().setGenieControllerSlot(-1);
         }
@@ -542,12 +590,14 @@ public final class EntitySlotLifecycle {
         runtime.genie().setGenieSpeedXAccumulator(slot, 0);
         runtime.genie().setGenieSpeedYAccumulator(slot, 0);
         runtime.genie().setGenieSpeedZAccumulator(slot, 0);
-        runtime.motionSet().secretSeashellMotion.clear(slot);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .clear(slot);
         runtime.physicsTables().writeSlowTransitionCountdown(slot, 0);
         runtime.physicsTables().writeSlowTimerInitialized(slot, false);
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0);
         runtime.bossRewards().writeBossDeathProducerState(slot, 0);
-        runtime.motionSet().moldormMotion.setDestructionTailState(slot, 0);
+        runtime.motions().get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 0);
         runtime.combatTables().writeEnemyStunnedCountdown(slot, 0);
         runtime.combatTables().writeDyingCountdown(slot, 0);
         runtime.combatTables().writePowerRecoilDeath(slot, false);
@@ -566,7 +616,7 @@ public final class EntitySlotLifecycle {
         runtime.rewards().writeInstrumentParticleSpeedY(slot, 0);
         runtime.rewards().writeInstrumentParticleXAccumulator(slot, 0);
         runtime.rewards().writeInstrumentParticleYAccumulator(slot, 0);
-        runtime.motionSet().armosKnightMotion.clear(slot);
+        runtime.motions().get(ArmosKnightMotion.class, ArmosKnightMotion::new).clear(slot);
         runtime.physicsTables().writeEntityGroundStatus(slot, 0);
         runtime.physicsTables().writeFallingTargetX(slot, 0);
         runtime.physicsTables().writeFallingTargetY(slot, 0);
@@ -585,8 +635,12 @@ public final class EntitySlotLifecycle {
         runtime.projectiles().writeMagicPowderPrivateState4(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown1(slot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown3(slot, 0);
-        runtime.motionSet().unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
-        runtime.motionSet().unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .setMaskRemovalState(slot, 0);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .setMaskSourceHookshotSlot(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashCountdown(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashSourceVariant(slot, 0);
         runtime.liftThrow().writeLiftableRockSmashActive(slot, false);
@@ -597,43 +651,49 @@ public final class EntitySlotLifecycle {
         runtime.liftThrow().writeThrownMotionInitialized(slot, false);
         runtime.physicsTables().writeBaseEntityFlipAttribute(slot, 0);
         runtime.physicsTables().writeEntityOptions1Override(slot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(slot);
-        runtime.motionSet().bomberMotion.clear(slot);
-        runtime.motionSet().madBomberMotion.clear(slot);
-        runtime.motionSet().bombiteMotion.clear(slot);
-        runtime.motionSet().colorShellMotion.clear(slot);
-        runtime.motionSet().butterflyMotion.clear(slot);
-        runtime.motionSet().keeseMotion.clear(slot);
-        runtime.motionSet().roamingEnemyMotion.clear(slot);
-        runtime.motionSet().unmaskedIronMaskMotion.clear(slot);
-        runtime.motionSet().moblinSwordMotion.clear(slot);
-        runtime.motionSet().tektiteMotion.clear(slot);
-        runtime.motionSet().leeverMotion.clear(slot);
-        runtime.motionSet().antiFairyMotion.clear(slot);
-        runtime.motionSet().sparkMotion.clear(slot);
-        runtime.motionSet().zolGelMotion.clear(slot);
-        runtime.motionSet().hidingZolMotion.clear(slot);
-        runtime.motionSet().starMotion.clear(slot);
-        runtime.motionSet().blooperMotion.clear(slot);
-        runtime.motionSet().pincerMotion.clear(slot);
-        runtime.motionSet().bushCrawlerMotion.clear(slot);
-        runtime.motionSet().pokeyMotion.clear(slot);
-        runtime.motionSet().piranhaMotion.clear(slot);
-        runtime.motionSet().zoraMotion.clear(slot);
-        runtime.motionSet().zombieMotion.clear(slot);
-        runtime.motionSet().buzzBlobMotion.clear(slot);
-        runtime.motionSet().sandCrabMotion.clear(slot);
-        runtime.motionSet().dogMotion.clear(slot);
-        runtime.motionSet().mimicMotion.clear(slot);
-        runtime.motionSet().maskedMimicMotion.clear(slot);
-        runtime.motionSet().miniMoldormMotion.clear(slot);
-        runtime.motionSet().moldormMotion.clear(slot);
-        runtime.motionSet().cuccoMotion.clear(slot);
-        runtime.motionSet().spikeTrapMotion.clear(slot);
-        runtime.motionSet().pairoddMotion.clear(slot);
-        runtime.motionSet().pairoddProjectileMotion.clear(slot);
-        runtime.motionSet().playerArrowMotion.clear(slot);
-        runtime.motionSet().magicRodFireballMotion.clear(slot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
+        runtime.motions().get(BomberMotion.class, BomberMotion::new).clear(slot);
+        runtime.motions().get(MadBomberMotion.class, MadBomberMotion::new).clear(slot);
+        runtime.motions().get(BombiteMotion.class, BombiteMotion::new).clear(slot);
+        runtime.motions().get(ColorShellMotion.class, ColorShellMotion::new).clear(slot);
+        runtime.motions().get(ButterflyMotion.class, ButterflyMotion::new).clear(slot);
+        runtime.motions().get(KeeseMotion.class, KeeseMotion::new).clear(slot);
+        runtime.motions().get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).clear(slot);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .clear(slot);
+        runtime.motions().get(MoblinSwordMotion.class, MoblinSwordMotion::new).clear(slot);
+        runtime.motions().get(TektiteMotion.class, TektiteMotion::new).clear(slot);
+        runtime.motions().get(LeeverMotion.class, LeeverMotion::new).clear(slot);
+        runtime.motions().get(AntiFairyMotion.class, AntiFairyMotion::new).clear(slot);
+        runtime.motions().get(SparkMotion.class, SparkMotion::new).clear(slot);
+        runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).clear(slot);
+        runtime.motions().get(HidingZolMotion.class, HidingZolMotion::new).clear(slot);
+        runtime.motions().get(StarMotion.class, StarMotion::new).clear(slot);
+        runtime.motions().get(BlooperMotion.class, BlooperMotion::new).clear(slot);
+        runtime.motions().get(PincerMotion.class, PincerMotion::new).clear(slot);
+        runtime.motions().get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
+        runtime.motions().get(PokeyMotion.class, PokeyMotion::new).clear(slot);
+        runtime.motions().get(PiranhaMotion.class, PiranhaMotion::new).clear(slot);
+        runtime.motions().get(ZoraMotion.class, ZoraMotion::new).clear(slot);
+        runtime.motions().get(ZombieMotion.class, ZombieMotion::new).clear(slot);
+        runtime.motions().get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
+        runtime.motions().get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
+        runtime.motions().get(DogMotion.class, DogMotion::new).clear(slot);
+        runtime.motions().get(MimicMotion.class, MimicMotion::new).clear(slot);
+        runtime.motions().get(MaskedMimicMotion.class, MaskedMimicMotion::new).clear(slot);
+        runtime.motions().get(MiniMoldormMotion.class, MiniMoldormMotion::new).clear(slot);
+        runtime.motions().get(MoldormMotion.class, MoldormMotion::new).clear(slot);
+        runtime.motions().get(CuccoMotion.class, CuccoMotion::new).clear(slot);
+        runtime.motions().get(SpikeTrapMotion.class, SpikeTrapMotion::new).clear(slot);
+        runtime.motions().get(PairoddMotion.class, PairoddMotion::new).clear(slot);
+        runtime.motions()
+                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .clear(slot);
+        runtime.motions().get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(slot);
+        runtime.motions()
+                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
+                .clear(slot);
         runtime.bombInteractions().writePlayerArrowBombArrow(slot, false);
         if (runtime.bombInteractions().readLatestDroppedBombEntityIndex() == slot) {
             runtime.bombInteractions().writeLatestDroppedBombEntityIndex(-1);
@@ -641,29 +701,37 @@ public final class EntitySlotLifecycle {
         if (runtime.projectiles().readLatestShotArrowEntityIndex() == slot) {
             runtime.projectiles().writeLatestShotArrowEntityIndex(-1);
         }
-        runtime.motionSet().enemyProjectileMotion.clear(slot);
-        runtime.motionSet().laserMotion.clear(slot);
-        runtime.motionSet().waterTektiteMotion.clear(slot);
-        runtime.motionSet().fishMotion.clear(slot);
-        runtime.motionSet().crowMotion.clear(slot);
-        runtime.motionSet().booBuddyMotion.clear(slot);
-        runtime.motionSet().stalfosAggressiveMotion.clear(slot);
-        runtime.motionSet().stalfosEvasiveMotion.clear(slot);
-        runtime.motionSet().gibdoMotion.clear(slot);
-        runtime.motionSet().goombaMotion.clear(slot);
-        runtime.motionSet().snakeMotion.clear(slot);
-        runtime.motionSet().wizrobeMotion.clear(slot);
-        runtime.motionSet().wizrobeProjectileMotion.clear(slot);
-        runtime.motionSet().peaHatMotion.clear(slot);
-        runtime.motionSet().armosMotion.clear(slot);
-        runtime.motionSet().followingNpcMotion.clear(slot);
-        runtime.motionSet().ghiniMotion.clear(slot);
-        runtime.motionSet().hardHatMotion.clear(slot);
-        runtime.motionSet().polsVoiceMotion.clear(slot);
-        runtime.motionSet().spikedBeetleMotion.clear(slot);
-        runtime.motionSet().bowWowMotion.clear(slot);
-        runtime.motionSet().moblinKingMotion.clear(slot);
-        runtime.motionSet().thrownEntityMotion.clear(slot);
+        runtime.motions()
+                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                .clear(slot);
+        runtime.motions().get(LaserMotion.class, LaserMotion::new).clear(slot);
+        runtime.motions().get(WaterTektiteMotion.class, WaterTektiteMotion::new).clear(slot);
+        runtime.motions().get(FishMotion.class, FishMotion::new).clear(slot);
+        runtime.motions().get(CrowMotion.class, CrowMotion::new).clear(slot);
+        runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).clear(slot);
+        runtime.motions()
+                .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
+                .clear(slot);
+        runtime.motions()
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .clear(slot);
+        runtime.motions().get(GibdoMotion.class, GibdoMotion::new).clear(slot);
+        runtime.motions().get(GoombaMotion.class, GoombaMotion::new).clear(slot);
+        runtime.motions().get(SnakeMotion.class, SnakeMotion::new).clear(slot);
+        runtime.motions().get(WizrobeMotion.class, WizrobeMotion::new).clear(slot);
+        runtime.motions()
+                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .clear(slot);
+        runtime.motions().get(PeaHatMotion.class, PeaHatMotion::new).clear(slot);
+        runtime.motions().get(ArmosMotion.class, ArmosMotion::new).clear(slot);
+        runtime.motions().get(FollowingNpcMotion.class, FollowingNpcMotion::new).clear(slot);
+        runtime.motions().get(GhiniMotion.class, GhiniMotion::new).clear(slot);
+        runtime.motions().get(HardHatMotion.class, HardHatMotion::new).clear(slot);
+        runtime.motions().get(PolsVoiceMotion.class, PolsVoiceMotion::new).clear(slot);
+        runtime.motions().get(SpikedBeetleMotion.class, SpikedBeetleMotion::new).clear(slot);
+        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).clear(slot);
+        runtime.motions().get(MoblinKingMotion.class, MoblinKingMotion::new).clear(slot);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
         if (runtime.liftThrow().readLiftedEntitySlot() == slot) {
             runtime.liftThrow().writeLiftedEntitySlot(-1);
             runtime.liftThrow().writeLiftedCarryState(0);
@@ -677,7 +745,9 @@ public final class EntitySlotLifecycle {
             runtime.combatTables().postEnemyFlashCountdown(slot, -1);
         }
         if (decrementIgnoreHits
-                && !runtime.motionSet().enemyRecoilMotion.isActive(slot)
+                && !runtime.motions()
+                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                        .isActive(slot)
                 && runtime.combatTables().readEnemyIgnoreHitsCountdown(slot) > 0) {
             runtime.combatTables().postEnemyIgnoreHitsCountdown(slot, -1);
             return true;
@@ -705,13 +775,15 @@ public final class EntitySlotLifecycle {
                 && runtime.backgroundMechanics().entityTimersInteractive()) {
             runtime.story().postOwlPrivateCountdown1(slot, -1);
         }
-        runtime.motionSet().hinoxMotion.decrementPrivateCountdown1(slot);
+        runtime.motions().get(HinoxMotion.class, HinoxMotion::new).decrementPrivateCountdown1(slot);
         if (runtime.liftThrow().readLiftableRockSmashActive(slot)
                 && runtime.liftThrow().readLiftableRockSmashCountdown(slot) > 0) {
             runtime.liftThrow().postLiftableRockSmashCountdown(slot, -1);
         }
-        runtime.motionSet().blooperMotion.decrementPrivateCountdown3(slot);
-        runtime.motionSet().wingedOctorokMotion.decrementPrivateCountdown2(slot);
+        runtime.motions().get(BlooperMotion.class, BlooperMotion::new).decrementPrivateCountdown3(slot);
+        runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .decrementPrivateCountdown2(slot);
     }
 
     public void requestPersistentClearMask(int mask) {
@@ -724,9 +796,12 @@ public final class EntitySlotLifecycle {
     }
 
     public void recordGelClinging(boolean clinging) {
-        runtime.motionSet()
-                .zolGelMotion
-                .writeGelClingingToLink(runtime.motionSet().zolGelMotion.readGelClingingToLink() | (clinging));
+        runtime.motions()
+                .get(ZolGelMotion.class, ZolGelMotion::new)
+                .writeGelClingingToLink(runtime.motions()
+                                .get(ZolGelMotion.class, ZolGelMotion::new)
+                                .readGelClingingToLink()
+                        | (clinging));
     }
 
     public void setDroppedItemBySlot(int slot, int value) {

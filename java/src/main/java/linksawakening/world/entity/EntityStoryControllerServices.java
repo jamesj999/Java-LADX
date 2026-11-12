@@ -1,8 +1,10 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityStoryController; resolved lazily to preserve initialization order. */
 interface EntityStoryControllerServices {
-    EntityMotionSet motionSet();
+    EntityMotionRegistry motions();
 
     int findFreeEntitySlot();
 
@@ -42,8 +44,8 @@ interface EntityStoryControllerServices {
 
     static EntityStoryControllerServices bind(RoomEntityRuntime r) {
         return new EntityStoryControllerServices() {
-            public EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public int findFreeEntitySlot() {

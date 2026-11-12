@@ -6,6 +6,7 @@ import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 /** Ordered slot dispatch phase 2; false preserves the ROM handler early return. */
@@ -197,7 +198,11 @@ final class EntitySlotPhase2 {
                 && !state.wasInitializing
                 && (usesSharedRecoil(state.entity.type())
                         || (state.entity.type() == EntityRomConstants.ENTITY_POKEY
-                                && state.runtime.entityState.motionSet.pokeyMotion.isSegment(state.entity.slot())
+                                && state.runtime
+                                        .entityState
+                                        .motions
+                                        .get(PokeyMotion.class, PokeyMotion::new)
+                                        .isSegment(state.entity.slot())
                                 && state.handlerLinkCollisionEnabled))
                 && state.entity.type() != EntityRomConstants.ENTITY_ROLLING_BONES
                 && state.entity.type() != EntityRomConstants.ENTITY_MINI_MOLDORM

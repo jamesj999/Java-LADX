@@ -14,6 +14,7 @@ import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.MadamMeowMeowFullHealRequest;
 import linksawakening.world.entity.event.OwlEventCompletion;
 import linksawakening.world.entity.event.RichardProgressEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
 /** ROM story and NPC presentation sequences, sharing the owning room slot table. */
@@ -75,7 +76,7 @@ public final class EntityStoryController {
             runtime.slots()[slot] = withZ(withPositionAndVariant(entity, x, entity.y(), 0), z);
             return;
         }
-        if (runtime.motionSet().bowWowMotion.readBowWowState() == 0x80) {
+        if (runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x80) {
             advanceKidnapWarningKid(entity, frame, linkX, linkY);
             return;
         }
@@ -235,14 +236,19 @@ public final class EntityStoryController {
                 && runtime.linkState().dialogCooldown == 0
                 && runtime.linkState().windowY == 0x80) {
             if ((runtime.roomVariables().readInstrument2Flags() & 0x02) != 0
-                    && runtime.motionSet().bowWowMotion.readBowWowState() == 0x01) {
-                runtime.motionSet().bowWowMotion.writeBowWowState(0);
+                    && runtime.motions()
+                                    .get(BowWowMotion.class, BowWowMotion::new)
+                                    .readBowWowState()
+                            == 0x01) {
+                runtime.motions().get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
                 runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x10);
                 runtime.events().pendingDialogRequests.add(new DialogRequest(1, 0x2F));
                 return;
             }
             int dialogLowId =
-                    switch (runtime.motionSet().bowWowMotion.readBowWowState()) {
+                    switch (runtime.motions()
+                            .get(BowWowMotion.class, BowWowMotion::new)
+                            .readBowWowState()) {
                         case 0 -> 0x30;
                         case 1 -> 0x32;
                         default -> 0x31;
@@ -325,7 +331,7 @@ public final class EntityStoryController {
                     runtime.slots()[slot] = updated;
                     return;
                 }
-                if (runtime.motionSet().bowWowMotion.readBowWowState() != 0) {
+                if (runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState() != 0) {
                     runtime.events().pendingDialogRequests.add(new DialogRequest(1, 0x2D));
                 } else if ((runtime.roomVariables().readEntityRoomStatus() & 0x10) == 0
                         || runtime.roomVariables().readEntityGoldenLeavesCount() == 0) {
@@ -435,7 +441,10 @@ public final class EntityStoryController {
                         == EntityRomConstants.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
                     if (runtime.pickups().readChestSwordLevel() == 0
                             || runtime.roomVariables().readInstrument2Flags() != 0
-                            || runtime.motionSet().bowWowMotion.readBowWowState() != 0x01
+                            || runtime.motions()
+                                            .get(BowWowMotion.class, BowWowMotion::new)
+                                            .readBowWowState()
+                                    != 0x01
                             || (runtime.roomVariables().readInstrument1Flags() & 0x02) == 0) {
                         runtime.lifecycle().disableEntityWithoutPersistence(slot);
                         return;
@@ -572,7 +581,8 @@ public final class EntityStoryController {
     }
 
     public void advanceWitchGotItemPresentation(int slot) {
-        int countdown = runtime.motionSet().witchMotion.readWitchGotItemCountdown(slot);
+        int countdown =
+                runtime.motions().get(WitchMotion.class, WitchMotion::new).readWitchGotItemCountdown(slot);
         if (countdown == 0) {
             return;
         }
@@ -581,7 +591,7 @@ public final class EntityStoryController {
             return;
         }
         countdown--;
-        runtime.motionSet().witchMotion.writeWitchGotItemCountdown(slot, countdown);
+        runtime.motions().get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, countdown);
         if (countdown == 0x02) {
             runtime.events().pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
@@ -592,38 +602,38 @@ public final class EntityStoryController {
     }
 
     public void enableBowWowFollowing() {
-        runtime.motionSet()
-                .followingNpcMotion
+        runtime.motions()
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                 .writeFollowingNpcState(new FollowingNpcState(
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .roosterFollowing(),
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .ghostFollowingState(),
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .marinFollowing(),
                         true,
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .instrument4Flags(),
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .powerBraceletLevel(),
-                        runtime.motionSet()
-                                .followingNpcMotion
+                        runtime.motions()
+                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                 .readFollowingNpcState()
                                 .db10()));
     }
 
     public void markBowWowRescued() {
-        runtime.motionSet().bowWowMotion.writeBowWowState(0x01);
+        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0x01);
     }
 
     public void consumeToadstool() {
@@ -631,19 +641,21 @@ public final class EntityStoryController {
     }
 
     public void startWitchGotItemCountdown(int slot) {
-        runtime.motionSet().witchMotion.writeWitchGotItemCountdown(slot, 0x2A);
+        runtime.motions().get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, 0x2A);
     }
 
     public int bowWowState() {
-        return runtime.motionSet().bowWowMotion.readBowWowState();
+        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState();
     }
 
     public FollowingNpcState followingNpcState() {
-        return runtime.motionSet().followingNpcMotion.readFollowingNpcState();
+        return runtime.motions()
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                .readFollowingNpcState();
     }
 
     public int booBuddyTriggerCount() {
-        return runtime.motionSet().booBuddyMotion.readBooBuddyTriggerCount();
+        return runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).readBooBuddyTriggerCount();
     }
 
     public boolean playerHasToadstool() {

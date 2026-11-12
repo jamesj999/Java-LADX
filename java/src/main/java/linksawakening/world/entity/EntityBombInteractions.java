@@ -10,6 +10,7 @@ import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 
@@ -45,7 +46,7 @@ public final class EntityBombInteractions {
         }
         // ConvertToBombArrowIfNeeded zeros speeds, but BombEntityHandler
         // must still run gravity and floor contact on subsequent frames.
-        runtime.motionSet().thrownEntityMotion.startEnemyBomb(slot, 0, 0, 0);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).startEnemyBomb(slot, 0, 0, 0);
         // Keep the placed-bomb bridge from restoring directional launch speed.
         this.writePlacedBombMotionInitialized(slot, true);
     }
@@ -57,7 +58,9 @@ public final class EntityBombInteractions {
             runtime.slots()[slot] = withDefinition(
                     arrow,
                     runtime.spriteHandlers().forBombArrow(),
-                    runtime.motionSet().playerArrowMotion.direction(slot));
+                    runtime.motions()
+                            .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                            .direction(slot));
         }
     }
 
@@ -164,7 +167,9 @@ public final class EntityBombInteractions {
             queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
-        runtime.motionSet().moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(0x04);
+        runtime.motions()
+                .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                .writeSwordMoblinAlertingSoundCounter(0x04);
 
         for (int targetSlot = runtime.slots().length - 1; targetSlot >= 0; targetSlot--) {
             RoomEntity target = runtime.slots()[targetSlot];
@@ -194,7 +199,9 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        runtime.motionSet().moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(0x04);
+        runtime.motions()
+                .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                .writeSwordMoblinAlertingSoundCounter(0x04);
         int bombX = bomb.x() & 0xFF;
         int bombY = bomb.y() & 0xFF;
         if (!isWithinBombExplosionWindow(bombX, linkEntityX) || !isWithinBombExplosionWindow(bombY, linkEntityY)) {
@@ -303,8 +310,8 @@ public final class EntityBombInteractions {
                             null));
         }
 
-        runtime.motionSet()
-                .enemyRecoilMotion
+        runtime.motions()
+                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .configureFromSource(targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
@@ -312,13 +319,15 @@ public final class EntityBombInteractions {
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = stunned.slot();
         RoomEntity moved = stunned;
-        if (runtime.motionSet().enemyRecoilMotion.isActive(slot)) {
+        if (runtime.motions()
+                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                .isActive(slot)) {
             moved = runtime.backgroundMechanics()
                     .applyEnemyRecoilIfNeeded(moved, backgroundCollision)
                     .entity();
         }
-        moved = runtime.motionSet()
-                .thrownEntityMotion
+        moved = runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(
                         moved,
                         runtime.physicsTables().readGroundInteractionSideScrolling(),
@@ -326,7 +335,7 @@ public final class EntityBombInteractions {
                         frame,
                         runtime.physicsTables().readEntityGroundStatus(slot))
                 .entity();
-        runtime.motionSet().thrownEntityMotion.clear(slot);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
         runtime.liftThrow().writeThrownMotionInitialized(slot, false);
         return withStatus(moved, stunned.status());
     }

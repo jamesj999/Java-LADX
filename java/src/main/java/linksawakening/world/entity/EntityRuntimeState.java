@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Composes cross-cutting state; type-specific state belongs to its controller. */
 final class EntityRuntimeState {
     final EntityEventChannels events = new EntityEventChannels();
@@ -10,6 +12,7 @@ final class EntityRuntimeState {
     final EntityPhysicsTables physicsTables = new EntityPhysicsTables();
     final EntityRoomVariables roomVariables = new EntityRoomVariables();
     final EntityPresentationState presentationState = new EntityPresentationState();
-    final EntityMotionSet motionSet = new EntityMotionSet();
-    final EntitySlotView slotView = new EntitySlotView(combatTables, physicsTables, motionSet.unmaskedIronMaskMotion);
+    final EntityMotionRegistry motions = new EntityMotionRegistry();
+    final EntitySlotView slotView = new EntitySlotView(
+            combatTables, physicsTables, motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new));
 }

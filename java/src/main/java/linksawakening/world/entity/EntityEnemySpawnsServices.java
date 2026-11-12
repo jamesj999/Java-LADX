@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityEnemySpawns; resolved lazily to preserve initialization order. */
 interface EntityEnemySpawnsServices {
     void setBombFinalPresentationPending(int slot, boolean value);
@@ -22,7 +24,7 @@ interface EntityEnemySpawnsServices {
 
     linksawakening.world.entity.EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -76,8 +78,8 @@ interface EntityEnemySpawnsServices {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

@@ -11,6 +11,7 @@ import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 
@@ -52,8 +53,8 @@ public final class GenieEntityController {
         }
         boolean bodySpawnSucceeded = freeSlots >= 1;
         boolean rockSpawnSucceeded = freeSlots >= 2;
-        GenieMotion.Update update = runtime.motionSet()
-                .genieMotion
+        GenieMotion.Update update = runtime.motions()
+                .get(GenieMotion.class, GenieMotion::new)
                 .advanceState0(
                         slot,
                         jarEntity.x(),
@@ -581,7 +582,7 @@ public final class GenieEntityController {
         genieSpeedXAccumulator[freeSlot] = 0;
         genieSpeedYAccumulator[freeSlot] = 0;
         genieSpeedZAccumulator[freeSlot] = 0;
-        runtime.motionSet().genieMotion.clear(freeSlot);
+        runtime.motions().get(GenieMotion.class, GenieMotion::new).clear(freeSlot);
         runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, transitionCountdown & 0xFF);
         runtime.combatTables().writeEnemyHealth(freeSlot, health & 0xFF);
         runtime.physicsTables().writeEnemyPhysicsFlags(freeSlot, physicsFlags & 0xFF);
@@ -612,7 +613,7 @@ public final class GenieEntityController {
         genieActiveState[slot] = 1;
         geniePrivateState3[slot] = 0;
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x80);
-        runtime.motionSet().thrownEntityMotion.clear(slot);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
         runtime.liftThrow().writeThrownMotionInitialized(slot, false);
         return withStatus(jar, EntityStatus.ACTIVE);
     }

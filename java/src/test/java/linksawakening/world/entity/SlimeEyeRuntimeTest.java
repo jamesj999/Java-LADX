@@ -7,6 +7,7 @@ import java.util.List;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.TestRom;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.room.ChestContentsTable;
 import org.junit.jupiter.api.Test;
 
@@ -171,7 +172,11 @@ final class SlimeEyeRuntimeTest {
                     EntitySnapshots.withStatus(r.slots[0], dead ? EntityStatus.DYING : EntityStatus.ACTIVE),
                     half ? 0 : 0x7E);
             StringBuilder trace = new StringBuilder(header);
-            for (int i = 0; i < 33; i++) r.entityState.motionSet.bossIntroMotion.advance(0x90, 0x5B, 2, 0);
+            for (int i = 0; i < 33; i++)
+                r.entityState
+                        .motions
+                        .get(BossIntroMotion.class, BossIntroMotion::new)
+                        .advance(0x90, 0x5B, 2, 0);
             frame = 39;
             for (int i = 0; i < (dead ? 226 : 145); i++) {
                 tick(r);

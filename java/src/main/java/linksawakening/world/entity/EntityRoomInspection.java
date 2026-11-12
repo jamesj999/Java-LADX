@@ -12,6 +12,7 @@ import linksawakening.world.entity.event.HeartPieceVisual;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.InstrumentWarpVisual;
 import linksawakening.world.entity.event.LiftedEntityState;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ColorShellMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
@@ -108,31 +109,45 @@ public final class EntityRoomInspection {
     }
 
     int boomerangDirection(int slot) {
-        return runtime.motionSet().boomerangMotion.direction(slot);
+        return runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .direction(slot);
     }
 
     int boomerangSpeedX(int slot) {
-        return runtime.motionSet().boomerangMotion.speedX(slot);
+        return runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .speedX(slot);
     }
 
     int boomerangSpeedY(int slot) {
-        return runtime.motionSet().boomerangMotion.speedY(slot);
+        return runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .speedY(slot);
     }
 
     int boomerangTransitionCountdown(int slot) {
-        return runtime.motionSet().boomerangMotion.transitionCountdown(slot);
+        return runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .transitionCountdown(slot);
     }
 
     int boomerangState(int slot) {
-        return runtime.motionSet().boomerangMotion.state(slot);
+        return runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .state(slot);
     }
 
     int swordBeamState(int slot) {
-        return runtime.motionSet().swordBeamMotion.state(slot);
+        return runtime.motions()
+                .get(SwordBeamMotion.class, SwordBeamMotion::new)
+                .state(slot);
     }
 
     int magicRodFireballPrivateCountdown1(int slot) {
-        return runtime.motionSet().magicRodFireballMotion.privateCountdown1(slot);
+        return runtime.motions()
+                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
+                .privateCountdown1(slot);
     }
 
     int magicPowderTransitionCountdown(int slot) {
@@ -151,27 +166,39 @@ public final class EntityRoomInspection {
     }
 
     int swordBeamSpeedX(int slot) {
-        return runtime.motionSet().swordBeamMotion.speedX(slot);
+        return runtime.motions()
+                .get(SwordBeamMotion.class, SwordBeamMotion::new)
+                .speedX(slot);
     }
 
     int swordBeamSpeedY(int slot) {
-        return runtime.motionSet().swordBeamMotion.speedY(slot);
+        return runtime.motions()
+                .get(SwordBeamMotion.class, SwordBeamMotion::new)
+                .speedY(slot);
     }
 
     int playerArrowDirection(int slot) {
-        return runtime.motionSet().playerArrowMotion.direction(slot);
+        return runtime.motions()
+                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                .direction(slot);
     }
 
     int playerArrowSpeedX(int slot) {
-        return runtime.motionSet().playerArrowMotion.speedX(slot);
+        return runtime.motions()
+                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                .speedX(slot);
     }
 
     int playerArrowSpeedY(int slot) {
-        return runtime.motionSet().playerArrowMotion.speedY(slot);
+        return runtime.motions()
+                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                .speedY(slot);
     }
 
     int playerArrowTransitionCountdown(int slot) {
-        return runtime.motionSet().playerArrowMotion.transitionCountdown(slot);
+        return runtime.motions()
+                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                .transitionCountdown(slot);
     }
 
     int bombArrowCooldownForTest() {
@@ -253,7 +280,9 @@ public final class EntityRoomInspection {
 
     int hookshotSlot() {
         for (int slot = 0; slot < runtime.slots().length; slot++) {
-            if (runtime.motionSet().hookshotChainMotion.active(slot)) {
+            if (runtime.motions()
+                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                    .active(slot)) {
                 return slot;
             }
         }
@@ -261,19 +290,21 @@ public final class EntityRoomInspection {
     }
 
     int hookshotTransitionCountdown(int slot) {
-        return runtime.motionSet().hookshotChainMotion.transitionCountdown(slot);
+        return runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                .transitionCountdown(slot);
     }
 
     int bowWowTargetSlot(int slot) {
-        return runtime.motionSet().bowWowMotion.targetSlot(slot);
+        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).targetSlot(slot);
     }
 
     int bowWowPrivateCountdown2(int slot) {
-        return runtime.motionSet().bowWowMotion.privateCountdown2(slot);
+        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).privateCountdown2(slot);
     }
 
     int bowWowTransitionCountdown(int slot) {
-        return runtime.motionSet().bowWowMotion.transitionCountdown(slot);
+        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).transitionCountdown(slot);
     }
 
     int entityInertia(int slot) {
@@ -283,17 +314,17 @@ public final class EntityRoomInspection {
 
     int pokeyPrivateState1(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().pokeyMotion.privateState1(slot);
+        return runtime.motions().get(PokeyMotion.class, PokeyMotion::new).privateState1(slot);
     }
 
     int pokeySpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().pokeyMotion.speedX(slot);
+        return runtime.motions().get(PokeyMotion.class, PokeyMotion::new).speedX(slot);
     }
 
     int pokeySpeedY(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().pokeyMotion.speedY(slot);
+        return runtime.motions().get(PokeyMotion.class, PokeyMotion::new).speedY(slot);
     }
 
     int pokeyTransitionCountdown(int slot) {
@@ -302,20 +333,25 @@ public final class EntityRoomInspection {
     }
 
     int hookshotEntityState(int slot) {
-        HookshotChainMotion.State state =
-                runtime.motionSet().hookshotChainMotion.state(slot);
+        HookshotChainMotion.State state = runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                .state(slot);
         return state == null ? 0 : state.entityState();
     }
 
     boolean hookshotWallCollisionPending(int slot) {
-        HookshotChainMotion.State state =
-                runtime.motionSet().hookshotChainMotion.state(slot);
+        HookshotChainMotion.State state = runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                .state(slot);
         return state != null && state.wallCollisionPending();
     }
 
     /** MarinEntityHandler $05:4E6A and MarinEntityHandler_Indoor $05:51CE. */
     public boolean indoorMarinAbsent() {
-        if (runtime.motionSet().followingNpcMotion.readFollowingNpcState().marinFollowing()) return true;
+        if (runtime.motions()
+                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                .readFollowingNpcState()
+                .marinFollowing()) return true;
         if (runtime.story().readHouseTradeItem() >= 7) return (runtime.story().readHouseWalrusStatus() & 0x30) != 0;
         return runtime.pickups().readChestPlayerLevelsKnown()
                 && runtime.pickups().readChestSwordLevel() != 0;
@@ -323,7 +359,10 @@ public final class EntityRoomInspection {
 
     /** TarinIndoorsHandler $05:4BF1-4C11, before any sprite rendering. */
     public boolean indoorTarinAbsent() {
-        if (!runtime.motionSet().followingNpcMotion.readFollowingNpcState().marinFollowing()
+        if (!runtime.motions()
+                        .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+                        .readFollowingNpcState()
+                        .marinFollowing()
                 && ((runtime.story().readHouseInstrument3Flags() & 2) != 0
                         || runtime.story().readHouseTradeItem() >= 4)) return true;
         return runtime.story().readHouseTarinFlag() == 0
@@ -366,39 +405,57 @@ public final class EntityRoomInspection {
     }
 
     int wingedOctorokState(int slot) {
-        return runtime.motionSet().wingedOctorokMotion.state(slot);
+        return runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .state(slot);
     }
 
     int wingedOctorokSpeedX(int slot) {
-        return runtime.motionSet().wingedOctorokMotion.speedX(slot);
+        return runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .speedX(slot);
     }
 
     int wingedOctorokSpeedY(int slot) {
-        return runtime.motionSet().wingedOctorokMotion.speedY(slot);
+        return runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .speedY(slot);
     }
 
     int wingedOctorokSpeedZ(int slot) {
-        return runtime.motionSet().wingedOctorokMotion.speedZ(slot);
+        return runtime.motions()
+                .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                .speedZ(slot);
     }
 
     int bushCrawlerState(int slot) {
-        return runtime.motionSet().bushCrawlerMotion.state(slot);
+        return runtime.motions()
+                .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
+                .state(slot);
     }
 
     int bushCrawlerPrivateState1(int slot) {
-        return runtime.motionSet().bushCrawlerMotion.privateState1(slot);
+        return runtime.motions()
+                .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
+                .privateState1(slot);
     }
 
     int bushCrawlerPrivateState4(int slot) {
-        return runtime.motionSet().bushCrawlerMotion.privateState4(slot);
+        return runtime.motions()
+                .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
+                .privateState4(slot);
     }
 
     int bushCrawlerSpeedX(int slot) {
-        return runtime.motionSet().bushCrawlerMotion.speedX(slot);
+        return runtime.motions()
+                .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
+                .speedX(slot);
     }
 
     int bushCrawlerSpeedY(int slot) {
-        return runtime.motionSet().bushCrawlerMotion.speedY(slot);
+        return runtime.motions()
+                .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
+                .speedY(slot);
     }
 
     public int groundStatus(int slot) {
@@ -409,11 +466,13 @@ public final class EntityRoomInspection {
     }
 
     public int bowWowState() {
-        return runtime.motionSet().bowWowMotion.readBowWowState() & 0xFF;
+        return runtime.motions().get(BowWowMotion.class, BowWowMotion::new).readBowWowState() & 0xFF;
     }
 
     int moblinKingState(int slot) {
-        return runtime.motionSet().moblinKingMotion.state(slot);
+        return runtime.motions()
+                .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                .state(slot);
     }
 
     public boolean shouldGetLostInMysteriousWoods() {
@@ -432,7 +491,9 @@ public final class EntityRoomInspection {
 
     int threeOfAKindStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().threeOfAKindMotion.state(slot);
+        return runtime.motions()
+                .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
+                .state(slot);
     }
 
     int transitionCountdownForTest(int slot) {
@@ -442,17 +503,17 @@ public final class EntityRoomInspection {
 
     int hinoxStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().hinoxMotion.state(slot);
+        return runtime.motions().get(HinoxMotion.class, HinoxMotion::new).state(slot);
     }
 
     int hinoxSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().hinoxMotion.speedX(slot);
+        return runtime.motions().get(HinoxMotion.class, HinoxMotion::new).speedX(slot);
     }
 
     int hinoxSpeedYForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().hinoxMotion.speedY(slot);
+        return runtime.motions().get(HinoxMotion.class, HinoxMotion::new).speedY(slot);
     }
 
     int enemyHealthForTest(int slot) {
@@ -462,7 +523,9 @@ public final class EntityRoomInspection {
 
     int tarinRaccoonStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().tarinRaccoonMotion.state(slot);
+        return runtime.motions()
+                .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
+                .state(slot);
     }
 
     int bombPrivateState4ForTest(int slot) {
@@ -490,23 +553,32 @@ public final class EntityRoomInspection {
     }
 
     int sideViewPlatformSpeedYForTest(int slot) {
-        return runtime.motionSet().sideViewPlatformMotion.speedY(slot);
+        return runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .speedY(slot);
     }
 
     int sideViewPlatformSpeedXForTest(int slot) {
-        return runtime.motionSet().sideViewPlatformMotion.speedX(slot);
+        return runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .speedX(slot);
     }
 
     int sideViewPlatformPrivateState2ForTest(int slot) {
-        return runtime.motionSet().sideViewPlatformMotion.privateState2(slot);
+        return runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .privateState2(slot);
     }
 
     int sideViewPlatformPrivateState4ForTest(int slot) {
-        return runtime.motionSet().sideViewPlatformMotion.privateState4(slot);
+        return runtime.motions()
+                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
+                .privateState4(slot);
     }
 
     public boolean witchGotItemPresentationActive() {
-        for (int countdown : runtime.motionSet().witchMotion.storageWitchGotItemCountdown()) {
+        for (int countdown :
+                runtime.motions().get(WitchMotion.class, WitchMotion::new).storageWitchGotItemCountdown()) {
             if (countdown != 0) {
                 return true;
             }
@@ -529,23 +601,23 @@ public final class EntityRoomInspection {
     }
 
     int likeLikeState(int slot) {
-        return runtime.motionSet().likeLikeMotion.state(slot);
+        return runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).state(slot);
     }
 
     int likeLikePrivateState1(int slot) {
-        return runtime.motionSet().likeLikeMotion.privateState1(slot);
+        return runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).privateState1(slot);
     }
 
     int likeLikeInertia(int slot) {
-        return runtime.motionSet().likeLikeMotion.inertia(slot);
+        return runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).inertia(slot);
     }
 
     int likeLikeWalkState(int slot) {
-        return runtime.motionSet().likeLikeMotion.walkState(slot);
+        return runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).walkState(slot);
     }
 
     int likeLikeWalkSpeedY(int slot) {
-        return runtime.motionSet().likeLikeMotion.walkSpeedY(slot);
+        return runtime.motions().get(LikeLikeMotion.class, LikeLikeMotion::new).walkSpeedY(slot);
     }
 
     public List<HookshotBridgeUpdate> hookshotBridgeUpdates() {
@@ -659,7 +731,9 @@ public final class EntityRoomInspection {
                 int slot = entity.slot();
                 return "%d,%d,%d,%d,%d,%d,%d"
                         .formatted(
-                                runtime.motionSet().moblinKingMotion.state(slot),
+                                runtime.motions()
+                                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                                        .state(slot),
                                 entity.x(),
                                 entity.y(),
                                 entity.z(),
@@ -757,9 +831,17 @@ public final class EntityRoomInspection {
         }
         EntitySpriteDefinition definition = runtime.spriteHandlers()
                 .forColorShellState(
-                        entity.type(), runtime.motionSet().colorShellMotion.state(entity.slot()), status);
+                        entity.type(),
+                        runtime.motions()
+                                .get(ColorShellMotion.class, ColorShellMotion::new)
+                                .state(entity.slot()),
+                        status);
         return withDefinition(
-                entity, definition, runtime.motionSet().colorShellMotion.spriteVariant(entity.slot()));
+                entity,
+                definition,
+                runtime.motions()
+                        .get(ColorShellMotion.class, ColorShellMotion::new)
+                        .spriteVariant(entity.slot()));
     }
 
     int slowTransitionCountdown(int slot) {
@@ -811,27 +893,33 @@ public final class EntityRoomInspection {
 
     int dropSpeedY(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().enemyDropMotion.speedY(slot);
+        return runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .speedY(slot);
     }
 
     public int dropSpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().enemyDropMotion.speedX(slot);
+        return runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .speedX(slot);
     }
 
     public int dropSpeedZ(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().enemyDropMotion.speedZ(slot);
+        return runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                .speedZ(slot);
     }
 
     int fairySpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().fairyMotion.speedX(slot);
+        return runtime.motions().get(FairyMotion.class, FairyMotion::new).speedX(slot);
     }
 
     int fairySpeedY(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.motionSet().fairyMotion.speedY(slot);
+        return runtime.motions().get(FairyMotion.class, FairyMotion::new).speedY(slot);
     }
 
     public int entityMapId() {
@@ -883,6 +971,8 @@ public final class EntityRoomInspection {
     }
 
     public ColorShellWorld colorShellWorld() {
-        return runtime.motionSet().colorShellMotion.readColorShellWorld();
+        return runtime.motions()
+                .get(ColorShellMotion.class, ColorShellMotion::new)
+                .readColorShellWorld();
     }
 }

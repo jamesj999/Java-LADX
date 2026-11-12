@@ -5,6 +5,8 @@ import static linksawakening.world.entity.EntityRomConstants.*;
 import static linksawakening.world.entity.EntitySnapshots.*;
 import static linksawakening.world.entity.EntityTypeRules.*;
 
+import linksawakening.world.entity.motion.*;
+
 /** Ordered slot dispatch phase 1; false preserves the ROM handler early return. */
 final class EntitySlotPhase1 {
     static boolean run(EntityFrameExecution state) {
@@ -13,8 +15,17 @@ final class EntitySlotPhase1 {
         if (state.runtime.liftThrow.advanceStatueRubble(state.entity, state.sideViewPotInteractive)) return false;
         state.moldormIntroOpenedThisFrame = false;
         state.rollingBonesHitThisFrame = state.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES
-                && state.runtime.entityState.motionSet.rollingBonesMotion.swordHitFrame(state.index) == state.frame + 1;
-        state.runtime.entityState.motionSet.rollingBonesMotion.setSwordHitFrame(state.index, 0);
+                && state.runtime
+                                .entityState
+                                .motions
+                                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                                .swordHitFrame(state.index)
+                        == state.frame + 1;
+        state.runtime
+                .entityState
+                .motions
+                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                .setSwordHitFrame(state.index, 0);
         if (!state.entity.loaded()) {
             return false;
         }
@@ -50,7 +61,12 @@ final class EntitySlotPhase1 {
         state.wasInitializing = state.initialStatus == EntityStatus.INIT;
         state.freezeTarinTimers = !state.runtime.indoorRoom
                 && state.entity.type() == EntityRomConstants.ENTITY_TARIN
-                && state.runtime.entityState.motionSet.tarinRaccoonMotion.state(state.entity.slot()) != 0
+                && state.runtime
+                                .entityState
+                                .motions
+                                .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
+                                .state(state.entity.slot())
+                        != 0
                 && !state.runtime.roomInspection.tarinTransformationTimersInteractive();
         state.freezeThreeOfAKindTimers =
                 state.entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND && !state.threeOfAKindInteractive;

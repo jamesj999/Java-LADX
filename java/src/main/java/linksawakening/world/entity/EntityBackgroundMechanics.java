@@ -9,6 +9,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.HookshotBridgeUpdate;
 import linksawakening.world.entity.event.LinkFinalPositionRequest;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ColorShellMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
@@ -36,23 +37,26 @@ public final class EntityBackgroundMechanics {
         if (runtime.combatTables().readEnemyFlashCountdown(entity.slot()) != 0) {
             return false;
         }
-        MoldormSegmentPosition tail = runtime.motionSet().moldormMotion.vulnerableTail(entity.slot());
+        MoldormSegmentPosition tail =
+                runtime.motions().get(MoldormMotion.class, MoldormMotion::new).vulnerableTail(entity.slot());
         RoomEntity tailCollisionEntity =
                 withPositionAndVariant(entity, tail.x(), (tail.y() + entity.z()) & 0xFF, entity.spriteVariant());
         return RoomEntityCombatRules.overlapsSword(tailCollisionEntity, swordX, swordWidth, swordY, swordHeight);
     }
 
     public void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
-        HookshotBridgeMotion.State bridgeState =
-                runtime.motionSet().hookshotBridgeMotion.state(entity.slot());
+        HookshotBridgeMotion.State bridgeState = runtime.motions()
+                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
+                .state(entity.slot());
         if (bridgeState == null) {
             runtime.clearEntity(entity.slot());
             return;
         }
 
         HookshotBridgeMotion.ObjectCell cell = HookshotBridgeMotion.objectCell(bridgeState);
-        HookshotBridgeMotion.Step step =
-                runtime.motionSet().hookshotBridgeMotion.advance(entity.slot());
+        HookshotBridgeMotion.Step step = runtime.motions()
+                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
+                .advance(entity.slot());
         RoomEntity moved =
                 withPositionAndVariant(entity, step.state().x(), step.state().y(), entity.spriteVariant());
         RoomEntityObjectSample object = runtime.physicsTables().readObjectQuery() == null
@@ -153,9 +157,13 @@ public final class EntityBackgroundMechanics {
             int variant = entity.spriteVariant();
             if (entity.type() == EntityRomConstants.ENTITY_OCTOROK
                     || entity.type() == EntityRomConstants.ENTITY_MOBLIN) {
-                variant = runtime.motionSet().roamingEnemyMotion.advancePresentationVariant(slot, 3);
+                variant = runtime.motions()
+                        .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                        .advancePresentationVariant(slot, 3);
             } else if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_SWORD) {
-                variant = runtime.motionSet().moblinSwordMotion.advancePresentationVariant(slot, entity.x(), 3);
+                variant = runtime.motions()
+                        .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                        .advancePresentationVariant(slot, entity.x(), 3);
             }
             return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
         }
@@ -196,55 +204,79 @@ public final class EntityBackgroundMechanics {
     public int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
         if (runtime.bossRewards().readEnemyDropActive(slot)) {
-            return runtime.motionSet().enemyDropMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_TEKTITE) {
-            return runtime.motionSet().tektiteMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(TektiteMotion.class, TektiteMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_FISH) {
-            return runtime.motionSet().fishMotion.speedZ(slot);
+            return runtime.motions().get(FishMotion.class, FishMotion::new).speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_CROW) {
-            return runtime.motionSet().crowMotion.speedZ(slot);
+            return runtime.motions().get(CrowMotion.class, CrowMotion::new).speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_CUCCO) {
-            return runtime.motionSet().cuccoMotion.speedZ(slot);
+            return runtime.motions().get(CuccoMotion.class, CuccoMotion::new).speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return runtime.motionSet().secretSeashellMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK) {
-            return runtime.motionSet().wingedOctorokMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE) {
-            return runtime.motionSet().stalfosAggressiveMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE) {
-            return runtime.motionSet().stalfosEvasiveMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                    .speedZ(slot);
         }
         if (isZolGelType(entity.type())) {
-            return runtime.motionSet().zolGelMotion.speedZ(slot);
+            return runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_HIDING_ZOL) {
-            return runtime.motionSet().hidingZolMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(HidingZolMotion.class, HidingZolMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
-            return runtime.motionSet().polsVoiceMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(PolsVoiceMotion.class, PolsVoiceMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
-            return runtime.motionSet().spikedBeetleMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DOG) {
-            return runtime.motionSet().dogMotion.speedZ(slot);
+            return runtime.motions().get(DogMotion.class, DogMotion::new).speedZ(slot);
         }
         if (isEnemyProjectileType(entity.type())) {
-            return runtime.motionSet().enemyProjectileMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                    .speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_ARROW) {
-            return runtime.motionSet().playerArrowMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                    .speedZ(slot);
         }
         if (ColorShellMotion.isColorShellType(entity.type())) {
-            return runtime.motionSet().colorShellMotion.speedZ(slot);
+            return runtime.motions()
+                    .get(ColorShellMotion.class, ColorShellMotion::new)
+                    .speedZ(slot);
         }
         return 0;
     }
@@ -286,13 +318,16 @@ public final class EntityBackgroundMechanics {
         for (int slot = 0; slot < runtime.slots().length; slot++) {
             if (!runtime.slots()[slot].loaded()
                     || runtime.slots()[slot].type() != EntityRomConstants.ENTITY_HOOKSHOT_CHAIN
-                    || !runtime.motionSet().hookshotChainMotion.active(slot)) {
+                    || !runtime.motions()
+                            .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                            .active(slot)) {
                 continue;
             }
-            HookshotChainMotion.State state =
-                    runtime.motionSet().hookshotChainMotion.state(slot);
-            runtime.motionSet()
-                    .hookshotChainMotion
+            HookshotChainMotion.State state = runtime.motions()
+                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                    .state(slot);
+            runtime.motions()
+                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
                     .setState(
                             slot,
                             new HookshotChainMotion.State(
@@ -314,22 +349,28 @@ public final class EntityBackgroundMechanics {
     public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
-        if (!runtime.motionSet().enemyRecoilMotion.isActive(slot)) {
+        if (!runtime.motions()
+                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                .isActive(slot)) {
             return new EnemyRecoilMotion.Update(entity, false);
         }
         if (runtime.combatTables().readEnemyIgnoreHitsCountdown(slot) == 0) {
-            runtime.motionSet().enemyRecoilMotion.clear(slot);
+            runtime.motions()
+                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
+                    .clear(slot);
             return new EnemyRecoilMotion.Update(entity, false);
         }
 
         if (isRoamingEnemyType(entity.type())) {
-            runtime.motionSet().roamingEnemyMotion.beginRecoil(slot);
+            runtime.motions()
+                    .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                    .beginRecoil(slot);
         }
         // ApplyRecoilIfNeeded_03/06 decrements the shared countdown
         // immediately before applying one fixed-point recoil step.
         runtime.combatTables().postEnemyIgnoreHitsCountdown(slot, -1);
-        EnemyRecoilMotion.Update update = runtime.motionSet()
-                .enemyRecoilMotion
+        EnemyRecoilMotion.Update update = runtime.motions()
+                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .advance(entity, backgroundCollision, isRoamingEnemyType(entity.type()));
         if (update.blocked() && isRoamingEnemyType(entity.type())) {
             // StopEntityRecoilOnCollision clears the ignore-hits countdown.

@@ -1,8 +1,10 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityRewardController; resolved lazily to preserve initialization order. */
 interface EntityRewardControllerServices {
-    EntityMotionSet motionSet();
+    EntityMotionRegistry motions();
 
     int clearEntity(int slot);
 
@@ -39,8 +41,8 @@ interface EntityRewardControllerServices {
 
     static EntityRewardControllerServices bind(RoomEntityRuntime r) {
         return new EntityRewardControllerServices() {
-            public EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public int clearEntity(int slot) {

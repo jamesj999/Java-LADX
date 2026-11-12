@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityBossRewards; resolved lazily to preserve initialization order. */
 interface EntityBossRewardsServices {
     int findFreeEntitySlot();
@@ -14,7 +16,7 @@ interface EntityBossRewardsServices {
 
     linksawakening.world.entity.EntityEventChannels events();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -58,8 +60,8 @@ interface EntityBossRewardsServices {
                 return r.entityState.events;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

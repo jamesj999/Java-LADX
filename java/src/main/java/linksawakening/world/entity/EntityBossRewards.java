@@ -13,6 +13,7 @@ import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.MoldormSegmentPosition;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 
 /** Boss destruction and source-shaped reward production. */
 public final class EntityBossRewards {
@@ -56,7 +57,10 @@ public final class EntityBossRewards {
             if (slot == killed.slot()
                     || other == null
                     || (other.type() != 0x10 && other.type() != 0x11)
-                    || runtime.motionSet().ghiniMotion.state(slot) != 0
+                    || runtime.motions()
+                                    .get(GhiniMotion.class, GhiniMotion::new)
+                                    .state(slot)
+                            != 0
                     || other.status() == EntityStatus.DISABLED) continue;
             runtime.slots()[slot] = withStatus(other, EntityStatus.DYING);
             runtime.combatTables().writeDyingCountdown(slot, 0x1F);
@@ -67,7 +71,10 @@ public final class EntityBossRewards {
 
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
         boolean swallowedShield = entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE
-                && runtime.motionSet().likeLikeMotion.privateState1(entity.slot()) != 0;
+                && runtime.motions()
+                                .get(LikeLikeMotion.class, LikeLikeMotion::new)
+                                .privateState1(entity.slot())
+                        != 0;
         if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // The mini-boss option reaches DidKillEnemy's room-event branch,
             // permanently opening the east rescue-room path.
@@ -118,8 +125,12 @@ public final class EntityBossRewards {
 
     public void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
-        if (!runtime.motionSet().rollingBonesMotion.deathInitialized(slot)) {
-            runtime.motionSet().rollingBonesMotion.setDeathInitialized(slot, true);
+        if (!runtime.motions()
+                .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                .deathInitialized(slot)) {
+            runtime.motions()
+                    .get(RollingBonesMotion.class, RollingBonesMotion::new)
+                    .setDeathInitialized(slot, true);
             runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0xFF);
             runtime.combatTables().writeEnemyFlashCountdown(slot, 0xFF);
             return;
@@ -172,8 +183,11 @@ public final class EntityBossRewards {
         int slot = source.slot();
         // Main resolves sword damage before dispatch; the ROM dispatches the
         // dying branch on the following frame, after this hit's active handler.
-        boolean hitThisFrame = runtime.motionSet().moblinKingMotion.lethalHitFrame(slot) == frame + 1;
-        runtime.motionSet().moblinKingMotion.setLethalHitFrame(slot, 0);
+        boolean hitThisFrame = runtime.motions()
+                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
+                        .lethalHitFrame(slot)
+                == frame + 1;
+        runtime.motions().get(MoblinKingMotion.class, MoblinKingMotion::new).setLethalHitFrame(slot, 0);
         if (hitThisFrame) return;
         if (runtime.spriteHandlers() != null)
             source = withDefinition(source, runtime.spriteHandlers().forMoblinKingState(12, -1, source.z() != 0), 0);
@@ -196,7 +210,9 @@ public final class EntityBossRewards {
                     .pendingEntityEvents
                     .add(new EntityCombatEvent(
                             slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
-            runtime.motionSet().moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(4);
+            runtime.motions()
+                    .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                    .writeSwordMoblinAlertingSoundCounter(4);
             handleTerminalEnemyDeath(source, random);
         } else if ((runtime.physicsTables().readEnemyTransitionCountdown(slot) & 7) == 0
                 && runtime.backgroundMechanics().entityHandlerInteractive(false)) {
@@ -212,16 +228,21 @@ public final class EntityBossRewards {
 
     public void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
         int slot = source.slot();
-        int tailState = runtime.motionSet().moldormMotion.destructionTailState(slot);
+        int tailState =
+                runtime.motions().get(MoldormMotion.class, MoldormMotion::new).destructionTailState(slot);
         if (runtime.spriteHandlers() != null) {
             RoomEntity rendered = withDefinition(
                     source,
                     runtime.spriteHandlers()
                             .forMoldormState(
-                                    runtime.motionSet().moldormMotion.headSpriteVariant(slot),
+                                    runtime.motions()
+                                            .get(MoldormMotion.class, MoldormMotion::new)
+                                            .headSpriteVariant(slot),
                                     source.x(),
                                     (source.y() - source.z()) & 0xFF,
-                                    runtime.motionSet().moldormMotion.currentTailSegments(slot),
+                                    runtime.motions()
+                                            .get(MoldormMotion.class, MoldormMotion::new)
+                                            .currentTailSegments(slot),
                                     tailState,
                                     frameCounter),
                     0);
@@ -253,12 +274,14 @@ public final class EntityBossRewards {
                     this.writeBossDeathProducerState(slot, 3);
                     return;
                 }
-                MoldormSegmentPosition poofPosition = runtime.motionSet()
-                        .moldormMotion
+                MoldormSegmentPosition poofPosition = runtime.motions()
+                        .get(MoldormMotion.class, MoldormMotion::new)
                         .currentTailSegments(slot)
                         .get(3 - tailState);
                 createMoldormPoof(source, poofPosition.x(), poofPosition.y());
-                runtime.motionSet().moldormMotion.setDestructionTailState(slot, tailState + 1);
+                runtime.motions()
+                        .get(MoldormMotion.class, MoldormMotion::new)
+                        .setDestructionTailState(slot, tailState + 1);
             }
             default -> advanceMoldormBossExplosion(source);
         }
@@ -285,7 +308,7 @@ public final class EntityBossRewards {
         createMoldormPoof(
                 source, (source.x() + xOffsets[index]) & 0xFF, ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
         if (countdown == 0x10) {
-            runtime.motionSet().moldormMotion.setDestructionTailState(slot, 5);
+            runtime.motions().get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 5);
         }
     }
 
@@ -315,8 +338,8 @@ public final class EntityBossRewards {
                 false);
         runtime.initializeHealthGroup(freeSlot);
         runtime.pickups().resetEnemyDropState(freeSlot);
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling(), 0x10);
         this.writeEnemyDropActive(freeSlot, true);
         runtime.physicsTables().writeSlowTransitionCountdown(freeSlot, 0);
@@ -334,7 +357,7 @@ public final class EntityBossRewards {
         runtime.physicsTables().writeEntityGroundStatus(freeSlot, 0);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 

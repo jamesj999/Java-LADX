@@ -3,6 +3,7 @@ package linksawakening.world.entity;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import linksawakening.world.entity.motion.*;
 import org.junit.jupiter.api.Test;
 
 class GhiniDeathCascadeTest {
@@ -37,7 +38,10 @@ class GhiniDeathCascadeTest {
         runtime.slots[12] = entity(12, 0x11, EntityStatus.STUNNED);
         runtime.slots[9] = entity(9, 0x10, EntityStatus.DISABLED);
         runtime.slots[7] = entity(7, 0x10, EntityStatus.ACTIVE);
-        runtime.entityState.motionSet.ghiniMotion.initialize(7, 0x10); // Hidden state 1 is excluded.
+        runtime.entityState
+                .motions
+                .get(GhiniMotion.class, GhiniMotion::new)
+                .initialize(7, 0x10); // Hidden state 1 is excluded.
         runtime.slots[3] = entity(3, 0x12, EntityStatus.ACTIVE);
         var draws = new AtomicInteger();
         runtime.bossRewards.cascadeGhiniDeath(killed, draws::getAndIncrement);

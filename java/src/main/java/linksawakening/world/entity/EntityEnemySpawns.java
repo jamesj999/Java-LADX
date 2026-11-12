@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.CuccoMotion;
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
@@ -85,9 +86,13 @@ public final class EntityEnemySpawns {
         runtime.bombInteractions().writePlacedBombMotionInitialized(freeSlot, false);
         runtime.bombInteractions().writeEnemyBombMotionInitialized(freeSlot, initializeMotion);
         if (initializeMotion) {
-            runtime.motionSet().thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .startEnemyBomb(freeSlot, speedX, speedY, speedZ);
         } else {
-            runtime.motionSet().thrownEntityMotion.clear(freeSlot);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .clear(freeSlot);
         }
         runtime.liftThrow().writeThrownMotionInitialized(freeSlot, false);
         runtime.combatTables().writeEnemyHitboxFlags(freeSlot, 0);
@@ -175,10 +180,12 @@ public final class EntityEnemySpawns {
                 .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE));
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);
         runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motionSet().pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+        runtime.motions()
+                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
+                .initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
     public void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
@@ -217,8 +224,10 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables()
                 .writeEnemyIgnoreHitsCountdown(freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-        runtime.motionSet().gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -258,8 +267,10 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables()
                 .writeEnemyIgnoreHitsCountdown(freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-        runtime.motionSet().gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -303,8 +314,8 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_ZOMBIE));
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-        runtime.motionSet().zombieMotion.initializeChild(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.motions().get(ZombieMotion.class, ZombieMotion::new).initializeChild(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -345,9 +356,11 @@ public final class EntityEnemySpawns {
         // ConfigureNewEntity seeds one ignored-hit frame; the child handler
         // decrements it before its first interactive collision pass.
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeEntityInertia(freeSlot, 0);
-        runtime.motionSet().pokeyMotion.initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
+        runtime.motions()
+                .get(PokeyMotion.class, PokeyMotion::new)
+                .initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -387,8 +400,10 @@ public final class EntityEnemySpawns {
                 .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE));
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-        runtime.motionSet().wizrobeProjectileMotion.initializeSpawn(freeSlot, spawn.direction());
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
+                .initializeSpawn(freeSlot, spawn.direction());
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -431,8 +446,10 @@ public final class EntityEnemySpawns {
         // stores register B over it. AnimateEntities keeps B at zero, so this
         // clone enters its fleeing handler with no ignore-hits countdown.
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
-        runtime.motionSet().stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
+                .initializeClone(freeSlot, request.speedX(), request.speedY());
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         runtime.events()
                 .pendingEntityEvents
@@ -443,7 +460,11 @@ public final class EntityEnemySpawns {
 
     public void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request) {
         spawnEnemyProjectile(
-                source, request, runtime.motionSet().roamingEnemyMotion.direction(source.slot()));
+                source,
+                request,
+                runtime.motions()
+                        .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                        .direction(source.slot()));
     }
 
     public void spawnEnemyProjectile(RoomEntity source, RoamingEnemyMotion.LaunchRequest request, int direction) {
@@ -484,10 +505,12 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyHealth(freeSlot, runtime.initialHealth(request.projectileType()));
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);
         runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motionSet().enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
+        runtime.motions()
+                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
+                .initializeSpawn(freeSlot, request.projectileType(), direction);
         runtime.physicsTables().writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
     }
 
@@ -530,11 +553,11 @@ public final class EntityEnemySpawns {
                 .writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK));
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);
         runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motionSet()
-                .enemyProjectileMotion
+        runtime.motions()
+                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
                 .initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
         runtime.physicsTables().writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
     }
@@ -571,7 +594,9 @@ public final class EntityEnemySpawns {
                 false);
         runtime.slots()[freeSlot] = angry;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
+        runtime.motions()
+                .get(CuccoMotion.class, CuccoMotion::new)
+                .initializeAngry(freeSlot, request.speedX(), request.speedY());
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, CuccoMotion.ANGRY_OPTIONS1);
         runtime.physicsTables().writeEnemyPhysicsFlags(freeSlot, CuccoMotion.ANGRY_PHYSICS_FLAGS);
@@ -615,10 +640,14 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);
         runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motionSet()
-                .laserMotion
+        runtime.motions()
+                .get(LaserMotion.class, LaserMotion::new)
                 .initializeSensor(
-                        freeSlot, parent.slot(), runtime.motionSet().laserMotion.direction(parent.slot()));
+                        freeSlot,
+                        parent.slot(),
+                        runtime.motions()
+                                .get(LaserMotion.class, LaserMotion::new)
+                                .direction(parent.slot()));
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -652,13 +681,19 @@ public final class EntityEnemySpawns {
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         runtime.combatTables().writeDyingCountdown(freeSlot, 0);
         runtime.combatTables().writePowerRecoilDeath(freeSlot, false);
-        runtime.motionSet()
-                .laserMotion
+        runtime.motions()
+                .get(LaserMotion.class, LaserMotion::new)
                 .initializeBeam(
                         freeSlot,
-                        runtime.motionSet().laserMotion.direction(parent.slot()),
-                        runtime.motionSet().laserMotion.speedX(parent.slot()),
-                        runtime.motionSet().laserMotion.speedY(parent.slot()));
+                        runtime.motions()
+                                .get(LaserMotion.class, LaserMotion::new)
+                                .direction(parent.slot()),
+                        runtime.motions()
+                                .get(LaserMotion.class, LaserMotion::new)
+                                .speedX(parent.slot()),
+                        runtime.motions()
+                                .get(LaserMotion.class, LaserMotion::new)
+                                .speedY(parent.slot()));
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }

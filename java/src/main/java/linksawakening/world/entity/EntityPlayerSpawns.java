@@ -7,6 +7,7 @@ import static linksawakening.world.entity.EntityTypeRules.*;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
 import linksawakening.world.entity.motion.MagicRodFireballMotion;
 import linksawakening.world.room.ChestContentsTable;
@@ -61,13 +62,15 @@ public final class EntityPlayerSpawns {
             runtime.physicsTables().writeSlowTransitionCountdown(freeSlot, 0x80);
             runtime.physicsTables().writeSlowTimerInitialized(freeSlot, true);
         }
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         // The source writes sourceSlot + 1 to private state 5. The current
         // mask handler does not consume that byte, but retaining the value
         // keeps the dynamic entity's provenance ROM-shaped for later pickup
         // and item-interaction work.
-        runtime.motionSet().unmaskedIronMaskMotion.setMaskSourceHookshotSlot(freeSlot, (sourceHookshotSlot + 1) & 0xFF);
+        runtime.motions()
+                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
+                .setMaskSourceHookshotSlot(freeSlot, (sourceHookshotSlot + 1) & 0xFF);
     }
 
     int spawnHookshotChain(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -98,8 +101,8 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = chain;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet()
-                .hookshotChainMotion
+        runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
                 .initializeSpawn(freeSlot, linkEntityX & 0xFF, linkEntityY & 0xFF, linkEntityZ & 0xFF, romDirection);
         runtime.physicsTables()
                 .writeEnemyPhysicsFlags(
@@ -193,7 +196,7 @@ public final class EntityPlayerSpawns {
         runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         if (!runtime.beginLift(freeSlot, romDirection)) {
             runtime.slots()[freeSlot] = RoomEntity.disabled(freeSlot);
@@ -253,8 +256,10 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = arrow;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().playerArrowMotion.clear(freeSlot);
-        runtime.motionSet().playerArrowMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
+        runtime.motions().get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                .initializeSpawn(freeSlot, romDirection, pieceOfPower);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables()
                 .writeEntityOptions1Override(
@@ -318,8 +323,10 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = boomerang;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().boomerangMotion.clear(freeSlot);
-        runtime.motionSet().boomerangMotion.initializeSpawn(freeSlot, romDirection, pressedButtonsMask);
+        runtime.motions().get(BoomerangMotion.class, BoomerangMotion::new).clear(freeSlot);
+        runtime.motions()
+                .get(BoomerangMotion.class, BoomerangMotion::new)
+                .initializeSpawn(freeSlot, romDirection, pressedButtonsMask);
         runtime.liftThrow().writeThrownDirection(freeSlot, romDirection);
         runtime.physicsTables().writeEntityUnknownJ(freeSlot, 1);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
@@ -369,8 +376,8 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = beam;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().swordBeamMotion.clear(freeSlot);
-        runtime.motionSet().swordBeamMotion.initializeSpawn(freeSlot, romDirection);
+        runtime.motions().get(SwordBeamMotion.class, SwordBeamMotion::new).clear(freeSlot);
+        runtime.motions().get(SwordBeamMotion.class, SwordBeamMotion::new).initializeSpawn(freeSlot, romDirection);
         runtime.liftThrow().writeThrownDirection(freeSlot, romDirection);
         runtime.physicsTables().writeEntityUnknownJ(freeSlot, 1);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
@@ -427,8 +434,12 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = fireball;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().magicRodFireballMotion.clear(freeSlot);
-        runtime.motionSet().magicRodFireballMotion.initializeSpawn(freeSlot, romDirection, pieceOfPower);
+        runtime.motions()
+                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
+                .clear(freeSlot);
+        runtime.motions()
+                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
+                .initializeSpawn(freeSlot, romDirection, pieceOfPower);
         runtime.liftThrow().writeThrownDirection(freeSlot, romDirection);
         runtime.physicsTables().writeEntityUnknownJ(freeSlot, 1);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
@@ -578,7 +589,9 @@ public final class EntityPlayerSpawns {
         runtime.slots()[freeSlot] = bomb;
         runtime.initializeHealthGroup(freeSlot);
         runtime.bombInteractions().writeBombDirection(freeSlot, romDirection);
-        runtime.motionSet().thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
+        runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                .startPlacedBomb(freeSlot, romDirection);
         runtime.bombInteractions().writePlacedBombMotionInitialized(freeSlot, true);
         runtime.bombInteractions().writePlayerArrowBombArrow(freeSlot, false);
         runtime.setBombFinalPresentationPending(freeSlot, false);
@@ -679,7 +692,7 @@ public final class EntityPlayerSpawns {
         runtime.physicsTables().writeEnemyTransitionCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyStunnedCountdown(freeSlot, 0);
         runtime.combatTables().writeEnemyFlashCountdown(freeSlot, 0);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
         if (soundId >= 0) {
             runtime.events()
@@ -723,7 +736,10 @@ public final class EntityPlayerSpawns {
         runtime.initializeHealthGroup(freeSlot);
         runtime.bombInteractions()
                 .writeBombDirection(
-                        freeSlot, runtime.motionSet().playerArrowMotion.direction(arrow.slot()));
+                        freeSlot,
+                        runtime.motions()
+                                .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
+                                .direction(arrow.slot()));
         runtime.setBombFinalPresentationPending(freeSlot, false);
         runtime.bombInteractions().writeBombPrivateState4(freeSlot, 0);
         runtime.bombInteractions().writeBombPrivateCountdown1(freeSlot, 0);
@@ -740,7 +756,7 @@ public final class EntityPlayerSpawns {
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
         runtime.bombInteractions().writePlacedBombMotionInitialized(freeSlot, true);
-        runtime.motionSet().thrownEntityMotion.clear(freeSlot);
+        runtime.motions().get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
@@ -772,7 +788,9 @@ public final class EntityPlayerSpawns {
                 false);
         runtime.slots()[freeSlot] = bridge;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().hookshotBridgeMotion.initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
+        runtime.motions()
+                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
+                .initializeSpawn(freeSlot, bridge.x(), bridge.y(), direction);
         runtime.physicsTables()
                 .writeEnemyPhysicsFlags(
                         freeSlot,
@@ -841,16 +859,16 @@ public final class EntityPlayerSpawns {
         runtime.physicsTables().writeEntityGroundStatus(freeSlot, 0);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.bossRewards().writeDropPrivateCountdown1(freeSlot, 0x18);
         runtime.bossRewards().writeDropPrivateCountdown3(freeSlot, 0x03);
         // label_002_4C92 seeds this drop at $20, unlike the common enemy
         // death path's $18 seed.
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling(), 0x20);
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initializeAwayFromLink(freeSlot, x & 0xFF, y & 0xFF, linkEntityX & 0xFF, linkEntityY & 0xFF, 0x0C);
         runtime.bossRewards().writeEnemyDropActive(freeSlot, true);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);

@@ -9,6 +9,7 @@ import java.util.Objects;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.ColorShellMotion;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 
@@ -23,11 +24,15 @@ final class EntitySlotPhase5 {
                 && !state.wasInitializing
                 && !state.keyDropTransitionActive
                 && state.runtime.bossRewards.readEnemyDropActive(state.updated.slot())) {
-            state.updated = state.runtime.entityState.motionSet.enemyDropMotion.advance(
-                    state.updated,
-                    state.frame,
-                    state.runtime.entityState.physicsTables.readEntityGroundStatus(state.updated.slot()),
-                    state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling());
+            state.updated = state.runtime
+                    .entityState
+                    .motions
+                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                    .advance(
+                            state.updated,
+                            state.frame,
+                            state.runtime.entityState.physicsTables.readEntityGroundStatus(state.updated.slot()),
+                            state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling());
         }
         if (state.status == EntityStatus.ACTIVE
                 && !state.wasInitializing
@@ -89,16 +94,30 @@ final class EntitySlotPhase5 {
                 if (dropBackground == null && state.backgroundCollision != null) {
                     dropBackground = RoomEntityBackgroundInteraction.fromBoolean(state.backgroundCollision);
                 }
-                state.updated = state.runtime.entityState.motionSet.enemyDropMotion.resolveWalls(
-                        beforeDropPhysics,
-                        state.updated,
-                        dropBackground,
-                        state.runtime.entityState.combatTables.readEnemyIgnoreHitsCountdown(state.updated.slot()),
-                        state.frame);
+                state.updated = state.runtime
+                        .entityState
+                        .motions
+                        .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                        .resolveWalls(
+                                beforeDropPhysics,
+                                state.updated,
+                                dropBackground,
+                                state.runtime.entityState.combatTables.readEnemyIgnoreHitsCountdown(
+                                        state.updated.slot()),
+                                state.frame);
                 boolean dropGroundCollision =
                         state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling()
-                                && state.runtime.entityState.motionSet.enemyDropMotion.speedY(state.updated.slot()) != 0
-                                && (state.runtime.entityState.motionSet.enemyDropMotion.speedY(state.updated.slot())
+                                && state.runtime
+                                                .entityState
+                                                .motions
+                                                .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                                                .speedY(state.updated.slot())
+                                        != 0
+                                && (state.runtime
+                                                        .entityState
+                                                        .motions
+                                                        .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                                                        .speedY(state.updated.slot())
                                                 & 0x80)
                                         == 0
                                 && state.backgroundCollision != null
@@ -107,11 +126,15 @@ final class EntitySlotPhase5 {
                                         EntityBackgroundCollisionResult.DOWN,
                                         state.updated.x(),
                                         state.updated.y());
-                state.updated = state.runtime.entityState.motionSet.enemyDropMotion.bounce(
-                        state.updated,
-                        groundResult.groundStatus(),
-                        state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling(),
-                        dropGroundCollision);
+                state.updated = state.runtime
+                        .entityState
+                        .motions
+                        .get(EnemyDropMotion.class, EnemyDropMotion::new)
+                        .bounce(
+                                state.updated,
+                                groundResult.groundStatus(),
+                                state.runtime.entityState.physicsTables.readGroundInteractionSideScrolling(),
+                                dropGroundCollision);
             }
         }
         state.genericLinkPushPolicy = EntityLinkCollisionRules.genericPolicyFor(state.updated.type());

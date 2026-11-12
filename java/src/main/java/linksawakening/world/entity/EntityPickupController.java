@@ -14,6 +14,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
 import linksawakening.world.entity.event.SlimeKeyRewardEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.HeartPiecePickupMotion;
 import linksawakening.world.room.ChestContentsTable;
 
@@ -82,21 +83,25 @@ public final class EntityPickupController {
                     }
                 }
             } else if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS) {
-                reveal = runtime.motionSet().secretSeashellMotion.readSecretSeashellScreenShakeActive()
-                        && runtime.motionSet().secretSeashellMotion.readSecretSeashellPegasusCollisionActive()
-                        && (!runtime.motionSet()
-                                        .secretSeashellMotion
+                reveal = runtime.motions()
+                                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                .readSecretSeashellScreenShakeActive()
+                        && runtime.motions()
+                                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                .readSecretSeashellPegasusCollisionActive()
+                        && (!runtime.motions()
+                                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                         .readSecretSeashellPegasusCollisionCoordinatesKnown()
                                 || withinUnsignedWindow(
                                                 entity.x() + 0x08,
-                                                runtime.motionSet()
-                                                        .secretSeashellMotion
+                                                runtime.motions()
+                                                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                         .readSecretSeashellPegasusCollisionX(),
                                                 0x10)
                                         && withinUnsignedWindow(
                                                 entity.y() + 0x08,
-                                                runtime.motionSet()
-                                                        .secretSeashellMotion
+                                                runtime.motions()
+                                                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                         .readSecretSeashellPegasusCollisionY(),
                                                 0x10));
             }
@@ -125,8 +130,8 @@ public final class EntityPickupController {
                                 : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
         if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY
                 && !runtime.bossRewards().readEnemyDropActive(slot)) {
-            runtime.motionSet()
-                    .enemyDropMotion
+            runtime.motions()
+                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
                     .initialize(slot, runtime.physicsTables().readGroundInteractionSideScrolling());
             runtime.bossRewards().writeEnemyDropActive(slot, true);
         }
@@ -150,18 +155,18 @@ public final class EntityPickupController {
                     linkEntityX,
                     linkEntityY,
                     EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-            runtime.motionSet().fairyMotion.setSpeed(slot, vector.x(), vector.y());
+            runtime.motions().get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
             return;
         }
 
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(
                         slot,
                         runtime.physicsTables().readGroundInteractionSideScrolling(),
                         EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initializeAwayFromLink(
                         slot,
                         entity.x(),
@@ -218,8 +223,8 @@ public final class EntityPickupController {
             initializeCommonDroppable(entity);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            runtime.motionSet()
-                    .secretSeashellMotion
+            runtime.motions()
+                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                     .ensureInitialized(slot, runtime.roomVariables().readEntityRoomId());
             runtime.physicsTables()
                     .writeEntityOptions1Override(slot, EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1);
@@ -237,9 +242,11 @@ public final class EntityPickupController {
         runtime.bossRewards().writeDroppablePrivateState3(slot, 0);
         runtime.bossRewards().writeDroppablePrivateState4(slot, 0);
         runtime.bossRewards().writeEnemyDropActive(slot, false);
-        runtime.motionSet().enemyDropMotion.clear(slot);
-        runtime.motionSet().fairyMotion.clear(slot);
-        runtime.motionSet().hookshotChainMotion.clear(slot);
+        runtime.motions().get(EnemyDropMotion.class, EnemyDropMotion::new).clear(slot);
+        runtime.motions().get(FairyMotion.class, FairyMotion::new).clear(slot);
+        runtime.motions()
+                .get(HookshotChainMotion.class, HookshotChainMotion::new)
+                .clear(slot);
     }
 
     void decrementEnemyDropCountdowns(RoomEntity entity) {
@@ -398,7 +405,7 @@ public final class EntityPickupController {
                 false);
         runtime.slots()[freeSlot] = zol;
         runtime.initializeHealthGroup(freeSlot);
-        runtime.motionSet().zolGelMotion.prepareChestSpawn(freeSlot);
+        runtime.motions().get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
         runtime.physicsTables().writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
         runtime.combatTables().writeEnemyHitboxFlags(freeSlot, 0);
         runtime.combatTables().writeEnemyHealth(freeSlot, runtime.initialHealth(EntityRomConstants.ENTITY_ZOL));
@@ -457,14 +464,14 @@ public final class EntityPickupController {
         runtime.physicsTables().writeEntityGroundStatus(freeSlot, 0);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.bossRewards().writeDropPrivateCountdown1(freeSlot, 0x18);
         runtime.bossRewards().writeDropPrivateCountdown3(freeSlot, 0x03);
         if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            runtime.motionSet().fairyMotion.initialize(freeSlot);
+            runtime.motions().get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
         } else {
-            runtime.motionSet()
-                    .enemyDropMotion
+            runtime.motions()
+                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
                     .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling());
             runtime.bossRewards().writeEnemyDropActive(freeSlot, true);
         }
@@ -507,8 +514,8 @@ public final class EntityPickupController {
         runtime.slots()[freeSlot] = drop;
         runtime.initializeHealthGroup(freeSlot);
         resetEnemyDropState(freeSlot);
-        runtime.motionSet()
-                .enemyDropMotion
+        runtime.motions()
+                .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .initialize(freeSlot, runtime.physicsTables().readGroundInteractionSideScrolling(), speedZ);
         runtime.bossRewards().writeEnemyDropActive(freeSlot, true);
         runtime.physicsTables().writeSlowTransitionCountdown(freeSlot, 0);
@@ -526,7 +533,7 @@ public final class EntityPickupController {
         runtime.physicsTables().writeEntityGroundStatus(freeSlot, 0);
         runtime.physicsTables().writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables().writeEntityOptions1Override(freeSlot, -1);
-        runtime.motionSet().enemyRecoilMotion.clear(freeSlot);
+        runtime.motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
         runtime.physicsTables().writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }

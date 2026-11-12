@@ -10,6 +10,7 @@ import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.entity.event.LinkAttackStepRequest;
 import linksawakening.world.entity.event.LinkHeldItemPoseRequest;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BombMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
@@ -45,7 +46,9 @@ final class EntityPlayerCommands {
         runtime.physicsTables().writeEnemyTransitionCountdown(slot, 0x02);
         if (entity.type() == EntityRomConstants.ENTITY_BOMB) {
             if (runtime.bombInteractions().readPlacedBombMotionInitialized(slot)) {
-                runtime.motionSet().thrownEntityMotion.clear(slot);
+                runtime.motions()
+                        .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                        .clear(slot);
                 runtime.bombInteractions().writePlacedBombMotionInitialized(slot, false);
             }
             runtime.setBombFinalPresentationPending(slot, false);
@@ -78,8 +81,12 @@ final class EntityPlayerCommands {
                         EntityRomConstants.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == EntityRomConstants.ENTITY_SIDE_VIEW_POT) {
             runtime.liftThrow().writeThrownDirection(slot, romDirection);
-            runtime.motionSet().sideViewPotMotion.start(slot, romDirection);
-            runtime.motionSet().thrownEntityMotion.clear(slot);
+            runtime.motions()
+                    .get(SideViewPotMotion.class, SideViewPotMotion::new)
+                    .start(slot, romDirection);
+            runtime.motions()
+                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+                    .clear(slot);
             runtime.liftThrow().writeThrownMotionInitialized(slot, false);
             runtime.liftThrow().writeLiftedStateInitialized(slot, false);
             runtime.liftThrow().writeLiftedPhase(slot, 0);
@@ -91,8 +98,8 @@ final class EntityPlayerCommands {
             return true;
         }
         runtime.liftThrow().writeThrownDirection(slot, romDirection);
-        runtime.motionSet()
-                .thrownEntityMotion
+        runtime.motions()
+                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .start(
                         slot,
                         romDirection,

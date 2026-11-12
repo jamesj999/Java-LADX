@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityLiftThrowController; resolved lazily to preserve initialization order. */
 interface EntityLiftThrowControllerServices {
     boolean beginLift(int slot, int romDirection);
@@ -24,7 +26,7 @@ interface EntityLiftThrowControllerServices {
 
     linksawakening.world.entity.EntityLinkState linkState();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -88,8 +90,8 @@ interface EntityLiftThrowControllerServices {
                 return r.entityState.linkState;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

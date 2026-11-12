@@ -1,10 +1,12 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by EntityPickupInspection; resolved lazily to preserve initialization order. */
 interface EntityPickupInspectionServices {
     linksawakening.world.entity.EntityBombInteractions bombInteractions();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -14,8 +16,8 @@ interface EntityPickupInspectionServices {
                 return r.bombInteractions;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

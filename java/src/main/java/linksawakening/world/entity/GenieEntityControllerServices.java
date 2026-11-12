@@ -1,5 +1,7 @@
 package linksawakening.world.entity;
 
+import linksawakening.world.entity.motion.*;
+
 /** Dependencies used by GenieEntityController; resolved lazily to preserve initialization order. */
 interface GenieEntityControllerServices {
     int findFreeEntitySlot();
@@ -12,7 +14,7 @@ interface GenieEntityControllerServices {
 
     linksawakening.world.entity.EntityLiftThrowController liftThrow();
 
-    linksawakening.world.entity.EntityMotionSet motionSet();
+    linksawakening.world.entity.EntityMotionRegistry motions();
 
     linksawakening.world.entity.EntityPhysicsTables physicsTables();
 
@@ -48,8 +50,8 @@ interface GenieEntityControllerServices {
                 return r.liftThrow;
             }
 
-            public linksawakening.world.entity.EntityMotionSet motionSet() {
-                return r.entityState.motionSet;
+            public linksawakening.world.entity.EntityMotionRegistry motions() {
+                return r.entityState.motions;
             }
 
             public linksawakening.world.entity.EntityPhysicsTables physicsTables() {

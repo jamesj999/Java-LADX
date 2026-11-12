@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.world.entity.motion.*;
 
 /** Room entity configuration preserving source-shaped handler inputs. */
 public final class EntityRuntimeConfiguration {
@@ -104,7 +105,7 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setBowWowState(int bowWowState) {
-        runtime.motionSet().bowWowMotion.writeBowWowState(bowWowState & 0xFF);
+        runtime.motions().get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(bowWowState & 0xFF);
     }
 
     public void setLikeLikeLinkInventory(int itemA, int itemB) {
@@ -183,11 +184,16 @@ public final class EntityRuntimeConfiguration {
         runtime.roomVariables().writeEntityRoomId(roomId);
         for (RoomEntity entity : runtime.slots()) {
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                runtime.motionSet().secretSeashellMotion.ensureInitialized(entity.slot(), roomId);
+                runtime.motions()
+                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                        .ensureInitialized(entity.slot(), roomId);
                 runtime.physicsTables()
                         .writeEntityOptions1Override(
                                 entity.slot(),
-                                runtime.motionSet().secretSeashellMotion.privateState3(entity.slot()) != 0
+                                runtime.motions()
+                                                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                                                        .privateState3(entity.slot())
+                                                != 0
                                         ? EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1
                                         : EntityRomConstants.SECRET_SEASHELL_REVEALED_OPTIONS1);
             }
@@ -211,11 +217,21 @@ public final class EntityRuntimeConfiguration {
             boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
         EntitySlotValidation.validateByte(collisionX, "Pegasus collision X");
         EntitySlotValidation.validateByte(collisionY, "Pegasus collision Y");
-        runtime.motionSet().secretSeashellMotion.writeSecretSeashellScreenShakeActive(screenShakeActive);
-        runtime.motionSet().secretSeashellMotion.writeSecretSeashellPegasusCollisionActive(collisionActive);
-        runtime.motionSet().secretSeashellMotion.writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
-        runtime.motionSet().secretSeashellMotion.writeSecretSeashellPegasusCollisionX(collisionX);
-        runtime.motionSet().secretSeashellMotion.writeSecretSeashellPegasusCollisionY(collisionY);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .writeSecretSeashellScreenShakeActive(screenShakeActive);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .writeSecretSeashellPegasusCollisionActive(collisionActive);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .writeSecretSeashellPegasusCollisionX(collisionX);
+        runtime.motions()
+                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
+                .writeSecretSeashellPegasusCollisionY(collisionY);
     }
 
     public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags, int walrusStatus) {
@@ -262,12 +278,15 @@ public final class EntityRuntimeConfiguration {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
-        runtime.motionSet().followingNpcMotion.writeFollowingNpcState(state);
-        if (state.bowWowFollowing()) runtime.motionSet().bowWowMotion.writeBowWowState(1);
+        runtime.motions().get(FollowingNpcMotion.class, FollowingNpcMotion::new).writeFollowingNpcState(state);
+        if (state.bowWowFollowing())
+            runtime.motions().get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(1);
     }
 
     public void setColorShellWorld(ColorShellWorld world) {
-        runtime.motionSet().colorShellMotion.writeColorShellWorld(world == null ? ColorShellWorld.none() : world);
+        runtime.motions()
+                .get(ColorShellMotion.class, ColorShellMotion::new)
+                .writeColorShellWorld(world == null ? ColorShellWorld.none() : world);
     }
 
     public void setSwitchBlockAnimationActive(boolean active) {
@@ -330,7 +349,7 @@ public final class EntityRuntimeConfiguration {
 
     public void setBooBuddyTriggerCount(int value) {
         EntitySlotValidation.validateByte(value, "Boo Buddy trigger count");
-        runtime.motionSet().booBuddyMotion.writeBooBuddyTriggerCount(value);
+        runtime.motions().get(BooBuddyMotion.class, BooBuddyMotion::new).writeBooBuddyTriggerCount(value);
     }
 
     public void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags, int defaultMusicTrack) {

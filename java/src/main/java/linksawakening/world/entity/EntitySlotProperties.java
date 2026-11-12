@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.*;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 import linksawakening.world.entity.motion.GiantGopongaMotion;
@@ -40,8 +41,8 @@ public final class EntitySlotProperties {
     }
 
     void resolveThreeOfAKindPuzzle() {
-        ThreeOfAKindMotion.PuzzleResult result = runtime.motionSet()
-                .threeOfAKindMotion
+        ThreeOfAKindMotion.PuzzleResult result = runtime.motions()
+                .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                 .resolvePuzzle(Arrays.asList(runtime.slots()), runtime.physicsTables()::readEnemyTransitionCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
@@ -53,7 +54,9 @@ public final class EntitySlotProperties {
                 .findFirst()
                 .orElse(0);
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? runtime.motionSet().threeOfAKindMotion.matchedJingle(coordinatorSlot)
+                ? runtime.motions()
+                        .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
+                        .matchedJingle(coordinatorSlot)
                 : 0x1D;
         runtime.events()
                 .pendingEntityEvents
@@ -75,7 +78,10 @@ public final class EntitySlotProperties {
             int slot = entity.slot();
             runtime.bossRewards()
                     .writeDroppedItemBySlot(
-                            slot, runtime.motionSet().threeOfAKindMotion.matchedDrop(slot));
+                            slot,
+                            runtime.motions()
+                                    .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
+                                    .matchedDrop(slot));
             runtime.combatTables().writeDyingCountdown(slot, 0x1F);
             runtime.combatTables().writeEnemyHealth(slot, 0);
             runtime.physicsTables().writeEnemyPhysicsFlags(slot, 0x04);
@@ -152,12 +158,22 @@ public final class EntitySlotProperties {
         for (int slot = 0; slot < runtime.slots().length; slot++) {
             RoomEntity entity = runtime.slots()[slot];
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            runtime.slots()[slot] = runtime.motionSet()
-                    .bowWowMotion
-                    .advanceChain(entity, runtime.motionSet().bowWowMotion.readBowWowState(), moving);
-            entries.addAll(runtime.motionSet()
-                    .bowWowMotion
-                    .chainEntries(slot, runtime.motionSet().bowWowMotion.readBowWowState(), frame));
+            runtime.slots()[slot] = runtime.motions()
+                    .get(BowWowMotion.class, BowWowMotion::new)
+                    .advanceChain(
+                            entity,
+                            runtime.motions()
+                                    .get(BowWowMotion.class, BowWowMotion::new)
+                                    .readBowWowState(),
+                            moving);
+            entries.addAll(runtime.motions()
+                    .get(BowWowMotion.class, BowWowMotion::new)
+                    .chainEntries(
+                            slot,
+                            runtime.motions()
+                                    .get(BowWowMotion.class, BowWowMotion::new)
+                                    .readBowWowState(),
+                            frame));
         }
         this.writeBowWowChainOam(List.copyOf(entries));
     }
@@ -170,11 +186,11 @@ public final class EntitySlotProperties {
             }
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
-                    runtime.motionSet().pincerMotion.holeX(entity.slot()),
-                    runtime.motionSet().pincerMotion.holeY(entity.slot()),
+                    runtime.motions().get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
+                    runtime.motions().get(PincerMotion.class, PincerMotion::new).holeY(entity.slot()),
                     entity.x(),
                     entity.y(),
-                    runtime.motionSet().pincerMotion.state(entity.slot())));
+                    runtime.motions().get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
         }
         this.writePincerBodyOam(List.copyOf(entries));
     }
@@ -187,7 +203,9 @@ public final class EntitySlotProperties {
             }
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    runtime.motionSet().wingedOctorokMotion.privateState2(entity.slot()),
+                    runtime.motions()
+                            .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
+                            .privateState2(entity.slot()),
                     entity.x(),
                     entity.y(),
                     entity.z()));
