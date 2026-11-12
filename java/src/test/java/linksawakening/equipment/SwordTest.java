@@ -12,11 +12,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -235,7 +235,7 @@ final class SwordTest {
 
     @Test
     void resetSpinAttackCancelsQueuedAndActiveRomSpinState() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_RIGHT);
+        Sword sword = fullyChargedSwordFacing(Direction.RIGHT.javaIndex());
 
         sword.onRelease();
         sword.tick(false);
@@ -253,7 +253,7 @@ final class SwordTest {
     void swordAcquisitionStartsTheRomForcedSpinWithoutChargeOrInput() {
         Sword sword = new Sword(null, null);
 
-        sword.startSwordAcquisitionSpin(Link.DIRECTION_DOWN);
+        sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
 
         assertTrue(sword.spinAttackActive());
         assertEquals(0, sword.charge());
@@ -309,13 +309,13 @@ final class SwordTest {
         }
 
         byte[] holdingBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(holdingBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(holdingBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         sword.onRelease();
         sword.tick(false);
 
         byte[] releaseBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(releaseBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(releaseBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         assertEquals(Arrays.toString(alphaMask(holdingBuffer)), Arrays.toString(alphaMask(releaseBuffer)));
     }
@@ -341,11 +341,11 @@ final class SwordTest {
 
         sword.tick(true, 0);
         byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(normalBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(normalBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         sword.tick(true, 4);
         byte[] chargedBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(chargedBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(chargedBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         assertTrue(containsOpaqueColor(normalBuffer, palette.normal()[2]));
         assertTrue(containsOpaqueColor(chargedBuffer, palette.charged()[2]));
@@ -365,10 +365,11 @@ final class SwordTest {
         }
 
         byte[] actual = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(actual, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(actual, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         byte[] expected = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        drawExpectedSwordPose(expected, romTables, spriteSheet, 40, 48, Link.DIRECTION_RIGHT, Sword.STATE_HOLDING);
+        drawExpectedSwordPose(
+                expected, romTables, spriteSheet, 40, 48, Direction.RIGHT.javaIndex(), Sword.STATE_HOLDING);
 
         assertEquals(Arrays.toString(alphaMask(expected)), Arrays.toString(alphaMask(actual)));
     }
@@ -380,8 +381,8 @@ final class SwordTest {
         sword.onPress();
         for (int i = 0; i < 32 && sword.state() != Sword.STATE_HOLDING; i++) sword.tick(true);
         assertEquals(Sword.STATE_HOLDING, sword.state());
-        assertFalse(sword.enemyCollisionBox(80, 96, Link.DIRECTION_UP).active());
-        var box = sword.enemyCollisionBox(80, 96, Link.DIRECTION_UP, true);
+        assertFalse(sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex()).active());
+        var box = sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex(), true);
         assertTrue(box.active());
         assertEquals(80 + tables.swordCollisionXOriginOffset(2, Sword.STATE_HOLDING), box.x());
         assertEquals(96 + tables.swordCollisionYOriginOffset(2, Sword.STATE_HOLDING), box.y());
@@ -396,7 +397,7 @@ final class SwordTest {
         }
 
         assertEquals(Sword.STATE_SWING_START, sword.state());
-        Sword.CollisionBox box = sword.enemyCollisionBox(100, 100, Link.DIRECTION_RIGHT);
+        Sword.CollisionBox box = sword.enemyCollisionBox(100, 100, Direction.RIGHT.javaIndex());
 
         assertTrue(box.active());
         // Direction RIGHT, SWING_START (bank2 tables at $45BE-$461D):
@@ -433,7 +434,7 @@ final class SwordTest {
         Set<Integer> collisionIndices = new HashSet<>();
 
         sword.onPress();
-        sword.attackDirection(Link.DIRECTION_RIGHT);
+        sword.attackDirection(Direction.RIGHT.javaIndex());
         while (sword.state() != Sword.STATE_HOLDING) {
             sword.tick(true);
         }
@@ -446,7 +447,7 @@ final class SwordTest {
             sword.tick(false);
         }
         while (sword.spinAttackActive()) {
-            collisionIndices.add(sword.staticCollisionMapIndex(Link.DIRECTION_UP));
+            collisionIndices.add(sword.staticCollisionMapIndex(Direction.UP.javaIndex()));
             sword.tick(false);
         }
 
@@ -455,7 +456,7 @@ final class SwordTest {
 
     @Test
     void downFacingSpinAttackUsesRomSectorOrder() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_DOWN);
+        Sword sword = fullyChargedSwordFacing(Direction.DOWN.javaIndex());
 
         sword.onRelease();
         while (!sword.spinAttackActive()) {
@@ -468,7 +469,7 @@ final class SwordTest {
         int lastDirection = -1;
         while (sword.spinAttackActive()) {
             int state = sword.state();
-            int direction = sword.attackDirection(Link.DIRECTION_DOWN);
+            int direction = sword.attackDirection(Direction.DOWN.javaIndex());
             if (state != lastState || direction != lastDirection) {
                 states.add(state);
                 directions.add(direction);
@@ -491,20 +492,20 @@ final class SwordTest {
                 states);
         assertEquals(
                 List.of(
-                        Link.DIRECTION_DOWN,
-                        Link.DIRECTION_RIGHT,
-                        Link.DIRECTION_RIGHT,
-                        Link.DIRECTION_UP,
-                        Link.DIRECTION_UP,
-                        Link.DIRECTION_LEFT,
-                        Link.DIRECTION_LEFT,
-                        Link.DIRECTION_DOWN),
+                        Direction.DOWN.javaIndex(),
+                        Direction.RIGHT.javaIndex(),
+                        Direction.RIGHT.javaIndex(),
+                        Direction.UP.javaIndex(),
+                        Direction.UP.javaIndex(),
+                        Direction.LEFT.javaIndex(),
+                        Direction.LEFT.javaIndex(),
+                        Direction.DOWN.javaIndex()),
                 directions);
     }
 
     @Test
     void spinAttackDurationMatchesRomCountdownCadence() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_RIGHT);
+        Sword sword = fullyChargedSwordFacing(Direction.RIGHT.javaIndex());
 
         sword.onRelease();
         while (!sword.spinAttackActive()) {
@@ -604,14 +605,14 @@ final class SwordTest {
     }
 
     private static int toRomDirection(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT:
+        switch (Direction.fromJavaOrUnknown(javaDirection)) {
+            case RIGHT:
                 return 0;
-            case Link.DIRECTION_LEFT:
+            case LEFT:
                 return 1;
-            case Link.DIRECTION_UP:
+            case UP:
                 return 2;
-            case Link.DIRECTION_DOWN:
+            case DOWN:
                 return 3;
             default:
                 return 3;

@@ -25,7 +25,7 @@ final class DialogFontTest {
         }
         System.arraycopy(expectedTile, 0, rom, FONT_OFFSET + 2 * TILE_SIZE, TILE_SIZE);
 
-        DialogFont font = DialogFont.loadFromRom(rom);
+        DialogFont font = DialogFont.loadFromRom(new linksawakening.rom.Rom(rom));
 
         assertArrayEquals(expectedTile, font.tileFor('A'));
     }
@@ -42,8 +42,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedFontTilesRange() {
         byte[] rom = new byte[FONT_OFFSET + TILE_SIZE - 1];
 
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> DialogFont.loadFromRom(new linksawakening.rom.Rom(rom)));
 
         assertTrue(exception.getMessage().contains("FontTiles"));
     }
@@ -52,8 +52,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedCodepointTableRange() {
         byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 255];
 
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> DialogFont.loadFromRom(new linksawakening.rom.Rom(rom)));
 
         assertTrue(exception.getMessage().contains("CodepointToTileMap"));
     }

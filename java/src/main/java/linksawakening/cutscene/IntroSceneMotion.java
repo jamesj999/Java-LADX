@@ -4,16 +4,17 @@ import static linksawakening.cutscene.IntroSequence.*;
 
 import java.util.List;
 import java.util.function.Function;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
-/** IntroSceneMotion behavior on the shared IntroSequence state. */
+/** Intro sequencing, presentation or ROM data used by ROM {@code IntroHandler}. */
 abstract class IntroSceneMotion extends IntroLifecycle {
 
     protected IntroSceneMotion() {
         super();
     }
 
-    protected IntroSceneMotion(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    protected IntroSceneMotion(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         super(romData, backgroundProvider);
     }
 

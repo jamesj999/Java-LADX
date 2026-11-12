@@ -7,6 +7,7 @@ import linksawakening.entity.LinkTunicPalette;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Tile;
+import linksawakening.rom.EquipmentTables;
 import linksawakening.rom.RomTables;
 import linksawakening.state.Direction;
 
@@ -35,7 +36,7 @@ public final class MagicRod implements EquipmentItem {
     private final GameplaySoundSink soundSink;
     private final LaunchTarget target;
     private final BooleanSupplier itemUseAllowed;
-    private final RomTables romTables;
+    private final EquipmentTables equipmentTables;
     private final LinkSpriteSheet spriteSheet;
     private final LinkTunicPalette tunicPalette;
     private int attackStepCountdown;
@@ -71,7 +72,7 @@ public final class MagicRod implements EquipmentItem {
         if ((romTables == null) != (spriteSheet == null) || (romTables == null) != (tunicPalette == null)) {
             throw new IllegalArgumentException("Magic Rod rendering dependencies must be complete");
         }
-        this.romTables = romTables;
+        this.equipmentTables = romTables == null ? null : romTables.equipmentTables();
         this.spriteSheet = spriteSheet;
         this.tunicPalette = tunicPalette;
     }
@@ -118,19 +119,19 @@ public final class MagicRod implements EquipmentItem {
 
     @Override
     public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY, int direction, int offsetX, int offsetY) {
-        if (attackStepCountdown == 0 || romTables == null) {
+        if (attackStepCountdown == 0 || equipmentTables == null) {
             return;
         }
 
         int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK) < FORWARD_SWING_THRESHOLD ? 0 : 4;
         int romDirection = toRomDirection(direction);
         int tableIndex = rowOffset + romDirection;
-        int x = linkPixelX + romTables.magicRodXOffset(tableIndex) + offsetX;
-        int y = linkPixelY + romTables.magicRodYOffset(tableIndex) + offsetY;
-        int tile0 = romTables.magicRodTile(tableIndex, 0);
-        int tile1 = romTables.magicRodTile(tableIndex, 1);
-        int attr0 = romTables.magicRodAttribute(tableIndex, 0);
-        int attr1 = romTables.magicRodAttribute(tableIndex, 1);
+        int x = linkPixelX + equipmentTables.magicRodXOffset(tableIndex) + offsetX;
+        int y = linkPixelY + equipmentTables.magicRodYOffset(tableIndex) + offsetY;
+        int tile0 = equipmentTables.magicRodTile(tableIndex, 0);
+        int tile1 = equipmentTables.magicRodTile(tableIndex, 1);
+        int attr0 = equipmentTables.magicRodAttribute(tableIndex, 0);
+        int attr1 = equipmentTables.magicRodAttribute(tableIndex, 1);
         if (tile0 != 0xFF) {
             drawTile(displayBuffer, spriteSheet.tile(tile0), x, y, attr0, tunicPalette.forObjectPalette(attr0 & 0x07));
         }
@@ -152,19 +153,19 @@ public final class MagicRod implements EquipmentItem {
             int direction,
             int offsetX,
             int offsetY) {
-        if (attackStepCountdown == 0 || romTables == null) {
+        if (attackStepCountdown == 0 || equipmentTables == null) {
             return;
         }
 
         int rowOffset = (attackStepCountdown & ATTACK_STEP_DURATION_MASK) < FORWARD_SWING_THRESHOLD ? 0 : 4;
         int romDirection = toRomDirection(direction);
         int tableIndex = rowOffset + romDirection;
-        int x = linkPixelX + romTables.magicRodXOffset(tableIndex) + offsetX;
-        int y = linkPixelY + romTables.magicRodYOffset(tableIndex) + offsetY;
-        int tile0 = romTables.magicRodTile(tableIndex, 0);
-        int tile1 = romTables.magicRodTile(tableIndex, 1);
-        int attr0 = romTables.magicRodAttribute(tableIndex, 0);
-        int attr1 = romTables.magicRodAttribute(tableIndex, 1);
+        int x = linkPixelX + equipmentTables.magicRodXOffset(tableIndex) + offsetX;
+        int y = linkPixelY + equipmentTables.magicRodYOffset(tableIndex) + offsetY;
+        int tile0 = equipmentTables.magicRodTile(tableIndex, 0);
+        int tile1 = equipmentTables.magicRodTile(tableIndex, 1);
+        int attr0 = equipmentTables.magicRodAttribute(tableIndex, 0);
+        int attr1 = equipmentTables.magicRodAttribute(tableIndex, 1);
         if (tile0 != 0xFF) {
             sink.append(
                     spriteSheet.tile(tile0),

@@ -38,24 +38,24 @@ final class LinkPitBehaviorAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x24, 0x20);
+        link.position().setPixelPosition(0x24, 0x20);
 
-        link.useRocsFeather();
+        link.airborne().useRocsFeather();
         for (int i = 0; i < 12; i++) {
-            link.update();
+            link.motion().update();
         }
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
         int guard = 0;
-        while (link.isAirborne() && guard++ < 80) {
-            link.update();
+        while (link.airborne().isAirborne() && guard++ < 80) {
+            link.motion().update();
         }
         runUntilPitFallStarts(link);
-        assertTrue(link.isFallingIntoPit());
+        assertTrue(link.airborne().isFallingIntoPit());
 
-        link.setPixelPosition(0x10, 0x20);
-        link.useRocsFeather();
+        link.position().setPixelPosition(0x10, 0x20);
+        link.airborne().useRocsFeather();
 
-        assertFalse(link.isAirborne());
-        assertEquals(0, link.zVelocity());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0, link.airborne().zVelocity());
     }
 }

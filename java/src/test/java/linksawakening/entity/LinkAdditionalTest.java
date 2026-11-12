@@ -12,6 +12,7 @@ import linksawakening.input.InputState;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
@@ -31,10 +32,10 @@ final class LinkAdditionalTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.setDirection(Link.DIRECTION_UP);
+        link.animation().setDirection(Direction.UP.javaIndex());
 
-        assertEquals(Link.DIRECTION_UP, link.direction());
-        assertThrows(IllegalArgumentException.class, () -> link.setDirection(4));
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
+        assertThrows(IllegalArgumentException.class, () -> link.animation().setDirection(4));
     }
 
     @Test
@@ -53,21 +54,21 @@ final class LinkAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(64, 64);
-        link.setDirection(Link.DIRECTION_UP);
+        link.position().setPixelPosition(64, 64);
+        link.animation().setDirection(Direction.UP.javaIndex());
         input.onKeyEvent(config.downKey(), GLFW_PRESS);
-        link.setGrabbingObject(true, false);
-        link.update();
-        assertEquals(Link.DIRECTION_UP, link.direction());
-        assertEquals(64, link.pixelY());
+        link.actions().setGrabbingObject(true, false);
+        link.motion().update();
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
+        assertEquals(64, link.position().pixelY());
         assertEquals(0x3A, resolvedAnimationState(link));
-        link.setGrabbingObject(true, true);
-        link.update();
+        link.actions().setGrabbingObject(true, true);
+        link.motion().update();
         assertEquals(0x3B, resolvedAnimationState(link));
-        assertEquals(64, link.pixelY());
-        link.setGrabbingObject(false, false);
-        link.update();
-        assertEquals(Link.DIRECTION_DOWN, link.direction());
+        assertEquals(64, link.position().pixelY());
+        link.actions().setGrabbingObject(false, false);
+        link.motion().update();
+        assertEquals(Direction.DOWN.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -82,13 +83,13 @@ final class LinkAdditionalTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.setCarryingLiftedObjectState(1, 0);
+        link.actions().setCarryingLiftedObjectState(1, 0);
         assertEquals(0x3E, resolvedAnimationState(link));
-        link.setCarryingLiftedObjectState(1, 1);
+        link.actions().setCarryingLiftedObjectState(1, 1);
         assertEquals(0x40, resolvedAnimationState(link));
-        link.setCarryingLiftedObjectState(1, 2);
+        link.actions().setCarryingLiftedObjectState(1, 2);
         assertEquals(0x42, resolvedAnimationState(link));
-        link.setCarryingLiftedObjectState(1, 3);
+        link.actions().setCarryingLiftedObjectState(1, 3);
         assertEquals(0x44, resolvedAnimationState(link));
     }
 
@@ -106,12 +107,12 @@ final class LinkAdditionalTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
 
-        link.setCarryingLiftedObjectState(0x37, 3);
+        link.actions().setCarryingLiftedObjectState(0x37, 3);
         inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
 
         assertEquals(0x37, resolvedAnimationState(link));
-        assertEquals(Link.DIRECTION_DOWN, link.direction());
+        assertEquals(Direction.DOWN.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -119,17 +120,17 @@ final class LinkAdditionalTest extends LinkFixture {
         InputState input = new InputState();
         InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         Link link = linkWithEmptyRoom(input);
-        link.setPixelPosition(40, 40);
+        link.position().setPixelPosition(40, 40);
         input.onKeyEvent(config.rightKey(), GLFW_PRESS);
         for (int frame = 0; frame < 8; frame++) {
-            int before = link.pixelX();
-            link.setGelClinging(true, frame);
-            link.update();
-            assertEquals(before + ((frame & 3) == 0 ? 1 : 0), link.pixelX());
+            int before = link.position().pixelX();
+            link.motion().setGelClinging(true, frame);
+            link.motion().update();
+            assertEquals(before + ((frame & 3) == 0 ? 1 : 0), link.position().pixelX());
         }
-        link.setGelClinging(false, 8);
-        link.update();
-        assertEquals(43, link.pixelX());
+        link.motion().setGelClinging(false, 8);
+        link.motion().update();
+        assertEquals(43, link.position().pixelX());
     }
 
     @Test
@@ -149,12 +150,12 @@ final class LinkAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
 
-        link.applyRomSpeed(0xF8, 0x00);
-        link.update();
+        link.position().applyRomSpeed(0xF8, 0x00);
+        link.motion().update();
 
-        assertEquals(0x1F, link.pixelX());
+        assertEquals(0x1F, link.position().pixelX());
     }
 
     @Test
@@ -163,7 +164,7 @@ final class LinkAdditionalTest extends LinkFixture {
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         PlayerState playerState = new PlayerState();
         ItemRegistry itemRegistry = new ItemRegistry();
-        itemRegistry.register(playerState.itemA(), new BlockingItem());
+        itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         Link link = new LinkTestBuilder()
                 .input(inputState)
                 .config(inputConfig)
@@ -175,13 +176,13 @@ final class LinkAdditionalTest extends LinkFixture {
                 .build();
 
         inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
-        link.update();
-        assertEquals(Link.DIRECTION_LEFT, link.direction());
+        link.motion().update();
+        assertEquals(Direction.LEFT.javaIndex(), link.animation().direction());
 
         inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
-        link.update();
+        link.motion().update();
 
-        assertEquals(Link.DIRECTION_LEFT, link.direction());
+        assertEquals(Direction.LEFT.javaIndex(), link.animation().direction());
     }
 
     @Test
@@ -191,21 +192,21 @@ final class LinkAdditionalTest extends LinkFixture {
         int[] objects = emptyRoomObjectsArea();
         objects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
         Link link = linkInRoom(config, tables, objects);
-        link.setPixelPosition(0x20, 0x20);
+        link.position().setPixelPosition(0x20, 0x20);
         // Link's motion has not ticked through the intervening room scroll.
         // The global clock, rather than the number of Link updates, gates grass.
-        link.setGelClinging(false, 211);
-        link.update();
-        assertEquals(0x21, link.pixelX());
-        link.setGelClinging(false, 212);
-        link.update();
-        assertEquals(0x21, link.pixelX());
-        link.setGelClinging(false, 219);
-        link.update();
-        assertEquals(0x22, link.pixelX());
-        link.setGelClinging(false, 220);
-        link.update();
-        assertEquals(0x22, link.pixelX());
+        link.motion().setGelClinging(false, 211);
+        link.motion().update();
+        assertEquals(0x21, link.position().pixelX());
+        link.motion().setGelClinging(false, 212);
+        link.motion().update();
+        assertEquals(0x21, link.position().pixelX());
+        link.motion().setGelClinging(false, 219);
+        link.motion().update();
+        assertEquals(0x22, link.position().pixelX());
+        link.motion().setGelClinging(false, 220);
+        link.motion().update();
+        assertEquals(0x22, link.position().pixelX());
     }
 
     @Test
@@ -219,16 +220,16 @@ final class LinkAdditionalTest extends LinkFixture {
         grassyRoomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2] = OBJECT_TALL_GRASS;
         Link slowed = linkInRoom(inputConfig, romTables, grassyRoomObjects);
 
-        normal.setPixelPosition(0x20, 0x20);
-        slowed.setPixelPosition(0x20, 0x20);
+        normal.position().setPixelPosition(0x20, 0x20);
+        slowed.position().setPixelPosition(0x20, 0x20);
 
         for (int i = 0; i < 8; i++) {
-            normal.update();
-            slowed.update();
+            normal.motion().update();
+            slowed.motion().update();
         }
 
-        assertEquals(0x28, normal.pixelX());
-        assertEquals(0x26, slowed.pixelX());
+        assertEquals(0x28, normal.position().pixelX());
+        assertEquals(0x26, slowed.position().pixelX());
     }
 
     @Test
@@ -247,15 +248,16 @@ final class LinkAdditionalTest extends LinkFixture {
         PlayerState player = new PlayerState();
         Link link = linkInRoom(
                 new InputConfig(1, 2, 3, 4, 5, 6, 7), tables, objects, player, RomTables.PHYSICS_TABLE_INDOORS1);
-        link.setRoomEntryPixelPosition(0x20, 0x20);
-        for (int i = 0; i < 32 && link.romMotionState() != Link.LINK_MOTION_RECOVER; i++) link.update();
-        assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
+        link.position().setRoomEntryPixelPosition(0x20, 0x20);
+        for (int i = 0; i < 32 && link.airborne().romMotionState() != LinkMotionState.RECOVER.romValue(); i++)
+            link.motion().update();
+        assertEquals(LinkMotionState.RECOVER.romValue(), link.airborne().romMotionState());
         assertEquals(lava, link.linkStateMachine.physicsModifier);
         assertEquals(0x50, link.linkStateMachine.recoverCountdown);
-        for (int i = 0; i < 80; i++) link.update();
-        assertEquals(0x20, link.pixelX());
-        assertEquals(0x20, link.pixelY());
-        assertEquals(lava == 6 ? 4 : 0, player.subtractHealthBuffer());
+        for (int i = 0; i < 80; i++) link.motion().update();
+        assertEquals(0x20, link.position().pixelX());
+        assertEquals(0x20, link.position().pixelY());
+        assertEquals(lava == 6 ? 4 : 0, player.vitals().subtractHealthBuffer());
     }
 
     @Test
@@ -265,24 +267,24 @@ final class LinkAdditionalTest extends LinkFixture {
         for (int object : new int[] {6, OBJECT_DEEP_WATER}) {
             PlayerState player = new PlayerState();
             Link link = linkInRoom(config, tables, emptyRoomObjectsArea(), player, RomTables.PHYSICS_TABLE_OVERWORLD);
-            link.setRoomEntryPixelPosition(16, 24);
-            link.setPixelPosition(64, 64);
+            link.position().setRoomEntryPixelPosition(16, 24);
+            link.position().setPixelPosition(64, 64);
             link.linkStateMachine.motionState = LinkMotionState.RECOVER;
             link.linkStateMachine.physicsModifier = object;
             link.linkStateMachine.recoverCountdown = 0x50;
             for (int frame = 1; frame < 80; frame++) {
-                link.update();
+                link.motion().update();
                 int remaining = 80 - frame;
                 assertEquals(remaining >= 64 ? 0x4C : remaining >= 48 ? 0x4E : 0xFF, resolvedAnimationState(link));
-                assertEquals(Link.LINK_MOTION_RECOVER, link.romMotionState());
-                assertEquals(64, link.pixelX());
+                assertEquals(LinkMotionState.RECOVER.romValue(), link.airborne().romMotionState());
+                assertEquals(64, link.position().pixelX());
             }
-            link.update();
-            assertEquals(Link.LINK_MOTION_DEFAULT, link.romMotionState());
-            assertEquals(16, link.pixelX());
-            assertEquals(24, link.pixelY());
-            assertEquals(0x40, player.invincibilityCounter());
-            assertEquals(object == 6 ? 4 : 0, player.subtractHealthBuffer());
+            link.motion().update();
+            assertEquals(LinkMotionState.DEFAULT.romValue(), link.airborne().romMotionState());
+            assertEquals(16, link.position().pixelX());
+            assertEquals(24, link.position().pixelY());
+            assertEquals(0x40, player.vitals().invincibilityCounter());
+            assertEquals(object == 6 ? 4 : 0, player.vitals().subtractHealthBuffer());
         }
     }
 
@@ -292,10 +294,10 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables romTables = RomTables.loadFromRom(rom);
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
         CollisionAttempt[] attempts = {
-            new CollisionAttempt(Link.DIRECTION_UP, 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
-            new CollisionAttempt(Link.DIRECTION_DOWN, 0x02, 0x20, 0x20, 3, 2, 0x26, 0x30),
-            new CollisionAttempt(Link.DIRECTION_LEFT, 0x04, 0x40, 0x20, 2, 3, 0x3F, 0x29),
-            new CollisionAttempt(Link.DIRECTION_RIGHT, 0x08, 0x20, 0x20, 2, 3, 0x30, 0x29),
+            new CollisionAttempt(Direction.UP.javaIndex(), 0x01, 0x20, 0x40, 3, 2, 0x26, 0x3F),
+            new CollisionAttempt(Direction.DOWN.javaIndex(), 0x02, 0x20, 0x20, 3, 2, 0x26, 0x30),
+            new CollisionAttempt(Direction.LEFT.javaIndex(), 0x04, 0x40, 0x20, 2, 3, 0x3F, 0x29),
+            new CollisionAttempt(Direction.RIGHT.javaIndex(), 0x08, 0x20, 0x20, 2, 3, 0x30, 0x29),
         };
 
         for (CollisionAttempt attempt : attempts) {
@@ -316,23 +318,25 @@ final class LinkAdditionalTest extends LinkFixture {
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();
-            link.setPixelPosition(attempt.startX(), attempt.startY());
+            link.position().setPixelPosition(attempt.startX(), attempt.startY());
 
             assertFalse(collision.linkOnNormalPit(attempt.startX(), attempt.startY()));
             assertTrue(collision.pointBlocked(attempt.probeX(), attempt.probeY()));
 
             int guard = 0;
-            while (link.romCollisionType() == 0 && guard++ < 16) {
-                link.update();
+            while (link.position().romCollisionType() == 0 && guard++ < 16) {
+                link.motion().update();
             }
 
-            assertEquals(attempt.sourceBit(), link.romCollisionType(), "direction " + attempt.direction());
+            assertEquals(attempt.sourceBit(), link.position().romCollisionType(), "direction " + attempt.direction());
 
             roomObjects[blockingCell] = 0xFF;
-            link.update();
+            link.motion().update();
 
             assertEquals(
-                    0, link.romCollisionType(), "collision type should reset for direction " + attempt.direction());
+                    0,
+                    link.position().romCollisionType(),
+                    "collision type should reset for direction " + attempt.direction());
         }
     }
 
@@ -358,12 +362,12 @@ final class LinkAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x07, 0x20);
+        link.position().setPixelPosition(0x07, 0x20);
 
         assertTrue(collision.pointBlocked(0x13, 0x29));
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x07, link.pixelX());
+        assertEquals(0x07, link.position().pixelX());
     }
 
     @Test
@@ -388,11 +392,11 @@ final class LinkAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x07, 0x20);
+        link.position().setPixelPosition(0x07, 0x20);
 
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x08, link.pixelX());
+        assertEquals(0x08, link.position().pixelX());
     }
 
     @Test
@@ -417,11 +421,11 @@ final class LinkAdditionalTest extends LinkFixture {
                 .player(new PlayerState())
                 .items(new ItemRegistry())
                 .build();
-        link.setPixelPosition(0x00, 0x20);
+        link.position().setPixelPosition(0x00, 0x20);
 
-        link.update();
+        link.motion().update();
 
-        assertEquals(0x01, link.pixelX());
+        assertEquals(0x01, link.position().pixelX());
         assertTrue(collision.linkStandingOnSwitchBlock());
     }
 
@@ -430,25 +434,25 @@ final class LinkAdditionalTest extends LinkFixture {
         RomTables tables = RomTables.loadFromRom(loadRom());
         // direction, start X/Y, expected X/Y. One solid tile at (32,32).
         int[][] cases = {
-            {Link.DIRECTION_DOWN, 25, 16, 24, 16},
-            {Link.DIRECTION_DOWN, 41, 16, 42, 16},
-            {Link.DIRECTION_UP, 25, 42, 24, 42},
-            {Link.DIRECTION_UP, 41, 42, 42, 42},
-            {Link.DIRECTION_RIGHT, 20, 20, 20, 19},
-            {Link.DIRECTION_RIGHT, 20, 38, 20, 39},
-            {Link.DIRECTION_LEFT, 44, 20, 44, 19},
-            {Link.DIRECTION_LEFT, 44, 38, 44, 39},
-            {Link.DIRECTION_DOWN, 32, 16, 32, 16}, // Both probes: no slide.
-            {Link.DIRECTION_RIGHT, 20, 32, 20, 32},
+            {Direction.DOWN.javaIndex(), 25, 16, 24, 16},
+            {Direction.DOWN.javaIndex(), 41, 16, 42, 16},
+            {Direction.UP.javaIndex(), 25, 42, 24, 42},
+            {Direction.UP.javaIndex(), 41, 42, 42, 42},
+            {Direction.RIGHT.javaIndex(), 20, 20, 20, 19},
+            {Direction.RIGHT.javaIndex(), 20, 38, 20, 39},
+            {Direction.LEFT.javaIndex(), 44, 20, 44, 19},
+            {Direction.LEFT.javaIndex(), 44, 38, 44, 39},
+            {Direction.DOWN.javaIndex(), 32, 16, 32, 16}, // Both probes: no slide.
+            {Direction.RIGHT.javaIndex(), 20, 32, 20, 32},
         };
         for (int[] c : cases) {
             InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
             InputState input = new InputState();
             int key =
-                    switch (c[0]) {
-                        case Link.DIRECTION_DOWN -> config.downKey();
-                        case Link.DIRECTION_UP -> config.upKey();
-                        case Link.DIRECTION_LEFT -> config.leftKey();
+                    switch (Direction.fromJavaOrUnknown(c[0])) {
+                        case DOWN -> config.downKey();
+                        case UP -> config.upKey();
+                        case LEFT -> config.leftKey();
                         default -> config.rightKey();
                     };
             input.onKeyEvent(key, GLFW_PRESS);
@@ -465,10 +469,10 @@ final class LinkAdditionalTest extends LinkFixture {
                     .player(new PlayerState())
                     .items(new ItemRegistry())
                     .build();
-            link.setPixelPosition(c[1], c[2]);
-            link.update();
-            assertEquals(c[3], link.pixelX(), java.util.Arrays.toString(c));
-            assertEquals(c[4], link.pixelY(), java.util.Arrays.toString(c));
+            link.position().setPixelPosition(c[1], c[2]);
+            link.motion().update();
+            assertEquals(c[3], link.position().pixelX(), java.util.Arrays.toString(c));
+            assertEquals(c[4], link.position().pixelY(), java.util.Arrays.toString(c));
         }
     }
 }

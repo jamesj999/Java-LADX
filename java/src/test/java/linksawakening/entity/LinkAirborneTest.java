@@ -17,16 +17,16 @@ final class LinkAirborneTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.setRoomEntryPixelPosition(32, 48);
-        link.setPixelPosition(64, 64);
+        link.position().setRoomEntryPixelPosition(32, 48);
+        link.position().setPixelPosition(64, 64);
         link.linkAirborne.startPitFall();
         for (int frame = 0; frame < 95; frame++) link.linkAirborne.tickPitFall();
-        assertTrue(link.isFallingIntoPit());
-        assertEquals(64, link.pixelX());
+        assertTrue(link.airborne().isFallingIntoPit());
+        assertEquals(64, link.position().pixelX());
         link.linkAirborne.tickPitFall();
-        assertFalse(link.isFallingIntoPit());
-        assertEquals(32, link.pixelX());
-        assertEquals(48, link.pixelY());
+        assertFalse(link.airborne().isFallingIntoPit());
+        assertEquals(32, link.position().pixelX());
+        assertEquals(48, link.position().pixelY());
     }
 
     @Test
@@ -40,12 +40,12 @@ final class LinkAirborneTest {
                 .player(null)
                 .items(null)
                 .build();
-        link.setPixelPosition(64, 64);
+        link.position().setPixelPosition(64, 64);
         link.linkAirborne.groundStatus = GroundStatus.PIT;
         link.linkAirborne.slipTowardPitCenter();
         assertEquals(GroundStatus.NORMAL, link.linkAirborne.groundStatus);
-        assertEquals(64, link.pixelX());
-        assertEquals(64, link.pixelY());
-        assertFalse(link.isFallingIntoPit());
+        assertEquals(64, link.position().pixelX());
+        assertEquals(64, link.position().pixelY());
+        assertFalse(link.airborne().isFallingIntoPit());
     }
 }

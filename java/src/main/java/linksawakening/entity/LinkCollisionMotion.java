@@ -9,7 +9,7 @@ import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 
-/** LinkCollisionMotion behavior on the shared LinkMotion state. */
+/** Link collision motion state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkCollisionMotion extends LinkPosition {
     protected LinkCollisionMotion(Dependencies dependencies) {
         super(dependencies);
@@ -101,7 +101,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
                 linkAirborne.get().airborne = false;
                 linkDamage.get().collisionIgnoreFramesRemaining = 0;
                 if (linkServices.get().playerState != null)
-                    linkServices.get().playerState.setInvincibilityCounter(0);
+                    linkServices.get().playerState.vitals().setInvincibilityCounter(0);
                 if (linkServices.get().itemRegistry != null
                         && linkServices.get().itemRegistry.lookup(InventoryItem.SWORD.romValue())
                                 instanceof linksawakening.equipment.Sword sword) sword.resetSpinAttack();
@@ -141,7 +141,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
                 boolean swordHolding = sword instanceof linksawakening.equipment.Sword blade
                         && blade.state() == linksawakening.equipment.Sword.STATE_HOLDING;
                 boolean running = linkServices.get().playerState != null
-                        && linkServices.get().playerState.runningWithPegasusBoots();
+                        && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
                 if (!linkEquipment.get().isUsingShield() && (!swordHolding || running)) {
                     linkItemState.get().accessMarkRomLinkPushing(3);
                 }
@@ -167,7 +167,7 @@ abstract class LinkCollisionMotion extends LinkPosition {
         }
 
         boolean pegasusRunning = linkServices.get().playerState != null
-                && linkServices.get().playerState.runningWithPegasusBoots();
+                && linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots();
         linkAirborne.get().directionalLedgeCollisionCounter++;
         if (!pegasusRunning && linkAirborne.get().directionalLedgeCollisionCounter < 0x0C) {
             return true;

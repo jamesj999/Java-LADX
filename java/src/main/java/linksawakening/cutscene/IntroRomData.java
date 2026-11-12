@@ -43,12 +43,13 @@ public final class IntroRomData {
     private static final int POST_BEACH_TILEMAP_SIZE = 20 * 19;
     private static final int DX_FADE_PALETTE_ROW_COUNT = 16;
 
-    private final byte[] romData;
+    private final Rom romData;
     private final Rom romView;
 
-    public IntroRomData(byte[] romData) {
-        this.romData = Objects.requireNonNull(romData, "romData").clone();
-        this.romView = new Rom(this.romData);
+    public IntroRomData(Rom romData) {
+        this.romData =
+                new Rom(Objects.requireNonNull(romData, "romData").bytes(RomAddress.fromOffset(0), romData.size()));
+        this.romView = romData;
     }
 
     /** ROM draw commands used by the scream and the beach mountain wrap correction. */
@@ -74,7 +75,7 @@ public final class IntroRomData {
 
     public byte[] tileBytes(int address, int count) {
         int offset = checkedOffset("Intro animated tiles", 0x30, address, count);
-        return Arrays.copyOfRange(romData, offset, offset + count);
+        return romData.bytes(RomAddress.fromOffset(offset), count);
     }
 
     public int animationFrameAddress(boolean beach, int frameCounter) {
@@ -243,10 +244,10 @@ public final class IntroRomData {
 
     private int checkedOffset(String label, int bank, int address, int length) {
         int offset = RomBank.romOffset(bank, address);
-        if (length < 0 || offset < 0 || offset > romData.length - length) {
+        if (length < 0 || offset < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException(String.format(
                     "%s truncated: bank $%02X address $%04X length %d (ROM length %d)",
-                    label, bank, address, length, romData.length));
+                    label, bank, address, length, romData.size()));
         }
         return offset;
     }
@@ -301,5 +302,11 @@ public final class IntroRomData {
             }
             return copy;
         }
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public IntroRomData(byte[] romData) {
+        this(romData == null ? null : new Rom(romData));
     }
 }

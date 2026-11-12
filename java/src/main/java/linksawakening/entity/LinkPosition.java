@@ -6,7 +6,7 @@ import static linksawakening.entity.LinkMotion.*;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.state.Direction;
 
-/** Shared state and dependency ownership for LinkMotion. */
+/** Link position state and operations used by ROM {@code ApplyLinkMotionState}. */
 abstract class LinkPosition {
 
     protected final LinkComponentRef<LinkAirborne> linkAirborne;

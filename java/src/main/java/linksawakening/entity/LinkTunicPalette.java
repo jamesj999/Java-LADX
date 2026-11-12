@@ -1,6 +1,7 @@
 package linksawakening.entity;
 
 import java.util.Arrays;
+import linksawakening.rom.Rom;
 import linksawakening.state.Tunic;
 
 /** ROM object palettes used by Link's green, red, and blue tunics. */
@@ -25,7 +26,7 @@ public final class LinkTunicPalette {
     }
 
     /** Loads {@code ObjectPalettes} through the existing ROM palette decoder. */
-    public static LinkTunicPalette loadFromRom(byte[] romData) {
+    public static LinkTunicPalette loadFromRom(Rom romData) {
         return new LinkTunicPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
@@ -58,5 +59,10 @@ public final class LinkTunicPalette {
             copy[i] = source[i] == null ? null : Arrays.copyOf(source[i], source[i].length);
         }
         return copy;
+    }
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static LinkTunicPalette loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : new Rom(romData));
     }
 }

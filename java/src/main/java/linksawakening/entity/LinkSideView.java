@@ -90,7 +90,7 @@ final class LinkSideView {
                 if (linkAirborne.get().airborne) {
                     linkServices.get().soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
                     if (linkServices.get().playerState != null)
-                        linkServices.get().playerState.setRunningWithPegasusBoots(false);
+                        linkServices.get().playerState.equipmentLevels().setRunningWithPegasusBoots(false);
                 }
                 linkAirborne.get().airborne = false;
                 sideViewSpeedX = targetX;
@@ -128,7 +128,7 @@ final class LinkSideView {
                 sideViewSpeedY++;
                 boolean featherHeld = linkServices.get().playerState != null
                         && linkServices.get().inputState != null
-                        && (linkServices.get().playerState.itemB() == InventoryItem.ROCS_FEATHER.romValue()
+                        && (linkServices.get().playerState.inventory().itemB() == InventoryItem.ROCS_FEATHER.romValue()
                                 ? linkServices
                                         .get()
                                         .inputState

@@ -5,7 +5,7 @@ import static linksawakening.entity.LinkRomConstants.*;
 
 import linksawakening.state.LinkMotionState;
 
-/** LinkRecovery owns its Link state and operations. */
+/** Link recovery state and operations used by ROM {@code ApplyLinkMotionState}. */
 final class LinkRecovery {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
@@ -87,7 +87,7 @@ final class LinkRecovery {
         linkStateMachine.get().motionState = LinkMotionState.PASS_OUT;
         linkStateMachine.get().physicsModifier = 0;
         if (linkServices.get().playerState != null)
-            linkServices.get().playerState.setInvincibilityCounter(0);
+            linkServices.get().playerState.vitals().setInvincibilityCounter(0);
         linkDamage.get().collisionIgnoreFramesRemaining = 0;
         linkMotion.get().forcedSpeedPending = false;
         linkMotion.get().lastRomSpeedX = 0;

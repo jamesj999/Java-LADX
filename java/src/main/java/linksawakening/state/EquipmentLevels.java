@@ -5,7 +5,7 @@ import static linksawakening.state.PlayerState.*;
 
 import java.util.Objects;
 
-/** EquipmentLevels owns its player-state fields and their update rules. */
+/** Equipment upgrade, tunic and power-up state used by ROM {@code wSwordLevel}. */
 public final class EquipmentLevels {
     int swordLevel = 1;
     int shieldLevel = 1;

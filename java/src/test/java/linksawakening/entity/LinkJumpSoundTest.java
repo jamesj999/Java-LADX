@@ -26,7 +26,7 @@ final class LinkJumpSoundTest {
     void directionalLedgeRequestsFallJingleOnLaunchAndFootstepNoiseOnLanding() throws Exception {
         var f = new Fixture(true);
         f.room[0x11 + 3 * 16 + 2] = 0x21;
-        f.link.setPixelPosition(32, 32);
+        f.link.position().setPixelPosition(32, 32);
         f.input.onKeyEvent(f.config.downKey(), GLFW_PRESS);
         f.advance(35);
         assertEquals(List.of("5:LEDGE_FALL", "33:LINK_FOOTSTEP"), f.sounds);
@@ -36,7 +36,7 @@ final class LinkJumpSoundTest {
     void overworldCliffPreservesBothRomLandingNoiseWrites() throws Exception {
         var f = new Fixture(false);
         f.room[0x11 + 3 * 16 + 2] = 0x43;
-        f.link.setPixelPosition(32, 40);
+        f.link.position().setPixelPosition(32, 40);
         f.input.onKeyEvent(f.config.downKey(), GLFW_PRESS);
         f.advance(23);
         // $49B6 sets airborne again after $45AA on frame 20, so the
@@ -48,8 +48,8 @@ final class LinkJumpSoundTest {
     @Test
     void bedHopHasNoLaunchJingleAndLandsWithFootstepNoise() throws Exception {
         var f = new Fixture(true);
-        f.link.setPixelPosition(48, 36);
-        f.link.leaveMarinWakeUpBed();
+        f.link.position().setPixelPosition(48, 36);
+        f.link.actions().leaveMarinWakeUpBed();
         f.advance(22);
         assertEquals(List.of("19:LINK_FOOTSTEP"), f.sounds);
     }
@@ -57,8 +57,8 @@ final class LinkJumpSoundTest {
     @Test
     void featherUsesItsOwnLaunchJingleAndTheSharedLandingNoise() throws Exception {
         var f = new Fixture(false);
-        f.link.setPixelPosition(32, 32);
-        f.link.useRocsFeather();
+        f.link.position().setPixelPosition(32, 32);
+        f.link.airborne().useRocsFeather();
         f.advance(35);
         assertEquals(List.of("0:ROC_FEATHER_JUMP", "32:LINK_FOOTSTEP"), f.sounds);
     }
@@ -150,11 +150,11 @@ final class LinkJumpSoundTest {
         }
 
         void advance(int frames) {
-            for (int i = 0; i < frames; i++, frame++) link.update();
+            for (int i = 0; i < frames; i++, frame++) link.motion().update();
         }
 
         void landAt(int x, int y) {
-            link.setPixelPosition(x, y);
+            link.position().setPixelPosition(x, y);
             link.linkAirborne.airborne = true;
             link.linkAirborne.zSubPixels = 16;
             link.linkAirborne.zVelocity = -16;

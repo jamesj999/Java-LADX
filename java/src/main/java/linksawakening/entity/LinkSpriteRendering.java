@@ -11,7 +11,7 @@ import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.Tunic;
 
-/** LinkSpriteRendering behavior on the shared LinkAnimator state. */
+/** Link sprite rendering state and operations used by ROM {@code UpdateLinkAnimation}. */
 abstract class LinkSpriteRendering extends LinkPoseState {
     protected LinkSpriteRendering(Dependencies dependencies) {
         super(dependencies);
@@ -34,7 +34,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         int renderY = renderY();
         int originY = renderY + offsetY;
         int[] palette = linkServices.get().playerState != null
-                        && (linkServices.get().playerState.invincibilityCounter() & 0x04) != 0
+                        && (linkServices.get().playerState.vitals().invincibilityCounter() & 0x04) != 0
                 // DrawLinkSprite's GBC path selects object palette 4 from bit 2
                 // of wInvincibilityCounter while Link is flashing.
                 ? linkServices.get().tunicPalette.forObjectPalette(4)
@@ -44,13 +44,17 @@ abstract class LinkSpriteRendering extends LinkPoseState {
                         .forTunic(
                                 linkServices.get().playerState == null
                                         ? Tunic.GREEN.romValue()
-                                        : linkServices.get().playerState.tunicType());
+                                        : linkServices
+                                                .get()
+                                                .playerState
+                                                .equipmentLevels()
+                                                .tunicType());
 
         if (linkStateMachine.get().revolvingDoorPaletteVariant >= 0
                 && linkStateMachine.get().revolvingDoorFrame < 0x38) {
             palette = linkServices
                     .get()
-                    .romTables
+                    .linkMotionTables
                     .revolvingDoorPalette(linkStateMachine.get().revolvingDoorPaletteVariant);
         }
 
@@ -81,7 +85,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         EquipmentItem a = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemA());
+                .lookup(linkServices.get().playerState.inventory().itemA());
         if (a != null) {
             a.render(
                     displayBuffer,
@@ -94,7 +98,7 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         EquipmentItem b = linkServices
                 .get()
                 .itemRegistry
-                .lookup(linkServices.get().playerState.itemB());
+                .lookup(linkServices.get().playerState.inventory().itemB());
         if (b != null && b != a) {
             b.render(
                     displayBuffer,
@@ -188,9 +192,14 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         if (linkServices.get().spriteSheet != null) {
             int carriedShield = !linkStateMachine.get().gelClinging
                             && linkServices.get().playerState != null
-                            && (linkServices.get().playerState.itemA() == InventoryItem.SHIELD.romValue()
-                                    || linkServices.get().playerState.itemB() == InventoryItem.SHIELD.romValue())
-                    ? linkServices.get().playerState.shieldLevel()
+                            && (linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
+                                    || linkServices
+                                                    .get()
+                                                    .playerState
+                                                    .inventory()
+                                                    .itemB()
+                                            == InventoryItem.SHIELD.romValue())
+                    ? linkServices.get().playerState.equipmentLevels().shieldLevel()
                     : 0;
             return linkServices
                     .get()
@@ -204,10 +213,11 @@ abstract class LinkSpriteRendering extends LinkPoseState {
         }
         if (linkEquipment.get().isUsingShield()
                 && linkServices.get().playerState != null
-                && linkServices.get().playerState.shieldLevel() > 0) {
-            int[][] shieldTable = linkServices.get().playerState.shieldLevel() >= 2
-                    ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE
-                    : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
+                && linkServices.get().playerState.equipmentLevels().shieldLevel() > 0) {
+            int[][] shieldTable =
+                    linkServices.get().playerState.equipmentLevels().shieldLevel() >= 2
+                            ? LinkAnimator.MIRROR_SHIELD_USE_ANIMATION_STATE
+                            : LinkAnimator.SHIELD_USE_ANIMATION_STATE;
             return shieldTable[linkAnimationState.get().direction][normalFrame];
         }
         return baseState;

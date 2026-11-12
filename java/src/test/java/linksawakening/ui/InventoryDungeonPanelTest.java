@@ -25,7 +25,8 @@ final class InventoryDungeonPanelTest {
         String[] values = lines.getFirst().split(" ");
         byte[] status = new byte[64];
         for (int i = 0; i < 64; i++) status[i] = (byte) Integer.parseInt(values[i]);
-        new InventoryDungeonPanel(rom).apply(map, attrs, 0, false, new byte[] {1, 1, 0, 0, 2}, status);
+        new InventoryDungeonPanel(linksawakening.rom.Rom.of(rom))
+                .apply(map, attrs, 0, false, new byte[] {1, 1, 0, 0, 2}, status);
         for (String line : lines.subList(1, lines.size())) {
             String[] cell = line.split(" ");
             int x = Integer.parseInt(cell[0]), y = Integer.parseInt(cell[1]);
@@ -36,7 +37,7 @@ final class InventoryDungeonPanelTest {
 
     @Test
     void mapCompassAndRewardStatusControlTheRoomSymbols() throws Exception {
-        var panel = new InventoryDungeonPanel(rom());
+        var panel = new InventoryDungeonPanel(linksawakening.rom.Rom.of(rom()));
         assertEquals(0x7D, panel.minimapTile(0xEF, 0x8F, false, false));
         assertEquals(0xED, panel.minimapTile(0xED, 0x80, false, true));
         assertEquals(0x7D, panel.minimapTile(0xED, 0x90, false, true));

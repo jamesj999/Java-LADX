@@ -4,11 +4,13 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.world.entity.EntityRoomLoader;
 
-/** EntitySpriteRomDecoding behavior on the shared EntitySpriteHandlerCatalog state. */
+/** Entity display-list decoding and presentation used by ROM {@code RenderActiveEntitySpritesPair}. */
 abstract class EntitySpriteRomDecoding extends EntitySpriteDynamicComposites {
-    protected EntitySpriteRomDecoding(byte[] romData) {
+    protected EntitySpriteRomDecoding(Rom romData) {
         super(romData);
     }
 
@@ -156,9 +158,10 @@ abstract class EntitySpriteRomDecoding extends EntitySpriteDynamicComposites {
             int index = offset + variant * 4;
             variants.add(new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(
-                            Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
+                            romData.u8(RomAddress.fromOffset(index)), romData.u8(RomAddress.fromOffset(index + 1))),
                     new EntitySpriteDefinition.OamAttribute(
-                            Byte.toUnsignedInt(romData[index + 2]), Byte.toUnsignedInt(romData[index + 3]))));
+                            romData.u8(RomAddress.fromOffset(index + 2)),
+                            romData.u8(RomAddress.fromOffset(index + 3)))));
         }
         return new EntitySpriteDefinition(
                 entityType, bank, address, EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
@@ -172,7 +175,7 @@ abstract class EntitySpriteRomDecoding extends EntitySpriteDynamicComposites {
             int index = offset + variant * 2;
             variants.add(new EntitySpriteDefinition.Variant(
                     new EntitySpriteDefinition.OamAttribute(
-                            Byte.toUnsignedInt(romData[index]), Byte.toUnsignedInt(romData[index + 1])),
+                            romData.u8(RomAddress.fromOffset(index)), romData.u8(RomAddress.fromOffset(index + 1))),
                     null));
         }
         return new EntitySpriteDefinition(

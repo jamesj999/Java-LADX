@@ -6,9 +6,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundScene;
 
-/** Cutscene manager behavior and state. */
+/** Owns the active IntroHandler presentation and its sound sink. */
 public final class CutsceneManager implements CutsceneContext {
 
     private final DialogController dialogController;
@@ -39,7 +40,7 @@ public final class CutsceneManager implements CutsceneContext {
         setScene(introSequence.sceneId());
     }
 
-    public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+    public void startIntro(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
         introSequence = new IntroSequence(romData, backgroundProvider);
         introSequence.setNoiseSound(noiseSound);
         frameSnapshot = introSequence.snapshot();
@@ -130,5 +131,11 @@ public final class CutsceneManager implements CutsceneContext {
             resized[index] = lineScroll[Math.min(index, lineScroll.length - 1)];
         }
         return resized;
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
+        startIntro(romData == null ? null : new Rom(romData), backgroundProvider);
     }
 }

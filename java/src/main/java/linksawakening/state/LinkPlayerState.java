@@ -1,6 +1,7 @@
 package linksawakening.state;
 
-/** Inventory and health operations used by Link; persistence remains in PlayerState. */
+/** @deprecated Use the inventory(), vitals(), progression() and equipmentLevels() components on PlayerState. */
+@Deprecated(forRemoval = true)
 public interface LinkPlayerState {
     int itemA();
 

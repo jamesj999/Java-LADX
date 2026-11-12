@@ -28,7 +28,7 @@ public final class SwordSpriteSheet {
         this.tiles = tiles;
     }
 
-    public static SwordSpriteSheet loadFromRom(byte[] romData) {
+    public static SwordSpriteSheet loadFromRom(Rom romData) {
         Tile[] tiles = new Tile[TILE_COUNT];
         int offset = romOffset(LINK_CHARACTER_1_BANK_GBC, LINK_CHARACTER_1_ADDR);
         for (int t = 0; t < TILE_COUNT; t++) {
@@ -41,11 +41,11 @@ public final class SwordSpriteSheet {
         return tiles[index & (TILE_COUNT - 1)];
     }
 
-    private static Tile decodeTile(byte[] romData, int offset) {
+    private static Tile decodeTile(Rom romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2));
-            int highByte = new Rom(romData).u8(RomAddress.fromOffset(offset + y * 2 + 1));
+            int lowByte = romData.u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = romData.u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -58,5 +58,11 @@ public final class SwordSpriteSheet {
 
     private static int romOffset(int bank, int address) {
         return new RomAddress(bank, address).offset();
+    }
+
+    /** @deprecated Use the Rom overload; retains legacy partial-buffer validation. */
+    @Deprecated(forRemoval = true)
+    public static SwordSpriteSheet loadFromRom(byte[] romData) {
+        return loadFromRom(romData == null ? null : new Rom(romData));
     }
 }

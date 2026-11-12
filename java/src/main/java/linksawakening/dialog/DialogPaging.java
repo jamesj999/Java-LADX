@@ -4,8 +4,12 @@ import static linksawakening.dialog.DialogController.*;
 
 import java.util.List;
 
-/** DialogPaging behavior on the shared DialogController state. */
+/** Dialog text, timing and presentation used by ROM {@code DialogDrawNextCharacterHandler}. */
 abstract class DialogPaging extends DialogLifecycle {
+    private static final List<SoundEvent> TEXT_PRINT = List.of(SoundEvent.TEXT_PRINT);
+    private static final List<SoundEvent> DIALOG_BREAK = List.of(SoundEvent.DIALOG_BREAK);
+    private static final List<SoundEvent> MOVE_SELECTION = List.of(SoundEvent.MOVE_SELECTION);
+
     protected DialogPaging(int lineWidth) {
         super(lineWidth);
     }
@@ -23,7 +27,13 @@ abstract class DialogPaging extends DialogLifecycle {
     }
 
     public List<SoundEvent> consumeSoundEvents() {
-        List<SoundEvent> events = List.copyOf(soundEvents);
+        List<SoundEvent> events = soundEvents.size() == 1
+                ? switch (soundEvents.getFirst()) {
+                    case TEXT_PRINT -> TEXT_PRINT;
+                    case DIALOG_BREAK -> DIALOG_BREAK;
+                    case MOVE_SELECTION -> MOVE_SELECTION;
+                }
+                : List.copyOf(soundEvents);
         soundEvents.clear();
         return events;
     }

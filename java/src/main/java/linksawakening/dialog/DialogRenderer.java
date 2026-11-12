@@ -2,7 +2,7 @@ package linksawakening.dialog;
 
 import linksawakening.gpu.Framebuffer;
 
-/** Dialog renderer behavior and state. */
+/** Java pixel adapter for the tile rows published by DialogDrawNextCharacterHandler. */
 public final class DialogRenderer {
 
     private static final int BOX_X = 8;
